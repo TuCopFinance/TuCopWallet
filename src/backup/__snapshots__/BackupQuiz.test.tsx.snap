@@ -899,7 +899,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -955,7 +955,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }
@@ -967,7 +967,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1023,7 +1023,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }
@@ -1035,7 +1035,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1091,7 +1091,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }
@@ -1103,7 +1103,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1159,7 +1159,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }
@@ -1171,7 +1171,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1227,7 +1227,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }
@@ -1239,7 +1239,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#1AB775",
+                "borderColor": "#5061E8",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1295,7 +1295,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#1AB775",
+                    "color": "#5061E8",
                     "textAlign": "center",
                   }
                 }

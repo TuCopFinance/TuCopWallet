@@ -417,7 +417,7 @@ exports[`renders correctly 1`] = `
       <View
         style={
           {
-            "backgroundColor": "#1AB775",
+            "backgroundColor": "#5061E8",
             "borderRadius": 5,
             "flex": 0,
             "height": 5,
@@ -530,8 +530,8 @@ exports[`renders correctly 1`] = `
               [
                 {
                   "alignItems": "center",
-                  "backgroundColor": "#F8F9F9",
-                  "borderColor": "#E6E6E6",
+                  "backgroundColor": "#FFFFFF",
+                  "borderColor": "#2E3338",
                   "borderRadius": 100,
                   "borderWidth": 1,
                   "flexDirection": "row",

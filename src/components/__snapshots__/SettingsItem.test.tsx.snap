@@ -167,8 +167,8 @@ exports[`SettingsItemSwitch renders correctly 1`] = `
         onStartShouldSetResponder={[Function]}
         thumbTintColor="#E6E6E6"
         trackColorForFalse="#757575"
-        trackColorForTrue="#1AB775"
-        trackTintColor="#1AB775"
+        trackColorForTrue="#5061E8"
+        trackTintColor="#5061E8"
       />
     </View>
   </View>

@@ -832,7 +832,7 @@ exports[`ReviewFees renders correctly 2`] = `
     <Text
       style={
         {
-          "color": "#1AB775",
+          "color": "#5061E8",
           "fontFamily": "Inter-Regular",
           "fontSize": 16,
           "lineHeight": 24,
