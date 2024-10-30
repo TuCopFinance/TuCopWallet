@@ -41,7 +41,7 @@ exports[`renders loading 1`] = `
   }
 >
   <ActivityIndicator
-    color="#1AB775"
+    color="#5061E8"
     size="large"
     style={
       {

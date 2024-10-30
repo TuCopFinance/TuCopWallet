@@ -67,14 +67,14 @@ exports[`renders selected correctly 1`] = `
           cx="10"
           cy="10"
           r="9"
-          stroke="#1AB775"
+          stroke="#5061E8"
           strokeWidth={2}
           style={{}}
         />
         <circle
           cx="10"
           cy="10"
-          fill="#1AB775"
+          fill="#5061E8"
           r="6"
           style={{}}
         />

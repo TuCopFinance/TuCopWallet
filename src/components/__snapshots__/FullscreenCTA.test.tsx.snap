@@ -140,7 +140,7 @@ exports[`FullscreenCTA renders correctly 1`] = `
             [
               {
                 "alignItems": "center",
-                "backgroundColor": "#2E3338",
+                "backgroundColor": "#5061E8",
                 "flexDirection": "row",
                 "height": 48,
                 "justifyContent": "center",
