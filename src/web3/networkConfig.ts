@@ -92,6 +92,7 @@ interface NetworkConfig {
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
+  ckesTokenId: string
   arbUsdcTokenId: string
   spendTokenIds: string[]
   saveContactsUrl: string
@@ -149,6 +150,9 @@ const CEUR_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd8763cba276a3738e6
 
 const CREAL_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xe4d517785d091d3c54818832db6094bcc2744545`
 const CREAL_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xe8537a3d056da446677b9e9d6c5db704eaab4787`
+
+const CKES_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x1e0433c1769271eccf4cff9fddd515eefe6cdf92`
+const CKES_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x456a3d042c0dbd3db53d5489e98dfb038553b0d0`
 
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
@@ -405,6 +409,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_STAGING,
     crealTokenId: CREAL_TOKEN_ID_STAGING,
     celoTokenId: CELO_TOKEN_ID_STAGING,
+    ckesTokenId: CKES_TOKEN_ID_STAGING,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_STAGING,
     spendTokenIds: [CUSD_TOKEN_ID_STAGING, CEUR_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
@@ -505,6 +510,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_MAINNET,
     crealTokenId: CREAL_TOKEN_ID_MAINNET,
     celoTokenId: CELO_TOKEN_ID_MAINNET,
+    ckesTokenId: CKES_TOKEN_ID_MAINNET,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CEUR_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
