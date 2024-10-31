@@ -3,8 +3,8 @@ import { FetchMock } from 'jest-fetch-mock'
 import { expectSaga } from 'redux-saga-test-plan'
 import { dynamic, throwError } from 'redux-saga-test-plan/providers'
 import { call, select } from 'redux-saga/effects'
-import { AppEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { AppEvents } from 'src/analytics/Events'
 import { getMultichainFeatures } from 'src/statsig'
 import {
   fetchImportedTokenBalances,
@@ -29,6 +29,7 @@ import {
 import { getTokenId } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
+import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
 import {
   mockAccount,
@@ -107,12 +108,19 @@ describe('getTokensInfo', () => {
   beforeEach(() => {
     mockFetch.resetMocks()
   })
-  it('returns payload if response OK', async () => {
-    mockFetch.mockResponseOnce('{"some": "data"}')
+  it('returns only CKES and CUSD payload if response OK', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.ckesTokenId]: 'CKES token info',
+        [networkConfig.cusdTokenId]: 'CUSD token info',
+        'celo-alfajores:native': 'CELO token info',
+      })
+    )
 
     const result = await getTokensInfo()
     expect(result).toEqual({
-      some: 'data',
+      [networkConfig.ckesTokenId]: 'CKES token info',
+      [networkConfig.cusdTokenId]: 'CUSD token info',
     })
   })
   it('throws if request does not complete within timeout', async () => {

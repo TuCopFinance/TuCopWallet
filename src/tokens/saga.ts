@@ -108,7 +108,14 @@ export async function getTokensInfo(): Promise<StoredTokenBalances> {
       `Failure response fetching token info. ${response.status}  ${response.statusText}`
     )
   }
-  return await response.json()
+  const rawTokens = await response.json()
+  const allowedTokenIds = [networkConfig.ckesTokenId, networkConfig.cusdTokenId]
+  return Object.keys(rawTokens)
+    .filter((tokenId) => allowedTokenIds.includes(tokenId))
+    .reduce((acc, tokenId) => {
+      acc[tokenId] = rawTokens[tokenId]
+      return acc
+    }, {} as StoredTokenBalances)
 }
 
 export function* fetchTokenBalancesSaga() {
