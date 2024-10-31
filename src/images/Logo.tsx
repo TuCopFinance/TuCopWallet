@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { StyleSheet, View, ViewStyle } from 'react-native'
-import Svg, { Defs, G, LinearGradient, Path, Stop } from 'react-native-svg'
+import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg'
 
 interface Props {
   size?: number
@@ -9,33 +9,24 @@ interface Props {
   testID?: string
 }
 
-export default function Logo({
-  style,
-  size = 32,
-  color = 'url(#prefix__paint0_linear)',
-  testID,
-}: Props) {
+export default function Logo({ style, size = 32, color = '#02010A', testID }: Props) {
   return (
     <View testID={testID} style={[styles.container, style]}>
-      <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-        <G>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <G clipPath="url(#clip0_3069_67395)">
           <Path
-            d="M18.39 26.77c1.072-8.36 5.002-13.12 10.943-17.434l-3.037-4.003c-3.886 2.98-8.13 7.205-10.095 13.032-1.608-4.76-4.958-8.94-10.363-13.032L2.667 9.425C9.41 14.228 12.807 19.61 13.744 26.77h4.646z"
+            d="M8.17236 8.17594V4.12915H14.0448C17.36 4.12915 19.8225 6.50961 19.8225 9.84226V15.7458H15.797V10.7944C15.797 9.12812 14.7552 8.17594 13.0977 8.17594H8.17236Z"
+            fill={color}
+          />
+          <Path
+            d="M15.7971 19.7927V15.7459H10.8719C9.21434 15.7459 8.17245 14.7937 8.17245 13.1274V8.17603H4.14697V14.0796C4.14697 17.4122 6.60962 19.7927 9.92471 19.7927H15.7971Z"
             fill={color}
           />
         </G>
         <Defs>
-          <LinearGradient
-            id="prefix__paint0_linear"
-            x1={34.337}
-            y1={10.054}
-            x2={28.937}
-            y2={30.49}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset={0.118} stopColor="#35D07F" />
-            <Stop offset={0.802} stopColor="#FBCC5C" />
-          </LinearGradient>
+          <ClipPath id="clip0_3069_67395">
+            <Rect width={16} height={16} fill="white" transform="translate(4 4)" />
+          </ClipPath>
         </Defs>
       </Svg>
     </View>
