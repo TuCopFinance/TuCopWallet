@@ -131,6 +131,7 @@ export const mockWBTCAddress = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'.toLo
 export const mockUSDCAddress = '0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8'.toLowerCase()
 export const mockAaveArbUsdcAddress = '0x460b97BD498E1157530AEb3086301d5225b91216'.toLowerCase()
 export const mockArbArbAddress = '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase()
+export const mockCkesAddress = '0x1e0433c1769271eccf4cff9fddd515eefe6cdf92'.toLowerCase()
 
 export const mockCusdTokenId = `celo-alfajores:${mockCusdAddress}`
 export const mockCeurTokenId = `celo-alfajores:${mockCeurAddress}`
@@ -146,6 +147,7 @@ export const mockOPTokenId = `op-sepolia:native`
 export const mockArbUsdcTokenId = `arbitrum-sepolia:${mockUSDCAddress}`
 export const mockArbArbTokenId = `arbitrum-sepolia:${mockArbArbAddress}`
 export const mockAaveArbUsdcTokenId = `arbitrum-sepolia:${mockAaveArbUsdcAddress}`
+export const mockCkesTokenId = `celo-alfajores:${mockCkesAddress}`
 
 export const mockQrCodeData2 = {
   address: mockAccount2Invite,
@@ -580,6 +582,18 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     symbol: 'AUSDC',
     decimals: 6,
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/AUSDC.png',
+    balance: '0',
+    priceUsd: '1',
+    priceFetchedAt: Date.now(),
+  },
+  [mockCkesTokenId]: {
+    name: 'cKES',
+    networkId: NetworkId['celo-alfajores'],
+    tokenId: mockCkesTokenId,
+    address: mockCkesAddress,
+    symbol: 'cKES',
+    decimals: 18,
+    imageUrl: 'https://example.com/address-metadata/main/assets/tokens/cKES.png',
     balance: '0',
     priceUsd: '1',
     priceFetchedAt: Date.now(),

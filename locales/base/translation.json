@@ -2299,6 +2299,10 @@
     "exploreTokens": "Explore all tokens",
     "exploreTokensBody": "You can buy up to 10+ tokens in {{appName}}. Check them out!"
   },
+  "getStartedActivity": {
+    "title": "Get started by adding {{tokenSymbol}} to your wallet",
+    "cta": "Purchase {{tokenSymbol}}"
+  },
   "nftCelebration": {
     "bottomSheet": {
       "title": "Congratulations!",
