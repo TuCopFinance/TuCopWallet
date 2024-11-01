@@ -3,39 +3,31 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FiatExchangeEvents } from 'src/analytics/Events'
-import Touchable from 'src/components/Touchable'
-import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
-import CircledIcon from 'src/icons/CircledIcon'
-import EarnCoins from 'src/icons/EarnCoins'
-import ExploreTokens from 'src/icons/ExploreTokens'
+import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { CICOFlow } from 'src/fiatExchanges/utils'
+import AddFunds from 'src/icons/AddFunds'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { useCKES } from 'src/tokens/hooks'
 
-function EarnItem() {
-  const { t } = useTranslation()
-
-  return (
-    <Item
-      icon={
-        <CircledIcon radius={32} backgroundColor={colors.successLight}>
-          <EarnCoins color={colors.successDark} />
-        </CircledIcon>
-      }
-      title={t('earnFlow.entrypoint.title')}
-      body={t('earnFlow.entrypoint.description')}
-    />
-  )
-}
+// hardcoding a fallback token symbol in case the token info is not loaded
+const DEFAULT_TOKEN_SYMBOL = 'cKES'
 
 export default function GetStarted() {
   const { t } = useTranslation()
+  const cKESToken = useCKES()
 
   const goToAddFunds = () => {
     AppAnalytics.track(FiatExchangeEvents.cico_add_get_started_selected)
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
+    cKESToken &&
+      navigate(Screens.FiatExchangeAmount, {
+        flow: CICOFlow.CashIn,
+        tokenId: cKESToken?.tokenId,
+        tokenSymbol: cKESToken?.symbol,
+      })
   }
 
   useEffect(() => {
@@ -44,74 +36,48 @@ export default function GetStarted() {
 
   return (
     <View testID="GetStarted" style={styles.container}>
-      <Text style={styles.title}>{t('getStarted')}</Text>
-      <Touchable
-        borderRadius={8}
-        style={styles.touchable}
-        onPress={goToAddFunds}
-        testID="GetStarted/Touchable"
-      >
-        <View style={styles.touchableView}>
-          <Text style={styles.cardTitle}>{t('getStartedHome.titleV1_86')}</Text>
-          <EarnItem />
-          <Item
-            icon={<ExploreTokens />}
-            title={t('getStartedHome.exploreTokens')}
-            body={t('getStartedHome.exploreTokensBody')}
-          />
-        </View>
-      </Touchable>
-    </View>
-  )
-}
-
-function Item({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <View style={styles.row}>
-      {icon}
-      <View style={styles.itemTextContainer}>
-        <Text style={styles.itemTitle}>{title}</Text>
-        <Text style={styles.itemBody}>{body}</Text>
+      <AddFunds />
+      <Text style={styles.title}>
+        {t('getStartedActivity.title', {
+          tokenSymbol: cKESToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
+        })}
+      </Text>
+      <View style={styles.ctaContainer}>
+        <Button
+          testID="GetStarted/cta"
+          onPress={goToAddFunds}
+          text={t('getStartedActivity.cta', {
+            tokenSymbol: cKESToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
+          })}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+          style={styles.cta}
+        />
       </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  cardTitle: {
-    ...typeScale.labelSemiBoldMedium,
-    color: colors.black,
-  },
   container: {
-    gap: 18,
+    borderColor: colors.black,
+    borderWidth: 1,
+    borderRadius: 12,
     margin: Spacing.Regular16,
+    padding: Spacing.Regular16,
+    gap: Spacing.Regular16,
+    alignItems: 'center',
   },
   title: {
-    ...typeScale.labelSemiBoldSmall,
-    color: colors.gray4,
-  },
-  touchable: {
-    padding: Spacing.Regular16,
-    borderColor: colors.gray2,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: Spacing.Smallest8,
-  },
-  itemTitle: {
-    ...typeScale.labelSemiBoldXSmall,
+    ...typeScale.labelSemiBoldMedium,
     color: colors.black,
+    textAlign: 'center',
+    marginHorizontal: Spacing.Large32,
   },
-  itemBody: {
-    ...typeScale.bodyXSmall,
-    color: colors.gray4,
+  ctaContainer: {
+    flexDirection: 'row',
   },
-  touchableView: {
-    gap: Spacing.Thick24,
-  },
-  itemTextContainer: {
-    flex: 1,
+  cta: {
+    flexGrow: 1,
   },
 })

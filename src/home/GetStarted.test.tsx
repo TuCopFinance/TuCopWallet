@@ -4,44 +4,44 @@ import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FiatExchangeEvents } from 'src/analytics/Events'
 import GetStarted from 'src/home/GetStarted'
-import { getFeatureGate } from 'src/statsig'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { createMockStore } from 'test/utils'
-
-jest.mock('src/statsig')
+import { mockCkesTokenId, mockTokenBalances } from 'test/values'
 
 describe('GetStarted', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.mocked(getFeatureGate).mockReturnValue(false)
   })
 
   it('should display the correct text', () => {
-    const store = createMockStore()
+    const store = createMockStore({ tokens: { tokenBalances: mockTokenBalances } })
     const { getByText } = render(
       <Provider store={store}>
         <GetStarted />
       </Provider>
     )
 
-    expect(getByText('getStarted')).toBeTruthy()
-    expect(getByText('getStartedHome.titleV1_86')).toBeTruthy()
-    expect(getByText('earnFlow.entrypoint.title')).toBeTruthy()
-    expect(getByText('earnFlow.entrypoint.description')).toBeTruthy()
-    expect(getByText('getStartedHome.exploreTokens')).toBeTruthy()
-    expect(getByText('getStartedHome.exploreTokensBody')).toBeTruthy()
-    expect(store.getActions()).toEqual([])
+    expect(getByText('getStartedActivity.title, {"tokenSymbol":"cKES"}')).toBeTruthy()
+    expect(getByText('getStartedActivity.cta, {"tokenSymbol":"cKES"}')).toBeTruthy()
   })
 
   it('should trigger button tap analytics event', () => {
+    const store = createMockStore({ tokens: { tokenBalances: mockTokenBalances } })
     const { getByTestId } = render(
-      <Provider store={createMockStore({})}>
+      <Provider store={store}>
         <GetStarted />
       </Provider>
     )
 
-    fireEvent.press(getByTestId('GetStarted/Touchable'))
+    fireEvent.press(getByTestId('GetStarted/cta'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(
       FiatExchangeEvents.cico_add_get_started_selected
     )
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
+      flow: 'CashIn',
+      tokenId: mockCkesTokenId,
+      tokenSymbol: 'cKES',
+    })
   })
 })
