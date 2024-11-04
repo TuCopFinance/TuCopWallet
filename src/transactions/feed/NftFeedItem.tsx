@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { HomeEvents } from 'src/analytics/Events'
-import IconWithNetworkBadge from 'src/components/IconWithNetworkBadge'
 import Touchable from 'src/components/Touchable'
 import ImageErrorIcon from 'src/icons/ImageErrorIcon'
 import NftReceivedIcon from 'src/images/NftReceivedIcon'
@@ -35,28 +34,26 @@ function NftFeedItem({ transaction }: Props) {
     <Touchable testID={'NftFeedItem'} disabled={false} onPress={openNftTransactionDetails}>
       <View style={styles.container}>
         {/* Try to show the first image. Otherwise display the default icons */}
-        <IconWithNetworkBadge networkId={transaction.networkId}>
-          {nfts.length > 0 && nfts[0].metadata?.image ? (
-            <NftMedia
-              nft={nfts[0]}
-              ErrorComponent={
-                <View style={styles.errorCircleIcon}>
-                  <ImageErrorIcon size={30} testID="NftFeedItem/NftErrorIcon" />
-                </View>
-              }
-              borderRadius={20}
-              width={40}
-              height={40}
-              testID="NftFeedItem/NftIcon"
-              origin={NftOrigin.TransactionFeed}
-              mediaType="image"
-            />
-          ) : transaction.type === TokenTransactionTypeV2.NftReceived ? (
-            <NftReceivedIcon />
-          ) : (
-            <NftSentIcon />
-          )}
-        </IconWithNetworkBadge>
+        {nfts.length > 0 && nfts[0].metadata?.image ? (
+          <NftMedia
+            nft={nfts[0]}
+            ErrorComponent={
+              <View style={styles.errorCircleIcon}>
+                <ImageErrorIcon size={30} testID="NftFeedItem/NftErrorIcon" />
+              </View>
+            }
+            borderRadius={20}
+            width={40}
+            height={40}
+            testID="NftFeedItem/NftIcon"
+            origin={NftOrigin.TransactionFeed}
+            mediaType="image"
+          />
+        ) : transaction.type === TokenTransactionTypeV2.NftReceived ? (
+          <NftReceivedIcon />
+        ) : (
+          <NftSentIcon />
+        )}
         <Text style={styles.title}>
           {transaction.type === TokenTransactionTypeV2.NftReceived
             ? t('receivedNft')

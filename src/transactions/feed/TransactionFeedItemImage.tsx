@@ -1,6 +1,5 @@
 import React from 'react'
 import ContactCircle from 'src/components/ContactCircle'
-import IconWithNetworkBadge from 'src/components/IconWithNetworkBadge'
 import Activity from 'src/icons/Activity'
 import AttentionIcon from 'src/icons/Attention'
 import CircledIcon from 'src/icons/CircledIcon'
@@ -39,8 +38,12 @@ function TransactionFeedItemBaseImage(props: Props) {
 
   if (status === TransactionStatus.Failed) {
     return (
-      <CircledIcon backgroundColor={Colors.errorLight} radius={AVATAR_SIZE}>
-        <AttentionIcon color={Colors.errorDark} size={24} testId={'FailedTransactionAlert'} />
+      <CircledIcon
+        backgroundColor={Colors.white}
+        borderColor={Colors.errorDark}
+        radius={AVATAR_SIZE}
+      >
+        <AttentionIcon color={Colors.errorDark} size={18} testId={'FailedTransactionAlert'} />
       </CircledIcon>
     )
   }
@@ -52,14 +55,14 @@ function TransactionFeedItemBaseImage(props: Props) {
     transactionType === TokenTransactionTypeV2.CrossChainSwapTransaction
   ) {
     return (
-      <CircledIcon backgroundColor={Colors.successLight} radius={AVATAR_SIZE}>
-        <SwapArrows color={Colors.successDark} />
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
+        <SwapArrows color={Colors.black} />
       </CircledIcon>
     )
   }
   if (transactionType === TokenTransactionTypeV2.Approval) {
     return (
-      <CircledIcon backgroundColor={Colors.successLight} radius={AVATAR_SIZE}>
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
         <Activity />
       </CircledIcon>
     )
@@ -71,7 +74,7 @@ function TransactionFeedItemBaseImage(props: Props) {
   ) {
     if (props.isJumpstart) {
       return (
-        <CircledIcon backgroundColor={Colors.successLight} radius={AVATAR_SIZE}>
+        <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
           <MagicWand size={24} />
         </CircledIcon>
       )
@@ -87,8 +90,8 @@ function TransactionFeedItemBaseImage(props: Props) {
     transactionType === TokenTransactionTypeV2.EarnSwapDeposit
   ) {
     return (
-      <CircledIcon backgroundColor={Colors.successLight} radius={AVATAR_SIZE}>
-        <EarnCoins size={24} color={Colors.successDark} />
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
+        <EarnCoins size={24} color={Colors.black} />
       </CircledIcon>
     )
   }
@@ -102,15 +105,7 @@ function TransactionFeedItemBaseImage(props: Props) {
 }
 
 function TransactionFeedItemImage(props: Props) {
-  if (props.hideNetworkIcon) {
-    return <TransactionFeedItemBaseImage {...props} />
-  }
-
-  return (
-    <IconWithNetworkBadge networkId={props.networkId}>
-      <TransactionFeedItemBaseImage {...props} />
-    </IconWithNetworkBadge>
-  )
+  return <TransactionFeedItemBaseImage {...props} />
 }
 
 export default TransactionFeedItemImage
