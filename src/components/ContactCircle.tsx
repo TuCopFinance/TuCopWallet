@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Image, StyleSheet, Text, View, ViewStyle } from 'react-native'
-import DefaultAvatar from 'src/icons/DefaultAvatar'
+import User from 'src/icons/User'
 import { Recipient } from 'src/recipients/recipient'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -12,29 +12,22 @@ interface Props {
   backgroundColor?: Colors
   foregroundColor?: Colors
   borderColor?: Colors
-  DefaultIcon?: React.ComponentType<{ foregroundColor: Colors; backgroundColor: Colors }>
+  DefaultIcon?: React.ComponentType<{ foregroundColor?: Colors; backgroundColor?: Colors }>
 }
 
 const DEFAULT_ICON_SIZE = 40
 
-const getAddressBackgroundColor = (address: string) =>
-  `hsl(${parseInt(address.substring(0, 5), 16) % 360}, 53%, 93%)` as Colors
-const getAddressForegroundColor = (address: string) =>
-  `hsl(${parseInt(address.substring(0, 5), 16) % 360}, 67%, 24%)` as Colors
 const getNameInitial = (name: string) => name.charAt(0).toLocaleUpperCase()
 
 function ContactCircle({
   size: iconSize = DEFAULT_ICON_SIZE,
   recipient,
   style,
-  backgroundColor,
-  foregroundColor,
-  borderColor,
-  DefaultIcon = DefaultAvatar,
+  backgroundColor = Colors.white,
+  foregroundColor = Colors.black,
+  borderColor = Colors.black,
+  DefaultIcon = ({ foregroundColor }) => <User color={foregroundColor} />,
 }: Props) {
-  const address = recipient.address
-  const iconBackgroundColor = backgroundColor ?? getAddressBackgroundColor(address || '0x0')
-
   const renderThumbnail = () => {
     if (recipient.thumbnailPath) {
       return (
@@ -49,7 +42,7 @@ function ContactCircle({
       )
     }
 
-    const fontColor = foregroundColor ?? getAddressForegroundColor(address || '0x0')
+    const fontColor = foregroundColor
     if (recipient.name) {
       const initial = getNameInitial(recipient.name)
       return (
@@ -65,7 +58,7 @@ function ContactCircle({
       )
     }
 
-    return <DefaultIcon foregroundColor={fontColor} backgroundColor={iconBackgroundColor} />
+    return <DefaultIcon foregroundColor={foregroundColor} backgroundColor={backgroundColor} />
   }
 
   return (
@@ -74,7 +67,7 @@ function ContactCircle({
         style={[
           styles.icon,
           {
-            backgroundColor: iconBackgroundColor,
+            backgroundColor,
             height: iconSize,
             width: iconSize,
             borderRadius: iconSize / 2,
