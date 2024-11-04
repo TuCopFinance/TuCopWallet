@@ -4,6 +4,7 @@ import { AppEvents } from 'src/analytics/Events'
 import { DOLLAR_MIN_AMOUNT_ACCOUNT_FUNDED } from 'src/config'
 import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
 import { SentryTransaction } from 'src/sentry/SentryTransactions'
+import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import {
   importedTokensSelector,
   lastKnownTokenBalancesSelector,
@@ -109,9 +110,8 @@ export async function getTokensInfo(): Promise<StoredTokenBalances> {
     )
   }
   const rawTokens = await response.json()
-  const allowedTokenIds = [networkConfig.ckesTokenId, networkConfig.cusdTokenId]
   return Object.keys(rawTokens)
-    .filter((tokenId) => allowedTokenIds.includes(tokenId))
+    .filter((tokenId) => ALLOWED_TOKEN_IDS.has(tokenId))
     .reduce((acc, tokenId) => {
       acc[tokenId] = rawTokens[tokenId]
       return acc
