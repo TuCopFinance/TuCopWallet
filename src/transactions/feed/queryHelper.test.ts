@@ -4,16 +4,75 @@ import { SwapEvents } from 'src/analytics/Events'
 import { vibrateSuccess } from 'src/styles/hapticFeedback'
 import * as TokenSelectors from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
-import { QueryResponse, handlePollResponse } from 'src/transactions/feed/queryHelper'
+import {
+  QueryResponse,
+  handlePollResponse,
+  isTransactionEligible,
+} from 'src/transactions/feed/queryHelper'
 import { updateTransactions } from 'src/transactions/slice'
 import {
   NetworkId,
+  TokenExchange,
   TokenTransaction,
   TokenTransactionTypeV2,
+  TokenTransfer,
   TransactionStatus,
 } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
+import {
+  mockAddress,
+  mockApprovalTransaction,
+  mockCeloTokenId,
+  mockEarnClaimRewardTransaction,
+  mockEarnDepositTransaction,
+  mockEarnSwapDeposit,
+  mockEarnWithdrawTransaction,
+} from 'test/values'
 
 jest.mock('src/styles/hapticFeedback')
+
+const mockSentTransaction: TokenTransfer = {
+  type: TokenTransactionTypeV2.Sent,
+  amount: {
+    value: '1',
+    tokenId: networkConfig.cusdTokenId,
+  },
+  transactionHash: '0x123',
+  timestamp: Date.now(),
+  block: '1234',
+  networkId: NetworkId['celo-mainnet'],
+  address: mockAddress,
+  status: TransactionStatus.Complete,
+  metadata: {},
+  fees: [],
+}
+
+const mockReceivedTransaction: TokenTransfer = {
+  ...mockSentTransaction,
+  type: TokenTransactionTypeV2.Received,
+  amount: {
+    value: '1',
+    tokenId: networkConfig.ckesTokenId,
+  },
+}
+
+const mockSwapTransaction: TokenExchange = {
+  type: TokenTransactionTypeV2.SwapTransaction,
+  inAmount: {
+    value: '1',
+    tokenId: networkConfig.cusdTokenId,
+  },
+  outAmount: {
+    value: '1',
+    tokenId: networkConfig.ckesTokenId,
+  },
+  transactionHash: '0x123',
+  timestamp: Date.now(),
+  block: '1234',
+  networkId: NetworkId['celo-mainnet'],
+  status: TransactionStatus.Complete,
+  fees: [],
+}
 
 describe('handlePollResponse', () => {
   const dispatchSpy = jest.fn()
@@ -226,4 +285,37 @@ describe('handlePollResponse', () => {
       })
     }
   )
+})
+
+describe('isTransactionEligible', () => {
+  it.each([
+    { ...mockApprovalTransaction, tokenId: networkConfig.cusdTokenId },
+    mockSentTransaction,
+    mockReceivedTransaction,
+    mockSwapTransaction,
+  ])('should return true if tokens involved is an allowed token ($type)', (transaction) => {
+    expect(isTransactionEligible(transaction)).toEqual(true)
+  })
+
+  it.each([
+    mockApprovalTransaction,
+    { ...mockSentTransaction, amount: { value: 1, tokenId: mockCeloTokenId } },
+    { ...mockReceivedTransaction, amount: { value: 1, tokenId: mockCeloTokenId } },
+    { ...mockSwapTransaction, inAmount: { value: 1, tokenId: mockCeloTokenId } },
+    { ...mockSwapTransaction, outAmount: { value: 1, tokenId: mockCeloTokenId } },
+  ])('should return false if tokens involved is not an allowed token ($type)', (transaction) => {
+    expect(isTransactionEligible(transaction)).toEqual(false)
+  })
+
+  it.each([
+    mockEarnClaimRewardTransaction,
+    mockEarnSwapDeposit,
+    mockEarnDepositTransaction,
+    mockEarnWithdrawTransaction,
+    { type: TokenTransactionTypeV2.CrossChainSwapTransaction } as TokenTransaction,
+    { type: TokenTransactionTypeV2.NftReceived } as TokenTransaction,
+    { type: TokenTransactionTypeV2.NftSent } as TokenTransaction,
+  ])('should return false for transaction type: $type', (transaction) => {
+    expect(isTransactionEligible(transaction)).toEqual(false)
+  })
 })
