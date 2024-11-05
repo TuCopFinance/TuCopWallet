@@ -35,6 +35,7 @@ import {
   SendEvents,
   SettingsEvents,
   SwapEvents,
+  TabHomeEvents,
   TokenBottomSheetEvents,
   TransactionDetailsEvents,
   TransactionEvents,
@@ -157,6 +158,16 @@ interface AppEventsProperties {
     fullPath: string | null
     query: string | null
   }
+}
+
+interface TabHomeEventsProperties {
+  [TabHomeEvents.add_ckes]: undefined
+  [TabHomeEvents.add_ckes_from_cash_in]: undefined
+  [TabHomeEvents.add_ckes_from_swap]: undefined
+  [TabHomeEvents.hold_usd]: undefined
+  [TabHomeEvents.receive_money]: undefined
+  [TabHomeEvents.send_money]: undefined
+  [TabHomeEvents.withdraw]: undefined
 }
 
 interface HomeEventsProperties {
@@ -1687,6 +1698,7 @@ export type AnalyticsPropertiesList = AppEventsProperties &
   DappShortcutsProperties &
   TransactionDetailsProperties &
   PointsEventsProperties &
-  EarnEventsProperties
+  EarnEventsProperties &
+  TabHomeEventsProperties
 
 export type AnalyticsEventType = keyof AnalyticsPropertiesList

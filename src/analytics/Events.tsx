@@ -53,6 +53,16 @@ export enum HomeEvents {
   nft_reward_dismiss = 'nft_reward_dismiss',
 }
 
+export enum TabHomeEvents {
+  add_ckes = 'add_ckes',
+  add_ckes_from_swap = 'add_ckes_from_swap',
+  add_ckes_from_cash_in = 'add_ckes_from_cash_in',
+  send_money = 'send_money',
+  receive_money = 'receive_money',
+  hold_usd = 'hold_usd',
+  withdraw = 'withdraw',
+}
+
 export enum SettingsEvents {
   settings_profile_edit = 'settings_profile_edit',
   profile_generate_name = 'profile_generate_name',

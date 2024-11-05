@@ -30,6 +30,7 @@ import {
   SendEvents,
   SettingsEvents,
   SwapEvents,
+  TabHomeEvents,
   TokenBottomSheetEvents,
   TransactionDetailsEvents,
   TransactionEvents,
@@ -612,6 +613,15 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [EarnEvents.earn_pool_info_tap_safety_details]: `When the user taps the view more/less details on the safety card on the pool info screen`,
   [EarnEvents.earn_select_withdraw_type]: `When a user selects a withdrawal type on the withdraw bottom sheet`,
 
+  [TabHomeEvents.add_ckes]: 'When a user taps the "Add cKES" button on the home screen',
+  [TabHomeEvents.add_ckes_from_cash_in]:
+    'When a user taps "From my cUSD Balance" on the Add cKES bottom sheet',
+  [TabHomeEvents.add_ckes_from_swap]:
+    'When a user taps "Purchase cKES" on the Add cKES bottom sheet',
+  [TabHomeEvents.hold_usd]: 'When a user taps "Hold US Dollars" on the home screen',
+  [TabHomeEvents.receive_money]: 'When a user taps "Receive Money" on the home screen',
+  [TabHomeEvents.send_money]: 'When a user taps "Send Money" on the home screen',
+  [TabHomeEvents.withdraw]: 'When a user taps "Withdraw from your wallet" on the home screen',
   // Legacy event docs
   //  The below events had docs, but are no longer produced by the latest app version.
   // [HomeEvents.home_send]: `when "send" button is pressed from home screen send or request bar (NOT from home screen actions)`,
