@@ -66,13 +66,13 @@ export default function TokenIcon({
   viewStyle,
   testID,
   size = IconSize.MEDIUM,
-  showNetworkIcon = true,
+  showNetworkIcon = false,
 }: Props) {
   const { tokenImageSize, networkImageSize, networkImagePosition, tokenTextSize } =
     IconSizeToStyle[size]
 
   return (
-    <View testID={testID} style={viewStyle}>
+    <View testID={testID} style={[styles.defaultViewStyle, viewStyle]}>
       {token.imageUrl ? (
         <FastImage
           source={{
@@ -144,4 +144,5 @@ const styles = StyleSheet.create({
     color: colors.black,
     textAlign: 'center',
   },
+  defaultViewStyle: { borderColor: colors.black, borderWidth: 1, borderRadius: 20 },
 })

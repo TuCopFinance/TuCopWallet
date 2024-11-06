@@ -51,9 +51,6 @@ describe('TokenIcon', () => {
     expect(getByTestId('TokenIcon')).toHaveProp('source', {
       uri: CUSD_TOKEN.imageUrl,
     })
-    expect(getByTestId('NetworkIcon')).toHaveProp('source', {
-      uri: CELO_TOKEN.imageUrl,
-    })
   })
 
   it('renders correctly with default icon if no token icon is present', () => {
@@ -63,8 +60,5 @@ describe('TokenIcon', () => {
       </Provider>
     )
     expect(getByTestId('DefaultTokenIcon')).toBeTruthy()
-    expect(getByTestId('NetworkIcon')).toHaveProp('source', {
-      uri: CELO_TOKEN.imageUrl,
-    })
   })
 })
