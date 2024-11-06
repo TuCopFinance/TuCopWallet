@@ -467,6 +467,15 @@ export const sortedTokensWithBalanceOrShowZeroBalanceSelector = createSelector(
     })
 )
 
+export const cKESFirstTokensListSelector = createSelector(
+  (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
+  (tokens) =>
+    tokens.sort((token1, _token2) => {
+      // Puts cKES first
+      return token1.tokenId === networkConfig.ckesTokenId ? -1 : 1
+    })
+)
+
 export const sortedTokensWithBalanceSelector = createSelector(
   sortedTokensWithBalanceOrShowZeroBalanceSelector,
   (tokens) => tokens.filter((token) => token.balance.gt(TOKEN_MIN_AMOUNT))

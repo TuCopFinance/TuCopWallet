@@ -27,7 +27,7 @@ export const TokenBalanceItem = ({
   containerStyle,
   balanceUsdErrorFallback,
   showPriceUsdUnavailableWarning,
-  testIdPrefix,
+  testIdPrefix = '',
   hideBalances = false,
 }: Props) => {
   const { t } = useTranslation()

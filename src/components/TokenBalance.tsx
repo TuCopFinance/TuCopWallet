@@ -121,14 +121,19 @@ function TokenBalance({
   }
 }
 
-function HideBalanceButton({ hideBalance }: { hideBalance: boolean }) {
+export function HideBalanceButton({ hideBalance }: { hideBalance: boolean }) {
   const dispatch = useDispatch()
   const eyeIconOnPress = () => {
     AppAnalytics.track(hideBalance ? HomeEvents.show_balances : HomeEvents.hide_balances)
     dispatch(toggleHideBalances())
   }
   return (
-    <Touchable onPress={eyeIconOnPress} hitSlop={variables.iconHitslop}>
+    <Touchable
+      onPress={eyeIconOnPress}
+      hitSlop={variables.iconHitslop}
+      testID={'HideBalanceButton'}
+      borderRadius={30}
+    >
       {hideBalance ? <HiddenEyeIcon /> : <EyeIcon />}
     </Touchable>
   )
