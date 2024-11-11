@@ -15,6 +15,7 @@ enum Colors {
   // primary
   primary = '#5061E8',
   accent = '#5061E8',
+  lightPrimary = 'rgba(80, 97, 232, 0.1)',
 
   // other
   successDark = '#137211',

@@ -229,7 +229,7 @@ export function PaymentMethodSection({
       >
         <View>
           <Expandable
-            arrowColor={colors.accent}
+            arrowColor={colors.gray3}
             containerStyle={{
               ...styles.expandableContainer,
               paddingVertical: isExpandable ? (expanded ? 22 : 27) : 16,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.gray2,
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: colors.successLight,
+    backgroundColor: colors.lightPrimary,
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',

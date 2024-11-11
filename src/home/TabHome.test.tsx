@@ -2,8 +2,10 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import { FetchMock } from 'jest-fetch-mock/types'
 import * as React from 'react'
 import { Provider } from 'react-redux'
+import { CICOFlow } from 'src/fiatExchanges/utils'
 import TabHome from 'src/home/TabHome'
 import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
 import MockedNavigator from 'test/MockedNavigator'
@@ -206,6 +208,10 @@ describe('TabHome', () => {
     const { getByTestId } = renderScreen()
 
     fireEvent.press(getByTestId('FlatCard/Withdraw'))
-    expect(navigate).toHaveBeenCalledWith('WithdrawSpend')
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
+      flow: CICOFlow.CashOut,
+      tokenId: mockCusdTokenId,
+      tokenSymbol: 'cUSD',
+    })
   })
 })
