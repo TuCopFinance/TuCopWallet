@@ -6,14 +6,14 @@ import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { TabHomeEvents } from 'src/analytics/Events'
+import { FiatExchangeEvents, TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
 import { appStateSelector, phoneNumberVerifiedSelector } from 'src/app/selectors'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
-import { CICOFlow } from 'src/fiatExchanges/utils'
+import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
 import SwapArrows from 'src/icons/SwapArrows'
@@ -31,7 +31,7 @@ import { initializeSentryUserContext } from 'src/sentry/actions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useCKES, useCUSD } from 'src/tokens/hooks'
+import { useCashOutTokens, useCKES, useCUSD } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
@@ -134,9 +134,29 @@ function TabHome(_props: Props) {
       })
   }
 
+  const cashOutTokens = useCashOutTokens(true)
+
   function onPressWithdraw() {
+    const availableCashOutTokens = cashOutTokens.filter((token) => !token.balance.isZero())
+    const numAvailableCashOutTokens = availableCashOutTokens.length
+    if (
+      numAvailableCashOutTokens === 1 ||
+      (numAvailableCashOutTokens === 0 && cashOutTokens.length === 1)
+    ) {
+      const { tokenId, symbol } =
+        numAvailableCashOutTokens === 1 ? availableCashOutTokens[0] : cashOutTokens[0]
+      navigate(Screens.FiatExchangeAmount, {
+        tokenId,
+        flow: CICOFlow.CashOut,
+        tokenSymbol: symbol,
+      })
+    } else {
+      navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashOut })
+      AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
+        flow: FiatExchangeFlow.CashOut,
+      })
+    }
     AppAnalytics.track(TabHomeEvents.withdraw)
-    navigate(Screens.WithdrawSpend)
   }
 
   return (

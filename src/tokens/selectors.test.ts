@@ -582,7 +582,7 @@ describe(cashOutTokensByNetworkIdSelector, () => {
         [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
         false
       )
-      expect(tokens.length).toEqual(2)
+      expect(tokens.length).toEqual(3)
       expect(tokens.find((t) => t.tokenId === 'celo-alfajores:0xeur')?.symbol).toEqual('cEUR')
       expect(tokens.find((t) => t.tokenId === 'celo-alfajores:0x1')?.name).toEqual('0x1 token')
     })
@@ -592,7 +592,7 @@ describe(cashOutTokensByNetworkIdSelector, () => {
         [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
         true
       )
-      expect(tokens.length).toEqual(3)
+      expect(tokens.length).toEqual(8)
       expect(tokens.find((t) => t.tokenId === 'celo-alfajores:0xusd')?.symbol).toEqual('cUSD')
       expect(tokens.find((t) => t.tokenId === 'celo-alfajores:0xeur')?.symbol).toEqual('cEUR')
       expect(tokens.find((t) => t.tokenId === 'celo-alfajores:0x1')?.name).toEqual('0x1 token')
