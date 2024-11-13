@@ -72,10 +72,13 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
   },
   title: {
-    ...typeScale.labelLarge,
+    ...typeScale.titleSmall,
+    paddingBottom: Spacing.Thick24,
   },
   touchable: {
-    backgroundColor: Colors.gray1,
+    borderRadius: 20,
+    borderColor: Colors.black,
+    borderWidth: 1,
     padding: Spacing.Regular16,
     flexDirection: 'row',
     gap: Spacing.Regular16,

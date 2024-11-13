@@ -2098,7 +2098,7 @@
     },
     "moreActions": "More Actions",
     "actionDescriptions": {
-      "send": "Use any Celo address, domain, phone number, etc.",
+      "send": "Send tokens using a wallet address or phone number",
       "sendV1_74_one": "Use any {{supportedNetworkNames}} address, domain, phone number, etc.",
       "sendV1_74_other": "Use any address, domain, phone number on the following networks: {{supportedNetworkNames}}",
       "swap": "Swap your tokens without leaving your wallet",

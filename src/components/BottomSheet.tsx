@@ -59,7 +59,7 @@ const BottomSheet = ({
         testId={testId}
       >
         {!stickyTitle && !!title && (
-          <Text style={[titleStyle, styles.headerContentSpacing]}>{title}</Text>
+          <Text style={[styles.headerContentSpacing, titleStyle]}>{title}</Text>
         )}
         {!!description && <Text style={styles.description}>{description}</Text>}
         {children}

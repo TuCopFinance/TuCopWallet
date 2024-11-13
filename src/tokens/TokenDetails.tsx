@@ -176,7 +176,7 @@ export const useActions = (token: TokenBalance) => {
     {
       name: TokenActionName.Send,
       title: t('tokenDetails.actions.send'),
-      details: t('tokenDetails.actionDescriptions.sendV1_74', {
+      details: t('tokenDetails.actionDescriptions.send', {
         supportedNetworkNames: supportedNetworkIdsForSend
           .map((networkId) => NETWORK_NAMES[networkId])
           .join(', '),
