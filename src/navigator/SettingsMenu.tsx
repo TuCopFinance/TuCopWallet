@@ -125,7 +125,7 @@ export default function SettingsMenu() {
           borderless
         />
 
-        <GradientBlock style={styles.divider} colors={[Colors.black, Colors.black]} />
+        <GradientBlock style={styles.divider} colors={[Colors.gray2, Colors.gray2]} />
 
         <SettingsItemTextValue
           icon={<Preferences size={24} />}
@@ -163,7 +163,7 @@ export default function SettingsMenu() {
           borderless
         />
 
-        <GradientBlock style={styles.divider} colors={[Colors.black, Colors.black]} />
+        <GradientBlock style={styles.divider} colors={[Colors.gray2, Colors.gray2]} />
 
         <SettingsItemTextValue
           title={t('legal')}
