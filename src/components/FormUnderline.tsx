@@ -9,7 +9,6 @@ export default function FormUnderline() {
 const styles = StyleSheet.create({
   container: {
     height: 1,
-    backgroundColor: colors.onboardingBrownLight,
-    opacity: 0.2,
+    backgroundColor: colors.black,
   },
 })

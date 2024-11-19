@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: variables.contentPadding,
   },
   title: {
-    ...typeScale.labelSemiBoldLarge,
+    ...typeScale.titleMedium,
     textAlign: 'center',
     color: Colors.black,
   },
@@ -197,7 +197,8 @@ const styles = StyleSheet.create({
     padding: Spacing.Thick24,
   },
   countryFlagStyle: {
-    backgroundColor: Colors.gray2,
-    marginRight: Spacing.Smallest8,
+    backgroundColor: Colors.white,
+    border: Colors.black,
+    borderWidth: 1,
   },
 })

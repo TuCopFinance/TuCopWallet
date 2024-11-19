@@ -179,10 +179,9 @@ const styles = StyleSheet.create({
   },
   backupPhrase: {
     borderWidth: 1,
-    borderColor: colors.gray2,
+    borderColor: colors.black,
     borderRadius: 8,
     marginTop: 0,
-    backgroundColor: colors.gray1,
   },
   contentContainer: {
     flexGrow: 1,
