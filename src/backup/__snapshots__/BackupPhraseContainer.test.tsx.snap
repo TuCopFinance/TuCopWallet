@@ -105,8 +105,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
     style={
       {
         "alignContent": "center",
-        "backgroundColor": "#F8F9F9",
-        "borderColor": "#E6E6E6",
+        "borderColor": "#2E3338",
         "borderRadius": 8,
         "borderWidth": 1,
         "flexDirection": "row",
@@ -685,8 +684,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 24-word phr
     style={
       {
         "alignContent": "center",
-        "backgroundColor": "#F8F9F9",
-        "borderColor": "#E6E6E6",
+        "borderColor": "#2E3338",
         "borderRadius": 8,
         "borderWidth": 1,
         "flexDirection": "row",

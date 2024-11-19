@@ -98,6 +98,7 @@ export default function PhoneNumberInput({
     <FormField style={[styles.container, style]} label={label}>
       <View style={styles.phoneNumberContainer}>
         <Touchable
+          borderRadius={8}
           onPress={onPressCountryInternal}
           style={[styles.countryCodeContainer, countryFlagStyle]}
           testID="CountrySelectionButton"
@@ -162,6 +163,6 @@ const styles = StyleSheet.create({
   },
   phoneNumberInput: {
     flex: 1,
-    marginLeft: Spacing.Regular16,
+    marginLeft: Spacing.Thick24,
   },
 })

@@ -89,7 +89,7 @@ export default function ImportSelect({ navigation }: Props) {
           <ActionCard
             title={t('importSelect.emailAndPhone.title')}
             description={t('importSelect.emailAndPhone.description')}
-            icon={<CloudCheck color={colors.successDark} />}
+            icon={<CloudCheck color={colors.black} />}
             onPress={() =>
               navigate(Screens.SignInWithEmail, {
                 keylessBackupFlow: KeylessBackupFlow.Restore,
@@ -101,7 +101,7 @@ export default function ImportSelect({ navigation }: Props) {
           <ActionCard
             title={t('importSelect.recoveryPhrase.title')}
             description={t('importSelect.recoveryPhrase.description')}
-            icon={<Lock color={colors.successDark} />}
+            icon={<Lock color={colors.black} />}
             onPress={() => navigate(Screens.ImportWallet, { clean: true })}
             testID="ImportSelect/Mnemonic"
           />
@@ -119,6 +119,8 @@ ImportSelect.navigationOptions = {
 
 const styles = StyleSheet.create({
   card: {
+    borderColor: colors.black,
+    borderWidth: 1,
     alignSelf: 'stretch',
     flex: 1,
     padding: 0,
@@ -129,11 +131,10 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...typeScale.labelMedium,
-    color: colors.successDark,
+    color: colors.black,
     flex: 1,
   },
   safeArea: {
-    backgroundColor: colors.gray1,
     flex: 1,
   },
   screenDescription: {

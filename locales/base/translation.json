@@ -77,7 +77,7 @@
     "title": "Your recovery phrase",
     "titleV1_90": "Your Recovery Phrase",
     "body": "Write these 12 words down somewhere safe, where it cannot be stolen or damaged.",
-    "bodyV1_90": "If you lose your recovery phrase, you will lose access to all funds held in {{appName}}.",
+    "bodyV1_90": "If you lose your recovery phrase, you will lose access to all of your assets on {{appName}}. Nobody, not even {{appName}} will be able to help you recover your account without your Recovery Phrase. Store it in a safe place and do not share it.",
     "continue": "I've saved it",
     "copy": "Copy to clipboard",
     "mnemonicCopied": "Recovery phrase copied to clipboard",
@@ -121,11 +121,11 @@
   },
   "keylessBackupPhoneInput": {
     "setup": {
-      "title": "Next, add your phone number",
+      "title": "Set Up Phone Number",
       "subtitle": "You’ll need to use this phone number to restore if you ever lose your wallet.\n\nWe’ll send you a code to verify that this number is yours."
     },
     "restore": {
-      "title": "Verify your phone number",
+      "title": "Verify Phone Number",
       "subtitle": "Enter the phone number you previously used to set up backup.\n\nWe’ll send you a code to verify that this number is yours."
     }
   },

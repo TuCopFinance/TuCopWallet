@@ -103,9 +103,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.Regular16,
     overflow: 'hidden',
-    backgroundColor: colors.gray1,
     borderWidth: 1,
-    borderColor: colors.gray2,
+    borderColor: colors.black,
   },
   innerContent: {
     flex: 1,
