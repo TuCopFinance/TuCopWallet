@@ -55,9 +55,9 @@ function RecipientItem({ recipient, onSelectRecipient, loading, selected }: Prop
           <ContactCircle
             style={styles.avatar}
             recipient={recipient}
-            backgroundColor={Colors.gray1}
+            backgroundColor={Colors.white}
             foregroundColor={Colors.black}
-            borderColor={Colors.gray2}
+            borderColor={Colors.black}
             DefaultIcon={() => <QuestionIcon />} // no need to honor color props here since the color we need match the defaults
           />
           {!!showAppIcon && (

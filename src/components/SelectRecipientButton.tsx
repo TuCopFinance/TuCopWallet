@@ -22,14 +22,14 @@ function SelectRecipientButton({
   subtitle,
   onPress,
   icon,
-  iconBackgroundColor = colors.gray1,
+  iconBackgroundColor = colors.white,
   testID,
   showCheckmark,
 }: Props) {
   return (
     <Touchable testID={testID} onPress={onPress} style={styles.container}>
       <View style={styles.body}>
-        <CircledIcon radius={40} style={styles.icon} backgroundColor={iconBackgroundColor}>
+        <CircledIcon radius={40} borderColor={colors.black} backgroundColor={iconBackgroundColor}>
           {icon}
         </CircledIcon>
         {showCheckmark && (
@@ -50,10 +50,6 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: Spacing.Regular16,
     paddingHorizontal: Spacing.Thick24,
-  },
-  icon: {
-    borderWidth: 1,
-    borderColor: colors.gray2,
   },
   subtitle: {
     ...typeScale.bodySmall,
