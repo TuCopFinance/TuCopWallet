@@ -390,7 +390,7 @@ describe('TokenDetails', () => {
     expect(getByTestId('TokenDetails/Action/Swap')).toBeTruthy()
     expect(getByTestId('TokenDetails/Action/Add')).toBeTruthy()
     expect(queryByTestId('TokenDetails/Action/Withdraw')).toBeFalsy()
-    expect(queryByTestId('TokenDetails/Action/More')).toBeTruthy()
+    expect(queryByTestId('TokenDetails/Action/More')).toBeFalsy()
   })
 
   it('hides swap action and shows more action if token is swappable, has balance and CICO token but swapfeature gate is false', () => {

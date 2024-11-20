@@ -97,7 +97,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(5)
   })
   it('shows the correct tokens for cash spend', () => {
     const { getAllByTestId } = render(

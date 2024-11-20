@@ -390,11 +390,7 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([
-      mockCeurTokenId,
-      mockCusdTokenId,
-      mockCeloTokenId,
-    ])
+    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId])
   })
 
   it('returns tokens eligible for cash out for multiple networks', () => {
@@ -407,13 +403,7 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([
-      mockCeurTokenId,
-      mockCusdTokenId,
-      mockCeloTokenId,
-      ethTokenId,
-      mockUSDCTokenId,
-    ])
+    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId, ethTokenId])
   })
 })
 
