@@ -549,10 +549,9 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     marginTop: Spacing.Large32,
-    backgroundColor: Colors.gray1,
     borderWidth: 1,
     borderRadius: 16,
-    borderColor: Colors.gray2,
+    borderColor: Colors.black,
   },
   inputRow: {
     paddingHorizontal: Spacing.Regular16,
@@ -562,11 +561,11 @@ const styles = StyleSheet.create({
   },
   localAmountRow: {
     marginTop: Spacing.Thick24,
-    marginLeft: Spacing.Regular16,
+    paddingLeft: Spacing.Regular16,
     paddingRight: Spacing.Regular16,
     paddingBottom: Spacing.Regular16,
     paddingTop: Spacing.Thick24,
-    borderTopColor: Colors.gray2,
+    borderTopColor: Colors.black,
     borderTopWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -583,7 +582,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.white,
     borderWidth: 1,
-    borderColor: Colors.gray2,
+    borderColor: Colors.black,
     borderRadius: TOKEN_SELECTOR_BORDER_RADIUS,
     paddingHorizontal: Spacing.Smallest8,
     paddingVertical: Spacing.Tiny4,
@@ -599,9 +598,8 @@ const styles = StyleSheet.create({
   maxTouchable: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: Colors.gray2,
     borderWidth: 1,
-    borderColor: Colors.gray2,
+    borderColor: Colors.black,
     borderRadius: MAX_BORDER_RADIUS,
   },
   maxText: {
