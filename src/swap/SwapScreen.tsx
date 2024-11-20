@@ -1102,7 +1102,7 @@ const styles = StyleSheet.create({
   },
   disclaimerLink: {
     ...typeScale.labelXXSmall,
-    color: colors.black,
+    color: colors.primary,
   },
   warning: {
     marginTop: Spacing.Thick24,
