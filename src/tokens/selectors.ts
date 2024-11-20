@@ -419,7 +419,14 @@ export const cashOutTokensByNetworkIdSelector = createSelector(
       showZeroBalanceTokens,
   ],
   (tokens, showZeroBalanceTokens) =>
-    tokens.filter((tokenInfo) => showZeroBalanceTokens || tokenInfo.isCashOutEligible)
+    tokens.filter(
+      (tokenInfo) =>
+        // Different from runtime since we want to show cKES as a zero balance token
+        // but don't want to set showZeroBalance in address-metadata as it would then
+        // show as a zero balance token in all runtime apps
+        (showZeroBalanceTokens || tokenInfo.balance.gt(TOKEN_MIN_AMOUNT)) &&
+        tokenInfo.isCashOutEligible
+    )
 )
 
 export const spendTokensByNetworkIdSelector = createSelector(

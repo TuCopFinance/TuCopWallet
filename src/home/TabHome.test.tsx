@@ -37,6 +37,8 @@ const mockBalances = {
         isFeeCurrency: true,
         priceUsd: '1',
         priceFetchedAt: Date.now(),
+        isCashInEligible: true,
+        isCashOutEligible: true,
       },
       [mockCkesTokenId]: {
         name: 'cKES',
@@ -49,6 +51,8 @@ const mockBalances = {
         balance: '0',
         priceUsd: '1',
         priceFetchedAt: Date.now(),
+        isCashInEligible: true,
+        isCashOutEligible: true,
       },
     },
   },
