@@ -38,8 +38,8 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v2
         with:
           secrets: |-
-            ANDROID_RELEASE_KEYSTORE:projects/1027349420744/secrets/VALORA_RELEASE_KEYSTORE_V2
-            RELEASE_STORE_PASSWORD:projects/1027349420744/secrets/VALORA_RELEASE_STORE_PASSWORD
+            RELEASE_STORE_PASSWORD:projects/1027349420744/secrets/ANDROID_MENTO_RELEASE_KEYSTORE_PASSWORD
+            ANDROID_RELEASE_KEYSTORE:projects/1027349420744/secrets/ANDROID_MENTO_RELEASE_KEYSTORE
             SLACK_WEBHOOK_URL:projects/1027349420744/secrets/SLACK_WEBHOOK_URL
             BOT_SSH_KEY:projects/1027349420744/secrets/BOT_SSH_PRIVATE_KEY
             GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_JSON:projects/1027349420744/secrets/GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_JSON
@@ -102,13 +102,26 @@ jobs:
           SUPPLY_UPLOAD_MAX_RETRIES: 5
           RUBYOPT: '-rostruct' # TODO: Remove when https://github.com/fastlane/fastlane/pull/21950 gets released
         run: bundle exec fastlane android ${{ matrix.lane }}
+      # Upload build artifacts to GitHub Actions so that they can be manually
+      # downloaded and submitted to the Play Store (in absence of a service
+      # account that can do the upload automatically. Once a service account for
+      # upload is available, this step can be deleted. Remember to re-enable the
+      # upload step in the FastFile, and update the success_text in the
+      # notification step.
+      - name: Upload Android build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-artifacts
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+            android/app/build/outputs/bundle/**/*.aab
       - name: Build notification
         if: always()
         uses: edge/simple-slack-notify@v1.1.2
         with:
           status: ${{ job.status }}
           # Note: ${xxx} in this action are evaluated by JavaScript
-          success_text: '✅ [${env.GITHUB_WORKFLOW} <${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}|#${env.GITHUB_RUN_NUMBER}>] ${env.LANE} (Android) build has been uploaded to Google Play internal test track.'
+          success_text: '✅ [${env.GITHUB_WORKFLOW} <${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}|#${env.GITHUB_RUN_NUMBER}>] ${env.LANE} (Android) build has been Generated.'
           failure_text: '⚠️ [${env.GITHUB_WORKFLOW} <${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}|#${env.GITHUB_RUN_NUMBER}>] ${env.LANE} (Android) build failed. Please investigate.'
           cancelled_text: '⏏️ [${env.GITHUB_WORKFLOW} <${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}|#${env.GITHUB_RUN_NUMBER}>] ${env.LANE} (Android) build was cancelled.'
           fields: |

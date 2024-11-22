@@ -76,28 +76,28 @@ platform :android do
   lane :alfajores do
     env = 'alfajores'
     build(environment: env)
-    upload(environment: env, track: 'internal')
+    # upload(environment: env, track: 'internal')
   end
 
   desc 'Ship Alfajores Nightly to Playstore Internal'
   lane :alfajoresnightly do
     env = 'alfajoresnightly'
     build(environment: env)
-    upload(environment: env, track: 'internal')
-  end
+    # upload(environment: env, track: 'internal')
+  end 
 
   desc 'Ship Mainnet to Playstore Internal'
   lane :mainnet do
     env = 'mainnet'
     build(environment: env)
-    upload(environment: env, track: 'internal')
+    # upload(environment: env, track: 'internal')
   end
 
   desc 'Ship Mainnet Nightly to Playstore Internal'
   lane :mainnetnightly do
     env = 'mainnetnightly'
     build(environment: env)
-    upload(environment: env, track: 'internal')
+    # upload(environment: env, track: 'internal')
   end
 
   desc 'Build an Android apk'
