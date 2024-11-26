@@ -180,7 +180,7 @@ describe('store state', () => {
           "sentryTracesSampleRate": 0.2,
           "sessionId": "",
           "showNotificationSpotlight": true,
-          "showSwapMenuInDrawerMenu": false,
+          "showSwapMenuInDrawerMenu": true,
           "supportedBiometryType": null,
           "walletConnectV2Enabled": true,
         },
