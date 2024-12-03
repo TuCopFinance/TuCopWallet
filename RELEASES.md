@@ -1,25 +1,10 @@
-# Release Automation 🤖
+# Releases
 
-This repository contains the configuration that automate nightly and release builds for Valora `mainnet` and `alfajores`.
+## Android - (internal testers)
 
-## Automated Build Types
+Android builds can be manually released by running the `Release - Production` workflow, downloading the bundle from github, and uploading the bundle to the playstore.
 
-### Nightly Builds
-
-Nightly builds are run on weekdays daily at 03:00 UTC using GitHub Action's schedule / CRON job feature. This CRON job will setup the environment, compile Valora Nightly for `mainnet` and `alfajores`, and upload them to Google Play and Apple TestFlight. Build status, completion or failure, is then reported in the #eng-release-notifications channel in Slack.
-
-### Release / Production Builds
-
-Release builds are manually triggered using GitHub's `workflow_dispatch` feature. The `workflow_dispatch` takes in an input of "Release Branch Name" which should be the branch that the release manager has created and updated the release version from 1.19.0 to 1.20.0 etc. When triggered, it will setup the environment, compile Valora for `mainnet` and `alfajores` and upload it to Google Play and Apple TestFlight. Build status, completion or failure, is then reported in the #eng-release-notifications channel in Slack.
-
-## How does it know which commit to build?
-
-Release / production builds use the specific branch / commit hash that is provided to the workflow using the `workflow_dispatch` input. The nightly builds on the otherhand use the latest commit on the wallet repo's main branch at the time of the run.
-
-## Why the unix time for version build codes?
-
-Using the unix time from the Git commit allows us to have a specific commit associated to each build we push and it's easy to lookup the commit from that value if needed:
-
-```
-git log --format='%H %ct' | grep TIMESTAMP
-```
+1. Run the [Release - Production Action](https://github.com/mobilestack-xyz/mobilestack-mento/actions/workflows/release-production.yml) against the `main` branch
+1. Download and unzip the android bundle which you can find in the build logs under android => fastlane-android (mainnet) => Upload Android build artifacts.
+1. Navigate to [Internal Testing on the Google Play Console](https://play.google.com/console/u/0/developers/5695387721434163201/app/4974536396935190989/tracks/internal-testing) (Reach out to Silas or Jacob if you need access) and click `Create new release`. Upload the app bundle that you just dowloaded and unzipped and click `Next`. Click `Save and Publish` on the next screen.
+1. You're done! Internal testers should be able to download the latest version of Mento on their android devices.
