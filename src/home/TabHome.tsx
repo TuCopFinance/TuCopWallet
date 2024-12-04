@@ -15,6 +15,7 @@ import { StackParamList } from 'src/navigator/types'
 import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { initializeSentryUserContext } from 'src/sentry/actions'
+import variables from 'src/styles/variables'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
@@ -80,6 +81,10 @@ function TabHome(_props: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // Padding applied to the content of the screen on sides and top
+    // No padding applied to the bottom by default incase of a scrollable screen
+    paddingHorizontal: variables.contentPadding,
+    paddingTop: variables.contentPadding,
     position: 'relative',
   },
 })
