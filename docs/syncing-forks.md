@@ -7,6 +7,9 @@ helps maintaining commit history and makes pulling future changes easier.
 
 ## One time setup
 
+First, if you're not a member of the [mobilestack-xyz](https://github.com/mobilestack-xyz) org on GitHub,
+reach out to a member of the Valora engineering team for an invitation.
+
 ### Pull forked repo to your local machine
 
 ```console
@@ -90,9 +93,13 @@ commit` option:
 
 ![create-a-merge-commit](./assets/create-a-merge-commit.png)
 
-This is off by default and you'd need to enable `Allow merge commits` in the repo settings:
+This is off by default and you'd need to enable `Allow merge commits` in the
+repo settings (make sure to select "Pull request title and description" as the
+default commit message so it follows conventional commit format when merging):
 
 ![allow-merge-commit](./assets/allow-merge-commit.png)
+
+If merge queue is on, you will also need to disable it since merge queue uses squash and merge by default. Merge queue can be turned off in Settings => Rules => Rulesets => main => Require Merge Queue.
 
 You'll get a red error message saying the repository requires linear history and
 doesn't allow merge commits. You can ignore this message and continue with the
@@ -103,7 +110,7 @@ message that says `This branch is X commits ahead of <base-repo>`. You should
 not see `Y commits behind`.
 
 Once you've merged, you can disable `Allow merge commits` option in the settings
-so other PRs are only merged using the `Squash and merge` option.
+so other PRs are only merged using the `Squash and merge` option. Turn back on merge queue using `Squash and merge` as the default setting.
 
 ## Fixing bad merges
 
