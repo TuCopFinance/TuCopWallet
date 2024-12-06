@@ -55,7 +55,7 @@ export default HandleDeepLinkSend = () => {
 
       // Return to home screen.
       await waitForElementByIdAndTap('Tab/Home')
-      await waitForElementId('WalletHome')
+      await waitForElementId('TabHome')
     })
 
     it('Then should handle deeplink without amount', async () => {
@@ -74,7 +74,7 @@ export default HandleDeepLinkSend = () => {
 
       // Return to home screen.
       await waitForElementByIdAndTap('Tab/Home')
-      await waitForElementId('WalletHome')
+      await waitForElementId('TabHome')
     })
 
     it('Then should error if no address provided', async () => {
@@ -114,7 +114,7 @@ export default HandleDeepLinkSend = () => {
 
       // Return to home screen.
       await waitForElementByIdAndTap('Tab/Home')
-      await waitForElementId('WalletHome')
+      await waitForElementId('TabHome')
     })
 
     it('Then should error if no address provided', async () => {
@@ -146,7 +146,7 @@ export default HandleDeepLinkSend = () => {
 
       // Return to home screen.
       await waitForElementByIdAndTap('Tab/Home')
-      await waitForElementId('WalletHome')
+      await waitForElementId('TabHome')
     })
 
     it('Then should error if no address provided', async () => {
