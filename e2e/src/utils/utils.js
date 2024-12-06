@@ -218,7 +218,7 @@ export async function quickOnboarding({
     await waitForElementByIdAndTap('ChooseYourAdventure/Later')
 
     // Assert on Wallet Home Screen
-    await expect(element(by.id('HomeAction-Send'))).toBeVisible()
+    await expect(element(by.id('TabHome'))).toBeVisible()
   } catch {} // Don't throw an error just silently continue
 }
 
