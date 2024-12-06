@@ -50,7 +50,7 @@ const verifySuccessfulConnection = async () => {
     .toBeVisible()
     .withTimeout(15 * 1000)
   await waitForElementByIdAndTap('Tab/Wallet')
-  await waitFor(element(by.id('HomeAction-Send')))
+  await waitFor(element(by.id('TabWallet')))
     .toBeVisible()
     .withTimeout(15 * 1000)
 }

@@ -34,7 +34,7 @@ export default HandleDeepLinkSend = () => {
   describe('When Launching Deeplink - App Closed', () => {
     it('Then should handle deeplink with all attributes', async () => {
       await launchDeepLink({
-        url: `celo://wallet/pay?address=${E2E_TEST_FAUCET}&amount=0.01&currencyCode=USD&token=cUSD&displayName=TestFaucet`,
+        url: `mento://wallet/pay?address=${E2E_TEST_FAUCET}&amount=0.01&currencyCode=USD&token=cUSD&displayName=TestFaucet`,
       })
 
       const cryptoSymbol = await getCryptoSymbol()
@@ -54,15 +54,13 @@ export default HandleDeepLinkSend = () => {
       await enterPinUiIfNecessary()
 
       // Return to home screen.
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitFor(element(by.id('HomeAction-Send')))
-        .toBeVisible()
-        .withTimeout(30_000)
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('WalletHome')
     })
 
     it('Then should handle deeplink without amount', async () => {
       await launchDeepLink({
-        url: `celo://wallet/pay?address=${E2E_TEST_FAUCET}&currencyCode=USD&token=cUSD&displayName=TestFaucet`,
+        url: `mento://wallet/pay?address=${E2E_TEST_FAUCET}&currencyCode=USD&token=cUSD&displayName=TestFaucet`,
       })
       await waitForElementId('SendEnterAmount/TokenSelect', 10_000)
       await expect(element(by.text('cUSD on Celo')).atIndex(0)).toBeVisible()
@@ -75,10 +73,8 @@ export default HandleDeepLinkSend = () => {
       await enterPinUiIfNecessary()
 
       // Return to home screen.
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitFor(element(by.id('HomeAction-Send')))
-        .toBeVisible()
-        .withTimeout(30_000)
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('WalletHome')
     })
 
     it('Then should error if no address provided', async () => {
@@ -117,10 +113,8 @@ export default HandleDeepLinkSend = () => {
       await enterPinUiIfNecessary()
 
       // Return to home screen.
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitFor(element(by.id('HomeAction-Send')))
-        .toBeVisible()
-        .withTimeout(30_000)
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('WalletHome')
     })
 
     it('Then should error if no address provided', async () => {
@@ -131,7 +125,7 @@ export default HandleDeepLinkSend = () => {
 
   describe(':ios: When Opening Deeplink - App in Foreground', () => {
     it('Then should handle deeplink with all attributes', async () => {
-      const deepLinksWithAll = `celo://wallet/pay?address=${E2E_TEST_FAUCET}&amount=0.01&currencyCode=USD&token=cUSD&displayName=TestFaucet`
+      const deepLinksWithAll = `mento://wallet/pay?address=${E2E_TEST_FAUCET}&amount=0.01&currencyCode=USD&token=cUSD&displayName=TestFaucet`
       await openDeepLink(deepLinksWithAll)
 
       const cryptoSymbol = await getCryptoSymbol()
@@ -151,10 +145,8 @@ export default HandleDeepLinkSend = () => {
       await enterPinUiIfNecessary()
 
       // Return to home screen.
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitFor(element(by.id('HomeAction-Send')))
-        .toBeVisible()
-        .withTimeout(30_000)
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('WalletHome')
     })
 
     it('Then should error if no address provided', async () => {

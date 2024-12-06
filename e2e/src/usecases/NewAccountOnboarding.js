@@ -27,7 +27,7 @@ const startBackupFromSettings = async () => {
 
 const arriveAtHomeScreen = async () => {
   // Arrived to Home screen
-  await expect(element(by.id('WalletHome'))).toBeVisible()
+  await expect(element(by.id('TabHome'))).toBeVisible()
 }
 
 export default NewAccountOnboarding = () => {
@@ -69,7 +69,7 @@ export default NewAccountOnboarding = () => {
     await arriveAtHomeScreen()
 
     // Able to open settings
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await element(by.id('Times')).tap()
   })
 
@@ -110,7 +110,7 @@ export default NewAccountOnboarding = () => {
   })
 
   it('Account Address shown in profile / menu', async () => {
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await waitForElementByIdAndTap('SettingsMenu/Address')
 
     const accountAddressElement = await element(by.id('address')).getAttributes()
@@ -148,7 +148,7 @@ export default NewAccountOnboarding = () => {
       },
     })
     await quickOnboarding({ mnemonic: testRecoveryPhrase, cloudBackupEnabled: true })
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await waitForElementByIdAndTap('SettingsMenu/Address')
 
     await expect(element(by.text(testAccountAddress))).toBeVisible()

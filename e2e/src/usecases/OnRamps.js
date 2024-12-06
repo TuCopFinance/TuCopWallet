@@ -8,8 +8,6 @@ export default onRamps = () => {
   beforeEach(async () => {
     await reloadReactNative()
     await waitForElementByIdAndTap('Tab/Wallet')
-    await waitForElementId('HomeAction-Add')
-    await element(by.id('HomeAction-Add')).tap()
   })
 
   describe('When Add Funds selected', () => {
@@ -17,12 +15,11 @@ export default onRamps = () => {
       token     | amount
       ${'cUSD'} | ${'20'}
       ${'cUSD'} | ${'2'}
-      ${'cEUR'} | ${'20'}
-      ${'cEUR'} | ${'2'}
-      ${'CELO'} | ${'20'}
-      ${'CELO'} | ${'2'}
+      ${'cKES'} | ${'20'}
+      ${'cKES'} | ${'2'}
     `('Then should display $token provider(s) for $$amount', async ({ token, amount }) => {
-      await waitForElementByIdAndTap(`BottomSheet${token}Symbol`)
+      await waitForElementByIdAndTap(`${token}Symbol`)
+      await waitForElementByIdAndTap('TokenDetails/Action/Add')
 
       await waitForElementId('FiatExchangeInput')
       await element(by.id('FiatExchangeInput')).replaceText(`${amount}`)
