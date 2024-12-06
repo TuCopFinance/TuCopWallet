@@ -412,17 +412,17 @@ export async function fundWallet(senderPrivateKey, recipientAddress, stableToken
 }
 
 export async function navigateToSecurity() {
-  await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+  await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
   await waitForElementByIdAndTap('SettingsMenu/Security')
 }
 
 export async function navigateToProfile() {
-  await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+  await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
   await waitForElementByIdAndTap('SettingsMenu/Profile')
 }
 
 export async function navigateToPreferences() {
-  await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+  await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
   await waitForElementByIdAndTap('SettingsMenu/Preferences')
 }
 

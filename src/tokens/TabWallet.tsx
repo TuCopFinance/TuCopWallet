@@ -29,7 +29,7 @@ function TabWallet() {
     ? `XX${decimalSeparator}XX`
     : totalTokenBalanceLocal?.toFormat(2)
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="TabWallet">
       <View style={styles.row}>
         <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
           {!hideWalletBalances && localCurrencySymbol}

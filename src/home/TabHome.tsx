@@ -161,7 +161,7 @@ function TabHome(_props: Props) {
   }
 
   return (
-    <SafeAreaView testID="WalletHome" style={styles.container} edges={[]}>
+    <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
       <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCKES}>
         <View style={styles.column}>
           {!!cKESToken && (
@@ -180,7 +180,7 @@ function TabHome(_props: Props) {
           </FlatCard>
         </View>
         <View style={styles.flex}>
-          <FlatCard testID="FlatCard/RecieveMoney" onPress={onPressRecieveMoney}>
+          <FlatCard testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
             <View style={styles.column}>
               <ArrowVertical />
               <Text style={styles.ctaText}>{t('tabHome.receiveMoney')}</Text>
