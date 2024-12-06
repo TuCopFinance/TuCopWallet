@@ -20,7 +20,8 @@ jobs:
       android-api-level: 34
     secrets: inherit
   ios:
-    if: true
+    # Enable when runners are setup for iOS
+    if: false
     name: iOS
     uses: ./.github/workflows/e2e-ios.yml
     with:
