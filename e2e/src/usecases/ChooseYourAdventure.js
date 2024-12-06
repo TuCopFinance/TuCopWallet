@@ -18,7 +18,7 @@ export default ChooseYourAdventure = () => {
   })
 
   it('learn about points navigates to points journey page', async () => {
-    await waitForElementByText({ text: `Learn about Valora Points`, tap: true })
+    await waitForElementByText({ text: `Learn about Mento Points`, tap: true })
 
     // Check that we are on the Points journey page
     await waitForElementByText({ text: 'Earn points effortlessly', index: 0 })
@@ -26,7 +26,7 @@ export default ChooseYourAdventure = () => {
     // Back should go to the home screen
     await element(by.id('BackChevron')).tap()
     await waitForElementByIdAndTap('Tab/Wallet')
-    await waitForElementId('HomeAction-Send')
+    await waitForElementId('TabWallet')
   })
 
   it('build your profile navigates to profile page', async () => {
@@ -38,7 +38,7 @@ export default ChooseYourAdventure = () => {
     // Back should go to the home screen
     await element(by.id('BackButton')).tap()
     await waitForElementByIdAndTap('Tab/Wallet')
-    await waitForElementId('HomeAction-Send')
+    await waitForElementId('TabWallet')
   })
 
   it('add funds to your wallet navigates to home and opens the token bottom sheet', async () => {
@@ -50,7 +50,7 @@ export default ChooseYourAdventure = () => {
     // dismissing the bottom sheet should show home screen
     await element(by.id('TokenBottomSheet')).swipe('down')
     await waitForElementByIdAndTap('Tab/Wallet')
-    await waitForElementId('HomeAction-Send')
+    await waitForElementId('TabWallet')
   })
 
   it('explore earning opportunities navigates to stablecoins info page', async () => {

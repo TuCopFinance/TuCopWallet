@@ -42,7 +42,7 @@ export default Support = () => {
       .toBeVisible()
       .withTimeout(10000)
     await element(by.id('MessageEntry')).tap()
-    await element(by.id('MessageEntry')).typeText('This is a test from Valora')
-    await expect(element(by.id('MessageEntry'))).toHaveText('This is a test from Valora')
+    await element(by.id('MessageEntry')).typeText('This is a test from Mento')
+    await expect(element(by.id('MessageEntry'))).toHaveText('This is a test from Mento')
   })
 }

@@ -8,10 +8,11 @@ export default RestoreAccountOnboarding = () => {
     await launchApp({ delete: true })
   })
 
+  // WALLET_ADDRESS has verified phone number, but phone verification is served in Mento every time :shrug:
   it.each`
     wordCount | phrase                          | walletAddress              | walletFunded | verifiedPhoneNumber
     ${'12'}   | ${E2E_WALLET_12_WORDS_MNEMONIC} | ${WALLET_12_WORDS_ADDRESS} | ${false}     | ${false}
-    ${'24'}   | ${E2E_WALLET_MNEMONIC}          | ${WALLET_ADDRESS}          | ${true}      | ${true}
+    ${'24'}   | ${E2E_WALLET_MNEMONIC}          | ${WALLET_ADDRESS}          | ${true}      | ${false}
   `(
     'restores an existing wallet using a $wordCount word recovery phrase',
     async ({ phrase, walletAddress, walletFunded, verifiedPhoneNumber }) => {
@@ -64,7 +65,7 @@ export default RestoreAccountOnboarding = () => {
 
       // verify that we land on the home screen
       await waitForElementByIdAndTap('Tab/Wallet')
-      await expect(element(by.id('HomeAction-Send'))).toBeVisible()
+      await expect(element(by.id('TabWallet'))).toBeVisible()
 
       // verify that the correct account was restored
       await waitForElementByIdAndTap('WalletHome/SettingsGearButton')

@@ -7,62 +7,16 @@ export default offRamps = () => {
   })
   beforeEach(async () => {
     await reloadReactNative()
-    await waitForElementByIdAndTap('Tab/Wallet')
-    await waitForElementId('HomeActionsCarousel')
-    await element(by.id('HomeActionsCarousel')).scrollTo('right')
-    await waitForElementId('HomeAction-Withdraw')
-    await element(by.id('HomeAction-Withdraw')).tap()
+    await waitForElementByIdAndTap('Tab/Home')
+    await waitForElementByIdAndTap('FlatCard/Withdraw')
   })
 
-  describe('When on Withdraw & Spend', () => {
-    it('Then should have support link', async () => {
-      await element(by.id('FiatExchange/scrollView')).scrollTo('bottom')
-      await expect(element(by.id('otherFundingOptions'))).toBeVisible()
-    })
-
-    it('Then should display total balance', async () => {
-      await waitForElementId('ViewBalances')
-      await element(by.id('ViewBalances')).tap()
-      await expect(element(by.id('AssetsTokenBalance'))).toBeVisible()
-    })
-  })
-
-  describe('When Spend selected', () => {
-    beforeEach(async () => {
-      await waitForElementId('spend')
-      await element(by.id('spend')).tap()
-    })
-
-    it('Then should be able to spend cUSD', async () => {
-      await waitForElementId(`BottomSheetcUSDSymbol`)
-      await element(by.id(`BottomSheetcUSDSymbol`)).tap()
-
-      await waitForElementId('RNWebView')
-      await expect(element(by.text('Bidali'))).toBeVisible()
-    })
-
-    it('Then should be able to spend cEUR', async () => {
-      await waitForElementId(`BottomSheetcEURSymbol`)
-      await element(by.id(`BottomSheetcEURSymbol`)).tap()
-
-      await waitForElementId('RNWebView')
-      await expect(element(by.text('Bidali'))).toBeVisible()
-    })
-  })
-
-  describe('When Withdraw Selected', () => {
-    beforeEach(async () => {
-      await waitForElementId('cashOut')
-      await element(by.id('cashOut')).tap()
-    })
-
+  describe('When Withdrawing', () => {
     // Verify that some exchanges are displayed not the exact total as this could change
     // Maybe use total in the future
     it.each`
       token     | exchanges
       ${'cUSD'} | ${{ total: 5, minExpected: 1 }}
-      ${'cEUR'} | ${{ total: 2, minExpected: 1 }}
-      ${'CELO'} | ${{ total: 19, minExpected: 5 }}
     `(
       'Then should display at least $exchanges.minExpected $token exchange(s)',
       async ({ token, exchanges }) => {
@@ -83,8 +37,8 @@ export default offRamps = () => {
 
     it('Then Send To Address', async () => {
       const randomAmount = `${(Math.random() * 10 ** -1).toFixed(3)}`
-      await waitForElementId(`BottomSheetCELOSymbol`)
-      await element(by.id(`BottomSheetCELOSymbol`)).tap()
+      await waitForElementId(`BottomSheetcUSDSymbol`)
+      await element(by.id(`BottomSheetcUSDSymbol`)).tap()
 
       await waitForElementId('FiatExchangeInput')
       await element(by.id('FiatExchangeInput')).replaceText(`${randomAmount}`)

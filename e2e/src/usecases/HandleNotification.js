@@ -13,9 +13,9 @@ export default HandleNotification = () => {
       body: 'Body',
       badge: 1,
       payload: {
-        ou: 'https://celo.org',
+        ou: 'https://www.mento.org',
       },
-      category: 'org.celo.mobile.test',
+      category: 'org.mento.mobile.test',
       'content-available': 0,
       'action-identifier': 'default',
     }
@@ -30,7 +30,7 @@ export default HandleNotification = () => {
           type: DetoxConstants.userNotificationTriggers.push,
         },
         payload: {
-          wzrk_dl: 'celo://wallet/openScreen?screen=SendSelectRecipient',
+          wzrk_dl: 'mento://wallet/openScreen?screen=SendSelectRecipient',
         },
       },
     })
