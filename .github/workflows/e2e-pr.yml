@@ -13,8 +13,7 @@ concurrency:
 
 jobs:
   android:
-    # TODO re-enable once tests are fixed
-    if: false
+    if: true
     name: Android
     uses: ./.github/workflows/e2e-android.yml
     with:
