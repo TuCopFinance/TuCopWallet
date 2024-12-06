@@ -116,7 +116,7 @@ describe('getTokensInfo', () => {
       })
     )
 
-    const result = await getTokensInfo()
+    const result = await getTokensInfo([NetworkId['celo-alfajores']])
     expect(result).toEqual({
       [networkConfig.ckesTokenId]: 'CKES token info',
       [networkConfig.cusdTokenId]: 'CUSD token info',
@@ -124,7 +124,7 @@ describe('getTokensInfo', () => {
   })
   it('throws if request does not complete within timeout', async () => {
     mockFetch.mockResponseOnce('error!', { status: 500, statusText: 'some error' })
-    await expect(getTokensInfo()).rejects.toEqual(
+    await expect(getTokensInfo([NetworkId['celo-alfajores']])).rejects.toEqual(
       new Error('Failure response fetching token info. 500  some error')
     )
     expect(Logger.error).toHaveBeenCalledTimes(1)
@@ -180,7 +180,7 @@ describe(fetchTokenBalancesSaga, () => {
       .provide([
         [select(importedTokensSelector, supportedNetworks), []],
         [select(networksIconSelector), {}],
-        [call(getTokensInfo), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
         [select(walletAddressSelector), mockAccount],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
@@ -192,7 +192,7 @@ describe(fetchTokenBalancesSaga, () => {
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
         [select(walletAddressSelector), null],
-        [call(getTokensInfo), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, [NetworkId['celo-alfajores']]), mockBlockchainApiTokenInfo],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
       .not.call(getTokensInfo)
@@ -210,7 +210,7 @@ describe(fetchTokenBalancesSaga, () => {
       .provide([
         [select(importedTokensSelector, supportedNetworks), []],
         [select(networksIconSelector), {}],
-        [call(getTokensInfo), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
         [select(walletAddressSelector), mockAccount],
         [
           call(fetchTokenBalancesForAddressByTokenId, mockAccount),
@@ -249,7 +249,7 @@ describe(fetchTokenBalancesSaga, () => {
 
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
-        [call(getTokensInfo), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
         [select(importedTokensSelector, supportedNetworks), importedTokens],
         [
           select(networksIconSelector),
