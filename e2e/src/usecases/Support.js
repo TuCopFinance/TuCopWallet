@@ -32,7 +32,7 @@ export default Support = () => {
   }
 
   it('Send Message to Support', async () => {
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await waitForElementByIdAndTap('SettingsMenu/Help')
     await waitFor(element(by.id('SupportContactLink')))
       .toBeVisible()
