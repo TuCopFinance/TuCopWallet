@@ -358,7 +358,7 @@ export default WalletConnect = () => {
   })
 
   it('Then should be able to disconnect a session', async () => {
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await element(by.id('SettingsMenu/ConnectedDapps')).tap()
     await element(by.text('Tap to Disconnect')).tap()
     await element(by.text('Disconnect')).tap()
