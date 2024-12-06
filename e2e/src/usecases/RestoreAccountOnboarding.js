@@ -68,7 +68,7 @@ export default RestoreAccountOnboarding = () => {
       await expect(element(by.id('TabWallet'))).toBeVisible()
 
       // verify that the correct account was restored
-      await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+      await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
       await waitForElementByIdAndTap('SettingsMenu/Address')
 
       await expect(element(by.text(walletAddress))).toBeVisible()
