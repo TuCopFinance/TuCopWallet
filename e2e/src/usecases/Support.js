@@ -32,7 +32,7 @@ export default Support = () => {
   }
 
   it('Send Message to Support', async () => {
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await waitForElementByIdAndTap('SettingsMenu/Help')
     await waitFor(element(by.id('SupportContactLink')))
       .toBeVisible()
@@ -42,7 +42,7 @@ export default Support = () => {
       .toBeVisible()
       .withTimeout(10000)
     await element(by.id('MessageEntry')).tap()
-    await element(by.id('MessageEntry')).typeText('This is a test from Valora')
-    await expect(element(by.id('MessageEntry'))).toHaveText('This is a test from Valora')
+    await element(by.id('MessageEntry')).typeText('This is a test from Mento')
+    await expect(element(by.id('MessageEntry'))).toHaveText('This is a test from Mento')
   })
 }

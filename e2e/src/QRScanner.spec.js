@@ -1,5 +1,6 @@
 import { reloadReactNative } from './utils/retries'
 import { quickOnboarding, waitForElementByIdAndTap, waitForElementId } from './utils/utils'
+import { DEFAULT_RECIPIENT_ADDRESS } from './utils/consts'
 
 describe('Given QR Scanner', () => {
   beforeAll(async () => {
@@ -9,9 +10,8 @@ describe('Given QR Scanner', () => {
   describe('When opening QR scanner', () => {
     it('Then should display QR code', async () => {
       await reloadReactNative()
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitForElementId('HomeAction-Receive')
-      await element(by.id('HomeAction-Receive')).tap()
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementByIdAndTap('FlatCard/ReceiveMoney')
       await waitForElementId('QRCode')
       await expect(element(by.id('QRCode'))).toBeVisible()
     })
@@ -33,28 +33,28 @@ describe('Given QR Scanner', () => {
     it('Then should be able to close QR code scanner', async () => {
       await waitForElementId('Times')
       await element(by.id('Times')).tap()
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitForElementId('HomeAction-Send')
-      await expect(element(by.id('HomeAction-Send'))).toBeVisible()
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('FlatCard/SendMoney')
+      await expect(element(by.id('FlatCard/SendMoney'))).toBeVisible()
     })
   })
 
   describe("When 'scanning' QR", () => {
     beforeEach(async () => {
       await reloadReactNative()
-      await waitForElementByIdAndTap('Tab/Wallet')
-      await waitForElementId('HomeAction-Receive')
-      await element(by.id('HomeAction-Receive')).tap()
+      await waitForElementByIdAndTap('Tab/Home')
+      await waitForElementId('FlatCard/ReceiveMoney')
+      await element(by.id('FlatCard/ReceiveMoney')).tap()
       await waitForElementId('Scan')
       await element(by.id('Scan')).tap()
       await waitForElementId('CameraScanInfo')
       await element(by.id('CameraScanInfo')).tap()
     })
 
-    it('Then should be able to handle Celo pay QR', async () => {
+    it('Then should be able to handle Mento pay QR', async () => {
       await waitForElementId('ManualInput')
       await element(by.id('ManualInput')).replaceText(
-        'celo://wallet/pay?address=0xe5F5363e31351C38ac82DBAdeaD91Fd5a7B08846'
+        `mento://wallet/pay?address=${DEFAULT_RECIPIENT_ADDRESS}`
       )
       await waitForElementId('ManualSubmit')
       await element(by.id('ManualSubmit')).tap()
@@ -66,7 +66,7 @@ describe('Given QR Scanner', () => {
 
     it('Then should handle address only QR', async () => {
       await waitForElementId('ManualInput')
-      await element(by.id('ManualInput')).replaceText('0xe5F5363e31351C38ac82DBAdeaD91Fd5a7B08846')
+      await element(by.id('ManualInput')).replaceText(`${DEFAULT_RECIPIENT_ADDRESS}`)
       await waitForElementId('ManualSubmit')
       await element(by.id('ManualSubmit')).tap()
 

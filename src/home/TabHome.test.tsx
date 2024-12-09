@@ -194,7 +194,7 @@ describe('TabHome', () => {
   it('Tapping receive money opens the QR code screen', async () => {
     const { getByTestId } = renderScreen()
 
-    fireEvent.press(getByTestId('FlatCard/RecieveMoney'))
+    fireEvent.press(getByTestId('FlatCard/ReceiveMoney'))
     expect(navigate).toHaveBeenCalledWith('QRNavigator', {
       screen: 'QRCode',
     })

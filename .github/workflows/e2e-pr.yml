@@ -13,15 +13,14 @@ concurrency:
 
 jobs:
   android:
-    # TODO re-enable once tests are fixed
-    if: false
+    if: true
     name: Android
     uses: ./.github/workflows/e2e-android.yml
     with:
       android-api-level: 34
     secrets: inherit
   ios:
-    # TODO re-enable after we're able to switch to Namespace for iOS
+    # Enable when runners are setup for iOS
     if: false
     name: iOS
     uses: ./.github/workflows/e2e-ios.yml

@@ -227,8 +227,8 @@ export const tabHeader: NativeStackNavigationOptions = {
   headerRight: () => {
     return (
       <View style={[styles.topElementsContainer, { marginRight: Spacing.Tiny4 }]}>
-        <QrScanButton testID="WalletHome/QRScanButton" />
-        <SettingsGearButton testID="WalletHome/SettingsGearButton" />
+        <QrScanButton testID="TabHeader/QRScanButton" />
+        <SettingsGearButton testID="TabHeader/SettingsGearButton" />
       </View>
     )
   },
