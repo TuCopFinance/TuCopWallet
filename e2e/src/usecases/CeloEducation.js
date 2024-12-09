@@ -27,7 +27,7 @@ const progressButtonCheck = async (text = 'Next', timeout = 10 * 1000) => {
 
 export default CeloEducation = () => {
   beforeAll(async () => {
-    await waitForElementByIdAndTap('WalletHome/NotificationBell')
+    await waitForElementByIdAndTap('TabHeader/NotificationBell')
     await waitForElementId('NotificationView/celo_asset_education')
     await element(
       by.text('Learn More').withAncestor(by.id('NotificationView/celo_asset_education'))

@@ -50,7 +50,7 @@ const verifySuccessfulConnection = async () => {
     .toBeVisible()
     .withTimeout(15 * 1000)
   await waitForElementByIdAndTap('Tab/Wallet')
-  await waitFor(element(by.id('HomeAction-Send')))
+  await waitFor(element(by.id('TabWallet')))
     .toBeVisible()
     .withTimeout(15 * 1000)
 }
@@ -358,7 +358,7 @@ export default WalletConnect = () => {
   })
 
   it('Then should be able to disconnect a session', async () => {
-    await waitForElementByIdAndTap('WalletHome/SettingsGearButton')
+    await waitForElementByIdAndTap('TabHeader/SettingsGearButton')
     await element(by.id('SettingsMenu/ConnectedDapps')).tap()
     await element(by.text('Tap to Disconnect')).tap()
     await element(by.text('Disconnect')).tap()

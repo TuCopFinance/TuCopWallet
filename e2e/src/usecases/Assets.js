@@ -40,18 +40,18 @@ export default Assets = () => {
       balance: 'non zero',
       tokens: [
         {
-          tokenId: 'celo-mainnet:native',
-          symbol: 'CELO',
+          tokenId: 'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a',
+          symbol: 'cUSD',
           actions: ['Send', 'Add'],
           moreActions: ['Send', 'Add', 'Withdraw'],
           learnMore: true,
         },
         {
-          tokenId: 'celo-mainnet:0x32a9fe697a32135bfd313a6ac28792dae4d9979d',
-          symbol: 'cMCO2',
-          actions: ['Send'],
+          tokenId: 'celo-mainnet:0x456a3d042c0dbd3db53d5489e98dfb038553b0d0',
+          symbol: 'cKES',
+          actions: ['Swap', 'Add'],
           moreActions: [],
-          learnMore: false,
+          learnMore: true,
         },
       ],
     },
@@ -59,15 +59,15 @@ export default Assets = () => {
       balance: 'zero',
       tokens: [
         {
-          tokenId: 'celo-mainnet:native',
-          symbol: 'CELO',
+          tokenId: 'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a',
+          symbol: 'cUSD',
           actions: ['Add'],
           moreActions: [],
           learnMore: true,
         },
         {
-          tokenId: 'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a',
-          symbol: 'cUSD',
+          tokenId: 'celo-mainnet:0x456a3d042c0dbd3db53d5489e98dfb038553b0d0',
+          symbol: 'cKES',
           actions: ['Add'],
           moreActions: [],
           learnMore: true,
@@ -90,10 +90,10 @@ export default Assets = () => {
 
     it('navigates to wallet tab from home', async () => {
       await waitForElementByIdAndTap('Tab/Wallet')
-      await waitForElementId('Assets/TabBar')
     })
 
-    it('switching tabs displays corresponding assets', async () => {
+    // No Tabs present in Mento wallet
+    it.skip('switching tabs displays corresponding assets', async () => {
       await expect(element(by.id('TokenBalanceItem')).atIndex(0)).toBeVisible()
       await element(by.id('Assets/TabBarItem')).atIndex(1).tap()
       await scrollIntoViewByTestId('Assets/NoNfts', 'AssetList')
@@ -167,7 +167,6 @@ export default Assets = () => {
 
       it('navigates back to Assets page', async () => {
         await element(by.id('BackChevron')).tap()
-        await waitForElementId('Assets/TabBar')
       })
     })
   })

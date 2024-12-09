@@ -57,7 +57,7 @@ function TabActivity(_props: Props) {
   const sections = [transactionFeedSection]
 
   return (
-    <SafeAreaView testID="WalletHome" edges={[]} style={{ flex: 1 }}>
+    <SafeAreaView testID="TabActivity" edges={[]} style={{ flex: 1 }}>
       <AnimatedSectionList
         // Workaround iOS setting an incorrect automatic inset at the top
         scrollIndicatorInsets={{ top: 0.01 }}
@@ -71,7 +71,7 @@ function TabActivity(_props: Props) {
         contentContainerStyle={{ marginBottom: insets.bottom }}
         sections={sections}
         keyExtractor={keyExtractor}
-        testID="WalletHome/SectionList"
+        testID="TabActivity/SectionList"
       />
     </SafeAreaView>
   )

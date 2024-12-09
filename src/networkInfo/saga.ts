@@ -29,7 +29,7 @@ function createNetworkStatusChannel() {
 }
 
 const MOCK_USER_LOCATION = {
-  countryCodeAlpha2: 'DE',
+  countryCodeAlpha2: 'KE',
   region: null,
   ipAddress: '1.1.1.7',
 }
