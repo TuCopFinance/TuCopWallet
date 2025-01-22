@@ -36,8 +36,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" android:host="valoraapp.com" />
-        <data android:scheme="https" android:host="vlra.app" />
+        <data android:scheme="https" android:host="tucop.org" />
         <data android:pathPrefix="/wc" />
         <data android:scheme="http" />
       </intent-filter>
