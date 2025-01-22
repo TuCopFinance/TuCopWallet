@@ -35,7 +35,7 @@ const configOrThrow = (key: string) => {
   throw new RangeError(`Missing Config value for ${key}`)
 }
 
-export const APP_NAME = 'Mento'
+export const APP_NAME = 'TuCopWallet'
 export const APP_REGISTRY_NAME = configOrThrow('APP_REGISTRY_NAME')
 
 // DEV only related settings
@@ -88,7 +88,7 @@ export const TORUS_NETWORK =
     : TORUS_SAPPHIRE_NETWORK.SAPPHIRE_DEVNET
 
 // FEATURE FLAGS
-export const FIREBASE_ENABLED = stringToBoolean(Config.FIREBASE_ENABLED || 'true')
+export const FIREBASE_ENABLED = stringToBoolean(Config.FIREBASE_ENABLED || 'false')
 export const SHOW_TESTNET_BANNER = stringToBoolean(Config.SHOW_TESTNET_BANNER || 'false')
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
@@ -143,10 +143,6 @@ export const AUTH0_DOMAIN = configOrThrow('AUTH0_DOMAIN')
 
 export const SPEND_MERCHANT_LINKS: SpendMerchant[] = [
   {
-    name: 'Beam and Go',
-    link: 'https://valora.beamandgo.com/',
-  },
-  {
     name: 'Merchant Map',
     link: 'https://celo.org/experience/merchant/merchants-accepting-celo#map',
     subtitleKey: 'findMerchants',
@@ -164,15 +160,15 @@ export const SIMPLEX_FEES_URL =
   'https://support.simplex.com/hc/en-gb/articles/360014078420-What-fees-am-I-paying-'
 
 export const APP_STORE_ID = Config.APP_STORE_ID
-export const DYNAMIC_LINK_DOMAIN_URI_PREFIX = 'https://vlra.app'
+export const DYNAMIC_LINK_DOMAIN_URI_PREFIX = 'https://tucop.app'
 export const CROWDIN_DISTRIBUTION_HASH = 'e-f9f6869461793b9d1a353b2v7c'
 export const OTA_TRANSLATIONS_FILEPATH = `file://${CachesDirectoryPath}/translations`
 
 export const FETCH_TIMEOUT_DURATION = 15000 // 15 seconds
 
-export const DEFAULT_APP_LANGUAGE = 'en-US'
+export const DEFAULT_APP_LANGUAGE = 'es-EN'
 
-export const ZENDESK_PROJECT_NAME = 'valoraapp'
+export const ZENDESK_PROJECT_NAME = 'tucopwallet'
 
 // Logging and monitoring
 export const DEFAULT_SENTRY_TRACES_SAMPLE_RATE = 0.2
@@ -226,4 +222,4 @@ export const ENABLED_QUICK_ACTIONS = (
 
 export const FETCH_FIATCONNECT_QUOTES = true
 
-export const WALLETCONNECT_UNIVERSAL_LINK = 'https://valoraapp.com/wc'
+export const WALLETCONNECT_UNIVERSAL_LINK = 'https://tucop.org/wc'
