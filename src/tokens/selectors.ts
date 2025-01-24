@@ -261,12 +261,14 @@ export const tokensByCurrencySelector = createSelector(
   (tokens): CurrencyTokens => {
     const cUsdTokenInfo = tokens.find((token) => token?.symbol === Currency.Dollar)
     const cEurTokenInfo = tokens.find((token) => token?.symbol === Currency.Euro)
+    const ccopTokenInfo = tokens.find((token) => token?.symbol === Currency.COP)
     // Currency.Celo === 'cGLD' for legacy reasons, so we just use a hard-coded string.
     const celoTokenInfo = tokens.find((token) => token?.symbol === 'CELO')
     return {
       [Currency.Dollar]: cUsdTokenInfo,
       [Currency.Euro]: cEurTokenInfo,
       [Currency.Celo]: celoTokenInfo,
+      [Currency.COP]: ccopTokenInfo,
     }
   }
 )
@@ -460,12 +462,12 @@ export const sortedTokensWithBalanceOrShowZeroBalanceSelector = createSelector(
     })
 )
 
-export const cKESFirstTokensListSelector = createSelector(
+export const cCOPFirstTokensListSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
   (tokens) =>
     tokens.sort((token1, _token2) => {
-      // Puts cKES first
-      return token1.tokenId === networkConfig.ckesTokenId ? -1 : 1
+      // Puts cCOP first
+      return token1.tokenId === networkConfig.ccopTokenId ? -1 : 1
     })
 )
 
