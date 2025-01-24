@@ -2,6 +2,7 @@ export enum Currency {
   Celo = 'cGLD',
   Dollar = 'cUSD',
   Euro = 'cEUR',
+  COP = 'cCOP',
 }
 
 // Important: when adding new currencies, the string must match the symbol
@@ -9,6 +10,8 @@ export enum Currency {
 export enum CiCoCurrency {
   CELO = 'CELO',
   cUSD = 'cUSD',
+  cCOP = 'cCOP',
+  USDT = 'USDT',
   cEUR = 'cEUR',
   cREAL = 'cREAL',
   ETH = 'ETH',
@@ -43,6 +46,11 @@ export const CURRENCIES: CurrencyObject = {
     displayDecimals: 2,
     cashTag: 'cUSD',
   },
+  [Currency.COP]: {
+    symbol: '$',
+    displayDecimals: 2,
+    cashTag: 'cCOP',
+  },
   [Currency.Euro]: {
     symbol: '€',
     displayDecimals: 2,
@@ -56,6 +64,8 @@ export function resolveCurrency(currencyCode: string): Currency | undefined {
     CGLD: Currency.Celo,
     CUSD: Currency.Dollar,
     CEUR: Currency.Euro,
+    CCOP: Currency.Celo,
+    USDT: Currency.Dollar,
   }
   return mapping[currencyCode.toUpperCase()]
 }
@@ -67,6 +77,8 @@ export function resolveCICOCurrency(currencyCode: string): CiCoCurrency {
     CUSD: CiCoCurrency.cUSD,
     CEUR: CiCoCurrency.cEUR,
     CREAL: CiCoCurrency.cREAL,
+    CUSDT: CiCoCurrency.USDT,
+    CCOP: CiCoCurrency.cCOP,
   }
   return mapping[currencyCode.toUpperCase()] || CiCoCurrency.CELO
 }

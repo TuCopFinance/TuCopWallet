@@ -51,6 +51,8 @@ react {
     // hermesFlags = ["-O", "-output-source-map"]
 }
 
+
+
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
     alfajoresnightly: ".env.alfajoresnightly",
@@ -141,8 +143,12 @@ android {
     namespace "xyz.mobilestack"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        lintOptions {
+            warningsAsErrors true
+            abortOnError false
+        }
     }
 
     defaultConfig {
