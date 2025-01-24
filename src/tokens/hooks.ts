@@ -39,12 +39,12 @@ export function useTokenInfoByAddress(tokenAddress?: string | null) {
   return tokenAddress ? tokens[tokenAddress] : undefined
 }
 
-export function useCKES() {
-  return useTokenInfo(networkConfig.ckesTokenId)
+export function useCCOP() {
+  return useTokenInfo(networkConfig.ccopTokenId)
 }
 
-export function useCUSD() {
-  return useTokenInfo(networkConfig.cusdTokenId)
+export function useUSDT() {
+  return useTokenInfo(networkConfig.cusdtTokenId)
 }
 
 export function useTokensWithUsdValue(networkIds: NetworkId[]) {
