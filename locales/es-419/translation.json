@@ -2838,5 +2838,19 @@
     "fiatPriceUnavailable": "Precio no disponible"
   },
   "celoDollarAmount": "<0></0> Celo Dollar",
-  "celoDollarAmount_plural": "<0></0> Celo Dollars"
+  "celoDollarAmount_plural": "<0></0> Celo Dollars",
+  "tabHome": {
+    "addCCOP": "Add cCOP",
+    "sendMoney": "Send Money",
+    "receiveMoney": "Receive Money",
+    "holdUSD": "Hold US Dollars",
+    "swapToUSD": "Swap your cCOP for USDT",
+    "withdraw": "Withdraw From Your Wallet",
+    "addCKESBottomSheet": {
+      "addCKESFromCUSD": "From My USDT Balance",
+      "bySwapping": "Add cCOP by swapping from your USDT",
+      "purchase": "Purchase cCOP",
+      "purchaseDescription": "Add cCOP by purchasing through one of our trusted providers"
+    }
+  }
 }

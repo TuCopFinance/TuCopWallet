@@ -32,7 +32,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCashOutTokens, useCKES, useCUSD } from 'src/tokens/hooks'
+import { useCashOutTokens, useCCOP, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
@@ -93,8 +93,8 @@ function TabHome(_props: Props) {
     }
   }, [appState])
 
-  const cKESToken = useCKES()
-  const cUSDToken = useCUSD()
+  const cKESToken = useCCOP()
+  const cUSDToken = useUSDT()
 
   function onPressAddCKES() {
     AppAnalytics.track(TabHomeEvents.add_ckes)
@@ -203,7 +203,7 @@ function TabHome(_props: Props) {
           <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
         </View>
       </FlatCard>
-      <AddCKESBottomSheet forwardedRef={addCKESBottomSheetRef} />
+      <AddCCOPBottomSheet forwardedRef={addCKESBottomSheetRef} />
     </SafeAreaView>
   )
 }
@@ -228,14 +228,14 @@ function FlatCard({
   )
 }
 
-function AddCKESBottomSheet({
+function AddCCOPBottomSheet({
   forwardedRef,
 }: {
   forwardedRef: React.RefObject<BottomSheetModalRefType>
 }) {
   const { t } = useTranslation()
-  const cKESToken = useCKES()
-  const cUSDToken = useCUSD()
+  const cKESToken = useCCOP()
+  const cUSDToken = useUSDT()
 
   function onPressSwapFromCusd() {
     AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
@@ -261,9 +261,9 @@ function AddCKESBottomSheet({
 
   return (
     <BottomSheet
-      title={t('tabHome.addCKES')}
+      title={t('tabHome.addCCOP')}
       forwardedRef={forwardedRef}
-      testId="AddCKESBottomSheet"
+      testId="AddCCOPBottomSheet"
     >
       <View style={styles.bottomSheetContainer}>
         <FlatCard testID="FlatCard/AddFromCUSD" onPress={onPressSwapFromCusd}>
