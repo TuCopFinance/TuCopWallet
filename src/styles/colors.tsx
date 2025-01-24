@@ -13,8 +13,8 @@ enum Colors {
   gray1 = '#F8F9F9',
 
   // primary
-  primary = '#5061E8',
-  accent = '#5061E8',
+  primary = '#2F4ACD',
+  accent = '#2F4ACD',
   lightPrimary = 'rgba(80, 97, 232, 0.1)',
 
   // other
