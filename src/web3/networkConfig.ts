@@ -89,7 +89,7 @@ interface NetworkConfig {
   celoGasPriceMinimumAddress: Address
   alchemyRpcUrl: Record<Exclude<Network, Network.Celo>, string>
   cusdTokenId: string
-  cusdtTokenId: string
+  usdtTokenId: string
   ccopTokenId: string
   ceurTokenId: string
   crealTokenId: string
@@ -162,10 +162,10 @@ const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
 // TODO: cambiar token al contrato correcto tanto en mainnet como en staging
 const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
-const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x765de816845861e75a25fca122bb6898b8b1282a`
+const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
 // TODO: cambiar token al contrato correcto tanto en mainnet como en staging
-const CUSDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
-const CUSDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x765de816845861e75a25fca122bb6898b8b1282a`
+const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e`
+const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e`
 
 const ARB_USDC_TOKEN_ID_STAGING = `${NetworkId['arbitrum-sepolia']}:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d`
 const ARB_USDC_TOKEN_ID_MAINNET = `${NetworkId['arbitrum-one']}:0xaf88d065e77c8cc2239327c5edb3a432268e5831`
@@ -411,8 +411,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.cREAL]: CREAL_TOKEN_ID_STAGING,
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_STAGING,
       [Currency.Celo]: CELO_TOKEN_ID_STAGING,
-      [CiCoCurrency.USDT]: CUSDT_TOKEN_ID_STAGING,
-      [CiCoCurrency.cCOP]: CKES_TOKEN_ID_STAGING,
+      [CiCoCurrency.USDT]: USDT_TOKEN_ID_STAGING,
+      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_STAGING,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_STAGING,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_STAGING,
@@ -429,7 +429,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_STAGING,
     ckesTokenId: CKES_TOKEN_ID_STAGING,
     ccopTokenId: CCOP_TOKEN_ID_STAGING,
-    cusdtTokenId: CUSDT_TOKEN_ID_STAGING,
+    usdtTokenId: USDT_TOKEN_ID_STAGING,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_STAGING,
     spendTokenIds: [CUSD_TOKEN_ID_STAGING, CEUR_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
@@ -518,8 +518,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.cREAL]: CREAL_TOKEN_ID_MAINNET,
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_MAINNET,
       [Currency.Celo]: CELO_TOKEN_ID_MAINNET,
-      [CiCoCurrency.USDT]: CUSDT_TOKEN_ID_MAINNET,
-      [CiCoCurrency.cCOP]: CKES_TOKEN_ID_MAINNET,
+      [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET,
+      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_MAINNET,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_MAINNET,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_MAINNET,
@@ -536,7 +536,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_MAINNET,
     ckesTokenId: CKES_TOKEN_ID_MAINNET,
     ccopTokenId: CCOP_TOKEN_ID_MAINNET,
-    cusdtTokenId: CUSDT_TOKEN_ID_MAINNET,
+    usdtTokenId: USDT_TOKEN_ID_MAINNET,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CEUR_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,

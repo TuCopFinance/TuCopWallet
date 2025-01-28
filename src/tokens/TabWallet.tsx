@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   totalBalance: {
     ...typeScale.titleLarge,
-    color: Colors.black,
+    color: Colors.primary,
   },
   contentContainerStyle: { marginTop: Spacing.Large32 },
 })

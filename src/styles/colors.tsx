@@ -4,6 +4,8 @@ enum Colors {
   // black & white
   black = '#2E3338',
   white = '#FFFFFF',
+  white30 = 'rgba(255, 255, 255, 0.3)',
+  white11 = 'rgba(255, 255, 255, 0.11)',
 
   // grays
   gray5 = '#505050',
@@ -16,6 +18,9 @@ enum Colors {
   primary = '#2F4ACD',
   accent = '#2F4ACD',
   lightPrimary = 'rgba(80, 97, 232, 0.1)',
+
+  // secondary
+  secondary = '#2E3142',
 
   // other
   successDark = '#137211',
