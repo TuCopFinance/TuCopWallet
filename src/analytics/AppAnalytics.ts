@@ -1,23 +1,15 @@
-import { createClient, SegmentClient } from '@segment/analytics-react-native'
-import { AdjustPlugin } from '@segment/analytics-react-native-plugin-adjust'
-import { ClevertapPlugin } from '@segment/analytics-react-native-plugin-clevertap'
-import { DestinationFiltersPlugin } from '@segment/analytics-react-native-plugin-destination-filters'
-import { FirebasePlugin } from '@segment/analytics-react-native-plugin-firebase'
+import { SegmentClient } from '@segment/analytics-react-native'
 import _ from 'lodash'
 import { Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
-import { AsyncStoragePersistor } from 'src/analytics/AsyncStoragePersistor'
 import { AppEvents } from 'src/analytics/Events'
-import { InjectTraits } from 'src/analytics/InjectTraits'
 import { AnalyticsPropertiesList } from 'src/analytics/Properties'
 import { getCurrentUserTraits } from 'src/analytics/selectors'
 import {
   DEFAULT_TESTNET,
   E2E_TEST_STATSIG_ID,
-  FIREBASE_ENABLED,
   isE2EEnv,
-  SEGMENT_API_KEY,
   STATSIG_API_KEY,
   STATSIG_ENV,
 } from 'src/config'
@@ -102,30 +94,30 @@ class AppAnalytics {
   async init() {
     let uniqueID
     try {
-      if (!SEGMENT_API_KEY) {
-        throw Error('API Key not present, likely due to environment. Skipping enabling')
-      }
-      this.segmentClient = createClient({
-        debug: __DEV__,
-        trackAppLifecycleEvents: true,
-        trackDeepLinks: true,
-        writeKey: SEGMENT_API_KEY,
-        storePersistor: AsyncStoragePersistor,
-      })
+      // if (!SEGMENT_API_KEY) {
+      //   throw Error('API Key not present, likely due to environment. Skipping enabling')
+      // }
+      // this.segmentClient = createClient({
+      //   debug: __DEV__,
+      //   trackAppLifecycleEvents: true,
+      //   trackDeepLinks: true,
+      //   writeKey: SEGMENT_API_KEY,
+      //   storePersistor: AsyncStoragePersistor,
+      // })
 
-      this.segmentClient.add({ plugin: new DestinationFiltersPlugin() })
-      this.segmentClient.add({ plugin: new InjectTraits() })
-      this.segmentClient.add({ plugin: new AdjustPlugin() })
-      this.segmentClient.add({ plugin: new ClevertapPlugin() })
-      if (FIREBASE_ENABLED) {
-        this.segmentClient.add({ plugin: new FirebasePlugin() })
-      }
+      // this.segmentClient.add({ plugin: new DestinationFiltersPlugin() })
+      // this.segmentClient.add({ plugin: new InjectTraits() })
+      // this.segmentClient.add({ plugin: new AdjustPlugin() })
+      // this.segmentClient.add({ plugin: new ClevertapPlugin() })
+      // if (FIREBASE_ENABLED) {
+      //   this.segmentClient.add({ plugin: new FirebasePlugin() })
+      // }
 
       try {
         const deviceInfo = await getDeviceInfo()
         this.deviceInfo = deviceInfo
         uniqueID = deviceInfo.UniqueID
-        this.sessionId = sha256(Buffer.from(uniqueID + String(Date.now()))).slice(2)
+        this.sessionId = sha256(new Uint8Array(Buffer.from(uniqueID + String(Date.now())))).slice(2)
       } catch (error) {
         Logger.error(TAG, 'getDeviceInfo error', error)
       }
@@ -147,6 +139,8 @@ class AppAnalytics {
         overrideStableID = this.segmentClient.userInfo.get().anonymousId
       }
       Logger.debug(TAG, 'Statsig stable ID', overrideStableID)
+
+      Logger.info(TAG, 'Statsig Integration initialized!', STATSIG_API_KEY)
       await Statsig.initialize(STATSIG_API_KEY, statsigUser, {
         // StableID should match Segment anonymousId
         overrideStableID,

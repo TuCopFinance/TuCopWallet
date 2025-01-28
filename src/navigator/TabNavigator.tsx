@@ -86,7 +86,7 @@ export default function TabNavigator({ route }: Props) {
           tabBarLabel: '',
           tabBarButtonTestID: 'Tab/Home',
           tabBarIconStyle: {
-            marginLeft: 20,
+            marginLeft: 15,
           },
         }}
       />
@@ -100,6 +100,7 @@ export default function TabNavigator({ route }: Props) {
                 flexDirection: 'row',
                 alignItems: 'center',
                 width: '100%',
+                marginRight: 20,
                 gap: 8,
               }}
             >

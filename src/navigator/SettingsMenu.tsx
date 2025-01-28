@@ -1,14 +1,7 @@
 import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native'
+import { SafeAreaView, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native'
 import deviceInfoModule from 'react-native-device-info'
 import { ScrollView } from 'react-native-gesture-handler'
 import { clearStoredAccount, devModeTriggerClicked } from 'src/account/actions'
@@ -19,7 +12,6 @@ import { setSessionId } from 'src/app/actions'
 import { sessionIdSelector, walletConnectEnabledSelector } from 'src/app/selectors'
 import GradientBlock from 'src/components/GradientBlock'
 import { SettingsItemTextValue } from 'src/components/SettingsItem'
-import Touchable from 'src/components/Touchable'
 import Lock from 'src/icons/Lock'
 import Preferences from 'src/icons/Preferences'
 import Stack from 'src/icons/Stack'
@@ -37,7 +29,6 @@ import variables from 'src/styles/variables'
 import Logger from 'src/utils/Logger'
 import { selectSessions } from 'src/walletConnect/selectors'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { Statsig } from 'statsig-react-native'
 
 export default function SettingsMenu() {
   const { t } = useTranslation()
@@ -81,33 +72,33 @@ export default function SettingsMenu() {
     }
   }
 
-  const getDevSettingsComp = () => {
-    if (!devModeActive) {
-      return null
-    } else {
-      const statsigStableId = Statsig.getStableID()
-      return (
-        <View style={styles.devSettings}>
-          <Touchable onPress={onCopyText(sessionId)} style={styles.devSettingsItem}>
-            <Text>{`Session ID: ${sessionId}`}</Text>
-          </Touchable>
-          <Touchable onPress={onCopyText(statsigStableId)} style={styles.devSettingsItem}>
-            <Text>{`Statsig Stable ID: ${statsigStableId}`}</Text>
-          </Touchable>
-          <View style={styles.devSettingsItem}>
-            <TouchableOpacity onPress={showDebugImagesScreen}>
-              <Text>See App Assets</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.devSettingsItem}>
-            <TouchableOpacity onPress={confirmAccountRemoval}>
-              <Text>App Quick Reset</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )
-    }
-  }
+  // const getDevSettingsComp = () => {
+  //   if (!devModeActive) {
+  //     return null
+  //   } else {
+  //     const statsigStableId = Statsig.getStableID()
+  //     return (
+  //       <View style={styles.devSettings}>
+  //         <Touchable onPress={onCopyText(sessionId)} style={styles.devSettingsItem}>
+  //           <Text>{`Session ID: ${sessionId}`}</Text>
+  //         </Touchable>
+  //         <Touchable onPress={onCopyText(statsigStableId)} style={styles.devSettingsItem}>
+  //           <Text>{`Statsig Stable ID: ${statsigStableId}`}</Text>
+  //         </Touchable>
+  //         <View style={styles.devSettingsItem}>
+  //           <TouchableOpacity onPress={showDebugImagesScreen}>
+  //             <Text>See App Assets</Text>
+  //           </TouchableOpacity>
+  //         </View>
+  //         <View style={styles.devSettingsItem}>
+  //           <TouchableOpacity onPress={confirmAccountRemoval}>
+  //             <Text>App Quick Reset</Text>
+  //           </TouchableOpacity>
+  //         </View>
+  //       </View>
+  //     )
+  //   }
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -179,7 +170,7 @@ export default function SettingsMenu() {
             <Text style={styles.appVersionText}>{`${appVersion} (${buildNumber})`}</Text>
           </View>
         </TouchableWithoutFeedback>
-        {getDevSettingsComp()}
+        {/* {getDevSettingsComp()} */}
         <View style={styles.logo}>
           <MSLogoFull />
         </View>
@@ -211,13 +202,13 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: Colors.gray3,
   },
-  devSettings: {
-    padding: Spacing.Regular16,
-  },
-  devSettingsItem: {
-    alignSelf: 'stretch',
-    marginVertical: Spacing.Smallest8,
-  },
+  // devSettings: {
+  //   padding: Spacing.Regular16,
+  // },
+  // devSettingsItem: {
+  //   alignSelf: 'stretch',
+  //   marginVertical: Spacing.Smallest8,
+  // },
   divider: {
     marginVertical: Spacing.Smallest8,
     marginHorizontal: Spacing.Regular16,
