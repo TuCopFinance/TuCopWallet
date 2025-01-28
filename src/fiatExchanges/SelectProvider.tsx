@@ -556,7 +556,7 @@ function LegacyMobileMoneySection({
       isLowestFee: undefined,
       ...analyticsData,
     })
-    navigateToURI(provider[tokenId === networkConfig.cusdTokenId ? 'cusd' : 'celo'].url)
+    navigateToURI(provider[tokenId === networkConfig.ccopTokenId ? 'ccop' : 'usdt'].url)
   }
 
   if (!provider) {

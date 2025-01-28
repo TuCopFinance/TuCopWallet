@@ -107,9 +107,7 @@ export default React.memo(function Button(props: ButtonProps) {
               />
             ) : (
               <>
-                {type === BtnTypes.PRIMARY && (
-                  <LinealGradientBtnBackground style={styles.gradientBackground} />
-                )}
+                {type === BtnTypes.PRIMARY && <LinealGradientBtnBackground />}
                 {icon}
                 <Text
                   maxFontSizeMultiplier={1}

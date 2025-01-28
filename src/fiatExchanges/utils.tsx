@@ -98,6 +98,18 @@ export interface LegacyMobileMoneyProvider {
     countries: string[]
     url: string
   }
+  usdt: {
+    cashIn: boolean
+    cashOut: boolean
+    countries: string[]
+    url: string
+  }
+  ccop: {
+    cashIn: boolean
+    cashOut: boolean
+    countries: string[]
+    url: string
+  }
 }
 
 interface SimplexPaymentData {
@@ -262,25 +274,27 @@ export const filterLegacyMobileMoneyProviders = (
   userCountry: string | null,
   selectedTokenId: string
 ) => {
-  if (
-    !providers ||
-    !userCountry ||
-    ![networkConfig.cusdTokenId, networkConfig.celoTokenId].includes(selectedTokenId)
-  ) {
-    return []
-  }
+  // if (
+  //   !providers ||
+  //   !userCountry ||
+  //   ![networkConfig.cusdTokenId, networkConfig.celoTokenId, networkConfig.ccopTokenId, networkConfig.usdtTokenId].includes(selectedTokenId)
+  // ) {
+  //   return []
+  // }
 
-  const activeProviders = providers.filter(
-    (provider) =>
-      (flow === CICOFlow.CashIn && (provider.cusd.cashIn || provider.celo.cashIn)) ||
-      (flow === CICOFlow.CashOut && (provider.cusd.cashOut || provider.celo.cashOut))
-  )
+  return providers
 
-  return activeProviders.filter((provider) =>
-    provider[selectedTokenId === networkConfig.cusdTokenId ? 'cusd' : 'celo'].countries.includes(
-      userCountry
-    )
-  )
+  // const activeProviders = providers.filter(
+  //   (provider) =>
+  //     (flow === CICOFlow.CashIn && (provider.cusd.cashIn || provider.celo.cashIn)) ||
+  //     (flow === CICOFlow.CashOut && (provider.cusd.cashOut || provider.celo.cashOut))
+  // )
+
+  // return activeProviders.filter((provider) =>
+  //   provider[selectedTokenId === networkConfig.cusdTokenId ? 'cusd' : 'celo'].countries.includes(
+  //     userCountry
+  //   )
+  // )
 }
 
 export async function fetchExchanges(

@@ -48,7 +48,8 @@ export const styles = StyleSheet.create({
   topElementsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Spacing.Regular16,
+    marginTop: 36,
+    paddingBottom: 16,
   },
 })
 
