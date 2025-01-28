@@ -253,7 +253,7 @@ function FlatCard({
 }) {
   const flatStyle = type === 'primary' ? styles.flatCardPrimary : styles.flatCard
   return (
-    <Shadow style={styles.shadow} startColor="rgba(190, 201, 255, 0.33)">
+    <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
       <Touchable borderRadius={Spacing.Small12} style={flatStyle} testID={testID} onPress={onPress}>
         <>
           {type === 'primary' && <RadialGradientBackground />}
@@ -274,7 +274,7 @@ function AddCCOPBottomSheet({
   const USDToken = useUSDT()
 
   function onPressSwapFromCusd() {
-    AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
+    // AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
     !!USDToken &&
       !!cCCOPToken &&
       navigate(Screens.SwapScreenWithBack, {
@@ -285,7 +285,7 @@ function AddCCOPBottomSheet({
   }
 
   function onPressPurchaseCkes() {
-    AppAnalytics.track(TabHomeEvents.add_ckes_from_cash_in)
+    // AppAnalytics.track(TabHomeEvents.add_ckes_from_cash_in)
     !!cCCOPToken &&
       navigate(Screens.FiatExchangeAmount, {
         tokenId: cCCOPToken.tokenId,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 33,
     padding: 22,
     paddingTop: 30,
-    borderColor: Colors.primary,
+    borderColor: 'rgba(190, 201, 255, 0.33)',
     borderWidth: 1,
     marginLeft: -17,
     marginRight: -17,

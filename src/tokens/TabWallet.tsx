@@ -1,8 +1,7 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
-import AppAnalytics from 'src/analytics/AppAnalytics'
-import { AssetsEvents } from 'src/analytics/Events'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import { HideBalanceButton } from 'src/components/TokenBalance'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
@@ -15,21 +14,27 @@ import { Spacing } from 'src/styles/styles'
 import { useTotalTokenBalance } from 'src/tokens/hooks'
 import { cCOPFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
-import { getSupportedNetworkIdsForTokenBalances, getTokenAnalyticsProps } from 'src/tokens/utils'
+import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
+import Logger from 'src/utils/Logger'
 
 function TabWallet() {
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const { decimalSeparator } = getNumberFormatSettings()
+  const { t } = useTranslation()
 
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
   const tokens = useSelector((state) => cCOPFirstTokensListSelector(state, supportedNetworkIds))
+
+  Logger.info('TOKEN', tokens)
+  Logger.info('supportedNetworkIds', supportedNetworkIds)
   const totalTokenBalanceLocal = useTotalTokenBalance()
   const balanceDisplay = hideWalletBalances
     ? `XX${decimalSeparator}XX`
     : totalTokenBalanceLocal?.toFormat(2)
   return (
     <View style={styles.container} testID="TabWallet">
+      <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
       <View style={styles.row}>
         <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
           {!hideWalletBalances && localCurrencySymbol}
@@ -44,12 +49,12 @@ function TabWallet() {
             key={index}
             onPress={() => {
               navigate(Screens.TokenDetails, { tokenId: token.tokenId })
-              AppAnalytics.track(AssetsEvents.tap_asset, {
-                ...getTokenAnalyticsProps(token),
-                title: token.symbol,
-                description: token.name,
-                assetType: 'token',
-              })
+              // AppAnalytics.track(AssetsEvents.tap_asset, {
+              //   ...getTokenAnalyticsProps(token),
+              //   title: token.symbol,
+              //   description: token.name,
+              //   assetType: 'token',
+              // })
             }}
             hideBalances={hideWalletBalances}
           />
@@ -62,6 +67,7 @@ function TabWallet() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 10,
   },
   row: {
     flexDirection: 'row',
@@ -75,6 +81,13 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   contentContainerStyle: { marginTop: Spacing.Large32 },
+  balanceTitle: {
+    ...typeScale.bodyLarge,
+    color: Colors.secondary,
+    margin: 'auto',
+    textAlign: 'center',
+    marginTop: 24,
+  },
 })
 
 export default TabWallet

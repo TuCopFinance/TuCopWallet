@@ -1,9 +1,7 @@
-import {
-  MaterialTopTabBarProps,
-  createMaterialTopTabNavigator,
-} from '@react-navigation/material-top-tabs'
+import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import { useIsFocused } from '@react-navigation/native'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +9,7 @@ import { Dimensions, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { PERMISSIONS, RESULTS, check } from 'react-native-permissions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { QrScreenEvents } from 'src/analytics/Events'
-import { noHeader } from 'src/navigator/Headers'
+import { noHeader, tabHeader } from 'src/navigator/Headers'
 import { Screens } from 'src/navigator/Screens'
 import { QRTabParamList, StackParamList } from 'src/navigator/types'
 import QRCode from 'src/qrcode/QRCode'
@@ -21,12 +19,13 @@ import { useDispatch } from 'src/redux/hooks'
 import { SVG, handleQRCodeDetected } from 'src/send/actions'
 import { QrCode } from 'src/send/types'
 import Colors from 'src/styles/colors'
+import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
 
-const Tab = createMaterialTopTabNavigator()
+const Tab = createBottomTabNavigator()
 
 const width = Dimensions.get('window').width
-const initialLayout = { width }
 
 export type QRCodeProps = NativeStackScreenProps<QRTabParamList, Screens.QRCode> & {
   qrSvgRef: React.MutableRefObject<SVG>
@@ -99,23 +98,31 @@ export default function QRNavigator({ route }: Props) {
   const qrSvgRef = useRef<SVG>()
   const { t } = useTranslation()
 
-  const tabBar = (props: MaterialTopTabBarProps) => (
-    <QRTabBar
-      {...props}
-      qrSvgRef={qrSvgRef}
-      canSwitch={!route.params?.params?.showSecureSendStyling}
-      leftIcon={route.params?.params?.showSecureSendStyling ? 'back' : 'times'}
-    />
-  )
-
   return (
     <Tab.Navigator
-      tabBar={tabBar}
+      //tabBar={tabBar}
       // Trick to position the tabs floating on top
-      tabBarPosition="bottom"
-      style={styles.container}
-      screenOptions={{ sceneStyle: styles.sceneContainerStyle }}
-      initialLayout={initialLayout}
+      tabBar={(props: BottomTabBarProps) => (
+        <QRTabBar
+          {...(props as unknown as MaterialTopTabBarProps)}
+          qrSvgRef={qrSvgRef}
+          canSwitch={!route.params?.params?.showSecureSendStyling}
+          leftIcon={route.params?.params?.showSecureSendStyling ? 'back' : 'times'}
+        />
+      )}
+      screenOptions={{
+        headerShown: true,
+        headerShadowVisible: true,
+        headerTitleAllowFontScaling: false,
+        headerTransparent: false,
+        tabBarActiveTintColor: Colors.black,
+        tabBarInactiveTintColor: Colors.gray3,
+        tabBarLabelStyle: styles.label,
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarAllowFontScaling: false,
+        tabBarLabelPosition: 'beside-icon',
+        ...(tabHeader as NativeStackHeaderProps),
+      }}
     >
       <Tab.Screen name={Screens.QRCode} options={{ title: t('myCode') ?? undefined }}>
         {({ route, navigation }) => (
@@ -141,11 +148,12 @@ QRNavigator.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: Colors.black,
+  label: {
+    ...typeScale.labelSemiBoldSmall,
   },
-  sceneContainerStyle: {
-    backgroundColor: Colors.black,
+  tabBarItem: {
+    paddingVertical: Spacing.Smallest8,
+    margin: 20,
   },
   viewContainer: {
     flex: 1,

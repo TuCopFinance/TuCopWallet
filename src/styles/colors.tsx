@@ -6,6 +6,7 @@ enum Colors {
   white = '#FFFFFF',
   white30 = 'rgba(255, 255, 255, 0.3)',
   white11 = 'rgba(255, 255, 255, 0.11)',
+  transparent = 'transparent',
 
   // grays
   gray5 = '#505050',
