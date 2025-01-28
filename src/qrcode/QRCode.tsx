@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { nameSelector } from 'src/account/selectors'
-import Button from 'src/components/Button'
+import Button, { BtnSizes } from 'src/components/Button'
 import ExchangesBottomSheet from 'src/components/ExchangesBottomSheet'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import { ExternalExchangeProvider } from 'src/fiatExchanges/ExternalExchanges'
@@ -84,35 +84,7 @@ export default function QRCodeDisplay(props: Props) {
 
   return (
     <View style={styles.container}>
-      <View testID="QRCode" style={styles.qrContainer}>
-        <StyledQRCode qrSvgRef={qrSvgRef} />
-      </View>
-
-      {!!displayName && (
-        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
-          {displayName}
-        </Text>
-      )}
-      <Text testID="address" style={styles.address}>
-        {address}
-      </Text>
-      <Button
-        text={t('fiatExchangeFlow.exchange.copyAddress')}
-        onPress={onPressCopy}
-        icon={<CopyIcon color={colors.white} />}
-        iconMargin={12}
-        iconPositionLeft={false}
-        testID="copyButton"
-      />
-
-      <View
-        style={[
-          styles.bottomContent,
-          {
-            marginBottom: Math.max(Spacing.Thick24, insets.bottom),
-          },
-        ]}
-      >
+      <View style={[styles.bottomContent]}>
         {exchanges && exchanges.length > 0 ? (
           <>
             <Text style={styles.exchangeText}>
@@ -128,24 +100,51 @@ export default function QRCodeDisplay(props: Props) {
             />
           </>
         ) : (
-          <InLineNotification
-            variant={NotificationVariant.Info}
-            description={description()}
-            style={styles.link}
-            testID="supportedNetworksNotification"
-          />
+          <View style={{ marginLeft: 33, marginRight: 33 }}>
+            <InLineNotification
+              variant={NotificationVariant.Info}
+              description={description()}
+              style={styles.link}
+              testID="supportedNetworksNotification"
+            />
+          </View>
         )}
       </View>
+
+      <View testID="QRCode" style={styles.qrContainer}>
+        <StyledQRCode qrSvgRef={qrSvgRef} />
+      </View>
+
+      {!!displayName && (
+        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
+          {displayName}
+        </Text>
+      )}
+      <Text testID="address" style={styles.address}>
+        {address}
+      </Text>
+
+      <Button
+        text={t('fiatExchangeFlow.exchange.copyAddress')}
+        onPress={onPressCopy}
+        icon={<CopyIcon color={colors.white} />}
+        iconMargin={12}
+        iconPositionLeft={false}
+        testID="copyButton"
+        size={BtnSizes.FULL}
+        style={{ flexDirection: 'row' }}
+        touchableStyle={{ width: '100%' }}
+      />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   bottomContent: {
-    position: 'absolute',
-    bottom: 0,
     paddingHorizontal: Spacing.Regular16,
     width: '100%',
+    marginTop: 120,
+    marginBottom: 16,
   },
   bold: {
     ...typeScale.labelSemiBoldXSmall,
@@ -164,9 +163,10 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     color: colors.accent,
     flexWrap: 'wrap',
+    width: '100%',
   },
   qrContainer: {
-    marginTop: '35%',
+    marginTop: '5%',
     marginBottom: Spacing.Thick24,
   },
   name: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: colors.gray5,
     marginHorizontal: variables.width / 5,
-    marginBottom: 8,
+    marginBottom: 16,
     textAlign: 'center',
   },
   exchangeText: {

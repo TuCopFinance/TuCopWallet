@@ -74,6 +74,7 @@ import KeylessBackupProgress from 'src/keylessBackup/KeylessBackupProgress'
 import LinkPhoneNumber from 'src/keylessBackup/LinkPhoneNumber'
 import SignInWithEmail from 'src/keylessBackup/SignInWithEmail'
 import WalletSecurityPrimer from 'src/keylessBackup/WalletSecurityPrimer'
+import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 import Language from 'src/language/Language'
 import SelectLocalCurrency from 'src/localCurrency/SelectLocalCurrency'
 import {
@@ -125,7 +126,6 @@ import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
 import WebViewScreen from 'src/webview/WebViewScreen'
-import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 
 const TAG = 'Navigator'
 

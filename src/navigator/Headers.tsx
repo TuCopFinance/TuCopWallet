@@ -32,7 +32,7 @@ export const noHeaderGestureDisabled: NativeStackNavigationOptions = {
 export const styles = StyleSheet.create({
   headerTitle: {
     ...typeScale.labelSemiBoldMedium,
-    maxWidth: Dimensions.get('window').width * 0.6,
+    maxWidth: Dimensions.get('window').width * 0,
   },
   headerSubTitle: {
     color: Colors.gray4,
@@ -48,6 +48,8 @@ export const styles = StyleSheet.create({
   topElementsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 36,
+    paddingBottom: 16,
   },
 })
 
@@ -234,7 +236,7 @@ export const tabHeader: NativeStackNavigationOptions = {
   },
   headerLeft: () => (
     <View style={[styles.topElementsContainer, { marginLeft: Spacing.Regular16 }]}>
-      <Logo color={Colors.black} size={22} />
+      <Logo />
     </View>
   ),
 }

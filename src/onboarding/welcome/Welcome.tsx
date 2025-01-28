@@ -15,6 +15,7 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import LanguageButton from 'src/onboarding/LanguageButton'
 import { firstOnboardingScreen } from 'src/onboarding/steps'
+import BackgroundWelcome from 'src/onboarding/welcome/BackgroundWelcome'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { getDynamicConfigParams, getExperimentParams, patchUpdateStatsigUser } from 'src/statsig'
 import { DynamicConfigs, ExperimentConfigs } from 'src/statsig/constants'
@@ -86,51 +87,54 @@ export default function Welcome() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.contentContainer}>
-        <WelcomeLogo />
-      </View>
-      <View style={styles.buttonView}>
-        {showTermsCheckbox && (
-          <View style={styles.termsContainer}>
-            <TouchableOpacity onPress={() => toggleTermsCheckBox((prev) => !prev)}>
-              <CheckBox
-                testID="TermsCheckbox"
-                checked={termsCheckbox}
-                checkedColor={colors.black}
-                uncheckedColor={colors.black}
-              />
-            </TouchableOpacity>
-            <Text style={styles.termsText}>
-              <Trans i18nKey="welcome.agreeToTerms">
-                <Text onPress={onPressTerms} style={styles.termsTextLink} />
-              </Trans>
-            </Text>
-          </View>
-        )}
+    <>
+      <BackgroundWelcome style={styles.backgroundContainer} />
+      <SafeAreaView style={styles.container}>
+        <View style={styles.contentContainer}>
+          <WelcomeLogo />
+        </View>
+        <View style={styles.buttonView}>
+          {showTermsCheckbox && (
+            <View style={styles.termsContainer}>
+              <TouchableOpacity onPress={() => toggleTermsCheckBox((prev: any) => !prev)}>
+                <CheckBox
+                  testID="TermsCheckbox"
+                  checked={termsCheckbox}
+                  checkedColor={colors.black}
+                  uncheckedColor={colors.black}
+                />
+              </TouchableOpacity>
+              <Text style={styles.termsText}>
+                <Trans i18nKey="welcome.agreeToTerms">
+                  <Text onPress={onPressTerms} style={styles.termsTextLink} />
+                </Trans>
+              </Text>
+            </View>
+          )}
 
-        <Button
-          onPress={onPressCreateAccount}
-          text={t('welcome.createNewWallet')}
-          size={BtnSizes.FULL}
-          type={BtnTypes.PRIMARY}
-          style={styles.createAccountButton}
-          testID={'CreateAccountButton'}
-          disabled={buttonsDisabled}
-        />
-        <Button
-          onPress={onPressRestoreAccount}
-          text={t('welcome.hasWalletV1_88')}
-          size={BtnSizes.FULL}
-          type={BtnTypes.SECONDARY}
-          testID={'RestoreAccountButton'}
-          disabled={buttonsDisabled}
-        />
-      </View>
-      <View style={styles.msLogoContainer}>
-        <MSLogoFull />
-      </View>
-    </SafeAreaView>
+          <Button
+            onPress={onPressCreateAccount}
+            text={t('welcome.createNewWallet')}
+            size={BtnSizes.FULL}
+            type={BtnTypes.PRIMARY}
+            style={styles.createAccountButton}
+            testID={'CreateAccountButton'}
+            disabled={buttonsDisabled}
+          />
+          <Button
+            onPress={onPressRestoreAccount}
+            text={t('welcome.hasWalletV1_88')}
+            size={BtnSizes.FULL}
+            type={BtnTypes.OUTLINE}
+            testID={'RestoreAccountButton'}
+            disabled={buttonsDisabled}
+          />
+        </View>
+        <View style={styles.msLogoContainer}>
+          <MSLogoFull />
+        </View>
+      </SafeAreaView>
+    </>
   )
 }
 
@@ -142,11 +146,19 @@ Welcome.navigationOptions = {
 const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    marginTop: 70,
     alignItems: 'center',
   },
   container: {
     flex: 1,
+  },
+  backgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
   },
   createAccountButton: {
     marginBottom: Spacing.Smallest8,

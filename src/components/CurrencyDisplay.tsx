@@ -146,8 +146,8 @@ export default function CurrencyDisplay({
     ? getLocalAmount(amount, localCurrencyCode, localCurrencyExchangeRate)
     : amount
   const displayCurrency = displayAmount
-    ? displayAmount.currencyCode === Currency.Celo
-      ? Currency.Celo
+    ? displayAmount.currencyCode === Currency.COP
+      ? Currency.COP
       : Currency.Dollar
     : null
   const currencySymbol = displayAmount

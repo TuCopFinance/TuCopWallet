@@ -1,5 +1,6 @@
 import React from 'react'
 import { GestureResponderEvent, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { Shadow } from 'react-native-shadow-2'
 import Touchable from 'src/components/Touchable'
 import AttentionIcon from 'src/icons/Attention'
 import Warning from 'src/icons/Warning'
@@ -71,28 +72,30 @@ export function InLineNotification({
   }
 
   return (
-    <View style={[styles.container, backgroundStyle, borderStyle, style]} testID={testID}>
-      <View style={styles.row}>
-        {!hideIcon && (
-          <View style={styles.iconContainer}>
-            {customIcon ?? (
-              <Icon color={variantColor.primary} size={16} testId="InLineNotification/Icon" />
-            )}
+    <Shadow style={{ width: '100%' }} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
+      <View style={[styles.container, backgroundStyle, borderStyle, style]} testID={testID}>
+        <View style={styles.row}>
+          {!hideIcon && (
+            <View style={styles.iconContainer}>
+              {customIcon ?? (
+                <Icon color={variantColor.primary} size={28} testId="InLineNotification/Icon" />
+              )}
+            </View>
+          )}
+          <View style={styles.contentContainer}>
+            {!!title && <Text style={styles.titleText}>{title}</Text>}
+            <Text style={[styles.bodyText]}>{description}</Text>
+          </View>
+        </View>
+
+        {(!!ctaLabel || !!ctaLabel2) && (
+          <View style={[styles.row, styles.ctaRow]}>
+            {renderCtaLabel(ctaLabel, onPressCta, variantColor.primary)}
+            {renderCtaLabel(ctaLabel2, onPressCta2, variantColor.primary)}
           </View>
         )}
-        <View style={styles.contentContainer}>
-          {!!title && <Text style={styles.titleText}>{title}</Text>}
-          <Text style={[styles.bodyText]}>{description}</Text>
-        </View>
       </View>
-
-      {(!!ctaLabel || !!ctaLabel2) && (
-        <View style={[styles.row, styles.ctaRow]}>
-          {renderCtaLabel(ctaLabel, onPressCta, variantColor.primary)}
-          {renderCtaLabel(ctaLabel2, onPressCta2, variantColor.primary)}
-        </View>
-      )}
-    </View>
+    </Shadow>
   )
 }
 
@@ -102,10 +105,13 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.Regular16,
   },
   contentContainer: {
-    flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    margin: 'auto',
   },
   row: {
-    flexDirection: 'row',
+    display: 'flex',
+    justifyContent: 'center',
   },
   ctaRow: {
     paddingTop: Spacing.Smallest8,
@@ -113,7 +119,8 @@ const styles = StyleSheet.create({
     gap: Spacing.Smallest8,
   },
   iconContainer: {
-    paddingRight: Spacing.Smallest8,
+    alignItems: 'center',
+    marginBottom: Spacing.Smallest8,
   },
   titleText: {
     ...typeScale.labelSmall,
@@ -121,7 +128,8 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     ...typeScale.bodyXSmall,
-    color: Colors.black,
+    color: Colors.secondary,
+    textAlign: 'center',
   },
   ctaLabel: {
     ...typeScale.labelSmall,
@@ -135,7 +143,7 @@ const styles = StyleSheet.create({
 const variantColors: Record<NotificationVariant, CustomColors> = {
   [NotificationVariant.Info]: {
     primary: Colors.black,
-    secondary: Colors.gray1,
+    secondary: Colors.white,
   },
   [NotificationVariant.Success]: {
     primary: Colors.successDark,

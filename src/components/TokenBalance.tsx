@@ -51,7 +51,7 @@ import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 
 function TokenBalance({
   style = styles.balance,
-  singleTokenViewEnabled = true,
+  singleTokenViewEnabled = false,
   showBalanceToggle = false,
 }: {
   style?: StyleProp<TextStyle>
@@ -133,7 +133,7 @@ export function HideBalanceButton({ hideBalance }: { hideBalance: boolean }) {
       testID={'HideBalanceButton'}
       borderRadius={30}
     >
-      {hideBalance ? <HiddenEyeIcon /> : <EyeIcon />}
+      {hideBalance ? <HiddenEyeIcon color={Colors.primary} /> : <EyeIcon color={Colors.primary} />}
     </Touchable>
   )
 }
