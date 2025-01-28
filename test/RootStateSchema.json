@@ -780,7 +780,9 @@
                 "ETH",
                 "cEUR",
                 "cREAL",
-                "cUSD"
+                "cUSD",
+                "cCOP",
+                "USDT"
             ],
             "type": "string"
         },
@@ -1109,7 +1111,8 @@
                 "CELO",
                 "cEUR",
                 "cREAL",
-                "cUSD"
+                "cUSD",
+                "USDT"
             ],
             "type": "string"
         },

@@ -1,6 +1,7 @@
 import { debounce } from 'lodash'
 import React, { ReactNode, useCallback } from 'react'
 import { ActivityIndicator, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import LinealGradientBtnBackground from 'src/components/LinealGradientBtnBackground'
 import Touchable from 'src/components/Touchable'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -16,6 +17,7 @@ export enum BtnTypes {
   PRIMARY = 'Primary',
   SECONDARY = 'Secondary',
   TERTIARY = 'Tertiary',
+  OUTLINE = 'Outline',
 }
 
 export enum BtnSizes {
@@ -96,29 +98,32 @@ export default React.memo(function Button(props: ButtonProps) {
           ]}
           testID={testID}
         >
-          {showLoading ? (
-            <ActivityIndicator
-              size="small"
-              color={loadingColor ?? textColor}
-              testID="Button/Loading"
-            />
-          ) : (
-            <>
-              {icon}
-              <Text
-                maxFontSizeMultiplier={1}
-                accessibilityLabel={accessibilityLabel}
-                style={{
-                  ...getTextStyle(textSize),
-                  color: textColor,
-                  marginLeft: icon && iconPositionLeft ? iconMargin : 0,
-                  marginRight: icon && !iconPositionLeft ? iconMargin : 0,
-                }}
-              >
-                {text}
-              </Text>
-            </>
-          )}
+          <>
+            {showLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={loadingColor ?? textColor}
+                testID="Button/Loading"
+              />
+            ) : (
+              <>
+                {type === BtnTypes.PRIMARY && <LinealGradientBtnBackground />}
+                {icon}
+                <Text
+                  maxFontSizeMultiplier={1}
+                  accessibilityLabel={accessibilityLabel}
+                  style={{
+                    ...getTextStyle(textSize),
+                    color: textColor,
+                    marginLeft: icon && iconPositionLeft ? iconMargin : 0,
+                    marginRight: icon && !iconPositionLeft ? iconMargin : 0,
+                  }}
+                >
+                  {text}
+                </Text>
+              </>
+            )}
+          </>
         </Touchable>
       </View>
     </View>
@@ -129,6 +134,11 @@ const styles = StyleSheet.create({
   // on android Touchable Provides a ripple effect, by itself it does not respect the border radius on Touchable
   containRipple: {
     overflow: 'hidden',
+  },
+  gradientBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
   rounded: {
     borderRadius: 100,
@@ -175,6 +185,12 @@ function getColors(type: BtnTypes, disabled: boolean | undefined) {
       backgroundColor = Colors.white
       borderColor = Colors.gray2
       opacity = disabled ? 0.5 : 1.0
+      break
+    case BtnTypes.OUTLINE:
+      textColor = Colors.white
+      backgroundColor = Colors.white11
+      borderColor = Colors.white
+      opacity = disabled ? 0.5 : 1
       break
   }
 

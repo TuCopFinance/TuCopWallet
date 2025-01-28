@@ -89,7 +89,7 @@ interface NetworkConfig {
   celoGasPriceMinimumAddress: Address
   alchemyRpcUrl: Record<Exclude<Network, Network.Celo>, string>
   cusdTokenId: string
-  cusdtTokenId: string
+  usdtTokenId: string
   ccopTokenId: string
   ceurTokenId: string
   crealTokenId: string
@@ -136,7 +136,7 @@ export type NetworkIdToNetwork = {
   [key in NetworkId]: Network
 }
 
-const CELO_TOKEN_ADDRESS_STAGING = '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9'
+const CELO_TOKEN_ADDRESS_STAGING = '0x471EcE3750Da237f93B8E339c536989b8978a438'
 const CELO_TOKEN_ADDRESS_MAINNET = '0x471ece3750da237f93b8e339c536989b8978a438'
 
 // From https://docs.celo.org/contract-addresses
@@ -161,11 +161,11 @@ const CKES_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x456a3d042c0dbd3db5
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
 // TODO: cambiar token al contrato correcto tanto en mainnet como en staging
-const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
-const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x765de816845861e75a25fca122bb6898b8b1282a`
+const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72BD25A935E9762397ed41eF67`
+const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
 // TODO: cambiar token al contrato correcto tanto en mainnet como en staging
-const CUSDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
-const CUSDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x765de816845861e75a25fca122bb6898b8b1282a`
+const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
+const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x617f3112bf5397d0467d315cc709ef968d9ba546`
 
 const ARB_USDC_TOKEN_ID_STAGING = `${NetworkId['arbitrum-sepolia']}:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d`
 const ARB_USDC_TOKEN_ID_MAINNET = `${NetworkId['arbitrum-one']}:0xaf88d065e77c8cc2239327c5edb3a432268e5831`
@@ -411,8 +411,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.cREAL]: CREAL_TOKEN_ID_STAGING,
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_STAGING,
       [Currency.Celo]: CELO_TOKEN_ID_STAGING,
-      [CiCoCurrency.USDT]: CUSDT_TOKEN_ID_STAGING,
-      [CiCoCurrency.cCOP]: CKES_TOKEN_ID_STAGING,
+      [CiCoCurrency.USDT]: USDT_TOKEN_ID_STAGING,
+      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_STAGING,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_STAGING,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_STAGING,
@@ -429,9 +429,9 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_STAGING,
     ckesTokenId: CKES_TOKEN_ID_STAGING,
     ccopTokenId: CCOP_TOKEN_ID_STAGING,
-    cusdtTokenId: CUSDT_TOKEN_ID_STAGING,
+    usdtTokenId: USDT_TOKEN_ID_STAGING,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_STAGING,
-    spendTokenIds: [CUSD_TOKEN_ID_STAGING, CEUR_TOKEN_ID_STAGING],
+    spendTokenIds: [USDT_TOKEN_ID_STAGING, CCOP_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
     getPointsConfigUrl: GET_POINTS_CONFIG_ALFAJORES,
     internalRpcUrl: {
@@ -518,8 +518,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.cREAL]: CREAL_TOKEN_ID_MAINNET,
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_MAINNET,
       [Currency.Celo]: CELO_TOKEN_ID_MAINNET,
-      [CiCoCurrency.USDT]: CUSDT_TOKEN_ID_MAINNET,
-      [CiCoCurrency.cCOP]: CKES_TOKEN_ID_MAINNET,
+      [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET,
+      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_MAINNET,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_MAINNET,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_MAINNET,
@@ -536,9 +536,9 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_MAINNET,
     ckesTokenId: CKES_TOKEN_ID_MAINNET,
     ccopTokenId: CCOP_TOKEN_ID_MAINNET,
-    cusdtTokenId: CUSDT_TOKEN_ID_MAINNET,
+    usdtTokenId: USDT_TOKEN_ID_MAINNET,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_MAINNET,
-    spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CEUR_TOKEN_ID_MAINNET],
+    spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
     getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
     internalRpcUrl: {

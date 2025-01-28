@@ -2381,6 +2381,10 @@
     "discover": {
       "tabName": "Explorar",
       "title": "Explora la web3"
+    },
+    "activity": {
+      "tabName": "Actividad",
+      "title": "Actividad"
     }
   },
   "jumpstartStatus": {
@@ -2840,17 +2844,18 @@
   "celoDollarAmount": "<0></0> Celo Dollar",
   "celoDollarAmount_plural": "<0></0> Celo Dollars",
   "tabHome": {
-    "addCCOP": "Add cCOP",
-    "sendMoney": "Send Money",
-    "receiveMoney": "Receive Money",
-    "holdUSD": "Hold US Dollars",
-    "swapToUSD": "Swap your cCOP for USDT",
-    "withdraw": "Withdraw From Your Wallet",
+    "myWallet": "Mi billetera",
+    "addCCOP": "Agregar cCOP",
+    "sendMoney": "Enviar dinero",
+    "receiveMoney": "Recibir dinero",
+    "holdUSD": "Mantener dólares estadounidenses",
+    "swapToUSD": "Intercambia tus cCOP por USDT",
+    "withdraw": "Retirar de tu billetera",
     "addCKESBottomSheet": {
-      "addCKESFromCUSD": "From My USDT Balance",
-      "bySwapping": "Add cCOP by swapping from your USDT",
-      "purchase": "Purchase cCOP",
-      "purchaseDescription": "Add cCOP by purchasing through one of our trusted providers"
+      "addCKESFromCUSD": "Desde mi saldo USDT",
+      "bySwapping": "Agregar cCOP intercambiando desde tu USDT",
+      "purchase": "Comprar cCOP",
+      "purchaseDescription": "Agregar cCOP comprando a través de uno de nuestros proveedores de confianza"
     }
   }
 }
