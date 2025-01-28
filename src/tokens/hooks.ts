@@ -44,7 +44,7 @@ export function useCCOP() {
 }
 
 export function useUSDT() {
-  return useTokenInfo(networkConfig.cusdtTokenId)
+  return useTokenInfo(networkConfig.usdtTokenId)
 }
 
 export function useTokensWithUsdValue(networkIds: NetworkId[]) {

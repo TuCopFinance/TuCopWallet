@@ -3,25 +3,34 @@ import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
+import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Shadow } from 'react-native-shadow-2'
 import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FiatExchangeEvents, TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
-import { appStateSelector, phoneNumberVerifiedSelector } from 'src/app/selectors'
+import {
+  appStateSelector,
+  hideWalletBalancesSelector,
+  phoneNumberVerifiedSelector,
+} from 'src/app/selectors'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
-import TokenIcon, { IconSize } from 'src/components/TokenIcon'
+import RadialGradientBackground from 'src/components/RadialGradientBackground'
+import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
 import SwapArrows from 'src/icons/SwapArrows'
+import AddCCOP from 'src/icons/tab-home/AddCCOP'
 import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
 import Withdraw from 'src/icons/tab-home/Withdraw'
 import { importContacts } from 'src/identity/actions'
+import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -32,7 +41,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCashOutTokens, useCCOP, useUSDT } from 'src/tokens/hooks'
+import { useCashOutTokens, useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
@@ -93,17 +102,17 @@ function TabHome(_props: Props) {
     }
   }, [appState])
 
-  const cKESToken = useCCOP()
-  const cUSDToken = useUSDT()
+  const cCCOPToken = useCCOP()
+  const USDToken = useUSDT()
 
   function onPressAddCKES() {
     AppAnalytics.track(TabHomeEvents.add_ckes)
-    if (cUSDToken?.balance.isZero()) {
-      !!cKESToken &&
+    if (USDToken?.balance.isZero()) {
+      !!cCCOPToken &&
         navigate(Screens.FiatExchangeAmount, {
-          tokenId: cKESToken.tokenId,
+          tokenId: cCCOPToken.tokenId,
           flow: CICOFlow.CashIn,
-          tokenSymbol: cKESToken.symbol,
+          tokenSymbol: cCCOPToken.symbol,
         })
     } else {
       addCKESBottomSheetRef.current?.snapToIndex(0)
@@ -112,9 +121,9 @@ function TabHome(_props: Props) {
 
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
-    !!cKESToken &&
+    !!cCCOPToken &&
       navigate(Screens.SendSelectRecipient, {
-        defaultTokenIdOverride: cKESToken.tokenId,
+        defaultTokenIdOverride: cCCOPToken.tokenId,
       })
   }
 
@@ -127,11 +136,11 @@ function TabHome(_props: Props) {
 
   function onPressHoldUSD() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
-    !!cKESToken &&
-      !!cUSDToken &&
+    !!cCCOPToken &&
+      !!USDToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: cKESToken.tokenId,
-        toTokenId: cUSDToken.tokenId,
+        fromTokenId: cCCOPToken.tokenId,
+        toTokenId: USDToken.tokenId,
       })
   }
 
@@ -160,49 +169,72 @@ function TabHome(_props: Props) {
     AppAnalytics.track(TabHomeEvents.withdraw)
   }
 
+  const hideWalletBalances = useSelector(hideWalletBalancesSelector)
+  const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
+  const { decimalSeparator } = getNumberFormatSettings()
+
+  const totalTokenBalanceLocal = useTotalTokenBalance()
+  const balanceDisplay = hideWalletBalances
+    ? `XX${decimalSeparator}XX`
+    : totalTokenBalanceLocal?.toFormat(2)
+
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
-      <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCKES}>
-        <View style={styles.column}>
-          {!!cKESToken && (
-            <TokenIcon token={cKESToken} showNetworkIcon={false} size={IconSize.LARGE} />
-          )}
-          <Text style={styles.ctaText}>{t('tabHome.addCKES')}</Text>
-        </View>
-      </FlatCard>
-      <View style={styles.row}>
-        <View style={styles.flex}>
-          <FlatCard testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
-            <View style={styles.column}>
-              <Send />
-              <Text style={styles.ctaText}>{t('tabHome.sendMoney')}</Text>
-            </View>
-          </FlatCard>
-        </View>
-        <View style={styles.flex}>
-          <FlatCard testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
-            <View style={styles.column}>
-              <ArrowVertical />
-              <Text style={styles.ctaText}>{t('tabHome.receiveMoney')}</Text>
-            </View>
-          </FlatCard>
+      <View style={styles.totalBalanceContainer}>
+        <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
+        <View style={styles.totalBalanceRow}>
+          <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
+            {!hideWalletBalances && localCurrencySymbol}
+            {balanceDisplay}
+          </Text>
+          <HideBalanceButton hideBalance={hideWalletBalances} />
         </View>
       </View>
-      <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+
+      <View style={styles.containerShadow}>
         <View style={styles.row}>
-          <Swap />
           <View style={styles.flex}>
-            <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
-            <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+            <FlatCard type="primary" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
+              <View style={styles.row}>
+                <Send />
+                <Text style={styles.textWhite}>{t('tabHome.sendMoney')}</Text>
+              </View>
+            </FlatCard>
+          </View>
+
+          <View style={styles.flex}>
+            <FlatCard type="primary" testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
+              <View style={styles.row}>
+                <ArrowVertical />
+                <Text style={styles.textWhite}>{t('tabHome.receiveMoney')}</Text>
+              </View>
+            </FlatCard>
           </View>
         </View>
-      </FlatCard>
-      <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
-        <View style={styles.row}>
-          <Withdraw />
-          <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
-        </View>
-      </FlatCard>
+
+        <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCKES}>
+          <View style={styles.column}>
+            <AddCCOP />
+            <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
+          </View>
+        </FlatCard>
+
+        <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+          <View style={styles.row}>
+            <Swap />
+            <View style={styles.flex}>
+              <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
+              <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+            </View>
+          </View>
+        </FlatCard>
+        <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+          <View style={styles.row}>
+            <Withdraw />
+            <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
+          </View>
+        </FlatCard>
+      </View>
       <AddCCOPBottomSheet forwardedRef={addCKESBottomSheetRef} />
     </SafeAreaView>
   )
@@ -211,20 +243,24 @@ function TabHome(_props: Props) {
 function FlatCard({
   onPress,
   testID,
-  ...props
+  type,
+  children,
 }: {
   children: React.ReactNode
   onPress: () => void
   testID: string
+  type?: 'primary'
 }) {
+  const flatStyle = type === 'primary' ? styles.flatCardPrimary : styles.flatCard
   return (
-    <Touchable
-      borderRadius={Spacing.Small12}
-      style={styles.flatCard}
-      testID={testID}
-      onPress={onPress}
-      {...props}
-    />
+    <Shadow style={styles.shadow} startColor="rgba(190, 201, 255, 0.33)">
+      <Touchable borderRadius={Spacing.Small12} style={flatStyle} testID={testID} onPress={onPress}>
+        <>
+          {type === 'primary' && <RadialGradientBackground />}
+          {children}
+        </>
+      </Touchable>
+    </Shadow>
   )
 }
 
@@ -234,27 +270,27 @@ function AddCCOPBottomSheet({
   forwardedRef: React.RefObject<BottomSheetModalRefType>
 }) {
   const { t } = useTranslation()
-  const cKESToken = useCCOP()
-  const cUSDToken = useUSDT()
+  const cCCOPToken = useCCOP()
+  const USDToken = useUSDT()
 
   function onPressSwapFromCusd() {
     AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
-    !!cUSDToken &&
-      !!cKESToken &&
+    !!USDToken &&
+      !!cCCOPToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: cUSDToken.tokenId,
-        toTokenId: cKESToken.tokenId,
+        fromTokenId: USDToken.tokenId,
+        toTokenId: cCCOPToken.tokenId,
       })
     forwardedRef.current?.dismiss()
   }
 
   function onPressPurchaseCkes() {
     AppAnalytics.track(TabHomeEvents.add_ckes_from_cash_in)
-    !!cKESToken &&
+    !!cCCOPToken &&
       navigate(Screens.FiatExchangeAmount, {
-        tokenId: cKESToken.tokenId,
+        tokenId: cCCOPToken.tokenId,
         flow: CICOFlow.CashIn,
-        tokenSymbol: cKESToken.symbol,
+        tokenSymbol: cCCOPToken.symbol,
       })
     forwardedRef.current?.dismiss()
   }
@@ -311,9 +347,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: Spacing.Regular16,
     borderRadius: Spacing.Small12,
-    borderColor: Colors.black,
-    borderWidth: 1,
+    justifyContent: 'center',
   },
+  flatCardPrimary: {
+    height: 62,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  textWhite: { color: Colors.white },
   column: {
     flexDirection: 'column',
     justifyContent: 'center',
@@ -331,7 +374,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.Regular16,
+    gap: 20,
   },
   flex: {
     flex: 1,
@@ -347,6 +390,43 @@ const styles = StyleSheet.create({
   bottomSheetCtaSubText: {
     ...typeScale.bodySmall,
     color: Colors.black,
+  },
+  totalBalanceContainer: {
+    marginTop: 18,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  totalBalanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.Smallest8,
+    marginTop: Spacing.Smallest8,
+  },
+  totalBalance: {
+    ...typeScale.titleLarge,
+    color: Colors.primary,
+  },
+  balanceTitle: {
+    ...typeScale.bodyLarge,
+    color: Colors.secondary,
+  },
+  containerShadow: {
+    borderTopRightRadius: 33,
+    padding: 22,
+    paddingTop: 30,
+    borderColor: Colors.primary,
+    borderWidth: 1,
+    marginLeft: -17,
+    marginRight: -17,
+    height: '100%',
+    display: 'flex',
+    flexGrow: 1,
+    gap: 17,
+  },
+  shadow: {
+    width: '100%',
+    borderRadius: 15,
   },
 })
 

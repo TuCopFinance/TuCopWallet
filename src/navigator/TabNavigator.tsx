@@ -2,12 +2,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import TabActivity from 'src/home/TabActivity'
 import TabHome from 'src/home/TabHome'
 import ClockIcon from 'src/icons/ClockIcon'
-import Home from 'src/icons/navigator/Home'
 import Wallet from 'src/icons/navigator/Wallet'
+import Swap from 'src/icons/tab-home/Swap'
 import { tabHeader } from 'src/navigator/Headers'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -39,7 +39,10 @@ export default function TabNavigator({ route }: Props) {
         tabBarAllowFontScaling: false,
         tabBarStyle: {
           height: variables.height * 0.1,
+          borderTopWidth: 0,
+          backgroundColor: Colors.white,
         },
+        tabBarLabelPosition: 'beside-icon',
         ...(tabHeader as NativeStackHeaderProps),
       }}
     >
@@ -47,8 +50,29 @@ export default function TabNavigator({ route }: Props) {
         name={Screens.TabWallet}
         component={TabWallet}
         options={{
-          tabBarLabel: t('bottomTabsNavigator.wallet.tabName') as string,
-          tabBarIcon: Wallet,
+          tabBarLabel: ({ focused, color }) => (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '100%',
+                gap: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color,
+                  fontSize: 16,
+                  marginRight: 6,
+                  marginLeft: 14,
+                }}
+              >
+                {t('bottomTabsNavigator.wallet.tabName')}
+              </Text>
+              <Wallet />
+            </View>
+          ),
+          tabBarIcon: () => null, // Hide default icon since we're using custom label
           tabBarButtonTestID: 'Tab/Wallet',
         }}
       />
@@ -58,17 +82,40 @@ export default function TabNavigator({ route }: Props) {
         options={{
           freezeOnBlur: false,
           lazy: false,
-          tabBarLabel: t('bottomTabsNavigator.home.tabName') as string,
-          tabBarIcon: Home,
+          tabBarIcon: () => <Swap />,
+          tabBarLabel: '',
           tabBarButtonTestID: 'Tab/Home',
+          tabBarIconStyle: {
+            marginLeft: 20,
+          },
         }}
       />
       <Tab.Screen
         name={Screens.TabActivity}
         component={TabActivity}
         options={{
-          tabBarLabel: t('bottomTabsNavigator.activity.tabName') as string,
-          tabBarIcon: ({ color }) => <ClockIcon color={color} />,
+          tabBarLabel: ({ focused, color }) => (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '100%',
+                gap: 8,
+              }}
+            >
+              <ClockIcon />
+              <Text
+                style={{
+                  color,
+                  fontSize: 16,
+                  paddingLeft: 6,
+                }}
+              >
+                {t('bottomTabsNavigator.activity.tabName')}
+              </Text>
+            </View>
+          ),
+          tabBarIcon: () => null,
           tabBarButtonTestID: 'Tab/Activity',
         }}
       />

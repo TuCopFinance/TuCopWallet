@@ -84,6 +84,12 @@
 		<string>Inter-Regular.ttf</string>
 		<string>Inter-SemiBold.ttf</string>
 		<string>Inter-Bold.ttf</string>
+		<string>RedHatDisplayBlack.ttf</string>
+		<string>RedHatDisplayExtraBold.ttf</string>
+		<string>RedHatDisplayLight.ttf</string>
+		<string>RedHatDisplayMedium.ttf</string>
+		<string>RedHatDisplayRegular.ttf</string>
+		<string>RedHatDisplaySemiBold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
