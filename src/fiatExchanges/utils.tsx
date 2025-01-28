@@ -44,6 +44,8 @@ export enum CloudFunctionDigitalAsset {
   CEUR = 'CEUR',
   CREAL = 'CREAL',
   ETH = 'ETH',
+  USDT = 'USDT',
+  CCOP = 'CCOP',
 }
 interface ProviderRequestData {
   userLocation: UserLocationData

@@ -71,7 +71,7 @@ export function resolveCurrency(currencyCode: string): Currency | undefined {
     CUSD: Currency.Dollar,
     CEUR: Currency.Euro,
     CCOP: Currency.COP,
-    USDT: Currency.Dollar,
+    USDT: Currency.USDT,
   }
   return mapping[currencyCode.toUpperCase()]
 }
@@ -80,7 +80,7 @@ export function resolveCICOCurrency(currencyCode: string): CiCoCurrency {
   const mapping: Record<string, CiCoCurrency | undefined> = {
     CELO: CiCoCurrency.CELO,
     CGLD: CiCoCurrency.CELO,
-    CUSD: CiCoCurrency.cUSD,
+    CUSD: CiCoCurrency.USDT,
     CEUR: CiCoCurrency.cEUR,
     CREAL: CiCoCurrency.cREAL,
     USDT: CiCoCurrency.USDT,

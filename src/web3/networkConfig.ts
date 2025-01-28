@@ -538,7 +538,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ccopTokenId: CCOP_TOKEN_ID_MAINNET,
     usdtTokenId: USDT_TOKEN_ID_MAINNET,
     arbUsdcTokenId: ARB_USDC_TOKEN_ID_MAINNET,
-    spendTokenIds: [USDT_TOKEN_ID_MAINNET, CCOP_TOKEN_ID_MAINNET],
+    spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
     getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
     internalRpcUrl: {
