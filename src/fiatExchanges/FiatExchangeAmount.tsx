@@ -57,7 +57,7 @@ function FiatExchangeAmount({ route }: Props) {
     setShowingInvalidAmountDialog(false)
   }
   const [inputAmount, setInputAmount] = useState('')
-  const parsedInputAmount = parseInputAmount(inputAmount, decimalSeparator)
+  const parsedInputAmount: BigNumber = parseInputAmount(inputAmount, decimalSeparator)
 
   const tokenInfo = useTokenInfo(tokenId)
   const inputConvertedToCrypto =
@@ -79,9 +79,9 @@ function FiatExchangeAmount({ route }: Props) {
   const maxWithdrawAmount = new BigNumber(tokenInfo?.balance ?? 0)
   const inputSymbol = inputIsCrypto ? '' : localCurrencySymbol
 
-  const cUSDToken = useTokenInfo(networkConfig.cusdTokenId)!
+  const usdtToken = useTokenInfo(networkConfig.usdtTokenId)!
   const localCurrencyMaxAmount =
-    useTokenToLocalAmount(new BigNumber(DOLLAR_ADD_FUNDS_MAX_AMOUNT), cUSDToken.tokenId) ||
+    useTokenToLocalAmount(new BigNumber(DOLLAR_ADD_FUNDS_MAX_AMOUNT), usdtToken.tokenId) ||
     new BigNumber(0)
   let overLocalLimitDisplayString = ''
   if (localCurrencyCode !== LocalCurrencyCode.USD) {
