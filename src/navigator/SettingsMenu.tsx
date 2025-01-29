@@ -1,13 +1,10 @@
-import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native'
 import deviceInfoModule from 'react-native-device-info'
 import { ScrollView } from 'react-native-gesture-handler'
-import { clearStoredAccount, devModeTriggerClicked } from 'src/account/actions'
-import { devModeSelector } from 'src/account/selectors'
+import { devModeTriggerClicked } from 'src/account/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { SettingsEvents } from 'src/analytics/Events'
 import { setSessionId } from 'src/app/actions'
 import { sessionIdSelector, walletConnectEnabledSelector } from 'src/app/selectors'
 import GradientBlock from 'src/components/GradientBlock'
@@ -26,14 +23,11 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import Logger from 'src/utils/Logger'
 import { selectSessions } from 'src/walletConnect/selectors'
-import { walletAddressSelector } from 'src/web3/selectors'
 
 export default function SettingsMenu() {
   const { t } = useTranslation()
   const dispatch = useDispatch()
-  const account = useSelector(walletAddressSelector)
 
   const appVersion = deviceInfoModule.getVersion()
   const buildNumber = deviceInfoModule.getBuildNumber()
@@ -44,7 +38,6 @@ export default function SettingsMenu() {
   const connectedDapps = sessions?.length
 
   const sessionId = useSelector(sessionIdSelector)
-  const devModeActive = useSelector(devModeSelector)
 
   useEffect(() => {
     if (AppAnalytics.getSessionId() !== sessionId) {
@@ -52,53 +45,9 @@ export default function SettingsMenu() {
     }
   }, [])
 
-  const showDebugImagesScreen = () => {
-    navigate(Screens.DebugImages)
-  }
-
-  const confirmAccountRemoval = () => {
-    AppAnalytics.track(SettingsEvents.completed_account_removal)
-    dispatch(clearStoredAccount(account ?? ''))
-  }
-
   const onDevSettingsTriggerPress = () => {
     dispatch(devModeTriggerClicked())
   }
-
-  const onCopyText = (...text: Array<string | null>) => {
-    return () => {
-      Logger.showMessage('Copied to Clipboard')
-      Clipboard.setString(text.join(', '))
-    }
-  }
-
-  // const getDevSettingsComp = () => {
-  //   if (!devModeActive) {
-  //     return null
-  //   } else {
-  //     const statsigStableId = Statsig.getStableID()
-  //     return (
-  //       <View style={styles.devSettings}>
-  //         <Touchable onPress={onCopyText(sessionId)} style={styles.devSettingsItem}>
-  //           <Text>{`Session ID: ${sessionId}`}</Text>
-  //         </Touchable>
-  //         <Touchable onPress={onCopyText(statsigStableId)} style={styles.devSettingsItem}>
-  //           <Text>{`Statsig Stable ID: ${statsigStableId}`}</Text>
-  //         </Touchable>
-  //         <View style={styles.devSettingsItem}>
-  //           <TouchableOpacity onPress={showDebugImagesScreen}>
-  //             <Text>See App Assets</Text>
-  //           </TouchableOpacity>
-  //         </View>
-  //         <View style={styles.devSettingsItem}>
-  //           <TouchableOpacity onPress={confirmAccountRemoval}>
-  //             <Text>App Quick Reset</Text>
-  //           </TouchableOpacity>
-  //         </View>
-  //       </View>
-  //     )
-  //   }
-  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -146,6 +95,7 @@ export default function SettingsMenu() {
             borderless
           />
         )}
+
         <SettingsItemTextValue
           icon={<Help size={24} color={Colors.black} />}
           title={t('help')}
@@ -172,7 +122,7 @@ export default function SettingsMenu() {
         </TouchableWithoutFeedback>
         {/* {getDevSettingsComp()} */}
         <View style={styles.logo}>
-          <MSLogoFull />
+          <MSLogoFull color="black" />
         </View>
       </ScrollView>
     </SafeAreaView>
