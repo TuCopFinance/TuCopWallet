@@ -165,7 +165,7 @@ const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72
 const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
 // TODO: cambiar token al contrato correcto tanto en mainnet como en staging
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
-const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x617f3112bf5397d0467d315cc709ef968d9ba546`
+const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
 
 const ARB_USDC_TOKEN_ID_STAGING = `${NetworkId['arbitrum-sepolia']}:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d`
 const ARB_USDC_TOKEN_ID_MAINNET = `${NetworkId['arbitrum-one']}:0xaf88d065e77c8cc2239327c5edb3a432268e5831`
