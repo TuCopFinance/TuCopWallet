@@ -212,12 +212,12 @@ const styles = StyleSheet.create({
   value: {
     ...typeScale.bodyMedium,
     color: colors.gray4,
-    marginRight: 8,
+    marginRight: 16,
   },
   valueActionable: {
     ...typeScale.bodyMedium,
     color: colors.accent,
-    marginRight: 8,
+    marginRight: 16,
   },
   details: {
     ...typeScale.bodySmall,
@@ -240,6 +240,6 @@ const styles = StyleSheet.create({
     color: colors.gray4,
   },
   iconContainer: {
-    paddingRight: Spacing.Smallest8,
+    paddingRight: Spacing.Regular16,
   },
 })
