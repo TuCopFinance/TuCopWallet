@@ -43,6 +43,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useCashOutTokens, useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
+import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -54,7 +55,7 @@ function TabHome(_props: Props) {
   const isNumberVerified = useSelector(phoneNumberVerifiedSelector)
 
   const dispatch = useDispatch()
-  const addCKESBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const addCCOPBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   useEffect(() => {
     dispatch(visitHome())
@@ -102,22 +103,21 @@ function TabHome(_props: Props) {
     }
   }, [appState])
 
-  const cCCOPToken = useCCOP()
-  const USDToken = useUSDT()
+  const cCCOPToken: any = useCCOP()
+  const USDTToken = useUSDT()
 
-  function onPressAddCKES() {
-    AppAnalytics.track(TabHomeEvents.add_ckes)
-    if (USDToken?.balance.isZero()) {
+  const onPressAddCCOP = React.useCallback(() => {
+    if (USDTToken?.balance.isZero()) {
       !!cCCOPToken &&
         navigate(Screens.FiatExchangeAmount, {
-          tokenId: cCCOPToken.tokenId,
+          tokenId: cCCOPToken.tokenId || CCOP_TOKEN_ID_MAINNET,
           flow: CICOFlow.CashIn,
           tokenSymbol: cCCOPToken.symbol,
         })
     } else {
-      addCKESBottomSheetRef.current?.snapToIndex(0)
+      addCCOPBottomSheetRef.current?.snapToIndex(0)
     }
-  }
+  }, [cCCOPToken.tokenId, USDTToken?.tokenId])
 
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
@@ -137,10 +137,10 @@ function TabHome(_props: Props) {
   function onPressHoldUSD() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
     !!cCCOPToken &&
-      !!USDToken &&
+      !!USDTToken &&
       navigate(Screens.SwapScreenWithBack, {
         fromTokenId: cCCOPToken.tokenId,
-        toTokenId: USDToken.tokenId,
+        toTokenId: USDTToken.tokenId,
       })
   }
 
@@ -212,7 +212,7 @@ function TabHome(_props: Props) {
           </View>
         </View>
 
-        <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCKES}>
+        <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCCOP}>
           <View style={styles.column}>
             <AddCCOP />
             <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
@@ -235,7 +235,7 @@ function TabHome(_props: Props) {
           </View>
         </FlatCard>
       </View>
-      <AddCCOPBottomSheet forwardedRef={addCKESBottomSheetRef} />
+      <AddCCOPBottomSheet forwardedRef={addCCOPBottomSheetRef} />
     </SafeAreaView>
   )
 }
@@ -271,14 +271,14 @@ function AddCCOPBottomSheet({
 }) {
   const { t } = useTranslation()
   const cCCOPToken = useCCOP()
-  const USDToken = useUSDT()
+  const USDTToken = useUSDT()
 
   function onPressSwapFromCusd() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
-    !!USDToken &&
+    !!USDTToken &&
       !!cCCOPToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: USDToken.tokenId,
+        fromTokenId: USDTToken.tokenId,
         toTokenId: cCCOPToken.tokenId,
       })
     forwardedRef.current?.dismiss()
