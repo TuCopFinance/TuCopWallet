@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
@@ -43,6 +43,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useCashOutTokens, useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
+import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -54,7 +55,7 @@ function TabHome(_props: Props) {
   const isNumberVerified = useSelector(phoneNumberVerifiedSelector)
 
   const dispatch = useDispatch()
-  const addCKESBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const addCCOPBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   useEffect(() => {
     dispatch(visitHome())
@@ -102,22 +103,21 @@ function TabHome(_props: Props) {
     }
   }, [appState])
 
-  const cCCOPToken = useCCOP()
-  const USDToken = useUSDT()
+  const cCCOPToken: any = useCCOP()
+  const USDTToken = useUSDT()
 
-  function onPressAddCKES() {
-    AppAnalytics.track(TabHomeEvents.add_ckes)
-    if (USDToken?.balance.isZero()) {
+  const onPressAddCCOP = React.useCallback(() => {
+    if (USDTToken?.balance.isZero()) {
       !!cCCOPToken &&
         navigate(Screens.FiatExchangeAmount, {
-          tokenId: cCCOPToken.tokenId,
+          tokenId: cCCOPToken.tokenId || CCOP_TOKEN_ID_MAINNET,
           flow: CICOFlow.CashIn,
           tokenSymbol: cCCOPToken.symbol,
         })
     } else {
-      addCKESBottomSheetRef.current?.snapToIndex(0)
+      addCCOPBottomSheetRef.current?.snapToIndex(0)
     }
-  }
+  }, [cCCOPToken.tokenId, USDTToken?.tokenId])
 
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
@@ -137,10 +137,10 @@ function TabHome(_props: Props) {
   function onPressHoldUSD() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
     !!cCCOPToken &&
-      !!USDToken &&
+      !!USDTToken &&
       navigate(Screens.SwapScreenWithBack, {
         fromTokenId: cCCOPToken.tokenId,
-        toTokenId: USDToken.tokenId,
+        toTokenId: USDTToken.tokenId,
       })
   }
 
@@ -191,51 +191,57 @@ function TabHome(_props: Props) {
         </View>
       </View>
 
-      <View style={styles.containerShadow}>
-        <View style={styles.row}>
-          <View style={styles.flex}>
-            <FlatCard type="primary" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
-              <View style={styles.row}>
-                <Send />
-                <Text style={styles.textWhite}>{t('tabHome.sendMoney')}</Text>
-              </View>
-            </FlatCard>
-          </View>
-
-          <View style={styles.flex}>
-            <FlatCard type="primary" testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
-              <View style={styles.row}>
-                <ArrowVertical />
-                <Text style={styles.textWhite}>{t('tabHome.receiveMoney')}</Text>
-              </View>
-            </FlatCard>
-          </View>
-        </View>
-
-        <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCKES}>
-          <View style={styles.column}>
-            <AddCCOP />
-            <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
-          </View>
-        </FlatCard>
-
-        <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+      <ScrollView
+        style={styles.scrollStyle}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.containerShadow}>
           <View style={styles.row}>
-            <Swap />
             <View style={styles.flex}>
-              <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
-              <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+              <FlatCard type="primary" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
+                <View style={styles.row}>
+                  <Send />
+                  <Text style={styles.textWhite}>{t('tabHome.sendMoney')}</Text>
+                </View>
+              </FlatCard>
+            </View>
+
+            <View style={styles.flex}>
+              <FlatCard type="primary" testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
+                <View style={styles.row}>
+                  <ArrowVertical />
+                  <Text style={styles.textWhite}>{t('tabHome.receiveMoney')}</Text>
+                </View>
+              </FlatCard>
             </View>
           </View>
-        </FlatCard>
-        <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
-          <View style={styles.row}>
-            <Withdraw />
-            <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
-          </View>
-        </FlatCard>
-      </View>
-      <AddCCOPBottomSheet forwardedRef={addCKESBottomSheetRef} />
+
+          <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCCOP}>
+            <View style={styles.column}>
+              <AddCCOP />
+              <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
+            </View>
+          </FlatCard>
+
+          <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+            <View style={styles.row}>
+              <Swap />
+              <View style={styles.flex}>
+                <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
+                <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+              </View>
+            </View>
+          </FlatCard>
+          <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+            <View style={styles.row}>
+              <Withdraw />
+              <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
+            </View>
+          </FlatCard>
+        </View>
+      </ScrollView>
+      <AddCCOPBottomSheet forwardedRef={addCCOPBottomSheetRef} />
     </SafeAreaView>
   )
 }
@@ -271,14 +277,14 @@ function AddCCOPBottomSheet({
 }) {
   const { t } = useTranslation()
   const cCCOPToken = useCCOP()
-  const USDToken = useUSDT()
+  const USDTToken = useUSDT()
 
   function onPressSwapFromCusd() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
-    !!USDToken &&
+    !!USDTToken &&
       !!cCCOPToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: USDToken.tokenId,
+        fromTokenId: USDTToken.tokenId,
         toTokenId: cCCOPToken.tokenId,
       })
     forwardedRef.current?.dismiss()
@@ -334,14 +340,33 @@ function AddCCOPBottomSheet({
 }
 
 const styles = StyleSheet.create({
+  scrollStyle: {
+    flex: 1,
+    marginHorizontal: -variables.contentPadding,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: variables.contentPadding,
+  },
+  containerShadow: {
+    flex: 1,
+    borderTopRightRadius: 33,
+    padding: 22,
+    paddingTop: 30,
+    borderColor: 'rgba(190, 201, 255, 0.33)',
+    borderWidth: 1,
+    marginLeft: -17,
+    marginRight: -17,
+    backgroundColor: 'white',
+    gap: 17,
+  },
   container: {
     flex: 1,
-    // Padding applied to the content of the screen on sides and top
-    // No padding applied to the bottom by default incase of a scrollable screen
     paddingHorizontal: variables.contentPadding,
     paddingTop: variables.contentPadding,
     position: 'relative',
     gap: Spacing.Regular16,
+    backgroundColor: 'white',
   },
   flatCard: {
     backgroundColor: 'white',
@@ -411,19 +436,7 @@ const styles = StyleSheet.create({
     ...typeScale.bodyLarge,
     color: Colors.secondary,
   },
-  containerShadow: {
-    borderTopRightRadius: 33,
-    padding: 22,
-    paddingTop: 30,
-    borderColor: 'rgba(190, 201, 255, 0.33)',
-    borderWidth: 1,
-    marginLeft: -17,
-    marginRight: -17,
-    height: '100%',
-    display: 'flex',
-    flexGrow: 1,
-    gap: 17,
-  },
+
   shadow: {
     width: '100%',
     borderRadius: 15,

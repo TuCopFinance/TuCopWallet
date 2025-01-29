@@ -88,7 +88,6 @@ interface NetworkConfig {
   celoTokenAddress: Address
   celoGasPriceMinimumAddress: Address
   alchemyRpcUrl: Record<Exclude<Network, Network.Celo>, string>
-  cusdTokenId: string
   usdtTokenId: string
   ccopTokenId: string
   ceurTokenId: string
@@ -160,12 +159,12 @@ const CKES_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x456a3d042c0dbd3db5
 
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
-// TODO: cambiar token al contrato correcto tanto en mainnet como en staging
+
 const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72BD25A935E9762397ed41eF67`
 const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
-// TODO: cambiar token al contrato correcto tanto en mainnet como en staging
+
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
-const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x617f3112bf5397d0467d315cc709ef968d9ba546`
+const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
 
 const ARB_USDC_TOKEN_ID_STAGING = `${NetworkId['arbitrum-sepolia']}:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d`
 const ARB_USDC_TOKEN_ID_MAINNET = `${NetworkId['arbitrum-one']}:0xaf88d065e77c8cc2239327c5edb3a432268e5831`
@@ -423,7 +422,6 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [Network.PolygonPoS]: ALCHEMY_POLYGON_POS_RPC_URL_STAGING,
       [Network.Base]: ALCHEMY_BASE_RPC_URL_STAGING,
     },
-    cusdTokenId: CUSD_TOKEN_ID_STAGING,
     ceurTokenId: CEUR_TOKEN_ID_STAGING,
     crealTokenId: CREAL_TOKEN_ID_STAGING,
     celoTokenId: CELO_TOKEN_ID_STAGING,
@@ -530,7 +528,6 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [Network.PolygonPoS]: ALCHEMY_POLYGON_POS_RPC_URL_MAINNET,
       [Network.Base]: ALCHEMY_BASE_RPC_URL_MAINNET,
     },
-    cusdTokenId: CUSD_TOKEN_ID_MAINNET,
     ceurTokenId: CEUR_TOKEN_ID_MAINNET,
     crealTokenId: CREAL_TOKEN_ID_MAINNET,
     celoTokenId: CELO_TOKEN_ID_MAINNET,
@@ -686,5 +683,7 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
 }
 
 Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
+
+export { CCOP_TOKEN_ID_MAINNET }
 
 export default networkConfigs[DEFAULT_TESTNET]
