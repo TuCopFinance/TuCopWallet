@@ -9,16 +9,9 @@ import DevSkipButton from 'src/components/DevSkipButton'
 import TextButton from 'src/components/TextButton'
 import Touchable from 'src/components/Touchable'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
-import EarnCoins from 'src/icons/EarnCoins'
 import PlusIcon from 'src/icons/PlusIcon'
-import ProfilePlus from 'src/icons/ProfilePlus'
-import LogoHeart from 'src/images/LogoHeart'
 import { nuxNavigationOptionsNoBackButton } from 'src/navigator/Headers'
-import {
-  navigate,
-  navigateHome,
-  navigateHomeAndThenToScreen,
-} from 'src/navigator/NavigationService'
+import { navigate, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { AdventureCardName } from 'src/onboarding/types'
 import { useSelector } from 'src/redux/hooks'
@@ -75,30 +68,30 @@ function ChooseYourAdventure() {
       icon: <PlusIcon />,
       name: AdventureCardName.Add,
     },
-    {
-      text: t('chooseYourAdventure.options.earn'),
-      goToNextScreen: () => {
-        navigateHomeAndThenToScreen(Screens.EarnInfoScreen)
-      },
-      icon: <EarnCoins color={colors.black} />,
-      name: AdventureCardName.Earn,
-    },
-    {
-      text: t('chooseYourAdventure.options.profile'),
-      goToNextScreen: () => {
-        navigateHomeAndThenToScreen(Screens.Profile)
-      },
-      icon: <ProfilePlus />,
-      name: AdventureCardName.Profile,
-    },
-    {
-      text: t('chooseYourAdventure.options.learnPoints'),
-      goToNextScreen: () => {
-        navigateHomeAndThenToScreen(Screens.PointsIntro)
-      },
-      icon: <LogoHeart size={Spacing.Thick24} color={colors.black} />,
-      name: AdventureCardName.LearnPoints,
-    },
+    // {
+    //   text: t('chooseYourAdventure.options.earn'),
+    //   goToNextScreen: () => {
+    //     navigateHomeAndThenToScreen(Screens.EarnInfoScreen)
+    //   },
+    //   icon: <EarnCoins color={colors.black} />,
+    //   name: AdventureCardName.Earn,
+    // },
+    // {
+    //   text: t('chooseYourAdventure.options.profile'),
+    //   goToNextScreen: () => {
+    //     navigateHomeAndThenToScreen(Screens.Profile)
+    //   },
+    //   icon: <ProfilePlus />,
+    //   name: AdventureCardName.Profile,
+    // },
+    // {
+    //   text: t('chooseYourAdventure.options.learnPoints'),
+    //   goToNextScreen: () => {
+    //     navigateHomeAndThenToScreen(Screens.PointsIntro)
+    //   },
+    //   icon: <LogoHeart size={Spacing.Thick24} color={colors.black} />,
+    //   name: AdventureCardName.LearnPoints,
+    // },
   ]
 
   const shuffledCardDetails = useMemo(() => {
