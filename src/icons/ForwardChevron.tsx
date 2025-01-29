@@ -9,18 +9,9 @@ interface Props {
 
 function ForwardChevron({ color, height }: Props) {
   return (
-    <Svg
-      height={height}
-      width={height / 2}
-      viewBox="0 0 8 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      testID="ForwardChevron"
-    >
+    <Svg width={height / 2} height={height} viewBox="0 0 14 27" fill="none">
       <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M.293.293a1 1 0 0 1 1.414 0l6 6a1 1 0 0 1 0 1.414l-6 6a1 1 0 0 1-1.414-1.414L5.586 7 .293 1.707a1 1 0 0 1 0-1.414Z"
+        d="M13.7099 14.2385L1.70421 26.7071C1.30403 27.1089 0.676985 27.095 0.290137 26.6794C-0.0833726 26.2777 -0.0833726 25.6404 0.290137 25.2386L11.5888 13.5042L0.290137 1.76985C-0.0967122 1.36808 -0.0967122 0.703093 0.290137 0.301326C0.676985 -0.100442 1.31736 -0.100442 1.70421 0.301326L13.7099 12.77C14.0967 13.1717 14.0967 13.8367 13.7099 14.2385Z"
         fill={color}
       />
     </Svg>
