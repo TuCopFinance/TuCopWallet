@@ -49,6 +49,10 @@
 
     <meta-data android:name="CLEVERTAP_BACKGROUND_SYNC" android:value="1"/>
 
+    <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
+
     <service android:name=".FirebaseMessagingService" android:exported="true">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT"/>
