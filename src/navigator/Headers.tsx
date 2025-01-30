@@ -9,6 +9,7 @@ import CurrencyDisplay from 'src/components/CurrencyDisplay'
 import LegacyTokenDisplay from 'src/components/LegacyTokenDisplay'
 import QrScanButton from 'src/components/QrScanButton'
 import SettingsGearButton from 'src/components/SettingsGearButton'
+import ShopTokensButton from 'src/components/ShopTokensButton'
 import TokenDisplay from 'src/components/TokenDisplay'
 import i18n from 'src/i18n'
 import Logo from 'src/images/Logo'
@@ -48,8 +49,6 @@ export const styles = StyleSheet.create({
   topElementsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 36,
-    paddingBottom: 16,
   },
 })
 
@@ -229,6 +228,7 @@ export const tabHeader: NativeStackNavigationOptions = {
   headerRight: () => {
     return (
       <View style={[styles.topElementsContainer, { marginRight: Spacing.Tiny4 }]}>
+        <ShopTokensButton testID="TabHeader/ShopTokenButton" />
         <QrScanButton testID="TabHeader/QRScanButton" />
         <SettingsGearButton testID="TabHeader/SettingsGearButton" />
       </View>

@@ -24,6 +24,13 @@
 		67911AC6D310414DAAC1498E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F5FA21E7EC46BBB744FE54 /* libz.tbd */; };
 		AB1661209DEA6E5BBD9BEDDE /* Pods_MobileStack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EDE6F6B79A9EBECD2E75DE05 /* Pods_MobileStack.framework */; };
 		B986845D4124CAF56EB14C7F /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B11FD0527A58E309137144D /* Pods_NotificationService.framework */; };
+		23056157C2D44DA195A5FADE /* RedHatDisplayBlack.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0D8E4F0377D494DA72D86A6 /* RedHatDisplayBlack.ttf */; };
+		56AD74CA0B574217B03B4076 /* RedHatDisplayBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4B31729B0BDE448DB29FDD7F /* RedHatDisplayBold.ttf */; };
+		4E833046DB86492389C718BC /* RedHatDisplayExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C838D7BAA2C34FA9B6A0A6FF /* RedHatDisplayExtraBold.ttf */; };
+		4AD4BDAC34434266972C791A /* RedHatDisplayLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6EFE0798ADE48B9B0A97143 /* RedHatDisplayLight.ttf */; };
+		23572DD74E784E24ABD3A672 /* RedHatDisplayMedium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D436B9AC7844F38ACD5EAA7 /* RedHatDisplayMedium.ttf */; };
+		2C1FE3A408B04A73B70C681B /* RedHatDisplayRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F72B47CCE61849B2ACFD58A4 /* RedHatDisplayRegular.ttf */; };
+		458D235666434BB3A94FAA0E /* RedHatDisplaySemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC132757ED074D838518011C /* RedHatDisplaySemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +98,13 @@
 		E47888B929494AC100308F07 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EDE6F6B79A9EBECD2E75DE05 /* Pods_MobileStack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MobileStack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3F5FA21E7EC46BBB744FE54 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		C0D8E4F0377D494DA72D86A6 /* RedHatDisplayBlack.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayBlack.ttf"; path = "../fonts/RedHatDisplayBlack.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		4B31729B0BDE448DB29FDD7F /* RedHatDisplayBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayBold.ttf"; path = "../fonts/RedHatDisplayBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C838D7BAA2C34FA9B6A0A6FF /* RedHatDisplayExtraBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayExtraBold.ttf"; path = "../fonts/RedHatDisplayExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		B6EFE0798ADE48B9B0A97143 /* RedHatDisplayLight.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayLight.ttf"; path = "../fonts/RedHatDisplayLight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		5D436B9AC7844F38ACD5EAA7 /* RedHatDisplayMedium.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayMedium.ttf"; path = "../fonts/RedHatDisplayMedium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F72B47CCE61849B2ACFD58A4 /* RedHatDisplayRegular.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayRegular.ttf"; path = "../fonts/RedHatDisplayRegular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		DC132757ED074D838518011C /* RedHatDisplaySemiBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplaySemiBold.ttf"; path = "../fonts/RedHatDisplaySemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +218,13 @@
 				270B61A62C6A3A2600979913 /* Inter-Regular.ttf */,
 				270B61A42C6A3A2600979913 /* Inter-SemiBold.ttf */,
 				270B61A22C6A3A0C00979913 /* Inter-Bold.ttf */,
+				C0D8E4F0377D494DA72D86A6 /* RedHatDisplayBlack.ttf */,
+				4B31729B0BDE448DB29FDD7F /* RedHatDisplayBold.ttf */,
+				C838D7BAA2C34FA9B6A0A6FF /* RedHatDisplayExtraBold.ttf */,
+				B6EFE0798ADE48B9B0A97143 /* RedHatDisplayLight.ttf */,
+				5D436B9AC7844F38ACD5EAA7 /* RedHatDisplayMedium.ttf */,
+				F72B47CCE61849B2ACFD58A4 /* RedHatDisplayRegular.ttf */,
+				DC132757ED074D838518011C /* RedHatDisplaySemiBold.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -337,6 +358,13 @@
 				0FC6C310256FEF2700C35F47 /* InfoPlist.strings in Resources */,
 				27DBFF6B2BDA6EED00863BC5 /* PrivacyInfo.xcprivacy in Resources */,
 				270B61A72C6A3A2600979913 /* Inter-SemiBold.ttf in Resources */,
+				23056157C2D44DA195A5FADE /* RedHatDisplayBlack.ttf in Resources */,
+				56AD74CA0B574217B03B4076 /* RedHatDisplayBold.ttf in Resources */,
+				4E833046DB86492389C718BC /* RedHatDisplayExtraBold.ttf in Resources */,
+				4AD4BDAC34434266972C791A /* RedHatDisplayLight.ttf in Resources */,
+				23572DD74E784E24ABD3A672 /* RedHatDisplayMedium.ttf in Resources */,
+				2C1FE3A408B04A73B70C681B /* RedHatDisplayRegular.ttf in Resources */,
+				458D235666434BB3A94FAA0E /* RedHatDisplaySemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,12 +436,17 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseInstallations/FirebaseInstallations_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseMessaging/FirebaseMessaging_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseRemoteConfig/FirebaseRemoteConfig_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GTMSessionFetcher/GTMSessionFetcher_Core_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleDataTransport/GoogleDataTransport_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities/GoogleUtilities_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNDeviceInfo/RNDeviceInfoPrivacyInfo.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/Sentry/Sentry.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Toast/Toast.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/leveldb-library/leveldb_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/nanopb/nanopb_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/react-native-cookies/RNCookiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -431,12 +464,17 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseInstallations_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseMessaging_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FirebaseRemoteConfig_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GTMSessionFetcher_Core_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleDataTransport_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleUtilities_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNDeviceInfoPrivacyInfo.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Sentry.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Toast.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/leveldb_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/nanopb_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCookiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -479,11 +517,13 @@
 				"${PODS_ROOT}/Target Support Files/Pods-NotificationService/Pods-NotificationService-resources.sh",
 				"${PODS_ROOT}/CleverTap-iOS-SDK/CleverTapSDK/AmazonRootCA1.cer",
 				"${PODS_CONFIGURATION_BUILD_DIR}/CleverTap-iOS-SDK/CleverTapSDK.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/CTNotificationService/CTNotificationService.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AmazonRootCA1.cer",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/CleverTapSDK.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/CTNotificationService.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

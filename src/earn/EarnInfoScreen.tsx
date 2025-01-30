@@ -11,8 +11,6 @@ import ArrowDown from 'src/icons/ArrowDown'
 import CircledIcon from 'src/icons/CircledIcon'
 import EarnCoins from 'src/icons/EarnCoins'
 import Manage from 'src/icons/Manage'
-import Blob from 'src/images/Blob'
-import Palm from 'src/images/Palm'
 import { headerWithCloseButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -110,20 +108,6 @@ export default function EarnInfoScreen() {
           size={BtnSizes.FULL}
         />
       </View>
-      <Blob
-        style={{
-          position: 'absolute',
-          left: 53,
-          zIndex: -1,
-        }}
-      />
-      <Palm
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          zIndex: -1,
-        }}
-      />
     </SafeAreaView>
   )
 }
