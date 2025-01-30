@@ -71,6 +71,8 @@ async function fetchHooks<T>(
     throw new Error(`Unable to fetch ${url}: ${response.status} ${response.statusText}`)
   }
   const json = await response.json()
+
+  Logger.debug('response fetch hooks', json.data)
   return json.data as T
 }
 
@@ -107,6 +109,8 @@ async function fetchPositions({
     fetchHooks<Position[]>(getPositionsUrl.toString(), options),
     fetchHooks<Position[]>(getEarnPositionsUrl.toString(), options),
   ])
+
+  Logger.debug(TAG, 'Fetched positions', { walletPositions, earnPositions })
 
   const positionIds = new Set()
   const positions: Position[] = []

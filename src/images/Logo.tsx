@@ -6,6 +6,7 @@ interface Props {
   style?: ViewStyle
   testID?: string
   size?: number
+  color?: string
 }
 
 export default function Logo({ style, testID }: Props) {

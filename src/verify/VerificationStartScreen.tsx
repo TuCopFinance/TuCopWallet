@@ -94,7 +94,7 @@ function VerificationStartScreen({
     navigate(Screens.VerificationCodeInputScreen, {
       registrationStep: showSteps ? { step, totalSteps } : undefined,
       e164Number: phoneNumberInfo.e164Number,
-      countryCallingCode: country?.countryCallingCode || '',
+      countryCallingCode: country?.countryCallingCode || '+57',
       verificationCompletionScreen,
     })
   }

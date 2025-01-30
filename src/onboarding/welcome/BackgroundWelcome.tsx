@@ -16,14 +16,7 @@ const BackgroundWelcome = ({ style }: any) => {
   return (
     <Svg width="100%" height="100%" fill="none" preserveAspectRatio="xMidYMid meet" style={style}>
       <G clip-path="url(#clip0_2051_242)">
-        <Rect
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
-          fill="url(#paint0_radial_2051_242)"
-          filter="url(#blur)"
-        />
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#paint0_radial_2051_242)" />
         <G clip-path="url(#clip1_2051_242)">
           <Path
             d="M399.967 329.439L399.967 242.976L228.811 242.976C105.727 242.976 0.807278 328.179 -0.741374 486.312L-0.741378 572.774L170.737 572.774C293.821 572.774 398.709 487.571 399.967 329.439ZM79.3358 486.312C79.3358 421.876 110.438 329.439 236.038 329.439L319.89 329.439C319.89 394.197 289.111 486.312 163.188 486.312L79.3358 486.312Z"

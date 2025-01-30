@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
@@ -57,8 +57,16 @@ function TabHome(_props: Props) {
   const dispatch = useDispatch()
   const addCCOPBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
+  const [refreshing, setRefreshing] = React.useState(false)
+
   useEffect(() => {
     dispatch(visitHome())
+  }, [])
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true)
+    dispatch(refreshAllBalances())
+    setRefreshing(false)
   }, [])
 
   const showTestnetBanner = () => {
@@ -144,6 +152,10 @@ function TabHome(_props: Props) {
       })
   }
 
+  function onPressEarn() {
+    navigate(Screens.EarnHome)
+  }
+
   const cashOutTokens = useCashOutTokens(true)
 
   function onPressWithdraw() {
@@ -195,6 +207,13 @@ function TabHome(_props: Props) {
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+          />
+        }
       >
         <View style={styles.containerShadow}>
           <View style={styles.row}>
@@ -233,6 +252,14 @@ function TabHome(_props: Props) {
               </View>
             </View>
           </FlatCard>
+
+          <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
+            <View style={styles.row}>
+              <Withdraw />
+              <Text style={styles.ctaText}>Invierte tus dolares</Text>
+            </View>
+          </FlatCard>
+
           <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
             <View style={styles.row}>
               <Withdraw />

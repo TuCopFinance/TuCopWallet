@@ -5,6 +5,7 @@ import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native'
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { DappFeaturedActions } from 'src/dappsExplorer/DappFeaturedActions'
+import EarnEntrypoint from 'src/earn/EarnEntrypoint'
 import { Screens } from 'src/navigator/Screens'
 import useScrollAwareHeader from 'src/navigator/ScrollAwareHeader'
 import { StackParamList } from 'src/navigator/types'
@@ -48,8 +49,8 @@ function TabDiscover({ navigation }: Props) {
             {t('bottomTabsNavigator.discover.title')}
           </Text>
           <DappFeaturedActions />
-          {/* <PointsDiscoverCard />
           <EarnEntrypoint />
+          {/* <PointsDiscoverCard />
           <DiscoverDappsCard /> */}
         </View>
       </SafeAreaView>

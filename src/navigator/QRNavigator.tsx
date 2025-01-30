@@ -5,7 +5,7 @@ import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigatio
 import React, { useEffect, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Dimensions, Platform, StatusBar, StyleSheet, View } from 'react-native'
+import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { PERMISSIONS, RESULTS, check } from 'react-native-permissions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { QrScreenEvents } from 'src/analytics/Events'
@@ -24,8 +24,6 @@ import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
 
 const Tab = createBottomTabNavigator()
-
-const width = Dimensions.get('window').width
 
 export type QRCodeProps = NativeStackScreenProps<QRTabParamList, Screens.QRCode> & {
   qrSvgRef: React.MutableRefObject<SVG>

@@ -166,7 +166,7 @@ export const OTA_TRANSLATIONS_FILEPATH = `file://${CachesDirectoryPath}/translat
 
 export const FETCH_TIMEOUT_DURATION = 15000 // 15 seconds
 
-export const DEFAULT_APP_LANGUAGE = 'es-EN'
+export const DEFAULT_APP_LANGUAGE = 'es-LA'
 
 export const ZENDESK_PROJECT_NAME = 'tucopwallet'
 

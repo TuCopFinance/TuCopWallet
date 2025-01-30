@@ -1,13 +1,14 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import { HideBalanceButton } from 'src/components/TokenBalance'
+import { refreshAllBalances } from 'src/home/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { useSelector } from 'src/redux/hooks'
+import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -18,6 +19,15 @@ import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
 
 function TabWallet() {
+  const dispatch = useDispatch()
+  const [refreshing, setRefreshing] = React.useState(false)
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true)
+    dispatch(refreshAllBalances())
+    setRefreshing(false)
+  }, [])
+
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const { decimalSeparator } = getNumberFormatSettings()
@@ -42,7 +52,16 @@ function TabWallet() {
         </Text>
         <HideBalanceButton hideBalance={hideWalletBalances} />
       </View>
-      <ScrollView contentContainerStyle={styles.contentContainerStyle}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainerStyle}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+          />
+        }
+      >
         {tokens.map((token, index) => (
           <TokenBalanceItem
             token={token}
