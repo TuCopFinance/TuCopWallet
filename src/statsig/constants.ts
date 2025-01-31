@@ -130,8 +130,15 @@ export const DynamicConfigs = {
   [StatsigDynamicConfigs.EARN_CONFIG]: {
     configName: StatsigDynamicConfigs.EARN_CONFIG,
     defaultValues: {
-      supportedPools: [] as string[],
-      supportedAppIds: [] as string[],
+      supportedPools: [
+        `${NetworkId['arbitrum-one']}:0x724dc807b04555b71ed48a6896b6f41593b8c637`,
+        `${NetworkId['arbitrum-sepolia']}:0x460b97bd498e1157530aeb3086301d5225b91216`,
+        // Allbridge USDT
+        `${NetworkId['celo-mainnet']}:0xfb2c7c10e731ebe96dabdf4a96d656bfe8e2b5af`,
+        // Somm Real Yield ETH
+        `${NetworkId['op-mainnet']}:0xc47bb288178ea40bf520a91826a3dee9e0dbfa4c`,
+      ],
+      supportedAppIds: ['aave', 'allbridge'],
     },
   },
 } satisfies {

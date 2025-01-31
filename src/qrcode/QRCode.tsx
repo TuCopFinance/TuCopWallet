@@ -2,7 +2,6 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { nameSelector } from 'src/account/selectors'
 import Button, { BtnSizes } from 'src/components/Button'
 import ExchangesBottomSheet from 'src/components/ExchangesBottomSheet'
@@ -37,8 +36,6 @@ export default function QRCodeDisplay(props: Props) {
   const { exchanges, qrSvgRef } = props
   const address = useSelector(walletAddressSelector)
   const displayName = useSelector(nameSelector)
-
-  const insets = useSafeAreaInsets()
 
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false)
 

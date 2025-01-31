@@ -12,6 +12,7 @@ import { SettingsItemTextValue } from 'src/components/SettingsItem'
 import Lock from 'src/icons/Lock'
 import Preferences from 'src/icons/Preferences'
 import Stack from 'src/icons/Stack'
+import User from 'src/icons/User'
 import Help from 'src/icons/navigator/Help'
 import Wallet from 'src/icons/navigator/Wallet'
 import MSLogoFull from 'src/images/MSLogoFull'
@@ -52,6 +53,17 @@ export default function SettingsMenu() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <SettingsItemTextValue
+          icon={<User size={24} color={Colors.black} />}
+          title={t('profile')}
+          onPress={() => navigate(Screens.ProfileSubmenu)}
+          testID="SettingsMenu/Profile"
+          showChevron
+          borderless
+        />
+
+        <GradientBlock style={styles.divider} colors={[Colors.gray2, Colors.gray2]} />
+
         <SettingsItemTextValue
           icon={<Wallet size={24} color={Colors.black} />}
           title={t('address')}

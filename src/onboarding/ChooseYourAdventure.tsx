@@ -12,7 +12,6 @@ import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import EarnCoins from 'src/icons/EarnCoins'
 import PlusIcon from 'src/icons/PlusIcon'
 import ProfilePlus from 'src/icons/ProfilePlus'
-import LogoHeart from 'src/images/LogoHeart'
 import { nuxNavigationOptionsNoBackButton } from 'src/navigator/Headers'
 import {
   navigate,
@@ -91,14 +90,14 @@ function ChooseYourAdventure() {
       icon: <ProfilePlus />,
       name: AdventureCardName.Profile,
     },
-    {
-      text: t('chooseYourAdventure.options.learnPoints'),
-      goToNextScreen: () => {
-        navigateHomeAndThenToScreen(Screens.PointsIntro)
-      },
-      icon: <LogoHeart size={Spacing.Thick24} color={colors.black} />,
-      name: AdventureCardName.LearnPoints,
-    },
+    // {
+    //   text: t('chooseYourAdventure.options.learnPoints'),
+    //   goToNextScreen: () => {
+    //     navigateHomeAndThenToScreen(Screens.PointsIntro)
+    //   },
+    //   icon: <LogoHeart size={Spacing.Thick24} color={colors.black} />,
+    //   name: AdventureCardName.LearnPoints,
+    // },
   ]
 
   const shuffledCardDetails = useMemo(() => {

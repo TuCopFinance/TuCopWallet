@@ -31,7 +31,7 @@ function OnboardingSuccessScreen() {
   return (
     <View style={styles.container}>
       <Image source={background} style={styles.backgroundImage} />
-      <Logo color={colors.white} size={70} />
+      <Logo size={70} />
       <Text style={styles.text}>{t('success.message')}</Text>
     </View>
   )

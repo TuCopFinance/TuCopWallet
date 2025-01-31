@@ -1,20 +1,16 @@
-import locales from 'locales'
 import React, { useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { Dimensions } from 'react-native'
-import { findBestLanguageTag } from 'react-native-localize'
-import { AppEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { AppEvents } from 'src/analytics/Events'
 import { appMounted, appUnmounted } from 'src/app/actions'
-import { isE2EEnv } from 'src/config'
 import i18n from 'src/i18n'
 import { currentLanguageSelector } from 'src/i18n/selectors'
-import useChangeLanguage from 'src/i18n/useChangeLanguage'
+import { setLanguage } from 'src/i18n/slice'
 import { navigateToError } from 'src/navigator/NavigationService'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { waitUntilSagasFinishLoading } from 'src/redux/sagas'
 import Logger from 'src/utils/Logger'
-
 const TAG = 'AppInitGate'
 
 interface Props {
@@ -24,11 +20,9 @@ interface Props {
 }
 
 const AppInitGate = ({ appStartedMillis, reactLoadTime, children }: Props) => {
-  const changelanguage = useChangeLanguage()
   const dispatch = useDispatch()
 
   const language = useSelector(currentLanguageSelector)
-  const bestLanguage = !isE2EEnv ? findBestLanguageTag(Object.keys(locales))?.languageTag : 'en-US'
 
   useEffect(() => {
     return () => {
@@ -41,9 +35,10 @@ const AppInitGate = ({ appStartedMillis, reactLoadTime, children }: Props) => {
       Logger.debug(TAG, 'Starting AppInitGate init')
       await waitUntilSagasFinishLoading()
 
-      if (!language && bestLanguage) {
-        await changelanguage(bestLanguage)
-      }
+      dispatch(setLanguage('es-419'))
+      i18n.changeLanguage('es-419' as string).catch((e) => {
+        Logger.error(TAG, 'Failed to change language', e)
+      })
 
       const reactLoadDuration = (reactLoadTime - appStartedMillis) / 1000
       const appLoadDuration = (Date.now() - appStartedMillis) / 1000
@@ -58,7 +53,7 @@ const AppInitGate = ({ appStartedMillis, reactLoadTime, children }: Props) => {
         language: i18n.language || language,
       })
 
-      Logger.debug(TAG, 'AppInitGate init completed')
+      Logger.debug(TAG, 'AppInitGate init completed', language)
       dispatch(appMounted())
     },
     [],
