@@ -30,7 +30,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string></string>
+			<string/>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>$(DEEP_LINK_URL_SCHEME)</string>
@@ -90,6 +90,7 @@
 		<string>RedHatDisplayMedium.ttf</string>
 		<string>RedHatDisplayRegular.ttf</string>
 		<string>RedHatDisplaySemiBold.ttf</string>
+		<string>RedHatDisplayBold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

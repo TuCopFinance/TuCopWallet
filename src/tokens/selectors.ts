@@ -403,9 +403,13 @@ export const swappableToTokensByNetworkIdSelector = createSelector(
   }
 )
 
+// export const cashInTokensByNetworkIdSelector = createSelector(
+//   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
+//   (tokens) => tokens.filter((tokenInfo) => tokenInfo.isCashInEligible)
+// )
 export const cashInTokensByNetworkIdSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
-  (tokens) => tokens.filter((tokenInfo) => tokenInfo.isCashInEligible)
+  (tokens) => tokens
 )
 
 export const cashOutTokensByNetworkIdSelector = createSelector(

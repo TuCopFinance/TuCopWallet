@@ -35,7 +35,7 @@ const mockSentTransaction: TokenTransfer = {
   type: TokenTransactionTypeV2.Sent,
   amount: {
     value: '1',
-    tokenId: networkConfig.cusdTokenId,
+    tokenId: networkConfig.ccopTokenId,
   },
   transactionHash: '0x123',
   timestamp: Date.now(),
@@ -52,7 +52,7 @@ const mockReceivedTransaction: TokenTransfer = {
   type: TokenTransactionTypeV2.Received,
   amount: {
     value: '1',
-    tokenId: networkConfig.ckesTokenId,
+    tokenId: networkConfig.ccopTokenId,
   },
 }
 
@@ -60,11 +60,11 @@ const mockSwapTransaction: TokenExchange = {
   type: TokenTransactionTypeV2.SwapTransaction,
   inAmount: {
     value: '1',
-    tokenId: networkConfig.cusdTokenId,
+    tokenId: networkConfig.ccopTokenId,
   },
   outAmount: {
     value: '1',
-    tokenId: networkConfig.ckesTokenId,
+    tokenId: networkConfig.usdtTokenId,
   },
   transactionHash: '0x123',
   timestamp: Date.now(),
@@ -289,7 +289,7 @@ describe('handlePollResponse', () => {
 
 describe('isTransactionEligible', () => {
   it.each([
-    { ...mockApprovalTransaction, tokenId: networkConfig.cusdTokenId },
+    { ...mockApprovalTransaction, tokenId: networkConfig.ccopTokenId },
     mockSentTransaction,
     mockReceivedTransaction,
     mockSwapTransaction,

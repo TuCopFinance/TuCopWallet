@@ -8,9 +8,7 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 34
         targetSdkVersion = 34
-        supportLibVersion = "31.0.0"
         kotlinVersion = "1.9.20"
-        // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
         ndkVersion = "23.1.7779620"
     }
     repositories {
@@ -18,14 +16,17 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle"
+        classpath "com.android.tools.build:gradle:7.4.2"
         classpath "com.facebook.react:react-native-gradle-plugin"
-        classpath "com.google.gms:google-services:4.3.15"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlinVersion"
+    }
+}
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+// Add this block
+configurations.all {
+    resolutionStrategy {
+        force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
     }
 }
 
@@ -71,7 +72,26 @@ subprojects {
             android {
                 compileSdkVersion rootProject.ext.compileSdkVersion
                 buildToolsVersion rootProject.ext.buildToolsVersion
+                
+                // Add these configurations
+                configurations.all {
+                    resolutionStrategy {
+                        force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+                        force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+                    }
+                }
             }
         }
+    }
+}
+
+// Add these tasks at the end
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xmaxerrs" << "500"
     }
 }

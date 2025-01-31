@@ -39,6 +39,7 @@ import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { getDynamicConfigParams, getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs, StatsigFeatureGates } from 'src/statsig/types'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -71,6 +72,8 @@ async function fetchHooks<T>(
     throw new Error(`Unable to fetch ${url}: ${response.status} ${response.statusText}`)
   }
   const json = await response.json()
+
+  Logger.debug('response fetch hooks', json.data)
   return json.data as T
 }
 
@@ -83,7 +86,7 @@ async function fetchPositions({
   walletAddress: string
   language: string
 }) {
-  const networkIds = getMultichainFeatures().showPositions
+  const networkIds = [NetworkId['celo-mainnet']]
 
   const getPositionsUrl = getHooksApiFunctionUrl(hooksApiUrl, 'getPositions')
   getPositionsUrl.searchParams.set('address', walletAddress)
@@ -107,6 +110,13 @@ async function fetchPositions({
     fetchHooks<Position[]>(getPositionsUrl.toString(), options),
     fetchHooks<Position[]>(getEarnPositionsUrl.toString(), options),
   ])
+
+  Logger.debug(
+    TAG,
+    'Fetched positions',
+    { walletPositions, earnPositions },
+    getPositionsUrl.toString()
+  )
 
   const positionIds = new Set()
   const positions: Position[] = []

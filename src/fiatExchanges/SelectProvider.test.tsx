@@ -86,6 +86,18 @@ const mockLegacyProviders: LegacyMobileMoneyProvider[] = [
       countries: ['MX'],
       url: 'https://www.fakecryptoprovider.com/celo',
     },
+    ccop: {
+      cashIn: true,
+      cashOut: true,
+      countries: ['MX'],
+      url: 'https://www.fakecryptoprovider.com/celo',
+    },
+    usdt: {
+      cashIn: true,
+      cashOut: true,
+      countries: ['MX'],
+      url: 'https://www.fakecryptoprovider.com/celo',
+    },
   },
 ]
 

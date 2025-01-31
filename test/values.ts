@@ -1938,6 +1938,18 @@ export const mockLegacyMobileMoneyProvider: LegacyMobileMoneyProvider = {
     countries: [],
     url: 'fake-url-1',
   },
+  ccop: {
+    cashIn: true,
+    cashOut: true,
+    countries: [],
+    url: 'fake-url-1',
+  },
+  usdt: {
+    cashIn: true,
+    cashOut: true,
+    countries: [],
+    url: 'fake-url-1',
+  },
 }
 
 export const mockNftAllFields: NftWithMetadata = {

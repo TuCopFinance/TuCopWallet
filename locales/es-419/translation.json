@@ -2845,7 +2845,7 @@
   "celoDollarAmount_plural": "<0></0> Celo Dollars",
   "tabHome": {
     "myWallet": "Mi billetera",
-    "addCCOP": "Agregar cCOP",
+    "addCCOP": "Recargar tu billetera",
     "sendMoney": "Enviar dinero",
     "receiveMoney": "Recibir dinero",
     "holdUSD": "Mantener dólares estadounidenses",
@@ -2853,9 +2853,9 @@
     "withdraw": "Retirar de tu billetera",
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
-      "bySwapping": "Agregar cCOP intercambiando desde tu USDT",
+      "bySwapping": "Recargar tu billetara intercambiando desde tu USDT",
       "purchase": "Comprar cCOP",
-      "purchaseDescription": "Agregar cCOP comprando a través de uno de nuestros proveedores de confianza"
+      "purchaseDescription": "Recargar tu billetara comprando a través de uno de nuestros proveedores de confianza"
     }
   }
 }
