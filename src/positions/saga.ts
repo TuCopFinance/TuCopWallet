@@ -39,7 +39,6 @@ import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { getDynamicConfigParams, getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs, StatsigFeatureGates } from 'src/statsig/types'
-import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -86,7 +85,7 @@ async function fetchPositions({
   walletAddress: string
   language: string
 }) {
-  const networkIds = [NetworkId['celo-mainnet']]
+  const networkIds = getMultichainFeatures().showPositions
 
   const getPositionsUrl = getHooksApiFunctionUrl(hooksApiUrl, 'getPositions')
   getPositionsUrl.searchParams.set('address', walletAddress)
@@ -111,12 +110,7 @@ async function fetchPositions({
     fetchHooks<Position[]>(getEarnPositionsUrl.toString(), options),
   ])
 
-  Logger.debug(
-    TAG,
-    'Fetched positions',
-    { walletPositions, earnPositions },
-    getPositionsUrl.toString()
-  )
+  Logger.debug('WALLET', walletPositions)
 
   const positionIds = new Set()
   const positions: Position[] = []
@@ -184,9 +178,9 @@ export function* fetchPositionsSaga() {
       Logger.debug(TAG, 'Skipping fetching positions since no address was found')
       return
     }
-    if (!getFeatureGate(StatsigFeatureGates.SHOW_POSITIONS)) {
-      return
-    }
+    // if (!getFeatureGate(StatsigFeatureGates.SHOW_POSITIONS)) {
+    //   return
+    // }
 
     yield* put(fetchPositionsStart())
     SentryTransactionHub.startTransaction(SentryTransaction.fetch_positions)
@@ -198,6 +192,11 @@ export function* fetchPositionsSaga() {
       walletAddress: address,
       language: shortLanguage,
     })
+
+    Logger.debug(TAG, 'hooksApiUrl>>>', hooksApiUrl)
+    Logger.debug(TAG, 'walletAddress>>>', hooksApiUrl)
+    Logger.debug(TAG, 'positions>>>', positions)
+
     SentryTransactionHub.finishTransaction(SentryTransaction.fetch_positions)
     yield* put(fetchPositionsSuccess({ positions, earnPositionIds, fetchedAt: Date.now() }))
   } catch (err) {
