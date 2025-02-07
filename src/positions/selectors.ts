@@ -17,7 +17,7 @@ import { isPresent } from 'src/utils/typescript'
 import networkConfig from 'src/web3/networkConfig'
 import { getPositionBalanceUsd } from './getPositionBalanceUsd'
 
-export const showPositionsSelector = () => getFeatureGate(StatsigFeatureGates.SHOW_POSITIONS)
+export const showPositionsSelector = () => true
 export const showClaimShortcutsSelector = () =>
   getFeatureGate(StatsigFeatureGates.SHOW_CLAIM_SHORTCUTS)
 export const allowHooksPreviewSelector = () =>
