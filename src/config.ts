@@ -134,10 +134,7 @@ export const WALLET_CONNECT_PROJECT_ID =
   keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'WALLET_CONNECT_PROJECT_ID') ??
   // mobilestack-e2e-client project in the WC project dashboard
   '36d4ec3335559558180cc1079152fcb3'
-export const AUTH0_CLIENT_ID =
-  keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'AUTH0_CLIENT_ID') ??
-  // dev app client id as fallback for e2e tests
-  'YgsHPq93Egfap5Wc4iEQlGyQMqjLeBf2'
+export const AUTH0_CLIENT_ID = 'nyGgrnWv5y6tI3ygl32T28Abc2ED5lMe'
 
 export const AUTH0_DOMAIN = configOrThrow('AUTH0_DOMAIN')
 
