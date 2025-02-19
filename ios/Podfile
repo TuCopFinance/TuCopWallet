@@ -1,3 +1,4 @@
+source 'https://github.com/CleverTap/podspecs.git'
 source 'https://cdn.cocoapods.org/'
 
 # Allow using RNFirebase as static frameworks
@@ -9,13 +10,13 @@ $RNFirebaseAsStaticFramework = true
 # Workaround for the following error:
 # `The 'Pods-MobileStack' target has transitive dependencies that include statically linked binaries [...]`
 $static_framework = [
-  'react-native-flipper', 
-  'FlipperKit', 
-  'Flipper', 
+  'react-native-flipper',
+  'FlipperKit',
+  'Flipper',
   'Flipper-Folly',
   'Flipper-DoubleConversion',
-  'Flipper-Glog', 
-  'Flipper-PeerTalk', 
+  'Flipper-Glog',
+  'Flipper-PeerTalk',
   'Flipper-RSocket',
   'Flipper-Fmt',
 ]
@@ -54,7 +55,7 @@ if Gem::Version.new(MIN_IOS_OVERRIDE) > Gem::Version.new(min_ios_version_support
 end
 
 platform :ios, min_ios_version_supported
-prepare_react_native_project! 
+prepare_react_native_project!
 
 # linkage = ENV['USE_FRAMEWORKS']
 linkage="static"
@@ -80,8 +81,8 @@ target "MobileStack" do
     # building all Flipper related pods as static libraries, linked against the main app.
     # See $static_framework above
     :flipper_configuration => FlipperConfiguration.enabled(
-      ["Debug"], 
-      { 
+      ["Debug"],
+      {
         # Use a specific version of Flipper-Glog which doesn't vendor glog as a dynamic library
         # otherwise the main app fails to link (likely due to the 2 dynamic libraries with the same name)
         # Flipper-Glog >= 0.3.7 uses a vendored dynamic library
@@ -99,6 +100,7 @@ target "MobileStack" do
 end
 
 target 'NotificationService' do
+  use_frameworks! :linkage => :static
   pod 'CTNotificationService'
   pod 'CleverTap-iOS-SDK'
 end
