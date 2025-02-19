@@ -49,7 +49,7 @@ end
 
 # Code to be added for react-native-video/Video
 # https://github.com/TheWidlarzGroup/react-native-video/issues/3737
-MIN_IOS_OVERRIDE = '13.0'
+MIN_IOS_OVERRIDE = '15.0'
 if Gem::Version.new(MIN_IOS_OVERRIDE) > Gem::Version.new(min_ios_version_supported)
   min_ios_version_supported = MIN_IOS_OVERRIDE
 end
@@ -99,8 +99,8 @@ target "MobileStack" do
   pod 'OpenSSL-Universal', '1.1.1100', :configurations => ['Debug','Release']
 end
 
+use_frameworks! :linkage => :static
 target 'NotificationService' do
-  use_frameworks! :linkage => :static
   pod 'CTNotificationService'
   pod 'CleverTap-iOS-SDK'
 end
@@ -129,6 +129,7 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings["ENABLE_BITCODE"] = "NO"
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
 
     # Fix for Xcode 14, see https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693

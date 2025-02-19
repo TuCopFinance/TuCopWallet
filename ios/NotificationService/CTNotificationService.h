@@ -1,7 +1,6 @@
-#import "CTNotificationService.h"
-#import "CleverTap.h"
+#import <UserNotifications/UserNotifications.h>
 
-@interface NotificationService : CTNotificationServiceExtension
+@interface CTNotificationServiceExtension : UNNotificationServiceExtension
 
 @property (nonatomic, strong) void (^contentHandler)(UNNotificationContent *contentToDeliver);
 @property (nonatomic, strong) UNMutableNotificationContent *bestAttemptContent;
