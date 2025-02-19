@@ -643,7 +643,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = 5393M6B897;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -661,7 +661,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.tucop.com--";
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -681,7 +681,7 @@
 				CODE_SIGN_ENTITLEMENTS = MobileStack/MobileStackRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = 5393M6B897;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -699,7 +699,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.tucop.com--";
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -759,7 +759,10 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -815,7 +818,10 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -872,7 +878,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com.NotificationService;
 				PRODUCT_NAME = TuCopNotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -909,7 +915,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = 5393M6B897;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -926,7 +932,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com.NotificationService;
 				PRODUCT_NAME = TuCopNotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
