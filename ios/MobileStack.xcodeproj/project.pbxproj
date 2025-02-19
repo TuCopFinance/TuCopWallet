@@ -640,6 +640,8 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MobileStack/MobileStack.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 4F7C56NGTF;
 				INFOPLIST_FILE = MobileStack/Info.plist;
@@ -659,8 +661,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.tucop.com--";
 				PRODUCT_NAME = TuCop;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -676,6 +679,8 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MobileStack/MobileStackRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4F7C56NGTF;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
@@ -694,8 +699,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.tucop.com--";
 				PRODUCT_NAME = TuCop;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
