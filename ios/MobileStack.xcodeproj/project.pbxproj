@@ -15,8 +15,21 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		27DBFF6B2BDA6EED00863BC5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 27DBFF6A2BDA6EED00863BC5 /* PrivacyInfo.xcprivacy */; };
 		67911AC6D310414DAAC1498E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F5FA21E7EC46BBB744FE54 /* libz.tbd */; };
-		A23CB4272D65AF8100B5ECCE /* TuCopNotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A23CB4202D65AF8100B5ECCE /* TuCopNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A23CB4272D65AF8100B5ECCE /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A23CB4202D65AF8100B5ECCE /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A23CB4662D65C0D400B5ECCE /* NotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = A23CB4622D65C0D400B5ECCE /* NotificationService.m */; };
+		A26DD4872D66FD1000FAC313 /* CleverTapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A26DD4862D66FD1000FAC313 /* CleverTapSDK.framework */; };
+		A26DD48B2D66FD2600FAC313 /* CleverTapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A26DD48A2D66FD2600FAC313 /* CleverTapSDK.framework */; };
+		A26DD48F2D6702E100FAC313 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 270B61A52C6A3A2600979913 /* Inter-Medium.ttf */; };
+		A26DD4902D6702E100FAC313 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 270B61A62C6A3A2600979913 /* Inter-Regular.ttf */; };
+		A26DD4912D6702E100FAC313 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 270B61A42C6A3A2600979913 /* Inter-SemiBold.ttf */; };
+		A26DD4922D6702E100FAC313 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 270B61A22C6A3A0C00979913 /* Inter-Bold.ttf */; };
+		A26DD4932D6702E100FAC313 /* RedHatDisplayBlack.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0D8E4F0377D494DA72D86A6 /* RedHatDisplayBlack.ttf */; };
+		A26DD4942D6702E100FAC313 /* RedHatDisplayBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4B31729B0BDE448DB29FDD7F /* RedHatDisplayBold.ttf */; };
+		A26DD4952D6702E100FAC313 /* RedHatDisplayExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C838D7BAA2C34FA9B6A0A6FF /* RedHatDisplayExtraBold.ttf */; };
+		A26DD4962D6702E100FAC313 /* RedHatDisplayLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6EFE0798ADE48B9B0A97143 /* RedHatDisplayLight.ttf */; };
+		A26DD4972D6702E100FAC313 /* RedHatDisplayMedium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D436B9AC7844F38ACD5EAA7 /* RedHatDisplayMedium.ttf */; };
+		A26DD4982D6702E100FAC313 /* RedHatDisplayRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F72B47CCE61849B2ACFD58A4 /* RedHatDisplayRegular.ttf */; };
+		A26DD4992D6702E100FAC313 /* RedHatDisplaySemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC132757ED074D838518011C /* RedHatDisplaySemiBold.ttf */; };
 		BE414F125812398905D26607 /* Pods_MobileStack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB83A5A2127F47DBD9F4039 /* Pods_MobileStack.framework */; };
 		DB130B9D3870A7D4B8C027DE /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 828CF4D4589B170F8D4D3637 /* Pods_NotificationService.framework */; };
 /* End PBXBuildFile section */
@@ -38,7 +51,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A23CB4272D65AF8100B5ECCE /* TuCopNotificationService.appex in Embed App Extensions */,
+				A23CB4272D65AF8100B5ECCE /* NotificationService.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -47,7 +60,6 @@
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		0F3673F62673A63800F9586A /* MobileStack-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MobileStack-Bridging-Header.h"; path = "MobileStack/MobileStack-Bridging-Header.h"; sourceTree = "<group>"; };
 		0F3673F72673A63900F9586A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = File.swift; path = MobileStack/File.swift; sourceTree = "<group>"; };
 		0FC6C311256FEF2700C35F47 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		0FC6C317256FEF4A00C35F47 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -77,10 +89,15 @@
 		68B737FF27D7B55B0044A85E /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		828CF4D4589B170F8D4D3637 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A23CB41B2D65A7D100B5ECCE /* MobileStackRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MobileStackRelease.entitlements; path = MobileStack/MobileStackRelease.entitlements; sourceTree = "<group>"; };
-		A23CB4202D65AF8100B5ECCE /* TuCopNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TuCopNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A23CB4202D65AF8100B5ECCE /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A23CB4602D65C0D400B5ECCE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A23CB4612D65C0D400B5ECCE /* NotificationService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationService.h; sourceTree = "<group>"; };
 		A23CB4622D65C0D400B5ECCE /* NotificationService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationService.m; sourceTree = "<group>"; };
+		A26DD4862D66FD1000FAC313 /* CleverTapSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CleverTapSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26DD4882D66FD1A00FAC313 /* CleverTapReact.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CleverTapReact.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26DD48A2D66FD2600FAC313 /* CleverTapSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CleverTapSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26DD48C2D66FD2A00FAC313 /* CleverTapReact.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CleverTapReact.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A26DD48E2D67006100FAC313 /* MobileStack-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MobileStack-Bridging-Header.h"; sourceTree = "<group>"; };
 		B514DC3DFD331D819FF996FE /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		B6EFE0798ADE48B9B0A97143 /* RedHatDisplayLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayLight.ttf; path = ../fonts/RedHatDisplayLight.ttf; sourceTree = "<group>"; };
 		BBB83A5A2127F47DBD9F4039 /* Pods_MobileStack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MobileStack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,6 +118,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A26DD48B2D66FD2600FAC313 /* CleverTapSDK.framework in Frameworks */,
 				67911AC6D310414DAAC1498E /* libz.tbd in Frameworks */,
 				BE414F125812398905D26607 /* Pods_MobileStack.framework in Frameworks */,
 			);
@@ -110,6 +128,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A26DD4872D66FD1000FAC313 /* CleverTapSDK.framework in Frameworks */,
 				DB130B9D3870A7D4B8C027DE /* Pods_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -120,6 +139,10 @@
 		080C3131575C4BB58D359856 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A26DD48C2D66FD2A00FAC313 /* CleverTapReact.framework */,
+				A26DD48A2D66FD2600FAC313 /* CleverTapSDK.framework */,
+				A26DD4882D66FD1A00FAC313 /* CleverTapReact.framework */,
+				A26DD4862D66FD1000FAC313 /* CleverTapSDK.framework */,
 				273ACDD52A02B36F0041B98E /* JavaScriptCore.framework */,
 				F3F5FA21E7EC46BBB744FE54 /* libz.tbd */,
 				BBB83A5A2127F47DBD9F4039 /* Pods_MobileStack.framework */,
@@ -131,6 +154,7 @@
 		13B07FAE1A68108700A75B9A /* MobileStack */ = {
 			isa = PBXGroup;
 			children = (
+				A26DD48E2D67006100FAC313 /* MobileStack-Bridging-Header.h */,
 				A23CB41B2D65A7D100B5ECCE /* MobileStackRelease.entitlements */,
 				0FE3DE8E2347740700EA87A0 /* MobileStack.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -141,7 +165,6 @@
 				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				0F3673F72673A63900F9586A /* File.swift */,
-				0F3673F62673A63800F9586A /* MobileStack-Bridging-Header.h */,
 				0FC6C312256FEF2700C35F47 /* InfoPlist.strings */,
 			);
 			name = MobileStack;
@@ -186,7 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* TuCop.app */,
-				A23CB4202D65AF8100B5ECCE /* TuCopNotificationService.appex */,
+				A23CB4202D65AF8100B5ECCE /* NotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -264,7 +287,7 @@
 			);
 			name = NotificationService;
 			productName = NotificationService;
-			productReference = A23CB4202D65AF8100B5ECCE /* TuCopNotificationService.appex */;
+			productReference = A23CB4202D65AF8100B5ECCE /* NotificationService.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -330,6 +353,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A26DD48F2D6702E100FAC313 /* Inter-Medium.ttf in Resources */,
+				A26DD4902D6702E100FAC313 /* Inter-Regular.ttf in Resources */,
+				A26DD4912D6702E100FAC313 /* Inter-SemiBold.ttf in Resources */,
+				A26DD4922D6702E100FAC313 /* Inter-Bold.ttf in Resources */,
+				A26DD4932D6702E100FAC313 /* RedHatDisplayBlack.ttf in Resources */,
+				A26DD4942D6702E100FAC313 /* RedHatDisplayBold.ttf in Resources */,
+				A26DD4952D6702E100FAC313 /* RedHatDisplayExtraBold.ttf in Resources */,
+				A26DD4962D6702E100FAC313 /* RedHatDisplayLight.ttf in Resources */,
+				A26DD4972D6702E100FAC313 /* RedHatDisplayMedium.ttf in Resources */,
+				A26DD4982D6702E100FAC313 /* RedHatDisplayRegular.ttf in Resources */,
+				A26DD4992D6702E100FAC313 /* RedHatDisplaySemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				0FC6C310256FEF2700C35F47 /* InfoPlist.strings in Resources */,
@@ -643,7 +677,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 5393M6B897;
+				DEVELOPMENT_TEAM = 4F7C56NGTF;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -661,7 +695,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -681,7 +715,7 @@
 				CODE_SIGN_ENTITLEMENTS = MobileStack/MobileStackRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5393M6B897;
+				DEVELOPMENT_TEAM = 4F7C56NGTF;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -699,7 +733,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -752,6 +786,8 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Public/CleverTap-iOS-SDK",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.100.0;
@@ -759,10 +795,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -812,16 +845,15 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Public/CleverTap-iOS-SDK",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.100.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -878,8 +910,8 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com.NotificationService;
-				PRODUCT_NAME = TuCopNotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_NAME = NotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -915,7 +947,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 5393M6B897;
+				DEVELOPMENT_TEAM = 4F7C56NGTF;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -932,8 +964,8 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.com.NotificationService;
-				PRODUCT_NAME = TuCopNotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_NAME = NotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;

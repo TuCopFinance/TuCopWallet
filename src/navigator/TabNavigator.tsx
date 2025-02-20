@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { Platform, StyleSheet, Text, View } from 'react-native'
 import TabActivity from 'src/home/TabActivity'
 import TabHome from 'src/home/TabHome'
 import ClockIcon from 'src/icons/ClockIcon'
@@ -38,9 +38,12 @@ export default function TabNavigator({ route }: Props) {
         tabBarItemStyle: styles.tabBarItem,
         tabBarAllowFontScaling: false,
         tabBarStyle: {
-          height: variables.height * 0.1,
+          height: Platform.select({ ios: variables.height * 0.1, android: 65 }),
           borderTopWidth: 0,
           backgroundColor: Colors.white,
+          paddingBottom: Platform.select({ ios: 20, android: 12 }),
+          elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarLabelPosition: 'beside-icon',
         ...(tabHeader as NativeStackHeaderProps),
@@ -51,28 +54,14 @@ export default function TabNavigator({ route }: Props) {
         component={TabWallet}
         options={{
           tabBarLabel: ({ focused, color }) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                width: '100%',
-                gap: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color,
-                  fontSize: 16,
-                  marginRight: 6,
-                  marginLeft: 14,
-                }}
-              >
+            <View style={styles.tabItemContainer}>
+              <Text style={[styles.tabText, { color }]}>
                 {t('bottomTabsNavigator.wallet.tabName')}
               </Text>
               <Wallet />
             </View>
           ),
-          tabBarIcon: () => null, // Hide default icon since we're using custom label
+          tabBarIcon: () => null,
           tabBarButtonTestID: 'Tab/Wallet',
         }}
       />
@@ -82,12 +71,13 @@ export default function TabNavigator({ route }: Props) {
         options={{
           freezeOnBlur: false,
           lazy: false,
-          tabBarIcon: () => <Swap />,
+          tabBarIcon: () => (
+            <View style={styles.centerTabIcon}>
+              <Swap />
+            </View>
+          ),
           tabBarLabel: '',
           tabBarButtonTestID: 'Tab/Home',
-          tabBarIconStyle: {
-            marginLeft: 15,
-          },
         }}
       />
       <Tab.Screen
@@ -95,23 +85,9 @@ export default function TabNavigator({ route }: Props) {
         component={TabActivity}
         options={{
           tabBarLabel: ({ focused, color }) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                width: '100%',
-                marginRight: 20,
-                gap: 8,
-              }}
-            >
+            <View style={[styles.tabItemContainer, styles.activityContainer]}>
               <ClockIcon />
-              <Text
-                style={{
-                  color,
-                  fontSize: 16,
-                  paddingLeft: 6,
-                }}
-              >
+              <Text style={[styles.tabText, { color }]}>
                 {t('bottomTabsNavigator.activity.tabName')}
               </Text>
             </View>
@@ -127,8 +103,36 @@ export default function TabNavigator({ route }: Props) {
 const styles = StyleSheet.create({
   label: {
     ...typeScale.labelSemiBoldSmall,
+    textAlign: 'center',
+    flexShrink: 1,
   },
   tabBarItem: {
+    height: Platform.select({ ios: 49, android: 53 }),
     paddingVertical: Spacing.Smallest8,
+    flex: 1,
+  },
+  activityContainer: {
+    marginRight: Platform.select({ ios: 48, android: 12 }),
+    paddingRight: Platform.select({ ios: 16, android: 12 }),
+  },
+  tabItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: Platform.select({ ios: 8, android: 12 }),
+    gap: Platform.select({ ios: 8, android: 10 }),
+  },
+  tabText: {
+    fontSize: 16,
+    textAlign: 'left',
+    flexShrink: 1,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+  centerTabIcon: {
+    justifyContent: 'center',
+    height: '100%',
+    width: '100%',
   },
 })

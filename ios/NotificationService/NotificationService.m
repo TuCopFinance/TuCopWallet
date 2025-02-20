@@ -6,6 +6,8 @@
 //  Copyright © 2021 Facebook. All rights reserved.
 //
 
+#import <UserNotifications/UserNotifications.h>
+#import <CleverTapSDK/CleverTap.h>
 #import "NotificationService.h"
 
 @implementation NotificationService
