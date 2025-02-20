@@ -1,10 +1,10 @@
 import { StyleSheet } from 'react-native'
 
 const Inter = {
-  Regular: 'RedHatDisplayRegular',
-  Medium: 'RedHatDisplayMedium',
-  SemiBold: 'RedHatDisplaySemiBold',
-  Bold: 'RedHatDisplayBold',
+  Regular: 'RedHatDisplay-Regular',
+  Medium: 'RedHatDisplay-Medium',
+  SemiBold: 'RedHatDisplay-SemiBold',
+  Bold: 'RedHatDisplay-Bold',
 }
 
 /**

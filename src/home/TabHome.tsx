@@ -24,7 +24,6 @@ import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
 import SwapArrows from 'src/icons/SwapArrows'
-import AddCCOP from 'src/icons/tab-home/AddCCOP'
 import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
@@ -135,6 +134,13 @@ function TabHome(_props: Props) {
       })
   }
 
+  function goToSpend() {
+    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
+    AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
+      flow: FiatExchangeFlow.Spend,
+    })
+  }
+
   function onPressRecieveMoney() {
     AppAnalytics.track(TabHomeEvents.receive_money)
     navigate(Screens.QRNavigator, {
@@ -192,17 +198,6 @@ function TabHome(_props: Props) {
 
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
-      <View style={styles.totalBalanceContainer}>
-        <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
-        <View style={styles.totalBalanceRow}>
-          <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
-            {!hideWalletBalances && localCurrencySymbol}
-            {balanceDisplay}
-          </Text>
-          <HideBalanceButton hideBalance={hideWalletBalances} />
-        </View>
-      </View>
-
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContainer}
@@ -215,59 +210,103 @@ function TabHome(_props: Props) {
           />
         }
       >
-        <View style={styles.containerShadow}>
-          <View style={styles.row}>
-            <View style={styles.flex}>
-              <FlatCard type="primary" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
-                <View style={styles.row}>
-                  <Send />
-                  <Text style={styles.textWhite}>{t('tabHome.sendMoney')}</Text>
-                </View>
-              </FlatCard>
-            </View>
-
-            <View style={styles.flex}>
-              <FlatCard type="primary" testID="FlatCard/ReceiveMoney" onPress={onPressRecieveMoney}>
-                <View style={styles.row}>
-                  <ArrowVertical />
-                  <Text style={styles.textWhite}>{t('tabHome.receiveMoney')}</Text>
-                </View>
-              </FlatCard>
-            </View>
+        <View style={styles.totalBalanceContainer}>
+          <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
+          <View style={styles.totalBalanceRow}>
+            <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
+              {!hideWalletBalances && localCurrencySymbol}
+              {balanceDisplay}
+            </Text>
+            <HideBalanceButton hideBalance={hideWalletBalances} />
           </View>
+        </View>
 
-          <FlatCard testID="FlatCard/AddCKES" onPress={onPressAddCCOP}>
-            <View style={styles.column}>
-              <AddCCOP />
-              <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
-            </View>
-          </FlatCard>
-
-          <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+        <Shadow
+          style={styles.shadow2}
+          offset={[0, 0]}
+          distance={10} // Add this to remove bottom shadow
+          startColor="rgba(190, 201, 255, 0.28)"
+          sides={{ bottom: false }} // Add this to specifically disable bottom shadow
+        >
+          <View style={[styles.containerShadow, styles.noBottomShadow]}>
             <View style={styles.row}>
-              <Swap />
               <View style={styles.flex}>
-                <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
-                <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+                <FlatCard type="primary" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
+                  <View style={styles.row}>
+                    <Send />
+                    <Text style={styles.textWhite}>{t('tabHome.sendMoney')}</Text>
+                  </View>
+                </FlatCard>
+              </View>
+
+              <View style={styles.flex}>
+                <FlatCard
+                  type="primary"
+                  testID="FlatCard/ReceiveMoney"
+                  onPress={onPressRecieveMoney}
+                >
+                  <View style={styles.row}>
+                    <ArrowVertical />
+                    <Text style={styles.textWhite}>{t('tabHome.receiveMoney')}</Text>
+                  </View>
+                </FlatCard>
               </View>
             </View>
-          </FlatCard>
 
-          <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-            <View style={styles.row}>
-              <Withdraw />
-              <Text style={styles.ctaText}>Invierte tus dolares</Text>
-            </View>
-          </FlatCard>
+            <FlatCard type="primary" testID="FlatCard/AddCKES" onPress={onPressAddCCOP}>
+              <View style={styles.row}>
+                <ArrowVertical />
+                <Text style={styles.textWhite}>{t('tabHome.addCCOP')}</Text>
+              </View>
+            </FlatCard>
 
-          <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
             <View style={styles.row}>
-              <Withdraw />
-              <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
+              <View style={styles.flex}>
+                <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
+                  <View style={styles.row}>
+                    <Swap />
+                    <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+                  </View>
+                </FlatCard>
+              </View>
+
+              <View style={styles.flex}>
+                <FlatCard testID="FlatCard/spendMoney" onPress={goToSpend}>
+                  <View style={styles.row}>
+                    <Withdraw />
+                    <Text style={styles.ctaSubText}>{t('tabHome.spendMoney')}</Text>
+                  </View>
+                </FlatCard>
+              </View>
             </View>
-          </FlatCard>
-        </View>
+
+            {/* <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
+              <View style={styles.row}>
+                <Swap />
+                <View style={styles.flex}>
+                  <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
+                  <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+                </View>
+              </View>
+            </FlatCard> */}
+
+            <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
+              <View style={styles.row}>
+                <Withdraw />
+                <Text style={styles.ctaText}>Invierte tus dolares</Text>
+              </View>
+            </FlatCard>
+
+            <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+              <View style={styles.row}>
+                <Withdraw />
+                <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
+              </View>
+            </FlatCard>
+          </View>
+        </Shadow>
       </ScrollView>
+
       <AddCCOPBottomSheet forwardedRef={addCCOPBottomSheetRef} />
     </SafeAreaView>
   )
@@ -385,7 +424,12 @@ const styles = StyleSheet.create({
     marginLeft: -17,
     marginRight: -17,
     backgroundColor: 'white',
+    borderBottomWidth: 0,
     gap: 17,
+  },
+  noBottomShadow: {
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0, // For Android
   },
   container: {
     flex: 1,
@@ -409,24 +453,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   textWhite: { color: Colors.white },
-  column: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.Smallest8,
-  },
+  // column: {
+  //   flexDirection: 'column',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   gap: Spacing.Smallest8,
+  // },
   ctaText: {
-    ...typeScale.labelSemiBoldMedium,
+    ...typeScale.bodySmall,
     color: Colors.black,
   },
   ctaSubText: {
     ...typeScale.bodySmall,
-    color: Colors.gray3,
+    color: Colors.black,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 10,
   },
   flex: {
     flex: 1,
@@ -446,7 +490,7 @@ const styles = StyleSheet.create({
   totalBalanceContainer: {
     marginTop: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 30,
   },
   totalBalanceRow: {
     flexDirection: 'row',
@@ -467,6 +511,9 @@ const styles = StyleSheet.create({
   shadow: {
     width: '100%',
     borderRadius: 15,
+  },
+  shadow2: {
+    width: '100%',
   },
 })
 
