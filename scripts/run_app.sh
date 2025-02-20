@@ -13,8 +13,8 @@ set -euo pipefail
 # -d (Optional): Name of the Device to run (iOS only)
 
 PLATFORM=""
-ENV_NAME="alfajoresdev"
-RELEASE=false
+ENV_NAME="mainnet"
+RELEASE=true
 SIMULATOR=""
 DEVICE=""
 PROFILING_ENABLED=false
@@ -82,7 +82,7 @@ startPackager() {
             yarn react-native start
         }
         run &
-      else 
+      else
         echo "Unsupported machine for running in new terminal"
         open_failed=1
       fi
@@ -99,7 +99,7 @@ startPackager() {
 if [ "$PLATFORM" = "android" ]; then
 
   NUM_DEVICES=$(adb devices -l | wc -l)
-  if [ "$NUM_DEVICES" -lt 3 ]; then 
+  if [ "$NUM_DEVICES" -lt 3 ]; then
     echo "No android devices found"
     exit 1
   fi
@@ -129,7 +129,7 @@ elif [ "$PLATFORM" = "ios" ]; then
   device_param=""
   if [ -n "$DEVICE" ]; then
     device_param="--device=$DEVICE"
-  fi 
+  fi
   yarn react-native run-ios --scheme "MobileStack-${ENV_NAME}" --configuration "$CONFIGURATION" --no-packager "${simulator_param}" "${device_param}"
 
 else

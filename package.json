@@ -20,9 +20,9 @@
     "build": "yarn run build:ts && yarn run build:metro",
     "build:ts": "tsc --noEmit",
     "build:metro": "yarn run react-native bundle --entry-file index.js --bundle-output bundle.js; rm bundle.js",
-    "win:dev:android:mainnet": "yarn react-native run-android --mode MainnetdevDebug --appId org.tucopwallet.dev",
-    "win:dev:android": "yarn react-native run-android --mode=AlfajoresdevDebug --appId=org.tucopwallet.dev",
-    "win:dev:android:np": "yarn react-native run-android --mode=AlfajoresdevDebug --appId org.tucopwallet.dev --no-packager",
+    "win:dev:android:mainnet": "yarn react-native run-android --mode MainnetdevDebug --appId org.tucop.com",
+    "win:dev:android": "yarn react-native run-android --mode=AlfajoresdevDebug --appId=org.tucop.com",
+    "win:dev:android:np": "yarn react-native run-android --mode=AlfajoresdevDebug --appId org.tucop.com --no-packager",
     "win:dev:show-menu": "adb -s emulator-5554 shell input keyevent 82",
     "dev:android": "./scripts/run_app.sh -p android",
     "dev:ios": "./scripts/run_app.sh -p ios",
@@ -58,7 +58,9 @@
     "deploy:update-disclaimer": "yarn licenses generate-disclaimer --prod > src/account/LicenseDisclaimer.txt && ./scripts/copy_license_to_android_assets.sh",
     "postinstall": "patch-package && yarn keys:decrypt && ./scripts/copy_license_to_android_assets.sh",
     "keys:decrypt": "bash scripts/key_placer.sh decrypt",
-    "keys:encrypt": "bash scripts/key_placer.sh encrypt"
+    "keys:encrypt": "bash scripts/key_placer.sh encrypt",
+    "release-build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/build/intermediates/res/merged/release/ && rm -rf android/app/src/main/res/drawable-* && rm -rf android/app/src/main/res/raw/* && cd android && ./gradlew assembleRelease && cd ..",
+    "release-build:ios": "./scripts/run_app.sh -p ios -r"
   },
   "husky": {
     "hooks": {
@@ -199,6 +201,7 @@
   "devDependencies": {
     "@actions/github": "^5.1.1",
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^11.3.9",
     "@babel/plugin-proposal-decorators": "^7.12.1",
     "@babel/plugin-proposal-numeric-separator": "^7.14.5",
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.17.12",

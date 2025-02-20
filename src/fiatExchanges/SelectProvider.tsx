@@ -4,7 +4,7 @@ import _ from 'lodash'
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { Trans, useTranslation } from 'react-i18next'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -13,7 +13,7 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { coinbasePayEnabledSelector } from 'src/app/selectors'
 import BackButton from 'src/components/BackButton'
 import Dialog from 'src/components/Dialog'
-import TextButton from 'src/components/TextButton'
+import ListItem from 'src/components/ListItem'
 import Touchable from 'src/components/Touchable'
 import { FETCH_FIATCONNECT_QUOTES } from 'src/config'
 import { CoinbasePaymentSection } from 'src/fiatExchanges/CoinbasePaymentSection'
@@ -37,6 +37,7 @@ import {
 } from 'src/fiatconnect/selectors'
 import { fetchFiatConnectQuotes } from 'src/fiatconnect/slice'
 import { readOnceFromFirebase } from 'src/firebase/firebase'
+import InfoIcon from 'src/icons/InfoIcon'
 import {
   getDefaultLocalCurrencyCode,
   getLocalCurrencyCode,
@@ -63,7 +64,7 @@ import networkConfig from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 import {
   CICOFlow,
-  FiatExchangeFlow,
+  // FiatExchangeFlow,
   LegacyMobileMoneyProvider,
   PaymentMethod,
   fetchExchanges,
@@ -219,11 +220,11 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     coinbasePayEnabled &&
     appId
 
-  const anyProviders =
-    normalizedQuotes.length ||
-    coinbasePayVisible ||
-    exchanges.length ||
-    legacyMobileMoneyProviders?.length
+  // const anyProviders =
+  //   normalizedQuotes.length ||
+  //   coinbasePayVisible ||
+  //   exchanges.length ||
+  //   legacyMobileMoneyProviders?.length
 
   const analyticsData = getProviderSelectionAnalyticsData({
     normalizedQuotes,
@@ -266,47 +267,81 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     availablePaymentMethods.includes(method)
   )
 
-  const supportOnPress = () => navigate(Screens.SupportContact)
+  // const supportOnPress = () => navigate(Screens.SupportContact)
 
   const handlePressDisclaimer = () => {
     navigate(Screens.WebViewScreen, { uri: links.funding })
   }
 
-  const switchCurrencyOnPress = () => {
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, {
-      flow: flow === CICOFlow.CashIn ? FiatExchangeFlow.CashIn : FiatExchangeFlow.CashOut,
-    })
-  }
+  // const switchCurrencyOnPress = () => {
+  //   navigate(Screens.FiatExchangeCurrencyBottomSheet, {
+  //     flow: flow === CICOFlow.CashIn ? FiatExchangeFlow.CashIn : FiatExchangeFlow.CashOut,
+  //   })
+  // }
 
-  if (!anyProviders) {
-    return (
-      <View style={styles.noPaymentMethodsContainer}>
-        <Text testID="NoPaymentMethods" style={styles.noPaymentMethods}>
-          {t('noPaymentMethods', {
-            digitalAsset: tokenInfo.symbol,
-          })}
-        </Text>
-        <TextButton
-          testID={'SwitchCurrency'}
-          style={styles.switchCurrency}
-          onPress={switchCurrencyOnPress}
-        >
-          {t('switchCurrency')}
-        </TextButton>
-        <TextButton
-          testID={'ContactSupport'}
-          style={styles.contactSupport}
-          onPress={supportOnPress}
-        >
-          {t('contactSupport')}
-        </TextButton>
-      </View>
-    )
-  }
+  // if (!anyProviders) {
+  //   return (
+  //     <View style={styles.noPaymentMethodsContainer}>
+  //       <Text testID="NoPaymentMethods" style={styles.noPaymentMethods}>
+  //         {t('noPaymentMethods', {
+  //           digitalAsset: tokenInfo.symbol,
+  //         })}
+  //       </Text>
+  //       <TextButton
+  //         testID={'SwitchCurrency'}
+  //         style={styles.switchCurrency}
+  //         onPress={switchCurrencyOnPress}
+  //       >
+  //         {t('switchCurrency')}
+  //       </TextButton>
+  //       <TextButton
+  //         testID={'ContactSupport'}
+  //         style={styles.contactSupport}
+  //         onPress={supportOnPress}
+  //       >
+  //         {t('contactSupport')}
+  //       </TextButton>
+  //     </View>
+  //   )
+  // }
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, Spacing.Thick24) }}>
       <AmountSpentInfo {...route.params} />
+
+      <ListItem>
+        <Touchable
+          onPress={() => {
+            navigate(Screens.WebViewScreen, {
+              uri: 'https://app.buckspay.xyz/',
+            })
+          }}
+          style={{ width: '100%' }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 10,
+              paddingVertical: 10,
+              borderRadius: 10,
+              backgroundColor: colors.lightPrimary,
+            }}
+          >
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: 'https://app.buckspay.xyz/favicon.ico' }}
+                style={styles.providerImage}
+              />
+            </View>
+            <Text style={styles.newLabelText}>Buckspay</Text>
+            <InfoIcon size={16} color={colors.gray5} />
+          </View>
+        </Touchable>
+      </ListItem>
+
       {paymentMethodSections.map((paymentMethod) => (
         <PaymentMethodSection
           key={paymentMethod}
@@ -596,19 +631,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  noPaymentMethods: {
-    ...typeScale.bodyMedium,
-    padding: variables.contentPadding,
-    textAlign: 'center',
-  },
-  switchCurrency: {
+  // noPaymentMethods: {
+  //   ...typeScale.bodyMedium,
+  //   padding: variables.contentPadding,
+  //   textAlign: 'center',
+  // },
+  // switchCurrency: {
+  //   ...typeScale.labelLarge,
+  //   color: colors.accent,
+  //   padding: Spacing.Smallest8,
+  // },
+  // noPaymentMethodsContainer: {
+  //   alignItems: 'center',
+  //   padding: Spacing.Thick24,
+  // },
+  newLabelText: {
     ...typeScale.labelLarge,
-    color: colors.accent,
-    padding: Spacing.Smallest8,
-  },
-  noPaymentMethodsContainer: {
-    alignItems: 'center',
-    padding: Spacing.Thick24,
   },
   left: {
     flex: 1,
@@ -646,11 +684,28 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     textAlign: 'center',
   },
-  contactSupport: {
-    ...typeScale.labelLarge,
-    color: colors.gray4,
-    padding: Spacing.Smallest8,
+  imageContainer: {
+    height: 40,
+    width: 40,
   },
+  providerImage: {
+    flex: 10,
+  },
+  // contactSupport: {
+  //   ...typeScale.labelLarge,
+  //   color: colors.gray4,
+  //   padding: Spacing.Smallest8,
+  // },
+  // newLabelContainer: {
+  //   backgroundColor: colors.gray3,
+  //   borderRadius: 100,
+  //   paddingVertical: 4,
+  //   paddingHorizontal: 8,
+  //   marginTop: 4,
+  //   marginLeft: 'auto',
+  //   flexDirection: 'row',
+  //   width: 'auto',
+  // },
   amountSpentInfo: {
     marginHorizontal: 16,
     marginBottom: 8,

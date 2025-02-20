@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1250"
+   LastUpgradeVersion = "1620"
    wasCreatedForAppExtension = "YES"
    version = "2.0">
    <BuildAction
@@ -15,8 +15,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0F49F5EC270F2F2A0005F897"
-               BuildableName = "NotificationServiceTucop.appex"
+               BlueprintIdentifier = "A23CB41F2D65AF8100B5ECCE"
+               BuildableName = "TuCopNotificationService.appex"
                BlueprintName = "NotificationService"
                ReferencedContainer = "container:MobileStack.xcodeproj">
             </BuildableReference>
@@ -30,7 +30,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Tucop.app"
+               BuildableName = "TuCop.app"
                BlueprintName = "MobileStack"
                ReferencedContainer = "container:MobileStack.xcodeproj">
             </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Tucop.app"
+            BuildableName = "TuCop.app"
             BlueprintName = "MobileStack"
             ReferencedContainer = "container:MobileStack.xcodeproj">
          </BuildableReference>
@@ -81,7 +81,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Tucop.app"
+            BuildableName = "TuCop.app"
             BlueprintName = "MobileStack"
             ReferencedContainer = "container:MobileStack.xcodeproj">
          </BuildableReference>
