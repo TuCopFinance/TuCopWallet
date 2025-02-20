@@ -69,6 +69,9 @@ setup_permissions(['Camera', 'AppTrackingTransparency', 'Contacts'])
 target "MobileStack" do
   config = use_native_modules!
 
+  # Add this line to ensure fonts are copied
+  pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec', :modular_headers => true
+
   # Flags change depending on the env values.
   flags = get_default_flags()
 
@@ -97,6 +100,8 @@ target "MobileStack" do
   # import OpenSSL after use_flipper! to avoid OpenSSL only being enabled for debug configurations
   # Flipper-Folly requires this specific version of OpenSSL, so declaring it here to avoid duplicate versions in the podfile.lock.
   pod 'OpenSSL-Universal', '1.1.1100', :configurations => ['Debug','Release']
+  pod 'CleverTap-iOS-SDK'
+  pod 'clevertap-react-native'
 end
 
 use_frameworks! :linkage => :static

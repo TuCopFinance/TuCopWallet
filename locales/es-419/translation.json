@@ -2371,8 +2371,8 @@
   },
   "bottomTabsNavigator": {
     "wallet": {
-      "tabName": "Wallet",
-      "title": "Mi wallet"
+      "tabName": "Billetera",
+      "title": "Mi Billetera"
     },
     "home": {
       "tabName": "Inicio",
@@ -2848,8 +2848,9 @@
     "addCCOP": "Recargar tu billetera",
     "sendMoney": "Enviar dinero",
     "receiveMoney": "Recibir dinero",
+    "spendMoney": "Gastar dinero",
     "holdUSD": "Mantener dólares estadounidenses",
-    "swapToUSD": "Intercambia tus cCOP por USDT",
+    "swapToUSD": "Intercambia",
     "withdraw": "Retirar de tu billetera",
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",

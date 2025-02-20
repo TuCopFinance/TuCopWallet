@@ -14,7 +14,7 @@ set -euo pipefail
 
 PLATFORM=""
 ENV_NAME="mainnet"
-RELEASE=true
+RELEASE=false
 SIMULATOR=""
 DEVICE=""
 PROFILING_ENABLED=false
