@@ -1,5 +1,5 @@
 #import "CTNotificationService.h"
-#import "CleverTap.h"
+#import <CleverTapSDK/CleverTap.h>
 
 @interface NotificationService : CTNotificationServiceExtension
 
