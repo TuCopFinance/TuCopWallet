@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A23CB41F2D65AF8100B5ECCE"
-               BuildableName = "TuCopNotificationService.appex"
+               BuildableName = "NotificationService.appex"
                BlueprintName = "NotificationService"
                ReferencedContainer = "container:MobileStack.xcodeproj">
             </BuildableReference>
