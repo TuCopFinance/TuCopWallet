@@ -319,7 +319,7 @@ export async function fetchExchanges(
       throw Error(`Fetch exchanges failed with status ${resp?.status}`)
     }
 
-    Logger.debug(TAG, 'got exchanges')
+    Logger.debug(TAG, 'got exchanges', resp.json())
 
     return resp.json()
   } catch (error) {

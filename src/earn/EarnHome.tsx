@@ -80,7 +80,7 @@ export default function EarnHome({ navigation, route }: Props) {
     paddingBottom: Math.max(insets.bottom, Spacing.Regular16),
   }
 
-  const supportedNetworkIds = [...new Set(pools.map((pool) => pool.networkId))]
+  const supportedNetworkIds = [NetworkId['celo-mainnet']]
   const allTokens = useSelector((state) => tokensByIdSelector(state, supportedNetworkIds))
 
   // Scroll Aware Header
