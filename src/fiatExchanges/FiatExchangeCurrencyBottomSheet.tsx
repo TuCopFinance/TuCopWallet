@@ -7,7 +7,7 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch } from 'src/redux/hooks'
-import { useCashInTokens, useCashOutTokens, useSpendTokens } from 'src/tokens/hooks'
+import { useCashInTokens, useCashOutTokens } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { sortCicoTokens } from 'src/tokens/utils'
 import { resolveCurrency } from 'src/utils/currencies'
@@ -21,7 +21,7 @@ function FiatExchangeCurrencyBottomSheet({ route }: Props) {
   const { flow } = route.params
   const cashInTokens = useCashInTokens()
   const cashOutTokens = useCashOutTokens(true)
-  const spendTokens = useSpendTokens()
+  const spendTokens = useCashInTokens()
   const unsortedTokenList =
     flow === FiatExchangeFlow.CashIn
       ? cashInTokens
