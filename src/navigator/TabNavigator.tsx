@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, StyleSheet, Text, View } from 'react-native'
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import TabActivity from 'src/home/TabActivity'
 import TabHome from 'src/home/TabHome'
 import ClockIcon from 'src/icons/ClockIcon'
@@ -45,6 +45,18 @@ export default function TabNavigator({ route }: Props) {
           elevation: 0,
           shadowOpacity: 0,
         },
+        tabBarButton: (props) => (
+          <Pressable
+            {...props}
+            android_ripple={null}
+            style={[
+              props.style,
+              {
+                backgroundColor: 'transparent',
+              },
+            ]}
+          />
+        ),
         tabBarLabelPosition: 'beside-icon',
         ...(tabHeader as NativeStackHeaderProps),
       }}
@@ -110,8 +122,10 @@ const styles = StyleSheet.create({
     height: Platform.select({ ios: 49, android: 53 }),
     paddingVertical: Spacing.Smallest8,
     flex: 1,
+    android_ripple: { color: 'transparent' },
   },
   activityContainer: {
+    marginLeft: Platform.select({ ios: 0, android: -44 }),
     marginRight: Platform.select({ ios: 48, android: 12 }),
     paddingRight: Platform.select({ ios: 16, android: 12 }),
   },
@@ -124,11 +138,8 @@ const styles = StyleSheet.create({
     gap: Platform.select({ ios: 8, android: 10 }),
   },
   tabText: {
-    fontSize: 16,
-    textAlign: 'left',
-    flexShrink: 1,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    ...typeScale.labelSemiBoldMedium,
+    marginHorizontal: Platform.select({ android: 8, ios: 8 }),
   },
   centerTabIcon: {
     justifyContent: 'center',

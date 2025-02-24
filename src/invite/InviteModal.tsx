@@ -4,15 +4,15 @@ import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaFrame } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { InviteEvents } from 'src/analytics/Events'
+import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import CustomHeader from 'src/components/header/CustomHeader'
 import ShareIcon from 'src/icons/Share'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import colors from 'src/styles/colors'
-import { typeScale } from 'src/styles/fonts'
+import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import CustomHeader from 'src/components/header/CustomHeader'
-import BackButton from 'src/components/BackButton'
 
 interface Props {
   title: string
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   textBold: {
     ...typeScale.bodyMedium,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: Inter.SemiBold,
   },
 })
 
