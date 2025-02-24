@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
@@ -24,9 +24,9 @@ import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
 import SwapArrows from 'src/icons/SwapArrows'
+import AddCCOP from 'src/icons/tab-home/AddCCOP'
 import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
 import Send from 'src/icons/tab-home/Send'
-import Swap from 'src/icons/tab-home/Swap'
 import Withdraw from 'src/icons/tab-home/Withdraw'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
@@ -253,32 +253,32 @@ function TabHome(_props: Props) {
               </View>
             </View>
 
-            <FlatCard type="primary" testID="FlatCard/AddCKES" onPress={onPressAddCCOP}>
-              <View style={styles.row}>
-                <ArrowVertical />
-                <Text style={styles.textWhite}>{t('tabHome.addCCOP')}</Text>
-              </View>
-            </FlatCard>
-
             <View style={styles.row}>
               <View style={styles.flex}>
-                <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
+                <FlatCard type="primary" testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
                   <View style={styles.row}>
-                    <Swap />
-                    <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
+                    <ArrowVertical />
+                    <Text style={styles.textWhite}>{t('tabHome.swapToUSD')}</Text>
                   </View>
                 </FlatCard>
               </View>
 
               <View style={styles.flex}>
-                <FlatCard testID="FlatCard/spendMoney" onPress={goToSpend}>
+                <FlatCard type="primary" testID="FlatCard/spendMoney" onPress={onPressWithdraw}>
                   <View style={styles.row}>
-                    <Withdraw />
-                    <Text style={styles.ctaSubText}>{t('tabHome.spendMoney')}</Text>
+                    <ArrowVertical />
+                    <Text style={styles.textWhite}>{t('tabHome.spendMoney')}</Text>
                   </View>
                 </FlatCard>
               </View>
             </View>
+
+            <FlatCard testID="FlatCard/AddCCOP" onPress={onPressAddCCOP}>
+              <View style={styles.column}>
+                <AddCCOP />
+                <Text style={styles.ctaText}>{t('tabHome.addCCOP')}</Text>
+              </View>
+            </FlatCard>
 
             {/* <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
               <View style={styles.row}>
@@ -297,12 +297,12 @@ function TabHome(_props: Props) {
               </View>
             </FlatCard>
 
-            <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+            {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
               <View style={styles.row}>
                 <Withdraw />
                 <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
               </View>
-            </FlatCard>
+            </FlatCard> */}
           </View>
         </Shadow>
       </ScrollView>
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    padding: variables.contentPadding,
+    paddingHorizontal: variables.contentPadding,
   },
   containerShadow: {
     flex: 1,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   flatCard: {
     backgroundColor: 'white',
-    padding: Spacing.Regular16,
+    padding: Platform.select({ ios: 16, android: 10 }),
     borderRadius: Spacing.Small12,
     justifyContent: 'center',
   },
@@ -453,20 +453,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   textWhite: { color: Colors.white },
-  // column: {
-  //   flexDirection: 'column',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   gap: Spacing.Smallest8,
-  // },
+  column: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.Smallest8,
+  },
   ctaText: {
     ...typeScale.bodySmall,
     color: Colors.black,
   },
-  ctaSubText: {
-    ...typeScale.bodySmall,
-    color: Colors.black,
-  },
+  // ctaSubText: {
+  //   ...typeScale.bodySmall,
+  //   color: Colors.black,
+  // },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -506,6 +506,8 @@ const styles = StyleSheet.create({
   balanceTitle: {
     ...typeScale.bodyLarge,
     color: Colors.secondary,
+    marginLeft: 1,
+    marginTop: 0,
   },
 
   shadow: {

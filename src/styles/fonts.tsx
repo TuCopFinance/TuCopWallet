@@ -1,10 +1,10 @@
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 
-const Inter = {
-  Regular: 'RedHatDisplay-Regular',
-  Medium: 'RedHatDisplay-Medium',
-  SemiBold: 'RedHatDisplay-SemiBold',
-  Bold: 'RedHatDisplay-Bold',
+export const Inter = {
+  Regular: Platform.OS === 'android' ? 'RedHatDisplayRegular' : 'RedHatDisplay-Regular',
+  Medium: Platform.OS === 'android' ? 'RedHatDisplayMedium' : 'RedHatDisplay-Medium',
+  SemiBold: Platform.OS === 'android' ? 'RedHatDisplaySemiBold' : 'RedHatDisplay-SemiBold',
+  Bold: Platform.OS === 'android' ? 'RedHatDisplayBold' : 'RedHatDisplay-Bold',
 }
 
 /**
@@ -52,7 +52,7 @@ export const typeScale = StyleSheet.create({
   },
   labelSemiBoldMedium: {
     fontFamily: Inter.SemiBold,
-    fontSize: 16,
+    fontSize: Platform.select({ android: 12, ios: 16 }),
     lineHeight: 24,
   },
   labelSemiBoldSmall: {
@@ -72,7 +72,7 @@ export const typeScale = StyleSheet.create({
   },
   labelMedium: {
     fontFamily: Inter.Medium,
-    fontSize: 16,
+    fontSize: Platform.select({ android: 12, ios: 16 }),
     lineHeight: 24,
   },
   labelSmall: {
@@ -99,7 +99,7 @@ export const typeScale = StyleSheet.create({
   },
   bodyMedium: {
     fontFamily: Inter.Regular,
-    fontSize: 16,
+    fontSize: Platform.select({ android: 12, ios: 16 }),
     lineHeight: 24,
   },
   bodySmall: {
