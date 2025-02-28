@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 
 const RadialGradientBackground = ({ style }: any) => (
-  <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
+  <Svg height="124" width="124" style={[StyleSheet.absoluteFill, style]}>
     <Defs>
       <RadialGradient
         id="grad"
@@ -19,7 +19,7 @@ const RadialGradientBackground = ({ style }: any) => (
         <Stop offset="100%" stopColor="#0D0D0D" stopOpacity="1" />
       </RadialGradient>
     </Defs>
-    <Rect x="0" y="0" width="100%" height="100%" fill="url(#grad)" />
+    <Rect x="0" y="0" width="124" height="124" fill="url(#grad)" />
   </Svg>
 )
 

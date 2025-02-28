@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import { default as React, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native'
+import { LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
@@ -25,6 +25,7 @@ import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
+import { refreshAllBalances } from 'src/home/actions'
 import AttentionIcon from 'src/icons/Attention'
 import { Screens } from 'src/navigator/Screens'
 import useScrollAwareHeader from 'src/navigator/ScrollAwareHeader'
@@ -158,6 +159,14 @@ export default function EarnHome({ navigation, route }: Props) {
     })
   }, [tokensInfo, activeFilters])
 
+  const [refreshing, setRefreshing] = React.useState(false)
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true)
+    dispatch(refreshAllBalances())
+    setRefreshing(false)
+  }, [])
+
   const handleToggleFilterChip = (chip: FilterChip<TokenBalance>) => {
     if (isNetworkChip(chip)) {
       return networkChipRef.current?.snapToIndex(0)
@@ -240,7 +249,12 @@ export default function EarnHome({ navigation, route }: Props) {
   const zeroPoolsinMyPoolsTab =
     !errorLoadingPools && displayPools.length === 0 && activeTab === EarnTabType.MyPools
   return (
-    <>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+      }
+    >
       <Animated.View testID="EarnScreen" style={styles.container}>
         <Animated.View
           style={[styles.listHeaderContainer, animatedListHeaderStyles]}
@@ -311,7 +325,7 @@ export default function EarnHome({ navigation, route }: Props) {
           forwardedRef={networkChipRef}
         />
       )}
-    </>
+    </ScrollView>
   )
 }
 

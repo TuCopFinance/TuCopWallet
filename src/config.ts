@@ -130,13 +130,11 @@ export const SEGMENT_API_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'SEG
 export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'SENTRY_CLIENT_URL')
 export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'RECAPTCHA_SITE_KEY')
 export const BIDALI_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'BIDALI_URL')
-export const WALLET_CONNECT_PROJECT_ID =
-  keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'WALLET_CONNECT_PROJECT_ID') ??
-  // mobilestack-e2e-client project in the WC project dashboard
-  '36d4ec3335559558180cc1079152fcb3'
-export const AUTH0_CLIENT_ID = 'nyGgrnWv5y6tI3ygl32T28Abc2ED5lMe'
 
-export const AUTH0_DOMAIN = configOrThrow('AUTH0_DOMAIN')
+export const WALLET_CONNECT_PROJECT_ID =
+  'BAJWXF8YqQSoNtdfX3z-vxgkZ0ZfN0hJVT0eGuf9BqoRbojNIxthU0wnW0oBScduV6XLeEePSmVhHQXuaqBMjcw'
+export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'
+export const AUTH0_DOMAIN = 'auth.valora.xyz'
 
 export const SPEND_MERCHANT_LINKS: SpendMerchant[] = [
   {
