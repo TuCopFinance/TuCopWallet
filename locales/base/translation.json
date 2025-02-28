@@ -2851,6 +2851,7 @@
     "holdUSD": "Hold US Dollars",
     "swapToUSD": "Swap your cCOP for USDT",
     "withdraw": "Withdraw From Your Wallet",
+    "earn": "Earn with your cCOP or USDT",
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "From My USDT Balance",
       "bySwapping": "Add cCOP by swapping from your USDT",
