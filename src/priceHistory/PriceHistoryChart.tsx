@@ -19,6 +19,7 @@ import { Price, fetchPriceHistoryStart } from 'src/priceHistory/slice'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { RootState } from 'src/redux/reducers'
 import colors from 'src/styles/colors'
+import { Inter } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { getLocalCurrencyDisplayValue } from 'src/utils/formatting'
@@ -83,7 +84,7 @@ function ChartAwareSvgText({
       onLayout={onLayout}
       fill={colors.gray4}
       fontSize="14"
-      fontFamily="Inter-Regular"
+      fontFamily={Inter.Regular}
       x={adjustedX}
       y={y}
       textAnchor="middle"

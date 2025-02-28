@@ -2850,7 +2850,8 @@
     "receiveMoney": "Recibir dinero",
     "spendMoney": "Gastar dinero",
     "holdUSD": "Mantener dólares estadounidenses",
-    "swapToUSD": "Intercambia",
+    "swapToUSD": "Intercambia tu dinero",
+    "earn": "Gana dinero con tus cCOP o USDT",
     "withdraw": "Retirar de tu billetera",
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
