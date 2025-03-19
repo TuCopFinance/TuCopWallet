@@ -57,7 +57,7 @@ enum STORAGE_KEYS {
 }
 
 const PEPPER_LENGTH = 64
-export const PIN_LENGTH = 6
+export const PIN_LENGTH = 4
 // Pepper and pin not currently generalized to be per account
 // Using this value in the caches
 export const DEFAULT_CACHE_ACCOUNT = 'default'
@@ -134,7 +134,7 @@ const DEPRECATED_PIN_BLOCKLIST = [
 ]
 
 export function isPinValid(pin: string) {
-  return /^\d{6}$/.test(pin) && !DEPRECATED_PIN_BLOCKLIST.includes(pin)
+  return /^\d{4,6}$/.test(pin) && !DEPRECATED_PIN_BLOCKLIST.includes(pin)
 }
 
 export async function retrieveOrGeneratePepper(account = DEFAULT_CACHE_ACCOUNT) {

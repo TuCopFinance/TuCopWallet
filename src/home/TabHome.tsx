@@ -1,14 +1,14 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
 import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { FiatExchangeEvents, TabHomeEvents } from 'src/analytics/Events'
+import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
 import {
   appStateSelector,
@@ -22,12 +22,14 @@ import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
+import i18n from 'src/i18n'
 import Add from 'src/icons/quick-actions/Add'
+import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
 import SwapArrows from 'src/icons/SwapArrows'
 import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
+import Recharge from 'src/icons/tab-home/Recharge'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
-import Withdraw from 'src/icons/tab-home/Withdraw'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
@@ -37,12 +39,12 @@ import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { initializeSentryUserContext } from 'src/sentry/actions'
 import Colors from 'src/styles/colors'
-import { typeScale } from 'src/styles/fonts'
+import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCashOutTokens, useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
+import { useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
-import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import Earn from './earn.svg'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -113,28 +115,23 @@ function TabHome(_props: Props) {
   const cCCOPToken: any = useCCOP()
   const USDTToken = useUSDT()
 
-  const onPressAddCCOP = React.useCallback(() => {
-    navigate(Screens.FiatExchangeAmount, {
-      tokenId: cCCOPToken?.tokenId || CCOP_TOKEN_ID_MAINNET,
-      flow: CICOFlow.CashIn,
-      tokenSymbol: cCCOPToken?.symbol,
-    })
-  }, [cCCOPToken?.tokenId])
+  const onPressRecharge = React.useCallback(() => {
+    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
+  }, [])
 
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
-    !!cCCOPToken &&
-      navigate(Screens.SendSelectRecipient, {
-        defaultTokenIdOverride: cCCOPToken.tokenId,
-      })
-  }
-
-  function goToSpend() {
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
-    AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
-      flow: FiatExchangeFlow.Spend,
+    navigate(Screens.SendSelectRecipient, {
+      defaultTokenIdOverride: cCCOPToken.tokenId,
     })
   }
+
+  // function goToSpend() {
+  //   navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
+  //   AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
+  //     flow: FiatExchangeFlow.Spend,
+  //   })
+  // }
 
   function onPressRecieveMoney() {
     AppAnalytics.track(TabHomeEvents.receive_money)
@@ -157,29 +154,18 @@ function TabHome(_props: Props) {
     navigate(Screens.EarnHome)
   }
 
-  const cashOutTokens = useCashOutTokens(true)
-
   function onPressWithdraw() {
-    const availableCashOutTokens = cashOutTokens.filter((token) => !token.balance.isZero())
-    const numAvailableCashOutTokens = availableCashOutTokens.length
-    if (
-      numAvailableCashOutTokens === 1 ||
-      (numAvailableCashOutTokens === 0 && cashOutTokens.length === 1)
-    ) {
-      const { tokenId, symbol } =
-        numAvailableCashOutTokens === 1 ? availableCashOutTokens[0] : cashOutTokens[0]
-      navigate(Screens.FiatExchangeAmount, {
-        tokenId,
-        flow: CICOFlow.CashOut,
-        tokenSymbol: symbol,
-      })
-    } else {
-      navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashOut })
-      AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
-        flow: FiatExchangeFlow.CashOut,
-      })
-    }
-    AppAnalytics.track(TabHomeEvents.withdraw)
+    // navigate(Screens.FiatExchangeAmount, {
+    //   tokenId: cCCOPToken.tokenId,
+    //   flow: CICOFlow.CashOut,
+    //   tokenSymbol: cCCOPToken.symbol,
+    // })
+
+    navigate(Screens.WebViewScreen, {
+      uri: 'https://app.buckspay.xyz/',
+    })
+
+    // AppAnalytics.track(TabHomeEvents.withdraw)
   }
 
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
@@ -214,6 +200,56 @@ function TabHome(_props: Props) {
             </Text>
             <HideBalanceButton hideBalance={hideWalletBalances} />
           </View>
+
+          <View style={styles.row}>
+            <View style={[styles.flex, { alignItems: 'center' }]}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.actionButtonsContainer}
+              >
+                <FlatCard type="scrollmenu" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
+                  <View style={styles.actionButton}>
+                    <Send />
+                  </View>
+                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
+                    {t('tabHome.sendMoney')}
+                  </Text>
+                </FlatCard>
+
+                <FlatCard
+                  type="scrollmenu"
+                  testID="FlatCard/ReceiveMoney"
+                  onPress={onPressRecieveMoney}
+                >
+                  <View style={styles.actionButton}>
+                    <ArrowVertical />
+                  </View>
+                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
+                    {t('tabHome.receiveMoney')}
+                  </Text>
+                </FlatCard>
+
+                <FlatCard type="scrollmenu" testID="FlatCard/AddCCOP" onPress={onPressRecharge}>
+                  <View style={styles.actionButton}>
+                    <Recharge />
+                  </View>
+                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
+                    {t('tabHome.addCCOP')}
+                  </Text>
+                </FlatCard>
+
+                <FlatCard type="scrollmenu" testID="FlatCard/spendMoney" onPress={onPressWithdraw}>
+                  <View style={styles.actionButton}>
+                    <QuickActionsWithdraw color={Colors.primary} />
+                  </View>
+                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
+                    {t('tabHome.spendMoney')}
+                  </Text>
+                </FlatCard>
+              </ScrollView>
+            </View>
+          </View>
         </View>
 
         <Shadow
@@ -224,64 +260,6 @@ function TabHome(_props: Props) {
           sides={{ bottom: false }} // Add this to specifically disable bottom shadow
         >
           <View style={[styles.containerShadow, styles.noBottomShadow]}>
-            <View style={styles.row}>
-              <View style={styles.flex}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.actionButtonsContainer}
-                >
-                  <FlatCard
-                    type="scrollmenu"
-                    testID="FlatCard/SendMoney"
-                    onPress={onPressSendMoney}
-                  >
-                    <View style={styles.actionButton}>
-                      <Send />
-                      <Text style={[styles.textWhite, styles.actionButtonText]}>
-                        {t('tabHome.sendMoney')}
-                      </Text>
-                    </View>
-                  </FlatCard>
-
-                  <FlatCard
-                    type="scrollmenu"
-                    testID="FlatCard/ReceiveMoney"
-                    onPress={onPressRecieveMoney}
-                  >
-                    <View style={styles.actionButton}>
-                      <ArrowVertical />
-                      <Text style={[styles.textWhite, styles.actionButtonText]}>
-                        {t('tabHome.receiveMoney')}
-                      </Text>
-                    </View>
-                  </FlatCard>
-
-                  <FlatCard type="scrollmenu" testID="FlatCard/AddCCOP" onPress={onPressAddCCOP}>
-                    <View style={styles.actionButton}>
-                      <Send />
-                      <Text style={[styles.textWhite, styles.actionButtonText]}>
-                        {t('tabHome.addCCOP')}
-                      </Text>
-                    </View>
-                  </FlatCard>
-
-                  <FlatCard
-                    type="scrollmenu"
-                    testID="FlatCard/spendMoney"
-                    onPress={onPressWithdraw}
-                  >
-                    <View style={styles.actionButton}>
-                      <ArrowVertical />
-                      <Text style={[styles.textWhite, styles.actionButtonText]}>
-                        {t('tabHome.spendMoney')}
-                      </Text>
-                    </View>
-                  </FlatCard>
-                </ScrollView>
-              </View>
-            </View>
-
             <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
               <View style={styles.row}>
                 <Swap />
@@ -300,9 +278,17 @@ function TabHome(_props: Props) {
             </FlatCard> */}
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={styles.row}>
-                <Withdraw />
-                <Text style={styles.ctaText}>{t('tabHome.earn')}</Text>
+              <View style={[styles.row, { paddingVertical: 5 }]}>
+                <Earn />
+                <Text>
+                  <Trans
+                    i18n={i18n}
+                    i18nKey="tabHome.earn"
+                    components={{
+                      0: (chunks: React.ReactNode) => <Bold>{chunks}</Bold>,
+                    }}
+                  />
+                </Text>
               </View>
             </FlatCard>
 
@@ -319,6 +305,10 @@ function TabHome(_props: Props) {
       <AddCCOPBottomSheet forwardedRef={addCCOPBottomSheetRef} />
     </SafeAreaView>
   )
+}
+
+function Bold({ children }: { children: React.ReactNode }) {
+  return <Text style={[styles.textBold]}>{children}</Text>
 }
 
 function FlatCard({
@@ -339,17 +329,19 @@ function FlatCard({
   }
 
   const flatStyle = card_styles[type || 'default']
-  return (
+  return type !== 'scrollmenu' ? (
     <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
       <Touchable borderRadius={Spacing.Small12} style={flatStyle} testID={testID} onPress={onPress}>
         <>
-          {(type === 'primary' || type === 'scrollmenu') && (
-            <RadialGradientBackground style={styles.grandient} />
-          )}
+          {type === 'primary' && <RadialGradientBackground style={styles.grandient} />}
           {children}
         </>
       </Touchable>
     </Shadow>
+  ) : (
+    <Touchable borderRadius={Spacing.Small12} style={flatStyle} testID={testID} onPress={onPress}>
+      <>{children}</>
+    </Touchable>
   )
 }
 
@@ -423,6 +415,10 @@ function AddCCOPBottomSheet({
 }
 
 const styles = StyleSheet.create({
+  textBold: {
+    fontFamily: Inter.Bold,
+    fontWeight: 'bold',
+  },
   scrollStyle: {
     flex: 1,
     marginHorizontal: -variables.contentPadding,
@@ -458,18 +454,16 @@ const styles = StyleSheet.create({
   },
   flatCard: {
     backgroundColor: 'white',
-    padding: Platform.select({ ios: 16, android: 10 }),
-    borderRadius: Spacing.Small12,
-    justifyContent: 'center',
-  },
-  flatCardScrollMenu: {
-    padding: Platform.select({ ios: 16, android: 10 }),
+    padding: Platform.select({ ios: 16, android: 13 }),
+    width: '100%',
     borderRadius: Spacing.Small12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flatCardScrollMenu: {
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
-    height: 124,
-    width: '100%',
     zIndex: 1,
   },
   flatCardPrimary: {
@@ -488,7 +482,7 @@ const styles = StyleSheet.create({
     height: 124,
     width: 124,
   },
-  textWhite: { color: Colors.white },
+  textPrimary: { color: Colors.primary },
   // column: {
   //   flexDirection: 'column',
   //   justifyContent: 'center',
@@ -497,7 +491,8 @@ const styles = StyleSheet.create({
   // },
   ctaText: {
     ...typeScale.bodySmall,
-    color: Colors.black,
+    color: Colors.gray6,
+    letterSpacing: -0.16,
   },
   // ctaSubText: {
   //   ...typeScale.bodySmall,
@@ -554,22 +549,24 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   actionButtonsContainer: {
-    paddingHorizontal: Spacing.Smallest8,
-    paddingVertical: Spacing.Regular16,
-    gap: Spacing.Smallest8,
+    gap: Spacing.Thick24,
+    marginTop: Spacing.Large32,
+    marg: 'auto',
   },
   actionButton: {
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.Smallest8,
-    width: 100, // Fixed width for consistent sizing
-    height: 80, // Increased height to accommodate vertical layout
+    backgroundColor: Colors.primary10,
+    padding: 16,
+    background: '#EEEFFF',
+    marginBottom: Spacing.Smallest8,
+    borderRadius: 12,
   },
   actionButtonText: {
     textAlign: 'center',
     fontSize: 12,
-    lineHeight: 14,
+    lineHeight: 20,
+    letterSpacing: -0.12,
+    fontFamily: Inter.Regular,
   },
 })
 

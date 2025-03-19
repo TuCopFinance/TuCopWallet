@@ -106,12 +106,12 @@
     }
   },
   "signInWithEmail": {
-    "title": "Iniciar sesión con email",
-    "subtitle": "Inicia sesión con tu correo electrónico para configurarlo como copia de seguridad. Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
+    "title": "Vincula tu billetera",
+    "subtitle": "Vincula tu nueva billetera con tu correo electrónico para configurarlo como copia de seguridad. Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
     "subtitleRestore": "Inicia sesión con el correo electrónico que usaste para configurar la copia de seguridad de tu wallet.",
-    "google": "Iniciar sesión con Google",
-    "apple": "Iniciar sesión con Apple",
-    "signInAnotherWay": "Inicia sesión de otra manera",
+    "google": "Vincular con Google",
+    "apple": "Vincular con Apple",
+    "signInAnotherWay": "Continuar de otra manera",
     "bottomSheet": {
       "title": "Guarda tu frase de recuperación para crear una wallet",
       "description": "Pronto agregaremos nuevos proveedores de correo electrónico. Mientras tanto, tendrás que guardar tu frase de recuperación para terminar de crear una billetera.",
@@ -159,14 +159,14 @@
         "title": "Tu wallet no ha sido restaurada",
         "body": "Hubo un problema técnico al restaurar tu wallet. Ponte en contacto con el equipo de soporte técnico para obtener más información.",
         "tryAgain": "Reintentar",
-        "createNewWallet": "Crear wallet",
+        "createNewWallet": "Crear billetera en TuCOP",
         "help": "Ayuda"
       },
       "notFound": {
         "title": "No se encontró la wallet",
         "body": "Para restaurar tu wallet, usa la <0>misma dirección de correo electrónico y el mismo número de teléfono</0> que usaste al configurarla.\n\nTambién puedes restaurar tu wallet con tu frase de recuperación.",
         "tryAgain": "Reintentar",
-        "createNewWallet": "Crear wallet"
+        "createNewWallet": "Crear billetera en TuCOP"
       }
     }
   },
@@ -843,10 +843,10 @@
     "titleGuided": "¡Te damos la bienvenida a {{appName}}!\nDemos el primer paso juntos, creemos tu wallet.",
     "createAccount": "Crear una cuenta",
     "restoreAccount": "Restaurar cuenta existente",
-    "createNewWallet": "Crear wallet",
+    "createNewWallet": "Crear billetera en TuCOP",
     "restoreWallet": "Restaurar wallet",
     "hasWallet": "Ya tengo una wallet",
-    "hasWalletV1_88": "Tengo una wallet",
+    "hasWalletV1_88": "Importar billetera existente",
     "header": "¡Te damos la bienvenida a {{appName}}! Demos el primer paso, creemos tu wallet.",
     "getStarted": "Primeros pasos",
     "agreeToTerms": "Al crear una wallet aceptas nuestros <0>Términos y condiciones</0>."
@@ -2713,7 +2713,7 @@
       "fees": "Tarifas"
     },
     "home": {
-      "title": "Gana",
+      "title": "Tu dinero crece",
       "learnMore": "<0>Más información</0> sobre las pools de rendimiento.",
       "learnMoreBottomSheet": {
         "bottomSheetTitle": "Más información sobre la pools de rendimiento",
@@ -2845,13 +2845,13 @@
   "celoDollarAmount_plural": "<0></0> Celo Dollars",
   "tabHome": {
     "myWallet": "Mi billetera",
-    "addCCOP": "Recargar tu billetera",
-    "sendMoney": "Enviar dinero",
-    "receiveMoney": "Recibir dinero",
-    "spendMoney": "Gastar dinero",
+    "addCCOP": "Recarga",
+    "sendMoney": "Envia",
+    "receiveMoney": "Recibe",
+    "spendMoney": "Gasta",
     "holdUSD": "Mantener dólares estadounidenses",
-    "swapToUSD": "Intercambia tu dinero",
-    "earn": "Gana dinero con tus cCOP o USDT",
+    "swapToUSD": "Intercambia tus divisas",
+    "earn": "Haz crecer <0>tu dinero</0>",
     "withdraw": "Retirar de tu billetera",
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",

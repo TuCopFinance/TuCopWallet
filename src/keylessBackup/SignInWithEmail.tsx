@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useAuth0 } from 'react-native-auth0'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -13,7 +13,6 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import TextButton from 'src/components/TextButton'
 import AppleIcon from 'src/icons/Apple'
 import GoogleIcon from 'src/icons/Google'
-import { email } from 'src/images/Images'
 import KeylessBackupCancelButton from 'src/keylessBackup/KeylessBackupCancelButton'
 import { auth0SignInCompleted, keylessBackupStarted } from 'src/keylessBackup/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
@@ -27,14 +26,13 @@ import {
   onboardingPropsSelector,
 } from 'src/onboarding/steps'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { getFeatureGate } from 'src/statsig'
-import { StatsigFeatureGates } from 'src/statsig/types'
 import { default as Colors, default as colors } from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
+import EmailImage from './email.svg'
 
 const TAG = 'keylessBackup/SignInWithEmail'
 
@@ -103,7 +101,7 @@ type Props = NativeStackScreenProps<StackParamList, Screens.SignInWithEmail>
 function SignInWithEmail({ route, navigation }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
-  const showApple = getFeatureGate(StatsigFeatureGates.SHOW_APPLE_IN_CAB)
+  const showApple = true
   const { authorize, getCredentials, clearCredentials } = useAuth0()
   const { keylessBackupFlow, origin } = route.params
   const [loading, setLoading] = useState<null | OAuthProvider>(null)
@@ -227,60 +225,62 @@ function SignInWithEmail({ route, navigation }: Props) {
       />
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.imageContainer}>
-          <Image testID="Email" source={email} />
+          <EmailImage />
         </View>
         <Text style={styles.title}>{t('signInWithEmail.title')}</Text>
         <Text style={styles.subtitle}>
           {isSetup ? t('signInWithEmail.subtitle') : t('signInWithEmail.subtitleRestore')}
         </Text>
-      </ScrollView>
-      <View
-        style={[
-          styles.buttonContainer,
-          isSetupInOnboarding ? insetsStyle : { marginBottom: Spacing.Thick24 },
-        ]}
-      >
-        <Button
-          testID="SignInWithEmail/Google"
-          onPress={() => onPressSignIn('google-oauth2')}
-          text={t('signInWithEmail.google')}
-          size={BtnSizes.FULL}
-          type={BtnTypes.SECONDARY}
-          icon={<GoogleIcon color={Colors.black} />}
-          iconMargin={10}
-          showLoading={loading === 'google-oauth2'}
-          disabled={!!loading}
-        />
-        {showApple && (
+        <View
+          style={[
+            styles.buttonContainer,
+            isSetupInOnboarding ? insetsStyle : { marginBottom: Spacing.Thick24 },
+          ]}
+        >
           <Button
-            testID="SignInWithEmail/Apple"
-            onPress={() => onPressSignIn('apple')}
-            text={t('signInWithEmail.apple')}
+            testID="SignInWithEmail/Google"
+            onPress={() => onPressSignIn('google-oauth2')}
+            text={t('signInWithEmail.google')}
             size={BtnSizes.FULL}
             type={BtnTypes.SECONDARY}
-            icon={<AppleIcon color={Colors.black} />}
-            iconMargin={10}
-            showLoading={loading === 'apple'}
+            iconPositionLeft={false}
+            icon={<GoogleIcon color={Colors.black} />}
+            iconMargin={5}
+            showLoading={loading === 'google-oauth2'}
             disabled={!!loading}
           />
-        )}
+          {showApple && (
+            <Button
+              testID="SignInWithEmail/Apple"
+              onPress={() => onPressSignIn('apple')}
+              text={t('signInWithEmail.apple')}
+              size={BtnSizes.FULL}
+              type={BtnTypes.SECONDARY}
+              icon={<AppleIcon color={Colors.black} />}
+              iconPositionLeft={false}
+              iconMargin={5}
+              showLoading={loading === 'apple'}
+              disabled={!!loading}
+            />
+          )}
+          {isSetupInOnboarding && (
+            <TextButton
+              style={styles.signInAnotherWay}
+              testID="SignInWithEmail/SignInAnotherWay"
+              onPress={onPressSignInAnotherWay}
+            >
+              {t('signInWithEmail.signInAnotherWay')}
+            </TextButton>
+          )}
+        </View>
         {isSetupInOnboarding && (
-          <TextButton
-            style={styles.signInAnotherWay}
-            testID="SignInWithEmail/SignInAnotherWay"
-            onPress={onPressSignInAnotherWay}
-          >
-            {t('signInWithEmail.signInAnotherWay')}
-          </TextButton>
+          <SignInWithEmailBottomSheet
+            keylessBackupFlow={keylessBackupFlow}
+            origin={origin}
+            bottomSheetRef={bottomSheetRef}
+          />
         )}
-      </View>
-      {isSetupInOnboarding && (
-        <SignInWithEmailBottomSheet
-          keylessBackupFlow={keylessBackupFlow}
-          origin={origin}
-          bottomSheetRef={bottomSheetRef}
-        />
-      )}
+      </ScrollView>
     </SafeAreaView>
   )
 }

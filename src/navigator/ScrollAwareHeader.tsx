@@ -3,6 +3,7 @@ import React, { useLayoutEffect } from 'react'
 import Animated, { useAnimatedStyle, useDerivedValue } from 'react-native-reanimated'
 import { HeaderTitleWithSubtitle } from 'src/navigator/Headers'
 import { StackParamList } from 'src/navigator/types'
+import Colors from 'src/styles/colors'
 
 interface Props {
   title: string | React.ReactNode
@@ -40,6 +41,7 @@ const useScrollAwareHeader = ({
   const animatedScreenHeaderStyles = useAnimatedStyle(() => {
     return {
       opacity: animatedScreenHeaderOpacity.value,
+      color: Colors.primary,
     }
   }, [animatedScreenHeaderOpacity.value])
 

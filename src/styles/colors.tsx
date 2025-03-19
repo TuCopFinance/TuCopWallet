@@ -9,6 +9,7 @@ enum Colors {
   transparent = 'transparent',
 
   // grays
+  gray6 = '#455073',
   gray5 = '#505050',
   gray4 = '#666666',
   gray3 = '#757575',
@@ -19,6 +20,7 @@ enum Colors {
   primary = '#2F4ACD',
   accent = '#2F4ACD',
   lightPrimary = 'rgba(80, 97, 232, 0.1)',
+  primary10 = '#EEEFFF',
 
   // secondary
   secondary = '#2E3142',

@@ -101,7 +101,6 @@ target "MobileStack" do
   # Flipper-Folly requires this specific version of OpenSSL, so declaring it here to avoid duplicate versions in the podfile.lock.
   pod 'OpenSSL-Universal', '1.1.1100', :configurations => ['Debug','Release']
   pod 'CleverTap-iOS-SDK'
-  pod 'clevertap-react-native'
 end
 
 use_frameworks! :linkage => :static

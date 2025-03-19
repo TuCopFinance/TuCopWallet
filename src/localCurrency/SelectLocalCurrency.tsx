@@ -12,7 +12,7 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { useDispatch } from 'src/redux/hooks'
 import { typeScale } from 'src/styles/fonts'
 
-const DEFAULT_CURRENCY_CODE = LocalCurrencyCode.USD
+const DEFAULT_CURRENCY_CODE = LocalCurrencyCode.COP
 
 function keyExtractor(item: LocalCurrencyCode) {
   return item

@@ -15,11 +15,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import FilterChipsCarousel, {
-  FilterChip,
-  NetworkFilterChip,
-  isNetworkChip,
-} from 'src/components/FilterChipsCarousel'
+import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/FilterChipsCarousel'
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
@@ -266,14 +262,14 @@ export default function EarnHome({ navigation, route }: Props) {
           >
             <View style={styles.headerRow}>
               <Text style={styles.title}>{t('earnFlow.home.title')}</Text>
-              <FilterChipsCarousel
+              {/* <FilterChipsCarousel
                 chips={filters}
                 onSelectChip={handleToggleFilterChip}
                 forwardedRef={filterChipsCarouselRef}
                 style={styles.filterChipsCarouselContainer}
                 contentContainerStyle={styles.contentContainerStyle}
                 scrollEnabled={false}
-              />
+              /> */}
             </View>
 
             <EarnTabBar activeTab={activeTab} onChange={handleChangeActiveView} />
@@ -298,7 +294,7 @@ export default function EarnHome({ navigation, route }: Props) {
             listHeaderHeight={listHeaderHeight}
             paddingBottom={insets.bottom}
             displayPools={displayPools.filter((pool) =>
-              pool.tokens.some((token) =>
+              pool.tokens.some((token: any) =>
                 tokenList.map((token) => token.tokenId).includes(token.tokenId)
               )
             )}
@@ -364,8 +360,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...typeScale.titleMedium,
-    color: Colors.black,
+    ...typeScale.titleLarge,
+    color: Colors.primary,
   },
   listHeaderContainer: {
     ...getShadowStyle(Shadow.SoftLight),
@@ -384,12 +380,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
   },
-  filterChipsCarouselContainer: {
-    flexDirection: 'row',
-  },
-  contentContainerStyle: {
-    justifyContent: 'flex-end',
-  },
+  // filterChipsCarouselContainer: {
+  //   flexDirection: 'row',
+  // },
+  // contentContainerStyle: {
+  //   justifyContent: 'flex-end',
+  // },
   learnMoreTitle: {
     ...typeScale.titleSmall,
     color: Colors.black,

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { BackHandler, Image, StyleSheet } from 'react-native'
+import { BackHandler, StyleSheet } from 'react-native'
 import RNExitApp from 'react-native-exit-app'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PincodeType } from 'src/account/reducer'
@@ -13,7 +13,7 @@ import { pincodeTypeSelector } from 'src/account/selectors'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { appUnlock } from 'src/app/actions'
 import { supportedBiometryTypeSelector } from 'src/app/selectors'
-import { background } from 'src/images/Images'
+import BackgroundSVG from 'src/images/svgs/Loader.svg'
 import Pincode from 'src/pincode/Pincode'
 import { checkPin, getPincodeWithBiometry } from 'src/pincode/authentication'
 import { useDispatch, useSelector } from 'src/redux/hooks'
@@ -74,7 +74,7 @@ function PincodeLock() {
   if (shouldGetPinWithBiometry && !getPinWithBiometryError) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <Image testID="BackgroundImage" source={background} style={styles.backgroundImage} />
+        <BackgroundSVG testID="BackgroundImage" style={styles.backgroundImage} />
       </SafeAreaView>
     )
   }
