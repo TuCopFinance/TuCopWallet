@@ -1,11 +1,11 @@
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import AppAnalytics from 'src/analytics/AppAnalytics'
-import { QrScreenEvents } from 'src/analytics/Events'
-import ScanIcon from 'src/icons/ScanIcon'
+import { Colors } from 'react-native/Libraries/NewAppScreen'
+import Share from 'src/icons/Share'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { TopBarIconButtonV2 } from 'src/navigator/TopBarIconButtonV2'
+import { useCCOP } from 'src/tokens/hooks'
 
 interface Props {
   style?: StyleProp<ViewStyle>
@@ -13,15 +13,18 @@ interface Props {
   testID?: string
 }
 
-export default function QrScanButton({ testID, size, style }: Props) {
+export default function SendButton({ testID, size = 23, style }: Props) {
+  const cCCOPToken: any = useCCOP()
+
   const onPress = () => {
-    AppAnalytics.track(QrScreenEvents.qr_scanner_open)
-    navigate(Screens.QRNavigator, { screen: Screens.QRCode })
+    navigate(Screens.SendSelectRecipient, {
+      defaultTokenIdOverride: cCCOPToken.tokenId,
+    })
   }
 
   return (
     <TopBarIconButtonV2
-      icon={<ScanIcon size={size} />}
+      icon={<Share size={size} color={Colors.black} />}
       testID={testID}
       onPress={onPress}
       style={style}

@@ -25,6 +25,8 @@ export const useDeepLinks = () => {
   const shouldConsumeDeepLinks = address && hasVisitedHome
 
   const handleOpenURL = (event: { url: string }, isSecureOrigin: boolean = false) => {
+    Logger.debug('Deep Link Received:', event.url)
+
     if (event.url.startsWith(DYNAMIC_LINK_DOMAIN_URI_PREFIX)) {
       // dynamic links come through both the `dynamicLinks` and `Linking` APIs.
       // the dynamicLinks handlers will already resolve the link, only the

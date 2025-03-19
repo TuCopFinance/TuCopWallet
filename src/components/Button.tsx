@@ -29,6 +29,7 @@ export enum BtnSizes {
 export enum TextSizes {
   SMALL = 'small',
   MEDIUM = 'medium',
+  NORMAL = 'normal',
 }
 
 export interface ButtonProps {
@@ -47,6 +48,7 @@ export interface ButtonProps {
   touchableStyle?: StyleProp<ViewStyle>
   iconMargin?: number
   textSize?: TextSizes
+  textBold?: boolean
 }
 
 export default React.memo(function Button(props: ButtonProps) {
@@ -63,6 +65,7 @@ export default React.memo(function Button(props: ButtonProps) {
     showLoading,
     loadingColor,
     touchableStyle,
+    textBold,
     iconMargin = 4,
     textSize = TextSizes.MEDIUM,
   } = props
@@ -117,6 +120,7 @@ export default React.memo(function Button(props: ButtonProps) {
                     color: textColor,
                     marginLeft: icon && iconPositionLeft ? iconMargin : 0,
                     marginRight: icon && !iconPositionLeft ? iconMargin : 0,
+                    fontWeight: textBold ? 'bold' : 'normal',
                   }}
                 >
                   {text}
@@ -239,6 +243,8 @@ function getStyle(
 
 function getTextStyle(textSize: TextSizes | undefined) {
   switch (textSize) {
+    case TextSizes.NORMAL:
+      return typeScale.labelSemiBoldLarge
     case TextSizes.SMALL:
       return typeScale.labelSemiBoldSmall
     default:

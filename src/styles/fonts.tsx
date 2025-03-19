@@ -32,7 +32,7 @@ export const typeScale = StyleSheet.create({
   titleLarge: {
     fontFamily: Inter.Bold,
     fontSize: 32,
-    lineHeight: 40,
+    lineHeight: 36,
     letterSpacing: -0.32,
   },
   titleMedium: {
@@ -78,6 +78,11 @@ export const typeScale = StyleSheet.create({
   labelSmall: {
     fontFamily: Inter.Medium,
     fontSize: 14,
+    lineHeight: 20,
+  },
+  labelNormal: {
+    fontFamily: Inter.Medium,
+    fontSize: 16,
     lineHeight: 20,
   },
   labelXSmall: {

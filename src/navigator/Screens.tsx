@@ -93,6 +93,7 @@ export enum Screens {
   TabHome = 'TabHome',
   TabActivity = 'TabActivity',
   TabWallet = 'TabWallet',
+  TabEarn = 'TabEarn',
   TokenDetails = 'TokenDetails',
   TokenDetailsMoreActions = 'TokenDetailsMoreActions',
   TokenImport = 'TokenImport',

@@ -49,7 +49,7 @@ function VerificationStartScreen({
   const [phoneNumberInfo, setPhoneNumberInfo] = useState(() =>
     getPhoneNumberDetails(
       cachedNumber || '',
-      cachedCountryCallingCode || '',
+      cachedCountryCallingCode || 'CO',
       route.params?.selectedCountryCodeAlpha2 || RNLocalize.getCountry()
     )
   )
@@ -74,7 +74,7 @@ function VerificationStartScreen({
   const countries = useMemo(() => new Countries(i18n.language), [i18n.language])
   const country = phoneNumberInfo.countryCodeAlpha2
     ? countries.getCountryByCodeAlpha2(phoneNumberInfo.countryCodeAlpha2)
-    : undefined
+    : countries.getCountryByCodeAlpha2('CO')
 
   const onPressStart = () => {
     AppAnalytics.track(PhoneVerificationEvents.phone_verification_start, {
