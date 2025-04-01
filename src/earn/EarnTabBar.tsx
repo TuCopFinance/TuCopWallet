@@ -18,7 +18,11 @@ export default function EarnTabBar({
 }) {
   const { t } = useTranslation()
 
-  const items = [t('earnFlow.poolFilters.allPools'), t('earnFlow.poolFilters.myPools')]
+  const items = [
+    t('earnFlow.poolFilters.tumarranito'),
+    t('earnFlow.poolFilters.allPools'),
+    t('earnFlow.poolFilters.myPools'),
+  ]
 
   const handleSelectOption = (index: EarnTabType) => () => {
     onChange(index)

@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js'
 import { default as React, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
   useAnimatedScrollHandler,
@@ -19,6 +18,7 @@ import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/Fil
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
+import MarranitosPools from 'src/earn/marranitos/MarranitosPools'
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
 import { refreshAllBalances } from 'src/home/actions'
@@ -39,6 +39,7 @@ import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
 
 const HEADER_OPACITY_ANIMATION_START_OFFSET = 44
 const HEADER_OPACITY_ANIMATION_DISTANCE = 20
@@ -67,10 +68,9 @@ export default function EarnHome({ navigation, route }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const filterChipsCarouselRef = useRef<ScrollView>(null)
   const pools = useSelector(earnPositionsSelector)
 
-  const activeTab = route.params?.activeEarnTab ?? EarnTabType.AllPools
+  const activeTab = route.params?.activeEarnTab ?? EarnTabType.Marranitos
 
   const insets = useSafeAreaInsets()
   const insetsStyle = {
@@ -115,7 +115,6 @@ export default function EarnHome({ navigation, route }: Props) {
   }, [scrollPosition.value, nonStickyHeaderHeight])
 
   const networkChipRef = useRef<BottomSheetModalRefType>(null)
-  const tokenBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const learnMoreBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   // The NetworkMultiSelectBottomSheet and TokenBottomSheet must be rendered at this level in order to be in
@@ -132,6 +131,9 @@ export default function EarnHome({ navigation, route }: Props) {
   const tokens = [...new Set(pools.flatMap((pool) => pool.tokens))]
 
   const tokensInfo = useMemo(() => {
+    Logger.debug('tokensInfo -> tokens', tokens)
+    Logger.debug('tokensInfo -> allTokens', allTokens)
+    Logger.debug('tokensInfo -> pools', pools)
     return tokens
       .map((token) => allTokens[token.tokenId])
       .filter((token): token is TokenBalance => !!token)
@@ -162,13 +164,6 @@ export default function EarnHome({ navigation, route }: Props) {
     dispatch(refreshAllBalances())
     setRefreshing(false)
   }, [])
-
-  const handleToggleFilterChip = (chip: FilterChip<TokenBalance>) => {
-    if (isNetworkChip(chip)) {
-      return networkChipRef.current?.snapToIndex(0)
-    }
-    return tokenBottomSheetRef.current?.snapToIndex(0)
-  }
 
   // These function params mimic the params of the setSelectedNetworkIds function in
   // const [selectedNetworkIds, setSelectedNetworkIds] = useState<NetworkId[]>([])
@@ -244,13 +239,9 @@ export default function EarnHome({ navigation, route }: Props) {
 
   const zeroPoolsinMyPoolsTab =
     !errorLoadingPools && displayPools.length === 0 && activeTab === EarnTabType.MyPools
+  // Replace the outer ScrollView with a View
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
-      }
-    >
+    <View style={styles.container}>
       <Animated.View testID="EarnScreen" style={styles.container}>
         <Animated.View
           style={[styles.listHeaderContainer, animatedListHeaderStyles]}
@@ -262,20 +253,13 @@ export default function EarnHome({ navigation, route }: Props) {
           >
             <View style={styles.headerRow}>
               <Text style={styles.title}>{t('earnFlow.home.title')}</Text>
-              {/* <FilterChipsCarousel
-                chips={filters}
-                onSelectChip={handleToggleFilterChip}
-                forwardedRef={filterChipsCarouselRef}
-                style={styles.filterChipsCarouselContainer}
-                contentContainerStyle={styles.contentContainerStyle}
-                scrollEnabled={false}
-              /> */}
             </View>
 
             <EarnTabBar activeTab={activeTab} onChange={handleChangeActiveView} />
           </View>
         </Animated.View>
-        {errorLoadingPools && (
+        {((displayPools.length === 0 && activeTab === EarnTabType.AllPools) ||
+          errorLoadingPools) && (
           <View style={styles.textContainer}>
             <AttentionIcon size={48} color={Colors.black} />
             <Text style={styles.errorTitle}>{t('earnFlow.home.errorTitle')}</Text>
@@ -284,11 +268,12 @@ export default function EarnHome({ navigation, route }: Props) {
         )}
         {zeroPoolsinMyPoolsTab && (
           <View style={styles.textContainer}>
-            <Text style={styles.noPoolsTitle}>{t('earnFlow.home.noPoolsTitle')}</Text>
+            <AttentionIcon size={48} color={Colors.black} />
+            <Text style={styles.errorTitle}>{t('earnFlow.home.noPoolsTitle')}</Text>
             <Text style={styles.description}>{t('earnFlow.home.noPoolsDescription')}</Text>
           </View>
         )}
-        {!errorLoadingPools && !zeroPoolsinMyPoolsTab && (
+        {!!displayPools.length && !errorLoadingPools && !zeroPoolsinMyPoolsTab && (
           <PoolList
             handleScroll={handleScroll}
             listHeaderHeight={listHeaderHeight}
@@ -299,6 +284,13 @@ export default function EarnHome({ navigation, route }: Props) {
               )
             )}
             onPressLearnMore={onPressLearnMore}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={Colors.primary}
+              />
+            }
           />
         )}
         {errorLoadingPools && (
@@ -311,6 +303,21 @@ export default function EarnHome({ navigation, route }: Props) {
             />
           </View>
         )}
+
+        {activeTab === EarnTabType.Marranitos && (
+          <MarranitosPools
+            handleScroll={handleScroll}
+            listHeaderHeight={listHeaderHeight}
+            paddingBottom={insets.bottom}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={Colors.primary}
+              />
+            }
+          />
+        )}
       </Animated.View>
       <LearnMoreBottomSheet learnMoreBottomSheetRef={learnMoreBottomSheetRef} />
       {networkChip && (
@@ -321,7 +328,7 @@ export default function EarnHome({ navigation, route }: Props) {
           forwardedRef={networkChipRef}
         />
       )}
-    </ScrollView>
+    </View>
   )
 }
 
@@ -405,10 +412,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.Thick24,
-  },
-  noPoolsTitle: {
-    ...typeScale.labelSemiBoldLarge,
-    textAlign: 'center',
   },
   errorTitle: {
     ...typeScale.labelSemiBoldLarge,

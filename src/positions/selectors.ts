@@ -13,6 +13,7 @@ import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
 import { isPresent } from 'src/utils/typescript'
 import networkConfig from 'src/web3/networkConfig'
 import { getPositionBalanceUsd } from './getPositionBalanceUsd'
@@ -44,6 +45,7 @@ export const positionsWithBalanceSelector = createSelector([positionsSelector], 
 export const earnPositionsSelector = createSelector(
   [positionsSelector, earnPositionIdsSelector],
   (positions, earnPositionIds) => {
+    Logger.debug('earnPositionIds -> positions', positions)
     const earnPositionIdsSet = new Set(earnPositionIds)
     return positions.filter(
       (position): position is EarnPosition =>
