@@ -24,12 +24,14 @@ export default function PoolList({
   paddingBottom,
   displayPools,
   onPressLearnMore,
+  refreshControl,
 }: {
   handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
   listHeaderHeight: number
   paddingBottom: number
   displayPools: EarnPosition[]
   onPressLearnMore: () => void
+  refreshControl?: React.ReactElement
 }) {
   return (
     <AnimatedFlatList
@@ -40,6 +42,7 @@ export default function PoolList({
       // Workaround iOS setting an incorrect automatic inset at the top
       scrollIndicatorInsets={{ top: 0.01 }}
       scrollEventThrottle={16}
+      refreshControl={refreshControl}
       ListHeaderComponent={<View style={{ height: listHeaderHeight }} />}
       ListFooterComponent={
         <Text style={styles.learnMore}>
