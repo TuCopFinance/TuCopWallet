@@ -2750,10 +2750,14 @@
       "percentage": "{{percentage}}%",
       "poweredBy": "Powered by {{providerName}}",
       "deposited": "Supplied",
-      "depositAndEarnings": "Deposit & Earnings"
+      "depositAndEarnings": "Deposit & Earnings",
+      "lockPeriod": "Lock Period",
+      "days": "{{days}} days",
+      "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "All Pools",
+      "allPools": "Allbridge Pools",
+      "tumarranito": "Tumarranito Pools",
       "myPools": "My Pools"
     },
     "poolInfoScreen": {
@@ -2826,6 +2830,52 @@
         "transfer": "Transfer",
         "transferDescription": "Use any {{tokenNetwork}} compatible wallet or exchange to deposit {{tokenSymbol}}"
       }
+    },
+    "staking": {
+      "title": "Stake CCOP",
+      "subtitle": "Earn rewards by staking your CCOP tokens",
+      "poolTitle": "Staking Pools",
+      "myStakes": "My Stakes",
+      "connectRequired": "Wallet Connection Required",
+      "connectToStake": "You need to connect your wallet to stake tokens",
+      "connectToViewStakes": "You need to connect your wallet to view your stakes",
+      "amount": "Amount",
+      "duration": "Duration",
+      "days": "{{days}} days",
+      "apy": "APY",
+      "password": "Password",
+      "stakeButton": "Stake Now",
+      "stakeSuccess": "Tokens staked successfully",
+      "stakeFailed": "Failed to stake tokens",
+      "invalidAmount": "Please enter a valid amount",
+      "invalidDuration": "Invalid staking duration",
+      "insufficientBalance": "Insufficient balance",
+      "enterPassword": "Please enter your password",
+      "error": "Error",
+      "stakeDetails": "Stake Details",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "remainingDays": "Remaining Days",
+      "status": "Status",
+      "active": "Active",
+      "completed": "Completed",
+      "withdraw": "Withdraw",
+      "earlyWithdraw": "Early Withdraw",
+      "earlyWithdrawWarning": "Early withdrawal will incur a 20% penalty",
+      "penalty": "Penalty",
+      "finalAmount": "Final Amount",
+      "withdrawSuccess": "Tokens withdrawn successfully",
+      "withdrawFailed": "Failed to withdraw tokens",
+      "invalidStakeIndex": "Invalid stake index",
+      "stakeNotFound": "Stake not found",
+      "alreadyClaimed": "This stake has already been claimed",
+      "confirmWithdraw": "Confirm Withdrawal",
+      "confirmEarlyWithdraw": "Confirm Early Withdrawal",
+      "withdrawConfirmation": "Are you sure you want to withdraw this stake?",
+      "earlyWithdrawConfirmation": "Are you sure you want to withdraw this stake early? You will incur a 20% penalty."
+    },
+    "wallet": {
+      "balance": "Balance"
     }
   },
   "addFundsActions": {
