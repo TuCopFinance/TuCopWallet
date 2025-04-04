@@ -3,47 +3,33 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
+import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import { useDollarsToLocalAmount } from 'src/localCurrency/hooks'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
-import { navigate } from 'src/navigator/NavigationService'
-import { Screens } from 'src/navigator/Screens'
 import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import MarranitoAvatar from './marranito.svg'
 
 export default function MarranitosPoolCard({
   pool,
   testID = 'PoolCard',
+  onPress,
+  walletConnected = false,
 }: {
   pool: any
   testID?: string
+  onPress: () => void
+  walletConnected?: boolean
 }) {
-  const { positionId, appId, appName, tokens, networkId, balance } = pool
+  const { network, apy, days } = pool
   const { t } = useTranslation()
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  // const { poolBalanceInUsd } = useMemo(() => getEarnPositionBalanceValues({ pool }), [pool])
-  // const poolBalanceInFiat = useDollarsToLocalAmount(poolBalanceInUsd) ?? null
   const poolBalanceInFiat = useDollarsToLocalAmount(0) ?? null
   const rewardAmountInUsd = 0
-  // const rewardAmountInUsd = useMemo(
-  //   () =>
-  //     earningItems
-  //       .reduce(
-  //         (acc, earnItem) =>
-  //           acc.plus(
-  //             new BigNumber(earnItem.amount).times(
-  //               allTokens[earnItem.tokenId]?.priceUsd ?? new BigNumber(0)
-  //             )
-  //           ),
-  //         new BigNumber(0)
-  //       )
-  //       .toFixed(2),
-  //   [earningItems]
-  // )
-
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
@@ -52,10 +38,6 @@ export default function MarranitosPoolCard({
       `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`,
     [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat]
   )
-
-  const onPress = () => {
-    navigate(Screens.EarnPoolInfoScreen, { pool })
-  }
 
   return (
     <Shadow
@@ -67,20 +49,11 @@ export default function MarranitosPoolCard({
       <Touchable borderRadius={12} style={styles.card} testID={testID} onPress={onPress}>
         <View style={styles.cardView}>
           <View style={styles.titleRow}>
-            {/* {tokensInfo.map((token, index) => (
-              <TokenIcon
-                key={index}
-                token={token}
-                viewStyle={index > 0 ? { marginLeft: -8, zIndex: -index } : {}}
-              />
-            ))} */}
+            <MarranitoAvatar width={36} height={36} />
             <View style={styles.titleTextContainer}>
-              <Text style={styles.titleTokens}>
-                {/* {tokensInfo.map((token) => token.symbol).join(' / ')} */}
-                TU MARRANITO
-              </Text>
+              <Text style={styles.titleTokens}>TU MARRANITO</Text>
               <Text style={styles.titleNetwork}>
-                {t('earnFlow.poolCard.onNetwork', { networkName: 'CELO' })}
+                {t('earnFlow.poolCard.onNetwork', { networkName: network })}
               </Text>
             </View>
           </View>
@@ -89,31 +62,42 @@ export default function MarranitosPoolCard({
               <Text style={styles.keyText}>{t('earnFlow.poolCard.yieldRate')}</Text>
               <Text style={styles.valueTextBold}>
                 {t('earnFlow.poolCard.percentage', {
-                  percentage: '123.45',
+                  percentage: apy,
                 })}
               </Text>
             </View>
             <View style={styles.keyValueRow}>
-              <Text style={styles.keyText}>{t('earnFlow.poolCard.tvl')}</Text>
-              <Text style={styles.valueText}>123 example</Text>
+              <Text style={styles.keyText}>{t('earnFlow.poolCard.lockPeriod')}</Text>
+              <Text style={styles.valueText}>{t('earnFlow.poolCard.days', { days })}</Text>
             </View>
           </View>
 
-          <View style={styles.withBalanceContainer}>
-            <Text style={styles.keyText}>{t('earnFlow.poolCard.depositAndEarnings')}</Text>
+          {/* <View style={styles.withBalanceContainer}>
+             <Text style={styles.keyText}>{t('earnFlow.poolCard.depositAndEarnings')}</Text>
             <Text>
               <Text style={styles.valueTextBold}>{poolBalanceString}</Text>
             </Text>
-          </View>
+          </View> */}
 
-          <Text style={styles.poweredByText}>
+          <Button
+            onPress={onPress}
+            text={
+              walletConnected ? t('earnFlow.poolCard.stake') : t('earnFlow.poolCard.connectWallet')
+            }
+            type={BtnTypes.PRIMARY}
+            size={BtnSizes.FULL}
+          />
+
+          {/* <Text style={styles.poweredByText}>
             {t('earnFlow.poolCard.poweredBy', { providerName: 'tucop.org' })}
-          </Text>
+          </Text> */}
         </View>
       </Touchable>
     </Shadow>
   )
 }
+
+// Styles remain the same
 const styles = StyleSheet.create({
   shadow: {
     width: '100%',
@@ -161,17 +145,17 @@ const styles = StyleSheet.create({
     color: Colors.black,
     ...typeScale.labelSemiBoldSmall,
   },
-  poweredByText: {
-    color: Colors.gray3,
-    ...typeScale.bodyXSmall,
-    alignSelf: 'center',
-  },
-  withBalanceContainer: {
-    borderTopWidth: 1,
-    borderTopColor: Colors.gray2,
-    paddingTop: Spacing.Regular16,
-    gap: Spacing.Smallest8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
+  // poweredByText: {
+  //   color: Colors.gray3,
+  //   ...typeScale.bodyXSmall,
+  //   alignSelf: 'center',
+  // },
+  // withBalanceContainer: {
+  //   borderTopWidth: 1,
+  //   borderTopColor: Colors.gray2,
+  //   paddingTop: Spacing.Regular16,
+  //   gap: Spacing.Smallest8,
+  //   flexDirection: 'row',
+  //   justifyContent: 'space-between',
+  // },
 })

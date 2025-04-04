@@ -109,4 +109,9 @@ export enum Screens {
   WebViewScreen = 'WebViewScreen',
   Welcome = 'Welcome',
   WithdrawSpend = 'WithdrawSpend',
+  MarranitoStaking = 'MarranitoStaking',
+  MarranitosMyStakes = 'MarranitosMyStakes',
 }
+
+export const MarranitoStaking = 'MarranitoStaking'
+export const MarranitosMyStakes = 'MarranitosMyStakes'

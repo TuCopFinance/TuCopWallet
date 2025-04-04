@@ -10,9 +10,8 @@ import {
 import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { CiCoCurrency, Currency } from 'src/utils/currencies'
-import { Address, TypedDataDefinition } from 'viem'
+import { Address, createPublicClient, http, TypedDataDefinition } from 'viem'
 import {
-  Chain as ViemChain,
   arbitrum,
   arbitrumSepolia,
   base,
@@ -25,6 +24,7 @@ import {
   optimismSepolia,
   polygon,
   polygonAmoy,
+  Chain as ViemChain,
 } from 'viem/chains'
 
 export enum Testnets {
@@ -81,6 +81,9 @@ interface NetworkConfig {
   simulateTransactionsUrl: string
   viemChain: {
     [key in Network]: ViemChain
+  }
+  publicClient: {
+    [key in Network]: any
   }
   currencyToTokenId: {
     [key in CiCoCurrency | Currency]: string
@@ -334,9 +337,50 @@ const SET_REGISTRATION_PROPERTIES_AUTH_ALFAJORES = {
 
 const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 
+const createPublicClients = () => {
+  // Crear un transport común para todos los clientes
+  const transport = http()
+
+  // Crear clientes para cada red
+  return {
+    [Network.Celo]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? celoAlfajores : celo,
+      transport,
+      // Añadir un polyfill para la propiedad difficulty
+      pollingInterval: 4000,
+    }),
+    [Network.Ethereum]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? ethereumSepolia : ethereum,
+      transport,
+      pollingInterval: 4000,
+    }),
+    [Network.Arbitrum]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? arbitrumSepolia : arbitrum,
+      transport,
+      pollingInterval: 4000,
+    }),
+    [Network.Optimism]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? optimismSepolia : optimism,
+      transport,
+      pollingInterval: 4000,
+    }),
+    [Network.PolygonPoS]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? polygonAmoy : polygon,
+      transport,
+      pollingInterval: 4000,
+    }),
+    [Network.Base]: createPublicClient({
+      chain: DEFAULT_TESTNET === Testnets.alfajores ? baseSepolia : base,
+      transport,
+      pollingInterval: 4000,
+    }),
+  } as const
+}
+
 const networkConfigs: { [testnet: string]: NetworkConfig } = {
   [Testnets.alfajores]: {
     networkId: '44787',
+    publicClient: createPublicClients(),
     networkToNetworkId: {
       [Network.Celo]: NetworkId['celo-alfajores'],
       [Network.Ethereum]: NetworkId['ethereum-sepolia'],
@@ -444,6 +488,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
   },
   [Testnets.mainnet]: {
     networkId: '42220',
+    publicClient: createPublicClients(),
     networkToNetworkId: {
       [Network.Celo]: NetworkId['celo-mainnet'],
       [Network.Ethereum]: NetworkId['ethereum-mainnet'],

@@ -2744,11 +2744,15 @@
       "percentage": "{{percentage}}%",
       "poweredBy": "Con tecnología de {{providerName}}",
       "deposited": "Suministrado",
-      "depositAndEarnings": "Depósitos y ganancias"
+      "depositAndEarnings": "Depósitos y ganancias",
+      "lockPeriod": "Período de bloqueo",
+      "days": "{{days}} días",
+      "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "Todos los Pools",
-      "myPools": "Mis pools"
+      "allPools": "Albridge",
+      "myPools": "Mis pools",
+      "tumarranito": "Tú marranito"
     },
     "poolInfoScreen": {
       "chainName": "Red: <0>{{networkName}}</0>",
@@ -2820,6 +2824,52 @@
         "transfer": "Transferir",
         "transferDescription": "Usa cualquier wallet o exchange compatible con {{tokenNetwork}} para depositar {{tokenSymbol}}."
       }
+    },
+    "staking": {
+      "title": "Stake de CCOP",
+      "subtitle": "Gana recompensas haciendo stake de tus tokens CCOP",
+      "poolTitle": "Pools de Staking",
+      "myStakes": "Mis Stakes",
+      "connectRequired": "Conexión de Wallet Requerida",
+      "connectToStake": "Necesitas conectar tu wallet para hacer stake de tokens",
+      "connectToViewStakes": "Necesitas conectar tu wallet para ver tus stakes",
+      "amount": "Cantidad",
+      "duration": "Duración",
+      "days": "{{days}} días",
+      "apy": "APY",
+      "password": "Contraseña",
+      "stakeButton": "Hacer Stake Ahora",
+      "stakeSuccess": "Tokens en stake exitosamente",
+      "stakeFailed": "Error al hacer stake de tokens",
+      "invalidAmount": "Por favor ingresa una cantidad válida",
+      "invalidDuration": "Duración de staking inválida",
+      "insufficientBalance": "Saldo insuficiente",
+      "enterPassword": "Por favor ingresa tu contraseña",
+      "error": "Error",
+      "stakeDetails": "Detalles del Stake",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Finalización",
+      "remainingDays": "Días Restantes",
+      "status": "Estado",
+      "active": "Activo",
+      "completed": "Completado",
+      "withdraw": "Retirar",
+      "earlyWithdraw": "Retiro Anticipado",
+      "earlyWithdrawWarning": "El retiro anticipado tendrá una penalización del 20%",
+      "penalty": "Penalización",
+      "finalAmount": "Cantidad Final",
+      "withdrawSuccess": "Tokens retirados exitosamente",
+      "withdrawFailed": "Error al retirar tokens",
+      "invalidStakeIndex": "Índice de stake inválido",
+      "stakeNotFound": "Stake no encontrado",
+      "alreadyClaimed": "Este stake ya ha sido reclamado",
+      "confirmWithdraw": "Confirmar Retiro",
+      "confirmEarlyWithdraw": "Confirmar Retiro Anticipado",
+      "withdrawConfirmation": "¿Estás seguro de que deseas retirar este stake?",
+      "earlyWithdrawConfirmation": "¿Estás seguro de que deseas retirar este stake anticipadamente? Tendrás una penalización del 20%."
+    },
+    "wallet": {
+      "balance": "Balance"
     }
   },
   "addFundsActions": {

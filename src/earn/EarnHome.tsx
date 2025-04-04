@@ -273,26 +273,29 @@ export default function EarnHome({ navigation, route }: Props) {
             <Text style={styles.description}>{t('earnFlow.home.noPoolsDescription')}</Text>
           </View>
         )}
-        {!!displayPools.length && !errorLoadingPools && !zeroPoolsinMyPoolsTab && (
-          <PoolList
-            handleScroll={handleScroll}
-            listHeaderHeight={listHeaderHeight}
-            paddingBottom={insets.bottom}
-            displayPools={displayPools.filter((pool) =>
-              pool.tokens.some((token: any) =>
-                tokenList.map((token) => token.tokenId).includes(token.tokenId)
-              )
-            )}
-            onPressLearnMore={onPressLearnMore}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor={Colors.primary}
-              />
-            }
-          />
-        )}
+        {!!displayPools.length &&
+          !errorLoadingPools &&
+          !zeroPoolsinMyPoolsTab &&
+          (activeTab === EarnTabType.AllPools || activeTab === EarnTabType.MyPools) && (
+            <PoolList
+              handleScroll={handleScroll}
+              listHeaderHeight={listHeaderHeight}
+              paddingBottom={insets.bottom}
+              displayPools={displayPools.filter((pool) =>
+                pool.tokens.some((token: any) =>
+                  tokenList.map((token) => token.tokenId).includes(token.tokenId)
+                )
+              )}
+              onPressLearnMore={onPressLearnMore}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={Colors.primary}
+                />
+              }
+            />
+          )}
         {errorLoadingPools && (
           <View style={[styles.buttonContainer, insetsStyle]}>
             <Button
