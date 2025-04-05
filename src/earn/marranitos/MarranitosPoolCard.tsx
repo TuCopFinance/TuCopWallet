@@ -1,17 +1,19 @@
 import BigNumber from 'bignumber.js'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
+import MarranitosContract, { STAKING_ADDRESS } from 'src/earn/marranitos/MarranitosContract'
 import { useDollarsToLocalAmount } from 'src/localCurrency/hooks'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { useSelector } from 'src/redux/hooks'
+import { TAG } from 'src/send/saga'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import Logger from 'src/utils/Logger'
 import MarranitoAvatar from './marranito.svg'
 
 export default function MarranitosPoolCard({
@@ -25,7 +27,7 @@ export default function MarranitosPoolCard({
   onPress: () => void
   walletConnected?: boolean
 }) {
-  const { network, apy, days } = pool
+  const { network, apy, days, positionId } = pool
   const { t } = useTranslation()
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const poolBalanceInFiat = useDollarsToLocalAmount(0) ?? null
@@ -33,11 +35,19 @@ export default function MarranitosPoolCard({
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
-  const poolBalanceString = useMemo(
-    () =>
-      `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`,
-    [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat]
-  )
+  const [poolBalance, setPoolBalance] = React.useState<any>(undefined)
+
+  React.useEffect(() => {
+    const loadBalance = async () => {
+      Logger.debug(TAG, `POOL Token balance for: ${STAKING_ADDRESS}`)
+      const balance = await MarranitosContract.getTokenBalance(STAKING_ADDRESS)
+      setPoolBalance(balance)
+
+      Logger.debug(TAG, `POOL BALANCE: ${balance}`)
+    }
+
+    void loadBalance()
+  }, [positionId])
 
   return (
     <Shadow
@@ -72,12 +82,12 @@ export default function MarranitosPoolCard({
             </View>
           </View>
 
-          {/* <View style={styles.withBalanceContainer}>
-             <Text style={styles.keyText}>{t('earnFlow.poolCard.depositAndEarnings')}</Text>
+          <View style={styles.withBalanceContainer}>
+            <Text style={styles.keyText}>{t('earnFlow.poolCard.depositAndEarnings')}</Text>
             <Text>
-              <Text style={styles.valueTextBold}>{poolBalanceString}</Text>
+              <Text style={styles.valueTextBold}>{poolBalance}</Text>
             </Text>
-          </View> */}
+          </View>
 
           <Button
             onPress={onPress}
@@ -150,12 +160,12 @@ const styles = StyleSheet.create({
   //   ...typeScale.bodyXSmall,
   //   alignSelf: 'center',
   // },
-  // withBalanceContainer: {
-  //   borderTopWidth: 1,
-  //   borderTopColor: Colors.gray2,
-  //   paddingTop: Spacing.Regular16,
-  //   gap: Spacing.Smallest8,
-  //   flexDirection: 'row',
-  //   justifyContent: 'space-between',
-  // },
+  withBalanceContainer: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+    paddingTop: Spacing.Regular16,
+    gap: Spacing.Smallest8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 })

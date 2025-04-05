@@ -5,13 +5,14 @@ import { store } from 'src/redux/store'
 import Logger from 'src/utils/Logger'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
 import { getKeychainAccounts } from 'src/web3/contracts'
+import { getStoredPrivateKey } from 'src/web3/KeychainAccounts'
 import networkConfig from 'src/web3/networkConfig'
 import { Address, formatEther, parseEther } from 'viem'
 
 const TAG = 'earn/marranitos/MarranitosContract'
 
 // Direcciones de contratos
-const STAKING_ADDRESS = '0x33F9D44eef92314dAE345Aa64763B01cf484F3C6' as Address
+export const STAKING_ADDRESS = '0x33F9D44eef92314dAE345Aa64763B01cf484F3C6' as Address
 const TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as Address
 
 // ABIs
@@ -102,6 +103,8 @@ export class MarranitosContract {
         args: [formattedWalletAddress],
       })
 
+      Logger.debug(TAG, `Current balance pool: ${balance}`)
+
       const symbol = await publicClient.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
@@ -149,7 +152,8 @@ export class MarranitosContract {
 
       // Obtener wallet usando un enfoque más directo
       Logger.debug(TAG, `Getting keychain accounts for address: ${walletAddress}`)
-      const accounts = await getKeychainAccounts()
+      const keyChains = getKeychainAccounts
+      const accounts = await keyChains()
 
       if (!accounts) {
         Logger.error(TAG, 'No accounts returned from keychain')
@@ -198,8 +202,14 @@ export class MarranitosContract {
         throw new Error(i18n.t('global.invalidPassword'))
       }
 
+      const { account, viemAccount } = (await keyChains()).getLoadAccount(formattedWalletAddress)!
+      const privateKey = await getStoredPrivateKey(account, passphrase)
+
+      Logger.debug(TAG, `privateKey: ${privateKey}`)
+
       // Verificar balance
       const publicClient = networkConfig.publicClient.celo
+
       const balance = await publicClient.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
@@ -255,6 +265,7 @@ export class MarranitosContract {
           address: STAKING_ADDRESS,
           abi: STAKING_ABI,
           functionName: 'stake',
+          args: [amountWei, BigInt(duration)],
           chain,
           account: formattedWalletAddress,
         })

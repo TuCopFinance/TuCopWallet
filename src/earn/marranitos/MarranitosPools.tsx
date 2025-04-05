@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert,
@@ -14,10 +14,8 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { useSelector } from 'src/redux/hooks'
 import { Spacing } from 'src/styles/styles'
-import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { Address } from 'viem'
-import MarranitosContract, { STAKING_DURATIONS } from './MarranitosContract'
+import MarranitosContract, { STAKING_ADDRESS, STAKING_DURATIONS } from './MarranitosContract'
 
 const TAG = 'earn/marranitos/MarranitosPools'
 
@@ -65,33 +63,8 @@ const MarranitosPools = ({
 }: MarranitosPoolsProps) => {
   const { t } = useTranslation()
   const walletAddress = useSelector(walletAddressSelector)
-  const [tokenBalance, setTokenBalance] = useState<string>('0 CCOP')
-  const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (walletAddress) {
-      // Añadir void para manejar la promesa
-      void loadTokenBalance()
-    }
-  }, [walletAddress])
-
-  const loadTokenBalance = async () => {
-    if (!walletAddress) return
-
-    try {
-      setIsLoading(true)
-      // Ensure walletAddress is properly formatted as an Address type
-      const formattedWalletAddress = walletAddress as Address
-      const balance = await MarranitosContract.getTokenBalance(formattedWalletAddress)
-      setTokenBalance(balance)
-    } catch (error) {
-      Logger.error(TAG, 'Error loading token balance', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handlePoolSelection = (pool: any) => {
+  const handlePoolSelection = async (pool: any) => {
     if (!walletAddress) {
       Alert.alert(t('earnFlow.staking.connectRequired'), t('earnFlow.staking.connectToStake'), [
         { text: t('global.ok') },
@@ -99,27 +72,15 @@ const MarranitosPools = ({
       return
     }
 
+    // Obtener el balance del contrato
+    const balance = await MarranitosContract.getTokenBalance(STAKING_ADDRESS)
+
     // Navegar a la pantalla de staking
     navigate(Screens.MarranitoStaking, {
       pool,
-      tokenBalance,
+      tokenBalance: balance,
       walletAddress,
     })
-  }
-
-  // Función para navegar a la pantalla de mis stakes
-  const navigateToMyStakes = () => {
-    if (!walletAddress) {
-      Alert.alert(
-        t('earnFlow.staking.connectRequired'),
-        t('earnFlow.staking.connectToViewStakes'),
-        [{ text: t('global.ok') }]
-      )
-      return
-    }
-
-    // Navegar a la pantalla de mis stakes
-    navigate(Screens.MarranitosMyStakes)
   }
 
   return (

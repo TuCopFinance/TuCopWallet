@@ -61,6 +61,8 @@ const MarranitoStaking = () => {
       // Asegurar que la dirección de la wallet esté correctamente formateada
       const formattedWalletAddress = walletAddress as Address
 
+      Logger.debug(TAG, `Staking ${amount} with wallet address: ${formattedWalletAddress}`)
+
       const success = await MarranitosContract.stake(
         amount,
         pool.duration,
