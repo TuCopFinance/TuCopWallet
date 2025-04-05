@@ -2,11 +2,13 @@ import { showError } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import i18n from 'src/i18n'
 import { store } from 'src/redux/store'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
+import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { getStoredPrivateKey } from 'src/web3/KeychainAccounts'
-import networkConfig from 'src/web3/networkConfig'
+import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { Address, formatEther, parseEther } from 'viem'
 
 const TAG = 'earn/marranitos/MarranitosContract'
@@ -49,6 +51,7 @@ export interface Stake {
 
 export class MarranitosContract {
   private static instance: MarranitosContract
+  private client = publicClient[networkIdToNetwork[NetworkId['celo-mainnet']]]
 
   public static getInstance(): MarranitosContract {
     if (!MarranitosContract.instance) {
@@ -63,14 +66,13 @@ export class MarranitosContract {
   async getUserStakes(walletAddress: Address): Promise<Stake[]> {
     try {
       Logger.debug(TAG, `Getting stakes for user: ${walletAddress}`)
-      const publicClient = networkConfig.publicClient.celo
 
-      const stakes = await publicClient.readContract({
+      const stakes = (await this.client.readContract({
         address: STAKING_ADDRESS,
         abi: STAKING_ABI,
         functionName: 'getUserStakes',
         args: [walletAddress],
-      })
+      })) as any[]
 
       Logger.debug(TAG, `Found ${stakes.length} stakes`)
       return stakes as unknown as Stake[]
@@ -93,19 +95,16 @@ export class MarranitosContract {
       // Ensure wallet address is properly formatted
       const formattedWalletAddress = walletAddress as Address
 
-      // Fix: Use the correct property for public client
-      const publicClient = networkConfig.publicClient.celo
-
-      const balance = await publicClient.readContract({
+      const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'balanceOf',
         args: [formattedWalletAddress],
-      })
+      })) as bigint
 
       Logger.debug(TAG, `Current balance pool: ${balance}`)
 
-      const symbol = await publicClient.readContract({
+      const symbol = await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'symbol',
@@ -208,26 +207,26 @@ export class MarranitosContract {
       Logger.debug(TAG, `privateKey: ${privateKey}`)
 
       // Verificar balance
-      const publicClient = networkConfig.publicClient.celo
-
-      const balance = await publicClient.readContract({
+      const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'balanceOf',
         args: [formattedWalletAddress],
-      })
+      })) as bigint
+      Logger.debug(TAG, `Current balance: ${balance}`)
 
       if (balance < amountWei) {
         throw new Error(i18n.t('earnFlow.staking.insufficientBalance'))
       }
 
       // Verificar allowance
-      const allowance = await publicClient.readContract({
+      const allowance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'allowance',
         args: [formattedWalletAddress, STAKING_ADDRESS],
-      })
+      })) as bigint
+      Logger.debug(TAG, `Current allowance: ${allowance}`)
 
       // Aprobar tokens si es necesario
       if (allowance < amountWei) {
@@ -246,7 +245,7 @@ export class MarranitosContract {
           Logger.debug(TAG, `Approval transaction hash: ${approveTx}`)
 
           // Esperar confirmación
-          await publicClient.waitForTransactionReceipt({ hash: approveTx })
+          await this.client.waitForTransactionReceipt({ hash: approveTx })
           Logger.debug(TAG, 'Tokens approved')
         } catch (approveError) {
           Logger.error(TAG, 'Error approving tokens', approveError)
@@ -273,7 +272,7 @@ export class MarranitosContract {
         Logger.debug(TAG, `Stake transaction hash: ${stakeTx}`)
 
         // Esperar confirmación
-        await publicClient.waitForTransactionReceipt({ hash: stakeTx })
+        await this.client.waitForTransactionReceipt({ hash: stakeTx })
         Logger.debug(TAG, 'Stake successful!')
 
         return true
@@ -325,7 +324,6 @@ export class MarranitosContract {
       }
 
       // Verificar el estado del stake
-      const publicClient = networkConfig.publicClient.celo
       const stakes = await this.getUserStakes(formattedWalletAddress)
 
       if (!stakes || !stakes[stakeIndex]) {
@@ -365,7 +363,7 @@ export class MarranitosContract {
       }
 
       // Esperar confirmación
-      await publicClient.waitForTransactionReceipt({ hash: tx })
+      await this.client.waitForTransactionReceipt({ hash: tx })
       Logger.debug(TAG, 'Withdraw successful!')
 
       return true
@@ -433,13 +431,12 @@ export class MarranitosContract {
       const amountWei = parseEther(amount)
 
       // Verificar balance
-      const publicClient = networkConfig.publicClient.celo
-      const balance = await publicClient.readContract({
+      const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'balanceOf',
         args: [walletAddress],
-      })
+      })) as bigint
 
       if (balance < amountWei) {
         return {
@@ -450,12 +447,12 @@ export class MarranitosContract {
       }
 
       // Verificar allowance
-      const allowance = await publicClient.readContract({
+      const allowance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
         abi: TOKEN_ABI,
         functionName: 'allowance',
         args: [walletAddress, STAKING_ADDRESS],
-      })
+      })) as bigint
 
       // Calcular transacciones necesarias
       const transactions = []
