@@ -303,4 +303,9 @@ export class KeychainAccounts {
     const normalizedAddress = normalizeAddressWith0x(address)
     return this.loadedAccounts.get(normalizedAddress)?.viemAccount
   }
+
+  getLoadAccount(address: string) {
+    const normalizedAddress = normalizeAddressWith0x(address)
+    return this.loadedAccounts.get(normalizedAddress)
+  }
 }
