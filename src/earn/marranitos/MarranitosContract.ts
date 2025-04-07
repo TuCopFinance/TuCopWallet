@@ -7,7 +7,6 @@ import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
 import { getKeychainAccounts } from 'src/web3/contracts'
-import { getStoredPrivateKey } from 'src/web3/KeychainAccounts'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { Address, formatEther, parseEther } from 'viem'
 
@@ -85,9 +84,6 @@ export class MarranitosContract {
   /**
    * Obtiene el balance de tokens CCOP del usuario
    */
-  /**
-   * Obtiene el balance de tokens CCOP del usuario
-   */
   async getTokenBalance(walletAddress: Address): Promise<string> {
     try {
       Logger.debug(TAG, `Getting token balance for: ${walletAddress}`)
@@ -122,7 +118,6 @@ export class MarranitosContract {
    * Realiza un stake de tokens
    */
   // Modificar la función stake para usar el enfoque de authentication.ts para encontrar la cuenta
-
   async stake(
     amount: string,
     duration: number,
@@ -130,8 +125,6 @@ export class MarranitosContract {
     passphrase: string
   ): Promise<boolean> {
     try {
-      Logger.debug(TAG, `Staking ${amount} tokens for ${duration} seconds`)
-
       // Validar duración
       if (
         ![STAKING_DURATIONS.DAYS_30, STAKING_DURATIONS.DAYS_60, STAKING_DURATIONS.DAYS_90].includes(
@@ -151,36 +144,13 @@ export class MarranitosContract {
 
       // Obtener wallet usando un enfoque más directo
       Logger.debug(TAG, `Getting keychain accounts for address: ${walletAddress}`)
-      const keyChains = getKeychainAccounts
-      const accounts = await keyChains()
-
-      if (!accounts) {
-        Logger.error(TAG, 'No accounts returned from keychain')
-        throw new Error(
-          'No accounts found in keychain. Please ensure your wallet is properly set up.'
-        )
-      }
-
-      const formattedWalletAddress = walletAddress as Address
-      Logger.debug(TAG, `Looking for account with address: ${formattedWalletAddress}`)
 
       // Simplificar la búsqueda de la cuenta - usar directamente el wallet
       const chain = networkConfig.viemChain.celo
 
-      // Verificar que chain sea un objeto válido
-      if (!chain || typeof chain !== 'object') {
-        Logger.error(TAG, `Invalid chain configuration: ${JSON.stringify(chain)}`)
-        throw new Error('Invalid chain configuration')
-      }
-
-      Logger.debug(TAG, `Creating wallet with chain ID: ${chain.id}`)
-
-      // Verificar estructura de accounts antes de usarlo
-      Logger.debug(
-        TAG,
-        `Accounts structure: ${JSON.stringify(accounts, null, 2).substring(0, 100)}...`
-      )
-
+      // Usar directamente getLockableViemWallet sin buscar la cuenta manualmente
+      const accounts = await getKeychainAccounts()
+      const formattedWalletAddress = walletAddress as Address
       const wallet = getLockableViemWallet(accounts, chain, formattedWalletAddress)
 
       if (!wallet) {
@@ -201,11 +171,6 @@ export class MarranitosContract {
         throw new Error(i18n.t('global.invalidPassword'))
       }
 
-      const { account, viemAccount } = (await keyChains()).getLoadAccount(formattedWalletAddress)!
-      const privateKey = await getStoredPrivateKey(account, passphrase)
-
-      Logger.debug(TAG, `privateKey: ${privateKey}`)
-
       // Verificar balance
       const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
@@ -213,7 +178,9 @@ export class MarranitosContract {
         functionName: 'balanceOf',
         args: [formattedWalletAddress],
       })) as bigint
+
       Logger.debug(TAG, `Current balance: ${balance}`)
+      Logger.debug(TAG, `Current amountWei: ${amountWei}`)
 
       if (balance < amountWei) {
         throw new Error(i18n.t('earnFlow.staking.insufficientBalance'))

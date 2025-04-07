@@ -93,8 +93,6 @@ interface NetworkConfig {
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
-  ckesTokenId: string
-  arbUsdcTokenId: string
   spendTokenIds: string[]
   saveContactsUrl: string
   getPointsConfigUrl: string
@@ -154,9 +152,6 @@ const CEUR_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd8763cba276a3738e6
 const CREAL_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xe4d517785d091d3c54818832db6094bcc2744545`
 const CREAL_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xe8537a3d056da446677b9e9d6c5db704eaab4787`
 
-const CKES_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x1e0433c1769271eccf4cff9fddd515eefe6cdf92`
-const CKES_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x456a3d042c0dbd3db53d5489e98dfb038553b0d0`
-
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
 
@@ -165,9 +160,6 @@ const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd
 
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
 const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
-
-const ARB_USDC_TOKEN_ID_STAGING = `${NetworkId['arbitrum-sepolia']}:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d`
-const ARB_USDC_TOKEN_ID_MAINNET = `${NetworkId['arbitrum-one']}:0xaf88d065e77c8cc2239327c5edb3a432268e5831`
 
 const CLOUD_FUNCTIONS_STAGING = 'https://api.alfajores.valora.xyz'
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
@@ -425,10 +417,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_STAGING,
     crealTokenId: CREAL_TOKEN_ID_STAGING,
     celoTokenId: CELO_TOKEN_ID_STAGING,
-    ckesTokenId: CKES_TOKEN_ID_STAGING,
     ccopTokenId: CCOP_TOKEN_ID_STAGING,
     usdtTokenId: USDT_TOKEN_ID_STAGING,
-    arbUsdcTokenId: ARB_USDC_TOKEN_ID_STAGING,
     spendTokenIds: [USDT_TOKEN_ID_STAGING, CCOP_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
     getPointsConfigUrl: GET_POINTS_CONFIG_ALFAJORES,
@@ -531,10 +521,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_MAINNET,
     crealTokenId: CREAL_TOKEN_ID_MAINNET,
     celoTokenId: CELO_TOKEN_ID_MAINNET,
-    ckesTokenId: CKES_TOKEN_ID_MAINNET,
     ccopTokenId: CCOP_TOKEN_ID_MAINNET,
     usdtTokenId: USDT_TOKEN_ID_MAINNET,
-    arbUsdcTokenId: ARB_USDC_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
     getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
