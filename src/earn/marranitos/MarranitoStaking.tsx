@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import { navigateBack } from 'src/navigator/NavigationService'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -70,26 +69,26 @@ const MarranitoStaking = () => {
         password
       )
 
-      if (success) {
-        Alert.alert(
-          t('earnFlow.staking.success'),
-          t('earnFlow.staking.successMessage', { days: pool.days }),
-          [
-            {
-              text: t('global.ok'),
-              onPress: () => navigateBack(),
-            },
-          ]
-        )
-      } else {
-        Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.stakeFailed'))
-      }
+      // if (success) {
+      //   Alert.alert(
+      //     t('earnFlow.staking.success'),
+      //     t('earnFlow.staking.successMessage', { days: pool.days }),
+      //     [
+      //       {
+      //         text: t('global.ok'),
+      //         onPress: () => navigateBack(),
+      //       },
+      //     ]
+      //   )
+      // } else {
+      //   Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.stakeFailed'))
+      // }
     } catch (error) {
-      Logger.error(TAG, 'Error staking', error)
-      Alert.alert(
-        t('earnFlow.staking.error'),
-        error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
-      )
+      // Logger.error(TAG, 'Error staking', error)
+      // Alert.alert(
+      //   t('earnFlow.staking.error'),
+      //   error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
+      // )
     } finally {
       setIsStaking(false)
     }
