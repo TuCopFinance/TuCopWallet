@@ -244,17 +244,20 @@ export class MarranitosContract {
     }
 
     // Hacer stake con configuración simplificada
-    Logger.debug(TAG, `Staking ${formatEther(amountWei)} tokens for ${duration} seconds`)
+    Logger.debug(TAG, `Staking ${parseUnits(amount, 18)} tokens for ${duration} seconds`)
     try {
       // Simplificar la configuración de la transacción
-      const stakeTx = await wallet.writeContract({
-        address: STAKING_ADDRESS,
-        abi: cCOPStaking.abi,
-        functionName: 'stake',
-        args: [amountWei, BigInt(duration)],
-        chain,
-        account: formattedWalletAddress,
-      })
+      const stakeTx = await wallet
+        .writeContract({
+          address: STAKING_ADDRESS,
+          abi: cCOPStaking.abi,
+          functionName: 'stake',
+          args: [parseUnits(amount, 18), duration as any],
+        })
+        .catch((error) => {
+          Logger.error(TAG, 'Error staking tokens:', error)
+          throw error
+        })
 
       Logger.debug(TAG, `Stake transaction hash: ${stakeTx}`)
 
