@@ -66,7 +66,7 @@ export const appViemTransports = {
 export const publicClient = {
   [Network.Celo]: createPublicClient({
     chain: networkConfig.viemChain.celo,
-    transport: http('https://celo.drpc.org', {
+    transport: http('https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9', {
       fetchOptions: {
         headers: {
           'Content-Type': 'application/json',
