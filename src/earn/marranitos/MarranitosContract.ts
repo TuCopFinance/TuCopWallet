@@ -8,7 +8,10 @@ import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
-import { Address, formatEther, parseEther } from 'viem'
+import { Address, formatEther, parseEther, parseUnits } from 'viem'
+
+import cCOPStaking from 'src/abis/ICCOPStaking'
+import IERC20 from 'src/abis/IERC20'
 
 const TAG = 'earn/marranitos/MarranitosContract'
 
@@ -16,18 +19,32 @@ const TAG = 'earn/marranitos/MarranitosContract'
 export const STAKING_ADDRESS = '0x33F9D44eef92314dAE345Aa64763B01cf484F3C6' as Address
 const TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as Address
 
-// ABIs
-const STAKING_ABI = [
-  'function stake(uint256 _amount, uint256 _duration) external',
-  'function withdraw(uint256 _stakeIndex) external',
-  'function earlyWithdraw(uint256 _stakeIndex) external',
-  'function getUserStakes(address _user) external view returns (tuple(uint256 amount, uint256 startTime, uint256 endTime, uint256 duration, bool claimed)[])',
-  'function stakingToken() external view returns (address)',
-]
-
 const TOKEN_ABI = [
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'approve',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
   'function balanceOf(address account) external view returns (uint256)',
-  'function approve(address spender, uint256 amount) external returns (bool)',
   'function symbol() external view returns (string)',
   'function allowance(address owner, address spender) external view returns (uint256)',
 ]
@@ -47,6 +64,8 @@ export interface Stake {
   duration: bigint
   claimed: boolean
 }
+
+///
 
 export class MarranitosContract {
   private static instance: MarranitosContract
@@ -68,7 +87,7 @@ export class MarranitosContract {
 
       const stakes = (await this.client.readContract({
         address: STAKING_ADDRESS,
-        abi: STAKING_ABI,
+        abi: cCOPStaking.abi,
         functionName: 'getUserStakes',
         args: [walletAddress],
       })) as any[]
@@ -93,7 +112,7 @@ export class MarranitosContract {
 
       const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
+        abi: IERC20.abi,
         functionName: 'balanceOf',
         args: [formattedWalletAddress],
       })) as bigint
@@ -102,7 +121,7 @@ export class MarranitosContract {
 
       const symbol = await this.client.readContract({
         address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
+        abi: IERC20.abi,
         functionName: 'symbol',
       })
 
@@ -124,138 +143,141 @@ export class MarranitosContract {
     walletAddress: Address,
     passphrase: string
   ): Promise<boolean> {
-    try {
-      // Validar duración
-      if (
-        ![STAKING_DURATIONS.DAYS_30, STAKING_DURATIONS.DAYS_60, STAKING_DURATIONS.DAYS_90].includes(
-          duration
-        )
-      ) {
-        throw new Error(i18n.t('earnFlow.staking.invalidDuration'))
+    //  try {
+    Logger.debug(TAG, 'stake', amount, duration, walletAddress, passphrase)
+
+    // Validar duración
+    if (
+      ![STAKING_DURATIONS.DAYS_30, STAKING_DURATIONS.DAYS_60, STAKING_DURATIONS.DAYS_90].includes(
+        duration
+      )
+    ) {
+      throw new Error(i18n.t('earnFlow.staking.invalidDuration'))
+    }
+
+    // Validar que el monto sea un número válido
+    if (isNaN(Number(amount)) || Number(amount) <= 0) {
+      throw new Error(i18n.t('earnFlow.staking.invalidAmount'))
+    }
+
+    // Convertir amount a wei
+    Logger.debug(TAG, 'amount', amount)
+    const amountWei = parseEther(amount, 'wei')
+    Logger.debug(TAG, 'amountWei', amountWei)
+
+    // Obtener wallet usando un enfoque más directo
+    Logger.debug(TAG, `Getting keychain accounts for address: ${walletAddress}`)
+
+    // Simplificar la búsqueda de la cuenta - usar directamente el wallet
+    const chain = networkConfig.viemChain.celo
+    Logger.debug(TAG, 'chain', chain)
+
+    // Usar directamente getLockableViemWallet sin buscar la cuenta manualmente
+    const accounts = await getKeychainAccounts()
+    Logger.debug(TAG, 'accounts', accounts)
+    const formattedWalletAddress = walletAddress as Address
+    const wallet = getLockableViemWallet(accounts, chain, formattedWalletAddress)
+    Logger.debug(TAG, 'wallet', wallet)
+    if (!wallet) {
+      Logger.error(TAG, `Could not create wallet for address ${formattedWalletAddress}`)
+      throw new Error(`Could not create wallet for address ${formattedWalletAddress}`)
+    }
+
+    // Verificar balance
+    const balance = (await this.client.readContract({
+      address: TOKEN_ADDRESS as Address,
+      abi: IERC20.abi,
+      functionName: 'balanceOf',
+      args: [formattedWalletAddress],
+    })) as bigint
+
+    Logger.debug(TAG, `Current balance: ${balance}`)
+    Logger.debug(TAG, `Current amountWei: ${amountWei}`)
+
+    if (balance < amountWei) {
+      throw new Error(i18n.t('earnFlow.staking.insufficientBalance'))
+    }
+
+    // Verificar allowance
+    const allowance = (await this.client.readContract({
+      address: TOKEN_ADDRESS,
+      abi: IERC20.abi,
+      functionName: 'allowance',
+      args: [formattedWalletAddress, STAKING_ADDRESS],
+    })) as bigint
+    Logger.debug(TAG, `Current allowance: ${allowance}`)
+
+    // Aprobar tokens si es necesario
+    if (allowance < amountWei) {
+      Logger.debug(TAG, 'Approving tokens...')
+      Logger.debug(TAG, `formattedWalletAddress`, formattedWalletAddress)
+      Logger.debug(TAG, `STAKING_ADDRESS`, STAKING_ADDRESS)
+      Logger.debug(TAG, `amountWei`, amountWei)
+
+      // Asegurarnos de que la cuenta esté desbloqueada
+      const unlocked = await wallet.unlockAccount(passphrase, 300)
+      if (!unlocked) {
+        throw new Error('No se pudo desbloquear la cuenta')
       }
 
-      // Validar que el monto sea un número válido
-      if (isNaN(Number(amount)) || Number(amount) <= 0) {
-        throw new Error(i18n.t('earnFlow.staking.invalidAmount'))
-      }
-
-      // Convertir amount a wei
-      const amountWei = parseEther(amount)
-
-      // Obtener wallet usando un enfoque más directo
-      Logger.debug(TAG, `Getting keychain accounts for address: ${walletAddress}`)
-
-      // Simplificar la búsqueda de la cuenta - usar directamente el wallet
-      const chain = networkConfig.viemChain.celo
-
-      // Usar directamente getLockableViemWallet sin buscar la cuenta manualmente
-      const accounts = await getKeychainAccounts()
-      const formattedWalletAddress = walletAddress as Address
-      const wallet = getLockableViemWallet(accounts, chain, formattedWalletAddress)
-
-      if (!wallet) {
-        Logger.error(TAG, `Could not create wallet for address ${formattedWalletAddress}`)
-        throw new Error(`Could not create wallet for address ${formattedWalletAddress}`)
-      }
-
-      // Desbloquear cuenta con manejo de errores mejorado
       try {
-        Logger.debug(TAG, `Attempting to unlock account with provided passphrase`)
-        const unlocked = await wallet.unlockAccount(passphrase, 300) // 5 minutos
-        if (!unlocked) {
-          throw new Error(i18n.t('global.invalidPassword'))
-        }
-        Logger.debug(TAG, `Account unlocked successfully`)
-      } catch (unlockError) {
-        Logger.error(TAG, 'Error unlocking account', unlockError)
-        throw new Error(i18n.t('global.invalidPassword'))
-      }
+        Logger.debug(TAG, `Approving tokens...`)
 
-      // Verificar balance
-      const balance = (await this.client.readContract({
-        address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
-        functionName: 'balanceOf',
-        args: [formattedWalletAddress],
-      })) as bigint
-
-      Logger.debug(TAG, `Current balance: ${balance}`)
-      Logger.debug(TAG, `Current amountWei: ${amountWei}`)
-
-      if (balance < amountWei) {
-        throw new Error(i18n.t('earnFlow.staking.insufficientBalance'))
-      }
-
-      // Verificar allowance
-      const allowance = (await this.client.readContract({
-        address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
-        functionName: 'allowance',
-        args: [formattedWalletAddress, STAKING_ADDRESS],
-      })) as bigint
-      Logger.debug(TAG, `Current allowance: ${allowance}`)
-
-      // Aprobar tokens si es necesario
-      if (allowance < amountWei) {
-        Logger.debug(TAG, 'Approving tokens...')
-        try {
-          // Usar un objeto de configuración más simple
-          const approveTx = await wallet.writeContract({
-            address: TOKEN_ADDRESS,
-            abi: TOKEN_ABI,
-            functionName: 'approve',
-            args: [STAKING_ADDRESS, amountWei],
-            chain: chain,
-            account: formattedWalletAddress,
-          })
-
-          Logger.debug(TAG, `Approval transaction hash: ${approveTx}`)
-
-          // Esperar confirmación
-          await this.client.waitForTransactionReceipt({ hash: approveTx })
-          Logger.debug(TAG, 'Tokens approved')
-        } catch (approveError) {
-          Logger.error(TAG, 'Error approving tokens', approveError)
-          if (approveError instanceof Error) {
-            Logger.error(TAG, `Approval error message: ${approveError.message}`)
-          }
-          throw new Error(i18n.t('earnFlow.staking.approvalFailed'))
-        }
-      }
-
-      // Hacer stake con configuración simplificada
-      Logger.debug(TAG, `Staking ${formatEther(amountWei)} tokens for ${duration} seconds`)
-      try {
-        // Simplificar la configuración de la transacción
-        const stakeTx = await wallet.writeContract({
-          address: STAKING_ADDRESS,
-          abi: STAKING_ABI,
-          functionName: 'stake',
-          args: [amountWei, BigInt(duration)],
-          chain,
-          account: formattedWalletAddress,
+        const approveTx = await await wallet.writeContract({
+          address: TOKEN_ADDRESS, // Dirección del contrato del token
+          abi: IERC20.abi,
+          functionName: 'approve',
+          args: [
+            STAKING_ADDRESS, // Dirección del contrato o wallet que va a gastar
+            parseUnits(amount, 18), // Monto a aprobar (en este caso 1000 tokens con 18 decimales)
+          ],
         })
 
-        Logger.debug(TAG, `Stake transaction hash: ${stakeTx}`)
-
+        Logger.debug(TAG, `Approval transaction hash: ${approveTx}`)
         // Esperar confirmación
-        await this.client.waitForTransactionReceipt({ hash: stakeTx })
-        Logger.debug(TAG, 'Stake successful!')
-
-        return true
-      } catch (stakeError) {
-        Logger.error(TAG, 'Error executing stake transaction', stakeError)
-        if (stakeError instanceof Error) {
-          Logger.error(TAG, `Stake error message: ${stakeError.message}`)
-          Logger.error(TAG, `Stake error stack: ${stakeError.stack}`)
-        }
-        throw stakeError
+        await this.client.waitForTransactionReceipt({ hash: approveTx })
+        Logger.debug(TAG, 'Tokens approved')
+      } catch (error) {
+        Logger.error(TAG, 'Error approving tokens:', error)
+        throw error
       }
-    } catch (error) {
-      Logger.error(TAG, 'Error staking tokens', error)
-      store.dispatch(showError(ErrorMessages.GENERIC_ERROR))
-      return false
     }
+
+    // Hacer stake con configuración simplificada
+    Logger.debug(TAG, `Staking ${formatEther(amountWei)} tokens for ${duration} seconds`)
+    try {
+      // Simplificar la configuración de la transacción
+      const stakeTx = await wallet.writeContract({
+        address: STAKING_ADDRESS,
+        abi: cCOPStaking.abi,
+        functionName: 'stake',
+        args: [amountWei, BigInt(duration)],
+        chain,
+        account: formattedWalletAddress,
+      })
+
+      Logger.debug(TAG, `Stake transaction hash: ${stakeTx}`)
+
+      // Esperar confirmación
+      await this.client.waitForTransactionReceipt({ hash: stakeTx })
+      Logger.debug(TAG, 'Stake successful!')
+
+      return true
+    } catch (stakeError) {
+      Logger.error(TAG, 'Error executing stake transaction', stakeError)
+      if (stakeError instanceof Error) {
+        Logger.error(TAG, `Stake error message: ${stakeError.message}`)
+        Logger.error(TAG, `Stake error stack: ${stakeError.stack}`)
+      }
+      throw stakeError
+    }
+
+    return false
+    // } catch (error) {
+    //   Logger.error(TAG, 'Error staking tokens', error)
+    //   store.dispatch(showError(ErrorMessages.GENERIC_ERROR))
+    //   return false
+    // }
   }
 
   /**
@@ -311,7 +333,7 @@ export class MarranitosContract {
         // Es un retiro anticipado
         tx = await wallet.writeContract({
           address: STAKING_ADDRESS,
-          abi: STAKING_ABI,
+          abi: cCOPStaking.abi,
           functionName: 'earlyWithdraw',
           args: [BigInt(stakeIndex)],
           chain,
@@ -321,7 +343,7 @@ export class MarranitosContract {
         // Retiro normal
         tx = await wallet.writeContract({
           address: STAKING_ADDRESS,
-          abi: STAKING_ABI,
+          abi: cCOPStaking.abi,
           functionName: 'withdraw',
           args: [BigInt(stakeIndex)],
           chain,
@@ -400,7 +422,7 @@ export class MarranitosContract {
       // Verificar balance
       const balance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
+        abi: cCOPStaking.abi,
         functionName: 'balanceOf',
         args: [walletAddress],
       })) as bigint
@@ -416,7 +438,7 @@ export class MarranitosContract {
       // Verificar allowance
       const allowance = (await this.client.readContract({
         address: TOKEN_ADDRESS,
-        abi: TOKEN_ABI,
+        abi: cCOPStaking.abi,
         functionName: 'allowance',
         args: [walletAddress, STAKING_ADDRESS],
       })) as bigint
