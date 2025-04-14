@@ -25,7 +25,7 @@ import MarranitosContract, { Stake } from './MarranitosContract'
 
 const TAG = 'earn/marranitos/MarranitosMyStakes'
 
-const MarranitosMyStakes = () => {
+const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) => {
   const { t } = useTranslation()
   const walletAddress = useSelector(walletAddressSelector)
   const [stakes, setStakes] = useState<Stake[]>([])
@@ -48,7 +48,7 @@ const MarranitosMyStakes = () => {
     try {
       setLoading(true)
       const userStakes = await MarranitosContract.getUserStakes(walletAddress as Address)
-      setStakes(userStakes)
+      setStakes(userStakes.filter((item) => !item.claimed))
     } catch (error) {
       Logger.error(TAG, 'Error loading stakes', error)
       Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
@@ -67,14 +67,47 @@ const MarranitosMyStakes = () => {
       // Asegurar que la dirección de la wallet esté correctamente formateada
       const formattedWalletAddress = walletAddress as Address
 
-      const success = await MarranitosContract.withdraw(
-        stakeIndex,
-        formattedWalletAddress,
-        password
-      )
+      const result = await MarranitosContract.withdraw(stakeIndex, formattedWalletAddress, password)
 
-      if (success) {
-        // Recargar stakes después de un retiro exitoso
+      // Verificar si es un retiro anticipado que requiere confirmación
+      if (typeof result === 'object' && result.type === 'EARLY_WITHDRAW_CONFIRMATION') {
+        // Mostrar alerta de confirmación para retiro anticipado
+        const { remainingDays, amount, penalty, finalAmount } = result.data
+
+        Alert.alert(
+          t('earnFlow.staking.earlyWithdrawTitle'),
+          t('earnFlow.staking.earlyWithdrawConfirmation', {
+            days: remainingDays,
+            amount,
+            penalty,
+            finalAmount,
+          }),
+          [
+            {
+              text: t('global.cancel'),
+              style: 'cancel',
+            },
+            {
+              text: t('global.confirm'),
+              onPress: async () => {
+                // Ejecutar el retiro anticipado con confirmación
+                const success = await MarranitosContract.withdraw(
+                  stakeIndex,
+                  formattedWalletAddress,
+                  password,
+                  true // confirmEarlyWithdraw = true
+                )
+
+                if (success === true) {
+                  await loadStakes()
+                  Alert.alert(t('earnFlow.staking.withdrawSuccess'))
+                }
+              },
+            },
+          ]
+        )
+      } else if (result === true) {
+        // Retiro normal exitoso
         await loadStakes()
         Alert.alert(t('earnFlow.staking.withdrawSuccess'))
       } else {
@@ -257,6 +290,7 @@ const MarranitosMyStakes = () => {
         <FlatList
           data={stakes}
           renderItem={renderStakeItem}
+          ListHeaderComponent={<View style={{ height: listHeaderHeight }} />}
           keyExtractor={(_, index) => `stake-${index}`}
           contentContainerStyle={styles.listContent}
         />
@@ -270,7 +304,6 @@ const MarranitosMyStakes = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.lightPrimary,
   },
   loadingContainer: {
     flex: 1,
@@ -295,7 +328,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   listContent: {
-    padding: Spacing.Regular16,
+    paddingHorizontal: Spacing.Regular16,
     gap: Spacing.Regular16,
   },
   shadow: {

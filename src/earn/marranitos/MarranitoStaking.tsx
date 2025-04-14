@@ -19,6 +19,8 @@ import Logger from 'src/utils/Logger'
 import { Address } from 'viem'
 import MarranitosContract from './MarranitosContract'
 // Importar las funciones de autenticación
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { getPassword } from 'src/pincode/authentication'
 
 const TAG = 'earn/marranitos/MarranitoStaking'
@@ -69,29 +71,36 @@ const MarranitoStaking = () => {
         password
       )
 
-      // if (success) {
-      //   Alert.alert(
-      //     t('earnFlow.staking.success'),
-      //     t('earnFlow.staking.successMessage', { days: pool.days }),
-      //     [
-      //       {
-      //         text: t('global.ok'),
-      //         onPress: () => navigateBack(),
-      //       },
-      //     ]
-      //   )
-      // } else {
-      //   Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.stakeFailed'))
-      // }
+      if (success) {
+        Alert.alert(
+          t('earnFlow.staking.success'),
+          t('earnFlow.staking.successMessage', { days: pool.days }),
+          [
+            {
+              text: t('global.ok'),
+              onPress: () => {
+                // Navegar a la pantalla de mis inversiones después de completar el staking
+                navigate(Screens.MarranitosMyStakes)
+              },
+            },
+          ]
+        )
+      } else {
+        Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.stakeFailed'))
+      }
     } catch (error) {
-      // Logger.error(TAG, 'Error staking', error)
-      // Alert.alert(
-      //   t('earnFlow.staking.error'),
-      //   error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
-      // )
+      Logger.error(TAG, 'Error staking', error)
+      Alert.alert(
+        t('earnFlow.staking.error'),
+        error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
+      )
     } finally {
       setIsStaking(false)
     }
+  }
+
+  const navigateToMyStakes = () => {
+    navigate(Screens.MarranitosMyStakes)
   }
 
   return (
@@ -148,6 +157,14 @@ const MarranitoStaking = () => {
             style={styles.stakeButton}
             showLoading={isStaking}
             disabled={isStaking}
+          />
+
+          <Button
+            text={t('earnFlow.staking.myStakes')}
+            onPress={navigateToMyStakes}
+            type={BtnTypes.SECONDARY}
+            size={BtnSizes.FULL}
+            style={styles.myStakesButton}
           />
         </View>
       </ScrollView>
@@ -222,6 +239,9 @@ const styles = StyleSheet.create({
   },
   stakeButton: {
     marginTop: Spacing.Regular16,
+  },
+  myStakesButton: {
+    marginTop: Spacing.Smallest8,
   },
 })
 

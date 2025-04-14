@@ -89,11 +89,7 @@ export default function Welcome() {
 
   return (
     <>
-      <BackgroundWelcome
-        style={styles.backgroundContainer}
-        height={height - 7}
-        width={width + 10}
-      />
+      <BackgroundWelcome style={styles.backgroundContainer} height={height - 1} width={width} />
       <SafeAreaView style={styles.container}>
         <View style={styles.contentContainer}>
           <WelcomeLogo />

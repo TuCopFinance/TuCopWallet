@@ -18,6 +18,7 @@ import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/Fil
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
+import MarranitosMyStakes from 'src/earn/marranitos/MarranitosMyStakes'
 import MarranitosPools from 'src/earn/marranitos/MarranitosPools'
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
@@ -320,6 +321,10 @@ export default function EarnHome({ navigation, route }: Props) {
               />
             }
           />
+        )}
+
+        {activeTab === EarnTabType.MyMarranitos && (
+          <MarranitosMyStakes listHeaderHeight={listHeaderHeight} />
         )}
       </Animated.View>
       <LearnMoreBottomSheet learnMoreBottomSheetRef={learnMoreBottomSheetRef} />

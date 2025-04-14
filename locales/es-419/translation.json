@@ -2752,7 +2752,8 @@
     "poolFilters": {
       "allPools": "Albridge",
       "myPools": "Mis pools",
-      "tumarranito": "Tú marranito"
+      "tumarranito": "Tú marranito",
+      "myMarranitos": "Mis marranitos"
     },
     "poolInfoScreen": {
       "chainName": "Red: <0>{{networkName}}</0>",
@@ -2826,12 +2827,14 @@
       }
     },
     "staking": {
-      "title": "Stake de CCOP",
+      "title": "Stake CCOP",
       "subtitle": "Gana recompensas haciendo stake de tus tokens CCOP",
       "poolTitle": "Pools de Staking",
       "myStakes": "Mis Stakes",
-      "connectRequired": "Conexión de Wallet Requerida",
-      "connectToStake": "Necesitas conectar tu wallet para hacer stake de tokens",
+      "enterAmount": "Ingresa Cantidad",
+      "balance": "Balance del pool",
+      "network": "Red",
+      "enterAmountWithdraw": "Ingresa Cantidad a Retirar",
       "connectToViewStakes": "Necesitas conectar tu wallet para ver tus stakes",
       "amount": "Cantidad",
       "duration": "Duración",
@@ -2839,11 +2842,8 @@
       "apy": "APY",
       "password": "Contraseña",
       "stakeButton": "Hacer Stake Ahora",
-      "stakeSuccess": "Tokens en stake exitosamente",
+      "stakeSuccess": "Tokens stakeados exitosamente",
       "stakeFailed": "Error al hacer stake de tokens",
-      "invalidAmount": "Por favor ingresa una cantidad válida",
-      "invalidDuration": "Duración de staking inválida",
-      "insufficientBalance": "Saldo insuficiente",
       "enterPassword": "Por favor ingresa tu contraseña",
       "error": "Error",
       "stakeDetails": "Detalles del Stake",
@@ -2858,19 +2858,47 @@
       "earlyWithdrawWarning": "El retiro anticipado tendrá una penalización del 20%",
       "penalty": "Penalización",
       "finalAmount": "Cantidad Final",
-      "withdrawSuccess": "Tokens retirados exitosamente",
-      "withdrawFailed": "Error al retirar tokens",
-      "invalidStakeIndex": "Índice de stake inválido",
-      "stakeNotFound": "Stake no encontrado",
-      "alreadyClaimed": "Este stake ya ha sido reclamado",
       "confirmWithdraw": "Confirmar Retiro",
       "confirmEarlyWithdraw": "Confirmar Retiro Anticipado",
-      "withdrawConfirmation": "¿Estás seguro de que deseas retirar este stake?",
-      "earlyWithdrawConfirmation": "¿Estás seguro de que deseas retirar este stake anticipadamente? Tendrás una penalización del 20%."
+      "withdrawConfirmation": "¿Estás seguro que deseas retirar este stake?",
+      "success": "Éxito",
+      "successMessage": "Tu stake ha sido retirado exitosamente",
+      "earlyWithdrawTitle": "Confirmación de Retiro Anticipado",
+      "earlyWithdrawConfirmation": "Estás retirando {{amount}} CCOP antes del final del período de staking ({{days}} días restantes). Se aplicará una penalización del 20% de {{penalty}} CCOP. Recibirás {{finalAmount}} CCOP. ¿Deseas continuar?",
+      "connectRequired": "Se Requiere Conexión de Wallet",
+      "connectToStake": "Necesitas conectar una wallet para hacer stake de tokens.",
+      "withdrawSuccess": "Retiro Exitoso",
+      "withdrawFailed": "Error en el Retiro",
+      "invalidAmount": "Por favor ingresa una cantidad válida",
+      "insufficientBalance": "Balance insuficiente",
+      "invalidDuration": "Duración de staking inválida",
+      "invalidStakeIndex": "Índice de stake inválido",
+      "stakeNotFound": "Stake no encontrado",
+      "alreadyClaimed": "Este stake ya ha sido reclamado"
     },
     "wallet": {
       "balance": "Balance"
+    },
+    "myStakes": {
+     "stakeTitle": "Stake #{{index}}",
+      "amount": "Cantidad",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Finalización",
+      "daysRemaining": "Días Restantes",
+      "days": "días",
+      "claimed": "Reclamado",
+      "earlyWithdraw": "Retiro Anticipado",
+      "withdraw": "Retirar",
+      "loading": "Cargando tus stakes...",
+      "noStakes": "No tienes ningún stake activo"
     }
+  },
+  "global": {
+    "ok": "Aceptar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "enterPassword": "Por favor ingresa tu contraseña",
+    "invalidPassword": "Contraseña inválida"
   },
   "addFundsActions": {
     "add": "Comprar",

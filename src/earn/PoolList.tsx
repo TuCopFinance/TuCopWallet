@@ -25,6 +25,7 @@ export default function PoolList({
   displayPools,
   onPressLearnMore,
   refreshControl,
+  showMarranitos,
 }: {
   handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
   listHeaderHeight: number
@@ -32,6 +33,7 @@ export default function PoolList({
   displayPools: EarnPosition[]
   onPressLearnMore: () => void
   refreshControl?: React.ReactElement
+  showMarranitos?: boolean
 }) {
   return (
     <AnimatedFlatList

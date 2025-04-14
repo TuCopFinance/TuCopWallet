@@ -43,7 +43,7 @@ import {
   getLocalCurrencyCode,
   usdToLocalCurrencyRateSelector,
 } from 'src/localCurrency/selectors'
-import { emptyHeader } from 'src/navigator/Headers'
+import { customEmptyHeader } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -60,8 +60,9 @@ import { useTokenInfo } from 'src/tokens/hooks'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
-import networkConfig from 'src/web3/networkConfig'
+import networkConfig, { USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
+import { uuidV4 } from 'web3-utils'
 import {
   CICOFlow,
   // FiatExchangeFlow,
@@ -74,6 +75,8 @@ import {
   filterProvidersByPaymentMethod,
   getProviderSelectionAnalyticsData,
 } from './utils'
+
+const TransakIcono = require('./transak.png')
 
 const TAG = 'SelectProviderScreen'
 
@@ -117,6 +120,9 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   const appId = appIdResponse.result
   const insets = useSafeAreaInsets()
 
+  const [isUSDT, setIsUSDT] = useState(false)
+  const [transakLoading, setTransakLoading] = useState(false)
+
   useEffect(() => {
     if (FETCH_FIATCONNECT_QUOTES) {
       dispatch(
@@ -128,6 +134,12 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
         })
       )
     }
+
+    if (tokenInfo.tokenId === USDT_TOKEN_ID_MAINNET) {
+      setIsUSDT(true)
+    }
+
+    Logger.debug(TAG, 'token info', tokenInfo)
   }, [flow, tokenInfo.symbol, cryptoAmount])
 
   useEffect(() => {
@@ -220,12 +232,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     coinbasePayEnabled &&
     appId
 
-  // const anyProviders =
-  //   normalizedQuotes.length ||
-  //   coinbasePayVisible ||
-  //   exchanges.length ||
-  //   legacyMobileMoneyProviders?.length
-
   const analyticsData = getProviderSelectionAnalyticsData({
     normalizedQuotes,
     legacyMobileMoneyProviders,
@@ -267,43 +273,47 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     availablePaymentMethods.includes(method)
   )
 
-  // const supportOnPress = () => navigate(Screens.SupportContact)
-
   const handlePressDisclaimer = () => {
     navigate(Screens.WebViewScreen, { uri: links.funding })
   }
 
-  // const switchCurrencyOnPress = () => {
-  //   navigate(Screens.FiatExchangeCurrencyBottomSheet, {
-  //     flow: flow === CICOFlow.CashIn ? FiatExchangeFlow.CashIn : FiatExchangeFlow.CashOut,
-  //   })
-  // }
+  const handleIntechchainProviderPress = async () => {
+    try {
+      setTransakLoading(true)
 
-  // if (!anyProviders) {
-  //   return (
-  //     <View style={styles.noPaymentMethodsContainer}>
-  //       <Text testID="NoPaymentMethods" style={styles.noPaymentMethods}>
-  //         {t('noPaymentMethods', {
-  //           digitalAsset: tokenInfo.symbol,
-  //         })}
-  //       </Text>
-  //       <TextButton
-  //         testID={'SwitchCurrency'}
-  //         style={styles.switchCurrency}
-  //         onPress={switchCurrencyOnPress}
-  //       >
-  //         {t('switchCurrency')}
-  //       </TextButton>
-  //       <TextButton
-  //         testID={'ContactSupport'}
-  //         style={styles.contactSupport}
-  //         onPress={supportOnPress}
-  //       >
-  //         {t('contactSupport')}
-  //       </TextButton>
-  //     </View>
-  //   )
-  // }
+      const body = {
+        externalOrderId: uuidV4(),
+        externalUserId: account,
+        providerCode: 'transak',
+        currencyFrom: 'USD',
+        currencyTo: 'CELO',
+        amountFrom: String(fiatAmount),
+        country: 'CO',
+        walletAddress: account,
+        paymentMethod: 'card',
+      }
+
+      // creamos la peticion a la api de intechchain
+      const response = await fetch('https://exchange.intechchain.com/api/fiat/createOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const data = await response.json()
+
+      navigate(Screens.WebViewScreen, {
+        uri: data.results.redirectUrl,
+      })
+    } catch (error) {
+      Logger.error(TAG, 'Error fetching Transak quote', error)
+      dispatch(showError(ErrorMessages.PROVIDER_FETCH_FAILED))
+    } finally {
+      setTransakLoading(false)
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, Spacing.Thick24) }}>
@@ -340,6 +350,37 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
             <InfoIcon size={16} color={colors.gray5} />
           </View>
         </Touchable>
+
+        {isUSDT && (
+          <Touchable onPress={handleIntechchainProviderPress} style={{ width: '100%' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+                borderRadius: 10,
+                marginTop: 10,
+                backgroundColor: colors.lightPrimary,
+              }}
+            >
+              <View style={styles.imageContainer}>
+                <Image
+                  source={TransakIcono}
+                  style={{ width: 40, height: 40, ...styles.providerImage }}
+                />
+              </View>
+              <Text style={styles.newLabelText}>Transak</Text>
+              {transakLoading ? (
+                <ActivityIndicator size="small" color={colors.accent} />
+              ) : (
+                <InfoIcon size={16} color={colors.gray5} />
+              )}
+            </View>
+          </Touchable>
+        )}
       </ListItem>
 
       {paymentMethodSections.map((paymentMethod) => (
@@ -723,7 +764,7 @@ SelectProviderScreen.navigationOptions = ({
 }: {
   route: RouteProp<StackParamList, Screens.SelectProvider>
 }) => ({
-  ...emptyHeader,
+  ...customEmptyHeader,
   headerLeft: () => (
     <BackButton
       eventName={FiatExchangeEvents.cico_providers_back}

@@ -22,6 +22,7 @@ export default function EarnTabBar({
     t('earnFlow.poolFilters.tumarranito'),
     t('earnFlow.poolFilters.allPools'),
     t('earnFlow.poolFilters.myPools'),
+    t('earnFlow.poolFilters.myMarranitos'),
   ]
 
   const handleSelectOption = (index: EarnTabType) => () => {
