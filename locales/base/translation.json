@@ -2758,7 +2758,8 @@
     "poolFilters": {
       "allPools": "Allbridge Pools",
       "tumarranito": "Tumarranito Pools",
-      "myPools": "My Pools"
+      "myPools": "My Pools",
+      "myMarranitos": "My Marranitos"
     },
     "poolInfoScreen": {
       "chainName": "Chain: <0>{{networkName}}</0>",
@@ -2836,8 +2837,10 @@
       "subtitle": "Earn rewards by staking your CCOP tokens",
       "poolTitle": "Staking Pools",
       "myStakes": "My Stakes",
-      "connectRequired": "Wallet Connection Required",
-      "connectToStake": "You need to connect your wallet to stake tokens",
+      "enterAmount": "Enter Amount",
+      "balance": "Balance del pool",
+      "network": "Network",
+      "enterAmountWithdraw": "Enter Amount to Withdraw",
       "connectToViewStakes": "You need to connect your wallet to view your stakes",
       "amount": "Amount",
       "duration": "Duration",
@@ -2847,9 +2850,6 @@
       "stakeButton": "Stake Now",
       "stakeSuccess": "Tokens staked successfully",
       "stakeFailed": "Failed to stake tokens",
-      "invalidAmount": "Please enter a valid amount",
-      "invalidDuration": "Invalid staking duration",
-      "insufficientBalance": "Insufficient balance",
       "enterPassword": "Please enter your password",
       "error": "Error",
       "stakeDetails": "Stake Details",
@@ -2864,19 +2864,47 @@
       "earlyWithdrawWarning": "Early withdrawal will incur a 20% penalty",
       "penalty": "Penalty",
       "finalAmount": "Final Amount",
-      "withdrawSuccess": "Tokens withdrawn successfully",
-      "withdrawFailed": "Failed to withdraw tokens",
-      "invalidStakeIndex": "Invalid stake index",
-      "stakeNotFound": "Stake not found",
-      "alreadyClaimed": "This stake has already been claimed",
       "confirmWithdraw": "Confirm Withdrawal",
       "confirmEarlyWithdraw": "Confirm Early Withdrawal",
       "withdrawConfirmation": "Are you sure you want to withdraw this stake?",
-      "earlyWithdrawConfirmation": "Are you sure you want to withdraw this stake early? You will incur a 20% penalty."
+      "success": "Success",
+      "successMessage": "Your stake has been withdrawn successfully",
+      "earlyWithdrawTitle": "Early Withdrawal Confirmation",
+      "earlyWithdrawConfirmation": "You are withdrawing {{amount}} CCOP before the end of the staking period ({{days}} days remaining). A 20% penalty of {{penalty}} CCOP will be applied. You will receive {{finalAmount}} CCOP. Do you want to continue?",
+      "connectRequired": "Wallet Connection Required",
+      "connectToStake": "You need to connect a wallet to stake tokens.",
+      "withdrawSuccess": "Withdrawal Successful",
+      "withdrawFailed": "Withdrawal Failed",
+      "invalidAmount": "Please enter a valid amount",
+      "insufficientBalance": "Insufficient balance",
+      "invalidDuration": "Invalid staking duration",
+      "invalidStakeIndex": "Invalid stake index",
+      "stakeNotFound": "Stake not found",
+      "alreadyClaimed": "This stake has already been claimed"
     },
     "wallet": {
       "balance": "Balance"
+    },
+    "myStakes": {
+      "stakeTitle": "Stake #{{index}}",
+      "amount": "Amount",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "daysRemaining": "Days Remaining",
+      "days": "days",
+      "claimed": "Claimed",
+      "earlyWithdraw": "Early Withdraw",
+      "withdraw": "Withdraw",
+      "loading": "Loading your stakes...",
+      "noStakes": "You don't have any active stakes"
     }
+  },
+  "global": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "enterPassword": "Enter Password",
+    "invalidPassword": "Invalid password"
   },
   "addFundsActions": {
     "add": "Buy",

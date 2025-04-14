@@ -65,6 +65,7 @@ interface NetworkConfig {
   migratePhoneVerificationUrl: string
   resolveId: string
   getNftsByOwnerAddressUrl: string
+  cabApiKey: string
   cabIssueSmsCodeUrl: string
   cabIssueAppKeyshareUrl: string
   cabStoreEncryptedMnemonicUrl: string
@@ -159,7 +160,7 @@ const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72
 const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
 
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
-const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
+export const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
 
 const CLOUD_FUNCTIONS_STAGING = 'https://api.alfajores.valora.xyz'
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
@@ -241,25 +242,30 @@ const JUMPSTART_CLAIM_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/walletJumpstart`
 const GET_NFTS_BY_OWNER_ADDRESS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getNfts`
 const GET_NFTS_BY_OWNER_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getNfts`
 
-const CAB_ISSUE_SMS_CODE_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/issueSmsCode`
-const CAB_ISSUE_SMS_CODE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/issueSmsCode`
-const CAB_STORE_ENCRYPTED_MNEMONIC_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/storeEncryptedMnemonic`
-const CAB_STORE_ENCRYPTED_MNEMONIC_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/storeEncryptedMnemonic`
+const CAB_API_KEY_MAINNET =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiY2xpZW50SWQiOiJkZWZhdWx0LWNsaWVudC1hcHAiLCJhcHBWZXJzaW9uIjoiMS4wLjAiLCJpYXQiOjE3NDQ2MDQ5NjZ9.nT_76FxDi7MT9Ri__jzuwRJkvl79Ld2DFRaIqkE8Mvw'
+const CAB_API_KEY_ALFAJORES =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiY2xpZW50SWQiOiJkZWZhdWx0LWNsaWVudC1hcHAiLCJhcHBWZXJzaW9uIjoiMS4wLjAiLCJpYXQiOjE3NDQ2MDQ5NjZ9.nT_76FxDi7MT9Ri__jzuwRJkvl79Ld2DFRaIqkE8Mvw'
 
-const CAB_ISSUE_APP_KEYSHARE_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/issueValoraKeyshare`
-const CAB_ISSUE_APP_KEYSHARE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/issueValoraKeyshare`
+const CAB_ISSUE_SMS_CODE_ALFAJORES = `https://twilio-service.up.railway.app/otp/send`
+const CAB_ISSUE_SMS_CODE_MAINNET = `https://twilio-service.up.railway.app/otp/send`
+const CAB_STORE_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup`
+const CAB_STORE_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup`
 
-const CAB_LOGIN_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/cloudBackupLogin`
-const CAB_LOGIN_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/cloudBackupLogin`
+const CAB_ISSUE_APP_KEYSHARE_ALFAJORES = `https://twilio-service.up.railway.app/otp/verify`
+const CAB_ISSUE_APP_KEYSHARE_MAINNET = `https://twilio-service.up.railway.app/otp/verify`
 
-const CAB_CLOCK_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/clock`
-const CAB_CLOCK_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/clock`
+const CAB_LOGIN_ALFAJORES = `https://twilio-service.up.railway.app/siwe/login`
+const CAB_LOGIN_MAINNET = `https://twilio-service.up.railway.app/siwe/login`
 
-const CAB_GET_ENCRYPTED_MNEMONIC_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getEncryptedMnemonic`
-const CAB_GET_ENCRYPTED_MNEMONIC_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getEncryptedMnemonic`
+const CAB_CLOCK_ALFAJORES = `https://twilio-service.up.railway.app/siwe/clock`
+const CAB_CLOCK_MAINNET = `https://twilio-service.up.railway.app/siwe/clock`
 
-const CAB_DELETE_ENCRYPTED_MNEMONIC_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/deleteEncryptedMnemonic`
-const CAB_DELETE_ENCRYPTED_MNEMONIC_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/deleteEncryptedMnemonic`
+const CAB_GET_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup`
+const CAB_GET_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup`
+
+const CAB_DELETE_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup/delete`
+const CAB_DELETE_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup/delete`
 
 const SAVE_CONTACTS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/saveContacts`
 const SAVE_CONTACTS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/saveContacts`
@@ -375,6 +381,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     migratePhoneVerificationUrl: MIGRATE_PHONE_VERIFICATION_ALFAJORES,
     resolveId: RESOLVE_ID_ALFAJORES,
     getNftsByOwnerAddressUrl: GET_NFTS_BY_OWNER_ADDRESS_ALFAJORES,
+    cabApiKey: CAB_API_KEY_ALFAJORES,
     cabIssueSmsCodeUrl: CAB_ISSUE_SMS_CODE_ALFAJORES,
     cabIssueAppKeyshareUrl: CAB_ISSUE_APP_KEYSHARE_ALFAJORES,
     cabStoreEncryptedMnemonicUrl: CAB_STORE_ENCRYPTED_MNEMONIC_ALFAJORES,
@@ -479,6 +486,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     migratePhoneVerificationUrl: MIGRATE_PHONE_VERIFICATION_MAINNET,
     resolveId: RESOLVE_ID_MAINNET,
     getNftsByOwnerAddressUrl: GET_NFTS_BY_OWNER_ADDRESS_MAINNET,
+    cabApiKey: CAB_API_KEY_MAINNET,
     cabIssueSmsCodeUrl: CAB_ISSUE_SMS_CODE_MAINNET,
     cabIssueAppKeyshareUrl: CAB_ISSUE_APP_KEYSHARE_MAINNET,
     cabStoreEncryptedMnemonicUrl: CAB_STORE_ENCRYPTED_MNEMONIC_MAINNET,

@@ -19,36 +19,6 @@ const TAG = 'earn/marranitos/MarranitosContract'
 export const STAKING_ADDRESS = '0x33F9D44eef92314dAE345Aa64763B01cf484F3C6' as Address
 const TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as Address
 
-const TOKEN_ABI = [
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'approve',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  'function balanceOf(address account) external view returns (uint256)',
-  'function symbol() external view returns (string)',
-  'function allowance(address owner, address spender) external view returns (uint256)',
-]
-
 // Duración de staking en segundos
 export const STAKING_DURATIONS = {
   DAYS_30: 2592000, // 30 días
@@ -264,8 +234,6 @@ export class MarranitosContract {
         // Esperar confirmación
         await this.client.waitForTransactionReceipt({ hash: stakeTx })
         Logger.debug(TAG, 'Stake successful!')
-
-        return true
       } catch (stakeError) {
         Logger.error(TAG, 'Error executing stake transaction', stakeError)
         if (stakeError instanceof Error) {
@@ -286,7 +254,12 @@ export class MarranitosContract {
   /**
    * Retira tokens de un stake
    */
-  async withdraw(stakeIndex: number, walletAddress: Address, passphrase: string): Promise<boolean> {
+  async withdraw(
+    stakeIndex: number,
+    walletAddress: Address,
+    passphrase: string,
+    confirmEarlyWithdraw = false
+  ): Promise<boolean | { type: 'EARLY_WITHDRAW_CONFIRMATION'; data: any }> {
     try {
       Logger.debug(TAG, `Withdrawing stake at index ${stakeIndex}`)
 
@@ -303,18 +276,6 @@ export class MarranitosContract {
       // Usar directamente getLockableViemWallet sin buscar la cuenta manualmente
       const wallet = getLockableViemWallet(accounts, chain, formattedWalletAddress)
 
-      // Desbloquear cuenta con mejor manejo de errores
-      try {
-        const unlocked = await wallet.unlockAccount(passphrase, 300) // 5 minutos
-        if (!unlocked) {
-          throw new Error(i18n.t('global.invalidPassword'))
-        }
-        Logger.debug(TAG, `Account unlocked successfully`)
-      } catch (unlockError) {
-        Logger.error(TAG, 'Error unlocking account', unlockError)
-        throw new Error(i18n.t('global.invalidPassword'))
-      }
-
       // Verificar el estado del stake
       const stakes = await this.getUserStakes(formattedWalletAddress)
 
@@ -329,28 +290,59 @@ export class MarranitosContract {
         throw new Error(i18n.t('earnFlow.staking.alreadyClaimed'))
       }
 
+      // Verificar si es retiro anticipado
+      if (currentTime < stake.endTime && !confirmEarlyWithdraw) {
+        // Calcular tiempo restante en días
+        const diasRestantes = Math.ceil(Number((stake.endTime - currentTime) / BigInt(86400)))
+
+        // Usar el método existente para calcular la penalización
+        const { penalty, finalAmount } = this.calculateEarlyWithdrawPenalty(stake)
+
+        // Retornar información para que la UI muestre la confirmación
+        return {
+          type: 'EARLY_WITHDRAW_CONFIRMATION',
+          data: {
+            stakeIndex,
+            remainingDays: diasRestantes,
+            amount: formatEther(stake.amount),
+            penalty,
+            finalAmount,
+          },
+        }
+      }
+
+      // Desbloquear cuenta con mejor manejo de errores
+      try {
+        const unlocked = await wallet.unlockAccount(passphrase, 300) // 5 minutos
+        if (!unlocked) {
+          throw new Error(i18n.t('global.invalidPassword'))
+        }
+        Logger.debug(TAG, `Account unlocked successfully`)
+      } catch (unlockError) {
+        Logger.error(TAG, 'Error unlocking account', unlockError)
+        throw new Error(i18n.t('global.invalidPassword'))
+      }
+
       let tx: `0x${string}`
 
-      // Verificar si es retiro anticipado
+      // Ejecutar el retiro (normal o anticipado)
       if (currentTime < stake.endTime) {
         // Es un retiro anticipado
+        Logger.debug(TAG, `Executing early withdrawal for stake ${stakeIndex}`)
         tx = await wallet.writeContract({
           address: STAKING_ADDRESS,
           abi: cCOPStaking.abi,
           functionName: 'earlyWithdraw',
           args: [BigInt(stakeIndex)],
-          chain,
-          account: formattedWalletAddress,
         })
       } else {
         // Retiro normal
+        Logger.debug(TAG, `Executing normal withdrawal for stake ${stakeIndex}`)
         tx = await wallet.writeContract({
           address: STAKING_ADDRESS,
           abi: cCOPStaking.abi,
           functionName: 'withdraw',
           args: [BigInt(stakeIndex)],
-          chain,
-          account: formattedWalletAddress,
         })
       }
 
@@ -400,88 +392,6 @@ export class MarranitosContract {
     const effectiveAPY = annualAPY * durationInYears
 
     return effectiveAPY.toFixed(2)
-  }
-  /**
-   * Prepara una transacción de staking sin ejecutarla
-   */
-  async prepareStakeTransaction(amount: string, duration: number, walletAddress: Address) {
-    try {
-      // Validaciones
-      if (
-        ![STAKING_DURATIONS.DAYS_30, STAKING_DURATIONS.DAYS_60, STAKING_DURATIONS.DAYS_90].includes(
-          duration
-        )
-      ) {
-        throw new Error(i18n.t('earnFlow.staking.invalidDuration'))
-      }
-
-      if (isNaN(Number(amount)) || Number(amount) <= 0) {
-        throw new Error(i18n.t('earnFlow.staking.invalidAmount'))
-      }
-
-      // Convertir amount a wei
-      const amountWei = parseEther(amount)
-
-      // Verificar balance
-      const balance = (await this.client.readContract({
-        address: TOKEN_ADDRESS,
-        abi: cCOPStaking.abi,
-        functionName: 'balanceOf',
-        args: [walletAddress],
-      })) as bigint
-
-      if (balance < amountWei) {
-        return {
-          type: 'insufficient-balance',
-          requiredAmount: amountWei,
-          currentBalance: balance,
-        }
-      }
-
-      // Verificar allowance
-      const allowance = (await this.client.readContract({
-        address: TOKEN_ADDRESS,
-        abi: cCOPStaking.abi,
-        functionName: 'allowance',
-        args: [walletAddress, STAKING_ADDRESS],
-      })) as bigint
-
-      // Calcular transacciones necesarias
-      const transactions = []
-
-      // Si se necesita aprobar tokens
-      if (allowance < amountWei) {
-        transactions.push({
-          type: 'approve',
-          address: TOKEN_ADDRESS,
-          abi: TOKEN_ABI,
-          functionName: 'approve',
-          args: [STAKING_ADDRESS, amountWei],
-        })
-      }
-
-      // Transacción de stake
-      transactions.push({
-        type: 'stake',
-        address: STAKING_ADDRESS,
-        abi: STAKING_ABI,
-        functionName: 'stake',
-        args: [amountWei, BigInt(duration)],
-      })
-
-      return {
-        type: 'possible',
-        transactions,
-        amount: amountWei,
-        duration,
-      }
-    } catch (error) {
-      Logger.error(TAG, 'Error preparing stake transaction', error)
-      return {
-        type: 'error',
-        error,
-      }
-    }
   }
 }
 

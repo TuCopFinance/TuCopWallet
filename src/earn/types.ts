@@ -36,6 +36,7 @@ export enum EarnTabType {
   Marranitos = 0,
   AllPools = 1,
   MyPools = 2,
+  MyMarranitos = 3,
 }
 
 export interface PoolInfo {

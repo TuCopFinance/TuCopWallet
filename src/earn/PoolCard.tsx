@@ -38,6 +38,7 @@ export default function PoolCard({
     balance,
     dataProps: { earningItems, tvl, depositTokenId },
   } = pool
+
   const { t } = useTranslation()
   const allTokens = useSelector((state) => tokensByIdSelector(state, [networkId]))
   const tokensInfo = useMemo(() => {
@@ -66,6 +67,7 @@ export default function PoolCard({
         .toFixed(2),
     [earningItems]
   )
+
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
