@@ -28,6 +28,8 @@ export async function storeMnemonic(mnemonic: string, account: string | null, pa
   }
   const passwordToUse = password ?? (await getPassword(account))
   const encryptedMnemonic = await encryptMnemonic(mnemonic, passwordToUse)
+  Logger.debug(TAG, 'Storing mnemonic', encryptedMnemonic)
+
   return storeItem({ key: MNEMONIC_STORAGE_KEY, value: encryptedMnemonic })
 }
 
@@ -51,6 +53,9 @@ export async function getStoredMnemonic(
     }
 
     const passwordToUse = password ?? (await getPassword(account))
+    Logger.debug(TAG, 'passwordToUse', passwordToUse)
+    Logger.debug(TAG, 'passwordToUse>account', account)
+    Logger.debug(TAG, 'encryptedMnemonic', encryptedMnemonic)
     return decryptMnemonic(encryptedMnemonic, passwordToUse)
   } catch (error) {
     Logger.error(TAG, 'Failed to retrieve mnemonic', error)

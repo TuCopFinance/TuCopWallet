@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useAuth0 } from 'react-native-auth0'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,6 +11,7 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import CustomHeader from 'src/components/header/CustomHeader'
 import TextButton from 'src/components/TextButton'
+import i18n from 'src/i18n'
 import AppleIcon from 'src/icons/Apple'
 import GoogleIcon from 'src/icons/Google'
 import KeylessBackupCancelButton from 'src/keylessBackup/KeylessBackupCancelButton'
@@ -223,63 +224,75 @@ function SignInWithEmail({ route, navigation }: Props) {
           ) : null
         }
       />
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.imageContainer}>
-          <EmailImage />
-        </View>
-        <Text style={styles.title}>{t('signInWithEmail.title')}</Text>
-        <Text style={styles.subtitle}>
-          {isSetup ? t('signInWithEmail.subtitle') : t('signInWithEmail.subtitleRestore')}
-        </Text>
-        <View
-          style={[
-            styles.buttonContainer,
-            isSetupInOnboarding ? insetsStyle : { marginBottom: Spacing.Thick24 },
-          ]}
-        >
-          <Button
-            testID="SignInWithEmail/Google"
-            onPress={() => onPressSignIn('google-oauth2')}
-            text={t('signInWithEmail.google')}
-            size={BtnSizes.FULL}
-            type={BtnTypes.SECONDARY}
-            iconPositionLeft={false}
-            icon={<GoogleIcon color={Colors.black} />}
-            iconMargin={5}
-            showLoading={loading === 'google-oauth2'}
-            disabled={!!loading}
-          />
-          {showApple && (
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.innerContainer}>
+          <View style={styles.imageContainer}>
+            <EmailImage />
+            <Text style={styles.title}>{t('signInWithEmail.title')}</Text>
+            <Text style={styles.subtitle}>
+              <Trans
+                i18n={i18n}
+                i18nKey={isSetup ? 'signInWithEmail.subtitle' : 'signInWithEmail.subtitleRestore'}
+                components={[<Text key={0} style={{ fontWeight: '700' }} />]}
+              />
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.buttonContainer,
+              isSetupInOnboarding
+                ? insetsStyle
+                : { marginBottom: Spacing.Thick24, gap: Spacing.Regular16 },
+            ]}
+          >
             <Button
-              testID="SignInWithEmail/Apple"
-              onPress={() => onPressSignIn('apple')}
-              text={t('signInWithEmail.apple')}
+              testID="SignInWithEmail/Google"
+              onPress={() => onPressSignIn('google-oauth2')}
+              text={t('signInWithEmail.google')}
               size={BtnSizes.FULL}
               type={BtnTypes.SECONDARY}
-              icon={<AppleIcon color={Colors.black} />}
               iconPositionLeft={false}
+              icon={<GoogleIcon color={Colors.primary} />}
               iconMargin={5}
-              showLoading={loading === 'apple'}
+              showLoading={loading === 'google-oauth2'}
               disabled={!!loading}
             />
-          )}
+            {showApple && (
+              <Button
+                testID="SignInWithEmail/Apple"
+                onPress={() => onPressSignIn('apple')}
+                text={t('signInWithEmail.apple')}
+                size={BtnSizes.FULL}
+                type={BtnTypes.SECONDARY}
+                icon={<AppleIcon color={Colors.primary} />}
+                iconPositionLeft={false}
+                iconMargin={5}
+                showLoading={loading === 'apple'}
+                disabled={!!loading}
+              />
+            )}
+            {isSetupInOnboarding && (
+              <TextButton
+                style={styles.signInAnotherWay}
+                testID="SignInWithEmail/SignInAnotherWay"
+                onPress={onPressSignInAnotherWay}
+              >
+                {t('signInWithEmail.signInAnotherWay')}
+              </TextButton>
+            )}
+          </View>
           {isSetupInOnboarding && (
-            <TextButton
-              style={styles.signInAnotherWay}
-              testID="SignInWithEmail/SignInAnotherWay"
-              onPress={onPressSignInAnotherWay}
-            >
-              {t('signInWithEmail.signInAnotherWay')}
-            </TextButton>
+            <SignInWithEmailBottomSheet
+              keylessBackupFlow={keylessBackupFlow}
+              origin={origin}
+              bottomSheetRef={bottomSheetRef}
+            />
           )}
         </View>
-        {isSetupInOnboarding && (
-          <SignInWithEmailBottomSheet
-            keylessBackupFlow={keylessBackupFlow}
-            origin={origin}
-            bottomSheetRef={bottomSheetRef}
-          />
-        )}
       </ScrollView>
     </SafeAreaView>
   )
@@ -288,9 +301,16 @@ function SignInWithEmail({ route, navigation }: Props) {
 export default SignInWithEmail
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
+  innerContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
   container: {
     justifyContent: 'space-between',
-    height: '100%',
+    flex: 1,
   },
   activityIndicatorContainer: {
     paddingVertical: variables.contentPadding,
@@ -299,6 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContainer: {
+    flex: 1,
     padding: Spacing.Thick24,
   },
   header: {
@@ -309,14 +330,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.Thick24,
   },
   title: {
-    ...typeScale.titleMedium,
+    ...typeScale.titleXSmall,
     textAlign: 'center',
     color: Colors.black,
+    marginTop: Spacing.Thick24,
   },
   subtitle: {
-    ...typeScale.bodyMedium,
+    ...typeScale.bodySmall,
     textAlign: 'center',
-    paddingVertical: Spacing.Regular16,
+    padding: Spacing.Regular16,
     color: Colors.black,
   },
   buttonContainer: {

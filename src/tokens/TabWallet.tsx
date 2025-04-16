@@ -1,10 +1,13 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
+import { Shadow } from 'react-native-shadow-2'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import { HideBalanceButton } from 'src/components/TokenBalance'
 import { refreshAllBalances } from 'src/home/actions'
+import { FlatCard } from 'src/home/TabHome'
+import i18n from 'src/i18n'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -17,6 +20,7 @@ import { cCOPFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
+import Earn from './../home/earn.svg'
 
 function TabWallet() {
   const dispatch = useDispatch()
@@ -42,6 +46,11 @@ function TabWallet() {
   const balanceDisplay = hideWalletBalances
     ? `XX${decimalSeparator}XX`
     : totalTokenBalanceLocal?.toFormat(2)
+
+  function onPressEarn() {
+    navigate(Screens.EarnHome)
+  }
+
   return (
     <View style={styles.container} testID="TabWallet">
       <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
@@ -52,38 +61,82 @@ function TabWallet() {
         </Text>
         <HideBalanceButton hideBalance={hideWalletBalances} />
       </View>
-      <ScrollView
-        contentContainerStyle={styles.contentContainerStyle}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={Colors.primary}
-          />
-        }
-      >
-        {tokens.map((token, index) => (
-          <TokenBalanceItem
-            token={token}
-            key={index}
-            onPress={() => {
-              navigate(Screens.TokenDetails, { tokenId: token.tokenId })
-              // AppAnalytics.track(AssetsEvents.tap_asset, {
-              //   ...getTokenAnalyticsProps(token),
-              //   title: token.symbol,
-              //   description: token.name,
-              //   assetType: 'token',
-              // })
-            }}
-            hideBalances={hideWalletBalances}
-          />
-        ))}
-      </ScrollView>
+      <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 28 }}>
+        <ScrollView
+          contentContainerStyle={[styles.contentContainerStyle, { flexGrow: 1 }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={Colors.primary}
+            />
+          }
+          style={{ flex: 1 }}
+        >
+          <View style={styles.shadowContainer}>
+            <Shadow
+              style={[styles.shadow, { justifyContent: 'space-between' }]}
+              distance={10}
+              offset={[0, 0]}
+              startColor="rgba(190, 201, 255, 0.28)"
+            >
+              <View>
+                {tokens.map((token, index) => (
+                  <TokenBalanceItem
+                    token={token}
+                    key={index}
+                    onPress={() => {
+                      navigate(Screens.TokenDetails, { tokenId: token.tokenId })
+                      // AppAnalytics.track(AssetsEvents.tap_asset, {
+                      //   ...getTokenAnalyticsProps(token),
+                      //   title: token.symbol,
+                      //   description: token.name,
+                      //   assetType: 'token',
+                      // })
+                    }}
+                    hideBalances={hideWalletBalances}
+                  />
+                ))}
+              </View>
+
+              <View style={{ marginHorizontal: 20 }}>
+                <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
+                  <View style={[styles.row, { paddingVertical: 8 }]}>
+                    <Earn />
+                    <Text style={styles.ctaText}>
+                      <Trans
+                        i18n={i18n}
+                        i18nKey="tabHome.earn"
+                        components={[<Text key={0} style={{ fontWeight: '700' }} />]}
+                      />
+                    </Text>
+                  </View>
+                </FlatCard>
+              </View>
+            </Shadow>
+          </View>
+        </ScrollView>
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  shadowContainer: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    width: '100%',
+    borderRadius: 15,
+  },
+  shadow: {
+    borderRadius: 15,
+    backgroundColor: Colors.white,
+    paddingVertical: 10,
+    height: '100%',
+    width: '99%',
+  },
   container: {
     flex: 1,
     marginTop: 10,
@@ -106,6 +159,11 @@ const styles = StyleSheet.create({
     margin: 'auto',
     textAlign: 'center',
     marginTop: 24,
+  },
+  ctaText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray6,
+    letterSpacing: -0.16,
   },
 })
 

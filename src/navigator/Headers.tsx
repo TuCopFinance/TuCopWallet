@@ -31,6 +31,11 @@ export const noHeaderGestureDisabled: NativeStackNavigationOptions = {
 }
 
 export const styles = StyleSheet.create({
+  customHeaderTitle: {
+    ...typeScale.titleSmall,
+    maxWidth: Dimensions.get('window').width * 0,
+    color: Colors.primary,
+  },
   headerTitle: {
     ...typeScale.titleLarge,
     maxWidth: Dimensions.get('window').width * 0,
@@ -82,6 +87,19 @@ export const emptyHeader: NativeStackNavigationOptions = {
   // Prevents double back button on Android
   headerBackVisible: false,
   headerTitleStyle: [styles.headerTitle, styles.screenHeader],
+  headerShadowVisible: false,
+  headerTitleAlign: 'center',
+  headerStyle: {
+    backgroundColor: Colors.white,
+  },
+}
+
+export const customEmptyHeader: NativeStackNavigationOptions = {
+  headerTitle: '',
+  headerShown: true,
+  // Prevents double back button on Android
+  headerBackVisible: false,
+  headerTitleStyle: [styles.customHeaderTitle, styles.screenHeader],
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerStyle: {

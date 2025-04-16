@@ -45,6 +45,11 @@ export const typeScale = StyleSheet.create({
     fontSize: 20,
     lineHeight: 28,
   },
+  titleXSmall: {
+    fontFamily: Inter.Bold,
+    fontSize: 16,
+    lineHeight: 20,
+  },
   labelSemiBoldLarge: {
     fontFamily: Inter.SemiBold,
     fontSize: 18,

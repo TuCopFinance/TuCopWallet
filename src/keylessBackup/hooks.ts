@@ -1,10 +1,8 @@
 import { useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { Platform } from 'react-native'
-import DeviceInfo from 'react-native-device-info'
 import { showError } from 'src/alert/actions'
-import { KeylessBackupEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { KeylessBackupEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { appKeyshareIssued } from 'src/keylessBackup/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
@@ -46,16 +44,16 @@ export function useVerifyPhoneNumber(
         origin,
       })
       Logger.debug(`${TAG}/issueSmsCode`, 'Initiating request')
+      Logger.debug(`${TAG}/token`, networkConfig.cabApiKey)
 
       const response = await fetch(networkConfig.cabIssueSmsCodeUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${networkConfig.cabApiKey}`,
         },
         body: JSON.stringify({
-          phoneNumber,
-          clientPlatform: Platform.OS,
-          clientBundleId: DeviceInfo.getBundleId(),
+          phone: phoneNumber,
         }),
       })
       if (response.ok) {
@@ -112,12 +110,11 @@ export function useVerifyPhoneNumber(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${networkConfig.cabApiKey}`,
         },
         body: JSON.stringify({
-          phoneNumber,
-          smsCode,
-          clientPlatform: Platform.OS,
-          clientBundleId: DeviceInfo.getBundleId(),
+          phone: phoneNumber,
+          code: smsCode,
         }),
       })
 
