@@ -21,6 +21,7 @@ enum Colors {
   accent = '#2F4ACD',
   lightPrimary = 'rgba(80, 97, 232, 0.1)',
   primary10 = '#EEEFFF',
+  primary80 = '#2F4ACDCC',
 
   // secondary
   secondary = '#2E3142',

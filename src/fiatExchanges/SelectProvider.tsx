@@ -60,7 +60,7 @@ import { useTokenInfo } from 'src/tokens/hooks'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
-import networkConfig, { USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import networkConfig, { CCOP_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 import { uuidV4 } from 'web3-utils'
 import {
@@ -121,6 +121,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   const insets = useSafeAreaInsets()
 
   const [isUSDT, setIsUSDT] = useState(false)
+  const [isCCOP, setCCOP] = useState(false)
   const [transakLoading, setTransakLoading] = useState(false)
 
   useEffect(() => {
@@ -137,6 +138,10 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 
     if (tokenInfo.tokenId === USDT_TOKEN_ID_MAINNET) {
       setIsUSDT(true)
+    }
+
+    if (tokenInfo.tokenId === CCOP_TOKEN_ID_MAINNET) {
+      setCCOP(true)
     }
 
     Logger.debug(TAG, 'token info', tokenInfo)
@@ -320,36 +325,38 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       <AmountSpentInfo {...route.params} />
 
       <ListItem>
-        <Touchable
-          onPress={() => {
-            navigate(Screens.WebViewScreen, {
-              uri: 'https://app.buckspay.xyz/',
-            })
-          }}
-          style={{ width: '100%' }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: colors.lightPrimary,
+        {isCCOP && (
+          <Touchable
+            onPress={() => {
+              navigate(Screens.WebViewScreen, {
+                uri: 'https://app.buckspay.xyz/',
+              })
             }}
+            style={{ width: '100%' }}
           >
-            <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: 'https://app.buckspay.xyz/favicon.ico' }}
-                style={styles.providerImage}
-              />
+            <View
+              style={{
+                flexDirection: 'row',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+                borderRadius: 10,
+                backgroundColor: colors.lightPrimary,
+              }}
+            >
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: 'https://app.buckspay.xyz/favicon.ico' }}
+                  style={styles.providerImage}
+                />
+              </View>
+              <Text style={styles.newLabelText}>Buckspay</Text>
+              <InfoIcon size={16} color={colors.gray5} />
             </View>
-            <Text style={styles.newLabelText}>Buckspay</Text>
-            <InfoIcon size={16} color={colors.gray5} />
-          </View>
-        </Touchable>
+          </Touchable>
+        )}
 
         {isUSDT && (
           <Touchable onPress={handleIntechchainProviderPress} style={{ width: '100%' }}>

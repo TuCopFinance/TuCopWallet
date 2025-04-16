@@ -117,7 +117,7 @@ export function useSwappableTokens() {
 }
 
 export function useCashInTokens() {
-  const networkIdsForCico = getMultichainFeatures().showCico
+  const networkIdsForCico = [NetworkId['celo-mainnet']]
   return useSelector((state) => cashInTokensByNetworkIdSelector(state, networkIdsForCico))
 }
 

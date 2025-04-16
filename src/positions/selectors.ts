@@ -21,8 +21,7 @@ import { getPositionBalanceUsd } from './getPositionBalanceUsd'
 export const showPositionsSelector = () => true
 export const showClaimShortcutsSelector = () =>
   getFeatureGate(StatsigFeatureGates.SHOW_CLAIM_SHORTCUTS)
-export const allowHooksPreviewSelector = () =>
-  getFeatureGate(StatsigFeatureGates.ALLOW_HOOKS_PREVIEW)
+export const allowHooksPreviewSelector = () => true
 
 const positionsSelector = (state: RootState) =>
   showPositionsSelector() ? state.positions.positions : []

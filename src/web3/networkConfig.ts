@@ -57,6 +57,7 @@ interface NetworkConfig {
   getSwapQuoteUrl: string
   walletJumpstartUrl: string
   verifyPhoneNumberUrl: string
+  resolvePhoneNumberUrl: string
   verifySmsCodeUrl: string
   lookupPhoneNumberUrl: string
   lookupAddressUrl: string
@@ -205,11 +206,14 @@ const FETCH_USER_LOCATION_DATA_PROD = `${CLOUD_FUNCTIONS_MAINNET}/fetchUserLocat
 const SET_REGISTRATION_PROPERTIES_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/setRegistrationProperties`
 const SET_REGISTRATION_PROPERTIES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/setRegistrationProperties`
 
-const VERIFY_PHONE_NUMBER_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/verifyPhoneNumber`
-const VERIFY_PHONE_NUMBER_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/verifyPhoneNumber`
+const VERIFY_PHONE_NUMBER_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
+const VERIFY_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
 
-const VERIFY_SMS_CODE_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/verifySmsCode`
-const VERIFY_SMS_CODE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/verifySmsCode`
+const VERIFY_SMS_CODE_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
+const VERIFY_SMS_CODE_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
+
+const RESOLVE_PHONE_NUMBER_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
+const RESOLVE_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
 
 const LOOKUP_PHONE_NUMBER_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/lookupPhoneNumber`
 const LOOKUP_PHONE_NUMBER_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupPhoneNumber`
@@ -374,6 +378,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     walletJumpstartUrl: JUMPSTART_CLAIM_URL_ALFAJORES,
     verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_ALFAJORES,
     verifySmsCodeUrl: VERIFY_SMS_CODE_ALFAJORES,
+    resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_ALFAJORES,
     lookupPhoneNumberUrl: LOOKUP_PHONE_NUMBER_ALFAJORES,
     lookupAddressUrl: LOOKUP_ADDRESS_ALFAJORES,
     checkAddressVerifiedUrl: CHECK_ADDRESS_VERIFIED_ALFAJORES,
@@ -479,6 +484,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     walletJumpstartUrl: JUMPSTART_CLAIM_URL_MAINNET,
     verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_MAINNET,
     verifySmsCodeUrl: VERIFY_SMS_CODE_MAINNET,
+    resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_MAINNET,
     lookupPhoneNumberUrl: LOOKUP_PHONE_NUMBER_MAINNET,
     lookupAddressUrl: LOOKUP_ADDRESS_MAINNET,
     checkAddressVerifiedUrl: CHECK_ADDRESS_VERIFIED_MAINNET,

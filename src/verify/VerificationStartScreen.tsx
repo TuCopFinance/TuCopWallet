@@ -74,7 +74,7 @@ function VerificationStartScreen({
   const countries = useMemo(() => new Countries(i18n.language), [i18n.language])
   const country = phoneNumberInfo.countryCodeAlpha2
     ? countries.getCountryByCodeAlpha2(phoneNumberInfo.countryCodeAlpha2)
-    : countries.getCountryByCodeAlpha2('CO')
+    : countries.getCountryByCodeAlpha2('57')
 
   const onPressStart = () => {
     AppAnalytics.track(PhoneVerificationEvents.phone_verification_start, {

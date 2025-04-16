@@ -5,11 +5,11 @@ import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import Warning from 'src/icons/Warning'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { TokenBalance } from 'src/tokens/slice'
+import networkConfig from 'src/web3/networkConfig'
 
 interface Props {
   token: TokenBalance
@@ -32,6 +32,17 @@ export const TokenBalanceItem = ({
 }: Props) => {
   const { t } = useTranslation()
 
+  const getTokenName = (token: any) => {
+    if (token.tokenId === networkConfig.ccopTokenId) {
+      return t('assets.pesos')
+    }
+
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
+
   const Content = (
     <View style={[styles.container, containerStyle]} testID="TokenBalanceItem">
       <TokenIcon token={token} />
@@ -43,7 +54,7 @@ export const TokenBalanceItem = ({
               style={styles.label}
               testID={`${testIdPrefix}${token.symbol}Symbol`}
             >
-              {token.name}
+              {getTokenName(token)}
             </Text>
             {showPriceUsdUnavailableWarning && !token.priceUsd && <Warning size={16} />}
           </View>
@@ -59,10 +70,10 @@ export const TokenBalanceItem = ({
             />
           )}
         </View>
-        <View style={styles.line}>
+        {/* <View style={styles.line}>
           {token.networkId in NETWORK_NAMES ? (
             <Text numberOfLines={1} style={styles.subLabel} testID="NetworkLabel">
-              {t('assets.networkName', { networkName: NETWORK_NAMES[token.networkId] })}
+              {t('assets.balanceInLocalAmount')}
             </Text>
           ) : (
             <View />
@@ -77,7 +88,7 @@ export const TokenBalanceItem = ({
               errorFallback={balanceUsdErrorFallback}
             />
           )}
-        </View>
+        </View> */}
         {!!token.bridge && (
           <Text
             testID="BridgeLabel"
