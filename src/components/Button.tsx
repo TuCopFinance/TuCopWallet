@@ -1,6 +1,7 @@
 import { debounce } from 'lodash'
 import React, { ReactNode, useCallback } from 'react'
 import { ActivityIndicator, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { Shadow } from 'react-native-shadow-2'
 import LinealGradientBtnBackground from 'src/components/LinealGradientBtnBackground'
 import Touchable from 'src/components/Touchable'
 import Colors from 'src/styles/colors'
@@ -89,48 +90,56 @@ export default React.memo(function Button(props: ButtonProps) {
   const { textColor, backgroundColor, opacity, borderColor } = getColors(type, disabled)
 
   return (
-    <View style={getStyleForWrapper(size, style)}>
-      {/* these Views cannot be combined as it will cause ripple to not respect the border radius */}
-      <View style={[styles.containRipple, styles.rounded]}>
-        <Touchable
-          onPress={debouncedOnPress}
-          disabled={disabled}
-          style={[
-            getStyle(size, backgroundColor, opacity, borderColor, iconPositionLeft),
-            touchableStyle,
-          ]}
-          testID={testID}
-        >
-          <>
-            {showLoading ? (
-              <ActivityIndicator
-                size="small"
-                color={loadingColor ?? textColor}
-                testID="Button/Loading"
-              />
-            ) : (
-              <>
-                {type === BtnTypes.PRIMARY && <LinealGradientBtnBackground />}
-                {icon}
-                <Text
-                  maxFontSizeMultiplier={1}
-                  accessibilityLabel={accessibilityLabel}
-                  style={{
-                    ...getTextStyle(textSize),
-                    color: textColor,
-                    marginLeft: icon && iconPositionLeft ? iconMargin : 0,
-                    marginRight: icon && !iconPositionLeft ? iconMargin : 0,
-                    fontWeight: textBold ? 'bold' : 'normal',
-                  }}
-                >
-                  {text}
-                </Text>
-              </>
-            )}
-          </>
-        </Touchable>
+    <Shadow
+      style={styles.shadow}
+      offset={[0, 0]}
+      distance={10} // Add this to remove bottom shadow
+      startColor="rgba(190, 201, 255, 0.28)"
+      disabled={type === BtnTypes.PRIMARY || type === BtnTypes.OUTLINE}
+    >
+      <View style={getStyleForWrapper(size, style)}>
+        {/* these Views cannot be combined as it will cause ripple to not respect the border radius */}
+        <View style={[styles.containRipple, styles.rounded]}>
+          <Touchable
+            onPress={debouncedOnPress}
+            disabled={disabled}
+            style={[
+              getStyle(size, backgroundColor, opacity, borderColor, iconPositionLeft),
+              touchableStyle,
+            ]}
+            testID={testID}
+          >
+            <>
+              {showLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={loadingColor ?? textColor}
+                  testID="Button/Loading"
+                />
+              ) : (
+                <>
+                  {type === BtnTypes.PRIMARY && <LinealGradientBtnBackground />}
+                  {icon}
+                  <Text
+                    maxFontSizeMultiplier={1}
+                    accessibilityLabel={accessibilityLabel}
+                    style={{
+                      ...getTextStyle(textSize),
+                      color: textColor,
+                      marginLeft: icon && iconPositionLeft ? iconMargin : 0,
+                      marginRight: icon && !iconPositionLeft ? iconMargin : 0,
+                      fontWeight: textBold ? 'bold' : 'normal',
+                    }}
+                  >
+                    {text}
+                  </Text>
+                </>
+              )}
+            </>
+          </Touchable>
+        </View>
       </View>
-    </View>
+    </Shadow>
   )
 })
 
@@ -138,6 +147,10 @@ const styles = StyleSheet.create({
   // on android Touchable Provides a ripple effect, by itself it does not respect the border radius on Touchable
   containRipple: {
     overflow: 'hidden',
+  },
+  shadow: {
+    width: '100%',
+    borderRadius: 15,
   },
   gradientBackground: {
     position: 'absolute',
@@ -179,9 +192,9 @@ function getColors(type: BtnTypes, disabled: boolean | undefined) {
       opacity = disabled ? 0.25 : 1.0
       break
     case BtnTypes.SECONDARY:
-      textColor = Colors.black
+      textColor = Colors.primary
       backgroundColor = Colors.white
-      borderColor = Colors.black
+      borderColor = Colors.white
       opacity = disabled ? 0.5 : 1.0
       break
     case BtnTypes.TERTIARY:

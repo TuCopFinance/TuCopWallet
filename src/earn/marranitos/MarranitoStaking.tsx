@@ -99,10 +99,6 @@ const MarranitoStaking = () => {
     }
   }
 
-  const navigateToMyStakes = () => {
-    navigate(Screens.MarranitosMyStakes)
-  }
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -157,14 +153,6 @@ const MarranitoStaking = () => {
             style={styles.stakeButton}
             showLoading={isStaking}
             disabled={isStaking}
-          />
-
-          <Button
-            text={t('earnFlow.staking.myStakes')}
-            onPress={navigateToMyStakes}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.FULL}
-            style={styles.myStakesButton}
           />
         </View>
       </ScrollView>
@@ -239,9 +227,6 @@ const styles = StyleSheet.create({
   },
   stakeButton: {
     marginTop: Spacing.Regular16,
-  },
-  myStakesButton: {
-    marginTop: Spacing.Smallest8,
   },
 })
 

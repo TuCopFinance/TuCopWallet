@@ -48,7 +48,16 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
     try {
       setLoading(true)
       const userStakes = await MarranitosContract.getUserStakes(walletAddress as Address)
-      setStakes(userStakes.filter((item) => !item.claimed))
+      setStakes(
+        userStakes
+          .map((item, index) => {
+            return {
+              ...item,
+              index,
+            }
+          })
+          .filter((item) => !item.claimed)
+      )
     } catch (error) {
       Logger.error(TAG, 'Error loading stakes', error)
       Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
@@ -211,9 +220,9 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
             )}
           </View>
 
-          {!isClaimed && (
+          {!isClaimed && daysRemaining <= 0 && (
             <Button
-              onPress={() => handleWithdraw(index)}
+              onPress={() => handleWithdraw(item.index!)}
               text={
                 daysRemaining > 0
                   ? t('earnFlow.myStakes.earlyWithdraw')

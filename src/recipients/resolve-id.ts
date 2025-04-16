@@ -7,12 +7,24 @@ export async function resolveId(id: string) {
   if (id === '') {
     return null
   }
-  const resolveIdUrl = networkConfig.resolveId
+  const resolveIdUrl = networkConfig.resolvePhoneNumberUrl
   try {
-    const response = await fetch(`${resolveIdUrl}?id=${encodeURIComponent(id)}`)
+    Logger.debug(TAG, `Resolving '${id}'`)
+    Logger.debug(TAG, `resolveIdUrl '${resolveIdUrl}'`)
+
+    const response = await fetch(`${resolveIdUrl}/${encodeURIComponent(id)}`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': 'tu-cop-intechchain-1234567890',
+        'Content-Type': 'application/json',
+      },
+    })
+
     if (response.ok) {
-      return await response.json()
+      const responseJson = await response.json()
+      return [responseJson.results]
     }
+
     Logger.warn(TAG, `Unexpected result from resolving '${id}'`)
   } catch (error) {
     Logger.warn(TAG, `Error resolving '${id}'`, error)

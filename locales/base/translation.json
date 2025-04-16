@@ -2081,7 +2081,10 @@
       "dappPositions": "Dapp Positions"
     },
     "importToken": "Import",
-    "importTokens": "Import Tokens"
+    "importTokens": "Import Tokens",
+    "balanceInLocalAmount": "Balance in local amount",
+    "pesos": "Colombian Pesos",
+    "dollars": "Dollars"
   },
   "notificationCenterSpotlight": {
     "message": "Introducing a new way to claim rewards, view alerts, and see updates in one place",
@@ -2756,10 +2759,8 @@
       "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "Allbridge Pools",
-      "tumarranito": "Tumarranito Pools",
-      "myPools": "My Pools",
-      "myMarranitos": "My Marranitos"
+      "allPools": "Investments",
+      "tumarranito": "My investments"
     },
     "poolInfoScreen": {
       "chainName": "Chain: <0>{{networkName}}</0>",

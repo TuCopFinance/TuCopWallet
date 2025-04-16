@@ -33,6 +33,7 @@ export interface Stake {
   endTime: bigint
   duration: bigint
   claimed: boolean
+  index?: number
 }
 
 ///

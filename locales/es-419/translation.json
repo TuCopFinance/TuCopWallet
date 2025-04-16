@@ -107,7 +107,7 @@
   },
   "signInWithEmail": {
     "title": "Vincula tu billetera",
-    "subtitle": "Vincula tu nueva billetera con tu correo electrónico para configurarlo como copia de seguridad. Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
+    "subtitle": "Vincula tu nueva billetera con tu correo electrónico para configurarlo como <0>copia de seguridad.</0> Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
     "subtitleRestore": "Inicia sesión con el correo electrónico que usaste para configurar la copia de seguridad de tu wallet.",
     "google": "Vincular con Google",
     "apple": "Vincular con Apple",
@@ -2079,7 +2079,10 @@
       "dappPositions": "DeFi"
     },
     "importToken": "Importar",
-    "importTokens": "Importar tokens"
+    "importTokens": "Importar tokens",
+    "balanceInLocalAmount": "Saldo en moneda local",
+    "pesos": "Pesos",
+    "dollars": "Dolares"
   },
   "notificationCenterSpotlight": {
     "message": "Presentamos una nueva forma de reclamar recompensas, ver alertas y consultar actualizaciones en un solo lugar",
@@ -2726,8 +2729,8 @@
         "chooseSubtitle": "¿Cómo deberías elegir un pool? ",
         "chooseDescription": "Cualquier decisión financiera es una elección personal. Hemos agrupado algunos pools en distintos protocolos, pero cada pool tiene sus ventajas y sus riesgos. Hacemos todo lo posible por ofrecer información útil sobre cada pool, pero siempre es mejor que investigues más si no estás seguro."
       },
-      "noPoolsTitle": "Aún no te has unido a ningún pool",
-      "noPoolsDescription": "Descubre los pools disponibles, elige uno que se ajuste a tus objetivos y saca el máximo de tus criptomonedas.",
+      "noPoolsTitle": "Aún no tienes inversiones",
+      "noPoolsDescription": "Descubre las inversiones disponibles, elige una que se ajuste a tus objetivos y saca el máximo de tus criptomonedas.",
       "errorTitle": "No se pueden cargar pools",
       "errorDescription": "Ups, algo salió mal al intentar cargar la información del pool. Vuelve a intentarlo.",
       "errorButton": "Inténtalo de nuevo"
@@ -2750,10 +2753,8 @@
       "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "Albridge",
-      "myPools": "Mis pools",
-      "tumarranito": "Tú marranito",
-      "myMarranitos": "Mis marranitos"
+      "allPools": "Inversiones disponibles",
+      "myPools": "Mis Inversiones"
     },
     "poolInfoScreen": {
       "chainName": "Red: <0>{{networkName}}</0>",
@@ -2841,7 +2842,7 @@
       "days": "{{days}} días",
       "apy": "APY",
       "password": "Contraseña",
-      "stakeButton": "Hacer Stake Ahora",
+      "stakeButton": "Hacer staking ahora",
       "stakeSuccess": "Tokens stakeados exitosamente",
       "stakeFailed": "Error al hacer stake de tokens",
       "enterPassword": "Por favor ingresa tu contraseña",

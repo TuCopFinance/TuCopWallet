@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react'
 import { ActivityIndicator, SectionList, StyleSheet, View } from 'react-native'
+import { Shadow } from 'react-native-shadow-2'
 import SectionHead from 'src/components/SectionHead'
 import GetStarted from 'src/home/GetStarted'
 import { useSelector } from 'src/redux/hooks'
-import { getFeatureGate } from 'src/statsig'
-import { StatsigFeatureGates } from 'src/statsig/types'
 import colors from 'src/styles/colors'
 import { Spacing } from 'src/styles/styles'
 import NoActivity from 'src/transactions/NoActivity'
@@ -33,8 +32,8 @@ function TransactionFeed() {
   const allConfirmedStandbyTransactions = useSelector(confirmedStandbyTransactionsSelector)
   const allowedNetworks = useAllowedNetworkIdsForTransfers()
 
-  const showGetStarted = getFeatureGate(StatsigFeatureGates.SHOW_GET_STARTED)
-  const showUKCompliantVariant = getFeatureGate(StatsigFeatureGates.SHOW_UK_COMPLIANT_VARIANT)
+  const showGetStarted = false
+  const showUKCompliantVariant = false
 
   const confirmedFeedTransactions = useMemo(() => {
     // Filter out received pending transactions that are also in the pending
@@ -131,22 +130,29 @@ function TransactionFeed() {
   }
 
   return (
-    <>
-      <SectionList
-        renderItem={renderItem}
-        renderSectionHeader={(item) => <SectionHead text={item.section.title} />}
-        sections={sections}
-        keyExtractor={(item) => `${item.transactionHash}-${item.timestamp.toString()}`}
-        keyboardShouldPersistTaps="always"
-        testID="TransactionList"
-        onEndReached={() => fetchMoreTransactions()}
-      />
-      {fetchingMoreTransactions && (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator style={styles.loadingIcon} size="large" color={colors.accent} />
-        </View>
-      )}
-    </>
+    <View style={styles.container}>
+      <Shadow
+        style={styles.shadow2}
+        distance={10}
+        offset={[0, 0]}
+        startColor="rgba(190, 201, 255, 0.28)"
+      >
+        <SectionList
+          renderItem={renderItem}
+          renderSectionHeader={(item) => <SectionHead text={item.section.title} />}
+          sections={sections}
+          keyExtractor={(item) => `${item.transactionHash}-${item.timestamp.toString()}`}
+          keyboardShouldPersistTaps="always"
+          testID="TransactionList"
+          onEndReached={() => fetchMoreTransactions()}
+        />
+        {fetchingMoreTransactions && (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator style={styles.loadingIcon} size="large" color={colors.accent} />
+          </View>
+        )}
+      </Shadow>
+    </View>
   )
 }
 
@@ -160,6 +166,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+    padding: 30,
+    width: '100%',
+  },
+  shadow2: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderRadius: 13,
+    padding: 5,
   },
 })
 
