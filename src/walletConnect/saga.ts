@@ -12,12 +12,7 @@ import { WalletConnect2Properties } from 'src/analytics/Properties'
 import { DappRequestOrigin, WalletConnectPairingOrigin } from 'src/analytics/types'
 import { walletConnectEnabledSelector } from 'src/app/selectors'
 import { getDappRequestOrigin } from 'src/app/utils'
-import {
-  APP_NAME,
-  DEEP_LINK_URL_SCHEME,
-  WALLET_CONNECT_PROJECT_ID,
-  WALLETCONNECT_UNIVERSAL_LINK,
-} from 'src/config'
+import { APP_NAME, DEEP_LINK_URL_SCHEME, WALLET_CONNECT_PROJECT_ID } from 'src/config'
 import { activeDappSelector } from 'src/dapps/selectors'
 import { ActiveDapp } from 'src/dapps/types'
 import i18n from 'src/i18n'
@@ -139,6 +134,7 @@ function* createWalletConnectChannel() {
   if (!client) {
     Logger.debug(TAG + '@createWalletConnectChannel', `init start`)
     const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
+
     client = yield* call([Web3Wallet, 'init'], {
       core: new Core({
         projectId: WALLET_CONNECT_PROJECT_ID,
@@ -147,11 +143,11 @@ function* createWalletConnectChannel() {
       metadata: {
         name: APP_NAME,
         description: i18n.t('appDescription'),
-        url: links.web,
-        icons: [appendPath(links.web, 'favicon.ico')],
+        url: 'https://tucop.org',
+        icons: [appendPath('https://tucop.org', 'favicon.ico')],
         redirect: {
           native: `${DEEP_LINK_URL_SCHEME}://wallet/wc`,
-          universal: WALLETCONNECT_UNIVERSAL_LINK,
+          // universal: WALLETCONNECT_UNIVERSAL_LINK,
         },
       },
     })

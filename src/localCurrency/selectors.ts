@@ -30,7 +30,7 @@ export const getDefaultLocalCurrencyCode = createSelector(
       ? getCountryCurrencies(e164PhoneNumber)
       : !isE2EEnv
         ? getCurrencies()
-        : [LocalCurrencyCode.USD]
+        : [LocalCurrencyCode.COP]
     const supportedCurrenciesSet = new Set(LOCAL_CURRENCY_CODES)
 
     for (const countryCurrency of countryCurrencies) {
@@ -39,7 +39,7 @@ export const getDefaultLocalCurrencyCode = createSelector(
       }
     }
 
-    return LocalCurrencyCode.USD
+    return LocalCurrencyCode.COP
   }
 )
 

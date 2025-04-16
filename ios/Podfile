@@ -23,12 +23,19 @@ $static_framework = [
 
 # https://github.com/zoontek/react-native-permissions?tab=readme-ov-file#ios
 def node_require(script)
-  # Resolve script with node to allow for hoisting
-  require Pod::Executable.execute_command('node', ['-p',
-    "require.resolve(
-      '#{script}',
-      {paths: [process.argv[1]]},
-    )", __dir__]).strip
+  # Alternative approach using direct path resolution
+  node_path = `which node`.strip
+  if node_path.empty?
+    raise "Could not locate Node.js executable. Make sure Node is installed and in your PATH"
+  end
+
+  # Resolve the script path using Node
+  resolved_path = `#{node_path} -p "require.resolve('#{script}', {paths: ['#{__dir__}/../node_modules']})"`.strip
+  if $?.success?
+    require resolved_path
+  else
+    raise "Failed to resolve script path for: #{script}"
+  end
 end
 
 node_require('react-native/scripts/react_native_pods.rb')
@@ -101,7 +108,6 @@ target "MobileStack" do
   # Flipper-Folly requires this specific version of OpenSSL, so declaring it here to avoid duplicate versions in the podfile.lock.
   pod 'OpenSSL-Universal', '1.1.1100', :configurations => ['Debug','Release']
   pod 'CleverTap-iOS-SDK'
-  pod 'clevertap-react-native'
 end
 
 use_frameworks! :linkage => :static

@@ -291,6 +291,7 @@ export type StackParamList = {
   [Screens.TabNavigator]: {
     initialScreen?: Screens.TabHome | Screens.TabWallet | Screens.TabDiscover
   }
+  [Screens.TabEarn]: { activeEarnTab?: EarnTabType } | undefined
   [Screens.TokenDetails]: { tokenId: string }
   [Screens.TokenImport]: undefined
   [Screens.TransactionDetailsScreen]: {
@@ -326,6 +327,12 @@ export type StackParamList = {
   [Screens.WebViewScreen]: { uri: string }
   [Screens.Welcome]: undefined
   [Screens.WithdrawSpend]: undefined
+  [Screens.MarranitoStaking]: {
+    pool: any
+    tokenBalance: string
+    walletAddress: string
+  }
+  [Screens.MarranitosMyStakes]: undefined
 }
 
 export type QRTabParamList = {

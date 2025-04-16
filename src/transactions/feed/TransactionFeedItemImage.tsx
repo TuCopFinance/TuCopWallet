@@ -41,12 +41,8 @@ function TransactionFeedItemBaseImage(props: Props) {
 
   if (status === TransactionStatus.Failed) {
     return (
-      <CircledIcon
-        backgroundColor={Colors.white}
-        borderColor={Colors.errorDark}
-        radius={AVATAR_SIZE}
-      >
-        <AttentionIcon color={Colors.errorDark} size={18} testId={'FailedTransactionAlert'} />
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.primary} radius={AVATAR_SIZE}>
+        <AttentionIcon color={Colors.primary} size={18} testId={'FailedTransactionAlert'} />
       </CircledIcon>
     )
   }
@@ -58,14 +54,14 @@ function TransactionFeedItemBaseImage(props: Props) {
     transactionType === TokenTransactionTypeV2.CrossChainSwapTransaction
   ) {
     return (
-      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
-        <SwapArrows color={Colors.black} />
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.primary} radius={AVATAR_SIZE}>
+        <SwapArrows color={Colors.primary} />
       </CircledIcon>
     )
   }
   if (transactionType === TokenTransactionTypeV2.Approval) {
     return (
-      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.primary} radius={AVATAR_SIZE}>
         <Activity />
       </CircledIcon>
     )
@@ -77,7 +73,11 @@ function TransactionFeedItemBaseImage(props: Props) {
   ) {
     if (props.isJumpstart) {
       return (
-        <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
+        <CircledIcon
+          backgroundColor={Colors.white}
+          borderColor={Colors.primary}
+          radius={AVATAR_SIZE}
+        >
           <MagicWand size={24} />
         </CircledIcon>
       )
@@ -96,8 +96,8 @@ function TransactionFeedItemBaseImage(props: Props) {
     transactionType === TokenTransactionTypeV2.EarnSwapDeposit
   ) {
     return (
-      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.black} radius={AVATAR_SIZE}>
-        <EarnCoins size={24} color={Colors.black} />
+      <CircledIcon backgroundColor={Colors.white} borderColor={Colors.primary} radius={AVATAR_SIZE}>
+        <EarnCoins size={24} color={Colors.primary} />
       </CircledIcon>
     )
   }

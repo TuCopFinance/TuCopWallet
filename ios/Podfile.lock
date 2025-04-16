@@ -826,6 +826,9 @@ PODS:
     - React-Core
   - RNSVG (15.7.1):
     - React-Core
+  - RNVectorIcons (10.2.0):
+    - RCT-Folly (= 2021.07.22.00)
+    - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -959,6 +962,7 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - "segment-analytics-react-native (from `../node_modules/@segment/analytics-react-native`)"
   - "sovran-react-native (from `../node_modules/@segment/sovran-react-native`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1192,6 +1196,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   segment-analytics-react-native:
     :path: "../node_modules/@segment/analytics-react-native"
   sovran-react-native:
@@ -1331,6 +1337,7 @@ SPEC CHECKSUMS:
   RNSentry: 5596dbadad9a1cccef90f9ccc18e1a309c1bde64
   RNShare: cc904a0d9305649d0fe7897fc6de938f958c3a40
   RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
+  RNVectorIcons: 41801c4c94e7f2526823e05b586133c5868ff98d
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   segment-analytics-react-native: 4bac3da03dd4a1eed178786b1d7025cd2c0ed6c9
@@ -1342,6 +1349,6 @@ SPEC CHECKSUMS:
   Yoga: 6f5ab94cd8b1ecd04b6e973d0bc583ede2a598cc
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 68ec9e72cda551fdcaa4b1ba4a230fe73548fc18
+PODFILE CHECKSUM: ce5d07171655e89c070d9bceb8338c8a77e36c94
 
 COCOAPODS: 1.15.2

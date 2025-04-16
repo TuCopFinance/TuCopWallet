@@ -2081,7 +2081,10 @@
       "dappPositions": "Dapp Positions"
     },
     "importToken": "Import",
-    "importTokens": "Import Tokens"
+    "importTokens": "Import Tokens",
+    "balanceInLocalAmount": "Balance in local amount",
+    "pesos": "Colombian Pesos",
+    "dollars": "Dollars"
   },
   "notificationCenterSpotlight": {
     "message": "Introducing a new way to claim rewards, view alerts, and see updates in one place",
@@ -2750,11 +2753,14 @@
       "percentage": "{{percentage}}%",
       "poweredBy": "Powered by {{providerName}}",
       "deposited": "Supplied",
-      "depositAndEarnings": "Deposit & Earnings"
+      "depositAndEarnings": "Deposit & Earnings",
+      "lockPeriod": "Lock Period",
+      "days": "{{days}} days",
+      "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "All Pools",
-      "myPools": "My Pools"
+      "allPools": "Investments",
+      "tumarranito": "My investments"
     },
     "poolInfoScreen": {
       "chainName": "Chain: <0>{{networkName}}</0>",
@@ -2826,7 +2832,80 @@
         "transfer": "Transfer",
         "transferDescription": "Use any {{tokenNetwork}} compatible wallet or exchange to deposit {{tokenSymbol}}"
       }
+    },
+    "staking": {
+      "title": "Stake CCOP",
+      "subtitle": "Earn rewards by staking your CCOP tokens",
+      "poolTitle": "Staking Pools",
+      "myStakes": "My Stakes",
+      "enterAmount": "Enter Amount",
+      "balance": "Balance del pool",
+      "network": "Network",
+      "enterAmountWithdraw": "Enter Amount to Withdraw",
+      "connectToViewStakes": "You need to connect your wallet to view your stakes",
+      "amount": "Amount",
+      "duration": "Duration",
+      "days": "{{days}} days",
+      "apy": "APY",
+      "password": "Password",
+      "stakeButton": "Stake Now",
+      "stakeSuccess": "Tokens staked successfully",
+      "stakeFailed": "Failed to stake tokens",
+      "enterPassword": "Please enter your password",
+      "error": "Error",
+      "stakeDetails": "Stake Details",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "remainingDays": "Remaining Days",
+      "status": "Status",
+      "active": "Active",
+      "completed": "Completed",
+      "withdraw": "Withdraw",
+      "earlyWithdraw": "Early Withdraw",
+      "earlyWithdrawWarning": "Early withdrawal will incur a 20% penalty",
+      "penalty": "Penalty",
+      "finalAmount": "Final Amount",
+      "confirmWithdraw": "Confirm Withdrawal",
+      "confirmEarlyWithdraw": "Confirm Early Withdrawal",
+      "withdrawConfirmation": "Are you sure you want to withdraw this stake?",
+      "success": "Success",
+      "successMessage": "Your stake has been withdrawn successfully",
+      "earlyWithdrawTitle": "Early Withdrawal Confirmation",
+      "earlyWithdrawConfirmation": "You are withdrawing {{amount}} CCOP before the end of the staking period ({{days}} days remaining). A 20% penalty of {{penalty}} CCOP will be applied. You will receive {{finalAmount}} CCOP. Do you want to continue?",
+      "connectRequired": "Wallet Connection Required",
+      "connectToStake": "You need to connect a wallet to stake tokens.",
+      "withdrawSuccess": "Withdrawal Successful",
+      "withdrawFailed": "Withdrawal Failed",
+      "invalidAmount": "Please enter a valid amount",
+      "insufficientBalance": "Insufficient balance",
+      "invalidDuration": "Invalid staking duration",
+      "invalidStakeIndex": "Invalid stake index",
+      "stakeNotFound": "Stake not found",
+      "alreadyClaimed": "This stake has already been claimed"
+    },
+    "wallet": {
+      "balance": "Balance"
+    },
+    "myStakes": {
+      "stakeTitle": "Stake #{{index}}",
+      "amount": "Amount",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "daysRemaining": "Days Remaining",
+      "days": "days",
+      "claimed": "Claimed",
+      "earlyWithdraw": "Early Withdraw",
+      "withdraw": "Withdraw",
+      "loading": "Loading your stakes...",
+      "noStakes": "You don't have any active stakes"
     }
+  },
+  "global": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "enterPassword": "Enter Password",
+    "invalidPassword": "Invalid password"
   },
   "addFundsActions": {
     "add": "Buy",

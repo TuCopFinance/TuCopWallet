@@ -1,8 +1,10 @@
 import * as React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
+import { Shadow } from 'react-native-shadow-2'
 import Touchable from 'src/components/Touchable'
 import Backspace from 'src/icons/Backspace'
-import { typeScale } from 'src/styles/fonts'
+import Colors from 'src/styles/colors'
+import { Inter } from 'src/styles/fonts'
 
 interface Props {
   onDigitPress: (digit: number) => void
@@ -21,12 +23,20 @@ function DigitButton({
   onDigitPress: (digit: number) => void
 }) {
   const onPress = () => onDigitPress(digit)
+
   return (
-    <Touchable testID={`digit${digit}`} borderless={true} onPress={onPress}>
-      <Text allowFontScaling={false} style={styles.digit}>
-        {digit}
-      </Text>
-    </Touchable>
+    <Shadow
+      style={styles.shadow}
+      distance={10}
+      offset={[0, 4]}
+      startColor="rgba(190, 201, 255, 0.28)"
+    >
+      <Touchable style={styles.digit} testID={`digit${digit}`} borderless={true} onPress={onPress}>
+        <Text allowFontScaling={false} style={styles.digit}>
+          {digit}
+        </Text>
+      </Touchable>
+    </Shadow>
   )
 }
 
@@ -78,10 +88,17 @@ export default function NumberKeypad(props: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: 300,
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
+    flexShrink: 0,
+    display: 'flex',
+    gap: 38,
+    flexWrap: 'wrap',
+    paddingBottom: 20,
+    marginBottom: 20,
   },
   row: {
     width: '100%',
@@ -90,13 +107,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   digit: {
-    ...typeScale.labelMedium,
-    width: 64,
-    padding: 24,
-    fontSize: 22,
-    lineHeight: 28,
+    borderRadius: 80,
+    width: 56,
+    height: 56,
+    backgroundColor: Colors.white,
+    fontSize: 32,
+    lineHeight: 44,
     justifyContent: 'center',
     textAlign: 'center',
     alignItems: 'center',
+    textAlignVertical: 'center',
+    fontFamily: Inter.Bold,
+    color: Colors.primary,
+    borderColor: Colors.white,
+  },
+  shadow: {
+    borderRadius: 80,
+    display: 'flex',
+    marginTop: 3,
+    borderColor: Colors.white,
+    overflow: 'hidden',
   },
 })

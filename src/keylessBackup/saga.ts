@@ -58,13 +58,33 @@ export function* handleAppKeyshareIssued({
     if (keylessBackupFlow === KeylessBackupFlow.Restore) {
       Logger.info(TAG, `Phone keyshare: ${hashedKeyshare}, Email keyshare: ${hashedTorusKeyshare}`)
     }
-    const torusKeyshareBuffer = Buffer.from(torusKeyshare, 'hex')
-    const appKeyshareBuffer = Buffer.from(keyshare, 'hex')
+
+    Logger.info(TAG, `torusKeyshare: ${torusKeyshare}`)
+
+    // Función auxiliar para crear buffers de manera segura
+    const createSafeBuffer = (value: any, name: string): Buffer => {
+      if (!value) {
+        throw new Error(`El valor de ${name} es undefined o null`)
+      }
+      try {
+        return Buffer.from(value, 'hex')
+      } catch (error: any) {
+        Logger.error(TAG, `Error al crear buffer para ${name}`, error)
+        throw new Error(`No se pudo crear buffer para ${name}: ${error.message}`)
+      }
+    }
+
+    const torusKeyshareBuffer = createSafeBuffer(torusKeyshare, 'torusKeyshare')
+    const appKeyshareBuffer = createSafeBuffer(keyshare, 'keyshare')
+
     const { privateKey: encryptionPrivateKey } = yield* call(
       getSecp256K1KeyPair,
       torusKeyshareBuffer,
       appKeyshareBuffer
     )
+
+    Logger.info(TAG, `torusKeyshareBuffer: ${torusKeyshareBuffer}`)
+    Logger.info(TAG, `jwt: ${jwt}`)
 
     const encryptionAddress = getWalletAddressFromPrivateKey(encryptionPrivateKey)
     if (keylessBackupFlow === KeylessBackupFlow.Setup) {
