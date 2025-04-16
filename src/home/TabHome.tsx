@@ -261,7 +261,7 @@ function TabHome(_props: Props) {
         >
           <View style={[styles.containerShadow, styles.noBottomShadow]}>
             <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
-              <View style={styles.row}>
+              <View style={[styles.row, { paddingVertical: 8 }]}>
                 <Swap />
                 <Text style={[styles.ctaText]}>{t('tabHome.swapToUSD')}</Text>
               </View>
@@ -278,15 +278,13 @@ function TabHome(_props: Props) {
             </FlatCard> */}
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={[styles.row, { paddingVertical: 5 }]}>
+              <View style={[styles.row, { paddingVertical: 8 }]}>
                 <Earn />
-                <Text>
+                <Text style={styles.ctaText}>
                   <Trans
                     i18n={i18n}
                     i18nKey="tabHome.earn"
-                    components={{
-                      0: (chunks: React.ReactNode) => <Bold>{chunks}</Bold>,
-                    }}
+                    components={[<Text key={0} style={{ fontWeight: '700' }} />]}
                   />
                 </Text>
               </View>
@@ -307,11 +305,7 @@ function TabHome(_props: Props) {
   )
 }
 
-function Bold({ children }: { children: React.ReactNode }) {
-  return <Text style={[styles.textBold]}>{children}</Text>
-}
-
-function FlatCard({
+export function FlatCard({
   onPress,
   testID,
   type,
@@ -415,10 +409,6 @@ function AddCCOPBottomSheet({
 }
 
 const styles = StyleSheet.create({
-  textBold: {
-    fontFamily: Inter.Bold,
-    fontWeight: 'bold',
-  },
   scrollStyle: {
     flex: 1,
     marginHorizontal: -variables.contentPadding,

@@ -12,7 +12,16 @@ import { PublicClient, Transport, createPublicClient, http } from 'viem'
 export const INTERNAL_RPC_SUPPORTED_NETWORKS = [Network.Arbitrum] as const
 
 export const viemTransports: Record<Network, Transport> = {
-  [Network.Celo]: http(),
+  [Network.Celo]: http(
+    'https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9',
+    {
+      fetchOptions: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    }
+  ),
   [Network.Ethereum]: http(networkConfig.alchemyRpcUrl[Network.Ethereum], {
     fetchOptions: {
       headers: {
@@ -57,7 +66,13 @@ export const appViemTransports = {
 export const publicClient = {
   [Network.Celo]: createPublicClient({
     chain: networkConfig.viemChain.celo,
-    transport: viemTransports[Network.Celo],
+    transport: http('https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9', {
+      fetchOptions: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    }),
   }),
   [Network.Ethereum]: createPublicClient({
     chain: networkConfig.viemChain.ethereum,

@@ -38,8 +38,6 @@ import { NumberToRecipient, contactsToRecipients } from 'src/recipients/recipien
 import { phoneRecipientCacheSelector, setPhoneRecipientCache } from 'src/recipients/reducer'
 import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
 import { SentryTransaction } from 'src/sentry/SentryTransactions'
-import { getFeatureGate } from 'src/statsig'
-import { StatsigFeatureGates } from 'src/statsig/types'
 import Logger from 'src/utils/Logger'
 import { getAllContacts, hasGrantedContactsPermission } from 'src/utils/contacts'
 import { ensureError } from 'src/utils/ensureError'
@@ -362,7 +360,7 @@ function getAddressFromPhoneNumber(
 
 export function* saveContacts() {
   try {
-    const saveContactsGate = getFeatureGate(StatsigFeatureGates.SAVE_CONTACTS)
+    const saveContactsGate = true
     const phoneVerified = yield* select(phoneNumberVerifiedSelector)
     const contactsEnabled = yield* call(hasGrantedContactsPermission)
 

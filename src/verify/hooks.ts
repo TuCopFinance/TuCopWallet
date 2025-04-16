@@ -99,14 +99,16 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
+          // authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
+          'x-api-key': 'tu-cop-intechchain-1234567890',
         },
         body: JSON.stringify({
-          phoneNumber,
-          clientPlatform: Platform.OS,
-          clientVersion: DeviceInfo.getVersion(),
-          clientBundleId: DeviceInfo.getBundleId(),
-          inviterAddress: inviterAddress ?? undefined,
+          phone: phoneNumber,
+          wallet: address,
+          // clientPlatform: Platform.OS,
+          // clientVersion: DeviceInfo.getVersion(),
+          // clientBundleId: DeviceInfo.getBundleId(),
+          // inviterAddress: inviterAddress ?? undefined,
         }),
       })
       if (response.ok) {
@@ -131,7 +133,7 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
         }
 
         const { data } = await response.json()
-        setVerificationId(data.verificationId)
+        setVerificationId(address!)
         setShouldResendSms(false)
         verificationCodeRequested.current = true
 
@@ -160,19 +162,25 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
         verificationId
       )
 
+      Logger.debug(`${TAG}/validateVerificationCode`, 'phoneNumber: ', phoneNumber)
+
+      Logger.debug(`${TAG}/validateVerificationCode`, 'smsCode: ', smsCode)
+
       const signedMessage = await retrieveSignedMessage()
       const response = await fetch(networkConfig.verifySmsCodeUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
+          // authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
+          'x-api-key': 'tu-cop-intechchain-1234567890',
         },
         body: JSON.stringify({
-          phoneNumber,
-          verificationId,
-          smsCode,
-          clientPlatform: Platform.OS,
-          clientVersion: DeviceInfo.getVersion(),
+          phone: phoneNumber,
+          // verificationId,
+          otp: smsCode,
+          // clientPlatform: Platform.OS,
+          // clientVersion: DeviceInfo.getVersion(),
+          wallet: address,
         }),
       })
 

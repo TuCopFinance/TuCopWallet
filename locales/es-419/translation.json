@@ -107,7 +107,7 @@
   },
   "signInWithEmail": {
     "title": "Vincula tu billetera",
-    "subtitle": "Vincula tu nueva billetera con tu correo electrónico para configurarlo como copia de seguridad. Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
+    "subtitle": "Vincula tu nueva billetera con tu correo electrónico para configurarlo como <0>copia de seguridad.</0> Se te pedirá que inicies sesión de nuevo si pierdes tu wallet.",
     "subtitleRestore": "Inicia sesión con el correo electrónico que usaste para configurar la copia de seguridad de tu wallet.",
     "google": "Vincular con Google",
     "apple": "Vincular con Apple",
@@ -2079,7 +2079,10 @@
       "dappPositions": "DeFi"
     },
     "importToken": "Importar",
-    "importTokens": "Importar tokens"
+    "importTokens": "Importar tokens",
+    "balanceInLocalAmount": "Saldo en moneda local",
+    "pesos": "Pesos",
+    "dollars": "Dolares"
   },
   "notificationCenterSpotlight": {
     "message": "Presentamos una nueva forma de reclamar recompensas, ver alertas y consultar actualizaciones en un solo lugar",
@@ -2726,8 +2729,8 @@
         "chooseSubtitle": "¿Cómo deberías elegir un pool? ",
         "chooseDescription": "Cualquier decisión financiera es una elección personal. Hemos agrupado algunos pools en distintos protocolos, pero cada pool tiene sus ventajas y sus riesgos. Hacemos todo lo posible por ofrecer información útil sobre cada pool, pero siempre es mejor que investigues más si no estás seguro."
       },
-      "noPoolsTitle": "Aún no te has unido a ningún pool",
-      "noPoolsDescription": "Descubre los pools disponibles, elige uno que se ajuste a tus objetivos y saca el máximo de tus criptomonedas.",
+      "noPoolsTitle": "Aún no tienes inversiones",
+      "noPoolsDescription": "Descubre las inversiones disponibles, elige una que se ajuste a tus objetivos y saca el máximo de tus criptomonedas.",
       "errorTitle": "No se pueden cargar pools",
       "errorDescription": "Ups, algo salió mal al intentar cargar la información del pool. Vuelve a intentarlo.",
       "errorButton": "Inténtalo de nuevo"
@@ -2744,11 +2747,14 @@
       "percentage": "{{percentage}}%",
       "poweredBy": "Con tecnología de {{providerName}}",
       "deposited": "Suministrado",
-      "depositAndEarnings": "Depósitos y ganancias"
+      "depositAndEarnings": "Depósitos y ganancias",
+      "lockPeriod": "Período de bloqueo",
+      "days": "{{days}} días",
+      "stake": "Staking"
     },
     "poolFilters": {
-      "allPools": "Todos los Pools",
-      "myPools": "Mis pools"
+      "allPools": "Inversiones disponibles",
+      "myPools": "Mis Inversiones"
     },
     "poolInfoScreen": {
       "chainName": "Red: <0>{{networkName}}</0>",
@@ -2820,7 +2826,80 @@
         "transfer": "Transferir",
         "transferDescription": "Usa cualquier wallet o exchange compatible con {{tokenNetwork}} para depositar {{tokenSymbol}}."
       }
+    },
+    "staking": {
+      "title": "Stake CCOP",
+      "subtitle": "Gana recompensas haciendo stake de tus tokens CCOP",
+      "poolTitle": "Pools de Staking",
+      "myStakes": "Mis Stakes",
+      "enterAmount": "Ingresa Cantidad",
+      "balance": "Balance del pool",
+      "network": "Red",
+      "enterAmountWithdraw": "Ingresa Cantidad a Retirar",
+      "connectToViewStakes": "Necesitas conectar tu wallet para ver tus stakes",
+      "amount": "Cantidad",
+      "duration": "Duración",
+      "days": "{{days}} días",
+      "apy": "APY",
+      "password": "Contraseña",
+      "stakeButton": "Hacer staking ahora",
+      "stakeSuccess": "Tokens stakeados exitosamente",
+      "stakeFailed": "Error al hacer stake de tokens",
+      "enterPassword": "Por favor ingresa tu contraseña",
+      "error": "Error",
+      "stakeDetails": "Detalles del Stake",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Finalización",
+      "remainingDays": "Días Restantes",
+      "status": "Estado",
+      "active": "Activo",
+      "completed": "Completado",
+      "withdraw": "Retirar",
+      "earlyWithdraw": "Retiro Anticipado",
+      "earlyWithdrawWarning": "El retiro anticipado tendrá una penalización del 20%",
+      "penalty": "Penalización",
+      "finalAmount": "Cantidad Final",
+      "confirmWithdraw": "Confirmar Retiro",
+      "confirmEarlyWithdraw": "Confirmar Retiro Anticipado",
+      "withdrawConfirmation": "¿Estás seguro que deseas retirar este stake?",
+      "success": "Éxito",
+      "successMessage": "Tu stake ha sido retirado exitosamente",
+      "earlyWithdrawTitle": "Confirmación de Retiro Anticipado",
+      "earlyWithdrawConfirmation": "Estás retirando {{amount}} CCOP antes del final del período de staking ({{days}} días restantes). Se aplicará una penalización del 20% de {{penalty}} CCOP. Recibirás {{finalAmount}} CCOP. ¿Deseas continuar?",
+      "connectRequired": "Se Requiere Conexión de Wallet",
+      "connectToStake": "Necesitas conectar una wallet para hacer stake de tokens.",
+      "withdrawSuccess": "Retiro Exitoso",
+      "withdrawFailed": "Error en el Retiro",
+      "invalidAmount": "Por favor ingresa una cantidad válida",
+      "insufficientBalance": "Balance insuficiente",
+      "invalidDuration": "Duración de staking inválida",
+      "invalidStakeIndex": "Índice de stake inválido",
+      "stakeNotFound": "Stake no encontrado",
+      "alreadyClaimed": "Este stake ya ha sido reclamado"
+    },
+    "wallet": {
+      "balance": "Balance"
+    },
+    "myStakes": {
+     "stakeTitle": "Stake #{{index}}",
+      "amount": "Cantidad",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Finalización",
+      "daysRemaining": "Días Restantes",
+      "days": "días",
+      "claimed": "Reclamado",
+      "earlyWithdraw": "Retiro Anticipado",
+      "withdraw": "Retirar",
+      "loading": "Cargando tus stakes...",
+      "noStakes": "No tienes ningún stake activo"
     }
+  },
+  "global": {
+    "ok": "Aceptar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "enterPassword": "Por favor ingresa tu contraseña",
+    "invalidPassword": "Contraseña inválida"
   },
   "addFundsActions": {
     "add": "Comprar",

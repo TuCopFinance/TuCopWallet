@@ -327,6 +327,12 @@ export type StackParamList = {
   [Screens.WebViewScreen]: { uri: string }
   [Screens.Welcome]: undefined
   [Screens.WithdrawSpend]: undefined
+  [Screens.MarranitoStaking]: {
+    pool: any
+    tokenBalance: string
+    walletAddress: string
+  }
+  [Screens.MarranitosMyStakes]: undefined
 }
 
 export type QRTabParamList = {

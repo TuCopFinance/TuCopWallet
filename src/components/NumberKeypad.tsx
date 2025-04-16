@@ -23,9 +23,15 @@ function DigitButton({
   onDigitPress: (digit: number) => void
 }) {
   const onPress = () => onDigitPress(digit)
+
   return (
-    <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
-      <Touchable testID={`digit${digit}`} borderless={true} onPress={onPress}>
+    <Shadow
+      style={styles.shadow}
+      distance={10}
+      offset={[0, 4]}
+      startColor="rgba(190, 201, 255, 0.28)"
+    >
+      <Touchable style={styles.digit} testID={`digit${digit}`} borderless={true} onPress={onPress}>
         <Text allowFontScaling={false} style={styles.digit}>
           {digit}
         </Text>
@@ -120,5 +126,6 @@ const styles = StyleSheet.create({
     display: 'flex',
     marginTop: 3,
     borderColor: Colors.white,
+    overflow: 'hidden',
   },
 })

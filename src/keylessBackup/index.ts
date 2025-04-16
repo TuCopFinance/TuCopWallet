@@ -1,10 +1,7 @@
 import { SiweClient } from '@fiatconnect/fiatconnect-sdk'
-import { KeylessBackupEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { KeylessBackupEvents } from 'src/analytics/Events'
 import { getWalletAddressFromPrivateKey } from 'src/keylessBackup/encryption'
-import { getDynamicConfigParams } from 'src/statsig'
-import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs } from 'src/statsig/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import networkConfig from 'src/web3/networkConfig'
 import { Hex } from 'viem'
@@ -27,6 +24,7 @@ export async function storeEncryptedMnemonic({
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${networkConfig.cabApiKey}`,
     },
     body: JSON.stringify({
       encryptedMnemonic,
@@ -57,9 +55,7 @@ function getSIWEClient(privateKey: Hex) {
       sessionDurationMs: SESSION_DURATION_MS,
       loginUrl: networkConfig.cabLoginUrl,
       clockUrl: networkConfig.cabClockUrl,
-      timeout:
-        getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.WALLET_NETWORK_TIMEOUT_SECONDS])
-          .default * 1000,
+      timeout: 60 * 1000,
     },
     (message) => account.signMessage({ message })
   )
@@ -68,7 +64,11 @@ function getSIWEClient(privateKey: Hex) {
 export async function getEncryptedMnemonic(encryptionPrivateKey: Hex) {
   const siweClient = getSIWEClient(encryptionPrivateKey)
   await siweClient.login()
-  const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl)
+  const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl, {
+    headers: {
+      Authorization: `Bearer ${networkConfig.cabApiKey}`,
+    },
+  })
   if (response.status === 404) {
     return null
   }
@@ -87,6 +87,9 @@ export async function deleteEncryptedMnemonic(encryptionPrivateKey: Hex) {
   await siweClient.login()
   const response = await siweClient.fetch(networkConfig.cabDeleteEncryptedMnemonicUrl, {
     method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${networkConfig.cabApiKey}`,
+    },
   })
   if (!response.ok) {
     const message = (await response.json())?.message

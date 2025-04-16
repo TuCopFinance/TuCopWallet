@@ -18,7 +18,12 @@ const BackgroundWelcome = ({ style, width = 391.5, height = 852 }: any) => {
   const centerX = width / 2
 
   return (
-    <Svg viewBox={`0 0 ${width} ${height}`} fill="none" style={[styles.fullScreen, style]}>
+    <Svg
+      viewBox={`0 0 ${width} ${height}`}
+      fill="none"
+      style={[styles.fullScreen, style]}
+      preserveAspectRatio="xMidYMid slice"
+    >
       <G clip-path="url(#clip0_2051_242)">
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#paint0_radial_2051_242)" />
         <G clip-path="url(#clip1_2051_242)" transform={`translate(${centerX - 200})`}>

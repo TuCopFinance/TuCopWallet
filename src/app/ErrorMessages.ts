@@ -38,4 +38,5 @@ export enum ErrorMessages {
   HOOKS_INVALID_PREVIEW_API_URL = 'hooksPreview.invalidApiUrl',
   SHORTCUT_CLAIM_REWARD_FAILED = 'dappShortcuts.claimRewardFailure',
   INVITE_WITH_URL_FAILED = 'inviteWithUrl.error',
+  GENERIC_ERROR = 'genericError',
 }

@@ -36,9 +36,9 @@ import {
 import { Position, Shortcut } from 'src/positions/types'
 import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
 import { SentryTransaction } from 'src/sentry/SentryTransactions'
-import { getDynamicConfigParams, getFeatureGate, getMultichainFeatures } from 'src/statsig'
-import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs, StatsigFeatureGates } from 'src/statsig/types'
+import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -85,23 +85,26 @@ async function fetchPositions({
   walletAddress: string
   language: string
 }) {
-  const networkIds = getMultichainFeatures().showPositions
+  const networkIds = [NetworkId['celo-mainnet']]
 
   const getPositionsUrl = getHooksApiFunctionUrl(hooksApiUrl, 'getPositions')
   getPositionsUrl.searchParams.set('address', walletAddress)
   networkIds.forEach((networkId) => getPositionsUrl.searchParams.append('networkIds', networkId))
 
   const getEarnPositionsUrl = getHooksApiFunctionUrl(hooksApiUrl, 'getEarnPositions')
-  const { supportedPools, supportedAppIds } = getDynamicConfigParams(
-    DynamicConfigs[StatsigDynamicConfigs.EARN_CONFIG]
-  )
+
+  // const { supportedPools, supportedAppIds } = getDynamicConfigParams(
+  //   DynamicConfigs[StatsigDynamicConfigs.EARN_CONFIG]
+  // )
+
   networkIds.forEach((networkId) =>
     getEarnPositionsUrl.searchParams.append('networkIds', networkId)
   )
-  supportedPools.forEach((pool) => getEarnPositionsUrl.searchParams.append('supportedPools', pool))
-  supportedAppIds.forEach((appId) =>
-    getEarnPositionsUrl.searchParams.append('supportedAppIds', appId)
-  )
+
+  // supportedPools.forEach((pool) => getEarnPositionsUrl.searchParams.append('supportedPools', pool))
+  // supportedAppIds.forEach((appId) =>
+  //   getEarnPositionsUrl.searchParams.append('supportedAppIds', appId)
+  // )
 
   const options: RequestInit = { headers: { 'Accept-Language': language } }
 

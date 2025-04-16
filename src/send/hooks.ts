@@ -15,6 +15,7 @@ import { phoneRecipientCacheSelector, recipientInfoSelector } from 'src/recipien
 import { resolveId } from 'src/recipients/resolve-id'
 import { useSelector } from 'src/redux/hooks'
 import { isValidAddress } from 'src/utils/address'
+import Logger from 'src/utils/Logger'
 import { parsePhoneNumber } from 'src/utils/phoneNumbers'
 
 // Ref: https://github.com/valora-inc/resolve-kit/blob/f84005ea0b522fb6ae40e10ab53d07cf8ef823ef/src/types.ts#L3
@@ -113,7 +114,12 @@ export function useResolvedRecipients(searchQuery: string): Recipient[] {
   const defaultCountryCode = useSelector(defaultCountryCodeSelector)
 
   useEffect(() => {
-    const parsedPhoneNumber = parsePhoneNumber(searchQuery, defaultCountryCode ?? undefined)
+    // Validar que el input tenga al menos 6 caracteres y empiece con número o "+"
+    const isPotentialPhone = /^\+?\d{6,}$/.test(searchQuery)
+    let parsedPhoneNumber = null
+    if (isPotentialPhone) {
+      parsedPhoneNumber = parsePhoneNumber(searchQuery, defaultCountryCode ?? undefined)
+    }
 
     if (parsedPhoneNumber) {
       debounceSearchQuery(parsedPhoneNumber.e164Number)
@@ -122,7 +128,14 @@ export function useResolvedRecipients(searchQuery: string): Recipient[] {
     }
   }, [searchQuery, defaultCountryCode])
   const { result: resolveAddressResult } = useAsync(resolveId, [debouncedSearchQuery])
-  const resolutions = resolveAddressResult?.resolutions ?? []
+
+  Logger.debug(`useResolvedRecipients`, resolveAddressResult)
+
+  const resolutions =
+    resolveAddressResult?.map((resolution: any) => ({
+      kind: ResolutionKind.Address,
+      address: resolution.wallet_address,
+    })) ?? []
   return useMapResolutionsToRecipients(searchQuery, resolutions as NameResolution[])
 }
 

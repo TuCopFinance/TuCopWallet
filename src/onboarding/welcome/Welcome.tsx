@@ -89,11 +89,7 @@ export default function Welcome() {
 
   return (
     <>
-      <BackgroundWelcome
-        style={styles.backgroundContainer}
-        height={height - 7}
-        width={width + 10}
-      />
+      <BackgroundWelcome style={styles.backgroundContainer} height={height} width={width} />
       <SafeAreaView style={styles.container}>
         <View style={styles.contentContainer}>
           <WelcomeLogo />
@@ -161,11 +157,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backgroundContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
     zIndex: -1,
   },
   createAccountButton: {

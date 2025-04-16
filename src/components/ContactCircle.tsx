@@ -24,8 +24,8 @@ function ContactCircle({
   recipient,
   style,
   backgroundColor = Colors.white,
-  foregroundColor = Colors.black,
-  borderColor = Colors.black,
+  foregroundColor = Colors.primary,
+  borderColor = Colors.primary,
   DefaultIcon = ({ foregroundColor }) => <User color={foregroundColor} />,
 }: Props) {
   const renderThumbnail = () => {

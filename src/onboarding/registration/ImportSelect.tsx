@@ -4,13 +4,11 @@ import React, { useLayoutEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Shadow } from 'react-native-shadow-2'
 import { cancelCreateOrRestoreAccount } from 'src/account/actions'
-import { OnboardingEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import Card from 'src/components/Card'
+import { OnboardingEvents } from 'src/analytics/Events'
 import Touchable from 'src/components/Touchable'
-import CloudCheck from 'src/icons/CloudCheck'
-import Lock from 'src/icons/Lock'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 import { nuxNavigationOptions } from 'src/navigator/Headers'
 import { navigate, navigateClearingStack } from 'src/navigator/NavigationService'
@@ -20,7 +18,9 @@ import TopBarTextButtonOnboarding from 'src/onboarding/TopBarTextButtonOnboardin
 import { useDispatch } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
-import { Shadow, Spacing } from 'src/styles/styles'
+import { Spacing } from 'src/styles/styles'
+import CommentsIcon from './comments.svg'
+import EnvelopeIcon from './envelope.svg'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.ImportSelect>
 
@@ -38,17 +38,22 @@ function ActionCard({
   testID?: string
 }) {
   return (
-    <Card style={styles.card} rounded={true} shadow={Shadow.SoftLight} testID={testID}>
-      <Touchable borderRadius={8} style={styles.touchable} onPress={onPress}>
-        <>
-          <View style={styles.topLine}>
-            {icon}
+    <Shadow
+      style={styles.shadow}
+      distance={10}
+      offset={[0, 0]}
+      startColor="rgba(190, 201, 255, 0.28)"
+    >
+      <Touchable borderRadius={21} style={styles.touchable} onPress={onPress}>
+        <View style={styles.topLine}>
+          <View>{icon}</View>
+          <View>
             <Text style={styles.cardTitle}>{title}</Text>
+            <Text style={styles.cardDescription}>{description}</Text>
           </View>
-          <Text style={styles.cardDescription}>{description}</Text>
-        </>
+        </View>
       </Touchable>
-    </Card>
+    </Shadow>
   )
 }
 
@@ -89,7 +94,7 @@ export default function ImportSelect({ navigation }: Props) {
           <ActionCard
             title={t('importSelect.emailAndPhone.title')}
             description={t('importSelect.emailAndPhone.description')}
-            icon={<CloudCheck color={colors.black} />}
+            icon={<EnvelopeIcon />}
             onPress={() =>
               navigate(Screens.SignInWithEmail, {
                 keylessBackupFlow: KeylessBackupFlow.Restore,
@@ -101,7 +106,7 @@ export default function ImportSelect({ navigation }: Props) {
           <ActionCard
             title={t('importSelect.recoveryPhrase.title')}
             description={t('importSelect.recoveryPhrase.description')}
-            icon={<Lock color={colors.black} />}
+            icon={<CommentsIcon />}
             onPress={() => navigate(Screens.ImportWallet, { clean: true })}
             testID="ImportSelect/Mnemonic"
           />
@@ -118,43 +123,43 @@ ImportSelect.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderColor: colors.black,
-    borderWidth: 1,
-    alignSelf: 'stretch',
-    flex: 1,
-    padding: 0,
+  shadow: {
+    width: 375,
+    borderRadius: 21,
+    backgroundColor: colors.white,
   },
   cardDescription: {
     ...typeScale.bodySmall,
-    marginLeft: 28,
+    width: 280,
   },
   cardTitle: {
-    ...typeScale.labelMedium,
+    ...typeScale.labelSmall,
     color: colors.black,
-    flex: 1,
+    fontWeight: '700',
+    width: 300,
   },
   safeArea: {
     flex: 1,
   },
   screenDescription: {
     ...typeScale.bodyMedium,
-    textAlign: 'center',
+    textAlign: 'left',
+    marginBottom: Spacing.Thick24,
   },
   screenTitle: {
     ...typeScale.titleSmall,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   screenTextContainer: {
     gap: Spacing.Regular16,
   },
   topLine: {
     alignItems: 'center',
-    flex: 1,
     flexDirection: 'row',
-    gap: Spacing.Smallest8,
+    gap: Spacing.Regular16,
   },
   touchable: {
+    flex: 1,
     padding: Spacing.Regular16,
   },
   viewContainer: {
