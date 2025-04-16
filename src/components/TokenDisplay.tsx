@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleProp, Text, TextStyle } from 'react-native'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -56,6 +57,7 @@ function TokenDisplay({
   testID,
   errorFallback = '-',
 }: Props) {
+  const { t } = useTranslation()
   const tokenInfo = useTokenInfo(tokenId)
   const localCurrencyExchangeRate = useSelector(usdToLocalCurrencyRateSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
@@ -76,6 +78,15 @@ function TokenDisplay({
   const sign = hideSign ? '' : amountToShow.isNegative() ? '-' : showExplicitPositiveSign ? '+' : ''
   const amountFallback = '--'
 
+  const getTokenSymbol = (symbol: string | undefined) => {
+    const symbols: Record<string, string> = {
+      cCOP: t('assets.pesos'),
+      'USD₮': t('assets.dollars'),
+    }
+
+    return symbol && symbol in symbols ? symbols[symbol] : symbol
+  }
+
   return (
     <Text style={style} testID={testID}>
       {showError ? (
@@ -88,7 +99,7 @@ function TokenDisplay({
           {amountToShow.isNaN()
             ? amountFallback
             : formatValueToDisplay(amountToShow.absoluteValue())}
-          {!showLocalAmount && showSymbol && ` ${tokenInfo?.symbol ?? ''}`}
+          {!showLocalAmount && showSymbol && ` ${getTokenSymbol(tokenInfo?.symbol) ?? ''}`}
         </>
       )}
     </Text>

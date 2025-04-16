@@ -14,24 +14,24 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		27DBFF6B2BDA6EED00863BC5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 27DBFF6A2BDA6EED00863BC5 /* PrivacyInfo.xcprivacy */; };
+		2A7631C136BD467A9CF58E92 /* RedHatDisplayLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9AE24AB537914F54B10F1BA3 /* RedHatDisplayLight.ttf */; };
+		3A700ADCECF3405A8FBDA72B /* RedHatDisplayRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D5B7C54A8524A9AAF49B8D6 /* RedHatDisplayRegular.ttf */; };
+		468E6F192B544580BAB39E8E /* RedHatDisplaySemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7FA6A18FB2204B1FA5C362F8 /* RedHatDisplaySemiBold.ttf */; };
+		493FF4E2830F4EC4A9D6B934 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 255D3E11D0314E39A21902D3 /* Inter-SemiBold.ttf */; };
+		5033B9EC723645D38EFE9406 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5349BAB65A04F63A116CB3F /* Inter-Bold.ttf */; };
 		67911AC6D310414DAAC1498E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F5FA21E7EC46BBB744FE54 /* libz.tbd */; };
+		72F99FEFC4D74FEF9D225AA1 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 20CACB2E2D96419EA8F61F27 /* Inter-Medium.ttf */; };
+		9F002EFFF1CF48E98E93CCB1 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0A3E9944E16A4869AC2328C6 /* Inter-Regular.ttf */; };
+		A119DEF2BF15471CA4C5EA32 /* RedHatDisplayBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0EFE37C6A2445778D1F5148 /* RedHatDisplayBold.ttf */; };
 		A23CB4272D65AF8100B5ECCE /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A23CB4202D65AF8100B5ECCE /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A23CB4662D65C0D400B5ECCE /* NotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = A23CB4622D65C0D400B5ECCE /* NotificationService.m */; };
 		A26DD4872D66FD1000FAC313 /* CleverTapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A26DD4862D66FD1000FAC313 /* CleverTapSDK.framework */; };
 		A26DD48B2D66FD2600FAC313 /* CleverTapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A26DD48A2D66FD2600FAC313 /* CleverTapSDK.framework */; };
 		BE414F125812398905D26607 /* Pods_MobileStack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB83A5A2127F47DBD9F4039 /* Pods_MobileStack.framework */; };
-		DB130B9D3870A7D4B8C027DE /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 828CF4D4589B170F8D4D3637 /* Pods_NotificationService.framework */; };
-		5033B9EC723645D38EFE9406 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5349BAB65A04F63A116CB3F /* Inter-Bold.ttf */; };
-		72F99FEFC4D74FEF9D225AA1 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 20CACB2E2D96419EA8F61F27 /* Inter-Medium.ttf */; };
-		9F002EFFF1CF48E98E93CCB1 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0A3E9944E16A4869AC2328C6 /* Inter-Regular.ttf */; };
-		493FF4E2830F4EC4A9D6B934 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 255D3E11D0314E39A21902D3 /* Inter-SemiBold.ttf */; };
-		E01DC2FFFC8D45E797EADD21 /* RedHatDisplayBlack.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 826EA2F126704CC196B0406E /* RedHatDisplayBlack.ttf */; };
-		A119DEF2BF15471CA4C5EA32 /* RedHatDisplayBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0EFE37C6A2445778D1F5148 /* RedHatDisplayBold.ttf */; };
 		BE870D62F02548038DC00A3A /* RedHatDisplayExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CBB7E7C7273C4374A07C607C /* RedHatDisplayExtraBold.ttf */; };
-		2A7631C136BD467A9CF58E92 /* RedHatDisplayLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9AE24AB537914F54B10F1BA3 /* RedHatDisplayLight.ttf */; };
 		C7773EF8EE8D4ECBADE45412 /* RedHatDisplayMedium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B88DF5773574F4E8428DBAA /* RedHatDisplayMedium.ttf */; };
-		3A700ADCECF3405A8FBDA72B /* RedHatDisplayRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D5B7C54A8524A9AAF49B8D6 /* RedHatDisplayRegular.ttf */; };
-		468E6F192B544580BAB39E8E /* RedHatDisplaySemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7FA6A18FB2204B1FA5C362F8 /* RedHatDisplaySemiBold.ttf */; };
+		DB130B9D3870A7D4B8C027DE /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 828CF4D4589B170F8D4D3637 /* Pods_NotificationService.framework */; };
+		E01DC2FFFC8D45E797EADD21 /* RedHatDisplayBlack.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 826EA2F126704CC196B0406E /* RedHatDisplayBlack.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +60,8 @@
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
+		0A3E9944E16A4869AC2328C6 /* Inter-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.ttf"; path = "../assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
+		0D5B7C54A8524A9AAF49B8D6 /* RedHatDisplayRegular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayRegular.ttf; path = ../assets/fonts/RedHatDisplayRegular.ttf; sourceTree = "<group>"; };
 		0F3673F72673A63900F9586A /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = File.swift; path = MobileStack/File.swift; sourceTree = "<group>"; };
 		0FC6C311256FEF2700C35F47 /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		0FC6C317256FEF4A00C35F47 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -71,6 +73,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = MobileStack/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MobileStack/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MobileStack/main.m; sourceTree = "<group>"; };
+		20CACB2E2D96419EA8F61F27 /* Inter-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.ttf"; path = "../assets/fonts/Inter-Medium.ttf"; sourceTree = "<group>"; };
+		255D3E11D0314E39A21902D3 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBold.ttf"; path = "../assets/fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; };
 		273ACDD52A02B36F0041B98E /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		273D9D2428635450007DCC9B /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2772E8DC27CEE9D900171137 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -81,7 +85,11 @@
 		61A715E249218FE538413789 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		67D0E8AEB7AF295EA57E99CE /* Pods-MobileStack.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileStack.release.xcconfig"; path = "Target Support Files/Pods-MobileStack/Pods-MobileStack.release.xcconfig"; sourceTree = "<group>"; };
 		68B737FF27D7B55B0044A85E /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7FA6A18FB2204B1FA5C362F8 /* RedHatDisplaySemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplaySemiBold.ttf; path = ../assets/fonts/RedHatDisplaySemiBold.ttf; sourceTree = "<group>"; };
+		826EA2F126704CC196B0406E /* RedHatDisplayBlack.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayBlack.ttf; path = ../assets/fonts/RedHatDisplayBlack.ttf; sourceTree = "<group>"; };
 		828CF4D4589B170F8D4D3637 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B88DF5773574F4E8428DBAA /* RedHatDisplayMedium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayMedium.ttf; path = ../assets/fonts/RedHatDisplayMedium.ttf; sourceTree = "<group>"; };
+		9AE24AB537914F54B10F1BA3 /* RedHatDisplayLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayLight.ttf; path = ../assets/fonts/RedHatDisplayLight.ttf; sourceTree = "<group>"; };
 		A23CB41B2D65A7D100B5ECCE /* MobileStackRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MobileStackRelease.entitlements; path = MobileStack/MobileStackRelease.entitlements; sourceTree = "<group>"; };
 		A23CB4202D65AF8100B5ECCE /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A23CB4602D65C0D400B5ECCE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -95,22 +103,14 @@
 		B514DC3DFD331D819FF996FE /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		BBB83A5A2127F47DBD9F4039 /* Pods_MobileStack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MobileStack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C88C5BFD26FA424100B9C0CE /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CBB7E7C7273C4374A07C607C /* RedHatDisplayExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayExtraBold.ttf; path = ../assets/fonts/RedHatDisplayExtraBold.ttf; sourceTree = "<group>"; };
+		E0EFE37C6A2445778D1F5148 /* RedHatDisplayBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RedHatDisplayBold.ttf; path = ../assets/fonts/RedHatDisplayBold.ttf; sourceTree = "<group>"; };
 		E47888B729494A2C00308F07 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		E47888B829494A3B00308F07 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E47888B929494AC100308F07 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E5349BAB65A04F63A116CB3F /* Inter-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.ttf"; path = "../assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
 		EC7D6CE9622BC3E1376D7515 /* Pods-MobileStack.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileStack.debug.xcconfig"; path = "Target Support Files/Pods-MobileStack/Pods-MobileStack.debug.xcconfig"; sourceTree = "<group>"; };
 		F3F5FA21E7EC46BBB744FE54 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		E5349BAB65A04F63A116CB3F /* Inter-Bold.ttf */ = {isa = PBXFileReference; name = "Inter-Bold.ttf"; path = "../assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		20CACB2E2D96419EA8F61F27 /* Inter-Medium.ttf */ = {isa = PBXFileReference; name = "Inter-Medium.ttf"; path = "../assets/fonts/Inter-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		0A3E9944E16A4869AC2328C6 /* Inter-Regular.ttf */ = {isa = PBXFileReference; name = "Inter-Regular.ttf"; path = "../assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		255D3E11D0314E39A21902D3 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; name = "Inter-SemiBold.ttf"; path = "../assets/fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		826EA2F126704CC196B0406E /* RedHatDisplayBlack.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayBlack.ttf"; path = "../assets/fonts/RedHatDisplayBlack.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		E0EFE37C6A2445778D1F5148 /* RedHatDisplayBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayBold.ttf"; path = "../assets/fonts/RedHatDisplayBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		CBB7E7C7273C4374A07C607C /* RedHatDisplayExtraBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayExtraBold.ttf"; path = "../assets/fonts/RedHatDisplayExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		9AE24AB537914F54B10F1BA3 /* RedHatDisplayLight.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayLight.ttf"; path = "../assets/fonts/RedHatDisplayLight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		8B88DF5773574F4E8428DBAA /* RedHatDisplayMedium.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayMedium.ttf"; path = "../assets/fonts/RedHatDisplayMedium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		0D5B7C54A8524A9AAF49B8D6 /* RedHatDisplayRegular.ttf */ = {isa = PBXFileReference; name = "RedHatDisplayRegular.ttf"; path = "../assets/fonts/RedHatDisplayRegular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		7FA6A18FB2204B1FA5C362F8 /* RedHatDisplaySemiBold.ttf */ = {isa = PBXFileReference; name = "RedHatDisplaySemiBold.ttf"; path = "../assets/fonts/RedHatDisplaySemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -474,6 +474,7 @@
 		};
 		95861C0E3EA1CBE9983C21B7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -522,6 +523,7 @@
 		};
 		D2AD1E722B53D6BA2D416743 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -546,6 +548,25 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNDeviceInfo/RNDeviceInfoPrivacyInfo.bundle",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Brands.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/Sentry/Sentry.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/Toast/Toast.bundle",
@@ -574,6 +595,25 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNDeviceInfoPrivacyInfo.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AntDesign.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome6_Brands.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome6_Regular.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome6_Solid.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialCommunityIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Octicons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SimpleLineIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zocial.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Sentry.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Toast.bundle",
@@ -677,7 +717,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = FBR3D7724U;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -695,7 +735,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
+				PRODUCT_BUNDLE_IDENTIFIER = tucop.org;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -715,7 +755,7 @@
 				CODE_SIGN_ENTITLEMENTS = MobileStack/MobileStackRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = FBR3D7724U;
 				INFOPLIST_FILE = MobileStack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TuCop;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -733,7 +773,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop;
+				PRODUCT_BUNDLE_IDENTIFIER = tucop.org;
 				PRODUCT_NAME = TuCop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileStack/MobileStack-Bridging-Header.h";
@@ -761,7 +801,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 165;
+				CURRENT_PROJECT_VERSION = 180;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64 ";
@@ -795,7 +835,10 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -822,7 +865,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				CURRENT_PROJECT_VERSION = 165;
+				CURRENT_PROJECT_VERSION = 180;
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -853,7 +896,10 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 4.2;
@@ -886,7 +932,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = FBR3D7724U;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -910,7 +956,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = tucop.org.NotificationService;
 				PRODUCT_NAME = NotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -947,7 +993,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 4F7C56NGTF;
+				DEVELOPMENT_TEAM = FBR3D7724U;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -964,7 +1010,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tucop.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = tucop.org.NotificationService;
 				PRODUCT_NAME = NotificationService;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;

@@ -35,7 +35,7 @@ const configOrThrow = (key: string) => {
   throw new RangeError(`Missing Config value for ${key}`)
 }
 
-export const APP_NAME = 'TuCopWallet'
+export const APP_NAME = 'TuCop'
 export const APP_REGISTRY_NAME = configOrThrow('APP_REGISTRY_NAME')
 
 // DEV only related settings
@@ -93,7 +93,8 @@ export const SHOW_TESTNET_BANNER = stringToBoolean(Config.SHOW_TESTNET_BANNER ||
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 // SECRETS
-export const WEB3AUTH_CLIENT_ID = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'WEB3AUTH_CLIENT_ID')
+export const WEB3AUTH_CLIENT_ID =
+  'BAJWXF8YqQSoNtdfX3z-vxgkZ0ZfN0hJVT0eGuf9BqoRbojNIxthU0wnW0oBScduV6XLeEePSmVhHQXuaqBMjcw'
 
 export const ALCHEMY_ETHEREUM_API_KEY = keyOrUndefined(
   secretsFile,
@@ -131,8 +132,7 @@ export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'S
 export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'RECAPTCHA_SITE_KEY')
 export const BIDALI_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'BIDALI_URL')
 
-export const WALLET_CONNECT_PROJECT_ID =
-  'BAJWXF8YqQSoNtdfX3z-vxgkZ0ZfN0hJVT0eGuf9BqoRbojNIxthU0wnW0oBScduV6XLeEePSmVhHQXuaqBMjcw'
+export const WALLET_CONNECT_PROJECT_ID = '787147cf79f2d0b543dd08cbcb0e6677'
 export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'
 export const AUTH0_DOMAIN = 'auth.valora.xyz'
 
@@ -217,4 +217,4 @@ export const ENABLED_QUICK_ACTIONS = (
 
 export const FETCH_FIATCONNECT_QUOTES = true
 
-export const WALLETCONNECT_UNIVERSAL_LINK = 'https://tucop.org/wc'
+export const WALLETCONNECT_UNIVERSAL_LINK = 'https://valoraapp.com/wc'

@@ -1,9 +1,8 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import { default as React, useMemo, useRef, useState } from 'react'
+import { default as React, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { Alert, LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   interpolateColor,
   useAnimatedScrollHandler,
@@ -15,14 +14,14 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import FilterChipsCarousel, {
-  FilterChip,
-  NetworkFilterChip,
-  isNetworkChip,
-} from 'src/components/FilterChipsCarousel'
+import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/FilterChipsCarousel'
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
+import MarranitosContract, {
+  STAKING_DURATIONS,
+  Stake,
+} from 'src/earn/marranitos/MarranitosContract'
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
 import { refreshAllBalances } from 'src/home/actions'
@@ -43,11 +42,47 @@ import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
+import { walletAddressSelector } from 'src/web3/selectors'
+import { Address } from 'viem'
 
 const HEADER_OPACITY_ANIMATION_START_OFFSET = 44
 const HEADER_OPACITY_ANIMATION_DISTANCE = 20
 
+export const MARRANITOS_POSITION_TYPE = 'marranitos'
+export const MY_MARRANITOS_POSITION_TYPE = 'misMarranitos'
+
 type Props = NativeStackScreenProps<StackParamList, Screens.EarnHome>
+
+const marranitos_pools = [
+  {
+    positionId: 'position_marranito_id1',
+    positionType: MARRANITOS_POSITION_TYPE,
+    network: 'CELO',
+    apy: '1.25',
+    days: '30',
+    duration: STAKING_DURATIONS.DAYS_30,
+    isActive: true,
+  },
+  {
+    positionId: 'position_marranito_id2',
+    positionType: MARRANITOS_POSITION_TYPE,
+    network: 'CELO',
+    apy: '1.50',
+    days: '60',
+    duration: STAKING_DURATIONS.DAYS_60,
+    isActive: true,
+  },
+  {
+    positionId: 'position_marranito_id3',
+    positionType: MARRANITOS_POSITION_TYPE,
+    network: 'CELO',
+    apy: '2.00',
+    days: '90',
+    duration: STAKING_DURATIONS.DAYS_90,
+    isActive: true,
+  },
+]
 
 function useFilterChips(): FilterChip<TokenBalance>[] {
   const { t } = useTranslation()
@@ -71,7 +106,6 @@ export default function EarnHome({ navigation, route }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const filterChipsCarouselRef = useRef<ScrollView>(null)
   const pools = useSelector(earnPositionsSelector)
 
   const activeTab = route.params?.activeEarnTab ?? EarnTabType.AllPools
@@ -119,7 +153,6 @@ export default function EarnHome({ navigation, route }: Props) {
   }, [scrollPosition.value, nonStickyHeaderHeight])
 
   const networkChipRef = useRef<BottomSheetModalRefType>(null)
-  const tokenBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const learnMoreBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   // The NetworkMultiSelectBottomSheet and TokenBottomSheet must be rendered at this level in order to be in
@@ -133,9 +166,12 @@ export default function EarnHome({ navigation, route }: Props) {
     () => filters.find((chip): chip is NetworkFilterChip<TokenBalance> => isNetworkChip(chip)),
     [filters]
   )
-  const tokens = [...new Set(pools.flatMap((pool) => pool.tokens))]
+  const tokens = [...new Set(pools.flatMap((pool: any) => pool.tokens))]
 
   const tokensInfo = useMemo(() => {
+    Logger.debug('tokensInfo -> tokens', tokens)
+    Logger.debug('tokensInfo -> allTokens', allTokens)
+    Logger.debug('tokensInfo -> pools', pools)
     return tokens
       .map((token) => allTokens[token.tokenId])
       .filter((token): token is TokenBalance => !!token)
@@ -166,13 +202,6 @@ export default function EarnHome({ navigation, route }: Props) {
     dispatch(refreshAllBalances())
     setRefreshing(false)
   }, [])
-
-  const handleToggleFilterChip = (chip: FilterChip<TokenBalance>) => {
-    if (isNetworkChip(chip)) {
-      return networkChipRef.current?.snapToIndex(0)
-    }
-    return tokenBottomSheetRef.current?.snapToIndex(0)
-  }
 
   // These function params mimic the params of the setSelectedNetworkIds function in
   // const [selectedNetworkIds, setSelectedNetworkIds] = useState<NetworkId[]>([])
@@ -248,13 +277,61 @@ export default function EarnHome({ navigation, route }: Props) {
 
   const zeroPoolsinMyPoolsTab =
     !errorLoadingPools && displayPools.length === 0 && activeTab === EarnTabType.MyPools
+
+  const walletAddress = useSelector(walletAddressSelector)
+
+  const [stakes, setStakes] = useState<Stake[]>([])
+  const [loading, setLoading] = useState(true)
+  const [withdrawing, setWithdrawing] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (walletAddress) {
+      // Corregir el error de promesa no manejada
+      void loadStakes()
+    }
+  }, [walletAddress])
+
+  const allPools = useMemo(() => {
+    const marranitos =
+      activeTab === EarnTabType.AllPools ? marranitos_pools.filter((pool) => pool.isActive) : stakes
+    return [
+      ...marranitos,
+      ...displayPools.filter((pool: any) =>
+        pool.tokens.some((token: any) =>
+          tokenList.map((token) => token.tokenId).includes(token.tokenId)
+        )
+      ),
+    ]
+  }, [displayPools, tokenList, marranitos_pools, activeTab])
+
+  const loadStakes = async () => {
+    if (!walletAddress) return
+
+    try {
+      setLoading(true)
+      const userStakes = await MarranitosContract.getUserStakes(walletAddress as Address)
+      setStakes(
+        userStakes
+          .map((item, index) => {
+            return {
+              ...item,
+              index,
+              positionType: MY_MARRANITOS_POSITION_TYPE,
+            }
+          })
+          .filter((item) => !item.claimed)
+      )
+    } catch (error) {
+      Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  Logger.debug('EarnHome -> allPools', allPools)
+
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
-      }
-    >
+    <View style={styles.container}>
       <Animated.View testID="EarnScreen" style={styles.container}>
         <Animated.View
           style={[styles.listHeaderContainer, animatedListHeaderStyles]}
@@ -266,20 +343,13 @@ export default function EarnHome({ navigation, route }: Props) {
           >
             <View style={styles.headerRow}>
               <Text style={styles.title}>{t('earnFlow.home.title')}</Text>
-              <FilterChipsCarousel
-                chips={filters}
-                onSelectChip={handleToggleFilterChip}
-                forwardedRef={filterChipsCarouselRef}
-                style={styles.filterChipsCarouselContainer}
-                contentContainerStyle={styles.contentContainerStyle}
-                scrollEnabled={false}
-              />
             </View>
 
             <EarnTabBar activeTab={activeTab} onChange={handleChangeActiveView} />
           </View>
         </Animated.View>
-        {errorLoadingPools && (
+        {((allPools.length === 0 && activeTab === EarnTabType.AllPools) ||
+          (allPools.length === 0 && errorLoadingPools)) && (
           <View style={styles.textContainer}>
             <AttentionIcon size={48} color={Colors.black} />
             <Text style={styles.errorTitle}>{t('earnFlow.home.errorTitle')}</Text>
@@ -288,23 +358,31 @@ export default function EarnHome({ navigation, route }: Props) {
         )}
         {zeroPoolsinMyPoolsTab && (
           <View style={styles.textContainer}>
-            <Text style={styles.noPoolsTitle}>{t('earnFlow.home.noPoolsTitle')}</Text>
+            <AttentionIcon size={48} color={Colors.primary} />
+            <Text style={styles.errorTitle}>{t('earnFlow.home.noPoolsTitle')}</Text>
             <Text style={styles.description}>{t('earnFlow.home.noPoolsDescription')}</Text>
           </View>
         )}
-        {!errorLoadingPools && !zeroPoolsinMyPoolsTab && (
-          <PoolList
-            handleScroll={handleScroll}
-            listHeaderHeight={listHeaderHeight}
-            paddingBottom={insets.bottom}
-            displayPools={displayPools.filter((pool) =>
-              pool.tokens.some((token) =>
-                tokenList.map((token) => token.tokenId).includes(token.tokenId)
-              )
-            )}
-            onPressLearnMore={onPressLearnMore}
-          />
-        )}
+        {!!allPools.length &&
+          !errorLoadingPools &&
+          !zeroPoolsinMyPoolsTab &&
+          (activeTab === EarnTabType.AllPools || activeTab === EarnTabType.MyPools) && (
+            <PoolList
+              handleScroll={handleScroll}
+              listHeaderHeight={listHeaderHeight}
+              paddingBottom={insets.bottom}
+              displayPools={allPools}
+              onPressLearnMore={onPressLearnMore}
+              onRefresh={onRefresh}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={Colors.primary}
+                />
+              }
+            />
+          )}
         {errorLoadingPools && (
           <View style={[styles.buttonContainer, insetsStyle]}>
             <Button
@@ -325,7 +403,7 @@ export default function EarnHome({ navigation, route }: Props) {
           forwardedRef={networkChipRef}
         />
       )}
-    </ScrollView>
+    </View>
   )
 }
 
@@ -364,8 +442,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...typeScale.titleMedium,
-    color: Colors.black,
+    ...typeScale.titleLarge,
+    color: Colors.primary,
   },
   listHeaderContainer: {
     ...getShadowStyle(Shadow.SoftLight),
@@ -384,12 +462,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
   },
-  filterChipsCarouselContainer: {
-    flexDirection: 'row',
-  },
-  contentContainerStyle: {
-    justifyContent: 'flex-end',
-  },
+  // filterChipsCarouselContainer: {
+  //   flexDirection: 'row',
+  // },
+  // contentContainerStyle: {
+  //   justifyContent: 'flex-end',
+  // },
   learnMoreTitle: {
     ...typeScale.titleSmall,
     color: Colors.black,
@@ -410,19 +488,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.Thick24,
   },
-  noPoolsTitle: {
-    ...typeScale.labelSemiBoldLarge,
-    textAlign: 'center',
-  },
   errorTitle: {
     ...typeScale.labelSemiBoldLarge,
     textAlign: 'center',
     marginTop: Spacing.Regular16,
+    color: Colors.primary,
   },
   description: {
     ...typeScale.bodySmall,
     textAlign: 'center',
     marginTop: Spacing.Regular16,
+    color: Colors.gray3,
   },
   buttonContainer: {
     marginHorizontal: Spacing.Thick24,

@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { acceptTerms, chooseCreateAccount, chooseRestoreAccount } from 'src/account/actions'
 import { recoveringFromStoreWipeSelector } from 'src/account/selectors'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { OnboardingEvents } from 'src/analytics/Events'
-import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Button, { BtnSizes, BtnTypes, TextSizes } from 'src/components/Button'
 import CheckBox from 'src/icons/CheckBox'
 import MSLogoFull from 'src/images/MSLogoFull'
 import WelcomeLogo from 'src/images/WelcomeLogo'
@@ -26,6 +26,7 @@ import { Spacing } from 'src/styles/styles'
 import { navigateToURI } from 'src/utils/linking'
 
 export default function Welcome() {
+  const { width, height } = Dimensions.get('window')
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const acceptedTerms = useSelector((state) => state.account.acceptedTerms)
@@ -88,7 +89,7 @@ export default function Welcome() {
 
   return (
     <>
-      <BackgroundWelcome style={styles.backgroundContainer} />
+      <BackgroundWelcome style={styles.backgroundContainer} height={height} width={width} />
       <SafeAreaView style={styles.container}>
         <View style={styles.contentContainer}>
           <WelcomeLogo />
@@ -120,6 +121,7 @@ export default function Welcome() {
             style={styles.createAccountButton}
             testID={'CreateAccountButton'}
             disabled={buttonsDisabled}
+            textSize={TextSizes.SMALL}
           />
           <Button
             onPress={onPressRestoreAccount}
@@ -128,6 +130,8 @@ export default function Welcome() {
             type={BtnTypes.OUTLINE}
             testID={'RestoreAccountButton'}
             disabled={buttonsDisabled}
+            textBold
+            textSize={TextSizes.SMALL}
           />
         </View>
         <View style={styles.msLogoContainer}>
@@ -146,18 +150,13 @@ Welcome.navigationOptions = {
 const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
-    marginTop: 70,
+    marginTop: 90,
     alignItems: 'center',
   },
   container: {
     flex: 1,
   },
   backgroundContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
     zIndex: -1,
   },
   createAccountButton: {
@@ -184,7 +183,7 @@ const styles = StyleSheet.create({
   msLogoContainer: {
     width: '100%',
     marginTop: Spacing.Large32,
-    paddingBottom: Spacing.Regular16,
+    paddingBottom: Spacing.Large32,
     alignItems: 'center',
   },
 })

@@ -8,11 +8,10 @@ import CloseButton from 'src/components/CloseButton'
 import CurrencyDisplay from 'src/components/CurrencyDisplay'
 import LegacyTokenDisplay from 'src/components/LegacyTokenDisplay'
 import QrScanButton from 'src/components/QrScanButton'
+import SendButton from 'src/components/SendButton'
 import SettingsGearButton from 'src/components/SettingsGearButton'
-import ShopTokensButton from 'src/components/ShopTokensButton'
 import TokenDisplay from 'src/components/TokenDisplay'
 import i18n from 'src/i18n'
-import Logo from 'src/images/Logo'
 import DisconnectBanner from 'src/shared/DisconnectBanner'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -20,6 +19,7 @@ import { Spacing } from 'src/styles/styles'
 import { useTokenInfoByCurrency } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { Currency } from 'src/utils/currencies'
+import LeftLogo from './Logo.svg'
 
 export const noHeader: NativeStackNavigationOptions = {
   headerShown: false,
@@ -31,9 +31,15 @@ export const noHeaderGestureDisabled: NativeStackNavigationOptions = {
 }
 
 export const styles = StyleSheet.create({
-  headerTitle: {
-    ...typeScale.labelSemiBoldMedium,
+  customHeaderTitle: {
+    ...typeScale.titleSmall,
     maxWidth: Dimensions.get('window').width * 0,
+    color: Colors.primary,
+  },
+  headerTitle: {
+    ...typeScale.titleLarge,
+    maxWidth: Dimensions.get('window').width * 0,
+    color: Colors.primary,
   },
   headerSubTitle: {
     color: Colors.gray4,
@@ -81,6 +87,19 @@ export const emptyHeader: NativeStackNavigationOptions = {
   // Prevents double back button on Android
   headerBackVisible: false,
   headerTitleStyle: [styles.headerTitle, styles.screenHeader],
+  headerShadowVisible: false,
+  headerTitleAlign: 'center',
+  headerStyle: {
+    backgroundColor: Colors.white,
+  },
+}
+
+export const customEmptyHeader: NativeStackNavigationOptions = {
+  headerTitle: '',
+  headerShown: true,
+  // Prevents double back button on Android
+  headerBackVisible: false,
+  headerTitleStyle: [styles.customHeaderTitle, styles.screenHeader],
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerStyle: {
@@ -228,15 +247,16 @@ export const tabHeader: NativeStackNavigationOptions = {
   headerRight: () => {
     return (
       <View style={[styles.topElementsContainer, { marginRight: Spacing.Tiny4 }]}>
-        <ShopTokensButton testID="TabHeader/ShopTokenButton" />
+        <SendButton testID="TabHeader/SendButton" />
         <QrScanButton testID="TabHeader/QRScanButton" />
+        {/* <ShopTokensButton testID="TabHeader/ShopTokenButton" /> */}
         <SettingsGearButton testID="TabHeader/SettingsGearButton" />
       </View>
     )
   },
   headerLeft: () => (
     <View style={[styles.topElementsContainer, { marginLeft: Spacing.Regular16 }]}>
-      <Logo />
+      <LeftLogo />
     </View>
   ),
 }

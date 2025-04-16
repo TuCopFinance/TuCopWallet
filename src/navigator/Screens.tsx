@@ -93,6 +93,7 @@ export enum Screens {
   TabHome = 'TabHome',
   TabActivity = 'TabActivity',
   TabWallet = 'TabWallet',
+  TabEarn = 'TabEarn',
   TokenDetails = 'TokenDetails',
   TokenDetailsMoreActions = 'TokenDetailsMoreActions',
   TokenImport = 'TokenImport',
@@ -108,4 +109,9 @@ export enum Screens {
   WebViewScreen = 'WebViewScreen',
   Welcome = 'Welcome',
   WithdrawSpend = 'WithdrawSpend',
+  MarranitoStaking = 'MarranitoStaking',
+  MarranitosMyStakes = 'MarranitosMyStakes',
 }
+
+export const MarranitoStaking = 'MarranitoStaking'
+export const MarranitosMyStakes = 'MarranitosMyStakes'

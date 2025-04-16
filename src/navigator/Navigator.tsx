@@ -36,6 +36,7 @@ import EarnConfirmationScreen from 'src/earn/EarnConfirmationScreen'
 import EarnEnterAmount from 'src/earn/EarnEnterAmount'
 import EarnHome from 'src/earn/EarnHome'
 import EarnInfoScreen from 'src/earn/EarnInfoScreen'
+import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
 import EarnPoolInfoScreen from 'src/earn/poolInfoScreen/EarnPoolInfoScreen'
 import BidaliScreen from 'src/fiatExchanges/BidaliScreen'
 import CashInSuccess from 'src/fiatExchanges/CashInSuccess'
@@ -661,6 +662,11 @@ function MainStackScreen() {
       {nftScreens(Stack)}
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
+      <Stack.Screen
+        name={Screens.MarranitoStaking}
+        component={MarranitoStaking}
+        options={headerWithBackButton}
+      />
     </Stack.Navigator>
   )
 }

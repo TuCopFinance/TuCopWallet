@@ -13,6 +13,7 @@ import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
 import { isPresent } from 'src/utils/typescript'
 import networkConfig from 'src/web3/networkConfig'
 import { getPositionBalanceUsd } from './getPositionBalanceUsd'
@@ -20,8 +21,7 @@ import { getPositionBalanceUsd } from './getPositionBalanceUsd'
 export const showPositionsSelector = () => true
 export const showClaimShortcutsSelector = () =>
   getFeatureGate(StatsigFeatureGates.SHOW_CLAIM_SHORTCUTS)
-export const allowHooksPreviewSelector = () =>
-  getFeatureGate(StatsigFeatureGates.ALLOW_HOOKS_PREVIEW)
+export const allowHooksPreviewSelector = () => true
 
 const positionsSelector = (state: RootState) =>
   showPositionsSelector() ? state.positions.positions : []
@@ -44,6 +44,7 @@ export const positionsWithBalanceSelector = createSelector([positionsSelector], 
 export const earnPositionsSelector = createSelector(
   [positionsSelector, earnPositionIdsSelector],
   (positions, earnPositionIds) => {
+    Logger.debug('earnPositionIds -> positions', positions)
     const earnPositionIdsSet = new Set(earnPositionIds)
     return positions.filter(
       (position): position is EarnPosition =>
