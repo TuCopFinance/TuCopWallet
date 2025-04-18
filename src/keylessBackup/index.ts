@@ -24,7 +24,7 @@ export async function storeEncryptedMnemonic({
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${networkConfig.cabApiKey}`,
+      Authorization: `Bearer ${jwt}`,
     },
     body: JSON.stringify({
       encryptedMnemonic,
@@ -64,11 +64,7 @@ function getSIWEClient(privateKey: Hex) {
 export async function getEncryptedMnemonic(encryptionPrivateKey: Hex) {
   const siweClient = getSIWEClient(encryptionPrivateKey)
   await siweClient.login()
-  const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl, {
-    headers: {
-      Authorization: `Bearer ${networkConfig.cabApiKey}`,
-    },
-  })
+  const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl)
   if (response.status === 404) {
     return null
   }
