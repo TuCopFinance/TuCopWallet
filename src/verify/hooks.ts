@@ -228,7 +228,7 @@ export function useRevokeCurrentPhoneNumber() {
 
       // const signedMessage = await retrieveSignedMessage()
       const response = await fetch(`${networkConfig.revokePhoneNumberUrl}/${e164Number}`, {
-        method: 'POST',
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': 'tu-cop-intechchain-1234567890',
