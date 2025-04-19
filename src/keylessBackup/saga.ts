@@ -83,9 +83,6 @@ export function* handleAppKeyshareIssued({
       appKeyshareBuffer
     )
 
-    Logger.info(TAG, `torusKeyshareBuffer: ${torusKeyshareBuffer}`)
-    Logger.info(TAG, `jwt: ${jwt}`)
-
     const encryptionAddress = getWalletAddressFromPrivateKey(encryptionPrivateKey)
     if (keylessBackupFlow === KeylessBackupFlow.Setup) {
       yield* handleKeylessBackupSetup({
@@ -104,17 +101,6 @@ export function* handleAppKeyshareIssued({
         encryptionPrivateKey,
         jwt,
         phone,
-      })
-    }
-
-    AppAnalytics.track(KeylessBackupEvents.cab_handle_keyless_backup_success, {
-      keylessBackupFlow,
-      origin,
-    })
-    if (keylessBackupFlow === KeylessBackupFlow.Setup) {
-      AppAnalytics.track(KeylessBackupEvents.cab_setup_hashed_keyshares, {
-        hashedKeysharePhone: hashedKeyshare,
-        hashedKeyshareEmail: hashedTorusKeyshare,
       })
     }
   } catch (error) {
@@ -198,6 +184,8 @@ function* handleKeylessBackupRestore({
     jwt: jwt as string,
     phone: phone as string,
   })
+
+  Logger.debug(TAG, `Encrypted mnemonic in handleKey: ${encryptedMnemonic}`)
 
   if (!encryptedMnemonic) {
     AppAnalytics.track(KeylessBackupEvents.cab_restore_mnemonic_not_found)
