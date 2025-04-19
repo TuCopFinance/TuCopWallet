@@ -129,8 +129,14 @@ export default function QRCodeDisplay(props: Props) {
         iconPositionLeft={false}
         testID="copyButton"
         size={BtnSizes.FULL}
-        style={{ flexDirection: 'row' }}
-        touchableStyle={{ width: '100%' }}
+        // Ensure the button wrapper takes full width within its container
+        // and add horizontal padding to align with other content.
+        style={{
+          width: '100%',
+          paddingHorizontal: Spacing.Regular16,
+          marginBottom: Spacing.Regular16,
+        }}
+        // Removed touchableStyle={{ width: '100%' }} as BtnSizes.FULL and the wrapper style should handle width.
       />
     </View>
   )
@@ -165,6 +171,8 @@ const styles = StyleSheet.create({
   qrContainer: {
     marginTop: '5%',
     marginBottom: Spacing.Thick24,
+    color: colors.accent,
+    tintColor: colors.accent,
   },
   name: {
     ...typeScale.labelSemiBoldMedium,
@@ -173,14 +181,15 @@ const styles = StyleSheet.create({
   },
   address: {
     ...typeScale.bodyMedium,
-    color: colors.gray5,
+    color: colors.accent,
     marginHorizontal: variables.width / 5,
-    marginBottom: 16,
+    // Adjusted marginBottom to accommodate the button's padding/margin
+    marginBottom: Spacing.Thick24,
     textAlign: 'center',
   },
   exchangeText: {
     ...typeScale.bodyMedium,
-    color: colors.gray5,
+    color: colors.accent,
     textAlign: 'center',
   },
 })
