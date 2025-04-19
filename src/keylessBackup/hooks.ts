@@ -6,10 +6,11 @@ import { KeylessBackupEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { appKeyshareIssued } from 'src/keylessBackup/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
-import { useDispatch } from 'src/redux/hooks'
+import { useDispatch, useSelector } from 'src/redux/hooks'
 import Logger from 'src/utils/Logger'
 import { PhoneNumberVerificationStatus } from 'src/verify/hooks'
 import networkConfig from 'src/web3/networkConfig'
+import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'keylessBackup/hooks'
 
@@ -21,6 +22,8 @@ export function useVerifyPhoneNumber(
   const verificationCodeRequested = useRef(false)
 
   const dispatch = useDispatch()
+
+  const walletAddress = useSelector(walletAddressSelector)
 
   const [verificationStatus, setVerificationStatus] = useState(PhoneNumberVerificationStatus.NONE)
   const [issueCodeCompleted, setIssueCodeCompleted] = useState(false)
@@ -131,14 +134,23 @@ export function useVerifyPhoneNumber(
           return
         }
 
-        const { keyshare, token } = await response.json()
+        const { keyshare, sessionId } = await response.json()
         AppAnalytics.track(KeylessBackupEvents.cab_issue_app_keyshare_success, {
           keylessBackupFlow,
           origin,
         })
         Logger.debug(`${TAG}/issueAppKeyShare`, 'Successfully verified sms code and got keyshare')
         setVerificationStatus(PhoneNumberVerificationStatus.SUCCESSFUL)
-        dispatch(appKeyshareIssued({ keyshare, keylessBackupFlow, origin, jwt: token }))
+        dispatch(
+          appKeyshareIssued({
+            keyshare,
+            keylessBackupFlow,
+            origin,
+            jwt: sessionId,
+            walletAddress: walletAddress as string,
+            phone: phoneNumber as string,
+          })
+        )
       },
       onError: (error: Error) => {
         AppAnalytics.track(KeylessBackupEvents.cab_issue_app_keyshare_error, {
