@@ -103,17 +103,41 @@ export async function getEncryptedMnemonic({
       'X-Phone': phone,
     },
   })
+
+  Logger.debug(TAG, `Response PHONE: ${phone}`)
+  Logger.debug(TAG, `Response status: ${response.status}`)
+
+  // Check for 404 before trying to parse JSON
   if (response.status === 404) {
     return null
   }
+
+  // Check for other errors before trying to parse JSON
   if (!response.ok) {
-    const message = (await response.json())?.message
+    let message = 'Unknown error'
+    try {
+      // Try to parse error response, consuming the body
+      const errorData = await response.json()
+      message = errorData?.message || message
+    } catch (e) {
+      Logger.error(TAG, 'Failed to parse error response', e)
+    }
+
     throw new Error(
       `Failed to get encrypted mnemonic with status ${response.status}, message ${message}`
     )
   }
-  const { encryptedMnemonic } = (await response.json()) as { encryptedMnemonic: string }
-  return encryptedMnemonic
+
+  // Parse the response JSON only once here
+  const responseData = await response.json()
+  // Log the parsed data
+  Logger.debug(TAG, `Response data: ${JSON.stringify(responseData)}`)
+
+  if (!responseData.encryptedMnemonic) {
+    throw new Error('Response missing encrypted mnemonic')
+  }
+
+  return responseData.encryptedMnemonic
 }
 
 export async function deleteEncryptedMnemonic(encryptionPrivateKey: Hex) {
