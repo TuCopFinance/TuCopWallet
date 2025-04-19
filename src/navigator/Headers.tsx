@@ -261,6 +261,24 @@ export const tabHeader: NativeStackNavigationOptions = {
   ),
 }
 
+export const customTabHeader = {
+  headerLeft: () => (
+    <View style={[styles.topElementsContainer, { marginLeft: Spacing.Regular16 }]}>
+      <BackButton color={Colors.primary80} />
+    </View>
+  ),
+  headerRight: () => {
+    return (
+      <View style={[styles.topElementsContainer, { marginRight: Spacing.Tiny4 }]}>
+        <SendButton testID="TabHeader/SendButton" />
+        <QrScanButton testID="TabHeader/QRScanButton" />
+        {/* <ShopTokensButton testID="TabHeader/ShopTokenButton" /> */}
+        <SettingsGearButton testID="TabHeader/SettingsGearButton" />
+      </View>
+    )
+  },
+}
+
 export const headerWithCloseButton: NativeStackNavigationOptions = {
   ...emptyHeader,
   headerLeft: () => (

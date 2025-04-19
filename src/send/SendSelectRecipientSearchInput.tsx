@@ -46,10 +46,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     columnGap: Spacing.Smallest8,
     paddingVertical: Spacing.Smallest8,
-    paddingHorizontal: Spacing.Small12,
-    borderWidth: 1,
-    borderColor: colors.gray2,
-    borderRadius: 100,
+    paddingHorizontal: Spacing.Regular16,
+    backgroundColor: 'rgba(245, 248, 255, 1)',
+    borderRadius: 15,
   },
   input: {
     ...typeScale.bodySmall,
