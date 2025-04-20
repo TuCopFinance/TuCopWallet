@@ -1,9 +1,9 @@
 import { formatJsonRpcError, formatJsonRpcResult, JsonRpcResult } from '@json-rpc-tools/utils'
+import { IWalletKit, WalletKit, WalletKitTypes } from '@reown/walletkit'
 import { Core } from '@walletconnect/core'
 import '@walletconnect/react-native-compat'
 import { SessionTypes } from '@walletconnect/types'
 import { buildApprovedNamespaces, getSdkError, parseUri } from '@walletconnect/utils'
-import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet'
 import { EventChannel, eventChannel } from 'redux-saga'
 import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -18,9 +18,6 @@ import { ActiveDapp } from 'src/dapps/types'
 import i18n from 'src/i18n'
 import { isBottomSheetVisible, navigate, navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { getDynamicConfigParams } from 'src/statsig'
-import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs } from 'src/statsig/types'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForWalletConnect } from 'src/tokens/utils'
 import { Network } from 'src/transactions/types'
@@ -89,9 +86,9 @@ import {
 import { Address, BaseError, GetTransactionCountParameters, hexToBigInt, isHex } from 'viem'
 import { getTransactionCount } from 'viem/actions'
 
-let client: IWeb3Wallet | null = null
+let client: IWalletKit | null = null
 
-export function _setClientForTesting(newClient: IWeb3Wallet | null) {
+export function _setClientForTesting(newClient: IWalletKit | null) {
   client = newClient
 }
 
@@ -100,7 +97,7 @@ const TAG = 'WalletConnect/saga'
 const GET_SESSION_TIMEOUT = 10_000
 
 export function* getDefaultSessionTrackedProperties(
-  session: Web3WalletTypes.EventArguments['session_proposal'] | SessionTypes.Struct
+  session: WalletKitTypes.EventArguments['session_proposal'] | SessionTypes.Struct
 ) {
   const activeDapp: ActiveDapp | null = yield* select(activeDappSelector)
   return getDefaultSessionTrackedPropertiesAnalytics(session, activeDapp)
@@ -118,7 +115,7 @@ function* handleInitialiseWalletConnect() {
 // so to avoid crashing the code depending on this, we fix it here
 // Note: this method mutates the session
 function applyIconFixIfNeeded(
-  session: Web3WalletTypes.EventArguments['session_proposal'] | SessionTypes.Struct
+  session: WalletKitTypes.EventArguments['session_proposal'] | SessionTypes.Struct
 ) {
   const peer = 'params' in session ? session.params.proposer : session.peer
   const { icons } = peer?.metadata || {}
@@ -133,9 +130,8 @@ export const _applyIconFixIfNeeded = applyIconFixIfNeeded
 function* createWalletConnectChannel() {
   if (!client) {
     Logger.debug(TAG + '@createWalletConnectChannel', `init start`)
-    const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
 
-    client = yield* call([Web3Wallet, 'init'], {
+    client = yield* call([WalletKit, 'init'], {
       core: new Core({
         projectId: WALLET_CONNECT_PROJECT_ID,
         relayUrl: networkConfig.walletConnectEndpoint,
@@ -147,7 +143,7 @@ function* createWalletConnectChannel() {
         icons: [appendPath('https://tucop.org', 'favicon.ico')],
         redirect: {
           native: `${DEEP_LINK_URL_SCHEME}://wallet/wc`,
-          // universal: WALLETCONNECT_UNIVERSAL_LINK,
+          universal: 'https://valoraapp.com/wc',
         },
       },
     })
@@ -157,15 +153,15 @@ function* createWalletConnectChannel() {
   }
 
   return eventChannel((emit) => {
-    const onSessionProposal = (session: Web3WalletTypes.EventArguments['session_proposal']) => {
+    const onSessionProposal = (session: WalletKitTypes.EventArguments['session_proposal']) => {
       applyIconFixIfNeeded(session)
       emit(sessionProposal(session))
     }
 
-    const onSessionDeleted = (session: Web3WalletTypes.EventArguments['session_delete']) => {
+    const onSessionDeleted = (session: WalletKitTypes.EventArguments['session_delete']) => {
       emit(sessionDeleted(session))
     }
-    const onSessionRequest = (request: Web3WalletTypes.EventArguments['session_request']) => {
+    const onSessionRequest = (request: WalletKitTypes.EventArguments['session_request']) => {
       emit(sessionPayload(request))
     }
 
@@ -236,7 +232,7 @@ function* handleInitialisePairing({ uri, origin }: InitialisePairing) {
  */
 
 function* handleIncomingSessionRequest({ session }: SessionProposal) {
-  const { pending }: { pending: Web3WalletTypes.EventArguments['session_proposal'][] } =
+  const { pending }: { pending: WalletKitTypes.EventArguments['session_proposal'][] } =
     yield* select(selectSessions)
   if (pending.length > 1) {
     return
@@ -246,7 +242,7 @@ function* handleIncomingSessionRequest({ session }: SessionProposal) {
 }
 
 function* handleIncomingActionRequest({ request }: SessionPayload) {
-  const pendingActions: Web3WalletTypes.EventArguments['session_request'][] =
+  const pendingActions: WalletKitTypes.EventArguments['session_request'][] =
     yield* select(selectPendingActions)
   if (pendingActions.length > 1) {
     return
@@ -255,7 +251,7 @@ function* handleIncomingActionRequest({ request }: SessionPayload) {
   yield* call(showActionRequest, request)
 }
 
-function* showSessionRequest(session: Web3WalletTypes.EventArguments['session_proposal']) {
+function* showSessionRequest(session: WalletKitTypes.EventArguments['session_proposal']) {
   const activeDapp = yield* select(activeDappSelector)
   AppAnalytics.track(WalletConnectEvents.wc_pairing_success, {
     dappRequestOrigin: activeDapp ? DappRequestOrigin.InAppWebView : DappRequestOrigin.External,
@@ -425,7 +421,7 @@ export function* normalizeTransaction(rawTx: any, network: Network) {
   return tx
 }
 
-function* showActionRequest(request: Web3WalletTypes.EventArguments['session_request']) {
+function* showActionRequest(request: WalletKitTypes.EventArguments['session_request']) {
   if (!client) {
     throw new Error('missing client')
   }
@@ -566,7 +562,7 @@ function* acceptSession({ session, approvedNamespaces }: AcceptSession) {
 // Export for testing
 export const _acceptSession = acceptSession
 
-function* getSessionFromClient(session: Web3WalletTypes.EventArguments['session_proposal']) {
+function* getSessionFromClient(session: WalletKitTypes.EventArguments['session_proposal']) {
   if (!client) {
     // should not happen
     throw new Error('missing client')
@@ -625,7 +621,7 @@ function* denySession({ session, reason }: DenySession) {
   yield* call(handlePendingStateOrNavigateBack)
 }
 
-function* getSessionFromRequest(request: Web3WalletTypes.EventArguments['session_request']) {
+function* getSessionFromRequest(request: WalletKitTypes.EventArguments['session_request']) {
   if (!client) {
     // should not happen
     throw new Error('missing client')
@@ -779,14 +775,14 @@ function* handlePendingStateOrNavigateBack() {
 function* handlePendingState() {
   const {
     pending: [pendingSession],
-  }: { pending: Web3WalletTypes.EventArguments['session_proposal'][] } =
+  }: { pending: WalletKitTypes.EventArguments['session_proposal'][] } =
     yield* select(selectSessions)
   if (pendingSession) {
     yield* call(showSessionRequest, pendingSession)
     return
   }
 
-  const [pendingRequest]: Web3WalletTypes.EventArguments['session_request'][] =
+  const [pendingRequest]: WalletKitTypes.EventArguments['session_request'][] =
     yield* select(selectPendingActions)
   if (pendingRequest) {
     yield* call(showActionRequest, pendingRequest)
