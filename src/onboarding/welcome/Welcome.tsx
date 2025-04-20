@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+// NOTE: Dimensions might not be needed anymore if BackgroundWelcome doesn't require explicit width/height
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { acceptTerms, chooseCreateAccount, chooseRestoreAccount } from 'src/account/actions'
 import { recoveringFromStoreWipeSelector } from 'src/account/selectors'
@@ -26,7 +27,8 @@ import { Spacing } from 'src/styles/styles'
 import { navigateToURI } from 'src/utils/linking'
 
 export default function Welcome() {
-  const { width, height } = Dimensions.get('window')
+  // NOTE: width and height might not be needed here anymore for the background
+  // const { width, height } = Dimensions.get('window')
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const acceptedTerms = useSelector((state) => state.account.acceptedTerms)
@@ -88,8 +90,11 @@ export default function Welcome() {
   }
 
   return (
-    <>
-      <BackgroundWelcome style={styles.backgroundContainer} height={height} width={width} />
+    // 1. Add a main container View
+    <View style={styles.mainContainer}>
+      {/* 2. Position BackgroundWelcome absolutely */}
+      <BackgroundWelcome style={styles.backgroundAbsolute} />
+      {/* SafeAreaView now sits on top of the absolutely positioned background */}
       <SafeAreaView style={styles.container}>
         <View style={styles.contentContainer}>
           <WelcomeLogo />
@@ -138,7 +143,7 @@ export default function Welcome() {
           <MSLogoFull />
         </View>
       </SafeAreaView>
-    </>
+    </View> // Close main container View
   )
 }
 
@@ -148,6 +153,14 @@ Welcome.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    position: 'relative', // Needed for absolute positioning of children
+  },
+  backgroundAbsolute: {
+    ...StyleSheet.absoluteFillObject, // Fills the parent completely
+    zIndex: -1, // Keep it behind other content if needed (might be optional now)
+  },
   contentContainer: {
     flexGrow: 1,
     marginTop: 90,
@@ -155,9 +168,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-  },
-  backgroundContainer: {
-    zIndex: -1,
+    backgroundColor: 'transparent', // Ensure SafeAreaView doesn't obscure the background
   },
   createAccountButton: {
     marginBottom: Spacing.Smallest8,
