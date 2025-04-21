@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     height: 56,
     backgroundColor: Colors.white,
     fontSize: 32,
-    lineHeight: 44,
+    lineHeight: 56,
     justifyContent: 'center',
     textAlign: 'center',
     alignItems: 'center',

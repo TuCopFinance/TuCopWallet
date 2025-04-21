@@ -49,7 +49,7 @@ export const DELAY_INTERVAL_MS = 500 // how long to wait between checks for keys
 export const WAIT_FOR_KEYSHARE_TIMEOUT_MS = 25 * 1000 // how long to wait for keyshares before failing
 
 export function* handleAppKeyshareIssued({
-  payload: { keylessBackupFlow, origin, keyshare, jwt },
+  payload: { keylessBackupFlow, origin, keyshare, jwt, walletAddress, phone },
 }: ReturnType<typeof appKeyshareIssued>) {
   try {
     const torusKeyshare = yield* waitForTorusKeyshare()
@@ -83,9 +83,6 @@ export function* handleAppKeyshareIssued({
       appKeyshareBuffer
     )
 
-    Logger.info(TAG, `torusKeyshareBuffer: ${torusKeyshareBuffer}`)
-    Logger.info(TAG, `jwt: ${jwt}`)
-
     const encryptionAddress = getWalletAddressFromPrivateKey(encryptionPrivateKey)
     if (keylessBackupFlow === KeylessBackupFlow.Setup) {
       yield* handleKeylessBackupSetup({
@@ -94,23 +91,16 @@ export function* handleAppKeyshareIssued({
         encryptionAddress,
         encryptionPrivateKey,
         jwt,
+        walletAddress,
+        phone,
       })
     } else {
       yield* handleKeylessBackupRestore({
         torusKeyshareBuffer,
         appKeyshareBuffer,
         encryptionPrivateKey,
-      })
-    }
-
-    AppAnalytics.track(KeylessBackupEvents.cab_handle_keyless_backup_success, {
-      keylessBackupFlow,
-      origin,
-    })
-    if (keylessBackupFlow === KeylessBackupFlow.Setup) {
-      AppAnalytics.track(KeylessBackupEvents.cab_setup_hashed_keyshares, {
-        hashedKeysharePhone: hashedKeyshare,
-        hashedKeyshareEmail: hashedTorusKeyshare,
+        jwt,
+        phone,
       })
     }
   } catch (error) {
@@ -130,44 +120,72 @@ function* handleKeylessBackupSetup({
   encryptionAddress,
   encryptionPrivateKey,
   jwt,
+  walletAddress,
+  phone,
 }: {
   torusKeyshareBuffer: Buffer
   appKeyshareBuffer: Buffer
   encryptionAddress: string
   encryptionPrivateKey: Hex
   jwt: string
+  walletAddress: string
+  phone: string
 }) {
-  const walletAddress = yield* select(walletAddressSelector)
-  const mnemonic = yield* call(getStoredMnemonic, walletAddress)
-  if (!mnemonic) {
-    throw new Error('No mnemonic found')
-  }
-  const encryptedMnemonic = yield* call(
-    encryptPassphrase,
-    torusKeyshareBuffer,
-    appKeyshareBuffer,
-    mnemonic
-  )
-  yield* call(storeEncryptedMnemonic, {
-    encryptedMnemonic,
-    encryptionAddress,
-    jwt,
-  })
-  yield* call(storeSECP256k1PrivateKey, encryptionPrivateKey, walletAddress)
+  try {
+    Logger.debug(TAG, `Starting keyless backup setup with JWT length: ${jwt?.length || 0}`)
 
-  yield* put(keylessBackupCompleted())
+    const mnemonic = yield* call(getStoredMnemonic, walletAddress)
+    if (!mnemonic) {
+      throw new Error('No mnemonic found')
+    }
+
+    const encryptedMnemonic = yield* call(
+      encryptPassphrase,
+      torusKeyshareBuffer,
+      appKeyshareBuffer,
+      mnemonic
+    )
+
+    // Registrar información antes de almacenar
+    Logger.debug(TAG, `Storing encrypted mnemonic for address: ${encryptionAddress}`)
+
+    yield* call(storeEncryptedMnemonic, {
+      encryptedMnemonic,
+      encryptionAddress,
+      jwt,
+      walletAddress: walletAddress as string,
+      phone: phone as string,
+    })
+
+    yield* call(storeSECP256k1PrivateKey, encryptionPrivateKey, walletAddress)
+
+    yield* put(keylessBackupCompleted())
+  } catch (error) {
+    Logger.error(TAG, 'Error in handleKeylessBackupSetup', error)
+    yield* put(keylessBackupFailed())
+  }
 }
 
 function* handleKeylessBackupRestore({
   torusKeyshareBuffer,
   appKeyshareBuffer,
   encryptionPrivateKey,
+  jwt,
+  phone,
 }: {
   torusKeyshareBuffer: Buffer
   appKeyshareBuffer: Buffer
   encryptionPrivateKey: Hex
+  jwt: string
+  phone: string
 }) {
-  const encryptedMnemonic = yield* call(getEncryptedMnemonic, encryptionPrivateKey)
+  const encryptedMnemonic = yield* call(getEncryptedMnemonic, {
+    encryptionPrivateKey: encryptionPrivateKey as Hex,
+    jwt: jwt as string,
+    phone: phone as string,
+  })
+
+  Logger.debug(TAG, `Encrypted mnemonic in handleKey: ${encryptedMnemonic}`)
 
   if (!encryptedMnemonic) {
     AppAnalytics.track(KeylessBackupEvents.cab_restore_mnemonic_not_found)

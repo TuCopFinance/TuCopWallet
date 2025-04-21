@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
-import { Platform } from 'react-native'
-import DeviceInfo from 'react-native-device-info'
 import { e164NumberSelector } from 'src/account/selectors'
 import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -9,14 +7,6 @@ import { PhoneVerificationEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { phoneNumberRevoked, phoneNumberVerificationCompleted } from 'src/app/actions'
 import { inviterAddressSelector } from 'src/app/selectors'
-import { PHONE_NUMBER_VERIFICATION_CODE_LENGTH } from 'src/config'
-import {
-  SmsEvent,
-  addSmsListener,
-  removeSmsListener,
-  startSmsRetriever,
-} from 'src/identity/smsRetrieval'
-import { retrieveSignedMessage } from 'src/pincode/authentication'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Logger from 'src/utils/Logger'
 import getPhoneHash from 'src/utils/getPhoneHash'
@@ -93,7 +83,7 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
       }
 
       Logger.debug(`${TAG}/requestVerificationCode`, 'Initiating request to verifyPhoneNumber')
-      const signedMessage = await retrieveSignedMessage()
+      // const signedMessage = await retrieveSignedMessage()
 
       const response = await fetch(networkConfig.verifyPhoneNumberUrl, {
         method: 'POST',
@@ -166,7 +156,7 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
 
       Logger.debug(`${TAG}/validateVerificationCode`, 'smsCode: ', smsCode)
 
-      const signedMessage = await retrieveSignedMessage()
+      // const signedMessage = await retrieveSignedMessage()
       const response = await fetch(networkConfig.verifySmsCodeUrl, {
         method: 'POST',
         headers: {
@@ -216,27 +206,6 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
   }
 }
 
-export function useAndroidSmsCodeRetriever(onSmsCodeRetrieved: (code: string) => void) {
-  const callbackRef = useRef(onSmsCodeRetrieved)
-  callbackRef.current = onSmsCodeRetrieved
-
-  useEffect(() => {
-    if (Platform.OS !== 'android') {
-      return
-    }
-    addSmsListener((event: SmsEvent) => {
-      const code = event.message?.match(`\\d{${PHONE_NUMBER_VERIFICATION_CODE_LENGTH}}`)?.[0]
-      if (code) {
-        callbackRef.current(code)
-      }
-    })
-    // We don't need to wait for this promise to finish, hence the void
-    void startSmsRetriever()
-
-    return removeSmsListener
-  }, [])
-}
-
 // This is only used from the dev menu for now
 // TODO: use i18n if this need to be used in prod
 export function useRevokeCurrentPhoneNumber() {
@@ -257,18 +226,18 @@ export function useRevokeCurrentPhoneNumber() {
         throw new Error('No phone number in the store')
       }
 
-      const signedMessage = await retrieveSignedMessage()
-      const response = await fetch(networkConfig.revokePhoneNumberUrl, {
-        method: 'POST',
+      // const signedMessage = await retrieveSignedMessage()
+      const response = await fetch(`${networkConfig.revokePhoneNumberUrl}/${e164Number}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
+          'x-api-key': 'tu-cop-intechchain-1234567890',
         },
-        body: JSON.stringify({
-          phoneNumber: e164Number,
-          clientPlatform: Platform.OS,
-          clientVersion: DeviceInfo.getVersion(),
-        }),
+        // body: JSON.stringify({
+        //   phoneNumber: e164Number,
+        //   clientPlatform: Platform.OS,
+        //   clientVersion: DeviceInfo.getVersion(),
+        // }),
       })
 
       if (!response.ok) {

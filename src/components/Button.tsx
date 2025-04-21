@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
   shadow: {
     width: '100%',
     borderRadius: 15,
+    flexGrow: 1,
   },
   gradientBackground: {
     position: 'absolute',
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
   full: {
     height: 48,
     flexGrow: 1,
+    width: '100%',
   },
 })
 

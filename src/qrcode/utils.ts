@@ -38,7 +38,7 @@ import {
 import { QrCode } from 'src/send/types'
 import { handleSendPaymentData } from 'src/send/utils'
 import Logger from 'src/utils/Logger'
-import { initialiseWalletConnect, isWalletConnectEnabled } from 'src/walletConnect/saga'
+import { initialiseWalletConnect } from 'src/walletConnect/saga'
 import { handleLoadingWithTimeout } from 'src/walletConnect/walletConnect'
 import { call, fork, put, select } from 'typed-redux-saga'
 import { isAddress } from 'viem'
@@ -152,7 +152,7 @@ export function* handleQRCodeDefault({
 }: HandleQRCodeDetectedAction) {
   AppAnalytics.track(QrScreenEvents.qr_scanned, qrCode)
 
-  const walletConnectEnabled: boolean = yield* call(isWalletConnectEnabled, qrCode.data)
+  const walletConnectEnabled: boolean = true
 
   // TODO there's some duplication with deep links handing
   // would be nice to refactor this

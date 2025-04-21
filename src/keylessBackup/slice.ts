@@ -38,6 +38,8 @@ export const slice = createSlice({
         keylessBackupFlow: KeylessBackupFlow
         origin: KeylessBackupOrigin
         jwt: string
+        walletAddress: string
+        phone: string
       }>
     ) => {
       state.appKeyshare = action.payload.keyshare

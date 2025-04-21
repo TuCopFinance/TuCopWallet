@@ -8,7 +8,6 @@ import { isAddressFormat } from 'src/account/utils'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SendEvents } from 'src/analytics/Events'
 import { SendOrigin } from 'src/analytics/types'
-import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes } from 'src/components/Button'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import KeyboardAwareScrollView from 'src/components/KeyboardAwareScrollView'
@@ -16,7 +15,7 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import CircledIcon from 'src/icons/CircledIcon'
 import { importContacts } from 'src/identity/actions'
 import { RecipientVerificationStatus } from 'src/identity/types'
-import { noHeader } from 'src/navigator/Headers'
+import { customTabHeader, noHeader } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -34,6 +33,7 @@ import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
+import Title from './title.svg'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.SendSelectRecipient>
 
@@ -302,13 +302,17 @@ function SendSelectRecipient({ route }: Props) {
     <SafeAreaView style={styles.body} edges={['top']}>
       <CustomHeader
         style={{ paddingHorizontal: variables.contentPadding }}
-        left={<BackButton />}
+        left={customTabHeader.headerLeft()}
+        right={customTabHeader.headerRight()}
         title={
           activeView === SelectRecipientView.Contacts
             ? t('sendSelectRecipient.contactsHeader')
             : t('sendSelectRecipient.header')
         }
       />
+      <View style={styles.titleContainer}>
+        <Title />
+      </View>
       <View style={styles.inputContainer}>
         <SendSelectRecipientSearchInput input={searchQuery} onChangeText={setSearchQuery} />
       </View>
@@ -367,6 +371,13 @@ function SendSelectRecipient({ route }: Props) {
 SendSelectRecipient.navigationOptions = noHeader
 
 const styles = StyleSheet.create({
+  titleContainer: {
+    paddingVertical: Spacing.Thick24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 'auto',
+    width: '100%',
+  },
   inputContainer: {
     padding: Spacing.Regular16,
     paddingTop: Spacing.Smallest8,
