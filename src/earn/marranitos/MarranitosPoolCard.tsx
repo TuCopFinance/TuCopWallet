@@ -4,16 +4,15 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import MarranitosContract, { STAKING_ADDRESS } from 'src/earn/marranitos/MarranitosContract'
-import { useDollarsToLocalAmount } from 'src/localCurrency/hooks'
-import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
-import { useSelector } from 'src/redux/hooks'
 import { TAG } from 'src/send/saga'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
+import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import MarranitoAvatar from './marranito.svg'
 
 export default function MarranitosPoolCard({
@@ -29,19 +28,18 @@ export default function MarranitosPoolCard({
 }) {
   const { network, apy, days, positionId } = pool
   const { t } = useTranslation()
-  const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const poolBalanceInFiat = useDollarsToLocalAmount(0) ?? null
-  const rewardAmountInUsd = 0
-  const rewardAmountInFiat =
-    useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
-
   const [poolBalance, setPoolBalance] = React.useState<any>(undefined)
 
   React.useEffect(() => {
     const loadBalance = async () => {
       Logger.debug(TAG, `POOL Token balance for: ${STAKING_ADDRESS}`)
       const balance = await MarranitosContract.getTokenBalance(STAKING_ADDRESS)
-      setPoolBalance(balance)
+
+      Logger.debug('balance', balance)
+
+      const balanceAmount = new BigNumber(balance.replace('cCOP', ''))
+
+      setPoolBalance(balanceAmount)
 
       Logger.debug(TAG, `POOL BALANCE: ${balance}`)
     }
@@ -85,7 +83,14 @@ export default function MarranitosPoolCard({
           <View style={styles.withBalanceContainer}>
             <Text style={styles.keyText}>{t('earnFlow.poolCard.depositAndEarnings')}</Text>
             <Text>
-              <Text style={styles.valueTextBold}>{poolBalance}</Text>
+              <TokenDisplay
+                style={styles.valueTextBold}
+                amount={poolBalance}
+                tokenId={CCOP_TOKEN_ID_MAINNET}
+                showSymbol={true}
+                hideSign={true}
+                showLocalAmount={true}
+              />
             </Text>
           </View>
 
@@ -98,9 +103,9 @@ export default function MarranitosPoolCard({
             size={BtnSizes.FULL}
           />
 
-          {/* <Text style={styles.poweredByText}>
-            {t('earnFlow.poolCard.poweredBy', { providerName: 'tucop.org' })}
-          </Text> */}
+          <Text style={styles.poweredByText}>
+            {t('earnFlow.poolCard.poweredBy', { providerName: 'Tu marranito' })}
+          </Text>
         </View>
       </Touchable>
     </Shadow>
@@ -155,11 +160,11 @@ const styles = StyleSheet.create({
     color: Colors.black,
     ...typeScale.labelSemiBoldSmall,
   },
-  // poweredByText: {
-  //   color: Colors.gray3,
-  //   ...typeScale.bodyXSmall,
-  //   alignSelf: 'center',
-  // },
+  poweredByText: {
+    color: Colors.gray3,
+    ...typeScale.bodyXSmall,
+    alignSelf: 'center',
+  },
   withBalanceContainer: {
     borderTopWidth: 1,
     borderTopColor: Colors.gray2,

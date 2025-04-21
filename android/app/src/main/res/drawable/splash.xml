@@ -8,11 +8,4 @@
         <bitmap
             android:src="@drawable/splash_background"/>
     </item>
-
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/logo"/>
-    </item>
-
 </layer-list>

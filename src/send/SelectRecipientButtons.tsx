@@ -177,7 +177,7 @@ export default function SelectRecipientButtons({
         title={t('sendSelectRecipient.qr.title')}
         subtitle={t('sendSelectRecipient.qr.subtitle')}
         onPress={onPressQR}
-        icon={<QRCode />}
+        icon={<QRCode color={Colors.primary} />}
       />
       <Dialog
         title={t('sendSelectRecipient.connectPhoneNumberModal.title')}
