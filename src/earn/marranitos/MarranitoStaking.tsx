@@ -19,9 +19,12 @@ import Logger from 'src/utils/Logger'
 import { Address } from 'viem'
 import MarranitosContract from './MarranitosContract'
 // Importar las funciones de autenticación
+import BigNumber from 'bignumber.js'
+import TokenDisplay from 'src/components/TokenDisplay'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { getPassword } from 'src/pincode/authentication'
+import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 const TAG = 'earn/marranitos/MarranitoStaking'
 
@@ -128,7 +131,16 @@ const MarranitoStaking = () => {
             </View>
             <View style={styles.poolInfoRow}>
               <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.balance')}</Text>
-              <Text style={styles.poolInfoValue}>{tokenBalance}</Text>
+              <Text style={styles.poolInfoValue}>
+                <TokenDisplay
+                  style={styles.poolInfoValue}
+                  amount={BigNumber(tokenBalance.replace('cCOP', ''))}
+                  tokenId={CCOP_TOKEN_ID_MAINNET}
+                  showSymbol={true}
+                  hideSign={true}
+                  showLocalAmount={true}
+                />
+              </Text>
             </View>
           </View>
 
