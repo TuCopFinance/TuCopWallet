@@ -157,7 +157,6 @@ function ActionButtons({
           onPress={onPressWithdraw}
           size={BtnSizes.FULL}
           type={BtnTypes.SECONDARY}
-          style={styles.flex}
           testID="WithdrawButton"
         />
       )}
@@ -523,9 +522,6 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
   },
-  flex: {
-    flex: 1,
-  },
   scrollContainer: {
     paddingHorizontal: Spacing.Thick24,
     ...(Platform.OS === 'android' && {
@@ -588,6 +584,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: Spacing.Regular16,
     gap: Spacing.Smallest8,
+    width: '80%',
+  },
+  flex: {
+    flex: 1,
+    marginHorizontal: Spacing.Tiny4,
   },
   infoBottomSheetTitle: {
     ...typeScale.titleSmall,

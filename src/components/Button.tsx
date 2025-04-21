@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
   full: {
     height: 48,
     flexGrow: 1,
+    width: '100%',
   },
 })
 
