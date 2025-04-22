@@ -16,7 +16,7 @@ import IERC20 from 'src/abis/IERC20'
 const TAG = 'earn/marranitos/MarranitosContract'
 
 // Direcciones de contratos
-export const STAKING_ADDRESS = '0x33F9D44eef92314dAE345Aa64763B01cf484F3C6' as Address
+export const STAKING_ADDRESS = '0x3ACb7d7cd683926D6A2FE998aF6350a8d56CfBBD' as Address
 const TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as Address
 
 // Duración de staking en segundos
