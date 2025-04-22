@@ -17,15 +17,13 @@ import { Spacing } from 'src/styles/styles'
 import { walletAddressSelector } from 'src/web3/selectors'
 import MarranitosContract, { STAKING_ADDRESS, STAKING_DURATIONS } from './MarranitosContract'
 
-const TAG = 'earn/marranitos/MarranitosPools'
-
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 const pools = [
   {
     positionId: '1',
     network: 'CELO',
-    apy: '1.25',
+    apy: MarranitosContract.calculateEffectiveAPY('1.25', STAKING_DURATIONS.DAYS_30),
     days: '30',
     duration: STAKING_DURATIONS.DAYS_30,
     isActive: true,
@@ -33,7 +31,7 @@ const pools = [
   {
     positionId: '2',
     network: 'CELO',
-    apy: '1.50',
+    apy: MarranitosContract.calculateEffectiveAPY('1.50', STAKING_DURATIONS.DAYS_60),
     days: '60',
     duration: STAKING_DURATIONS.DAYS_60,
     isActive: true,
@@ -41,7 +39,7 @@ const pools = [
   {
     positionId: '3',
     network: 'CELO',
-    apy: '2.00',
+    apy: MarranitosContract.calculateEffectiveAPY('2.00', STAKING_DURATIONS.DAYS_90),
     days: '90',
     duration: STAKING_DURATIONS.DAYS_90,
     isActive: true,

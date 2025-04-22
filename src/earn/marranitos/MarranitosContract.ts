@@ -115,8 +115,6 @@ export class MarranitosContract {
     passphrase: string
   ): Promise<boolean> {
     try {
-      Logger.debug(TAG, 'stake', amount, duration, walletAddress, passphrase)
-
       // Validar duración
       if (
         ![STAKING_DURATIONS.DAYS_30, STAKING_DURATIONS.DAYS_60, STAKING_DURATIONS.DAYS_90].includes(
@@ -131,24 +129,17 @@ export class MarranitosContract {
         throw new Error(i18n.t('earnFlow.staking.invalidAmount'))
       }
 
-      // Convertir amount a wei
-      Logger.debug(TAG, 'amount', amount)
       const amountWei = parseEther(amount, 'wei')
-      Logger.debug(TAG, 'amountWei', amountWei)
-
-      // Obtener wallet usando un enfoque más directo
-      Logger.debug(TAG, `Getting keychain accounts for address: ${walletAddress}`)
 
       // Simplificar la búsqueda de la cuenta - usar directamente el wallet
       const chain = networkConfig.viemChain.celo
-      Logger.debug(TAG, 'chain', chain)
 
       // Usar directamente getLockableViemWallet sin buscar la cuenta manualmente
       const accounts = await getKeychainAccounts()
-      Logger.debug(TAG, 'accounts', accounts)
+
       const formattedWalletAddress = walletAddress as Address
       const wallet = getLockableViemWallet(accounts, chain, formattedWalletAddress)
-      Logger.debug(TAG, 'wallet', wallet)
+
       if (!wallet) {
         Logger.error(TAG, `Could not create wallet for address ${formattedWalletAddress}`)
         throw new Error(`Could not create wallet for address ${formattedWalletAddress}`)
@@ -162,9 +153,6 @@ export class MarranitosContract {
         args: [formattedWalletAddress],
       })) as bigint
 
-      Logger.debug(TAG, `Current balance: ${balance}`)
-      Logger.debug(TAG, `Current amountWei: ${amountWei}`)
-
       if (balance < amountWei) {
         throw new Error(i18n.t('earnFlow.staking.insufficientBalance'))
       }
@@ -176,15 +164,9 @@ export class MarranitosContract {
         functionName: 'allowance',
         args: [formattedWalletAddress, STAKING_ADDRESS],
       })) as bigint
-      Logger.debug(TAG, `Current allowance: ${allowance}`)
 
       // Aprobar tokens si es necesario
       if (allowance < amountWei) {
-        Logger.debug(TAG, 'Approving tokens...')
-        Logger.debug(TAG, `formattedWalletAddress`, formattedWalletAddress)
-        Logger.debug(TAG, `STAKING_ADDRESS`, STAKING_ADDRESS)
-        Logger.debug(TAG, `amountWei`, amountWei)
-
         // Asegurarnos de que la cuenta esté desbloqueada
         const unlocked = await wallet.unlockAccount(passphrase, 300)
         if (!unlocked) {
@@ -192,9 +174,7 @@ export class MarranitosContract {
         }
 
         try {
-          Logger.debug(TAG, `Approving tokens...`)
-
-          const approveTx = await await wallet.writeContract({
+          const approveTx = await wallet.writeContract({
             address: TOKEN_ADDRESS, // Dirección del contrato del token
             abi: IERC20.abi,
             functionName: 'approve',
@@ -215,7 +195,6 @@ export class MarranitosContract {
       }
 
       // Hacer stake con configuración simplificada
-      Logger.debug(TAG, `Staking ${parseUnits(amount, 18)} tokens for ${duration} seconds`)
       try {
         // Simplificar la configuración de la transacción
         const stakeTx = await wallet
@@ -236,7 +215,6 @@ export class MarranitosContract {
         await this.client.waitForTransactionReceipt({ hash: stakeTx })
         Logger.debug(TAG, 'Stake successful!')
       } catch (stakeError) {
-        Logger.error(TAG, 'Error executing stake transaction', stakeError)
         if (stakeError instanceof Error) {
           Logger.error(TAG, `Stake error message: ${stakeError.message}`)
           Logger.error(TAG, `Stake error stack: ${stakeError.stack}`)
@@ -244,7 +222,7 @@ export class MarranitosContract {
         throw stakeError
       }
 
-      return false
+      return true
     } catch (error) {
       Logger.error(TAG, 'Error staking tokens', error)
       store.dispatch(showError(ErrorMessages.GENERIC_ERROR))
