@@ -71,12 +71,23 @@ export default function TokenIcon({
   const { tokenImageSize, networkImageSize, networkImagePosition, tokenTextSize } =
     IconSizeToStyle[size]
 
+  const getTokenImagen = (token: BaseToken | Token) => {
+    const symbols: Record<string, string> = {
+      cCOP: '',
+      'USD₮': '',
+    }
+
+    return token.symbol && token.symbol in symbols && symbols[token.symbol]
+      ? symbols[token.symbol]
+      : token.imageUrl
+  }
+
   return (
     <View testID={testID} style={[styles.defaultViewStyle, viewStyle]}>
       {token.imageUrl ? (
         <FastImage
           source={{
-            uri: token.imageUrl,
+            uri: getTokenImagen(token),
           }}
           style={[
             styles.tokenImage,
