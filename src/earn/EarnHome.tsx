@@ -42,7 +42,6 @@ import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
-import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
 
@@ -161,6 +160,7 @@ export default function EarnHome({ navigation, route }: Props) {
   // on all of them, not just the Earn tab.
   const chips = useFilterChips()
   const [filters, setFilters] = useState(chips)
+  const [stakes, setStakes] = useState<Stake[]>([])
   const activeFilters = useMemo(() => filters.filter((filter) => filter.isSelected), [filters])
   const networkChip = useMemo(
     () => filters.find((chip): chip is NetworkFilterChip<TokenBalance> => isNetworkChip(chip)),
@@ -169,9 +169,6 @@ export default function EarnHome({ navigation, route }: Props) {
   const tokens = [...new Set(pools.flatMap((pool: any) => pool.tokens))]
 
   const tokensInfo = useMemo(() => {
-    Logger.debug('tokensInfo -> tokens', tokens)
-    Logger.debug('tokensInfo -> allTokens', allTokens)
-    Logger.debug('tokensInfo -> pools', pools)
     return tokens
       .map((token) => allTokens[token.tokenId])
       .filter((token): token is TokenBalance => !!token)
@@ -275,14 +272,7 @@ export default function EarnHome({ navigation, route }: Props) {
     (pools.length === 0 ||
       Date.now() - (positionsFetchedAt ?? 0) > TIME_UNTIL_TOKEN_INFO_BECOMES_STALE)
 
-  const zeroPoolsinMyPoolsTab =
-    !errorLoadingPools && displayPools.length === 0 && activeTab === EarnTabType.MyPools
-
   const walletAddress = useSelector(walletAddressSelector)
-
-  const [stakes, setStakes] = useState<Stake[]>([])
-  const [loading, setLoading] = useState(true)
-  const [withdrawing, setWithdrawing] = useState<number | null>(null)
 
   useEffect(() => {
     if (walletAddress) {
@@ -304,11 +294,13 @@ export default function EarnHome({ navigation, route }: Props) {
     ]
   }, [displayPools, tokenList, marranitos_pools, activeTab])
 
+  const zeroPoolsinMyPoolsTab =
+    !errorLoadingPools && allPools.length === 0 && activeTab === EarnTabType.MyPools
+
   const loadStakes = async () => {
     if (!walletAddress) return
 
     try {
-      setLoading(true)
       const userStakes = await MarranitosContract.getUserStakes(walletAddress as Address)
       setStakes(
         userStakes
@@ -323,12 +315,8 @@ export default function EarnHome({ navigation, route }: Props) {
       )
     } catch (error) {
       Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
-    } finally {
-      setLoading(false)
     }
   }
-
-  Logger.debug('EarnHome -> allPools', allPools)
 
   return (
     <View style={styles.container}>

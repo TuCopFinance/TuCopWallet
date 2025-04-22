@@ -2,9 +2,16 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import React, { useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { LayoutChangeEvent, Platform, StyleSheet, Text, View } from 'react-native'
+import {
+  LayoutChangeEvent,
+  Platform,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native'
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import { EarnCommonProperties } from 'src/analytics/Properties'
@@ -139,18 +146,29 @@ function ActionButtons({
   onPressDeposit: () => void
   onPressWithdraw: () => void
 }) {
-  const { bottom } = useSafeAreaInsets()
   const insetsStyle = {
-    paddingBottom: Math.max(bottom, Spacing.Regular16),
+    marginTop: 40,
   }
   const { t } = useTranslation()
   const { availableShortcutIds } = earnPosition
   const deposit = availableShortcutIds.includes('deposit')
   const withdraw =
     availableShortcutIds.includes('withdraw') && new BigNumber(earnPosition.balance).gt(0)
+  const { width: screenWidth } = useWindowDimensions()
+  const actionsContainerWidth = screenWidth - Spacing.Thick24 * 2
 
   return (
-    <View testID="ActionButtons" style={[styles.buttonContainer, insetsStyle]}>
+    <View
+      testID="ActionButtons"
+      style={[
+        styles.buttonContainer,
+        insetsStyle,
+        {
+          width: actionsContainerWidth,
+          maxWidth: actionsContainerWidth,
+        },
+      ]}
+    >
       {withdraw && (
         <Button
           text={t('earnFlow.poolInfoScreen.withdraw')}
@@ -158,6 +176,7 @@ function ActionButtons({
           size={BtnSizes.FULL}
           type={BtnTypes.SECONDARY}
           testID="WithdrawButton"
+          style={{ width: '100%' }}
         />
       )}
       {deposit && (
@@ -165,8 +184,8 @@ function ActionButtons({
           text={t('earnFlow.poolInfoScreen.deposit')}
           onPress={onPressDeposit}
           size={BtnSizes.FULL}
-          style={styles.flex}
           testID="DepositButton"
+          style={{ width: '100%' }}
         />
       )}
     </View>
@@ -364,12 +383,12 @@ export default function EarnPoolInfoScreen({ route, navigation }: Props) {
             />
           ) : null}
         </View>
+        <ActionButtons
+          earnPosition={pool}
+          onPressDeposit={onPressDeposit}
+          onPressWithdraw={onPressWithdraw}
+        />
       </Animated.ScrollView>
-      <ActionButtons
-        earnPosition={pool}
-        onPressDeposit={onPressDeposit}
-        onPressWithdraw={onPressWithdraw}
-      />
       <InfoBottomSheet
         infoBottomSheetRef={depositInfoBottomSheetRef}
         titleKey="earnFlow.poolInfoScreen.depositAndEarnings"
@@ -525,7 +544,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: Spacing.Thick24,
     ...(Platform.OS === 'android' && {
-      minHeight: variables.height,
+      minHeight: variables.height - 500,
     }),
   },
   title: {
@@ -580,11 +599,10 @@ const styles = StyleSheet.create({
     color: Colors.black,
   },
   buttonContainer: {
-    flexShrink: 1,
     flexDirection: 'row',
     padding: Spacing.Regular16,
     gap: Spacing.Smallest8,
-    width: '80%',
+    justifyContent: 'center',
   },
   flex: {
     flex: 1,
