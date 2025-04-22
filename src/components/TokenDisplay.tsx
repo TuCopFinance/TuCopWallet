@@ -30,6 +30,15 @@ export function formatValueToDisplay(value: BigNumber) {
   return text
 }
 
+export const getTokenSymbol = (t: any, symbol: string | undefined) => {
+  const symbols: Record<string, string> = {
+    cCOP: t('assets.pesos'),
+    'USD₮': t('assets.dollars'),
+  }
+
+  return symbol && symbol in symbols ? symbols[symbol] : symbol
+}
+
 interface Props {
   amount: BigNumber.Value
   tokenId?: string
@@ -78,15 +87,6 @@ function TokenDisplay({
   const sign = hideSign ? '' : amountToShow.isNegative() ? '-' : showExplicitPositiveSign ? '+' : ''
   const amountFallback = '--'
 
-  const getTokenSymbol = (symbol: string | undefined) => {
-    const symbols: Record<string, string> = {
-      cCOP: t('assets.pesos'),
-      'USD₮': t('assets.dollars'),
-    }
-
-    return symbol && symbol in symbols ? symbols[symbol] : symbol
-  }
-
   return (
     <Text style={style} testID={testID}>
       {showError ? (
@@ -99,7 +99,7 @@ function TokenDisplay({
           {amountToShow.isNaN()
             ? amountFallback
             : formatValueToDisplay(amountToShow.absoluteValue())}
-          {!showLocalAmount && showSymbol && ` ${getTokenSymbol(tokenInfo?.symbol) ?? ''}`}
+          {!showLocalAmount && showSymbol && ` ${getTokenSymbol(t, tokenInfo?.symbol) ?? ''}`}
         </>
       )}
     </Text>
