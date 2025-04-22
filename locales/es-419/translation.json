@@ -2669,7 +2669,9 @@
       "primaryCta": "Finalizar",
       "secondaryCta": "Cancelar",
       "yieldRate": "Tasa de rendimiento (est.)",
-      "apy": "{{apy}}%"
+      "apy": "{{apy}}%",
+      "yieldRateV2": "Tasa de rendimiento"
+
     },
     "collect": {
       "title": "¡Felicidades! Revisa y recoge tus ganancias",
@@ -2840,7 +2842,7 @@
       "amount": "Cantidad",
       "duration": "Duración",
       "days": "{{days}} días",
-      "apy": "APY",
+      "apy": "Tasa de rendimiento",
       "password": "Contraseña",
       "stakeButton": "Hacer staking ahora",
       "stakeSuccess": "Tokens stakeados exitosamente",
