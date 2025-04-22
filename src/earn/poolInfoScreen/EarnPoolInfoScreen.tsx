@@ -155,7 +155,7 @@ function ActionButtons({
   const withdraw =
     availableShortcutIds.includes('withdraw') && new BigNumber(earnPosition.balance).gt(0)
   const { width: screenWidth } = useWindowDimensions()
-  const actionsContainerWidth = screenWidth - Spacing.Thick24 * 2
+  const actionsContainerWidth = screenWidth - 150
 
   return (
     <View
@@ -174,9 +174,7 @@ function ActionButtons({
           text={t('earnFlow.poolInfoScreen.withdraw')}
           onPress={onPressWithdraw}
           size={BtnSizes.FULL}
-          type={BtnTypes.SECONDARY}
           testID="WithdrawButton"
-          style={{ width: '100%' }}
         />
       )}
       {deposit && (
@@ -185,7 +183,6 @@ function ActionButtons({
           onPress={onPressDeposit}
           size={BtnSizes.FULL}
           testID="DepositButton"
-          style={{ width: '100%' }}
         />
       )}
     </View>
@@ -600,7 +597,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    padding: Spacing.Regular16,
+    margin: Spacing.XLarge48,
     gap: Spacing.Smallest8,
     justifyContent: 'center',
   },
