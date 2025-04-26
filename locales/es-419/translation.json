@@ -868,7 +868,7 @@
     "changePIN": "Cambiar PIN",
     "pinsDontMatch": "Los PIN no coinciden",
     "invalidPin": "Por favor use un PIN más fuerte",
-    "onboardingTitle": "Elige un PIN de 6 dígitos",
+    "onboardingTitle": "Elige un PIN de 4 dígitos",
     "onboardingConfirm": "Ingresa tu PIN de nuevo",
     "onboardingSubtitle": "El PIN te ayuda a asegurar tu wallet",
     "pin": "PIN"
@@ -2670,7 +2670,7 @@
       "secondaryCta": "Cancelar",
       "yieldRate": "Tasa de rendimiento (est.)",
       "apy": "{{apy}}%",
-      "yieldRateV2": "Tasa de rendimiento"
+      "yieldRateV2": "Tasa de interés m.v."
 
     },
     "collect": {
@@ -2842,7 +2842,7 @@
       "amount": "Cantidad",
       "duration": "Duración",
       "days": "{{days}} días",
-      "apy": "Tasa de rendimiento",
+      "apy": "Tasa de interés m.v.",
       "password": "Contraseña",
       "stakeButton": "Hacer staking ahora",
       "stakeSuccess": "Tokens stakeados exitosamente",
