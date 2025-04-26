@@ -5069,7 +5069,7 @@
     "@walletconnect/safe-json" "^1.0.2"
     pino "7.11.0"
 
-"@walletconnect/react-native-compat@^2.18.1":
+"@walletconnect/react-native-compat@^2.19.0":
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/@walletconnect/react-native-compat/-/react-native-compat-2.20.0.tgz#998f26c5d0442b265adf43596bcebc7126ddcde9"
   integrity sha512-NTyYFTJBL8ShCG3piJaoodJNVZBXI7T5zka/YJiuuozpEkh/v6v9a8EwVTotdwbNel37/NaBn96AAyPckQbJ0A==
@@ -5118,7 +5118,7 @@
     "@walletconnect/utils" "2.19.2"
     events "3.3.0"
 
-"@walletconnect/sign-client@^2.18.1":
+"@walletconnect/sign-client@^2.19.0":
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.20.0.tgz#97abeecfb128dec1bd2c22606607f68f281f52a2"
   integrity sha512-5Ao9RVGsgpMTLjVByFfjMbX7RwJM0HvKV7P9ONJwPPo4OiviNyneeOufr2KKZhuwF+QUu5mTE0Lj/euGWSNaOQ==
