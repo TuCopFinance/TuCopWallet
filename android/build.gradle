@@ -33,14 +33,8 @@ configurations.all {
 allprojects {
     repositories {
         mavenLocal()
-        maven {
-            url "$rootDir/../node_modules/detox/Detox-android"
-        }
-        jcenter() {
-            content {
-                includeGroup("com.google.android.exoplayer")
-            }
-        }
+        google()
+        mavenCentral()
         maven {
             url 'https://sdk.withpersona.com/android/releases'
         }
@@ -51,28 +45,28 @@ allprojects {
     // For devs running Java > 11
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class) {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
         }
     }
 }
 
 subprojects {
-  { project ->
+    project ->
     if (project.name.contains('react-native-firebase')) {
-      buildscript {
-        dependencies {
-          classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.41"
+        buildscript {
+            dependencies {
+                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+            }
         }
-      }
     }
-  }
+}
 
   afterEvaluate {project ->
         if (project.hasProperty("android")) {
             android {
                 compileSdkVersion rootProject.ext.compileSdkVersion
                 buildToolsVersion rootProject.ext.buildToolsVersion
-                
+
                 // Add these configurations
                 configurations.all {
                     resolutionStrategy {
