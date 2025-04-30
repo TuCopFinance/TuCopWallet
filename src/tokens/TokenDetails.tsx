@@ -68,6 +68,17 @@ export default function TokenDetailsScreen({ route }: Props) {
   const tokenDetailsMoreActionsBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
 
+  const getTokenName = (token: any) => {
+    if (token.tokenId === networkConfig.ccopTokenId) {
+      return t('assets.pesos')
+    }
+
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <CustomHeader style={{ paddingHorizontal: variables.contentPadding }} left={<BackButton />} />
@@ -80,7 +91,7 @@ export default function TokenDetailsScreen({ route }: Props) {
             size={IconSize.SMALL}
           />
           <Text style={styles.tokenName} testID="TokenDetails/Title">
-            {token.name}
+            {getTokenName(token)}
           </Text>
         </View>
         <TokenDisplay
