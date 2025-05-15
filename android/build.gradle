@@ -10,6 +10,15 @@ buildscript {
         targetSdkVersion = 34
         kotlinVersion = "1.9.20"
         ndkVersion = "23.1.7779620"
+        
+        // Add these version configurations for react-native-svg
+        androidXVersion = "1.9.0"
+        kotlinCompilerExtensionVersion = "1.5.3"
+        
+        // Add specific versions for react-native-svg
+        reactNativeVersion = "0.72.7"  // Update this to match your react-native version
+        androidXAnnotation = "1.6.0"
+        androidXAppcompat = "1.6.1"
     }
     repositories {
         google()
@@ -33,52 +42,49 @@ configurations.all {
 allprojects {
     repositories {
         mavenLocal()
-        maven {
-            url "$rootDir/../node_modules/detox/Detox-android"
-        }
-        jcenter() {
-            content {
-                includeGroup("com.google.android.exoplayer")
-            }
-        }
+        google()
+        mavenCentral()
         maven {
             url 'https://sdk.withpersona.com/android/releases'
         }
     }
 
-    // Needed to avoid the following error
-    // `Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (11) and 'compileDebugKotlin' (17).`
-    // For devs running Java > 11
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class) {
+    // Add this configuration for all projects
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "11"  // Set to 11 to match Java compilation
         }
+    }
+
+    // For Java compilation
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
 subprojects {
-  { project ->
+    project ->
     if (project.name.contains('react-native-firebase')) {
-      buildscript {
-        dependencies {
-          classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.41"
+        buildscript {
+            dependencies {
+                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+            }
         }
-      }
     }
-  }
+}
 
-  afterEvaluate {project ->
-        if (project.hasProperty("android")) {
-            android {
-                compileSdkVersion rootProject.ext.compileSdkVersion
-                buildToolsVersion rootProject.ext.buildToolsVersion
-                
-                // Add these configurations
-                configurations.all {
-                    resolutionStrategy {
-                        force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-                        force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
-                    }
+afterEvaluate { project ->
+    if (project.hasProperty("android")) {
+        android {
+            compileSdkVersion rootProject.ext.compileSdkVersion
+            buildToolsVersion rootProject.ext.buildToolsVersion
+
+            // Add these configurations
+            configurations.all {
+                resolutionStrategy {
+                    force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+                    force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
                 }
             }
         }

@@ -1,6 +1,7 @@
 import { Platform } from 'react-native'
 import { BIOMETRY_TYPE } from 'react-native-keychain'
 import { Actions, ActionTypes, AppState, MultichainBetaStatus } from 'src/app/actions'
+import { PublicAppConfig } from 'src/app/selectors'
 import { CeloNewsConfig } from 'src/celoNews/types'
 import { DEEP_LINK_URL_SCHEME } from 'src/config'
 import { REMOTE_CONFIG_VALUES_DEFAULTS } from 'src/firebase/remoteConfigValuesDefaults'
@@ -49,6 +50,7 @@ interface State {
   hideBalances: boolean
   multichainBetaStatus: MultichainBetaStatus
   pendingDeepLinks: PendingDeepLink[]
+  publicConfig?: PublicAppConfig
 }
 
 interface PendingDeepLink {
@@ -91,6 +93,7 @@ const initialState = {
   hideBalances: false,
   multichainBetaStatus: MultichainBetaStatus.NotSeen,
   pendingDeepLinks: [],
+  publicConfig: undefined,
 }
 
 function getPersistedDeepLinks(deepLinks: PendingDeepLink[]) {
@@ -265,6 +268,11 @@ export const appReducer = (
         pendingDeepLinks: state.pendingDeepLinks.filter(
           (pendingDeepLink) => pendingDeepLink.url !== action.deepLink
         ),
+      }
+    case Actions.SET_PUBLIC_CONFIG:
+      return {
+        ...state,
+        publicConfig: action.config,
       }
     default:
       return state

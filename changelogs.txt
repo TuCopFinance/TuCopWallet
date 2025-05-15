@@ -1,0 +1,20 @@
+3e224ad35 - Alejandro Pérez, 4 minutes ago : Merge branch 'TuCopFinance:main' into main
+0fc12a480 - Alejandro Pérez, 61 minutes ago : refactor(earn): replace raw balance display with TokenDisplay component
+c9ba0bdae - Alejandro Pérez, 83 minutes ago : style(Button): set full button width to 100% and adjust EarnPoolInfoScreen styles
+4a1a86c5b - Alejandro Pérez, 30 hours ago : refactor(welcome): simplify background positioning and remove unused dimensions
+776a0bfec - Alejandro Pérez, 2 days ago : refactor: remove logo from splash screen drawable
+2cdd95f36 - Alejandro Pérez, 2 days ago : refactor(walletConnect): remove walletConnect enablement checks and update imports
+c20c396ae - Alejandro Pérez, 2 days ago : refactor(walletConnect): migrate from @walletconnect/web3wallet to @reown/walletkit
+c87e31629 - Alejandro Pérez, 2 days ago : fix: change HTTP method from POST to DELETE for revoke phone number endpoint
+f55432ef3 - Alejandro Pérez, 2 days ago : refactor(ui): update styles and components for consistency and clarity
+706e6791b - Alejandro Pérez, 2 days ago : style(qrcode): update styles and improve layout consistency
+c819ef721 - Alejandro Pérez, 2 days ago : refactor(keylessBackup): improve error handling and logging in keyless backup flow
+821a2fd04 - Alejandro Pérez, 3 days ago : feat(keylessBackup): add walletAddress and phone to keyshare payload
+7453a6996 - Alejandro Pérez, 3 days ago : refactor(keylessBackup): replace cabApiKey with jwt for authorization
+5bd908846 - TuCop Finance, 5 days ago : Merge pull request #11 from alejandr0pg/feature/tumarranitos
+9aa87fb15 - Alejandro Pérez, 5 days ago : Merge pull request #1 from alejandr0pg/feature/tumarranitos
+c8f63a692 - Alejandro Pérez, 5 days ago : feat(earn): add Marranitos staking feature and UI enhancements
+3d11bf256 - Alejandro Pérez, 7 days ago : feat(earn): add My Marranitos tab and improve staking flow
+1be5c33c9 - Junior Rojas, 2 weeks ago : fix: actualizar URL de transporte para el cliente público en Celo
+cba51c7f5 - Junior Rojas, 2 weeks ago : refactor(MarranitosContract): mejorar la lógica de staking y manejo de errores
+2d3627c0b - Junior Rojas, 2 weeks ago : refactor(MarranitosContract): actualizar lógica de staking para usar parseUnits

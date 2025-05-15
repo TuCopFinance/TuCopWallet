@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
@@ -44,7 +44,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
-import Earn from './earn.svg'
+import Earn from './earn-v2.png'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -279,7 +279,7 @@ function TabHome(_props: Props) {
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
               <View style={[styles.row, { paddingVertical: 8 }]}>
-                <Earn />
+                <Image source={Earn} />
                 <Text style={styles.ctaText}>
                   <Trans
                     i18n={i18n}

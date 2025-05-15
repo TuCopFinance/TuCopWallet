@@ -15,6 +15,7 @@ const initialState = {
   isLoading: false,
   error: false,
   usdToLocalRate: null,
+  preferredCurrencyCode: LocalCurrencyCode.COP,
 }
 
 export const reducer = (

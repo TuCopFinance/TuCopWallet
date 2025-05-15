@@ -1,5 +1,15 @@
 import { RootState } from 'src/redux/reducers'
 
+// La interfaz para la configuración de Divvi
+export interface PublicAppConfig {
+  divviProtocol?: {
+    divviId: string
+    campaignIds: string[]
+    consumer?: string
+    providers?: string[]
+  }
+}
+
 export const getRequirePinOnAppOpen = (state: RootState) => {
   return state.app.requirePinOnAppOpen
 }
@@ -28,6 +38,11 @@ export const sessionIdSelector = (state: RootState) => {
 export const walletConnectEnabledSelector = (state?: RootState) => ({
   v2: state?.app.walletConnectV2Enabled ?? false,
 })
+
+// Selector para obtener la configuración pública de la app
+export const getPublicAppConfig = (state: RootState): PublicAppConfig | undefined => {
+  return state.app.publicConfig
+}
 
 export const logPhoneNumberTypeEnabledSelector = (state: RootState) =>
   state.app.logPhoneNumberTypeEnabled

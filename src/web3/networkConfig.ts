@@ -689,3 +689,12 @@ Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
 export { CCOP_TOKEN_ID_MAINNET }
 
 export default networkConfigs[DEFAULT_TESTNET]
+
+// En lugar de definir los valores repetidos, derivamos el mapeo de los valores existentes
+export const networkIdToChainId: Record<NetworkId, number> = Object.fromEntries(
+  Object.entries(networkIdToWalletConnectChainId).map(([networkId, wcChainId]) => [
+    networkId,
+    // Extraer el número de chainId del formato 'eip155:CHAIN_ID'
+    parseInt(wcChainId.split(':')[1], 10),
+  ])
+) as Record<NetworkId, number>

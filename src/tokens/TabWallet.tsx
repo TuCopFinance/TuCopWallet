@@ -1,6 +1,6 @@
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { Shadow } from 'react-native-shadow-2'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
@@ -20,7 +20,7 @@ import { cCOPFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
-import Earn from './../home/earn.svg'
+import Earn from './../home/earn-v2.png'
 
 function TabWallet() {
   const dispatch = useDispatch()
@@ -102,7 +102,7 @@ function TabWallet() {
               <View style={{ marginHorizontal: 20 }}>
                 <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
                   <View style={[styles.row, { paddingVertical: 8 }]}>
-                    <Earn />
+                    <Image source={Earn} />
                     <Text style={styles.ctaText}>
                       <Trans
                         i18n={i18n}

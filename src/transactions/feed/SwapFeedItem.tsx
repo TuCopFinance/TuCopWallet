@@ -15,6 +15,7 @@ import variables from 'src/styles/variables'
 import { useTokenInfo } from 'src/tokens/hooks'
 import TransactionFeedItemImage from 'src/transactions/feed/TransactionFeedItemImage'
 import { TokenExchange, TokenTransactionTypeV2 } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 
 interface Props {
   transaction: TokenExchange
@@ -34,6 +35,17 @@ function SwapFeedItem({ transaction }: Props) {
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
 
+  const getTokenName = (token: any) => {
+    if (token.tokenId === networkConfig.ccopTokenId) {
+      return t('assets.pesos')
+    }
+
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
+
   return (
     <Touchable testID="SwapFeedItem" onPress={handleOpenTransactionDetails}>
       <View style={styles.container}>
@@ -51,8 +63,8 @@ function SwapFeedItem({ transaction }: Props) {
             {isCrossChainSwap
               ? t('transactionFeed.crossChainSwapTransactionLabel')
               : t('feedItemSwapPath', {
-                  token1: outgoingTokenInfo?.symbol,
-                  token2: incomingTokenInfo?.symbol,
+                  token1: getTokenName(outgoingTokenInfo),
+                  token2: getTokenName(incomingTokenInfo),
                 })}
           </Text>
         </View>
