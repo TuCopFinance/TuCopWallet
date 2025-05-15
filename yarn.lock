@@ -1166,6 +1166,11 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@divvi/referral-sdk@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@divvi/referral-sdk/-/referral-sdk-1.0.0.tgz#008e0e882003486dae7db12bd7943c382f3c9831"
+  integrity sha512-X1i66AFQMJCu5jdOjg6mruSZ70YXolTNE1VHDr9tSHRnoR3EWki1Wtgb+A5fyE0AVl73uWZClqXlEGivyZbQ1w==
+
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.npmjs.org/@egjs/hammerjs/-/hammerjs-2.0.17.tgz"
