@@ -41,7 +41,7 @@ export const walletConnectEnabledSelector = (state?: RootState) => ({
 
 // Selector para obtener la configuración pública de la app
 export const getPublicAppConfig = (state: RootState): PublicAppConfig | undefined => {
-  return state._persist?.app?.publicConfig
+  return state.app.publicConfig
 }
 
 export const logPhoneNumberTypeEnabledSelector = (state: RootState) =>

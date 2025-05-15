@@ -14,25 +14,25 @@ Divvi es un protocolo de referidos y atribución on-chain que permite a las apli
 
 ### Configuración
 
-La configuración de Divvi debe incluir:
+La configuración de Divvi se ha implementado como parte del estado de la aplicación en `publicConfig`. Los valores están definidos en `src/app/publicConfig.ts`:
 
-- `consumer`: Dirección del contrato consumer (la entidad registrada en el portal de Divvi)
-- `providers`: Lista de direcciones de proveedores asociadas a la integración
-
-Ejemplo:
-
-```json
-{
-  "divviProtocol": {
-    "consumer": "0x22886C71a4C1Fa2824BD86210ead1C310B3d7cf5",
-    "providers": [
-      "0x5f0a55FaD9424ac99429f635dfb9bF20c3360Ab8",
-      "0xB06a1b291863f923E7417E9F302e2a84018c33C5",
-      "0x6226ddE08402642964f9A6de844ea3116F0dFc7e"
+```javascript
+// src/app/publicConfig.ts
+export const publicAppConfig: PublicAppConfig = {
+  divviProtocol: {
+    divviId: 'tucop-wallet',
+    campaignIds: [],
+    consumer: '0x22886C71a4C1Fa2824BD86210ead1C310B3d7cf5',
+    providers: [
+      '0x5f0a55FaD9424ac99429f635dfb9bF20c3360Ab8',
+      '0xB06a1b291863f923E7417E9F302e2a84018c33C5',
+      '0x6226ddE08402642964f9A6de844ea3116F0dFc7e'
     ]
   }
 }
 ```
+
+Esta configuración se inicializa en `src/app/saga.ts` cuando se inicia la aplicación y está disponible a través del selector `getDivviConfig` en `src/divviProtocol/selectors.ts`.
 
 ### Componentes principales
 
@@ -90,21 +90,20 @@ await submitReferral({
 
 Para verificar que la integración con Divvi funciona correctamente, sigue estos pasos:
 
-### 1. Configuración
+### 1. Verificación de configuración
 
-Asegúrate de que la configuración de Divvi esté correctamente establecida en tu aplicación:
+Puedes verificar que la configuración de Divvi está correctamente cargada usando las herramientas de desarrollo de Redux:
 
 ```javascript
-// En la configuración de la aplicación
-const appConfig = {
-  // ... otras configuraciones
-  divviProtocol: {
-    consumer: '0x22886C71a4C1Fa2824BD86210ead1C310B3d7cf5', // Tu dirección de consumer
-    providers: [
-      '0x5f0a55FaD9424ac99429f635dfb9bF20c3360Ab8',
-      // ... otras direcciones de providers
-    ],
-  },
+// En la consola de Redux DevTools
+state.app.publicConfig.divviProtocol
+
+// Debe mostrar algo como:
+{
+  divviId: 'tucop-wallet',
+  campaignIds: [],
+  consumer: '0x22886C71a4C1Fa2824BD86210ead1C310B3d7cf5',
+  providers: ['0x5f0a55FaD9424ac99429f635dfb9bF20c3360Ab8', '0xB06a1b291863f923E7417E9F302e2a84018c33C5', '0x6226ddE08402642964f9A6de844ea3116F0dFc7e']
 }
 ```
 
