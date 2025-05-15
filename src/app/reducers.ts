@@ -269,6 +269,11 @@ export const appReducer = (
           (pendingDeepLink) => pendingDeepLink.url !== action.deepLink
         ),
       }
+    case Actions.SET_PUBLIC_CONFIG:
+      return {
+        ...state,
+        publicConfig: action.config,
+      }
     default:
       return state
   }

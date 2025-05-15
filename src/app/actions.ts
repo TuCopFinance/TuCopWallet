@@ -1,5 +1,6 @@
 import { BIOMETRY_TYPE } from 'react-native-keychain'
 import { RemoteConfigValues } from 'src/app/saga'
+import { PublicAppConfig } from 'src/app/selectors'
 import { Screens } from 'src/navigator/Screens'
 
 // https://facebook.github.io/react-native/docs/appstate
@@ -41,6 +42,7 @@ export enum Actions {
   NOTIFICATION_SPOTLIGHT_SEEN = 'APP/NOTIFICATION_SPOTLIGHT_SEEN',
   TOGGLE_HIDE_BALANCES = 'APP/TOGGLE_HIDE_BALANCES',
   OPT_MULTICHAIN_BETA = 'APP/OPT_MULTICHAIN_BETA',
+  SET_PUBLIC_CONFIG = 'APP/SET_PUBLIC_CONFIG',
 }
 
 export interface SetAppState {
@@ -169,6 +171,11 @@ interface OptMultichainBeta {
   optedIn: boolean
 }
 
+export interface SetPublicConfig {
+  type: Actions.SET_PUBLIC_CONFIG
+  config: PublicAppConfig
+}
+
 export type ActionTypes =
   | SetAppState
   | SetLoggedIn
@@ -195,6 +202,7 @@ export type ActionTypes =
   | ToggleHideBalances
   | OptMultichainBeta
   | DeepLinkDeferred
+  | SetPublicConfig
 
 export const setAppState = (state: string): SetAppState => ({
   type: Actions.SET_APP_STATE,
@@ -358,5 +366,12 @@ export const optMultichainBeta = (optedIn: boolean): OptMultichainBeta => {
   return {
     type: Actions.OPT_MULTICHAIN_BETA,
     optedIn,
+  }
+}
+
+export const setPublicConfig = (config: PublicAppConfig): SetPublicConfig => {
+  return {
+    type: Actions.SET_PUBLIC_CONFIG,
+    config,
   }
 }
