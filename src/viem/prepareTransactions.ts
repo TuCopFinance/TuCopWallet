@@ -3,6 +3,8 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
+import { fetchDivviCalldata } from 'src/divviProtocol/divviService'
+import { appendDivviCalldata } from 'src/divviProtocol/registerReferral'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -291,6 +293,33 @@ export async function prepareTransactions({
   isGasSubsidized?: boolean
   origin: TransactionOrigin
 }): Promise<PreparedTransactionsResult> {
+  // Intentamos obtener el sufijo de datos de Divvi para transacciones
+  try {
+    // Verificamos si las transacciones tienen data (calldata)
+    const modifiedBaseTransactions = [...baseTransactions]
+
+    // Obtener sufijo de datos de Divvi usando el servicio
+    const divviSuffix = await fetchDivviCalldata()
+
+    // Solo aplicamos si hay sufijo para agregar
+    if (divviSuffix) {
+      for (let i = 0; i < modifiedBaseTransactions.length; i++) {
+        const tx = modifiedBaseTransactions[i]
+        if (tx.data) {
+          // Si la transacción ya tiene datos, agregamos el sufijo de Divvi
+          tx.data = appendDivviCalldata(tx.data as string, divviSuffix) as `0x${string}`
+          Logger.debug(TAG, 'Se agregó sufijo de datos de Divvi a la transacción')
+        }
+      }
+
+      // Reemplazamos las transacciones base con las modificadas que incluyen Divvi
+      baseTransactions = modifiedBaseTransactions
+    }
+  } catch (error) {
+    // Si hay error al obtener o agregar el sufijo de Divvi, continuamos con las transacciones originales
+    Logger.error(TAG, 'Error al obtener o agregar sufijo de datos de Divvi', error)
+  }
+
   if (!spendToken && spendTokenAmount.isGreaterThan(0)) {
     throw new Error(
       `prepareTransactions requires a spendToken if spendTokenAmount is greater than 0. spendTokenAmount: ${spendTokenAmount.toString()}`
