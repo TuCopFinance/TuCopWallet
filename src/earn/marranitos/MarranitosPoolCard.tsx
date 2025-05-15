@@ -67,7 +67,7 @@ export default function MarranitosPoolCard({
           </View>
           <View style={styles.keyValueContainer}>
             <View style={styles.keyValueRow}>
-              <Text style={styles.keyText}>{t('earnFlow.poolCard.yieldRate')}</Text>
+              <Text style={styles.keyText}>{t('earnFlow.staking.apy')}</Text>
               <Text style={styles.valueTextBold}>
                 {t('earnFlow.poolCard.percentage', {
                   percentage: apy,

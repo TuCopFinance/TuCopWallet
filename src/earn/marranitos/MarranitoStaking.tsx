@@ -55,17 +55,13 @@ const MarranitoStaking = () => {
       Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.invalidAmount'))
       return
     }
-
     try {
       setIsStaking(true)
-
       // Obtener el password usando el sistema de Pincode
       const password = await getPassword(walletAddress, true)
 
       // Asegurar que la dirección de la wallet esté correctamente formateada
       const formattedWalletAddress = walletAddress as Address
-
-      Logger.debug(TAG, `Staking ${amount} with wallet address: ${formattedWalletAddress}`)
 
       const success = await MarranitosContract.stake(
         amount,
@@ -77,13 +73,13 @@ const MarranitoStaking = () => {
       if (success) {
         Alert.alert(
           t('earnFlow.staking.success'),
-          t('earnFlow.staking.successMessage', { days: pool.days }),
+          t('earnFlow.staking.stakeSuccess', { days: pool.days }),
           [
             {
               text: t('global.ok'),
               onPress: () => {
                 // Navegar a la pantalla de mis inversiones después de completar el staking
-                navigate(Screens.MarranitosMyStakes)
+                navigate(Screens.EarnHome)
               },
             },
           ]
@@ -93,10 +89,10 @@ const MarranitoStaking = () => {
       }
     } catch (error) {
       Logger.error(TAG, 'Error staking', error)
-      Alert.alert(
-        t('earnFlow.staking.error'),
-        error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
-      )
+      // Alert.alert(
+      //   t('earnFlow.staking.error'),
+      //   error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
+      // )
     } finally {
       setIsStaking(false)
     }

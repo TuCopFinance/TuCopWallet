@@ -4,6 +4,7 @@ import FastImage from 'react-native-fast-image'
 import { Token } from 'src/positions/types'
 import colors from 'src/styles/colors'
 import { BaseToken } from 'src/tokens/slice'
+import USD from './v2.png'
 
 export enum IconSize {
   XXSMALL = 'xxsmall',
@@ -71,13 +72,23 @@ export default function TokenIcon({
   const { tokenImageSize, networkImageSize, networkImagePosition, tokenTextSize } =
     IconSizeToStyle[size]
 
+  const getTokenImagen = (token: BaseToken | Token) => {
+    const symbols: Record<string, any> = {
+      // cCOP: '',
+      'USD₮': USD,
+    }
+
+    if (token.symbol && token.symbol in symbols) {
+      return symbols[token.symbol]
+    }
+    return { uri: token.imageUrl }
+  }
+
   return (
     <View testID={testID} style={[styles.defaultViewStyle, viewStyle]}>
       {token.imageUrl ? (
         <FastImage
-          source={{
-            uri: token.imageUrl,
-          }}
+          source={getTokenImagen(token)}
           style={[
             styles.tokenImage,
             {

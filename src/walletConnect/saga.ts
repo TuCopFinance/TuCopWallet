@@ -139,8 +139,8 @@ function* createWalletConnectChannel() {
       metadata: {
         name: APP_NAME,
         description: i18n.t('appDescription'),
-        url: 'https://tucop.org',
-        icons: [appendPath('https://tucop.org', 'favicon.ico')],
+        url: 'https://tucop.xyz',
+        icons: [appendPath('https://tucop.xyz', 'favicon.ico')],
         redirect: {
           native: `${DEEP_LINK_URL_SCHEME}://wallet/wc`,
           universal: 'https://valoraapp.com/wc',

@@ -12,11 +12,10 @@ import {
 } from 'react-native'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import TextInput from 'src/components/TextInput'
-import TokenDisplay from 'src/components/TokenDisplay'
+import TokenDisplay, { getTokenSymbol } from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -85,10 +84,10 @@ const SwapAmountInput = ({
             <View style={styles.tokenInfo}>
               <TokenIcon token={token} size={IconSize.MEDIUM} />
               <View style={styles.tokenInfoText}>
-                <Text style={styles.tokenName}>{token.symbol}</Text>
-                <Text style={styles.tokenNetwork}>
+                <Text style={styles.tokenName}>{getTokenSymbol(t, token.symbol)}</Text>
+                {/* <Text style={styles.tokenNetwork}>
                   {t('swapScreen.onNetwork', { networkName: NETWORK_NAMES[token.networkId] })}
-                </Text>
+                </Text> */}
               </View>
             </View>
           ) : (
@@ -207,11 +206,11 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldXSmall,
     paddingHorizontal: 4,
   },
-  tokenNetwork: {
-    ...typeScale.bodyXSmall,
-    color: Colors.gray4,
-    paddingHorizontal: 4,
-  },
+  // tokenNetwork: {
+  //   ...typeScale.bodyXSmall,
+  //   color: Colors.gray4,
+  //   paddingHorizontal: 4,
+  // },
   tokenInfoText: {
     paddingLeft: Spacing.Smallest8,
   },

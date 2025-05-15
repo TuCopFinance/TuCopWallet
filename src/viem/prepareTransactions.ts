@@ -3,6 +3,8 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
+import { getDivviData } from 'src/divviProtocol/register'
+import { appendDivviCalldata } from 'src/divviProtocol/registerReferral'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -291,6 +293,61 @@ export async function prepareTransactions({
   isGasSubsidized?: boolean
   origin: TransactionOrigin
 }): Promise<PreparedTransactionsResult> {
+  // Intentamos obtener el sufijo de datos de Divvi para transacciones
+  try {
+    // Verificamos si las transacciones tienen data (calldata)
+    const modifiedBaseTransactions = [...baseTransactions]
+
+    // Obtener sufijo de datos de Divvi usando la nueva función getDivviData
+    const divviSuffix = getDivviData()
+
+    // Solo aplicamos si hay sufijo para agregar
+    if (divviSuffix) {
+      // Aplicamos el sufijo solo a la primera transacción del lote
+      if (modifiedBaseTransactions.length > 0) {
+        const tx = modifiedBaseTransactions[0]
+        if (tx.data) {
+          Logger.debug(TAG, 'Datos originales de la transacción antes de añadir Divvi', {
+            originalData: tx.data,
+            originalDataSample: (tx.data as string).substring(0, 40) + '...',
+            originalDataLength: (tx.data as string).length,
+          })
+
+          Logger.debug(TAG, 'Datos de sufijo Divvi', {
+            suffijoCompleto: divviSuffix,
+            suffijoLength: divviSuffix.length,
+          })
+
+          // Si la transacción ya tiene datos, agregamos el sufijo de Divvi
+          tx.data = appendDivviCalldata(tx.data as string, divviSuffix) as `0x${string}`
+
+          Logger.debug(TAG, 'Se agregó sufijo de datos de Divvi a la primera transacción', {
+            originalDataLength: (tx.data as string).length,
+            withSuffixLength: (tx.data as string).length,
+            dataSample: (tx.data as string).substring(0, 40) + '...',
+            suffixSample: divviSuffix.substring(0, 40) + '...',
+          })
+        } else {
+          Logger.debug(TAG, 'La primera transacción no tiene data, no se aplicó sufijo Divvi')
+        }
+      }
+
+      // Reemplazamos las transacciones base con las modificadas que incluyen Divvi
+      baseTransactions = modifiedBaseTransactions
+
+      Logger.debug(TAG, 'Transacciones actualizadas con sufijo de Divvi', {
+        numTransactions: baseTransactions.length,
+        divviAppliedToFirstTx: baseTransactions.length > 0,
+        firstTxHasData: baseTransactions.length > 0 && !!baseTransactions[0].data,
+      })
+    } else {
+      Logger.debug(TAG, 'No se obtuvo sufijo de Divvi, continuando sin modificar transacciones')
+    }
+  } catch (error) {
+    // Si hay error al obtener o agregar el sufijo de Divvi, continuamos con las transacciones originales
+    Logger.error(TAG, 'Error al obtener o agregar sufijo de datos de Divvi', error)
+  }
+
   if (!spendToken && spendTokenAmount.isGreaterThan(0)) {
     throw new Error(
       `prepareTransactions requires a spendToken if spendTokenAmount is greater than 0. spendTokenAmount: ${spendTokenAmount.toString()}`

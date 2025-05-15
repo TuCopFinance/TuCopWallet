@@ -19,11 +19,14 @@ import {
   inviteLinkConsumed,
   openDeepLink,
   setAppState,
+  setPublicConfig,
   setSupportedBiometryType,
   updateRemoteConfigValues,
 } from 'src/app/actions'
+import { publicAppConfig } from 'src/app/publicConfig'
 import {
   getLastTimeBackgrounded,
+  getPublicAppConfig,
   getRequirePinOnAppOpen,
   googleMobileServicesAvailableSelector,
   huaweiMobileServicesAvailableSelector,
@@ -426,10 +429,30 @@ function* watchAppReview() {
   yield* takeLatest([SendActions.SEND_PAYMENT_SUCCESS, swapSuccess], safely(requestInAppReview))
 }
 
+// This function initializes the public configuration for the app,
+// including all third-party integrations like Divvi
+export function* initializePublicConfig() {
+  Logger.debug(TAG, 'Initializing public configuration')
+
+  // Check if we already have a public config
+  const existingConfig = yield* select(getPublicAppConfig)
+
+  if (!existingConfig) {
+    // No existing config, use the default one
+    yield* put(setPublicConfig(publicAppConfig))
+    Logger.debug(TAG, 'Public configuration initialized')
+  } else {
+    Logger.debug(TAG, 'Public configuration already exists')
+  }
+}
+
 export function* appSaga() {
   yield* spawn(watchDeepLinks)
   yield* spawn(watchOpenUrl)
   yield* spawn(watchAppState)
   yield* takeLatest(Actions.SET_APP_STATE, safely(handleSetAppState))
   yield* spawn(watchAppReview)
+
+  // Initialize public configuration on app startup
+  yield* call(initializePublicConfig)
 }

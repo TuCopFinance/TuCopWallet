@@ -2,7 +2,7 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useLayoutEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
 import { cancelCreateOrRestoreAccount } from 'src/account/actions'
@@ -37,9 +37,17 @@ function ActionCard({
   onPress?: () => void
   testID?: string
 }) {
+  const { width: screenWidth } = useWindowDimensions()
+  const actionsContainerWidth = screenWidth - Spacing.XLarge48
+
   return (
     <Shadow
-      style={styles.shadow}
+      style={[
+        styles.shadow,
+        {
+          width: actionsContainerWidth,
+        },
+      ]}
       distance={10}
       offset={[0, 0]}
       startColor="rgba(190, 201, 255, 0.28)"
@@ -47,7 +55,7 @@ function ActionCard({
       <Touchable borderRadius={21} style={styles.touchable} onPress={onPress}>
         <View style={styles.topLine}>
           <View>{icon}</View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>{title}</Text>
             <Text style={styles.cardDescription}>{description}</Text>
           </View>
@@ -124,19 +132,16 @@ ImportSelect.navigationOptions = {
 
 const styles = StyleSheet.create({
   shadow: {
-    width: 375,
     borderRadius: 21,
     backgroundColor: colors.white,
   },
   cardDescription: {
     ...typeScale.bodySmall,
-    width: 280,
   },
   cardTitle: {
     ...typeScale.labelSmall,
     color: colors.black,
     fontWeight: '700',
-    width: 300,
   },
   safeArea: {
     flex: 1,
@@ -151,7 +156,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   screenTextContainer: {
-    gap: Spacing.Regular16,
+    gap: Spacing.Thick24,
   },
   topLine: {
     alignItems: 'center',

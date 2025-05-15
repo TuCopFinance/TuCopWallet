@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AssetsEvents } from 'src/analytics/Events'
@@ -68,6 +68,17 @@ export default function TokenDetailsScreen({ route }: Props) {
   const tokenDetailsMoreActionsBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
 
+  const getTokenName = (token: any) => {
+    if (token.tokenId === networkConfig.ccopTokenId) {
+      return t('assets.pesos')
+    }
+
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <CustomHeader style={{ paddingHorizontal: variables.contentPadding }} left={<BackButton />} />
@@ -80,7 +91,7 @@ export default function TokenDetailsScreen({ route }: Props) {
             size={IconSize.SMALL}
           />
           <Text style={styles.tokenName} testID="TokenDetails/Title">
-            {token.name}
+            {getTokenName(token)}
           </Text>
         </View>
         <TokenDisplay
@@ -239,6 +250,8 @@ function Actions({
   const { t } = useTranslation()
   const cashOutTokens = useCashOutTokens()
   const showWithdraw = !!cashOutTokens.find((tokenInfo) => tokenInfo.tokenId === token.tokenId)
+  const { width: screenWidth } = useWindowDimensions()
+  const actionsContainerWidth = screenWidth / 2 - Spacing.Thick24
 
   const moreAction = {
     name: TokenActionName.More,
@@ -262,6 +275,8 @@ function Actions({
       style={[
         styles.actions,
         {
+          width: actionsContainerWidth,
+          maxWidth: actionsContainerWidth,
           gap: actionButtons.length === MAX_ACTION_BUTTONS ? Spacing.Smallest8 : Spacing.Regular16,
         },
       ]}
@@ -321,6 +336,7 @@ function LearnMore({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    maxWidth: '100%',
   },
   titleContainer: {
     flexDirection: 'row',
@@ -347,8 +363,8 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     marginTop: 40,
+    paddingHorizontal: Spacing.Thick24, // Mantenemos el padding
     marginBottom: Spacing.Regular16,
-    marginHorizontal: Spacing.Thick24,
   },
   actionButton: {
     flexGrow: 1,

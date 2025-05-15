@@ -15,6 +15,7 @@ import {
 } from 'src/app/saga'
 import { dappsSaga } from 'src/dapps/saga'
 import { fetchDappsListCompleted } from 'src/dapps/slice'
+import { divviProtocolSaga } from 'src/divviProtocol/saga'
 import { earnSaga } from 'src/earn/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
@@ -127,6 +128,7 @@ export function* rootSaga() {
     yield* spawn(firebaseSaga)
     yield* spawn(tokensSaga)
     yield* spawn(positionsSaga)
+    yield* spawn(divviProtocolSaga)
     yield* spawn(localCurrencySaga)
     yield* spawn(transactionSaga)
     yield* spawn(homeSaga)
