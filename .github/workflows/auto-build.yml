@@ -1,0 +1,279 @@
+name: Auto Build & Deploy
+
+on:
+  repository_dispatch:
+    types: [auto-build]
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'android/**'
+      - 'ios/**'
+      - 'src/**'
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '20.17.0'
+  JAVA_VERSION: '11'
+  RUBY_VERSION: '2.7'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.changed }}
+      new-version: ${{ steps.version-check.outputs.version }}
+      should-build: ${{ steps.should-build.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check version changes
+        id: version-check
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            # Check if package.json version changed
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+            git show HEAD~1:package.json > /tmp/old-package.json 2>/dev/null || echo '{"version":"0.0.0"}' > /tmp/old-package.json
+            OLD_VERSION=$(node -p "require('/tmp/old-package.json').version")
+
+            if [ "$CURRENT_VERSION" != "$OLD_VERSION" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Should build?
+        id: should-build
+        run: |
+          if [ "${{ steps.version-check.outputs.changed }}" = "true" ] || [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
+  bump-version:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should-build == 'true'
+    runs-on: macos-14
+    outputs:
+      new-version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./.github/actions/yarn-install
+
+      - name: Bump version and update build files
+        id: bump
+        run: |
+          # Si no hay cambio de versión, usar pre-deploy para incrementar
+          if [ "${{ needs.detect-changes.outputs.version-changed }}" = "false" ]; then
+            yarn pre-deploy --minor
+          fi
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "🚀 Building version: $NEW_VERSION"
+
+      - name: Commit version changes
+        if: needs.detect-changes.outputs.version-changed == 'false'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}" || exit 0
+          git push
+
+  build-android:
+    needs: [detect-changes, bump-version]
+    if: needs.detect-changes.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [mainnet, alfajores]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: ./.github/actions/yarn-install
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Decode secrets
+        run: yarn keys:decrypt
+        env:
+          SECRETS_PASSWORD: ${{ secrets.SECRETS_PASSWORD }}
+
+      - name: Set build number
+        run: |
+          APP_VERSION_CODE=$(date +%s)
+          echo "APP_VERSION_CODE=$APP_VERSION_CODE" >> $GITHUB_ENV
+          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=$APP_VERSION_CODE/" android/gradle.properties
+
+      - name: Build Android Bundle
+        run: |
+          cd android
+          ./gradlew bundle${{ matrix.environment }}Release
+
+      - name: Upload Android Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle-${{ matrix.environment }}-${{ needs.bump-version.outputs.new-version }}
+          path: android/app/build/outputs/bundle/${{ matrix.environment }}Release/
+          retention-days: 30
+
+      - name: Deploy to Play Store (Internal)
+        if: matrix.environment == 'mainnet'
+        run: |
+          bundle exec fastlane android upload environment:${{ matrix.environment }} track:internal
+        env:
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+  build-ios:
+    needs: [detect-changes, bump-version]
+    if: needs.detect-changes.outputs.should-build == 'true'
+    runs-on: macos-14
+    strategy:
+      matrix:
+        environment: [mainnet, alfajores]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: ./.github/actions/yarn-install
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Decode secrets
+        run: yarn keys:decrypt
+        env:
+          SECRETS_PASSWORD: ${{ secrets.SECRETS_PASSWORD }}
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.2'
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Build iOS
+        run: bundle exec fastlane ios build environment:${{ matrix.environment }}
+        env:
+          APPLE_CONNECT_KEY_ID: ${{ secrets.APPLE_CONNECT_KEY_ID }}
+          APPLE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_CONNECT_ISSUER_ID }}
+          APPLE_CONNECT_CERTIFICATE_PATH: ${{ secrets.APPLE_CONNECT_CERTIFICATE_PATH }}
+
+      - name: Upload iOS Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-archive-${{ matrix.environment }}-${{ needs.bump-version.outputs.new-version }}
+          path: build/
+          retention-days: 30
+
+      - name: Deploy to TestFlight
+        if: matrix.environment == 'mainnet'
+        run: bundle exec fastlane ios upload environment:${{ matrix.environment }}
+        env:
+          APPLE_CONNECT_KEY_ID: ${{ secrets.APPLE_CONNECT_KEY_ID }}
+          APPLE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_CONNECT_ISSUER_ID }}
+          APPLE_CONNECT_CERTIFICATE_PATH: ${{ secrets.APPLE_CONNECT_CERTIFICATE_PATH }}
+
+  notify-railway:
+    needs: [detect-changes, bump-version, build-android, build-ios]
+    if: always() && needs.detect-changes.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Railway API
+        run: |
+          curl -X POST "${{ secrets.RAILWAY_API_URL }}/api/update-version" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "platform": "both",
+              "version": "${{ needs.bump-version.outputs.new-version }}",
+              "releaseNotes": "Build automático desde GitHub Actions",
+              "apiKey": "${{ secrets.RAILWAY_API_KEY }}"
+            }'
+
+      - name: Create GitHub Release
+        if: github.event_name != 'release'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.bump-version.outputs.new-version }}
+          release_name: Release v${{ needs.bump-version.outputs.new-version }}
+          body: |
+            🚀 **Versión ${{ needs.bump-version.outputs.new-version }}**
+
+            **Cambios:**
+            - Build automático desde GitHub Actions
+            - Compilado para Android y iOS
+            - Desplegado en tiendas de aplicaciones
+
+            **Artefactos:**
+            - Android Bundle (Play Store)
+            - iOS Archive (TestFlight)
+
+            **Estado de builds:**
+            - Android: ${{ needs.build-android.result }}
+            - iOS: ${{ needs.build-ios.result }}
+          draft: false
+          prerelease: false
+
+  slack-notification:
+    needs: [detect-changes, bump-version, build-android, build-ios, notify-railway]
+    if: always() && needs.detect-changes.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#releases'
+          text: |
+            🚀 *Tu Cop Wallet v${{ needs.bump-version.outputs.new-version }}*
+
+            *Estado del build:*
+            • Android: ${{ needs.build-android.result == 'success' && '✅' || '❌' }}
+            • iOS: ${{ needs.build-ios.result == 'success' && '✅' || '❌' }}
+
+            *Desplegado en:*
+            • Play Store (Internal): ${{ needs.build-android.result == 'success' && '✅' || '❌' }}
+            • TestFlight: ${{ needs.build-ios.result == 'success' && '✅' || '❌' }}
+
+            <https://github.com/${{ github.repository }}/releases/tag/v${{ needs.bump-version.outputs.new-version }}|Ver Release>
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
