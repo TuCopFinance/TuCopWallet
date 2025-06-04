@@ -1,234 +1,413 @@
-# 🚀 Tu Cop Wallet - Backend de Versiones
+# TuCOP Wallet Version API
 
-API backend para gestionar versiones y actualizaciones de la app Tu Cop Wallet.
+API robusta y segura para gestionar versiones de la aplicación móvil TuCOP Wallet, construida con Express.js, Prisma y PostgreSQL.
 
-## 🏗️ Arquitectura
+## 🚀 Características
 
-Este backend proporciona:
+- **Base de datos PostgreSQL** con Prisma ORM
+- **Autenticación segura** con API keys hasheadas
+- **Rate limiting** para prevenir abuso
+- **Logging completo** de requests y eventos
+- **Validación robusta** de datos de entrada
+- **Integración con GitHub** para actualizaciones automáticas
+- **Webhooks** para eventos de GitHub
+- **Health checks** y monitoreo
+- **Manejo de errores** centralizado
+- **Compresión** y optimizaciones de rendimiento
 
-- ✅ **Endpoint de verificación de versiones** para la app móvil
-- ✅ **Webhook para eventos de GitHub** (push, release, etc.)
-- ✅ **API para actualización manual de versiones**
-- ✅ **Tarea programada** para sincronizar con GitHub
-- ✅ **Health check** para monitoreo
+## 📋 Prerequisitos
 
-## 🚀 Configuración Rápida
+- Node.js 18.x o superior
+- PostgreSQL 13 o superior
+- Cuenta de GitHub con token de acceso personal
 
-### 1. Variables de Entorno
+## 🛠️ Instalación
 
-Copia `.env.example` a `.env` y configura:
+### 1. Clonar e instalar dependencias
 
 ```bash
-cp .env.example .env
-```
-
-### 2. Instalar Dependencias
-
-```bash
+cd railway-backend
 npm install
 ```
 
-### 3. Ejecutar en Desarrollo
+### 2. Configurar variables de entorno
+
+Crea un archivo `.env` basado en `.env.example`:
 
 ```bash
+# DATABASE
+DATABASE_URL="postgresql://username:password@localhost:5432/tu_cop_wallet_versions?schema=public"
+
+# SERVER
+PORT=3000
+NODE_ENV=production
+
+# SECURITY
+API_KEY=your-super-secret-api-key-here-minimum-32-chars
+ALLOWED_ORIGINS=https://your-frontend-domain.com
+
+# GITHUB INTEGRATION
+GITHUB_TOKEN=your-github-personal-access-token
+GITHUB_REPO=your-username/tu-cop-wallet-2
+
+# LOGGING
+LOG_RETENTION_DAYS=30
+```
+
+### 3. Configurar la base de datos
+
+```bash
+# Generar el cliente de Prisma
+npm run db:generate
+
+# Ejecutar las migraciones
+npm run db:migrate
+
+# (Opcional) Abrir Prisma Studio para administrar datos
+npm run db:studio
+```
+
+### 4. Configuración inicial
+
+```bash
+# Ejecutar el script de setup para crear la primera API key
+npm run setup
+```
+
+Este script:
+
+- Verifica la conexión a la base de datos
+- Crea la primera API key de administrador
+- Inicializa las versiones por defecto
+- Muestra información importante de configuración
+
+### 5. Iniciar el servidor
+
+```bash
+# Desarrollo
 npm run dev
+
+# Producción
+npm start
 ```
 
-### 4. Desplegar en Railway
+## 📡 API Endpoints
 
-```bash
-railway login
-railway link
-railway up
-```
+### Públicos
 
-## 📡 Endpoints de la API
+#### `GET /health`
 
-### `GET /api/app-version`
-
-Endpoint principal usado por la app móvil para verificar actualizaciones.
-
-**Headers:**
-
-- `X-Platform`: `ios` | `android`
-- `X-Bundle-Id`: Bundle ID de la app (opcional)
-
-**Respuesta:**
-
-```json
-{
-  "latestVersion": "1.101.0",
-  "minRequiredVersion": "1.95.0",
-  "releaseNotes": "Nuevas funcionalidades y mejoras",
-  "downloadUrl": "https://apps.apple.com/app/id1234567890",
-  "releaseDate": "2024-01-15T10:30:00.000Z",
-  "isForced": false,
-  "platform": "ios",
-  "bundleId": "xyz.mobilestack"
-}
-```
-
-### `GET /api/version-info`
-
-Información detallada de todas las versiones.
-
-**Respuesta:**
-
-```json
-{
-  "versions": {
-    "ios": { ... },
-    "android": { ... }
-  },
-  "lastUpdated": "2024-01-15T10:30:00.000Z",
-  "server": "Railway",
-  "environment": "production"
-}
-```
-
-### `POST /api/update-version`
-
-Actualizar versiones manualmente (requiere API key).
-
-**Body:**
-
-```json
-{
-  "platform": "both", // "ios" | "android" | "both"
-  "version": "1.101.0",
-  "minRequired": "1.95.0",
-  "releaseNotes": "Nueva versión manual",
-  "isForced": false,
-  "apiKey": "tu-api-key"
-}
-```
-
-### `POST /api/github-webhook`
-
-Webhook para recibir eventos de GitHub (push, release, repository_dispatch).
-
-### `GET /health`
-
-Health check para monitoreo.
-
-**Respuesta:**
+Health check del servidor y base de datos.
 
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "timestamp": "2024-01-01T00:00:00.000Z",
   "uptime": 3600,
   "versions": {
-    "ios": "1.101.0",
-    "android": "1.101.0"
-  }
+    "ios": "1.102.1",
+    "android": "1.102.1"
+  },
+  "database": "connected",
+  "environment": "production"
 }
 ```
 
-## 🔄 Integración con GitHub
+#### `GET /api/app-version`
 
-### Eventos Soportados
+Obtiene información de versión para la aplicación móvil.
 
-1. **Push a main**: Detecta cambios de versión en `package.json`
-2. **Release publicado**: Actualiza versiones con información del release
-3. **Repository dispatch**: Builds manuales desde GitHub Actions
+**Headers:**
 
-### Configurar Webhook
+- `x-platform`: `ios` | `android` (opcional, default: `android`)
+- `x-bundle-id`: ID del bundle de la app (opcional)
+- `x-app-version`: Versión actual de la app (opcional)
 
-En tu repositorio de GitHub:
-
-1. Ve a **Settings > Webhooks**
-2. Añade webhook con URL: `https://tu-railway-url.railway.app/api/github-webhook`
-3. Selecciona eventos: `push`, `release`, `repository_dispatch`
-4. Content type: `application/json`
-
-## 🕐 Tarea Programada
-
-El backend verifica automáticamente cada hora si hay nuevas versiones en GitHub:
-
-- Consulta la API de GitHub Releases
-- Actualiza versiones si encuentra cambios
-- Mantiene sincronizada la información
-
-## 🛠️ Desarrollo
-
-### Scripts Disponibles
-
-```bash
-npm run dev      # Ejecutar con nodemon
-npm run start    # Ejecutar en producción
-npm run lint     # Verificar código con ESLint
-npm run lint:fix # Corregir errores de ESLint automáticamente
+```json
+{
+  "latestVersion": "1.102.1",
+  "minRequiredVersion": "1.95.0",
+  "releaseNotes": "Mejoras de rendimiento y corrección de errores",
+  "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop",
+  "releaseDate": "2024-01-01T00:00:00.000Z",
+  "isForced": false,
+  "requiresUpdate": true,
+  "platform": "android",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
 ```
 
-### Estructura del Proyecto
+#### `GET /api/version-info`
+
+Información detallada de todas las plataformas.
+
+```json
+{
+  "versions": {
+    "ios": {
+      "latestVersion": "1.102.1",
+      "minRequiredVersion": "1.95.0",
+      "releaseNotes": "Mejoras de rendimiento",
+      "downloadUrl": "https://apps.apple.com/app/tucop-wallet/id1234567890",
+      "releaseDate": "2024-01-01T00:00:00.000Z",
+      "isForced": false,
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    },
+    "android": {
+      /* ... */
+    }
+  },
+  "lastUpdated": "2024-01-01T00:00:00.000Z",
+  "server": "Railway",
+  "environment": "production",
+  "totalPlatforms": 2
+}
+```
+
+### Protegidos (Requieren API Key)
+
+Incluir la API key en el header `x-api-key` o en el body como `apiKey`.
+
+#### `POST /api/update-version`
+
+Actualiza la versión de una plataforma.
+
+```json
+{
+  "platform": "android",
+  "version": "1.103.0",
+  "minRequired": "1.95.0",
+  "releaseNotes": "Nueva funcionalidad agregada",
+  "isForced": false,
+  "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop"
+}
+```
+
+#### `POST /api/admin/create-api-key`
+
+Crea una nueva API key.
+
+```json
+{
+  "name": "CI/CD Key",
+  "apiKey": "your-64-character-secure-api-key-here",
+  "expiresAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+#### `GET /api/admin/api-keys`
+
+Lista todas las API keys (sin mostrar el hash).
+
+```json
+{
+  "apiKeys": [
+    {
+      "id": "clx123...",
+      "name": "Initial Admin Key",
+      "isActive": true,
+      "lastUsedAt": "2024-01-01T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "expiresAt": null
+    }
+  ]
+}
+```
+
+### Webhooks
+
+#### `POST /api/github-webhook`
+
+Webhook para eventos de GitHub (push, release, etc.).
+
+## 🔒 Seguridad
+
+### API Keys
+
+- Las API keys se almacenan hasheadas con bcrypt (12 salt rounds)
+- Soporte para expiración de keys
+- Logging de uso de API keys
+- Rate limiting estricto para endpoints administrativos
+
+### Rate Limiting
+
+- **General**: 100 requests/15min por IP
+- **Administrativos**: 10 requests/15min por IP
+- Headers de rate limit incluidos en respuestas
+
+### Headers de Seguridad
+
+- Content Security Policy (CSP)
+- HTTP Strict Transport Security (HSTS)
+- X-Frame-Options, X-Content-Type-Options, etc.
+
+### Validación
+
+- Validación estricta de entrada con express-validator
+- Sanitización de versiones para prevenir injection
+- Validación de URLs y formatos de fecha
+
+## 📊 Logging y Monitoreo
+
+### Request Logging
+
+Todos los requests se registran en la base de datos con:
+
+- Método HTTP y endpoint
+- Plataforma y User-Agent
+- IP address y tiempo de respuesta
+- Código de estado HTTP
+
+### Webhook Events
+
+Todos los eventos de webhook se almacenan para auditoría:
+
+- Tipo de evento y payload completo
+- Estado de procesamiento y errores
+- Timestamps de recepción y procesamiento
+
+### Cleanup Automático
+
+- Los logs se limpian automáticamente después de 30 días
+- Tarea programada que se ejecuta diariamente a las 2 AM
+
+## 🔄 Integración con GitHub
+
+### Configuración del Token
+
+1. Crear un Personal Access Token en GitHub con permisos:
+
+   - `repo` (acceso completo al repositorio)
+   - `workflow` (para disparar builds automáticos)
+
+2. Configurar webhook en GitHub:
+   - URL: `https://your-api-domain.com/api/github-webhook`
+   - Content type: `application/json`
+   - Eventos: `Push`, `Releases`
+
+### Funcionalidades
+
+- **Detección automática** de nuevas versiones en `package.json`
+- **Actualización automática** cuando se publican releases
+- **Trigger de builds** automáticos via repository dispatch
+- **Sincronización** cada hora via cron job
+
+## 🏗️ Arquitectura
 
 ```
 railway-backend/
-├── index.js           # Servidor principal
-├── package.json       # Dependencias y scripts
-├── .env.example       # Variables de entorno de ejemplo
-├── .eslintrc.js       # Configuración de ESLint
-└── README.md          # Esta documentación
+├── src/
+│   ├── middleware/          # Middleware personalizado
+│   │   ├── auth.js         # Autenticación con API keys
+│   │   └── logging.js      # Logging de requests
+│   ├── services/           # Lógica de negocio
+│   │   └── versionService.js # Gestión de versiones
+│   ├── utils/              # Utilidades
+│   │   └── auth.js         # Funciones de autenticación
+│   └── validators/         # Validadores
+│       └── version.js      # Validación de datos
+├── scripts/
+│   └── setup.js           # Script de configuración inicial
+├── prisma/
+│   └── schema.prisma      # Esquema de base de datos
+├── index.js               # Servidor principal
+└── package.json
 ```
 
-## 🔐 Seguridad
+## 🗄️ Esquema de Base de Datos
 
-- ✅ **API Key**: Protege endpoints de actualización manual
-- ✅ **CORS**: Configurado para permitir requests de la app
-- ✅ **Helmet**: Headers de seguridad HTTP
-- ✅ **Validación**: Validación de parámetros de entrada
+### `app_versions`
 
-## 📊 Monitoreo
+Almacena las versiones de cada plataforma.
 
-### Logs
+### `api_keys`
+
+Gestiona las API keys de autenticación.
+
+### `request_logs`
+
+Logs de todas las peticiones HTTP.
+
+### `webhook_events`
+
+Eventos recibidos de GitHub webhooks.
+
+## 🚀 Deployment en Railway
+
+### Variables de Entorno Requeridas
 
 ```bash
-# En Railway
-railway logs
-
-# En desarrollo
-npm run dev
+DATABASE_URL=postgresql://...
+API_KEY=your-secure-api-key
+GITHUB_TOKEN=ghp_...
+GITHUB_REPO=your-username/tu-cop-wallet-2
 ```
 
-### Health Check
+### Build y Deploy
+
+Railway detecta automáticamente el proyecto Node.js y ejecuta:
+
+1. `npm install`
+2. `npm run build` (genera cliente Prisma)
+3. `npm start` (ejecuta migraciones y inicia servidor)
+
+## 🧪 Testing
 
 ```bash
-curl https://tu-railway-url.railway.app/health
+# Ejecutar linter
+npm run lint
+
+# Corregir errores de lint automáticamente
+npm run lint:fix
+
+# Tests (a implementar)
+npm test
 ```
 
-### Verificar Versiones
+## 📚 Scripts Disponibles
 
-```bash
-curl -H "X-Platform: ios" https://tu-railway-url.railway.app/api/app-version
-```
+- `npm start` - Inicia en producción (con migraciones)
+- `npm run dev` - Inicia en desarrollo con nodemon
+- `npm run setup` - Configuración inicial
+- `npm run build` - Genera cliente Prisma
+- `npm run db:migrate` - Ejecuta migraciones
+- `npm run db:reset` - Resetea la base de datos
+- `npm run db:studio` - Abre Prisma Studio
+- `npm run lint` - Ejecuta ESLint
+- `npm run lint:fix` - Corrige errores de lint
 
-## 🚨 Troubleshooting
+## 🆘 Troubleshooting
 
-### Backend no responde
+### Error de conexión a base de datos
 
-1. Verificar variables de entorno
-2. Revisar logs: `railway logs`
-3. Verificar health check
+1. Verificar que `DATABASE_URL` esté correctamente configurada
+2. Asegurar que PostgreSQL esté ejecutándose
+3. Ejecutar `npm run db:migrate` para aplicar migraciones
 
-### GitHub webhook no funciona
+### Error de autenticación
 
-1. Verificar URL del webhook en GitHub
-2. Verificar que los eventos estén seleccionados
-3. Revisar logs de requests en Railway
+1. Verificar que la API key esté configurada correctamente
+2. Usar el header `x-api-key` o el campo `apiKey` en el body
+3. Ejecutar `npm run setup` para crear una nueva API key
 
-### Versiones no se actualizan
+### Rate limiting
 
-1. Verificar GITHUB_TOKEN
-2. Verificar GITHUB_REPO
-3. Revisar permisos del token
+1. Verificar que no se estén haciendo demasiadas peticiones
+2. Usar diferentes IPs para testing si es necesario
+3. Los límites se resetean cada 15 minutos
 
-## 🔗 Enlaces Útiles
+## 📄 Licencia
 
-- [Railway Dashboard](https://railway.app/dashboard)
-- [GitHub API Documentation](https://docs.github.com/en/rest)
-- [Express.js Documentation](https://expressjs.com/)
+MIT License - Ver archivo LICENSE para detalles.
+
+## 👥 Contribuir
+
+1. Fork el proyecto
+2. Crear branch para feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push al branch (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
 ---
 
-**¡Tu backend está listo para gestionar versiones automáticamente! 🎉**
+**TuCOP Wallet Version API** - Gestión robusta y segura de versiones para aplicaciones móviles.

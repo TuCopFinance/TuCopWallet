@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppVersion {
+  id                 String   @id @default(cuid())
+  platform           String // 'ios' or 'android'
+  latestVersion      String
+  minRequiredVersion String
+  releaseNotes       String?
+  downloadUrl        String
+  releaseDate        DateTime @default(now())
+  isForced           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([platform])
+  @@map("app_versions")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String // Nombre descriptivo del API key
+  hashedKey  String    @unique
+  isActive   Boolean   @default(true)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  expiresAt  DateTime?
+
+  @@map("api_keys")
+}
+
+model RequestLog {
+  id           String   @id @default(cuid())
+  method       String
+  endpoint     String
+  platform     String?
+  userAgent    String?
+  ipAddress    String?
+  responseTime Int? // en milisegundos
+  statusCode   Int
+  createdAt    DateTime @default(now())
+
+  @@map("request_logs")
+}
+
+model WebhookEvent {
+  id           String    @id @default(cuid())
+  eventType    String // 'push', 'release', etc.
+  payload      Json
+  processed    Boolean   @default(false)
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  processedAt  DateTime?
+
+  @@map("webhook_events")
+}
