@@ -150,11 +150,17 @@ export async function checkForAppUpdate(
       // Usar tu propio backend (recomendado para producción)
       storeInfo = await checkBackendVersion()
 
-      // URLs actualizadas para TuCOP
-      const bundleId = DeviceInfo.getBundleId()
-      if (Platform.OS === 'ios') {
-        downloadUrl = 'https://apps.apple.com/app/tucop-wallet/id1234567890' // Actualizar con ID real cuando esté disponible
-      } else {
+      // Determinar URLs de descarga basadas en la plataforma
+      try {
+        const systemName = DeviceInfo.getSystemName()
+
+        if (systemName === 'iOS') {
+          downloadUrl = 'https://apps.apple.com/app/tucop-wallet/id1234567890'
+        } else {
+          downloadUrl = 'https://play.google.com/store/apps/details?id=org.tucop'
+        }
+      } catch (error) {
+        Logger.warn(TAG, 'Error getting system info for download URL', error)
         downloadUrl = 'https://play.google.com/store/apps/details?id=org.tucop'
       }
     } else {
@@ -212,8 +218,6 @@ export async function checkForAppUpdate(
  * Navegar a la tienda de aplicaciones correspondiente
  */
 export function navigateToAppStore(): void {
-  const bundleId = DeviceInfo.getBundleId()
-
   if (Platform.OS === 'ios') {
     // Actualizar con el ID real de App Store cuando esté disponible
     void Linking.openURL('https://apps.apple.com/app/tucop-wallet/id1234567890')

@@ -279,7 +279,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   )
 
   const handlePressDisclaimer = () => {
-    navigate(Screens.WebViewScreen, { uri: links.funding })
+    navigate(Screens.WebViewScreen, { uri: links.web })
   }
 
   const handleIntechchainProviderPress = async () => {

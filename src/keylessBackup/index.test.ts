@@ -36,6 +36,8 @@ describe(storeEncryptedMnemonic, () => {
         encryptedMnemonic: 'encrypted',
         encryptionAddress: 'address',
         jwt: 'abc.def.ghi',
+        walletAddress: '0x0000000000000000000000000000000000000000',
+        phone: '+15555555555',
       })
     ).rejects.toThrow('Failed to post encrypted mnemonic with status 500, message bad news')
     expect(AppAnalytics.track).toHaveBeenCalledWith('cab_post_encrypted_mnemonic_failed', {
@@ -53,6 +55,8 @@ describe(storeEncryptedMnemonic, () => {
         encryptedMnemonic: 'encrypted',
         encryptionAddress: 'address',
         jwt: 'abc.def.ghi',
+        walletAddress: '0x0000000000000000000000000000000000000000',
+        phone: '+15555555555',
       })
     ).rejects.toThrow('Failed to post encrypted mnemonic with status 409, message backup exists')
     expect(AppAnalytics.track).toHaveBeenCalledWith('cab_post_encrypted_mnemonic_failed', {
@@ -66,6 +70,8 @@ describe(storeEncryptedMnemonic, () => {
         encryptedMnemonic: 'encrypted',
         encryptionAddress: 'address',
         jwt: 'abc.def.ghi',
+        walletAddress: '0x0000000000000000000000000000000000000000',
+        phone: '+15555555555',
       })
     ).toBeUndefined()
   })
@@ -78,7 +84,13 @@ describe(getEncryptedMnemonic, () => {
       ok: true,
       json: () => Promise.resolve({ encryptedMnemonic: 'encrypted-mnemonic' }),
     } as any)
-    expect(await getEncryptedMnemonic(generatePrivateKey())).toEqual('encrypted-mnemonic')
+    expect(
+      await getEncryptedMnemonic({
+        encryptionPrivateKey: generatePrivateKey(),
+        jwt: 'abc.def.ghi',
+        phone: '+15555555555',
+      })
+    ).toEqual('encrypted-mnemonic')
     expect(mockSiweLogin).toHaveBeenCalledWith()
     expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl)
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
@@ -102,7 +114,13 @@ describe(getEncryptedMnemonic, () => {
       ok: false,
       json: () => Promise.resolve({ message: 'internal server error' }),
     } as any)
-    await expect(() => getEncryptedMnemonic(generatePrivateKey())).rejects.toThrow(
+    await expect(() =>
+      getEncryptedMnemonic({
+        encryptionPrivateKey: generatePrivateKey(),
+        jwt: 'abc.def.ghi',
+        phone: '+15555555555',
+      })
+    ).rejects.toThrow(
       'Failed to get encrypted mnemonic with status 500, message internal server error'
     )
     expect(mockSiweLogin).toHaveBeenCalledWith()
@@ -127,7 +145,13 @@ describe(getEncryptedMnemonic, () => {
       ok: false,
       json: () => Promise.resolve({ message: 'not found' }),
     } as any)
-    expect(await getEncryptedMnemonic(generatePrivateKey())).toBeNull()
+    expect(
+      await getEncryptedMnemonic({
+        encryptionPrivateKey: generatePrivateKey(),
+        jwt: 'abc.def.ghi',
+        phone: '+15555555555',
+      })
+    ).toBeNull()
     expect(mockSiweLogin).toHaveBeenCalledWith()
     expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl)
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
