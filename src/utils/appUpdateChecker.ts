@@ -106,7 +106,7 @@ async function checkPlayStoreVersion(): Promise<AppStoreVersionInfo | null> {
 async function checkBackendVersion(): Promise<AppStoreVersionInfo | null> {
   try {
     // URL actualizada para usar Railway backend
-    const response = await fetch('https://tu-railway-url.railway.app/api/app-version', {
+    const response = await fetch('https://tucopwallet-production.up.railway.app/api/app-version', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
