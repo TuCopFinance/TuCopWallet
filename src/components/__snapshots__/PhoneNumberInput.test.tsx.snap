@@ -14,7 +14,7 @@ exports[`PhoneNumberInput renders and behaves correctly 1`] = `
       [
         {
           "color": "#A49B80",
-          "fontFamily": "Inter-SemiBold",
+          "fontFamily": "RedHatDisplaySemiBold",
           "fontSize": 14,
           "lineHeight": 20,
         },
@@ -195,8 +195,8 @@ exports[`PhoneNumberInput renders and behaves correctly 1`] = `
               {
                 "color": "#2E3338",
                 "flex": 1,
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 22,
                 "paddingHorizontal": 0,
                 "paddingVertical": 12,

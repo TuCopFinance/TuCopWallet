@@ -71,8 +71,8 @@ exports[`ReviewFees renders correctly 1`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -84,8 +84,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -100,8 +100,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -128,8 +128,8 @@ exports[`ReviewFees renders correctly 1`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -141,8 +141,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
@@ -157,8 +157,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
@@ -205,8 +205,8 @@ exports[`ReviewFees renders correctly 1`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -218,8 +218,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -231,8 +231,8 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -260,8 +260,8 @@ exports[`ReviewFees renders correctly 1`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -283,8 +283,8 @@ exports[`ReviewFees renders correctly 1`] = `
         style={
           [
             {
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             },
           ]
@@ -373,8 +373,8 @@ exports[`ReviewFees renders correctly 1`] = `
           [
             [
               {
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
             ],
@@ -396,8 +396,8 @@ exports[`ReviewFees renders correctly 1`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -409,13 +409,13 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplaySemiBold",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -427,13 +427,13 @@ exports[`ReviewFees renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplaySemiBold",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -444,8 +444,8 @@ exports[`ReviewFees renders correctly 1`] = `
           [
             [
               {
-                "fontFamily": "Inter-SemiBold",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplaySemiBold",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
             ],
@@ -535,8 +535,8 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -548,8 +548,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -564,8 +564,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -592,8 +592,8 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -605,8 +605,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
@@ -621,8 +621,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
@@ -669,8 +669,8 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -682,8 +682,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -695,8 +695,8 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -724,8 +724,8 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -747,8 +747,8 @@ exports[`ReviewFees renders correctly 2`] = `
         style={
           [
             {
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             },
           ]
@@ -832,9 +832,9 @@ exports[`ReviewFees renders correctly 2`] = `
     <Text
       style={
         {
-          "color": "#5061E8",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "color": "#2F4ACD",
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "lineHeight": 24,
         }
       }
@@ -848,8 +848,8 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "display": "flex",
           "flexDirection": "row",
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -861,13 +861,13 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplaySemiBold",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -879,13 +879,13 @@ exports[`ReviewFees renders correctly 2`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
           },
           {
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplaySemiBold",
+            "fontSize": 12,
             "lineHeight": 24,
           },
         ]
@@ -896,8 +896,8 @@ exports[`ReviewFees renders correctly 2`] = `
           [
             [
               {
-                "fontFamily": "Inter-SemiBold",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplaySemiBold",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
             ],

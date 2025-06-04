@@ -76,27 +76,15 @@ exports[`Education renders correctly 1`] = `
       testID="Education/CloseIcon"
     >
       <svg
+        fill="none"
         height={16}
         style={{}}
-        testID="Times"
-        viewBox="0 0 16 16"
+        viewBox="0 0 27 28"
         width={16}
-        xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13.9999 2.00146L1.99994 14.0015"
-          stroke="#2E3338"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          style={{}}
-        />
-        <path
-          d="M1.99994 2.00146L13.9999 14.0015"
-          stroke="#2E3338"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
+          d="M18.3877 10.4533L14.9677 14L18.3877 17.5467C18.8031 17.9631 18.8169 18.6379 18.4154 19.0687C18.0138 19.4995 17.3631 19.5138 16.9477 19.0974C16.9477 19.0974 16.9338 19.0831 16.92 19.0687L13.5 15.5221L10.08 19.0687C9.66461 19.4851 9.01385 19.4708 8.61231 19.04C8.22462 18.6236 8.22462 17.9631 8.61231 17.5467L12.0323 14L8.61231 10.4533C8.21077 10.0369 8.21077 9.34769 8.61231 8.93128C9.01385 8.51487 9.67846 8.51487 10.08 8.93128L13.5 12.4779L16.92 8.93128C17.3077 8.50051 17.9723 8.4718 18.3877 8.87385C18.8031 9.2759 18.8308 9.96513 18.4431 10.3959C18.4292 10.4103 18.4154 10.439 18.3877 10.4533ZM27 9.69231V18.3077C27 23.6636 22.8185 28 17.6538 28H9.34615C4.18154 28 0 23.6636 0 18.3077V9.69231C0 4.33641 4.18154 0 9.34615 0H17.6538C22.8185 0 27 4.33641 27 9.69231ZM24.9231 9.69231C24.9231 5.5282 21.6692 2.15385 17.6538 2.15385H9.34615C5.33077 2.15385 2.07692 5.5282 2.07692 9.69231V18.3077C2.07692 22.4718 5.33077 25.8462 9.34615 25.8462H17.6538C21.6692 25.8462 24.9231 22.4718 24.9231 18.3077V9.69231Z"
+          fill="#2E3338"
           style={{}}
         />
       </svg>
@@ -147,7 +135,7 @@ exports[`Education renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "fontFamily": "Inter-Bold",
+                    "fontFamily": "RedHatDisplayBold",
                     "fontSize": 20,
                     "lineHeight": 28,
                     "marginTop": 24,
@@ -160,8 +148,8 @@ exports[`Education renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "fontFamily": "Inter-Regular",
-                    "fontSize": 16,
+                    "fontFamily": "RedHatDisplayRegular",
+                    "fontSize": 12,
                     "lineHeight": 24,
                     "marginBottom": 24,
                     "paddingTop": 16,
@@ -184,94 +172,168 @@ exports[`Education renders correctly 1`] = `
       }
     >
       <View
-        style={
-          [
-            {
-              "flexDirection": "column",
-            },
-            undefined,
-          ]
-        }
+        pointerEvents="box-none"
       >
         <View
+          pointerEvents="box-none"
           style={
             [
               {
-                "overflow": "hidden",
+                "borderRadius": 15,
+                "flexGrow": 1,
+                "width": "100%",
               },
-              {
-                "borderRadius": 100,
-              },
+              {},
             ]
           }
         >
           <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
-              }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            focusable={true}
-            nativeBackgroundAndroid={
-              {
-                "attribute": "selectableItemBackground",
-                "rippleRadius": undefined,
-                "type": "ThemeAttrAndroid",
-              }
-            }
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
             style={
               [
                 {
-                  "alignItems": "center",
-                  "backgroundColor": "#5061E8",
-                  "flexDirection": "row",
-                  "flexGrow": 1,
-                  "height": 48,
-                  "justifyContent": "center",
-                  "opacity": 1,
-                  "paddingHorizontal": 24,
-                  "paddingVertical": 5,
+                  "flexDirection": "column",
                 },
                 undefined,
               ]
             }
-            testID="Education/progressButton"
           >
-            <Text
-              maxFontSizeMultiplier={1}
+            <View
               style={
-                {
-                  "color": "#FFFFFF",
-                  "fontFamily": "Inter-SemiBold",
-                  "fontSize": 16,
-                  "lineHeight": 24,
-                  "marginLeft": 0,
-                  "marginRight": 0,
-                }
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "borderRadius": 100,
+                  },
+                ]
               }
             >
-              Done
-            </Text>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                focusable={true}
+                nativeBackgroundAndroid={
+                  {
+                    "attribute": "selectableItemBackground",
+                    "rippleRadius": undefined,
+                    "type": "ThemeAttrAndroid",
+                  }
+                }
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "backgroundColor": "#2F4ACD",
+                      "flexDirection": "row",
+                      "flexGrow": 1,
+                      "height": 48,
+                      "justifyContent": "center",
+                      "opacity": 1,
+                      "paddingHorizontal": 24,
+                      "paddingVertical": 5,
+                      "width": "100%",
+                    },
+                    undefined,
+                  ]
+                }
+                testID="Education/progressButton"
+              >
+                <View
+                  style={
+                    {
+                      "bottom": 0,
+                      "left": 0,
+                      "position": "absolute",
+                      "right": 0,
+                      "top": 0,
+                    }
+                  }
+                >
+                  <BVLinearGradient
+                    borderRadii={
+                      [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                      ]
+                    }
+                    colors={
+                      [
+                        -13677875,
+                        -15194777,
+                      ]
+                    }
+                    endPoint={
+                      [
+                        1,
+                        0,
+                      ]
+                    }
+                    locations={null}
+                    startPoint={
+                      [
+                        0,
+                        0,
+                      ]
+                    }
+                    style={
+                      {
+                        "bottom": 0,
+                        "left": 0,
+                        "position": "absolute",
+                        "right": 0,
+                        "top": 0,
+                      }
+                    }
+                  />
+                </View>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={
+                    {
+                      "color": "#FFFFFF",
+                      "fontFamily": "RedHatDisplaySemiBold",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "lineHeight": 24,
+                      "marginLeft": 0,
+                      "marginRight": 0,
+                    }
+                  }
+                >
+                  Done
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>

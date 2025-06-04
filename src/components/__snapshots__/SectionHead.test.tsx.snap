@@ -9,6 +9,7 @@ exports[`renders text 1`] = `
         "backgroundColor": "#FFFFFF",
         "flexDirection": "row",
         "justifyContent": "space-between",
+        "marginTop": 16,
         "paddingHorizontal": 16,
         "paddingVertical": 8,
       },
@@ -20,7 +21,7 @@ exports[`renders text 1`] = `
     style={
       {
         "color": "#666666",
-        "fontFamily": "Inter-Medium",
+        "fontFamily": "RedHatDisplayRegular",
         "fontSize": 13,
         "lineHeight": 16,
       }

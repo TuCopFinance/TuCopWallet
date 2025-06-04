@@ -103,7 +103,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -135,7 +135,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -167,7 +167,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -199,7 +199,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -231,7 +231,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -263,7 +263,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -295,7 +295,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -327,7 +327,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -359,7 +359,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -391,7 +391,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -423,7 +423,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -455,7 +455,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -487,7 +487,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -519,7 +519,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -551,7 +551,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -583,7 +583,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -615,7 +615,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -647,7 +647,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -679,7 +679,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -711,7 +711,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -743,7 +743,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -775,7 +775,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -807,7 +807,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -839,7 +839,7 @@ exports[`BackupQuiz renders correctly 1`] = `
             style={
               {
                 "color": "#666666",
-                "fontFamily": "Inter-Regular",
+                "fontFamily": "RedHatDisplayRegular",
                 "fontSize": 14,
                 "lineHeight": undefined,
                 "textAlign": "center",
@@ -863,8 +863,8 @@ exports[`BackupQuiz renders correctly 1`] = `
           style={
             {
               "color": "#2E3338",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
               "marginTop": 20,
               "textAlign": "center",
@@ -875,8 +875,8 @@ exports[`BackupQuiz renders correctly 1`] = `
           <Text
             style={
               {
-                "fontFamily": "Inter-Medium",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplayMedium",
+                "fontSize": 12,
                 "lineHeight": 24,
                 "marginTop": 25,
                 "textAlign": "center",
@@ -899,7 +899,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -955,7 +955,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
@@ -967,7 +967,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1023,7 +1023,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
@@ -1035,7 +1035,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1091,7 +1091,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
@@ -1103,7 +1103,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1159,7 +1159,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
@@ -1171,7 +1171,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1227,7 +1227,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
@@ -1239,7 +1239,7 @@ exports[`BackupQuiz renders correctly 1`] = `
           <View
             style={
               {
-                "borderColor": "#5061E8",
+                "borderColor": "#2F4ACD",
                 "borderRadius": 100,
                 "borderWidth": 1.5,
                 "marginHorizontal": 4,
@@ -1295,7 +1295,7 @@ exports[`BackupQuiz renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#5061E8",
+                    "color": "#2F4ACD",
                     "textAlign": "center",
                   }
                 }
