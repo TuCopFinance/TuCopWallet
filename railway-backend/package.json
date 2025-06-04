@@ -4,12 +4,17 @@
   "description": "API para gestionar versiones de la app Tu Cop Wallet",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "build": "echo 'No build step required'",
+    "start": "npx prisma migrate deploy && node index.js",
+    "dev": "npx prisma db push && nodemon index.js",
+    "build": "npx prisma generate",
+    "setup": "node scripts/setup.js",
     "lint": "eslint . --no-eslintrc --config .eslintrc.json",
     "lint:fix": "eslint . --no-eslintrc --config .eslintrc.json --fix",
-    "test": "echo 'No tests specified'"
+    "test": "echo 'No tests specified'",
+    "db:migrate": "npx prisma migrate dev",
+    "db:reset": "npx prisma migrate reset",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -17,11 +22,19 @@
     "helmet": "^7.1.0",
     "dotenv": "^16.3.1",
     "node-cron": "^3.0.3",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "@prisma/client": "^5.7.0",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
-    "eslint": "^8.55.0"
+    "eslint": "^8.55.0",
+    "prisma": "^5.7.0"
   },
   "engines": {
     "node": "18.x"
