@@ -1,0 +1,38 @@
+{
+  "name": "tu-cop-wallet-version-api",
+  "version": "1.0.0",
+  "description": "API para gestionar versiones de la app Tu Cop Wallet",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "echo 'No build step required'",
+    "lint": "eslint . --no-eslintrc --config .eslintrc.json",
+    "lint:fix": "eslint . --no-eslintrc --config .eslintrc.json --fix",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "eslint": "^8.55.0"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "keywords": [
+    "react-native",
+    "version-management",
+    "ci-cd",
+    "railway",
+    "api"
+  ],
+  "author": "Tu Cop Wallet Team",
+  "license": "MIT"
+}
