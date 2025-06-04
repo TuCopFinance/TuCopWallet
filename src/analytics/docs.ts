@@ -172,7 +172,7 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [OnboardingEvents.backup_education_complete]: ``,
   [OnboardingEvents.backup_education_cancel]: ``,
   [OnboardingEvents.backup_start]: ``,
-  [OnboardingEvents.backup_continue]: `(count # of taps on “Continue” button in Backup_Phrase)`,
+  [OnboardingEvents.backup_continue]: `(count # of taps on "Continue" button in Backup_Phrase)`,
   [OnboardingEvents.backup_complete]: `(count # of taps on "Cancel" button in Backup_Phrase/BackupQuiz)`,
   [OnboardingEvents.backup_more_info]: ``,
   [OnboardingEvents.backup_delay_confirm]: `when a user confirms they want to delay backup`,
@@ -621,6 +621,8 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [TabHomeEvents.receive_money]: 'When a user taps "Receive Money" on the home screen',
   [TabHomeEvents.send_money]: 'When a user taps "Send Money" on the home screen',
   [TabHomeEvents.withdraw]: 'When a user taps "Withdraw from your wallet" on the home screen',
+  [TabHomeEvents.refi_medellin_ubi_pressed]:
+    'When a user taps "Reclama tu UBI de ReFiMedellin" button on the home screen',
   // Legacy event docs
   //  The below events had docs, but are no longer produced by the latest app version.
   // [HomeEvents.home_send]: `when "send" button is pressed from home screen send or request bar (NOT from home screen actions)`,
@@ -631,10 +633,10 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   // [DappExplorerEvents.dapp_rankings_impression]: `when the dapp rankings card shows up`,
   // [DappExplorerEvents.dapp_rankings_open]: `when a user taps on the dapp rankings card`,
   // [WalletConnectEvents.wc_request_details]: `when user presses the button to show details of a dapp request`,
-  // [CeloExchangeEvents.celo_withdraw_review]: `when ‘review’ is clicked on the withdraw amount screen`,
-  // [CeloExchangeEvents.celo_withdraw_edit]: `when ‘edit’ is clicked on the review screen`,
-  // [CeloExchangeEvents.celo_withdraw_cancel]: `when ’cancel’ is clicked on the review screen`,
-  // [CeloExchangeEvents.celo_withdraw_confirm]: `when ‘withdraw’ is clicked on the review screen`,
+  // [CeloExchangeEvents.celo_withdraw_review]: `when 'review' is clicked on the withdraw amount screen`,
+  // [CeloExchangeEvents.celo_withdraw_edit]: `when 'edit' is clicked on the review screen`,
+  // [CeloExchangeEvents.celo_withdraw_cancel]: `when 'cancel' is clicked on the review screen`,
+  // [CeloExchangeEvents.celo_withdraw_confirm]: `when 'withdraw' is clicked on the review screen`,
   // [CeloExchangeEvents.celo_withdraw_error]: `when there's an error on the withdrawal transaction`,
   // [CeloExchangeEvents.celo_home_info]: `when the (i) next to Celo Gold price is clicked, launching education (not pictured)`,
   // [CeloExchangeEvents.celo_chart_tapped]: `when user clicks the chart on exchange screen`,

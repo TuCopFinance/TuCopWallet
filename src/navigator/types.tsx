@@ -228,6 +228,7 @@ export type StackParamList = {
   [Screens.SettingsMenu]: undefined
   [Screens.QRNavigator]: NestedNavigatorParams<QRTabParamList> | undefined
   [Screens.RegulatoryTerms]: undefined
+  [Screens.ReFiMedellinUBI]: undefined
   [Screens.SanctionedCountryErrorScreen]: undefined
   [Screens.SelectCountry]: {
     countries: Countries
