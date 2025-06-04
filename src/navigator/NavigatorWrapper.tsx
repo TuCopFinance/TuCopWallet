@@ -71,13 +71,13 @@ export const NavigatorWrapper = () => {
   useDeepLinks()
 
   // Sistema de verificación de actualizaciones mejorado
-  const { updateInfo, isChecking, checkForUpdate } = useAppUpdateChecker({
+  const { updateInfo } = useAppUpdateChecker({
     minRequiredVersion,
-    useBackend: true, // Usar backend de Railway
+    useBackend: true,
     showDialogAutomatically: true,
     checkOnAppStart: true,
     checkOnAppResume: true,
-    checkInterval: 24 * 60 * 60 * 1000, // 24 horas
+    checkInterval: 24 * 60 * 60 * 1000,
   })
 
   // URL de actualización para fallback (mover fuera de la condición)
@@ -188,12 +188,6 @@ export const NavigatorWrapper = () => {
   const onReady = () => {
     navigatorIsReadyRef.current = true
     sentryRoutingInstrumentation.registerNavigationContainer(navigationRef)
-  }
-
-  const handleUpdateLater = () => {
-    if (updateInfo) {
-      void checkForUpdate()
-    }
   }
 
   // Función para navegar a la tienda de aplicaciones

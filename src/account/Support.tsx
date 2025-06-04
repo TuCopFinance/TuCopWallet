@@ -8,9 +8,6 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import variables from 'src/styles/variables'
-import { navigateToURI } from 'src/utils/linking'
-
-const openExternalLink = (link: string) => () => navigateToURI(link)
 
 const onPressContact = () => {
   navigate(Screens.SupportContact)

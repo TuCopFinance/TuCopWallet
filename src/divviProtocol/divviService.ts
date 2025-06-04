@@ -5,14 +5,6 @@ import { Address } from 'viem'
 
 const TAG = 'divviProtocol/divviService'
 
-// Aseguramos que las direcciones tengan el formato correcto para el SDK
-const formatAddress = (address: string): `0x${string}` => {
-  if (!address.startsWith('0x')) {
-    return `0x${address}` as `0x${string}`
-  }
-  return address as `0x${string}`
-}
-
 /**
  * Obtiene el sufijo de datos para incluir en transacciones según el protocolo Divvi
  * @returns El sufijo de datos o undefined si no hay configuración

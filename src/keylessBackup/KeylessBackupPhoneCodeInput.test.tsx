@@ -3,8 +3,8 @@ import { FetchMock } from 'jest-fetch-mock'
 import React from 'react'
 import { Provider } from 'react-redux'
 import { showError } from 'src/alert/actions'
-import { KeylessBackupEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { KeylessBackupEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import KeylessBackupPhoneCodeInput from 'src/keylessBackup/KeylessBackupPhoneCodeInput'
 import { appKeyshareIssued } from 'src/keylessBackup/slice'
@@ -121,6 +121,8 @@ describe('KeylessBackupPhoneCodeInput', () => {
         keylessBackupFlow: KeylessBackupFlow.Setup,
         jwt: 'abc.def.ghi',
         origin: KeylessBackupOrigin.Onboarding,
+        walletAddress: '0x0000000000000000000000000000000000000000',
+        phone: '+15555555555',
       }),
     ])
 

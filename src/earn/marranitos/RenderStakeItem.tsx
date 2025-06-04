@@ -12,8 +12,6 @@ import { MarranitoStaking } from 'src/navigator/Screens'
 import { t } from 'i18next'
 import MarranitoAvatar from './marranito.svg'
 
-const TAG = 'earn/marranitos/RenderStakeItem'
-
 import { Shadow } from 'react-native-shadow-2'
 
 export const RenderStakeItem = ({

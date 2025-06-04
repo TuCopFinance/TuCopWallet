@@ -50,17 +50,16 @@ const getStore = (phoneNumberVerified: boolean = true) =>
 describe('useResolvedRecipients', () => {
   beforeEach(() => {
     jest.mocked(resolveId).mockImplementation(async (id) => {
-      return {
-        resolutions:
-          id === '5555555555'
-            ? [
-                {
-                  kind: ResolutionKind.Address,
-                  address: mockAccount,
-                },
-              ]
-            : [],
-      }
+      const resolutions =
+        id === '5555555555'
+          ? [
+              {
+                kind: ResolutionKind.Address,
+                address: mockAccount,
+              },
+            ]
+          : []
+      return resolutions
     })
   })
 
