@@ -92,8 +92,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       return (
         <View style={styles.loadingContainer}>
           <Celebration size={48} color={Colors.primary} />
-          <Text style={styles.loadingText}>Verificando tu elegibilidad...</Text>
-          <Text style={styles.loadingSubtext}>Conectando con el contrato de ReFi Medellín</Text>
+          <Text style={styles.loadingText}>{t('reFiMedellinUbi.checking.title')}</Text>
+          <Text style={styles.loadingSubtext}>{t('reFiMedellinUbi.checking.subtitle')}</Text>
           <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
         </View>
       )
@@ -103,13 +103,11 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       return (
         <View style={styles.errorContainer}>
           <Celebration size={48} color={Colors.error} />
-          <Text style={styles.errorTitle}>Error de conexión</Text>
-          <Text style={styles.errorText}>
-            No pudimos verificar tu elegibilidad. Por favor intenta de nuevo.
-          </Text>
+          <Text style={styles.errorTitle}>{t('reFiMedellinUbi.error.title')}</Text>
+          <Text style={styles.errorText}>{t('reFiMedellinUbi.error.description')}</Text>
           <Button
             onPress={checkBeneficiary}
-            text="Reintentar"
+            text={t('reFiMedellinUbi.error.retry')}
             type={BtnTypes.SECONDARY}
             size={BtnSizes.MEDIUM}
             style={styles.retryButton}
@@ -123,14 +121,11 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
         <View style={styles.notEligibleContainer}>
           <View style={styles.notEligibleCard}>
             <Celebration size={56} color={Colors.gray3} />
-            <Text style={styles.notEligibleTitle}>No eres elegible</Text>
+            <Text style={styles.notEligibleTitle}>{t('reFiMedellinUbi.notEligible.title')}</Text>
             <Text style={styles.notEligibleDescription}>
-              Tu dirección de wallet no está registrada como beneficiaria del programa UBI de ReFi
-              Medellín.
+              {t('reFiMedellinUbi.notEligible.description')}
             </Text>
-            <Text style={styles.contactInfo}>
-              Si crees que esto es un error, contacta al equipo de ReFi Medellín.
-            </Text>
+            <Text style={styles.contactInfo}>{t('reFiMedellinUbi.notEligible.contact')}</Text>
           </View>
         </View>
       )
@@ -142,21 +137,26 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           <Celebration size={72} color={Colors.primary} />
 
           <View style={styles.congratsSection}>
-            <Text style={styles.congratsTitle}>¡Felicidades!</Text>
-            <Text style={styles.congratsSubtitle}>Eres elegible para recibir tu UBI</Text>
+            <Text style={styles.congratsTitle}>
+              {t('reFiMedellinUbi.eligible.congratulations')}
+            </Text>
+            <Text style={styles.congratsSubtitle}>{t('reFiMedellinUbi.eligible.subtitle')}</Text>
           </View>
 
           <View style={styles.benefitCard}>
-            <Text style={styles.benefitTitle}>Subsidio Universal Básico</Text>
+            <Text style={styles.benefitTitle}>{t('reFiMedellinUbi.eligible.benefitTitle')}</Text>
             <Text style={styles.benefitDescription}>
-              Como beneficiario registrado del programa de ReFi Medellín, puedes reclamar tu
-              subsidio de forma segura y directa a tu wallet.
+              {t('reFiMedellinUbi.eligible.benefitDescription')}
             </Text>
           </View>
 
           <Button
             onPress={handleClaimSubsidy}
-            text={isLoading ? 'Reclamando...' : 'Reclamar Mi Subsidio'}
+            text={
+              isLoading
+                ? t('reFiMedellinUbi.eligible.claimingButton')
+                : t('reFiMedellinUbi.eligible.claimButton')
+            }
             type={BtnTypes.PRIMARY}
             size={BtnSizes.FULL}
             disabled={isLoading}
@@ -166,7 +166,9 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           {isLoading && (
             <View style={styles.processingContainer}>
               <ActivityIndicator size="small" color={Colors.primary} />
-              <Text style={styles.processingText}>Procesando transacción...</Text>
+              <Text style={styles.processingText}>
+                {t('reFiMedellinUbi.eligible.processingText')}
+              </Text>
             </View>
           )}
         </View>
@@ -186,8 +188,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.headerTitle}>Reclama tu UBI de ReFi Medellín</Text>
-        <Text style={styles.headerSubtitle}>Programa de Subsidio Universal Básico</Text>
+        <Text style={styles.headerTitle}>{t('reFiMedellinUbi.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('reFiMedellinUbi.subtitle')}</Text>
       </View>
 
       <View style={styles.gradientDecoration} />

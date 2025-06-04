@@ -33,17 +33,32 @@ export class ReFiMedellinUBIContract {
     try {
       Logger.debug(TAG, `Checking if address ${walletAddress} is beneficiary`)
 
-      const isBeneficiary = (await this.client.readContract({
+      // Primero verificar si hay bytecode en la dirección del contrato
+      const bytecode = await this.client.getBytecode({ address: REFI_MEDELLIN_UBI_ADDRESS })
+      if (!bytecode || bytecode === '0x') {
+        Logger.error(TAG, `No contract found at address ${REFI_MEDELLIN_UBI_ADDRESS}`)
+        throw new Error(`No contract deployed at address ${REFI_MEDELLIN_UBI_ADDRESS}`)
+      }
+
+      Logger.debug(TAG, `Contract bytecode found, length: ${bytecode.length}`)
+
+      const isBeneficiaryResult = (await this.client.readContract({
         address: REFI_MEDELLIN_UBI_ADDRESS,
         abi: ReFiMedellinUBI.abi,
-        functionName: 'isbeneficiary',
+        functionName: 'isBeneficiary',
         args: [walletAddress],
       })) as boolean
 
-      Logger.debug(TAG, `Address ${walletAddress} is beneficiary: ${isBeneficiary}`)
-      return isBeneficiary
+      Logger.debug(TAG, `Address ${walletAddress} is beneficiary: ${isBeneficiaryResult}`)
+      return isBeneficiaryResult
     } catch (error) {
       Logger.error(TAG, 'Error checking if address is beneficiary', error)
+
+      // Si el error es que no hay contrato, mostrar un mensaje más específico
+      if (error instanceof Error && error.message.includes('No contract deployed')) {
+        store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
+      }
+
       return false
     }
   }
@@ -86,7 +101,7 @@ export class ReFiMedellinUBIContract {
       const claimTx = await (wallet as any).writeContract({
         address: REFI_MEDELLIN_UBI_ADDRESS,
         abi: ReFiMedellinUBI.abi,
-        functionName: 'claimsubsidy',
+        functionName: 'claimSubsidy',
         args: [],
       })
 

@@ -8,7 +8,7 @@ const ReFiMedellinUBI = {
           type: 'address',
         },
       ],
-      name: 'isbeneficiary',
+      name: 'isBeneficiary',
       outputs: [
         {
           internalType: 'bool',
@@ -21,7 +21,7 @@ const ReFiMedellinUBI = {
     },
     {
       inputs: [],
-      name: 'claimsubsidy',
+      name: 'claimSubsidy',
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',

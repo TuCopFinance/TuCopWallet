@@ -51,7 +51,7 @@
   },
   "promptFornoModal": {
     "header": "Switch Connection Mode?",
-    "body": "We’ve noticed you’re having some trouble connecting. We recommend enabling Data Saver mode to allow you to keep using {{appName}} with intermittent connection.",
+    "body": "We've noticed you're having some trouble connecting. We recommend enabling Data Saver mode to allow you to keep using {{appName}} with intermittent connection.",
     "switchToDataSaver": "Switch To Data Saver"
   },
   "accountKeyModal": {
@@ -89,7 +89,7 @@
   },
   "walletSecurityPrimer": {
     "title": "Keep your wallet safe",
-    "description": "Only you can access your wallet. If your phone is lost or stolen, {{appName}} cannot recover it for you.\n\nYou’ll need to set up a method to keep your wallet safe and protect your funds."
+    "description": "Only you can access your wallet. If your phone is lost or stolen, {{appName}} cannot recover it for you.\n\nYou'll need to set up a method to keep your wallet safe and protect your funds."
   },
   "keylessBackupIntro": {
     "emailAddress": "Email Address",
@@ -114,7 +114,7 @@
     "signInAnotherWay": "Sign in another way",
     "bottomSheet": {
       "title": "Save your recovery phrase to create a wallet",
-      "description": "We’re going to be supporting other email providers soon, but in the meanwhile you’ll have to save your recovery phrase to finish creating a wallet.",
+      "description": "We're going to be supporting other email providers soon, but in the meanwhile you'll have to save your recovery phrase to finish creating a wallet.",
       "continue": "Continue",
       "skip": "Skip (not recommended)"
     }
@@ -122,11 +122,11 @@
   "keylessBackupPhoneInput": {
     "setup": {
       "title": "Set Up Phone Number",
-      "subtitle": "You’ll need to use this phone number to restore if you ever lose your wallet.\n\nWe’ll send you a code to verify that this number is yours."
+      "subtitle": "You'll need to use this phone number to restore if you ever lose your wallet.\n\nWe'll send you a code to verify that this number is yours."
     },
     "restore": {
       "title": "Verify Phone Number",
-      "subtitle": "Enter the phone number you previously used to set up backup.\n\nWe’ll send you a code to verify that this number is yours."
+      "subtitle": "Enter the phone number you previously used to set up backup.\n\nWe'll send you a code to verify that this number is yours."
     }
   },
   "keylessBackupStatus": {
@@ -194,7 +194,7 @@
   "faq": "Frequently Asked Questions",
   "raiseLimit": "Raise Account Send Limit",
   "forum": "Forum",
-  "contactText": "Can’t find what you’re looking for?",
+  "contactText": "Can't find what you're looking for?",
   "contactMessagePlaceholder": "Please type your message here...",
   "attachLogs": "Attach logs",
   "supportLegalCheckbox": "By submitting, I agree to share the above information and any attached application log data with {{appName}} Support.",
@@ -209,7 +209,7 @@
   "applicationCompletedDescription": "Your application was accepted. You are now able to send an unlimited amount daily.",
   "raiseLimitBegin": "Begin Identity Verification",
   "storeRecoveryTitle": "We need you to setup your account again",
-  "storeRecoveryBody": "There’s been an error. We’re aware of the issue and working to fix it. In the meantime, you will need to go through the setup process again.",
+  "storeRecoveryBody": "There's been an error. We're aware of the issue and working to fix it. In the meantime, you will need to go through the setup process again.",
   "storeRecoveryButton": "Restore Account",
   "havingTrouble": "Having Trouble?",
   "shakeForSupport": "This menu appears when you shake your device.",
@@ -217,7 +217,7 @@
   "tapToCopy": "Tap to Copy",
   "headerTitle": "Recovery Phrase",
   "introBackUpPhrase": "Back Up Recovery Phrase",
-  "introCompleteQuiz": "Complete our backup quiz to verify that your wallet can be recovered.\n\nIf you wrote it down incorrectly, you won’t be able to access your wallet if anything happens to your device.",
+  "introCompleteQuiz": "Complete our backup quiz to verify that your wallet can be recovered.\n\nIf you wrote it down incorrectly, you won't be able to access your wallet if anything happens to your device.",
   "postSetupTitle": "Your Recovery Phrase",
   "postSetupBody": "If you lose your Recovery Phrase, you will lose access to all of your assets on {{appName}}. Nobody, not even {{appName}}, will be able to help you recover your account without your Recovery Phrase. Store it in a safe place and do not share it.",
   "postSetupCTA": "Learn about your Recovery Phrase",
@@ -246,7 +246,7 @@
     "header": "Backup Complete",
     "0": "Success!",
     "1": "Next, you can set up Safeguards.",
-    "2": "You’re all set!"
+    "2": "You're all set!"
   },
   "cancelDialog": {
     "title": "Finish setting up your Recovery Phrase",
@@ -270,7 +270,7 @@
     },
     {
       "title": "Keep your Phrase private",
-      "text": "Anyone with your Phrase will have access to your account and all of its funds. Don’t share it with others."
+      "text": "Anyone with your Phrase will have access to your account and all of its funds. Don't share it with others."
     }
   ],
   "consumerIncentivesTitle": "Supercharge is ending",
@@ -288,7 +288,7 @@
     "header": "Set up your Recovery Phrase",
     "text": "This will ensure your rewards are safe and in your control."
   },
-  "conclusion": "It’s that simple. Supercharge your crypto today!",
+  "conclusion": "It's that simple. Supercharge your crypto today!",
   "superchargeTitle": "Supercharge is ending",
   "superchargeDescription": "But more rewards are headed your way. Until May 28, get {{apy}}% annual rewards on your highest {{token}} balance. Here's how it works:",
   "superchargeConnectNumber": "Connect your phone number",
@@ -299,7 +299,7 @@
   "superchargeDisclaimerDayLimit": "This will not affect your balance or previous earnings. <0>Learn more</0>",
   "superchargeTokenDetailsDialog": {
     "title": "Which assets can I Supercharge?",
-    "body": "You’ll get rewarded weekly on your Celo stablecoin with the highest value (cEUR, cUSD, cREAL).",
+    "body": "You'll get rewarded weekly on your Celo stablecoin with the highest value (cEUR, cUSD, cREAL).",
     "dismiss": "Dismiss"
   },
   "superchargingTitle": "App update required",
@@ -434,7 +434,7 @@
   },
   "explanationModal": {
     "title": "About Providers",
-    "body": "Providers allow you to add or withdraw funds from your account. They determine their own rates and restrictions depending on various factors. Please visit the provider’s website for specific help."
+    "body": "Providers allow you to add or withdraw funds from your account. They determine their own rates and restrictions depending on various factors. Please visit the provider's website for specific help."
   },
   "invalidAmountDialog": {
     "minAmount": "Our providers do not support totals smaller than {{usdLimit}}{{localLimit}}. Please enter a larger amount.",
@@ -628,8 +628,8 @@
   "addressValidationNoMatch": "Incorrect wallet address",
   "addressValidationFullPoorlyFormatted": "Wallet addresses begin with \"0x\" and are 42 characters long",
   "addressValidationPartialPoorlyFormatted": "Wallet addresses begin with \"0x\" and are 42 characters long",
-  "addressValidationFullOwnAddress": "This is your wallet address, please enter your contact’s wallet address.",
-  "addressValidationPartialOwnAddress": "This is your wallet address, please enter your contact’s wallet address.",
+  "addressValidationFullOwnAddress": "This is your wallet address, please enter your contact's wallet address.",
+  "addressValidationPartialOwnAddress": "This is your wallet address, please enter your contact's wallet address.",
   "providerRateFetchFailed": "Could not fetch provider rate. You can continue without a prefilled rate.",
   "helpFindAccount": "Help your contact find their Account Address",
   "close": "Close",
@@ -666,12 +666,12 @@
       "text": "CELO is a digital currency that keeps the Celo Dollar (cUSD) stable."
     },
     {
-      "title": "CELO’s price changes",
+      "title": "CELO's price changes",
       "text": "If more people use the Celo Dollar, the value of CELO increases. Unlike CELO, the Celo Dollar doesn't change in value. "
     },
     {
       "title": "Shape the Celo Network",
-      "text": "By holding CELO, you have the ability to vote for changes and features you’d like to see on the Celo Network."
+      "text": "By holding CELO, you have the ability to vote for changes and features you'd like to see on the Celo Network."
     },
     {
       "title": "Please buy and sell responsibly",
@@ -693,11 +693,11 @@
   "sendAndInvite": "Send & Invite",
   "inviteRewardsBanner": {
     "title": "Invite friends and collect NFTs",
-    "body": "Once they set up their {{appName}} wallet and connect their number, you’ll each get an exclusive NFT."
+    "body": "Once they set up their {{appName}} wallet and connect their number, you'll each get an exclusive NFT."
   },
   "inviteRewardsBannerCUSD": {
     "title": "Invite friends and get up to 12 cUSD",
-    "body": "Once they connect their number and add funds to {{appName}}, you’ll both receive 0.50 cUSD."
+    "body": "Once they connect their number and add funds to {{appName}}, you'll both receive 0.50 cUSD."
   },
   "inviteWithUrl": {
     "title": "Invite a Friend",
@@ -712,7 +712,7 @@
     },
     "rewardsActiveCUSD": {
       "title": "GET UP TO 12 cUSD for inviting your friends to {{appName}}!",
-      "body": "Get 0.50 cUSD for every friend you invite to {{appName}}. Once they connect their number, add funds, and hold them for 7 days, you’ll both get 0.50 cUSD. Hurry, funds are limited! (Limit 25 friends)."
+      "body": "Get 0.50 cUSD for every friend you invite to {{appName}}. Once they connect their number, add funds, and hold them for 7 days, you'll both get 0.50 cUSD. Hurry, funds are limited! (Limit 25 friends)."
     }
   },
   "getReward": "Get ${{reward}}",
@@ -730,20 +730,20 @@
     "goldDisclaimerWithPoints": "When you create an \"account\" with {{appName}} you are creating a digital wallet to which only you hold the keys. No other person or entity, including {{appName}}, can recover your key, change or undo transactions, or recover lost funds. {{appName}} grants tokenized loyalty rewards (\"Points\") to Users for engaging in certain in-app activities. Points are on-chain, non-transferable, and non-redeemable collectibles. No guarantees are made about Points availability or value. Be aware that digital assets are part of a new asset class and present a risk of financial loss. Carefully consider your financial circumstances and tolerance for financial risk before purchasing any digital asset."
   },
   "termsColloquial": {
-    "title": "Let’s start by creating your wallet",
+    "title": "Let's start by creating your wallet",
     "privacyHeading": "Your Info & Privacy:",
     "privacy1": "We gather usage data which helps us improve the app and security. The type of information we collect, how we use it and your rights related to that information can all be seen in our <0>Privacy Policy</0>.",
     "privacy2": "If you decide to link your phone number, we will store an encrypted copy of it.",
     "privacy3": "If you decide to connect your contacts, we use their names, numbers, and profile pictures to make it easier to find them.",
     "walletHeading": "Your Digital Wallet with {{appName}}:",
-    "wallet1": "You’re about to create a digital wallet. Only you have the key to your wallet. We cannot recover your key or your assets if you lose your key. We also cannot reverse actions taken through {{appName}} on blockchains.",
-    "wallet2": "Digital assets, the assets with which you will interact with {{appName}}, come with unique risks. By using {{appName}}, you accept these risks and take responsibility for them. Please consider your finances and risk tolerance before making choices.",
+    "wallet1": "You're about to create a digital wallet. Only you have the key to your wallet. We cannot recover your key or your assets if you lose your key. We also cannot reverse actions taken through {{appName}} on blockchains.",
+    "wallet2": "Digital assets, the assets with which you will interact with {{appName}}, come with unique risks. By using {{appName}}, you accept these risks and take responsibility for them. Please consider your finances and risk tolerance before making choices.",
     "fullTerms": "Read our full <0>Terms & Conditions</0>"
   },
   "fullNameOrPsuedonym": "Full name or pseudonym",
   "namePlaceholder": "ex. name",
-  "nameAndPicGuideCopyTitle": "What’s your name?",
-  "nameAndPicGuideCopyContent": "We’d like to know what to call you.",
+  "nameAndPicGuideCopyTitle": "What's your name?",
+  "nameAndPicGuideCopyContent": "We'd like to know what to call you.",
   "important": "Important",
   "confirmPin": {
     "title": "Enter PIN"
@@ -754,8 +754,8 @@
   "pinLostForeverMessage": "You removed the screen lock, the PIN is lost",
   "importContactsPermission": {
     "title": "Import Contacts",
-    "0": "Connecting your address book makes it easy to send and request payments with your friends. Otherwise, you’ll have to enter their info individually.",
-    "1": "Don’t worry—connecting does not send invites to your contacts.",
+    "0": "Connecting your address book makes it easy to send and request payments with your friends. Otherwise, you'll have to enter their info individually.",
+    "1": "Don't worry—connecting does not send invites to your contacts.",
     "enable": "Enable Contact Access",
     "loading": "Finding friends on {{appName}}..."
   },
@@ -816,7 +816,7 @@
   },
   "onboardingEducation": {
     "step1": "If you can text, you can crypto. Starting now, your phone is your crypto wallet.",
-    "step2": "With {{appName}}, it’s easy to access and easy to grow your crypto.",
+    "step2": "With {{appName}}, it's easy to access and easy to grow your crypto.",
     "step3": "All you need is a mobile phone to send, spend and explore.",
     "payment": "Make payments globally with near zero fees",
     "impact": "Support climate and social change initiatives",
@@ -840,7 +840,7 @@
   "unlockWithBiometryPrompt": "Authenticate to unlock {{appName}}",
   "welcome": {
     "title": "Step into the future of crypto with {{appName}}",
-    "titleGuided": "Welcome to {{appName}}!\nLet’s create your crypto wallet.",
+    "titleGuided": "Welcome to {{appName}}!\nLet's create your crypto wallet.",
     "createAccount": "Create new account",
     "restoreAccount": "Restore my account",
     "createNewWallet": "Create new wallet",
@@ -878,15 +878,15 @@
     "body": "Did you receive a payment or invite? If so, please copy and paste the Invite Code below.",
     "label": "Invite Code",
     "codePlaceholder": "Enter invite code",
-    "noCode": "Don’t have an Invite Code",
-    "nodeCodeInviteLink": "Don’t have an invite code? Request one at <0>celo.org/developers/wallet</0> or <1>continue without</1>",
+    "noCode": "Don't have an Invite Code",
+    "nodeCodeInviteLink": "Don't have an invite code? Request one at <0>celo.org/developers/wallet</0> or <1>continue without</1>",
     "loadingHeader": "Creating account...",
     "loadingBody": "This can take up to 90 seconds"
   },
   "verificationEducation": {
     "title": "Phone Number",
     "header": "Connect your phone number",
-    "body": "To make sure your number is really yours, you’ll receive three SMS messages that will cost about 0.05 cUSD each.\n\nConnection takes about three minutes.",
+    "body": "To make sure your number is really yours, you'll receive three SMS messages that will cost about 0.05 cUSD each.\n\nConnection takes about three minutes.",
     "feelessBody": "You will receive three messages to help securely connect your phone number. Connection takes about three minutes.",
     "start": "Start",
     "resume": "Resume",
@@ -904,7 +904,7 @@
   "verificationPrematureRevealMessage": "Please wait one minute before resending",
   "verificationLearnMoreDialog": {
     "title": "Phone Numbers and {{appName}}",
-    "body": "Connecting allows you to send and receive funds with your phone number.\n\n<0>Can I do this later?</0>\n\nYes, but wallets that aren’t connected can only send payments with QR codes or Account Addresses.\n\n<1>Secure and Private</1>\n\n{{appName}} uses state of the art cryptography to keep your phone number private.",
+    "body": "Connecting allows you to send and receive funds with your phone number.\n\n<0>Can I do this later?</0>\n\nYes, but wallets that aren't connected can only send payments with QR codes or Account Addresses.\n\n<1>Secure and Private</1>\n\n{{appName}} uses state of the art cryptography to keep your phone number private.",
     "dismiss": "Dismiss"
   },
   "phoneVerificationScreen": {
@@ -915,7 +915,7 @@
     "learnMore": {
       "buttonLabel": "Do I need to connect?",
       "title": "Do I need to connect?",
-      "body": "Connecting your phone number will allow you to send money to friends in your address book and other phone numbers. \n \n If you choose to skip this step you won’t be able to access your contacts and you will only be able to send money via QR code or wallet address."
+      "body": "Connecting your phone number will allow you to send money to friends in your address book and other phone numbers. \n \n If you choose to skip this step you won't be able to access your contacts and you will only be able to send money via QR code or wallet address."
     },
     "skip": {
       "title": "Are you sure?",
@@ -931,15 +931,15 @@
     "codeInputPlaceholder": "123456",
     "helpDialog": {
       "title": "Help",
-      "body": "We sent an SMS to your phone number. Please check your text messages to find the 6 digit code. \n \n If you’re having trouble receiving messages, you can skip this step for now and try again later.",
-      "bodyCloudBackupOnboarding": "We sent an SMS to your phone number. Please check your text messages to find the 6 digit code. \n \n If you’re having trouble receiving messages, we recommend backing up with a Recovery Phrase. You can try signing in with your email and phone later.",
+      "body": "We sent an SMS to your phone number. Please check your text messages to find the 6 digit code. \n \n If you're having trouble receiving messages, you can skip this step for now and try again later.",
+      "bodyCloudBackupOnboarding": "We sent an SMS to your phone number. Please check your text messages to find the 6 digit code. \n \n If you're having trouble receiving messages, we recommend backing up with a Recovery Phrase. You can try signing in with your email and phone later.",
       "skip": "Skip",
       "dismiss": "Go back",
       "useRecoveryPhrase": "Use Recovery Phrase"
     },
     "verificationFailure": "Oops! Something went wrong, please try again later.",
     "resendButtonNotYetAvailable": "Resend available in {{secondsRemaining}} second(s)",
-    "resendButton": "Didn’t receive code?"
+    "resendButton": "Didn't receive code?"
   },
   "importExistingKey": {
     "keyPlaceholder": "horse leopard dog monkey ...",
@@ -948,7 +948,7 @@
     "description": "Use the 12 or 24-word phrase that you saved when you set up your wallet to restore.",
     "descriptionV1_90": "Your Recovery Phrase is a 12 or 24-word phrase that you wrote down and saved when you set up your wallet. Please enter it here to restore your wallet.",
     "emptyWalletDialog": {
-      "description": "This wallet doesn’t have any funds. Would you still like to use it?",
+      "description": "This wallet doesn't have any funds. Would you still like to use it?",
       "action": "Use Wallet",
       "title": "Balance\n<0></0>"
     }
@@ -988,11 +988,11 @@
     "title": "Help",
     "bodySection1": {
       "title": "Received all three messages?",
-      "content": "If your messages contain a link, simply tap the links to confirm.\n\nIf there are no links, please copy and paste the messages into the fields. You’re welcome to paste the entire message."
+      "content": "If your messages contain a link, simply tap the links to confirm.\n\nIf there are no links, please copy and paste the messages into the fields. You're welcome to paste the entire message."
     },
     "bodySection2": {
       "title": "Missing some or all messages?",
-      "defaultContent": "If you’re having trouble receiving messages, you can skip this step for now and try again later. Sometimes it can take a few minutes for messages to arrive.",
+      "defaultContent": "If you're having trouble receiving messages, you can skip this step for now and try again later. Sometimes it can take a few minutes for messages to arrive.",
       "content": "$t(verificationInputHelpDialog.bodySection2.defaultContent)",
       "content_countdown": "$t(verificationInputHelpDialog.bodySection2.defaultContent) The skip option below will be available in {{count}} second.",
       "content_countdown_plural": "$t(verificationInputHelpDialog.bodySection2.defaultContent) The skip option below will be available in {{count}} seconds."
@@ -1058,8 +1058,8 @@
   "requestFromMobileNumber": "Request From Phone Number",
   "sendToAddress": "Send to Address",
   "walletAddress": "Wallet Address",
-  "inviteWithoutPayment": "Hi! I’ve been using {{appName}} to send crypto worldwide. It’s easy to try and I want to invite you to check it out with this link: {{link}}",
-  "inviteWithEscrowedPayment": "Hi! I’ve been using {{appName}} to send crypto worldwide. I just sent you {{amount}} {{token}}. Please download the {{appName}} App and redeem your {{token}} using this link: {{link}}",
+  "inviteWithoutPayment": "Hi! I've been using {{appName}} to send crypto worldwide. It's easy to try and I want to invite you to check it out with this link: {{link}}",
+  "inviteWithEscrowedPayment": "Hi! I've been using {{appName}} to send crypto worldwide. I just sent you {{amount}} {{token}}. Please download the {{appName}} App and redeem your {{token}} using this link: {{link}}",
   "inviteWithRewards": "Hi! 👋 I'm using {{appName}} as my crypto wallet. It's super quick to download the app and connect your phone number - plus, we both get a special edition NFT as a reward. 💫 \n\nUse this link to download: {{link}}",
   "inviteWithRewardsCUSD": "Hey! Right now we can both get a free $0.50 reward if you sign up, connect your number, and fund your {{appName}} wallet. I use it to grow my savings in USD and crypto, and you can set it up in seconds with just a phone number. Make sure to sign up with my referral link here: \n\n{{link}} \n\n Hurry, the referral promotion ends soon.",
   "loadingContacts": "Finding your contacts",
@@ -1070,7 +1070,7 @@
   "writeStorageNeededForQrDownload": "Storage write permission is needed for downloading the QR code",
   "cameraScanInfo": "Center code in the box above",
   "cameraNotAuthorizedTitle": "Enable Camera",
-  "cameraNotAuthorizedDescription": "Please enable the Camera in your phone’s Settings. You’ll need it to scan QR codes.",
+  "cameraNotAuthorizedDescription": "Please enable the Camera in your phone's Settings. You'll need it to scan QR codes.",
   "cameraSettings": "Settings",
   "toSentOrRequestPayment": "to send or request payment",
   "reminderSent": "Reminder Sent",
@@ -1091,7 +1091,7 @@
   },
   "importContactsCta": {
     "header": "Enable Contacts",
-    "body": "Enable Contacts in your phone’s Settings to easily send and request payments.",
+    "body": "Enable Contacts in your phone's Settings to easily send and request payments.",
     "cta": "Settings"
   },
   "contactSyncProgress": {
@@ -1263,7 +1263,7 @@
   "transactionsAreLoading": "Transactions are loading!",
   "pleaseHoldOn": "Please hold on",
   "welcomeToCeloPayments": "Welcome to {{appName}}",
-  "letsGetStartedByFirstTransaction": "Let’s get started by sending your first transaction",
+  "letsGetStartedByFirstTransaction": "Let's get started by sending your first transaction",
   "sendMoney": "Send Crypto",
   "verificationFee": "Confirmation Fee",
   "networkFee": "Network Fee",
@@ -1286,9 +1286,9 @@
   "refreshBalances": "Refresh Balances",
   "escrowedPaymentReminder": "Pending Invites",
   "escrowedPaymentReminderSummaryTitle": "{{count}} Pending Invites",
-  "escrowedPaymentReminderSummaryDetails_exactly2Items": "<0></0> and <1></1> won’t be able to claim their invites",
-  "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> and one other won’t be able to claim their invites",
-  "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> and others won’t be able to claim their invites",
+  "escrowedPaymentReminderSummaryDetails_exactly2Items": "<0></0> and <1></1> won't be able to claim their invites",
+  "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> and one other won't be able to claim their invites",
+  "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> and others won't be able to claim their invites",
   "escrowedPaymentReminderSmsNoData": "A friendly reminder that you haven't yet redeemed your {{currency}} with {{appName}}! Download the mobile app to get started!",
   "testnetAlert": {
     "0": "{{testnet}}",
@@ -1356,7 +1356,7 @@
   "transactionHeaderNetworkFee": "Network",
   "transactionHeaderFaucet": "Faucet",
   "transactionHeaderInviteSent": "$t(inviteSent)",
-  "transactionHeaderInviteReceived": "$t(inviteReceived)",
+  "transactionHeaderInviteReceived": "$t(invitereceived)",
   "transactionHeaderSent": "Payment Sent",
   "transactionHeaderWithdrewCelo": "CELO Withdrawal",
   "transactionHeaderEscrowSent": "Escrow Payment Sent",
@@ -1961,7 +1961,7 @@
       "done": "Done"
     },
     "swapErrorSection": {
-      "title": "We couldn’t complete your swap",
+      "title": "We couldn't complete your swap",
       "subtitle": "Your assets are safe in your wallet.\nPlease try again.",
       "contactSupport": "If you need additional help, you can contact\n<0>customer support<0>"
     },
@@ -1971,24 +1971,24 @@
       "swapAgain": "Swap Again"
     },
     "swapErrorModal": {
-      "title": "We couldn’t complete this transaction.",
+      "title": "We couldn't complete this transaction.",
       "body": "Please wait and try again later or contact our support team for help.",
       "swapRestart": "Dismiss",
       "contactSupport": "Contact Support"
     }
   },
   "inviteModal": {
-    "title": "Looks like {{contactName}} doesn’t have a {{appName}} wallet yet.",
+    "title": "Looks like {{contactName}} doesn't have a {{appName}} wallet yet.",
     "body": "You can still invite them to {{appName}}, or try to send a payment to their wallet address or nom.space.",
     "sendInviteButtonLabel": "Send Invite",
     "shareMessage": "Hi! I've been using {{appName}} as my crypto wallet and I want to invite you to check it out. Once you download the app and connect your phone number, we both get a special NFT. Use this link: {{link}}",
     "rewardsActive": {
-      "title": "Invite {{contactName}} to {{appName}} and you’ll both receive NFTs!",
-      "body": "Looks like {{contactName}} isn't on {{appName}}. You can still send a payment if you know their wallet address, or send an invite instead. \n\n After they download the wallet and connect their phone number, you’ll both get an exclusive NFT."
+      "title": "Invite {{contactName}} to {{appName}} and you'll both receive NFTs!",
+      "body": "Looks like {{contactName}} isn't on {{appName}}. You can still send a payment if you know their wallet address, or send an invite instead. \n\n After they download the wallet and connect their phone number, you'll both get an exclusive NFT."
     },
     "rewardsActiveCUSD": {
-      "title": "Invite {{contactName}} to {{appName}} and get 0.50 cUSD",
-      "body": "Looks like {{contactName}} isn’t on {{appName}}. You can still send a payment if you know their wallet address, or send an invite instead. \n\n After they download {{appName}}, connect their phone number, add funds and keep them in their wallet for 7 days, you will both get 0.50 cUSD while funds last."
+      "title": "Invite {{contactName}} to {{appName}} and get 0.50 cUSD",
+      "body": "Looks like {{contactName}} isn't on {{appName}}. You can still send a payment if you know their wallet address, or send an invite instead. \n\n After they download {{appName}}, connect their phone number, add funds and keep them in their wallet for 7 days, you will both get 0.50 cUSD while funds last."
     }
   },
   "celoNews": {
@@ -2233,12 +2233,12 @@
   "jumpstartIntro": {
     "title": "Share crypto like a text",
     "description": "Live Links are a way to send crypto on the Celo network to a friend with a link",
-    "noFundsHint": "To get started, you’ll need some assets on Celo in your wallet.",
+    "noFundsHint": "To get started, you'll need some assets on Celo in your wallet.",
     "haveFundsButton": "Send with a Live Link",
     "addFundsCelo": {
       "title": "Get Assets on Celo",
-      "info": "Live Links are a way to send crypto on the Celo network to a friend with a link.\nTo get started, you’ll need some CELO assets in your wallet.",
-      "description": "Once you’ve added assets on Celo you’ll have to come back to create a Live Link.",
+      "info": "Live Links are a way to send crypto on the Celo network to a friend with a link.\nTo get started, you'll need some CELO assets in your wallet.",
+      "description": "Once you've added assets on Celo you'll have to come back to create a Live Link.",
       "cta": "Get Assets on Celo",
       "actionDescriptions": {
         "add": "Buy assets on Celo using one of our trusted providers",
@@ -2260,7 +2260,7 @@
     "info": "When you create a link, funds are withdrawn from your wallet. You can reclaim the link anytime. Share links with care.",
     "sendError": {
       "title": "Unable to create link",
-      "description": "Your live link wasn’t created. Please try again.",
+      "description": "Your live link wasn't created. Please try again.",
       "ctaLabel": "Dismiss"
     }
   },
@@ -2271,12 +2271,12 @@
     "linkCopiedMessage": "Live Link copied",
     "navigationWarning": {
       "title": "Did you share your link?",
-      "description": "Make sure to share this live link or save it somewhere safe.\n\nDon’t worry if it goes unclaimed — you can easily reclaim the funds from your activity feed.",
+      "description": "Make sure to share this live link or save it somewhere safe.\n\nDon't worry if it goes unclaimed — you can easily reclaim the funds from your activity feed.",
       "ctaNavigate": "Go Home"
     },
     "ctaShare": "Share Link",
     "ctaScanQRCode": "Show QR Code",
-    "shareMessage": "Hi! I’m sending you a link funded with {{tokenAmount}} {{tokenSymbol}} on {{appName}}. Use this link to download the app and the funds will be live, waiting for you. {{link}}",
+    "shareMessage": "Hi! I'm sending you a link funded with {{tokenAmount}} {{tokenSymbol}} on {{appName}}. Use this link to download the app and the funds will be live, waiting for you. {{link}}",
     "qrCodeBottomSheet": {
       "title": "Scan the code to receive funds",
       "description": "Check the status of your funds on the homescreen. Alternatively, copy or share the link below."
@@ -2331,8 +2331,8 @@
   "multichainBeta": {
     "beta": "BETA",
     "title": "New! Ethereum is on {{appName}}",
-    "description1": "We’re opening up this feature to a select group of people first. You’re one of the lucky ones!",
-    "description2": "This is still new, and our team is still working hard to make things perfect. We’d love to hear your feedback.",
+    "description1": "We're opening up this feature to a select group of people first. You're one of the lucky ones!",
+    "description2": "This is still new, and our team is still working hard to make things perfect. We'd love to hear your feedback.",
     "primaryCta": "Try it now",
     "secondaryCta": "No thanks"
   },
@@ -2350,12 +2350,12 @@
   "nftCelebration": {
     "bottomSheet": {
       "title": "Congratulations!",
-      "description": "You’ve earned an exclusive collectible for Early Ethereum Explorers. Welcome to Ethereum on {{appName}}.",
+      "description": "You've earned an exclusive collectible for Early Ethereum Explorers. Welcome to Ethereum on {{appName}}.",
       "cta": "Thanks!"
     },
     "notification": {
       "title": "A new NFT awaits 🎉",
-      "description": "You can find your new {{rewardName}} NFT under your “Collectibles”"
+      "description": "You can find your new {{rewardName}} NFT under your 'Collectibles'"
     },
     "rewardBottomSheet": {
       "title": "Earn $5 of ETH",
@@ -2679,9 +2679,9 @@
     },
     "collect": {
       "title": "Congratulations! Review & collect your earnings",
-      "titleClaim": "You’re going to claim:",
-      "titleCollect": "You’re going to collect:",
-      "titleWithdraw": "You’re going to withdraw:",
+      "titleClaim": "You're going to claim:",
+      "titleCollect": "You're going to collect:",
+      "titleWithdraw": "You're going to withdraw:",
       "total": "TOTAL",
       "plus": "PLUS",
       "reward": "REWARD",
@@ -2733,9 +2733,9 @@
         "yieldPoolSubtitle": "What is a yield pool?",
         "yieldPoolDescription": "Yield pools, or liquidity pools, are pooled funds provided by token holders, which enable trading on decentralized exchanges. When you contribute to the pool, you can earn interest from other people who borrow those funds.",
         "chooseSubtitle": "How should you choose a pool? ",
-        "chooseDescription": "Any financial decision is a personal choice. We have aggregated some pools across different protocols, but each pool has benefits and risks. We do our best to provide some helpful info for each pool, but it’s always best to do additional research if you’re unsure."
+        "chooseDescription": "Any financial decision is a personal choice. We have aggregated some pools across different protocols, but each pool has benefits and risks. We do our best to provide some helpful info for each pool, but it's always best to do additional research if you're unsure."
       },
-      "noPoolsTitle": "You haven’t joined any pools yet",
+      "noPoolsTitle": "You haven't joined any pools yet",
       "noPoolsDescription": "Discover available pools, pick one that matches your goals, and make the most of your crypto.",
       "errorTitle": "Unable to load pools",
       "errorDescription": "Oops, something went wrong when trying to load the pool information. Please try again.",
@@ -2797,8 +2797,8 @@
       "lineItemAmountDisplay": "{{localCurrencySymbol}}{{localCurrencyAmount}} ({{cryptoAmount}} {{cryptoSymbol}})",
       "infoBottomSheet": {
         "gotIt": "Got it",
-        "depositDescription": "This is your breakdown of your deposited amount, the interest you’e earned on that amount, and any additional rewards you’ve received from participating in the pool.",
-        "depositNoBreakdownDescription": "This number combines your supplied tokens with any interest and rewards you’ve earned.\n\nSome protocols, like {{providerName}}, do not provide a breakdown of your earnings - this is normal. Instead they add your earnings directly to your deposited amount, which continues to earn interest based on the growing amount. ",
+        "depositDescription": "This is your breakdown of your deposited amount, the interest you'e earned on that amount, and any additional rewards you've received from participating in the pool.",
+        "depositNoBreakdownDescription": "This number combines your supplied tokens with any interest and rewards you've earned.\n\nSome protocols, like {{providerName}}, do not provide a breakdown of your earnings - this is normal. Instead they add your earnings directly to your deposited amount, which continues to earn interest based on the growing amount. ",
         "tvlTitle": "Total Value Locked (TVL)",
         "tvlDescription": "TVL refers to the total amount of assets deposited in a liquidity pool and can be used to help indicate the trust and utility of a pool. Typically a higher TVL correlates to reduced risk, however no pool is completely risk free.",
         "ageTitle": "Age of Pool",
@@ -2817,12 +2817,12 @@
     },
     "beforeDepositBottomSheet": {
       "youNeedTitle": "You Need {{tokenSymbol}} on {{tokenNetwork}} to Deposit",
-      "crossChainAlternativeDescription": "If you don’t want to use your tokens on {{tokenNetwork}}, choose an option below. You’ll need to return to complete your pool deposit later.",
+      "crossChainAlternativeDescription": "If you don't want to use your tokens on {{tokenNetwork}}, choose an option below. You'll need to return to complete your pool deposit later.",
       "beforeYouCanDepositTitle": "Before you can deposit...",
-      "beforeYouCanDepositDescription": "You’ll need to add one of the pool tokens. Once added, you’ll need to return to complete your pool deposit.",
+      "beforeYouCanDepositDescription": "You'll need to add one of the pool tokens. Once added, you'll need to return to complete your pool deposit.",
       "action": {
         "swapAndDeposit": "Swap & Deposit",
-        "swapAndDepositDescription": "Choose any token on {{tokenNetwork}}. We’ll swap and deposit it simultaneously for you.",
+        "swapAndDepositDescription": "Choose any token on {{tokenNetwork}}. We'll swap and deposit it simultaneously for you.",
         "crossChainSwap": "Cross-chain Swap",
         "crossChainSwapDescription": "Swap a token on another network for {{tokenSymbol}}",
         "swap": "Swap",
@@ -2931,6 +2931,10 @@
     "swapToUSD": "Swap your cCOP for USDT",
     "withdraw": "Withdraw From Your Wallet",
     "earn": "Earn with your cCOP or USDT",
+    "reFiMedellinUbi": {
+      "button": "Claim your UBI",
+      "subtitle": "from ReFiMedellin"
+    },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "From My USDT Balance",
       "bySwapping": "Add cCOP by swapping from your USDT",
@@ -2942,5 +2946,35 @@
     "availableBalance": "Available: <0></0>",
     "selectToken": "Select token",
     "fiatPriceUnavailable": "Price unavailable"
+  },
+  "ubiNotBeneficiary": "You are not eligible to receive the ReFi Medellín UBI subsidy",
+  "ubiAlreadyClaimed": "You have already claimed your UBI subsidy this week",
+  "ubiClaimError": "Error processing UBI subsidy claim. Please try again",
+  "reFiMedellinUbi": {
+    "title": "Claim your ReFi Medellín UBI",
+    "subtitle": "Universal Basic Income Program",
+    "checking": {
+      "title": "Checking your eligibility...",
+      "subtitle": "Connecting to the ReFi Medellín contract"
+    },
+    "error": {
+      "title": "Connection error",
+      "description": "We couldn't verify your eligibility. Please try again.",
+      "retry": "Retry"
+    },
+    "notEligible": {
+      "title": "You are not eligible to receive the ReFi Medellín UBI subsidy",
+      "description": "Your wallet address is not registered as a beneficiary of the ReFi Medellín UBI program.",
+      "contact": "If you believe this is an error, contact the ReFi Medellín team."
+    },
+    "eligible": {
+      "congratulations": "Congratulations!",
+      "subtitle": "You are eligible to receive your UBI",
+      "benefitTitle": "Universal Basic Income",
+      "benefitDescription": "As a registered beneficiary of the ReFi Medellín program, you can claim your subsidy safely and directly to your wallet.",
+      "claimButton": "Claim My Subsidy",
+      "claimingButton": "Claiming...",
+      "processingText": "Processing transaction..."
+    }
   }
 }

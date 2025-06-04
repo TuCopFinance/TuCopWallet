@@ -299,8 +299,8 @@ function TabHome(_props: Props) {
               <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
                 <Image source={require('./refi-medellin-logo.webp')} style={styles.refiLogo} />
                 <View style={styles.textColumn}>
-                  <Text style={styles.ctaText}>Reclama tu UBI</Text>
-                  <Text style={styles.ctaSubText}>de ReFiMedellin</Text>
+                  <Text style={styles.ctaText}>{t('tabHome.reFiMedellinUbi.button')}</Text>
+                  <Text style={styles.ctaSubText}>{t('tabHome.reFiMedellinUbi.subtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
