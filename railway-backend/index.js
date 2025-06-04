@@ -16,7 +16,7 @@ app.use(express.json())
 // Base de datos en memoria (en producción usar PostgreSQL de Railway)
 let appVersions = {
   ios: {
-    latestVersion: '1.100.0',
+    latestVersion: '1.101.0',
     minRequiredVersion: '1.95.0',
     releaseNotes: 'Mejoras de rendimiento y corrección de errores',
     downloadUrl: 'https://apps.apple.com/app/tucop-wallet/id1234567890',
@@ -24,7 +24,7 @@ let appVersions = {
     isForced: false,
   },
   android: {
-    latestVersion: '1.100.0',
+    latestVersion: '1.101.0',
     minRequiredVersion: '1.95.0',
     releaseNotes: 'Mejoras de rendimiento y corrección de errores',
     downloadUrl: 'https://play.google.com/store/apps/details?id=org.tucop',
