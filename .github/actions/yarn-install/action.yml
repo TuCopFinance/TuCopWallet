@@ -14,6 +14,11 @@ runs:
           node_modules
           */*/node_modules
         key: ${{ runner.os }}-${{ runner.arch }}-node-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('**/yarn.lock', 'patches/*.patch') }}
+    - name: Configure Git to use HTTPS
+      run: |
+        git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+        git config --global url."https://github.com/".insteadOf "git@github.com:"
+      shell: bash
     - name: Install Yarn dependencies
       run: |
         # Deals with yarn (v1) install flakiness
