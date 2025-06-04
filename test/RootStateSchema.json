@@ -249,6 +249,7 @@
                                 "fiatDetailsScreen.addFiatAccountFailed",
                                 "fiatDetailsScreen.addFiatAccountResourceExist",
                                 "firebaseFailed",
+                                "genericError",
                                 "hooksPreview.invalidApiUrl",
                                 "importBackupFailed",
                                 "importContactsFailed",
@@ -778,11 +779,11 @@
             "enum": [
                 "CELO",
                 "ETH",
+                "USDT",
+                "cCOP",
                 "cEUR",
                 "cREAL",
-                "cUSD",
-                "cCOP",
-                "USDT"
+                "cUSD"
             ],
             "type": "string"
         },
@@ -804,13 +805,13 @@
                     "$ref": "#/definitions/SwapClaimHistory"
                 },
                 {
-                    "$ref": "#/definitions/DepositEarnClaimHistory"
-                },
-                {
                     "$ref": "#/definitions/Erc20CreateLiveLinkClaimHistory"
                 },
                 {
                     "$ref": "#/definitions/Erc721CreateLiveLinkClaimHistory"
+                },
+                {
+                    "$ref": "#/definitions/DepositEarnClaimHistory"
                 }
             ]
         },
@@ -1085,6 +1086,51 @@
             ],
             "type": "object"
         },
+        "CoreTypes.Metadata_1": {
+            "additionalProperties": false,
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "icons": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "redirect": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "linkMode": {
+                            "type": "boolean"
+                        },
+                        "native": {
+                            "type": "string"
+                        },
+                        "universal": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "verifyUrl": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "description",
+                "icons",
+                "name",
+                "url"
+            ],
+            "type": "object"
+        },
         "CreateWalletClaimHistory": {
             "additionalProperties": false,
             "properties": {
@@ -1111,8 +1157,7 @@
                 "CELO",
                 "cEUR",
                 "cREAL",
-                "cUSD",
-                "USDT"
+                "cUSD"
             ],
             "type": "string"
         },
@@ -1286,6 +1331,30 @@
                 "timestamp",
                 "transactionHash",
                 "type"
+            ],
+            "type": "object"
+        },
+        "DivviProtocolState": {
+            "additionalProperties": false,
+            "properties": {
+                "isInitialized": {
+                    "type": "boolean"
+                },
+                "isSDKInitialized": {
+                    "type": "boolean"
+                },
+                "pendingRegistration": {
+                    "type": "boolean"
+                },
+                "referrals": {
+                    "$ref": "#/definitions/Record<string,Referral>"
+                }
+            },
+            "required": [
+                "isInitialized",
+                "isSDKInitialized",
+                "pendingRegistration",
+                "referrals"
             ],
             "type": "object"
         },
@@ -3198,13 +3267,13 @@
                     "$ref": "#/definitions/PointsEventSwap"
                 },
                 {
-                    "$ref": "#/definitions/PointsEventDepositEarn"
-                },
-                {
                     "$ref": "#/definitions/PointsEventErc20CreateLiveLink"
                 },
                 {
                     "$ref": "#/definitions/PointsEventErc721CreateLiveLink"
+                },
+                {
+                    "$ref": "#/definitions/PointsEventDepositEarn"
                 }
             ]
         },
@@ -3442,11 +3511,31 @@
             "additionalProperties": false,
             "type": "object"
         },
+        "ProposalTypes.OptionalNamespaces_1": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "ProposalTypes.RequiredNamespaces": {
             "additionalProperties": false,
             "type": "object"
         },
+        "ProposalTypes.RequiredNamespaces_1": {
+            "additionalProperties": false,
+            "type": "object"
+        },
+        "ProposalTypes.ScopedProperties": {
+            "additionalProperties": false,
+            "type": "object"
+        },
+        "ProposalTypes.ScopedProperties_1": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "ProposalTypes.SessionProperties": {
+            "additionalProperties": false,
+            "type": "object"
+        },
+        "ProposalTypes.SessionProperties_1": {
             "additionalProperties": false,
             "type": "object"
         },
@@ -3463,7 +3552,7 @@
                     "type": "number"
                 },
                 "optionalNamespaces": {
-                    "$ref": "#/definitions/ProposalTypes.OptionalNamespaces"
+                    "$ref": "#/definitions/ProposalTypes.OptionalNamespaces_1"
                 },
                 "pairingTopic": {
                     "type": "string"
@@ -3472,7 +3561,7 @@
                     "additionalProperties": false,
                     "properties": {
                         "metadata": {
-                            "$ref": "#/definitions/CoreTypes.Metadata"
+                            "$ref": "#/definitions/CoreTypes.Metadata_1"
                         },
                         "publicKey": {
                             "type": "string"
@@ -3486,15 +3575,18 @@
                 },
                 "relays": {
                     "items": {
-                        "$ref": "#/definitions/RelayerTypes.ProtocolOptions"
+                        "$ref": "#/definitions/RelayerTypes.ProtocolOptions_1"
                     },
                     "type": "array"
                 },
                 "requiredNamespaces": {
-                    "$ref": "#/definitions/ProposalTypes.RequiredNamespaces"
+                    "$ref": "#/definitions/ProposalTypes.RequiredNamespaces_1"
+                },
+                "scopedProperties": {
+                    "$ref": "#/definitions/ProposalTypes.ScopedProperties_1"
                 },
                 "sessionProperties": {
-                    "$ref": "#/definitions/ProposalTypes.SessionProperties"
+                    "$ref": "#/definitions/ProposalTypes.SessionProperties_1"
                 }
             },
             "required": [
@@ -3527,6 +3619,40 @@
         "ProviderLogos": {
             "additionalProperties": {
                 "type": "string"
+            },
+            "type": "object"
+        },
+        "PublicAppConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "divviProtocol": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "campaignIds": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "consumer": {
+                            "type": "string"
+                        },
+                        "divviId": {
+                            "type": "string"
+                        },
+                        "providers": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "campaignIds",
+                        "divviId"
+                    ],
+                    "type": "object"
+                }
             },
             "type": "object"
         },
@@ -3611,6 +3737,10 @@
             ],
             "type": "string"
         },
+        "Record<string,Referral>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "Record<string,[string,...string[]]>": {
             "additionalProperties": false,
             "type": "object"
@@ -3628,6 +3758,21 @@
             "type": "string"
         },
         "RelayerTypes.ProtocolOptions": {
+            "additionalProperties": false,
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "protocol"
+            ],
+            "type": "object"
+        },
+        "RelayerTypes.ProtocolOptions_1": {
             "additionalProperties": false,
             "properties": {
                 "data": {
@@ -3743,6 +3888,8 @@
                 "LinkPhoneNumber",
                 "Main",
                 "MainModal",
+                "MarranitoStaking",
+                "MarranitosMyStakes",
                 "MultichainBeta",
                 "NftsInfoCarousel",
                 "NotificationCenter",
@@ -3779,6 +3926,7 @@
                 "SwapScreenWithBack",
                 "TabActivity",
                 "TabDiscover",
+                "TabEarn",
                 "TabHome",
                 "TabNavigator",
                 "TabWallet",
@@ -3908,6 +4056,9 @@
                 },
                 "requiredNamespaces": {
                     "$ref": "#/definitions/ProposalTypes.RequiredNamespaces"
+                },
+                "scopedProperties": {
+                    "$ref": "#/definitions/ProposalTypes.ScopedProperties"
                 },
                 "self": {
                     "additionalProperties": false,
@@ -4783,6 +4934,9 @@
                 "pincodeUseExpandedBlocklist": {
                     "type": "boolean"
                 },
+                "publicConfig": {
+                    "$ref": "#/definitions/PublicAppConfig"
+                },
                 "pushNotificationRequestedUnixTime": {
                     "type": [
                         "null",
@@ -4948,15 +5102,12 @@
                 "fetchedCurrencyCode": {
                     "enum": [
                         "ARS",
-                        "AUD",
                         "BOB",
                         "BRL",
                         "CAD",
-                        "CHF",
                         "CLP",
                         "CNY",
                         "COP",
-                        "CVE",
                         "EUR",
                         "FKP",
                         "GBP",
@@ -4965,24 +5116,18 @@
                         "GYD",
                         "INR",
                         "KES",
-                        "LRD",
                         "MXN",
                         "MYR",
                         "NGN",
                         "PAB",
                         "PEN",
                         "PHP",
-                        "PLN",
                         "PYG",
-                        "RUB",
                         "RWF",
                         "SGD",
-                        "SLL",
                         "SRD",
                         "THB",
-                        "TRY",
                         "TWD",
-                        "UAH",
                         "UGX",
                         "USD",
                         "UYU",
@@ -5003,15 +5148,12 @@
                 "preferredCurrencyCode": {
                     "enum": [
                         "ARS",
-                        "AUD",
                         "BOB",
                         "BRL",
                         "CAD",
-                        "CHF",
                         "CLP",
                         "CNY",
                         "COP",
-                        "CVE",
                         "EUR",
                         "FKP",
                         "GBP",
@@ -5020,24 +5162,18 @@
                         "GYD",
                         "INR",
                         "KES",
-                        "LRD",
                         "MXN",
                         "MYR",
                         "NGN",
                         "PAB",
                         "PEN",
                         "PHP",
-                        "PLN",
                         "PYG",
-                        "RUB",
                         "RWF",
                         "SGD",
-                        "SLL",
                         "SRD",
                         "THB",
-                        "TRY",
                         "TWD",
-                        "UAH",
                         "UGX",
                         "USD",
                         "UYU",
@@ -6069,6 +6205,8 @@
                         "LinkPhoneNumber",
                         "Main",
                         "MainModal",
+                        "MarranitoStaking",
+                        "MarranitosMyStakes",
                         "MultichainBeta",
                         "NftsInfoCarousel",
                         "NotificationCenter",
@@ -6103,6 +6241,7 @@
                         "SwapScreenWithBack",
                         "TabActivity",
                         "TabDiscover",
+                        "TabEarn",
                         "TabHome",
                         "TabNavigator",
                         "TabWallet",
@@ -7607,6 +7746,9 @@
         "dapps": {
             "$ref": "#/definitions/State_16"
         },
+        "divviProtocol": {
+            "$ref": "#/definitions/DivviProtocolState"
+        },
         "earn": {
             "$ref": "#/definitions/State_25"
         },
@@ -7703,6 +7845,7 @@
         "alert",
         "app",
         "dapps",
+        "divviProtocol",
         "earn",
         "fiatConnect",
         "fiatExchanges",
