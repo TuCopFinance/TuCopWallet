@@ -21,6 +21,45 @@ export enum PhoneNumberVerificationStatus {
   FAILED,
 }
 
+// Función auxiliar para verificar si el número existe en el sistema de keyless backup
+async function checkPhoneInKeylessBackupSystem(
+  phoneNumber: string,
+  walletAddress: string
+): Promise<boolean> {
+  try {
+    Logger.debug(
+      `${TAG}/checkPhoneInKeylessBackupSystem`,
+      'Checking if phone exists in keyless backup system'
+    )
+
+    const response = await fetch(`${networkConfig.cabGetEncryptedMnemonicUrl}/check-phone`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${networkConfig.cabApiKey}`,
+      },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        wallet: walletAddress,
+      }),
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return data.exists === true
+    }
+
+    return false
+  } catch (error) {
+    Logger.debug(
+      `${TAG}/checkPhoneInKeylessBackupSystem`,
+      'Error checking keyless backup system:',
+      error
+    )
+    return false
+  }
+}
+
 export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: string) {
   const verificationCodeRequested = useRef(false)
 
@@ -59,7 +98,7 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
     setSmsCode('')
   }
 
-  const handleAlreadyVerified = () => {
+  const handleAlreadyVerified = async () => {
     Logger.debug(`${TAG}/requestVerificationCode`, 'Phone number already verified')
 
     setShouldResendSms(false)
@@ -83,22 +122,29 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
       }
 
       Logger.debug(`${TAG}/requestVerificationCode`, 'Initiating request to verifyPhoneNumber')
-      // const signedMessage = await retrieveSignedMessage()
+
+      // Primero verificar si el número ya existe en el sistema de keyless backup
+      if (address) {
+        const existsInKeylessBackup = await checkPhoneInKeylessBackupSystem(phoneNumber, address)
+        if (existsInKeylessBackup) {
+          Logger.debug(
+            `${TAG}/requestVerificationCode`,
+            'Phone number found in keyless backup system, auto-verifying'
+          )
+          await handleAlreadyVerified()
+          return
+        }
+      }
 
       const response = await fetch(networkConfig.verifyPhoneNumberUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // authorization: `${networkConfig.authHeaderIssuer} ${address}:${signedMessage}`,
           'x-api-key': 'tu-cop-intechchain-1234567890',
         },
         body: JSON.stringify({
           phone: phoneNumber,
           wallet: address,
-          // clientPlatform: Platform.OS,
-          // clientVersion: DeviceInfo.getVersion(),
-          // clientBundleId: DeviceInfo.getBundleId(),
-          // inviterAddress: inviterAddress ?? undefined,
         }),
       })
       if (response.ok) {
@@ -110,9 +156,9 @@ export function useVerifyPhoneNumber(phoneNumber: string, countryCallingCode: st
 
     [phoneNumber, shouldResendSms],
     {
-      onError: (error: Error) => {
+      onError: async (error: Error) => {
         if (error?.message.includes('Phone number already verified')) {
-          handleAlreadyVerified()
+          await handleAlreadyVerified()
         } else {
           handleRequestVerificationCodeError(error)
         }
