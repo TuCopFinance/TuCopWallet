@@ -2,6 +2,27 @@
 
 API robusta y segura para gestionar versiones de la aplicación móvil TuCOP Wallet, construida con Express.js, Prisma y PostgreSQL.
 
+> **⚠️ IMPORTANTE**: Este API backend se encuentra en el directorio `railway-backend/` del proyecto TuCOP Wallet. Asegúrate de ejecutar todos los comandos desde este directorio.
+
+## 📊 Estado del Proyecto
+
+✅ **Implementado y Funcionando**:
+
+- Backend completo con Express.js y PostgreSQL
+- Autenticación segura con API keys hasheadas
+- Base de datos configurada con Prisma ORM
+- Endpoints públicos y protegidos
+- Rate limiting y headers de seguridad
+- Logging completo de requests
+- Integración con GitHub (webhooks y auto-updates)
+- Validación robusta de datos
+- Health checks y monitoreo
+- Script de configuración inicial
+
+🎯 **Versión Actual**: `1.0.0`
+📅 **Última Actualización**: Enero 2025
+🏗️ **Listo para**: Desarrollo y Producción
+
 ## 🚀 Características
 
 - **Base de datos PostgreSQL** con Prisma ORM
@@ -15,44 +36,94 @@ API robusta y segura para gestionar versiones de la aplicación móvil TuCOP Wal
 - **Manejo de errores** centralizado
 - **Compresión** y optimizaciones de rendimiento
 
+## ⚡ Inicio Rápido
+
+```bash
+# 1. Navegar al directorio del backend
+cd railway-backend
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno (ver sección de configuración)
+cp .env.example .env
+# Editar .env con tus valores
+
+# 4. Configurar base de datos y generar cliente
+npm run db:generate
+npm run db:migrate
+
+# 5. Configuración inicial (crear primera API key)
+npm run setup
+
+# 6. Iniciar servidor
+npm run dev
+```
+
 ## 📋 Prerequisitos
 
-- Node.js 18.x o superior
-- PostgreSQL 13 o superior
-- Cuenta de GitHub con token de acceso personal
+- **Node.js** 18.x o superior (probado con Node.js 20.x)
+- **PostgreSQL** 13 o superior
+- **Cuenta de GitHub** con token de acceso personal (opcional para integración)
 
-## 🛠️ Instalación
+## 🛠️ Instalación Detallada
 
 ### 1. Clonar e instalar dependencias
 
 ```bash
+# Desde el directorio raíz del proyecto TuCOP Wallet
 cd railway-backend
 npm install
 ```
 
+> **💡 Tip**: Si tienes errores de versión de Node.js, el proyecto soporta Node.js >=18.x
+
 ### 2. Configurar variables de entorno
 
-Crea un archivo `.env` basado en `.env.example`:
+Crea un archivo `.env` con las siguientes variables:
 
 ```bash
-# DATABASE
+# ================================
+# DATABASE CONFIGURATION
+# ================================
+# PostgreSQL connection string
 DATABASE_URL="postgresql://username:password@localhost:5432/tu_cop_wallet_versions?schema=public"
 
-# SERVER
+# ================================
+# SERVER CONFIGURATION
+# ================================
 PORT=3000
 NODE_ENV=production
 
-# SECURITY
-API_KEY=your-super-secret-api-key-here-minimum-32-chars
+# ================================
+# SECURITY CONFIGURATION
+# ================================
+# Super secret API key (minimum 32 characters)
+# Generate with: openssl rand -hex 32
+API_KEY=your-super-secret-api-key-here-minimum-32-characters-long
+
+# Allowed origins for CORS (comma-separated)
 ALLOWED_ORIGINS=https://your-frontend-domain.com
 
-# GITHUB INTEGRATION
-GITHUB_TOKEN=your-github-personal-access-token
+# ================================
+# GITHUB INTEGRATION (Opcional)
+# ================================
+# GitHub Personal Access Token with 'repo' and 'workflow' permissions
+GITHUB_TOKEN=ghp_your_github_personal_access_token_here
 GITHUB_REPO=your-username/tu-cop-wallet-2
 
-# LOGGING
+# ================================
+# LOGGING CONFIGURATION
+# ================================
 LOG_RETENTION_DAYS=30
 ```
+
+**Variables importantes:**
+
+- **`DATABASE_URL`**: Conexión a PostgreSQL (requerida)
+- **`API_KEY`**: Clave de API para autenticación (requerida)
+- **`GITHUB_TOKEN`**: Token para integración con GitHub (opcional)
+- **`ALLOWED_ORIGINS`**: Dominios permitidos para CORS (opcional)
 
 ### 3. Configurar la base de datos
 
@@ -78,18 +149,22 @@ Este script:
 
 - Verifica la conexión a la base de datos
 - Crea la primera API key de administrador
-- Inicializa las versiones por defecto
+- Inicializa las versiones por defecto (Android e iOS: 1.102.1)
 - Muestra información importante de configuración
+
+**⚠️ IMPORTANTE**: Guarda la API key que se muestra en la consola en un lugar seguro.
 
 ### 5. Iniciar el servidor
 
 ```bash
-# Desarrollo
+# Desarrollo (con hot reload)
 npm run dev
 
 # Producción
 npm start
 ```
+
+El servidor estará disponible en `http://localhost:3000`
 
 ## 📡 API Endpoints
 
@@ -378,23 +453,174 @@ npm test
 
 ## 🆘 Troubleshooting
 
+### Error: "Missing script: start"
+
+Si ejecutas `npm start` desde el directorio raíz del proyecto en lugar del directorio `railway-backend/`:
+
+```bash
+# ❌ Incorrecto (desde tu-cop-wallet-2/)
+npm start
+
+# ✅ Correcto (desde railway-backend/)
+cd railway-backend
+npm start
+```
+
+### Error de versión de Node.js
+
+Si obtienes errores sobre versiones incompatibles de Node.js:
+
+```bash
+# Verificar tu versión de Node.js
+node --version
+
+# El proyecto soporta Node.js >=18.x (probado con 20.x)
+# Si tienes una versión menor, actualiza Node.js
+```
+
 ### Error de conexión a base de datos
 
-1. Verificar que `DATABASE_URL` esté correctamente configurada
-2. Asegurar que PostgreSQL esté ejecutándose
-3. Ejecutar `npm run db:migrate` para aplicar migraciones
+1. **Verificar `DATABASE_URL`**:
+
+   ```bash
+   # Verificar que la URL esté correctamente configurada
+   echo $DATABASE_URL
+   ```
+
+2. **PostgreSQL no ejecutándose**:
+
+   ```bash
+   # Verificar que PostgreSQL esté corriendo
+   # macOS con Homebrew:
+   brew services start postgresql
+
+   # Linux/Ubuntu:
+   sudo systemctl start postgresql
+   ```
+
+3. **Aplicar migraciones**:
+   ```bash
+   npm run db:migrate
+   ```
 
 ### Error de autenticación
 
-1. Verificar que la API key esté configurada correctamente
-2. Usar el header `x-api-key` o el campo `apiKey` en el body
-3. Ejecutar `npm run setup` para crear una nueva API key
+1. **API key no encontrada**:
+
+   ```bash
+   # Crear nueva API key
+   npm run setup
+   ```
+
+2. **Formato de autenticación**:
+
+   ```bash
+   # Usar header x-api-key
+   curl -H "x-api-key: your-api-key-here" http://localhost:3000/api/admin/api-keys
+
+   # O en el body de la petición
+   curl -X POST http://localhost:3000/api/update-version \
+     -H "Content-Type: application/json" \
+     -d '{"apiKey": "your-api-key-here", "platform": "android", "version": "1.103.0"}'
+   ```
+
+### Error: "Prisma Client not generated"
+
+```bash
+# Generar el cliente Prisma
+npm run db:generate
+
+# O ejecutar setup completo
+npm run db:migrate
+```
 
 ### Rate limiting
 
-1. Verificar que no se estén haciendo demasiadas peticiones
-2. Usar diferentes IPs para testing si es necesario
-3. Los límites se resetean cada 15 minutos
+1. **Demasiadas peticiones**:
+
+   - **General**: Máximo 100 requests/15min por IP
+   - **Admin**: Máximo 10 requests/15min por IP
+
+2. **Soluciones**:
+   - Esperar 15 minutos para que se resetee el límite
+   - Usar diferentes IPs para testing
+   - Implementar backoff en tu cliente
+
+### Puerto en uso
+
+```bash
+# Error: EADDRINUSE :::3000
+# Cambiar puerto en .env
+PORT=3001
+
+# O matar proceso que usa el puerto
+lsof -ti:3000 | xargs kill -9
+```
+
+## 📖 Ejemplos de Uso
+
+### Verificar versión (público)
+
+```bash
+# Obtener versión para Android
+curl -H "x-platform: android" \
+     -H "x-app-version: 1.100.0" \
+     http://localhost:3000/api/app-version
+
+# Respuesta:
+{
+  "latestVersion": "1.102.1",
+  "minRequiredVersion": "1.95.0",
+  "requiresUpdate": true,
+  "isForced": false,
+  "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop"
+}
+```
+
+### Actualizar versión (requiere API key)
+
+```bash
+curl -X POST http://localhost:3000/api/update-version \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: c6b499bd78225a2274f35565095d6eddcb7955e9df466b5bbcd1deff3740345b" \
+  -d '{
+    "platform": "android",
+    "version": "1.103.0",
+    "minRequired": "1.95.0",
+    "releaseNotes": "Nueva funcionalidad agregada",
+    "isForced": false
+  }'
+```
+
+### Health check
+
+```bash
+curl http://localhost:3000/health
+
+# Respuesta:
+{
+  "status": "healthy",
+  "uptime": 3600,
+  "versions": {
+    "ios": "1.102.1",
+    "android": "1.102.1"
+  },
+  "database": "connected"
+}
+```
+
+### Crear nueva API key
+
+```bash
+curl -X POST http://localhost:3000/api/admin/create-api-key \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-existing-api-key" \
+  -d '{
+    "name": "CI/CD Key",
+    "apiKey": "new-64-character-secure-api-key-here-minimum-32-chars-long",
+    "expiresAt": "2025-12-31T23:59:59.000Z"
+  }'
+```
 
 ## 📄 Licencia
 
