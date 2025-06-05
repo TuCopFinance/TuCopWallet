@@ -41,8 +41,8 @@ exports[`SettingsItemInput renders correctly 1`] = `
           style={
             {
               "color": "#2E3338",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -77,8 +77,8 @@ exports[`SettingsItemInput renders correctly 1`] = `
               {
                 "color": "#2E3338",
                 "flex": 1,
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 22,
                 "paddingHorizontal": 0,
                 "paddingVertical": 12,
@@ -149,8 +149,8 @@ exports[`SettingsItemSwitch renders correctly 1`] = `
           style={
             {
               "color": "#2E3338",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -167,8 +167,8 @@ exports[`SettingsItemSwitch renders correctly 1`] = `
         onStartShouldSetResponder={[Function]}
         thumbTintColor="#E6E6E6"
         trackColorForFalse="#757575"
-        trackColorForTrue="#5061E8"
-        trackTintColor="#5061E8"
+        trackColorForTrue="#2F4ACD"
+        trackTintColor="#2F4ACD"
       />
     </View>
   </View>
@@ -216,8 +216,8 @@ exports[`SettingsItemTextValue renders correctly 1`] = `
           style={
             {
               "color": "#2E3338",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -237,10 +237,10 @@ exports[`SettingsItemTextValue renders correctly 1`] = `
           style={
             {
               "color": "#666666",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
-              "marginRight": 8,
+              "marginRight": 16,
             }
           }
           testID="testID/value"
@@ -251,16 +251,12 @@ exports[`SettingsItemTextValue renders correctly 1`] = `
           fill="none"
           height={12}
           style={{}}
-          testID="ForwardChevron"
-          viewBox="0 0 8 16"
+          viewBox="0 0 14 27"
           width={6}
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            clipRule="evenodd"
-            d="M.293.293a1 1 0 0 1 1.414 0l6 6a1 1 0 0 1 0 1.414l-6 6a1 1 0 0 1-1.414-1.414L5.586 7 .293 1.707a1 1 0 0 1 0-1.414Z"
+            d="M13.7099 14.2385L1.70421 26.7071C1.30403 27.1089 0.676985 27.095 0.290137 26.6794C-0.0833726 26.2777 -0.0833726 25.6404 0.290137 25.2386L11.5888 13.5042L0.290137 1.76985C-0.0967122 1.36808 -0.0967122 0.703093 0.290137 0.301326C0.676985 -0.100442 1.31736 -0.100442 1.70421 0.301326L13.7099 12.77C14.0967 13.1717 14.0967 13.8367 13.7099 14.2385Z"
             fill="#757575"
-            fillRule="evenodd"
             style={{}}
           />
         </svg>
@@ -311,8 +307,8 @@ exports[`SettingsItemTextValue renders correctly without value 1`] = `
           style={
             {
               "color": "#2E3338",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }

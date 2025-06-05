@@ -1,13 +1,5 @@
 import React, { useState } from 'react'
-import {
-  StyleSheet,
-  TextInput,
-  View,
-  TouchableOpacity,
-  StyleProp,
-  ViewStyle,
-  Text,
-} from 'react-native'
+import { StyleProp, StyleSheet, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'

@@ -18,10 +18,7 @@ import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/Fil
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import EarnTabBar from 'src/earn/EarnTabBar'
-import MarranitosContract, {
-  STAKING_DURATIONS,
-  Stake,
-} from 'src/earn/marranitos/MarranitosContract'
+import MarranitosContract, { Stake } from 'src/earn/marranitos/MarranitosContract'
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
 import { refreshAllBalances } from 'src/home/actions'
@@ -53,35 +50,36 @@ export const MY_MARRANITOS_POSITION_TYPE = 'misMarranitos'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.EarnHome>
 
+// TODO: Se comentan los pools de marranitos para que no se muestren en la pantalla de Earn
 const marranitos_pools = [
-  {
-    positionId: 'position_marranito_id1',
-    positionType: MARRANITOS_POSITION_TYPE,
-    network: 'CELO',
-    apy: '1.25',
-    days: '30',
-    duration: STAKING_DURATIONS.DAYS_30,
-    isActive: true,
-  },
-  {
-    positionId: 'position_marranito_id2',
-    positionType: MARRANITOS_POSITION_TYPE,
-    network: 'CELO',
-    apy: '1.50',
-    days: '60',
-    duration: STAKING_DURATIONS.DAYS_60,
-    isActive: true,
-  },
-  {
-    positionId: 'position_marranito_id3',
-    positionType: MARRANITOS_POSITION_TYPE,
-    network: 'CELO',
-    apy: '2.00',
-    days: '90',
-    duration: STAKING_DURATIONS.DAYS_90,
-    isActive: true,
-  },
-]
+  // {
+  //   positionId: 'position_marranito_id1',
+  //   positionType: MARRANITOS_POSITION_TYPE,
+  //   network: 'CELO',
+  //   apy: '1.25',
+  //   days: '30',
+  //   duration: STAKING_DURATIONS.DAYS_30,
+  //   isActive: true,
+  // },
+  // {
+  //   positionId: 'position_marranito_id2',
+  //   positionType: MARRANITOS_POSITION_TYPE,
+  //   network: 'CELO',
+  //   apy: '1.50',
+  //   days: '60',
+  //   duration: STAKING_DURATIONS.DAYS_60,
+  //   isActive: true,
+  // },
+  // {
+  //   positionId: 'position_marranito_id3',
+  //   positionType: MARRANITOS_POSITION_TYPE,
+  //   network: 'CELO',
+  //   apy: '2.00',
+  //   days: '90',
+  //   duration: STAKING_DURATIONS.DAYS_90,
+  //   isActive: true,
+  // },
+] as any[]
 
 function useFilterChips(): FilterChip<TokenBalance>[] {
   const { t } = useTranslation()

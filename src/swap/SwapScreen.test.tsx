@@ -1372,7 +1372,7 @@ describe('SwapScreen', () => {
 
       // as per test/utils.ts, line 105
       transactionFeedV2Api: undefined,
-    })
+    } as any)
 
     update(
       <Provider store={updatedStore}>
@@ -1421,7 +1421,7 @@ describe('SwapScreen', () => {
 
       // as per test/utils.ts, line 105
       transactionFeedV2Api: undefined,
-    })
+    } as any)
 
     update(
       <Provider store={updatedStore}>

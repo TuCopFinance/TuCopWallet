@@ -189,9 +189,9 @@ android {
     signingConfigs {
         release {
           storeFile file('tucop.keystore')
-          storePassword 'clavedelakey'
-          keyAlias 'tucop'
-          keyPassword 'clavedelakey'
+          storePassword System.getenv("KEYSTORE_PASSWORD") ?: 'clavedelakey'
+          keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
+          keyPassword System.getenv("KEY_PASSWORD") ?: 'clavedelakey'
         }
 
         debug {

@@ -1,8 +1,8 @@
 import Clipboard from '@react-native-clipboard/clipboard'
+import { WalletKitTypes } from '@reown/walletkit'
 import { fireEvent, render, within } from '@testing-library/react-native'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import * as React from 'react'
 import 'react-native'
 import { Provider } from 'react-redux'
@@ -71,9 +71,10 @@ describe('ActionRequest with WalletConnect V2', () => {
       },
     },
     optionalNamespaces: {},
+    scopedProperties: {},
   }
 
-  const pendingAction: Web3WalletTypes.EventArguments['session_request'] = {
+  const pendingAction: WalletKitTypes.EventArguments['session_request'] = {
     id: 1669810746892321,
     topic: 'd8afe1f5c3efa38bbb62c68005f572a7218afcd48703e4b02bdc5df2549ac5b5',
     params: {
@@ -122,7 +123,7 @@ describe('ActionRequest with WalletConnect V2', () => {
   describe('eth_sendTransaction', () => {
     const store = createMockStore({
       walletConnect: {
-        sessions: [v2Session],
+        sessions: [v2Session as any],
       },
     })
 
@@ -222,7 +223,7 @@ describe('ActionRequest with WalletConnect V2', () => {
   describe('personal_sign', () => {
     const store = createMockStore({
       walletConnect: {
-        sessions: [v2Session],
+        sessions: [v2Session as any],
       },
     })
 
@@ -383,7 +384,7 @@ describe('ActionRequest with WalletConnect V2', () => {
                 },
                 publicKey: '',
               },
-            },
+            } as any,
           ],
         },
       })
@@ -425,7 +426,7 @@ describe('ActionRequest with WalletConnect V2', () => {
                 },
                 publicKey: '',
               },
-            },
+            } as any,
           ],
         },
       })
@@ -467,7 +468,7 @@ describe('ActionRequest with WalletConnect V2', () => {
                 },
                 publicKey: '',
               },
-            },
+            } as any,
           ],
         },
       })
@@ -504,7 +505,7 @@ describe('ActionRequest with WalletConnect V2', () => {
     ])('%s: should show a warning if the chain is not supported', (method, title, description) => {
       const store = createMockStore({
         walletConnect: {
-          sessions: [v2Session],
+          sessions: [v2Session as any],
         },
       })
 
@@ -545,7 +546,7 @@ describe('ActionRequest with WalletConnect V2', () => {
     it('should not show a warning if the chain is not supported and the method is personal_sign', () => {
       const store = createMockStore({
         walletConnect: {
-          sessions: [v2Session],
+          sessions: [v2Session as any],
         },
       })
 

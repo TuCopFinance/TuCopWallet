@@ -2,94 +2,167 @@
 
 exports[`Persona renders correctly 1`] = `
 <View
-  style={
-    [
-      {
-        "flexDirection": "row",
-      },
-      undefined,
-    ]
-  }
+  pointerEvents="box-none"
 >
   <View
+    pointerEvents="box-none"
     style={
       [
         {
-          "overflow": "hidden",
+          "borderRadius": 15,
+          "flexGrow": 1,
+          "width": "100%",
         },
-        {
-          "borderRadius": 100,
-        },
+        {},
       ]
     }
   >
     <View
-      accessibilityState={
-        {
-          "busy": undefined,
-          "checked": undefined,
-          "disabled": true,
-          "expanded": undefined,
-          "selected": undefined,
-        }
-      }
-      accessibilityValue={
-        {
-          "max": undefined,
-          "min": undefined,
-          "now": undefined,
-          "text": undefined,
-        }
-      }
-      accessible={true}
-      focusable={false}
-      nativeBackgroundAndroid={
-        {
-          "attribute": "selectableItemBackground",
-          "rippleRadius": undefined,
-          "type": "ThemeAttrAndroid",
-        }
-      }
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
       style={
         [
           {
-            "alignItems": "center",
-            "backgroundColor": "#5061E8",
             "flexDirection": "row",
-            "height": 48,
-            "justifyContent": "center",
-            "minWidth": 120,
-            "opacity": 0.25,
-            "paddingHorizontal": 24,
-            "paddingVertical": 5,
           },
           undefined,
         ]
       }
-      testID="PersonaButton"
     >
-      <Text
-        maxFontSizeMultiplier={1}
+      <View
         style={
-          {
-            "color": "#FFFFFF",
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
-            "lineHeight": 24,
-            "marginLeft": 0,
-            "marginRight": 0,
-          }
+          [
+            {
+              "overflow": "hidden",
+            },
+            {
+              "borderRadius": 100,
+            },
+          ]
         }
       >
-        raiseLimitBegin
-      </Text>
+        <View
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": true,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          focusable={false}
+          nativeBackgroundAndroid={
+            {
+              "attribute": "selectableItemBackground",
+              "rippleRadius": undefined,
+              "type": "ThemeAttrAndroid",
+            }
+          }
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "backgroundColor": "#2F4ACD",
+                "flexDirection": "row",
+                "height": 48,
+                "justifyContent": "center",
+                "minWidth": 120,
+                "opacity": 0.25,
+                "paddingHorizontal": 24,
+                "paddingVertical": 5,
+              },
+              undefined,
+            ]
+          }
+          testID="PersonaButton"
+        >
+          <View
+            style={
+              {
+                "bottom": 0,
+                "left": 0,
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              }
+            }
+          >
+            <BVLinearGradient
+              borderRadii={
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                ]
+              }
+              colors={
+                [
+                  -13677875,
+                  -15194777,
+                ]
+              }
+              endPoint={
+                [
+                  1,
+                  0,
+                ]
+              }
+              locations={null}
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "bottom": 0,
+                  "left": 0,
+                  "position": "absolute",
+                  "right": 0,
+                  "top": 0,
+                }
+              }
+            />
+          </View>
+          <Text
+            maxFontSizeMultiplier={1}
+            style={
+              {
+                "color": "#FFFFFF",
+                "fontFamily": "RedHatDisplaySemiBold",
+                "fontSize": 12,
+                "fontWeight": "normal",
+                "lineHeight": 24,
+                "marginLeft": 0,
+                "marginRight": 0,
+              }
+            }
+          >
+            raiseLimitBegin
+          </Text>
+        </View>
+      </View>
     </View>
   </View>
 </View>

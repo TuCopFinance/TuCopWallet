@@ -56,7 +56,7 @@ exports[`SmartTopAlert renders correctly 1`] = `
       style={
         [
           {
-            "fontFamily": "Inter-Regular",
+            "fontFamily": "RedHatDisplayRegular",
             "fontSize": 14,
             "lineHeight": 20,
           },
@@ -73,7 +73,7 @@ exports[`SmartTopAlert renders correctly 1`] = `
         style={
           [
             {
-              "fontFamily": "Inter-Medium",
+              "fontFamily": "RedHatDisplayMedium",
               "fontSize": 14,
               "lineHeight": 20,
             },

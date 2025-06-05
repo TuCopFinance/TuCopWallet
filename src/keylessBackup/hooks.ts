@@ -4,6 +4,7 @@ import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { KeylessBackupEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { phoneNumberVerificationCompleted } from 'src/app/actions'
 import { appKeyshareIssued } from 'src/keylessBackup/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
@@ -13,6 +14,51 @@ import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'keylessBackup/hooks'
+
+// Función auxiliar para registrar el número en el sistema regular
+async function registerPhoneInRegularSystem(phoneNumber: string, walletAddress: string) {
+  try {
+    Logger.debug(
+      `${TAG}/registerPhoneInRegularSystem`,
+      'Registering phone in regular verification system'
+    )
+
+    const response = await fetch(networkConfig.verifyPhoneNumberUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'tu-cop-intechchain-1234567890',
+      },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        wallet: walletAddress,
+      }),
+    })
+
+    if (response.ok) {
+      Logger.debug(
+        `${TAG}/registerPhoneInRegularSystem`,
+        'Successfully registered phone in regular system'
+      )
+      return true
+    } else {
+      const errorText = await response.text()
+      Logger.warn(
+        `${TAG}/registerPhoneInRegularSystem`,
+        'Failed to register in regular system:',
+        errorText
+      )
+      return false
+    }
+  } catch (error) {
+    Logger.warn(
+      `${TAG}/registerPhoneInRegularSystem`,
+      'Error registering in regular system:',
+      error
+    )
+    return false
+  }
+}
 
 export function useVerifyPhoneNumber(
   phoneNumber: string,
@@ -141,6 +187,25 @@ export function useVerifyPhoneNumber(
         })
         Logger.debug(`${TAG}/issueAppKeyShare`, 'Successfully verified sms code and got keyshare')
         setVerificationStatus(PhoneNumberVerificationStatus.SUCCESSFUL)
+
+        // Registrar el número en el sistema regular de verificación telefónica
+        if (walletAddress) {
+          const registeredInRegularSystem = await registerPhoneInRegularSystem(
+            phoneNumber,
+            walletAddress
+          )
+
+          if (registeredInRegularSystem) {
+            // Extraer código de país del número E.164
+            const countryCallingCode = phoneNumber.match(/^\+(\d{1,3})/)?.[1] || ''
+
+            // Disparar la acción para actualizar el estado de verificación telefónica
+            dispatch(phoneNumberVerificationCompleted(phoneNumber, `+${countryCallingCode}`))
+
+            Logger.debug(`${TAG}/issueAppKeyShare`, 'Phone number linked to profile successfully')
+          }
+        }
+
         dispatch(
           appKeyshareIssued({
             keyshare,

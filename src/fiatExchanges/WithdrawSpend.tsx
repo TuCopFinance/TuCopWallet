@@ -52,7 +52,7 @@ export default function WithdrawSpend() {
   const { t } = useTranslation()
 
   const onOpenOtherFundingOptions = () => {
-    navigateToURI(links.funding)
+    navigateToURI(links.web)
     AppAnalytics.track(FiatExchangeEvents.cico_landing_how_to_fund)
     setTimestamp(Date.now())
   }

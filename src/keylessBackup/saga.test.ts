@@ -189,6 +189,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Setup,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -212,6 +214,8 @@ describe('keylessBackup saga', () => {
                 encryptedMnemonic: mockEncryptedMnemonic,
                 encryptionAddress: mockEncryptionAddress,
                 jwt: mockJwt,
+                walletAddress: mockWalletAddress,
+                phone: '+15555555555',
               }),
               undefined,
             ],
@@ -238,6 +242,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Setup,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -261,6 +267,8 @@ describe('keylessBackup saga', () => {
                 encryptedMnemonic: mockEncryptedMnemonic,
                 encryptionAddress: mockEncryptionAddress,
                 jwt: mockJwt,
+                walletAddress: mockWalletAddress,
+                phone: '+15555555555',
               }),
               throwError(new Error('mock error storing encrypted mnemonic')),
             ],
@@ -282,6 +290,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Restore,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -294,7 +304,14 @@ describe('keylessBackup saga', () => {
                 publicKey: mockEncryptionPublicKeyBuffer,
               },
             ],
-            [call(getEncryptedMnemonic, mockEncryptionPrivateKeyHex), mockEncryptedMnemonic],
+            [
+              call(getEncryptedMnemonic, {
+                encryptionPrivateKey: mockEncryptionPrivateKeyHex,
+                jwt: mockJwt,
+                phone: '+15555555555',
+              }),
+              mockEncryptedMnemonic,
+            ],
             [
               call(
                 decryptPassphrase,
@@ -332,6 +349,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Restore,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -344,7 +363,14 @@ describe('keylessBackup saga', () => {
                 publicKey: mockEncryptionPublicKeyBuffer,
               },
             ],
-            [call(getEncryptedMnemonic, mockEncryptionPrivateKeyHex), mockEncryptedMnemonic],
+            [
+              call(getEncryptedMnemonic, {
+                encryptionPrivateKey: mockEncryptionPrivateKeyHex,
+                jwt: mockJwt,
+                phone: '+15555555555',
+              }),
+              mockEncryptedMnemonic,
+            ],
             [
               call(
                 decryptPassphrase,
@@ -373,6 +399,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Restore,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -386,7 +414,11 @@ describe('keylessBackup saga', () => {
               },
             ],
             [
-              call(getEncryptedMnemonic, mockEncryptionPrivateKeyHex),
+              call(getEncryptedMnemonic, {
+                encryptionPrivateKey: mockEncryptionPrivateKeyHex,
+                jwt: mockJwt,
+                phone: '+15555555555',
+              }),
               throwError(new Error('mock error getting encrypted mnemonic')),
             ],
           ])
@@ -404,6 +436,8 @@ describe('keylessBackup saga', () => {
             keylessBackupFlow: KeylessBackupFlow.Restore,
             origin: KeylessBackupOrigin.Settings,
             jwt: mockJwt,
+            walletAddress: mockWalletAddress,
+            phone: '+15555555555',
           },
           type: appKeyshareIssued.type,
         })
@@ -416,7 +450,14 @@ describe('keylessBackup saga', () => {
                 publicKey: mockEncryptionPublicKeyBuffer,
               },
             ],
-            [call(getEncryptedMnemonic, mockEncryptionPrivateKeyHex), null],
+            [
+              call(getEncryptedMnemonic, {
+                encryptionPrivateKey: mockEncryptionPrivateKeyHex,
+                jwt: mockJwt,
+                phone: '+15555555555',
+              }),
+              null,
+            ],
           ])
           .put(keylessBackupNotFound())
           .run()

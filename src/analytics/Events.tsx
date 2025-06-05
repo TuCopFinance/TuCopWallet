@@ -61,6 +61,7 @@ export enum TabHomeEvents {
   receive_money = 'receive_money',
   hold_usd = 'hold_usd',
   withdraw = 'withdraw',
+  refi_medellin_ubi_pressed = 'refi_medellin_ubi_pressed',
 }
 
 export enum SettingsEvents {

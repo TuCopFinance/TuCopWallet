@@ -154,6 +154,11 @@ function TabHome(_props: Props) {
     navigate(Screens.EarnHome)
   }
 
+  function onPressReFiMedellinUBI() {
+    AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
+    navigate(Screens.ReFiMedellinUBI)
+  }
+
   function onPressWithdraw() {
     // navigate(Screens.FiatExchangeAmount, {
     //   tokenId: cCCOPToken.tokenId,
@@ -287,6 +292,16 @@ function TabHome(_props: Props) {
                     components={[<Text key={0} style={{ fontWeight: '700' }} />]}
                   />
                 </Text>
+              </View>
+            </FlatCard>
+
+            <FlatCard testID="FlatCard/ReFiMedellinUBI" onPress={onPressReFiMedellinUBI}>
+              <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
+                <Image source={require('./refi-medellin-logo.webp')} style={styles.refiLogo} />
+                <View style={styles.textColumn}>
+                  <Text style={styles.ctaText}>{t('tabHome.reFiMedellinUbi.button')}</Text>
+                  <Text style={styles.ctaSubText}>{t('tabHome.reFiMedellinUbi.subtitle')}</Text>
+                </View>
               </View>
             </FlatCard>
 
@@ -484,10 +499,12 @@ const styles = StyleSheet.create({
     color: Colors.gray6,
     letterSpacing: -0.16,
   },
-  // ctaSubText: {
-  //   ...typeScale.bodySmall,
-  //   color: Colors.black,
-  // },
+  ctaSubText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray6,
+    letterSpacing: -0.16,
+    fontFamily: Inter.Regular,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -557,6 +574,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: -0.12,
     fontFamily: Inter.Regular,
+  },
+  refiLogo: {
+    width: 48,
+    height: 48,
+  },
+  ubiRow: {
+    alignItems: 'center',
+    display: 'flex',
+  },
+  textColumn: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 

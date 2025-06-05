@@ -1,0 +1,51 @@
+{
+  "name": "tu-cop-wallet-version-api",
+  "version": "1.0.1",
+  "description": "API para gestionar versiones de la app Tu Cop Wallet",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx prisma migrate deploy && node index.js",
+    "dev": "npx prisma db push && nodemon index.js",
+    "build": "npx prisma generate",
+    "setup": "node scripts/setup.js",
+    "lint": "eslint . --no-eslintrc --config .eslintrc.json",
+    "lint:fix": "eslint . --no-eslintrc --config .eslintrc.json --fix",
+    "test": "echo 'No tests specified'",
+    "db:migrate": "npx prisma migrate dev",
+    "db:reset": "npx prisma migrate reset",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "nodemon": "^3.0.2",
+    "prisma": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "keywords": [
+    "react-native",
+    "version-management",
+    "ci-cd",
+    "railway",
+    "api"
+  ],
+  "author": "Tu Cop Wallet Team",
+  "license": "MIT"
+}
