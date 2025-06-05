@@ -67,14 +67,14 @@ exports[`renders selected correctly 1`] = `
           cx="10"
           cy="10"
           r="9"
-          stroke="#5061E8"
+          stroke="#2F4ACD"
           strokeWidth={2}
           style={{}}
         />
         <circle
           cx="10"
           cy="10"
-          fill="#5061E8"
+          fill="#2F4ACD"
           r="6"
           style={{}}
         />
@@ -85,8 +85,8 @@ exports[`renders selected correctly 1`] = `
       style={
         {
           "flex": 1,
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "lineHeight": 24,
           "marginRight": 16,
         }
@@ -183,8 +183,8 @@ exports[`renders unselected correctly 1`] = `
       style={
         {
           "flex": 1,
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "lineHeight": 24,
           "marginRight": 16,
         }

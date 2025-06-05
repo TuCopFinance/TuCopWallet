@@ -23,3 +23,49 @@ export enum KeylessBackupOrigin {
   Onboarding = 'Onboarding',
   Settings = 'Settings',
 }
+
+// Nuevos tipos para el sistema mejorado
+export interface CreateKeylessBackupDto {
+  encryptedMnemonic: string
+  encryptionAddress: string
+  token: string
+  phone: string
+}
+
+export interface KeylessBackupDto {
+  encryptedMnemonic?: string
+  encryptionAddress?: string
+  walletAddress: string
+  phone?: string
+  status?: KeylessBackupStatus
+  flow?: KeylessBackupFlow
+  origin?: KeylessBackupOrigin
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface LinkWalletToPhoneRequest {
+  phone: string
+  walletAddress: string
+  keyshare: string
+}
+
+export interface KeylessBackupServiceResponse {
+  success: boolean
+  data?: KeylessBackupDto
+  error?: string
+}
+
+export interface OtpVerificationResponse {
+  keyshare: string
+  sessionId: string
+  verified: boolean
+}
+
+export interface KeylessBackupSession {
+  id: string
+  walletAddress: string
+  phone: string
+  expirationTime: Date
+  verified: boolean
+}

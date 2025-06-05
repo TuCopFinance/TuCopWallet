@@ -35,14 +35,14 @@ exports[`BackupComplete renders correctly 1`] = `
     >
       <path
         d="M20.5 7.33 9.186 18.643 4 13.458l1.33-1.33 3.856 3.847L19.17 6 20.5 7.33Z"
-        fill="#5061E8"
+        fill="#2F4ACD"
         style={{}}
       />
     </svg>
     <Text
       style={
         {
-          "fontFamily": "Inter-Bold",
+          "fontFamily": "RedHatDisplayBold",
           "fontSize": 24,
           "lineHeight": 32,
           "marginTop": 20,

@@ -118,9 +118,9 @@ exports[`BackupPhrase renders correctly with backup completed 1`] = `
           style={
             [
               {
-                "color": "#5061E8",
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "color": "#2F4ACD",
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
               [
@@ -193,9 +193,9 @@ exports[`BackupPhrase renders correctly with backup completed 1`] = `
         <Text
           style={
             {
-              "color": "#5061E8",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "color": "#2F4ACD",
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -234,7 +234,7 @@ exports[`BackupPhrase renders correctly with backup completed 1`] = `
             <Text
               style={
                 {
-                  "fontFamily": "Inter-Bold",
+                  "fontFamily": "RedHatDisplayBold",
                   "fontSize": 20,
                   "lineHeight": 28,
                   "marginBottom": 16,
@@ -266,8 +266,8 @@ exports[`BackupPhrase renders correctly with backup completed 1`] = `
       <Text
         style={
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
             "marginTop": 16,
           }
@@ -814,9 +814,9 @@ exports[`BackupPhrase still renders when mnemonic doesnt show up 1`] = `
           style={
             [
               {
-                "color": "#5061E8",
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "color": "#2F4ACD",
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
               [
@@ -889,9 +889,9 @@ exports[`BackupPhrase still renders when mnemonic doesnt show up 1`] = `
         <Text
           style={
             {
-              "color": "#5061E8",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "color": "#2F4ACD",
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -930,7 +930,7 @@ exports[`BackupPhrase still renders when mnemonic doesnt show up 1`] = `
             <Text
               style={
                 {
-                  "fontFamily": "Inter-Bold",
+                  "fontFamily": "RedHatDisplayBold",
                   "fontSize": 20,
                   "lineHeight": 28,
                   "marginBottom": 16,
@@ -962,8 +962,8 @@ exports[`BackupPhrase still renders when mnemonic doesnt show up 1`] = `
       <Text
         style={
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
             "marginTop": 16,
           }

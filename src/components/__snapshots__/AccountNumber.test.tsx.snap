@@ -5,7 +5,7 @@ exports[`AccountNumber renders correctly when touch disabled 1`] = `
   style={
     {
       "color": "#666666",
-      "fontFamily": "Inter-Regular",
+      "fontFamily": "RedHatDisplayRegular",
       "fontSize": 14,
       "lineHeight": 20,
       "marginBottom": 8,
@@ -59,7 +59,7 @@ exports[`AccountNumber renders correctly when touch enabled 1`] = `
     style={
       {
         "color": "#666666",
-        "fontFamily": "Inter-Regular",
+        "fontFamily": "RedHatDisplayRegular",
         "fontSize": 14,
         "lineHeight": 20,
         "marginBottom": 8,
@@ -73,7 +73,7 @@ exports[`AccountNumber renders correctly when touch enabled 1`] = `
     style={
       {
         "color": "#666666",
-        "fontFamily": "Inter-Regular",
+        "fontFamily": "RedHatDisplayRegular",
         "fontSize": 14,
         "lineHeight": 20,
         "textDecorationLine": "underline",

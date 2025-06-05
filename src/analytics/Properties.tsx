@@ -163,6 +163,7 @@ interface TabHomeEventsProperties {
   [TabHomeEvents.receive_money]: undefined
   [TabHomeEvents.send_money]: undefined
   [TabHomeEvents.withdraw]: undefined
+  [TabHomeEvents.refi_medellin_ubi_pressed]: undefined
 }
 
 interface HomeEventsProperties {
@@ -1571,6 +1572,8 @@ interface EarnDepositProperties extends EarnCommonProperties {
   mode: EarnActiveMode
   // the below are mainly for swap-deposit. For deposit, this would just be
   // same as the depositTokenAmount and depositTokenId
+  // For swaps these will be the swapFromTokenId and swapFromTokenAmount
+  // For withdrawals this will be in units of the depositToken
   fromTokenAmount: string
   fromTokenId: string
 }

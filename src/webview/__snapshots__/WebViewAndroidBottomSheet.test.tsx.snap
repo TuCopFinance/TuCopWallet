@@ -200,8 +200,8 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
         <Text
           style={
             {
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
               "padding": 16,
               "textAlign": "left",
@@ -245,8 +245,8 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
         <Text
           style={
             {
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
               "padding": 16,
               "textAlign": "left",

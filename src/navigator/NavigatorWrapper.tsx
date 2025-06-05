@@ -4,7 +4,8 @@ import { NavigationContainer, NavigationState } from '@react-navigation/native'
 import * as Sentry from '@sentry/react-native'
 import { SeverityLevel } from '@sentry/types'
 import * as React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { useMemo } from 'react'
+import { Linking, StyleSheet, View } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import ShakeForSupport from 'src/account/ShakeForSupport'
 import AlertBanner from 'src/alert/AlertBanner'
@@ -14,6 +15,7 @@ import { activeScreenChanged } from 'src/app/actions'
 import { getAppLocked } from 'src/app/selectors'
 import { useDeepLinks } from 'src/app/useDeepLinks'
 import { DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
+import { useAppUpdateChecker } from 'src/hooks/useAppUpdateChecker'
 import JumpstartClaimStatusToasts from 'src/jumpstart/JumpstartClaimStatusToasts'
 import {
   navigateClearingStack,
@@ -68,17 +70,40 @@ export const NavigatorWrapper = () => {
   useLogger(navigationRef)
   useDeepLinks()
 
-  const updateRequired = React.useMemo(() => {
-    if (!minRequiredVersion) {
-      return false
+  // Sistema de verificación de actualizaciones mejorado
+  const { updateInfo } = useAppUpdateChecker({
+    minRequiredVersion,
+    useBackend: true,
+    showDialogAutomatically: true,
+    checkOnAppStart: true,
+    checkOnAppResume: true,
+    checkInterval: 24 * 60 * 60 * 1000,
+  })
+
+  // URL de actualización para fallback (mover fuera de la condición)
+  const upgradeUrl = React.useMemo(() => {
+    // Determinar URL basada en plataforma
+    const bundleId = DeviceInfo.getBundleId()
+    if (bundleId.includes('ios') || DeviceInfo.getSystemName() === 'iOS') {
+      return 'https://apps.apple.com/app/tucop-wallet/id1234567890'
     }
-    const version = DeviceInfo.getVersion()
-    Logger.info(
-      'NavigatorWrapper',
-      `Current version: ${version}. Required min version: ${minRequiredVersion}`
-    )
-    return isVersionBelowMinimum(version, minRequiredVersion)
-  }, [minRequiredVersion])
+    return 'https://play.google.com/store/apps/details?id=org.tucop'
+  }, [])
+
+  // Verificación de actualización forzada (mantener compatibilidad con sistema existente)
+  const shouldForceUpgrade = useMemo(() => {
+    // Priorizar resultado del nuevo sistema
+    if (updateInfo?.isForced) {
+      return true
+    }
+
+    // Fallback al sistema existente con Statsig
+    if (minRequiredVersion && DeviceInfo.getVersion()) {
+      return isVersionBelowMinimum(DeviceInfo.getVersion(), minRequiredVersion)
+    }
+
+    return false
+  }, [updateInfo, minRequiredVersion])
 
   React.useEffect(() => {
     if (inSanctionedCountry) {
@@ -165,6 +190,28 @@ export const NavigatorWrapper = () => {
     sentryRoutingInstrumentation.registerNavigationContainer(navigationRef)
   }
 
+  // Función para navegar a la tienda de aplicaciones
+  const navigateToAppStore = () => {
+    if (updateInfo?.downloadUrl) {
+      void Linking.openURL(updateInfo.downloadUrl)
+    } else {
+      // Fallback al sistema existente
+      void Linking.openURL(upgradeUrl)
+    }
+  }
+
+  if (shouldForceUpgrade) {
+    return (
+      <UpgradeScreen
+        updateInfo={updateInfo || undefined}
+        onUpdate={() => {
+          // Usar función de navegación del nuevo sistema
+          navigateToAppStore()
+        }}
+      />
+    )
+  }
+
   return (
     <NavigationContainer
       navigationInChildEnabled
@@ -177,8 +224,20 @@ export const NavigatorWrapper = () => {
       <View style={styles.container}>
         <Navigator />
         <HooksPreviewModeBanner />
-        {(appLocked || updateRequired) && (
-          <View style={styles.locked}>{updateRequired ? <UpgradeScreen /> : <PincodeLock />}</View>
+        {(appLocked || shouldForceUpgrade) && (
+          <View style={styles.locked}>
+            {shouldForceUpgrade ? (
+              <UpgradeScreen
+                updateInfo={updateInfo || undefined}
+                onUpdate={() => {
+                  // Usar función de navegación del nuevo sistema
+                  navigateToAppStore()
+                }}
+              />
+            ) : (
+              <PincodeLock />
+            )}
+          </View>
         )}
         <AlertBanner />
         <ShakeForSupport />
@@ -198,9 +257,10 @@ const styles = StyleSheet.create({
   locked: {
     position: 'absolute',
     left: 0,
-    top: 0,
     right: 0,
+    top: 0,
     bottom: 0,
+    zIndex: 10,
   },
 })
 
