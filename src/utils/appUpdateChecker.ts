@@ -135,11 +135,17 @@ async function checkBackendVersion(): Promise<AppStoreVersionInfo | null> {
  * Obtiene la URL correcta de la tienda según la plataforma
  */
 function getStoreUrl(): string {
+  Logger.info(TAG, `🔧 APP_STORE_ID from config: ${APP_STORE_ID}`)
+
   if (Platform.OS === 'ios') {
-    return `https://apps.apple.com/app/id${APP_STORE_ID}`
+    const url = `https://apps.apple.com/app/id${APP_STORE_ID}`
+    Logger.info(TAG, `🍎 Generated iOS URL: ${url}`)
+    return url
   } else {
     const bundleId = DeviceInfo.getBundleId()
-    return `https://play.google.com/store/apps/details?id=${bundleId}`
+    const url = `https://play.google.com/store/apps/details?id=${bundleId}`
+    Logger.info(TAG, `🤖 Generated Android URL: ${url}`)
+    return url
   }
 }
 
@@ -228,10 +234,14 @@ export async function checkForAppUpdate(
  * Navegar a la tienda de aplicaciones correspondiente
  */
 export function navigateToAppStore(): void {
+  Logger.info(TAG, `🚀 navigateToAppStore called`)
+  Logger.info(TAG, `📱 Platform: ${Platform.OS}`)
+  Logger.info(TAG, `🔧 APP_STORE_ID: ${APP_STORE_ID}`)
+
   if (Platform.OS === 'ios') {
     // Usar el APP_STORE_ID correcto configurado en .env
     const appStoreUrl = `https://apps.apple.com/app/id${APP_STORE_ID}`
-    Logger.info(TAG, `Navigating to App Store: ${appStoreUrl}`)
+    Logger.info(TAG, `🍎 Navigating to App Store: ${appStoreUrl}`)
     void Linking.openURL(appStoreUrl)
   } else {
     // Para Android, intentar abrir en la app de Play Store primero, luego web como fallback
@@ -239,7 +249,7 @@ export function navigateToAppStore(): void {
     const marketUrl = `market://details?id=${bundleId}`
     const webUrl = `https://play.google.com/store/apps/details?id=${bundleId}`
 
-    Logger.info(TAG, `Navigating to Play Store: ${marketUrl} (fallback: ${webUrl})`)
+    Logger.info(TAG, `🤖 Navigating to Play Store: ${marketUrl} (fallback: ${webUrl})`)
 
     Linking.openURL(marketUrl).catch((error) => {
       Logger.warn(TAG, 'Could not open Play Store app, trying web version:', error)

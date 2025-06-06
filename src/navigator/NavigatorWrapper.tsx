@@ -77,7 +77,7 @@ export const NavigatorWrapper = () => {
     showDialogAutomatically: true,
     checkOnAppStart: true,
     checkOnAppResume: true,
-    checkInterval: 24 * 60 * 60 * 1000,
+    checkInterval: 60 * 60 * 1000,
   })
 
   // Log para debugging
