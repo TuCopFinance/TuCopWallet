@@ -231,7 +231,7 @@ android {
     namespace "xyz.mobilestack"
     defaultConfig {
         applicationId project.env.get("APP_BUNDLE_ID")  // = org.tucop
-        versionName "1.100.0"
+        versionName "1.103.0"
         // ... otras configuraciones
     }
 
