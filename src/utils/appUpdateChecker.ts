@@ -132,6 +132,18 @@ async function checkBackendVersion(): Promise<AppStoreVersionInfo | null> {
 }
 
 /**
+ * Obtiene la URL correcta de la tienda según la plataforma
+ */
+function getStoreUrl(): string {
+  if (Platform.OS === 'ios') {
+    return `https://apps.apple.com/app/id${APP_STORE_ID}`
+  } else {
+    const bundleId = DeviceInfo.getBundleId()
+    return `https://play.google.com/store/apps/details?id=${bundleId}`
+  }
+}
+
+/**
  * Función principal para verificar actualizaciones
  */
 export async function checkForAppUpdate(
@@ -140,42 +152,32 @@ export async function checkForAppUpdate(
 ): Promise<UpdateCheckResult> {
   const currentVersion = DeviceInfo.getVersion()
 
-  Logger.info(TAG, `Checking for updates. Current version: ${currentVersion}`)
+  Logger.info(TAG, `🔍 Checking for updates...`)
+  Logger.info(TAG, `📱 Current version: ${currentVersion}`)
+  Logger.info(TAG, `🔧 Use backend: ${useBackend}`)
+  Logger.info(TAG, `⚠️ Min required version: ${minRequiredVersion || 'none'}`)
 
   try {
     let storeInfo: AppStoreVersionInfo | null = null
-    let downloadUrl: string | undefined
+    const downloadUrl = getStoreUrl()
 
     if (useBackend) {
       // Usar tu propio backend (recomendado para producción)
+      Logger.info(TAG, `🌐 Fetching version from backend...`)
       storeInfo = await checkBackendVersion()
-
-      // Determinar URLs de descarga basadas en la plataforma
-      try {
-        const systemName = DeviceInfo.getSystemName()
-
-        if (systemName === 'iOS') {
-          downloadUrl = 'https://apps.apple.com/app/tucop-wallet/id1234567890'
-        } else {
-          downloadUrl = 'https://play.google.com/store/apps/details?id=org.tucop'
-        }
-      } catch (error) {
-        Logger.warn(TAG, 'Error getting system info for download URL', error)
-        downloadUrl = 'https://play.google.com/store/apps/details?id=org.tucop'
-      }
     } else {
       // Usar APIs de las tiendas directamente
       if (Platform.OS === 'ios') {
+        Logger.info(TAG, `🍎 Fetching version from App Store...`)
         storeInfo = await checkAppStoreVersion()
-        downloadUrl = 'https://apps.apple.com/app/tucop-wallet/id1234567890' // Actualizar con ID real
       } else {
+        Logger.info(TAG, `🤖 Fetching version from Play Store...`)
         storeInfo = await checkPlayStoreVersion()
-        downloadUrl = 'https://play.google.com/store/apps/details?id=org.tucop'
       }
     }
 
     if (!storeInfo) {
-      Logger.warn(TAG, 'Could not fetch store version information')
+      Logger.warn(TAG, '❌ Could not fetch store version information')
       return {
         hasUpdate: false,
         currentVersion,
@@ -184,17 +186,24 @@ export async function checkForAppUpdate(
     }
 
     const latestVersion = storeInfo.version
+    Logger.info(TAG, `📦 Latest version from store: ${latestVersion}`)
+
     const hasUpdate = compareVersion(currentVersion, latestVersion) < 0
+    Logger.info(TAG, `🔄 Has update: ${hasUpdate} (${currentVersion} vs ${latestVersion})`)
 
     // Verificar si es una actualización forzada
     let isForced = false
     if (minRequiredVersion) {
       isForced = compareVersion(currentVersion, minRequiredVersion) < 0
+      Logger.info(
+        TAG,
+        `⚠️ Is forced update: ${isForced} (${currentVersion} vs ${minRequiredVersion})`
+      )
     }
 
     Logger.info(
       TAG,
-      `Update check result: hasUpdate=${hasUpdate}, isForced=${isForced}, latest=${latestVersion}`
+      `✅ Update check result: hasUpdate=${hasUpdate}, isForced=${isForced}, latest=${latestVersion}`
     )
 
     return {
@@ -206,10 +215,11 @@ export async function checkForAppUpdate(
       downloadUrl,
     }
   } catch (error) {
-    Logger.error(TAG, 'Error during update check:', error)
+    Logger.error(TAG, '💥 Error during update check:', error)
     return {
       hasUpdate: false,
       currentVersion,
+      downloadUrl: getStoreUrl(),
     }
   }
 }
@@ -219,11 +229,22 @@ export async function checkForAppUpdate(
  */
 export function navigateToAppStore(): void {
   if (Platform.OS === 'ios') {
-    // Actualizar con el ID real de App Store cuando esté disponible
-    void Linking.openURL('https://apps.apple.com/app/tucop-wallet/id1234567890')
+    // Usar el APP_STORE_ID correcto configurado en .env
+    const appStoreUrl = `https://apps.apple.com/app/id${APP_STORE_ID}`
+    Logger.info(TAG, `Navigating to App Store: ${appStoreUrl}`)
+    void Linking.openURL(appStoreUrl)
   } else {
-    // URL correcta de Google Play Store para TuCOP
-    void Linking.openURL('https://play.google.com/store/apps/details?id=org.tucop')
+    // Para Android, intentar abrir en la app de Play Store primero, luego web como fallback
+    const bundleId = DeviceInfo.getBundleId()
+    const marketUrl = `market://details?id=${bundleId}`
+    const webUrl = `https://play.google.com/store/apps/details?id=${bundleId}`
+
+    Logger.info(TAG, `Navigating to Play Store: ${marketUrl} (fallback: ${webUrl})`)
+
+    Linking.openURL(marketUrl).catch((error) => {
+      Logger.warn(TAG, 'Could not open Play Store app, trying web version:', error)
+      void Linking.openURL(webUrl)
+    })
   }
 }
 

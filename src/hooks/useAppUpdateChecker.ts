@@ -70,11 +70,25 @@ export function useAppUpdateChecker(
   const shouldCheckForUpdate = useCallback(async (): Promise<boolean> => {
     try {
       const lastCheckStr = await AsyncStorage.getItem(LAST_UPDATE_CHECK_KEY)
-      if (!lastCheckStr) return true
+      const now = Date.now()
+
+      if (!lastCheckStr) {
+        Logger.info(TAG, '🆕 No previous update check found, should check')
+        return true
+      }
 
       const lastCheck = parseInt(lastCheckStr, 10)
-      const now = Date.now()
-      return now - lastCheck >= checkInterval
+      const timeSinceLastCheck = now - lastCheck
+      const shouldCheck = timeSinceLastCheck >= checkInterval
+
+      Logger.info(
+        TAG,
+        `⏰ Time since last check: ${Math.round(timeSinceLastCheck / 1000 / 60)} minutes`
+      )
+      Logger.info(TAG, `⏰ Check interval: ${Math.round(checkInterval / 1000 / 60)} minutes`)
+      Logger.info(TAG, `⏰ Should check: ${shouldCheck}`)
+
+      return shouldCheck
     } catch (error) {
       Logger.error(TAG, 'Error checking last update time:', error)
       return true
@@ -83,35 +97,57 @@ export function useAppUpdateChecker(
 
   // Función principal para verificar actualizaciones
   const checkForUpdate = useCallback(async (): Promise<void> => {
-    if (isChecking) return
+    if (isChecking) {
+      Logger.info(TAG, '⏳ Update check already in progress, skipping...')
+      return
+    }
 
     setIsChecking(true)
     setError(null)
 
     try {
-      Logger.info(TAG, 'Starting update check...')
+      Logger.info(TAG, '🚀 Starting update check...')
+      Logger.info(TAG, `🔧 Config: useBackend=${useBackend}, showDialog=${showDialogAutomatically}`)
 
       const result = await checkForAppUpdate(useBackend, minRequiredVersion)
       setUpdateInfo(result)
+
+      Logger.info(TAG, `📊 Update check result:`, {
+        hasUpdate: result.hasUpdate,
+        currentVersion: result.currentVersion,
+        latestVersion: result.latestVersion,
+        isForced: result.isForced,
+      })
 
       // Guardar timestamp de la última verificación
       await AsyncStorage.setItem(LAST_UPDATE_CHECK_KEY, Date.now().toString())
 
       if (result.hasUpdate && result.latestVersion) {
+        Logger.info(TAG, `🔄 Update available: ${result.latestVersion}`)
+
         // Verificar si esta versión ya fue descartada por el usuario
         const isDismissed = await isUpdateDismissed(result.latestVersion)
+        Logger.info(TAG, `🚫 Update dismissed: ${isDismissed}`)
 
         // Solo mostrar diálogo si no fue descartada o si es una actualización forzada
         if (showDialogAutomatically && (!isDismissed || result.isForced)) {
+          Logger.info(TAG, `💬 Showing update dialog...`)
           showUpdateDialog(result)
+        } else {
+          Logger.info(
+            TAG,
+            `🔇 Not showing dialog: dismissed=${isDismissed}, forced=${result.isForced}`
+          )
         }
+      } else {
+        Logger.info(TAG, `✅ No update needed`)
       }
 
-      Logger.info(TAG, 'Update check completed successfully')
+      Logger.info(TAG, '✅ Update check completed successfully')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
       setError(errorMessage)
-      Logger.error(TAG, 'Error during update check:', err)
+      Logger.error(TAG, '💥 Error during update check:', err)
     } finally {
       setIsChecking(false)
     }
@@ -139,11 +175,18 @@ export function useAppUpdateChecker(
   // Verificar actualizaciones al montar el componente
   useEffect(() => {
     if (checkOnAppStart) {
+      Logger.info(TAG, '🚀 App started, checking if should verify updates...')
       void shouldCheckForUpdate().then((should) => {
+        Logger.info(TAG, `🚀 Should check on app start: ${should}`)
         if (should) {
+          Logger.info(TAG, '🚀 Starting update check on app start...')
           void checkForUpdate()
+        } else {
+          Logger.info(TAG, '🚀 Skipping update check on app start (too recent)')
         }
       })
+    } else {
+      Logger.info(TAG, '🚀 App started but checkOnAppStart is disabled')
     }
   }, [checkOnAppStart, shouldCheckForUpdate, checkForUpdate])
 
