@@ -564,7 +564,7 @@ lsof -ti:3000 | xargs kill -9
 ```bash
 # Obtener versión para Android
 curl -H "x-platform: android" \
-     -H "x-app-version: 1.100.0" \
+     -H "x-app-version: 1.103.0" \
      http://localhost:3000/api/app-version
 
 # Respuesta:
