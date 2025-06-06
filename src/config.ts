@@ -132,7 +132,7 @@ export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'S
 export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'RECAPTCHA_SITE_KEY')
 export const BIDALI_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'BIDALI_URL')
 
-export const WALLET_CONNECT_PROJECT_ID = '787147cf79f2d0b543dd08cbcb0e6677'
+export const WALLET_CONNECT_PROJECT_ID = 'dcc6ce1fc698ea19c114e7afe1bc469f'
 export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'
 export const AUTH0_DOMAIN = 'auth.valora.xyz'
 

@@ -3,7 +3,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { WalletConnectEvents } from 'src/analytics/Events'
 import { WalletConnectPairingOrigin } from 'src/analytics/types'
 import { getDappRequestOrigin } from 'src/app/utils'
-import { DEEP_LINK_URL_SCHEME, WALLETCONNECT_UNIVERSAL_LINK } from 'src/config'
+import { WALLETCONNECT_UNIVERSAL_LINK } from 'src/config'
 import { activeDappSelector } from 'src/dapps/selectors'
 import { ActiveDapp } from 'src/dapps/types'
 import { navigate } from 'src/navigator/NavigationService'
@@ -15,7 +15,8 @@ import { WalletConnectRequestType } from 'src/walletConnect/types'
 import { call, delay, fork, race, select, take } from 'typed-redux-saga'
 
 const WC_PREFIX = 'wc:'
-const APP_DEEPLINK_PREFIX = `${DEEP_LINK_URL_SCHEME}://wallet/wc?uri=`
+const APP_DEEPLINK_PREFIX = `myapp://tucop/wc?uri=`
+const APP_DEEPLINK_BASE = `myapp://tucop/wc`
 const CONNECTION_TIMEOUT = 45_000
 
 /**
@@ -29,8 +30,16 @@ const CONNECTION_TIMEOUT = 45_000
  */
 export function* handleWalletConnectDeepLink(deepLink: string) {
   let link = deepLink
+
+  // Manejar deep link con parámetro URI
   if (link.startsWith(APP_DEEPLINK_PREFIX)) {
     link = deepLink.substring(APP_DEEPLINK_PREFIX.length)
+  }
+  // Manejar deep link base (sin parámetros)
+  else if (link.startsWith(APP_DEEPLINK_BASE)) {
+    // Si es solo el deep link base sin URI, no hay nada que procesar
+    // Esto puede ocurrir cuando la app se abre desde WalletConnect pero sin una URI específica
+    return
   }
 
   const wcLinkWithUri = `${WALLETCONNECT_UNIVERSAL_LINK}?uri=`
@@ -58,8 +67,9 @@ export function* handleWalletConnectDeepLink(deepLink: string) {
 }
 
 export function isWalletConnectDeepLink(deepLink: string) {
-  return [WC_PREFIX, APP_DEEPLINK_PREFIX, WALLETCONNECT_UNIVERSAL_LINK].some((prefix) =>
-    decodeURIComponent(deepLink).startsWith(prefix)
+  const decodedLink = decodeURIComponent(deepLink)
+  return [WC_PREFIX, APP_DEEPLINK_PREFIX, APP_DEEPLINK_BASE, WALLETCONNECT_UNIVERSAL_LINK].some(
+    (prefix) => decodedLink.startsWith(prefix)
   )
 }
 

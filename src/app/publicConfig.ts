@@ -10,9 +10,9 @@ export const publicAppConfig: PublicAppConfig = {
     campaignIds: [],
     consumer: '0x22886C71a4C1Fa2824BD86210ead1C310B3d7cf5',
     providers: [
-      '0x5f0a55FaD9424ac99429f635dfb9bF20c3360Ab8',
-      '0xB06a1b291863f923E7417E9F302e2a84018c33C5',
-      '0x6226ddE08402642964f9A6de844ea3116F0dFc7e',
+      '0x0423189886d7966f0dd7e7d256898daeee625dca',
+      '0xc95876688026be9d6fa7a7c33328bd013effa2bb',
+      '0x7beb0e14f8d2e6f6678cc30d867787b384b19e20',
     ],
   },
 }

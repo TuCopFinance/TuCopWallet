@@ -83,17 +83,17 @@ async function initializeDefaultVersions() {
     const defaultVersions = [
       {
         platform: 'ios',
-        latestVersion: '1.102.1',
+        latestVersion: '1.104.0',
         minRequiredVersion: '1.95.0',
-        releaseNotes: 'Mejoras de rendimiento y corrección de errores',
-        downloadUrl: 'https://apps.apple.com/app/tucop-wallet/id1234567890',
+        releaseNotes: 'Actualización con correcciones de WalletConnect y mejoras de sistema',
+        downloadUrl: 'https://apps.apple.com/app/id6742667119',
         isForced: false,
       },
       {
         platform: 'android',
-        latestVersion: '1.102.1',
+        latestVersion: '1.104.0',
         minRequiredVersion: '1.95.0',
-        releaseNotes: 'Mejoras de rendimiento y corrección de errores',
+        releaseNotes: 'Actualización con correcciones de WalletConnect y mejoras de sistema',
         downloadUrl: 'https://play.google.com/store/apps/details?id=org.tucop',
         isForced: false,
       },
@@ -120,7 +120,7 @@ async function initializeDefaultVersions() {
  */
 function getDefaultDownloadUrl(platform) {
   const urls = {
-    ios: 'https://apps.apple.com/app/tucop-wallet/id1234567890',
+    ios: 'https://apps.apple.com/app/id6742667119',
     android: 'https://play.google.com/store/apps/details?id=org.tucop',
   }
   return urls[platform] || urls.android
