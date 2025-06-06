@@ -10,7 +10,7 @@ export const REMOTE_CONFIG_VALUES_DEFAULTS: Omit<
   celoNews: string
 } = {
   inviteRewardsVersion: 'none',
-  walletConnectV2Enabled: false,
+  walletConnectV2Enabled: true,
   pincodeUseExpandedBlocklist: false,
   logPhoneNumberTypeEnabled: false,
   allowOtaTranslations: false,
