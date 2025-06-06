@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { BackHandler, StyleSheet } from 'react-native'
+import { BackHandler, StyleSheet, View } from 'react-native'
 import RNExitApp from 'react-native-exit-app'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PincodeType } from 'src/account/reducer'
@@ -73,9 +73,9 @@ function PincodeLock() {
 
   if (shouldGetPinWithBiometry && !getPinWithBiometryError) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View style={styles.loadingContainer}>
         <BackgroundSVG testID="BackgroundImage" style={styles.backgroundImage} />
-      </SafeAreaView>
+      </View>
     )
   }
 
@@ -99,13 +99,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   loadingContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
-    resizeMode: 'stretch',
-    width: undefined,
-    height: undefined,
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
 })
 
