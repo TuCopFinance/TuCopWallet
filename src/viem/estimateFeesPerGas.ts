@@ -78,10 +78,15 @@ async function estimateCeloL2FeesPerGas(
         maxPriorityFeePerGas = BigInt(maxPriorityFeeResponse as string)
       } catch {
         // Fallback: calculate priority fee from gas price and base fee
-        maxPriorityFeePerGas =
-          currentGasPrice > block.baseFeePerGas
-            ? currentGasPrice - block.baseFeePerGas
-            : BigInt('1000000000') // 1 Gwei fallback
+        if (currentGasPrice > block.baseFeePerGas) {
+          maxPriorityFeePerGas = currentGasPrice - block.baseFeePerGas
+        } else {
+          // Ensure priority fee is at least 10% of base fee or minimum 1 Gwei, whichever is higher
+          const minPriorityFee = block.baseFeePerGas / BigInt(10) // 10% of base fee
+          const fallbackPriorityFee = BigInt('1000000000') // 1 Gwei
+          maxPriorityFeePerGas =
+            minPriorityFee > fallbackPriorityFee ? minPriorityFee : fallbackPriorityFee
+        }
       }
     } else {
       // Standard EIP-1559 estimation for CELO native token
@@ -101,6 +106,12 @@ async function estimateCeloL2FeesPerGas(
 
     if (baseFeePerGas < minGasPrice) {
       baseFeePerGas = minGasPrice
+    }
+
+    // Ensure maxPriorityFeePerGas is never less than a reasonable minimum relative to baseFeePerGas
+    const minReasonablePriorityFee = baseFeePerGas / BigInt(20) // 5% of base fee minimum
+    if (maxPriorityFeePerGas < minReasonablePriorityFee) {
+      maxPriorityFeePerGas = minReasonablePriorityFee
     }
 
     // Apply conservative multipliers for Celo L2
@@ -130,15 +141,22 @@ async function estimateCeloL2FeesPerGas(
       block,
     })
 
+    // Ensure maxPriorityFeePerGas is reasonable relative to baseFeePerGas even in fallback
+    let adjustedPriorityFee = maxPriorityFeePerGas
+    const minReasonablePriorityFee = block.baseFeePerGas / BigInt(20) // 5% of base fee minimum
+    if (adjustedPriorityFee < minReasonablePriorityFee) {
+      adjustedPriorityFee = minReasonablePriorityFee
+    }
+
     // Apply conservative multipliers even in fallback mode
-    const adjustedMaxFee = BigInt(Math.floor(Number(maxFeePerGas) * CELO_GAS_MULTIPLIERS.maxFee))
-    const adjustedPriorityFee = BigInt(
-      Math.floor(Number(maxPriorityFeePerGas) * CELO_GAS_MULTIPLIERS.priorityFee)
+    const finalPriorityFee = BigInt(
+      Math.floor(Number(adjustedPriorityFee) * CELO_GAS_MULTIPLIERS.priorityFee)
     )
+    const adjustedMaxFee = BigInt(Math.floor(Number(maxFeePerGas) * CELO_GAS_MULTIPLIERS.maxFee))
 
     return {
       maxFeePerGas: adjustedMaxFee,
-      maxPriorityFeePerGas: adjustedPriorityFee,
+      maxPriorityFeePerGas: finalPriorityFee,
       baseFeePerGas: block.baseFeePerGas,
     }
   }
