@@ -840,13 +840,13 @@ export function* isWalletConnectEnabled(uri: string) {
 }
 
 export function* initialiseWalletConnect(uri: string, origin: WalletConnectPairingOrigin) {
-  // const walletConnectEnabled = yield* call(isWalletConnectEnabled, uri)
+  const walletConnectEnabled = yield* call(isWalletConnectEnabled, uri)
 
   const { version } = parseUri(uri)
-  // if (!walletConnectEnabled) {
-  //   Logger.debug('initialiseWalletConnect', `v${version} is disabled, ignoring`)
-  //   return
-  // }
+  if (!walletConnectEnabled) {
+    Logger.debug('initialiseWalletConnect', `v${version} is disabled, ignoring`)
+    return
+  }
 
   switch (version) {
     case 2:
