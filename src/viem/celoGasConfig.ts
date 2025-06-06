@@ -8,22 +8,22 @@ export const CELO_ALFAJORES_ID = 44787
 export const CELO_GAS_MULTIPLIERS = {
   // Base multiplier for gas limit estimation (15% buffer for L2)
   gasLimit: 1.15,
-  // Priority fee multiplier (10% buffer)
-  priorityFee: 1.1,
-  // Max fee multiplier (minimal buffer since L2 has more predictable fees)
-  maxFee: 1.05,
+  // Priority fee multiplier (20% buffer to ensure it's above base fee)
+  priorityFee: 1.2,
+  // Max fee multiplier (10% buffer since L2 has more predictable fees)
+  maxFee: 1.1,
 } as const
 
 // Minimum gas prices for different fee currencies (in wei) - L2 optimized
 export const CELO_MIN_GAS_PRICES = {
-  // CELO native token minimum (lower for L2)
-  CELO: BigInt('100000000'), // 0.1 Gwei
+  // CELO native token minimum (adjusted for L2 base fees)
+  CELO: BigInt('500000000'), // 0.5 Gwei - higher minimum to avoid base fee issues
   // cUSD minimum
-  cUSD: BigInt('100000000'), // 0.1 Gwei equivalent
+  cUSD: BigInt('500000000'), // 0.5 Gwei equivalent
   // cEUR minimum
-  cEUR: BigInt('100000000'), // 0.1 Gwei equivalent
+  cEUR: BigInt('500000000'), // 0.5 Gwei equivalent
   // cREAL minimum
-  cREAL: BigInt('100000000'), // 0.1 Gwei equivalent
+  cREAL: BigInt('500000000'), // 0.5 Gwei equivalent
 } as const
 
 // Fee currency addresses on Celo L2 Mainnet
