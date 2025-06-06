@@ -30,7 +30,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/myapp_url_scheme" android:host="tucop" />
+        <data android:scheme="myapp" android:host="tucop" />
       </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />

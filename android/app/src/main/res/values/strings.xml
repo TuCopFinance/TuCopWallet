@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">TuCop</string>
-  <string name="deep_link_url_scheme">celo</string>
   <string name="myapp_url_scheme">myapp</string>
   <string name="persona_inquiry_start_title">This app would like to verify your identity</string>
   <string name="persona_inquiry_start_body">Please have a government issued ID ready to continue.</string>
