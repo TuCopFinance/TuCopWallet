@@ -86,6 +86,11 @@ public class MainActivity extends ReactActivity {
 
   @Override
   public void onNewIntent(Intent intent) {
+    // Always call super.onNewIntent to handle deep links properly
+    super.onNewIntent(intent);
+    // Ensure the new intent is used instead of the original one
+    setIntent(intent);
+
     // if firebase is not enabled this would cause a crash because of the firebase app not being inited
     // the better fix would be to have a test firebase running in CI
     // this is just a temporary fix until we get firebase working in all environments
@@ -93,8 +98,6 @@ public class MainActivity extends ReactActivity {
     // firebase dynamic links, which in turn complains about firebase app not being initialized
     Boolean firebaseEnabled = Boolean.parseBoolean(BuildConfig.FIREBASE_ENABLED);
     if (firebaseEnabled) {
-      super.onNewIntent(intent);
-
       CleverTapAPI cleverTapDefaultInstance = CleverTapAPI.getDefaultInstance(this);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         cleverTapDefaultInstance.pushNotificationClickedEvent(intent.getExtras());
