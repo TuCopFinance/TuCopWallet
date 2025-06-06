@@ -1,3 +1,4 @@
+import Logger from 'src/utils/Logger'
 import { Address, Client } from 'viem'
 import { estimateFeesPerGas as defaultEstimateFeesPerGas, getBlock } from 'viem/actions'
 import { CELO_GAS_MULTIPLIERS, CELO_MIN_GAS_PRICES, isCeloNetwork } from './celoGasConfig'
@@ -41,123 +42,128 @@ async function estimateCeloL2FeesPerGas(
   feeCurrency: Address | undefined,
   chainId: number
 ): Promise<{ maxFeePerGas: bigint; maxPriorityFeePerGas: bigint; baseFeePerGas: bigint }> {
+  // Get the most recent block to ensure we have current base fee
+  const block = await getBlock(client, { blockTag: 'latest' })
+
+  if (!block.baseFeePerGas) {
+    throw new Error(`missing baseFeePerGas on block: ${block.hash}`)
+  }
+
+  const currentBaseFee = block.baseFeePerGas
+
+  Logger.debug('estimateFeesPerGas', 'Celo L2 estimation start:', {
+    blockNumber: block.number?.toString(),
+    baseFee: currentBaseFee.toString(),
+    feeCurrency: feeCurrency || 'native',
+  })
+
+  // Apply minimum gas price if needed
+  const minGasPrice = CELO_MIN_GAS_PRICES.CELO
+  let adjustedBaseFee = currentBaseFee
+  if (adjustedBaseFee < minGasPrice) {
+    adjustedBaseFee = minGasPrice
+  }
+
+  let priorityFee: bigint
+
   try {
-    // Celo L2 uses standard EIP-1559 with fee currency support
-    // Get current block for base fee
-    const block = await getBlock(client)
+    // Try to get network gas price
+    let networkGasPrice: bigint
 
-    if (!block.baseFeePerGas) {
-      throw new Error(`missing baseFeePerGas on block: ${block.hash}`)
-    }
-
-    let maxPriorityFeePerGas: bigint
-    let currentGasPrice: bigint
-
-    // Try to get gas price with fee currency if specified
     if (feeCurrency) {
       try {
+        // Try fee currency specific gas price first
         const gasPriceResponse = await client.request({
           method: 'eth_gasPrice',
           params: [feeCurrency],
         } as any)
-        currentGasPrice = BigInt(gasPriceResponse as string)
+        networkGasPrice = BigInt(gasPriceResponse as string)
       } catch {
-        // Fallback to standard gas price if fee currency fails
+        // Fallback to standard gas price
         const gasPriceResponse = await client.request({
           method: 'eth_gasPrice',
         } as any)
-        currentGasPrice = BigInt(gasPriceResponse as string)
-      }
-
-      // Try to get max priority fee per gas with fee currency
-      try {
-        const maxPriorityFeeResponse = await client.request({
-          method: 'eth_maxPriorityFeePerGas',
-          params: [feeCurrency],
-        } as any)
-        maxPriorityFeePerGas = BigInt(maxPriorityFeeResponse as string)
-      } catch {
-        // Fallback: calculate priority fee from gas price and base fee
-        if (currentGasPrice > block.baseFeePerGas) {
-          maxPriorityFeePerGas = currentGasPrice - block.baseFeePerGas
-        } else {
-          // Ensure priority fee is at least 10% of base fee or minimum 1 Gwei, whichever is higher
-          const minPriorityFee = block.baseFeePerGas / BigInt(10) // 10% of base fee
-          const fallbackPriorityFee = BigInt('1000000000') // 1 Gwei
-          maxPriorityFeePerGas =
-            minPriorityFee > fallbackPriorityFee ? minPriorityFee : fallbackPriorityFee
-        }
+        networkGasPrice = BigInt(gasPriceResponse as string)
       }
     } else {
-      // Standard EIP-1559 estimation for CELO native token
-      const { maxFeePerGas: defaultMaxFee, maxPriorityFeePerGas: defaultPriorityFee } =
-        await defaultEstimateFeesPerGas(client, {
-          // @ts-expect-error
-          block,
-        })
-
-      maxPriorityFeePerGas = defaultPriorityFee
-      currentGasPrice = defaultMaxFee
+      // Standard gas price for native currency
+      const gasPriceResponse = await client.request({
+        method: 'eth_gasPrice',
+      } as any)
+      networkGasPrice = BigInt(gasPriceResponse as string)
     }
 
-    // Apply minimum gas price if needed
-    const minGasPrice = CELO_MIN_GAS_PRICES.CELO
-    let baseFeePerGas = block.baseFeePerGas
-
-    if (baseFeePerGas < minGasPrice) {
-      baseFeePerGas = minGasPrice
+    // Calculate priority fee from network gas price
+    if (networkGasPrice > adjustedBaseFee) {
+      priorityFee = networkGasPrice - adjustedBaseFee
+    } else {
+      // If network gas price <= base fee, use a reasonable minimum
+      const minPriorityFee = adjustedBaseFee / BigInt(20) // 5% of base fee
+      const fallbackPriorityFee = BigInt('1500000000') // 1.5 Gwei (matching the logs)
+      priorityFee = minPriorityFee > fallbackPriorityFee ? minPriorityFee : fallbackPriorityFee
     }
 
-    // Ensure maxPriorityFeePerGas is never less than a reasonable minimum relative to baseFeePerGas
-    const minReasonablePriorityFee = baseFeePerGas / BigInt(20) // 5% of base fee minimum
-    if (maxPriorityFeePerGas < minReasonablePriorityFee) {
-      maxPriorityFeePerGas = minReasonablePriorityFee
-    }
-
-    // Apply conservative multipliers for Celo L2
-    const adjustedPriorityFee = BigInt(
-      Math.floor(Number(maxPriorityFeePerGas) * CELO_GAS_MULTIPLIERS.priorityFee)
-    )
-
-    const adjustedMaxFee = BigInt(
-      Math.floor(Number(baseFeePerGas + adjustedPriorityFee) * CELO_GAS_MULTIPLIERS.maxFee)
-    )
-
-    return {
-      maxFeePerGas: adjustedMaxFee,
-      maxPriorityFeePerGas: adjustedPriorityFee,
-      baseFeePerGas,
-    }
+    Logger.debug('estimateFeesPerGas', 'network gas price method:', {
+      networkGasPrice: networkGasPrice.toString(),
+      calculatedPriorityFee: priorityFee.toString(),
+    })
   } catch (error) {
-    // Fallback to standard EIP-1559 estimation if Celo-specific methods fail
-    const block = await getBlock(client)
+    Logger.debug('estimateFeesPerGas', 'fallback to default priority fee due to:', error)
 
-    if (!block.baseFeePerGas) {
-      throw new Error(`missing baseFeePerGas on block: ${block.hash}`)
-    }
+    // Fallback: use a reasonable priority fee
+    const minPriorityFee = adjustedBaseFee / BigInt(20) // 5% of base fee
+    const fallbackPriorityFee = BigInt('1500000000') // 1.5 Gwei
+    priorityFee = minPriorityFee > fallbackPriorityFee ? minPriorityFee : fallbackPriorityFee
+  }
 
-    const { maxFeePerGas, maxPriorityFeePerGas } = await defaultEstimateFeesPerGas(client, {
-      // @ts-expect-error
-      block,
+  // Apply Celo multipliers for additional safety
+  const adjustedPriorityFee = BigInt(
+    Math.floor(Number(priorityFee) * CELO_GAS_MULTIPLIERS.priorityFee)
+  )
+
+  // CRITICAL: Calculate maxFeePerGas ensuring it's ALWAYS > baseFeePerGas
+  // This is the key fix based on the error logs and internet research
+  const baseMaxFee = adjustedBaseFee + adjustedPriorityFee
+
+  // Apply multiplier to the total
+  const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * CELO_GAS_MULTIPLIERS.maxFee))
+
+  // Add additional safety margin to handle base fee volatility
+  // Base fee can increase by up to 12.5% per block, so we add extra buffer
+  const safetyBuffer = adjustedBaseFee / BigInt(4) // 25% of base fee as safety buffer
+  const finalMaxFee = multipliedMaxFee + safetyBuffer
+
+  Logger.debug('estimateFeesPerGas', 'Celo L2 calculation:', {
+    adjustedBaseFee: adjustedBaseFee.toString(),
+    priorityFee: priorityFee.toString(),
+    adjustedPriorityFee: adjustedPriorityFee.toString(),
+    baseMaxFee: baseMaxFee.toString(),
+    multipliedMaxFee: multipliedMaxFee.toString(),
+    safetyBuffer: safetyBuffer.toString(),
+    finalMaxFee: finalMaxFee.toString(),
+    safetyMarginPercent:
+      (((finalMaxFee - adjustedBaseFee) * BigInt(100)) / adjustedBaseFee).toString() + '%',
+  })
+
+  // Final validation to prevent the error we saw in logs
+  if (finalMaxFee <= adjustedBaseFee) {
+    const emergencyMaxFee = adjustedBaseFee * BigInt(2) // 100% above base fee as emergency fallback
+    Logger.warn('estimateFeesPerGas', 'Emergency fallback activated:', {
+      calculatedMaxFee: finalMaxFee.toString(),
+      baseFee: adjustedBaseFee.toString(),
+      emergencyMaxFee: emergencyMaxFee.toString(),
     })
 
-    // Ensure maxPriorityFeePerGas is reasonable relative to baseFeePerGas even in fallback
-    let adjustedPriorityFee = maxPriorityFeePerGas
-    const minReasonablePriorityFee = block.baseFeePerGas / BigInt(20) // 5% of base fee minimum
-    if (adjustedPriorityFee < minReasonablePriorityFee) {
-      adjustedPriorityFee = minReasonablePriorityFee
-    }
-
-    // Apply conservative multipliers even in fallback mode
-    const finalPriorityFee = BigInt(
-      Math.floor(Number(adjustedPriorityFee) * CELO_GAS_MULTIPLIERS.priorityFee)
-    )
-    const adjustedMaxFee = BigInt(Math.floor(Number(maxFeePerGas) * CELO_GAS_MULTIPLIERS.maxFee))
-
     return {
-      maxFeePerGas: adjustedMaxFee,
-      maxPriorityFeePerGas: finalPriorityFee,
-      baseFeePerGas: block.baseFeePerGas,
+      maxFeePerGas: emergencyMaxFee,
+      maxPriorityFeePerGas: adjustedPriorityFee,
+      baseFeePerGas: adjustedBaseFee,
     }
+  }
+
+  return {
+    maxFeePerGas: finalMaxFee,
+    maxPriorityFeePerGas: adjustedPriorityFee,
+    baseFeePerGas: adjustedBaseFee,
   }
 }
