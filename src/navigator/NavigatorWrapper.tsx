@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/react-native'
 import { SeverityLevel } from '@sentry/types'
 import * as React from 'react'
 import { useMemo } from 'react'
-import { Linking, StyleSheet, View } from 'react-native'
+import { Linking, Platform, StyleSheet, View } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import ShakeForSupport from 'src/account/ShakeForSupport'
 import AlertBanner from 'src/alert/AlertBanner'
@@ -14,7 +14,7 @@ import UpgradeScreen from 'src/app/UpgradeScreen'
 import { activeScreenChanged } from 'src/app/actions'
 import { getAppLocked } from 'src/app/selectors'
 import { useDeepLinks } from 'src/app/useDeepLinks'
-import { DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
+import { APP_STORE_ID, DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
 import { useAppUpdateChecker } from 'src/hooks/useAppUpdateChecker'
 import JumpstartClaimStatusToasts from 'src/jumpstart/JumpstartClaimStatusToasts'
 import {
@@ -80,14 +80,37 @@ export const NavigatorWrapper = () => {
     checkInterval: 24 * 60 * 60 * 1000,
   })
 
+  // Log para debugging
+  React.useEffect(() => {
+    Logger.info('NavigatorWrapper', '🔧 Update checker config:', {
+      minRequiredVersion,
+      useBackend: true,
+      showDialogAutomatically: true,
+      checkOnAppStart: true,
+      checkOnAppResume: true,
+    })
+  }, [minRequiredVersion])
+
+  React.useEffect(() => {
+    if (updateInfo) {
+      Logger.info('NavigatorWrapper', '📊 Update info received:', {
+        hasUpdate: updateInfo.hasUpdate,
+        currentVersion: updateInfo.currentVersion,
+        latestVersion: updateInfo.latestVersion,
+        isForced: updateInfo.isForced,
+      })
+    }
+  }, [updateInfo])
+
   // URL de actualización para fallback (mover fuera de la condición)
   const upgradeUrl = React.useMemo(() => {
-    // Determinar URL basada en plataforma
-    const bundleId = DeviceInfo.getBundleId()
-    if (bundleId.includes('ios') || DeviceInfo.getSystemName() === 'iOS') {
-      return 'https://apps.apple.com/app/tucop-wallet/id1234567890'
+    // Usar la misma lógica que en appUpdateChecker para consistencia
+    if (Platform.OS === 'ios') {
+      return `https://apps.apple.com/app/id${APP_STORE_ID}`
+    } else {
+      const bundleId = DeviceInfo.getBundleId()
+      return `https://play.google.com/store/apps/details?id=${bundleId}`
     }
-    return 'https://play.google.com/store/apps/details?id=org.tucop'
   }, [])
 
   // Verificación de actualización forzada (mantener compatibilidad con sistema existente)
