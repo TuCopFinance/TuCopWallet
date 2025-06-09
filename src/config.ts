@@ -217,4 +217,4 @@ export const ENABLED_QUICK_ACTIONS = (
 
 export const FETCH_FIATCONNECT_QUOTES = true
 
-export const WALLETCONNECT_UNIVERSAL_LINK = 'https://valoraapp.com/wc'
+export const WALLETCONNECT_UNIVERSAL_LINK = 'https://tucop.xyz/wc'

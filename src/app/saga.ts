@@ -262,11 +262,17 @@ export function* handleDeepLink(action: OpenDeepLink) {
     return
   }
 
-  if (isWalletConnectDeepLink(deepLink)) {
+  Logger.debug(TAG, '🔍 Verificando si es WalletConnect deep link:', deepLink)
+  const isWCDeepLink = isWalletConnectDeepLink(deepLink)
+  Logger.debug(TAG, '🔍 Es WalletConnect deep link?', isWCDeepLink)
+
+  if (isWCDeepLink) {
+    Logger.debug(TAG, '✅ Procesando WalletConnect deep link')
     yield* call(handleWalletConnectDeepLink, deepLink)
     return
   }
 
+  Logger.debug(TAG, '📝 Procesando deep link regular')
   const rawParams = parse(deepLink)
   if (rawParams.path) {
     const pathParts = rawParams.path.split('/')

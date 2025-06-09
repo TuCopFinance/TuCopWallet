@@ -2972,5 +2972,8 @@
       "processingText": "Procesando transacción..."
     }
   },
-  "ubiNotBeneficiary": "No eres elegible para recibir el subsidio UBI de ReFi Medellín"
+  "ubiNotBeneficiary": "No eres elegible para recibir el subsidio UBI de ReFi Medellín",
+  "ubiAlreadyClaimed": "Ya has reclamado tu subsidio UBI esta semana",
+  "ubiClaimError": "Error procesando el reclamo del subsidio UBI. Por favor intenta de nuevo",
+  "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas"
 }
