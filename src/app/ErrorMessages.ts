@@ -41,5 +41,6 @@ export enum ErrorMessages {
   UBI_NOT_BENEFICIARY = 'ubiNotBeneficiary',
   UBI_ALREADY_CLAIMED = 'ubiAlreadyClaimed',
   UBI_CLAIM_ERROR = 'ubiClaimError',
+  INSUFFICIENT_FUNDS_FOR_GAS = 'insufficientFundsForGas',
   GENERIC_ERROR = 'genericError',
 }
