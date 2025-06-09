@@ -11,7 +11,7 @@ import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useSelector } from 'src/redux/hooks'
-import ReFiMedellinUBIContract from 'src/refi/ReFiMedellinUBIContract'
+import ReFiMedellinUBIContract, { UBIClaimStatus } from 'src/refi/ReFiMedellinUBIContract'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { getShadowStyle, Shadow, Spacing } from 'src/styles/styles'
@@ -26,33 +26,70 @@ type Props = NativeStackScreenProps<StackParamList, Screens.ReFiMedellinUBI>
 export default function ReFiMedellinUBIScreen({ navigation }: Props) {
   const { t } = useTranslation()
   const walletAddress = useSelector(walletAddressSelector)
-  const [isBeneficiary, setIsBeneficiary] = useState<boolean | null>(null)
+  const [ubiStatus, setUbiStatus] = useState<UBIClaimStatus | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingBeneficiary, setIsCheckingBeneficiary] = useState(true)
+  const [debugInfo, setDebugInfo] = useState<string>('')
 
   useEffect(() => {
-    void checkBeneficiary()
+    void checkUBIStatus()
+    void runDebugInfo()
   }, [walletAddress])
 
-  const checkBeneficiary = async () => {
+  const runDebugInfo = async () => {
+    try {
+      await ReFiMedellinUBIContract.debugContractInfo()
+    } catch (error) {
+      Logger.error(TAG, 'Error running debug info', error)
+    }
+  }
+
+  const checkUBIStatus = async () => {
     if (!walletAddress) return
 
     try {
       setIsCheckingBeneficiary(true)
-      const beneficiaryStatus = await ReFiMedellinUBIContract.isBeneficiary(
-        walletAddress as Address
-      )
-      setIsBeneficiary(beneficiaryStatus)
+      Logger.debug(TAG, `Checking UBI status for ${walletAddress}`)
+
+      let status: UBIClaimStatus
+
+      try {
+        // Intentar obtener el estado completo con eventos
+        status = await ReFiMedellinUBIContract.getUBIStatus(walletAddress as Address)
+      } catch (error) {
+        Logger.warn(TAG, 'Could not get full UBI status, falling back to basic status:', error)
+        // Si falla, usar la función básica como fallback
+        status = await ReFiMedellinUBIContract.getBasicUBIStatus(walletAddress as Address)
+      }
+
+      setUbiStatus(status)
+
+      Logger.debug(TAG, 'UBI Status:', status)
+
+      // Crear información de debug para mostrar
+      let debug = `Beneficiario: ${status.isBeneficiary}\n`
+      debug += `Reclamado esta semana: ${status.hasClaimedThisWeek}\n`
+      if (status.lastClaimTimestamp) {
+        debug += `Último reclamo: ${new Date(status.lastClaimTimestamp * 1000).toLocaleString()}\n`
+      }
+      if (status.nextClaimAvailable) {
+        debug += `Próximo reclamo disponible: ${new Date(status.nextClaimAvailable * 1000).toLocaleString()}\n`
+      }
+      if (!status.lastClaimTimestamp && status.isBeneficiary) {
+        debug += `Nota: No se pudo verificar el historial de reclamos debido a limitaciones del RPC\n`
+      }
+      setDebugInfo(debug)
     } catch (error) {
-      Logger.error(TAG, 'Error checking beneficiary status', error)
-      setIsBeneficiary(false)
+      Logger.error(TAG, 'Error checking UBI status', error)
+      setUbiStatus(null)
+      setDebugInfo(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCheckingBeneficiary(false)
     }
   }
 
   const handleClaimSubsidy = async () => {
-    if (!walletAddress) return
+    if (!walletAddress || !ubiStatus) return
 
     try {
       setIsLoading(true)
@@ -62,17 +99,28 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
         withVerification: true,
         onSuccess: async (pin: string) => {
           try {
+            Logger.debug(TAG, 'Starting claim process with PIN')
             const result = await ReFiMedellinUBIContract.claimSubsidy(walletAddress as Address, pin)
+
+            Logger.debug(TAG, 'Claim result:', result)
 
             if (result.success) {
               // Analítica
               AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
 
+              // Actualizar el estado después del éxito
+              await checkUBIStatus()
+
               // Regresar a la pantalla anterior después del éxito
               navigation.goBack()
+            } else {
+              Logger.warn(TAG, 'Claim failed:', result.error)
+              // El error ya se mostró en el contrato, solo actualizamos el estado
+              await checkUBIStatus()
             }
           } catch (error) {
             Logger.error(TAG, 'Error claiming subsidy', error)
+            await checkUBIStatus()
           } finally {
             setIsLoading(false)
           }
@@ -84,6 +132,22 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
     } catch (error) {
       Logger.error(TAG, 'Error in claim process', error)
       setIsLoading(false)
+    }
+  }
+
+  const formatTimeRemaining = (timestamp: number): string => {
+    const now = Math.floor(Date.now() / 1000)
+    const remaining = timestamp - now
+
+    if (remaining <= 0) return 'Disponible ahora'
+
+    const days = Math.floor(remaining / (24 * 60 * 60))
+    const hours = Math.floor((remaining % (24 * 60 * 60)) / (60 * 60))
+
+    if (days > 0) {
+      return `${days} día${days > 1 ? 's' : ''} y ${hours} hora${hours > 1 ? 's' : ''}`
+    } else {
+      return `${hours} hora${hours > 1 ? 's' : ''}`
     }
   }
 
@@ -99,14 +163,20 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       )
     }
 
-    if (isBeneficiary === null) {
+    if (ubiStatus === null) {
       return (
         <View style={styles.errorContainer}>
           <Celebration size={48} color={Colors.error} />
           <Text style={styles.errorTitle}>{t('reFiMedellinUbi.error.title')}</Text>
           <Text style={styles.errorText}>{t('reFiMedellinUbi.error.description')}</Text>
+          {!!debugInfo && (
+            <View style={styles.debugContainer}>
+              <Text style={styles.debugTitle}>Debug Info:</Text>
+              <Text style={styles.debugText}>{debugInfo}</Text>
+            </View>
+          )}
           <Button
-            onPress={checkBeneficiary}
+            onPress={checkUBIStatus}
             text={t('reFiMedellinUbi.error.retry')}
             type={BtnTypes.SECONDARY}
             size={BtnSizes.MEDIUM}
@@ -116,7 +186,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       )
     }
 
-    if (!isBeneficiary) {
+    if (!ubiStatus.isBeneficiary) {
       return (
         <View style={styles.notEligibleContainer}>
           <View style={styles.notEligibleCard}>
@@ -126,11 +196,76 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
               {t('reFiMedellinUbi.notEligible.description')}
             </Text>
             <Text style={styles.contactInfo}>{t('reFiMedellinUbi.notEligible.contact')}</Text>
+            {!!debugInfo && (
+              <View style={styles.debugContainer}>
+                <Text style={styles.debugTitle}>Debug Info:</Text>
+                <Text style={styles.debugText}>{debugInfo}</Text>
+              </View>
+            )}
           </View>
         </View>
       )
     }
 
+    // Usuario es beneficiario
+    if (ubiStatus.hasClaimedThisWeek) {
+      return (
+        <View style={styles.alreadyClaimedContainer}>
+          <View style={styles.alreadyClaimedCard}>
+            <Celebration size={72} color={Colors.successDark} />
+
+            <View style={styles.congratsSection}>
+              <Text style={styles.congratsTitle}>¡Ya reclamaste tu subsidio!</Text>
+              <Text style={styles.congratsSubtitle}>
+                Has reclamado exitosamente tu subsidio UBI esta semana
+              </Text>
+            </View>
+
+            {!!ubiStatus.lastClaimTimestamp && (
+              <View style={styles.claimInfoCard}>
+                <Text style={styles.claimInfoTitle}>Último reclamo</Text>
+                <Text style={styles.claimInfoDate}>
+                  {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </View>
+            )}
+
+            {!!ubiStatus.nextClaimAvailable && (
+              <View style={styles.nextClaimCard}>
+                <Text style={styles.nextClaimTitle}>Próximo reclamo disponible</Text>
+                <Text style={styles.nextClaimTime}>
+                  {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
+                </Text>
+                <Text style={styles.nextClaimDate}>
+                  {new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </View>
+            )}
+
+            <Button
+              onPress={() => navigation.goBack()}
+              text="Volver"
+              type={BtnTypes.SECONDARY}
+              size={BtnSizes.FULL}
+              style={styles.backButton}
+            />
+          </View>
+        </View>
+      )
+    }
+
+    // Usuario puede reclamar
     return (
       <View style={styles.eligibleContainer}>
         <View style={styles.eligibleCard}>
@@ -149,6 +284,14 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
               {t('reFiMedellinUbi.eligible.benefitDescription')}
             </Text>
           </View>
+
+          {!!ubiStatus.lastClaimTimestamp && (
+            <View style={styles.lastClaimInfo}>
+              <Text style={styles.lastClaimText}>
+                Último reclamo: {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString()}
+              </Text>
+            </View>
+          )}
 
           <Button
             onPress={handleClaimSubsidy}
@@ -169,6 +312,13 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
               <Text style={styles.processingText}>
                 {t('reFiMedellinUbi.eligible.processingText')}
               </Text>
+            </View>
+          )}
+
+          {!!debugInfo && __DEV__ && (
+            <View style={styles.debugContainer}>
+              <Text style={styles.debugTitle}>Debug Info:</Text>
+              <Text style={styles.debugText}>{debugInfo}</Text>
             </View>
           )}
         </View>
@@ -331,9 +481,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
+  alreadyClaimedContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  alreadyClaimedCard: {
+    alignItems: 'center',
+  },
   eligibleContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   eligibleCard: {
     alignItems: 'center',
@@ -375,8 +532,67 @@ const styles = StyleSheet.create({
     color: Colors.gray6,
     lineHeight: 22,
   },
+  claimInfoCard: {
+    backgroundColor: '#E8F5E8',
+    borderRadius: 12,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+    alignSelf: 'stretch',
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.successDark,
+  },
+  claimInfoTitle: {
+    ...typeScale.bodySmall,
+    color: Colors.successDark,
+    fontWeight: '600',
+    marginBottom: Spacing.Tiny4,
+  },
+  claimInfoDate: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray6,
+  },
+  nextClaimCard: {
+    backgroundColor: '#FFF4E6',
+    borderRadius: 12,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Large32,
+    alignSelf: 'stretch',
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.warningDark,
+  },
+  nextClaimTitle: {
+    ...typeScale.bodySmall,
+    color: Colors.warningDark,
+    fontWeight: '600',
+    marginBottom: Spacing.Tiny4,
+  },
+  nextClaimTime: {
+    ...typeScale.titleSmall,
+    color: Colors.gray6,
+    fontWeight: '600',
+    marginBottom: Spacing.Tiny4,
+  },
+  nextClaimDate: {
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
+  },
+  lastClaimInfo: {
+    backgroundColor: Colors.gray1,
+    borderRadius: 8,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+    alignSelf: 'stretch',
+  },
+  lastClaimText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
+    textAlign: 'center',
+  },
   claimButton: {
     ...getShadowStyle(Shadow.Soft),
+  },
+  backButton: {
+    marginTop: Spacing.Regular16,
   },
   processingContainer: {
     flexDirection: 'row',
@@ -392,5 +608,23 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
     fontWeight: '500',
+  },
+  debugContainer: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    padding: Spacing.Regular16,
+    marginTop: Spacing.Regular16,
+    alignSelf: 'stretch',
+  },
+  debugTitle: {
+    ...typeScale.bodySmall,
+    color: Colors.gray6,
+    fontWeight: '600',
+    marginBottom: Spacing.Smallest8,
+  },
+  debugText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
+    fontFamily: 'monospace',
   },
 })
