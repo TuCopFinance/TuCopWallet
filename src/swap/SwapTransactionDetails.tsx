@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   container: {
     padding: Spacing.Regular16,
     borderWidth: 1,
-    borderColor: colors.black,
+    borderColor: colors.gray2,
     borderRadius: 12,
     gap: Spacing.Regular16,
   },

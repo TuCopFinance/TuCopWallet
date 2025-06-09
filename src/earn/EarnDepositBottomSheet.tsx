@@ -271,24 +271,27 @@ export default function EarnDepositBottomSheet({
           )
         )}
         <View style={styles.ctaContainer}>
-          <Button
-            testID="EarnDeposit/SecondaryCta"
-            size={BtnSizes.FULL}
-            text={t('earnFlow.depositBottomSheet.secondaryCta')}
-            type={BtnTypes.SECONDARY}
-            style={styles.cta}
-            onPress={onPressCancel}
-            disabled={transactionSubmitted}
-          />
-          <Button
-            testID="EarnDeposit/PrimaryCta"
-            size={BtnSizes.FULL}
-            text={t('earnFlow.depositBottomSheet.primaryCta')}
-            style={styles.cta}
-            onPress={onPressComplete}
-            disabled={transactionSubmitted}
-            showLoading={transactionSubmitted}
-          />
+          <View style={styles.buttonWrapper}>
+            <Button
+              testID="EarnDeposit/SecondaryCta"
+              size={BtnSizes.FULL}
+              text={t('earnFlow.depositBottomSheet.secondaryCta')}
+              type={BtnTypes.TERTIARY}
+              onPress={onPressCancel}
+              disabled={transactionSubmitted}
+            />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <Button
+              testID="EarnDeposit/PrimaryCta"
+              size={BtnSizes.FULL}
+              text={t('earnFlow.depositBottomSheet.primaryCta')}
+              type={BtnTypes.PRIMARY}
+              onPress={onPressComplete}
+              disabled={transactionSubmitted}
+              showLoading={transactionSubmitted}
+            />
+          </View>
         </View>
       </View>
     </BottomSheet>
@@ -352,10 +355,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Smallest8,
     flexDirection: 'row',
     gap: Spacing.Smallest8,
+    width: '100%',
   },
-  cta: {
-    flexGrow: 1,
-    flexBasis: 0,
+  buttonWrapper: {
+    flex: 1,
   },
   gasSubsidized: {
     ...typeScale.labelXSmall,

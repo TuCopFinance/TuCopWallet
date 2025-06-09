@@ -49,6 +49,42 @@ export class ReFiMedellinUBIContract {
   }
 
   /**
+   * Función para verificar si puede reclamar directamente del contrato
+   */
+  async canClaimThisWeek(address: Address): Promise<boolean> {
+    try {
+      Logger.debug(TAG, `Checking if ${address} can claim this week`)
+
+      // Intentar hacer una llamada de prueba para ver si puede reclamar
+      try {
+        await this.client.simulateContract({
+          address: REFI_MEDELLIN_UBI_ADDRESS,
+          abi: ReFiMedellinUBI.abi,
+          functionName: 'claimSubsidy',
+          args: [],
+          account: address,
+        })
+        return true // Si la simulación pasa, puede reclamar
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        if (
+          errorMessage.includes('Cannot claim yet') ||
+          errorMessage.includes('already claimed') ||
+          errorMessage.includes('too soon')
+        ) {
+          return false
+        }
+        // Otros errores podrían ser por falta de fondos, etc.
+        Logger.warn(TAG, 'Simulation error (might still be able to claim):', errorMessage)
+        return true
+      }
+    } catch (error) {
+      Logger.error(TAG, 'Error checking if can claim this week', error)
+      return false
+    }
+  }
+
+  /**
    * Obtiene el estado completo del UBI para una dirección
    */
   async getUBIStatus(walletAddress: Address): Promise<UBIClaimStatus> {
@@ -69,29 +105,31 @@ export class ReFiMedellinUBIContract {
         return {
           isBeneficiary: false,
           hasClaimedThisWeek: false,
+          lastClaimTimestamp: undefined,
+          nextClaimAvailable: undefined,
         }
       }
 
-      // Buscar eventos de claim recientes para esta dirección
-      const oneWeekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
-      const currentBlock = await this.client.getBlockNumber()
+      // Verificar si puede reclamar esta semana
+      const canClaim = await this.canClaimThisWeek(walletAddress)
+      Logger.debug(TAG, `Can claim this week: ${canClaim}`)
 
-      // Reducir el rango de búsqueda para evitar el límite del RPC
-      // En Celo, aproximadamente 1 bloque cada 5 segundos
-      // 7 días = 604,800 segundos / 5 = 120,960 bloques
-      // Limitamos a 10,000 bloques (aproximadamente 14 horas) para evitar el límite
-      const maxBlockRange = BigInt(10000)
-      const fromBlock = currentBlock - maxBlockRange
-
-      Logger.debug(
-        TAG,
-        `Searching for claim events from block ${fromBlock} to ${currentBlock} (range: ${maxBlockRange} blocks)`
-      )
-
-      let claimEvents: any[] = []
+      // Intentar obtener información de claims previos
+      let lastClaimTimestamp: number | undefined
+      let nextClaimAvailable: number | undefined
 
       try {
-        claimEvents = await this.client.getLogs({
+        // Buscar eventos de claim más recientes con rango reducido
+        const currentBlock = await this.client.getBlockNumber()
+        const blocksToSearch = 5000 // Reducir aún más el rango
+        const fromBlock = currentBlock - BigInt(blocksToSearch)
+
+        Logger.debug(
+          TAG,
+          `Searching for claim events from block ${fromBlock} to ${currentBlock} (range: ${blocksToSearch} blocks)`
+        )
+
+        const claimEvents = await this.client.getLogs({
           address: REFI_MEDELLIN_UBI_ADDRESS,
           event: {
             type: 'event',
@@ -107,47 +145,43 @@ export class ReFiMedellinUBIContract {
           fromBlock,
           toBlock: 'latest',
         })
-      } catch (eventError) {
-        Logger.warn(TAG, 'Could not fetch claim events, assuming no recent claims:', eventError)
-        // Si no podemos obtener eventos, asumimos que no hay claims recientes
-        claimEvents = []
+
+        Logger.debug(TAG, `Found ${claimEvents.length} claim events for address ${walletAddress}`)
+
+        if (claimEvents.length > 0) {
+          // Obtener el evento más reciente
+          const latestEvent = claimEvents[claimEvents.length - 1]
+          const eventArgs = parseEventLogs({
+            abi: ReFiMedellinUBI.abi,
+            logs: [latestEvent],
+          })[0]?.args as any
+
+          if (eventArgs?.timestamp) {
+            lastClaimTimestamp = Number(eventArgs.timestamp)
+            // Calcular próximo claim disponible (asumiendo 7 días)
+            nextClaimAvailable = lastClaimTimestamp + 7 * 24 * 60 * 60
+            Logger.debug(TAG, `Last claim: ${new Date(lastClaimTimestamp * 1000).toISOString()}`)
+            Logger.debug(
+              TAG,
+              `Next claim available: ${new Date(nextClaimAvailable * 1000).toISOString()}`
+            )
+          }
+        } else {
+          Logger.debug(TAG, 'No recent claim events found in the searched range')
+        }
+      } catch (error) {
+        Logger.warn(TAG, 'Could not fetch claim events, using contract state only:', error)
       }
-
-      Logger.debug(TAG, `Found ${claimEvents.length} claim events for address ${walletAddress}`)
-
-      let lastClaimTimestamp: number | undefined
-      let hasClaimedThisWeek = false
-
-      if (claimEvents.length > 0) {
-        // Obtener el timestamp del último claim
-        const lastEvent = claimEvents[claimEvents.length - 1]
-        const block = await this.client.getBlock({ blockHash: lastEvent.blockHash! })
-        lastClaimTimestamp = Number(block.timestamp)
-
-        // Verificar si fue en la última semana
-        hasClaimedThisWeek = lastClaimTimestamp > oneWeekAgo
-
-        Logger.debug(
-          TAG,
-          `Last claim timestamp: ${lastClaimTimestamp}, claimed this week: ${hasClaimedThisWeek}`
-        )
-      } else {
-        Logger.debug(TAG, 'No recent claim events found in the searched range')
-      }
-
-      const nextClaimAvailable = lastClaimTimestamp
-        ? lastClaimTimestamp + 7 * 24 * 60 * 60
-        : undefined
 
       return {
         isBeneficiary: true,
-        hasClaimedThisWeek,
+        hasClaimedThisWeek: !canClaim,
         lastClaimTimestamp,
         nextClaimAvailable,
       }
     } catch (error) {
       Logger.error(TAG, 'Error getting UBI status', error)
-      throw error
+      return this.getBasicUBIStatus(walletAddress)
     }
   }
 
@@ -291,26 +325,34 @@ export class ReFiMedellinUBIContract {
       if (error instanceof Error) {
         errorMessage = error.message
 
-        // Detectar diferentes tipos de errores
-        if (error.message.includes('revert')) {
-          if (error.message.includes('Already claimed') || error.message.includes('too soon')) {
-            store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
-            return { success: false, error: 'Already claimed this week' }
-          } else if (
-            error.message.includes('Not beneficiary') ||
-            error.message.includes('not eligible')
-          ) {
-            store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
-            return { success: false, error: 'Not a beneficiary' }
-          }
-        } else if (error.message.includes('User rejected') || error.message.includes('cancelled')) {
-          return { success: false, error: 'Transaction cancelled by user' }
-        } else if (error.message.includes('insufficient funds')) {
+        // Detectar errores específicos del contrato
+        if (errorMessage.includes('Cannot claim yet')) {
+          Logger.warn(TAG, 'User tried to claim but cannot claim yet (already claimed this week)')
+          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
+        } else if (errorMessage.includes('already claimed')) {
+          Logger.warn(TAG, 'User has already claimed this week')
+          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
+        } else if (
+          errorMessage.includes('Not beneficiary') ||
+          errorMessage.includes('not eligible')
+        ) {
+          Logger.warn(TAG, 'User is not a beneficiary')
+          store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
+          return { success: false, error: 'No eres elegible para este subsidio' }
+        } else if (errorMessage.includes('insufficient funds')) {
+          Logger.warn(TAG, 'Insufficient funds for gas')
           store.dispatch(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
-          return { success: false, error: 'Insufficient funds for gas' }
+          return { success: false, error: 'Fondos insuficientes para pagar las tarifas de gas' }
+        } else if (errorMessage.includes('User rejected') || errorMessage.includes('cancelled')) {
+          Logger.info(TAG, 'Transaction cancelled by user')
+          return { success: false, error: 'Transacción cancelada por el usuario' }
         }
       }
 
+      // Error genérico
+      Logger.error(TAG, 'Unknown error during claim:', errorMessage)
       store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
       return { success: false, error: errorMessage }
     }
