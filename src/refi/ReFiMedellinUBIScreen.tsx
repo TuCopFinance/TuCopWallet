@@ -130,15 +130,23 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
     const now = Math.floor(Date.now() / 1000)
     const remaining = timestamp - now
 
-    if (remaining <= 0) return 'Disponible ahora'
+    if (remaining <= 0) return t('reFiMedellinUbi.timeRemaining.availableNow')
 
     const days = Math.floor(remaining / (24 * 60 * 60))
     const hours = Math.floor((remaining % (24 * 60 * 60)) / (60 * 60))
 
     if (days > 0) {
-      return `${days} día${days > 1 ? 's' : ''} y ${hours} hora${hours > 1 ? 's' : ''}`
+      return t('reFiMedellinUbi.timeRemaining.daysAndHours', {
+        days,
+        daysPlural: days > 1 ? 's' : '',
+        hours,
+        hoursPlural: hours > 1 ? 's' : '',
+      })
     } else {
-      return `${hours} hora${hours > 1 ? 's' : ''}`
+      return t('reFiMedellinUbi.timeRemaining.hoursOnly', {
+        hours,
+        hoursPlural: hours > 1 ? 's' : '',
+      })
     }
   }
 
@@ -206,15 +214,17 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             <Celebration size={72} color={Colors.primary} />
 
             <View style={styles.congratsSection}>
-              <Text style={styles.congratsTitle}>¡Ya reclamaste tu subsidio!</Text>
+              <Text style={styles.congratsTitle}>{t('reFiMedellinUbi.alreadyClaimed.title')}</Text>
               <Text style={styles.congratsSubtitle}>
-                Has reclamado exitosamente tu subsidio UBI esta semana
+                {t('reFiMedellinUbi.alreadyClaimed.subtitle')}
               </Text>
             </View>
 
             {!!ubiStatus.lastClaimTimestamp && (
               <View style={styles.claimInfoCard}>
-                <Text style={styles.claimInfoTitle}>Último reclamo</Text>
+                <Text style={styles.claimInfoTitle}>
+                  {t('reFiMedellinUbi.alreadyClaimed.lastClaimTitle')}
+                </Text>
                 <Text style={styles.claimInfoDate}>
                   {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
                     weekday: 'long',
@@ -230,7 +240,9 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
             {!!ubiStatus.nextClaimAvailable && (
               <View style={styles.nextClaimCard}>
-                <Text style={styles.nextClaimTitle}>Próximo reclamo disponible</Text>
+                <Text style={styles.nextClaimTitle}>
+                  {t('reFiMedellinUbi.alreadyClaimed.nextClaimTitle')}
+                </Text>
                 <Text style={styles.nextClaimTime}>
                   {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
                 </Text>
@@ -246,7 +258,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
             <Button
               onPress={() => navigation.goBack()}
-              text="Volver"
+              text={t('reFiMedellinUbi.alreadyClaimed.backButton')}
               type={BtnTypes.PRIMARY}
               size={BtnSizes.FULL}
               style={styles.backButton}
@@ -279,7 +291,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           {!!ubiStatus.lastClaimTimestamp && (
             <View style={styles.lastClaimInfo}>
               <Text style={styles.lastClaimText}>
-                Último reclamo: {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString()}
+                {t('reFiMedellinUbi.alreadyClaimed.lastClaimTitle')}:{' '}
+                {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString()}
               </Text>
             </View>
           )}
