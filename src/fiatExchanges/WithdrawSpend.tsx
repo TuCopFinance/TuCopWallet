@@ -42,13 +42,6 @@ export default function WithdrawSpend() {
     })
   }
 
-  function goToSpend() {
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
-    AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
-      flow: FiatExchangeFlow.Spend,
-    })
-  }
-
   const { t } = useTranslation()
 
   const onOpenOtherFundingOptions = () => {
@@ -65,14 +58,6 @@ export default function WithdrawSpend() {
           <Image source={fiatExchange} style={styles.image} resizeMode={'contain'} />
         </View>
         <View style={styles.optionsListContainer}>
-          {/* <ListItem onPress={goToSpend}>
-            <Text testID="spend" style={styles.optionTitle}>
-              {t(`fiatExchangeFlow.spend.fiatExchangeTitle`)}
-            </Text>
-            <Text style={styles.optionSubtitle}>
-              {t(`fiatExchangeFlow.spend.fiatExchangeSubtitle`)}
-            </Text>
-          </ListItem> */}
           <ListItem onPress={goToCashOut}>
             <Text testID="cashOut" style={styles.optionTitle}>
               {t(`fiatExchangeFlow.cashOut.fiatExchangeTitle`)}
