@@ -92,8 +92,8 @@ export default React.memo(function Button(props: ButtonProps) {
   return (
     <Shadow
       style={styles.shadow}
-      offset={[0, 0]}
-      distance={10} // Add this to remove bottom shadow
+      offset={[0, 4]}
+      distance={8}
       startColor="rgba(190, 201, 255, 0.28)"
       disabled={type === BtnTypes.PRIMARY || type === BtnTypes.OUTLINE}
     >
@@ -149,9 +149,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   shadow: {
-    width: '100%',
     borderRadius: 15,
-    flexGrow: 1,
+    alignSelf: 'stretch',
   },
   gradientBackground: {
     position: 'absolute',
@@ -166,6 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 5,
     paddingHorizontal: 24,
+    maxHeight: 48,
   },
   small: {
     height: 40,
@@ -271,5 +271,8 @@ function getStyleForWrapper(
   size: BtnSizes | undefined,
   style: StyleProp<ViewStyle>
 ): StyleProp<ViewStyle> {
-  return [{ flexDirection: size === BtnSizes.FULL ? 'column' : 'row' }, style]
+  if (size === BtnSizes.FULL) {
+    return [{ flexDirection: 'column', width: '100%' }, style]
+  }
+  return [{ flexDirection: 'row' }, style]
 }

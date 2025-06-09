@@ -203,7 +203,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       return (
         <View style={styles.alreadyClaimedContainer}>
           <View style={styles.alreadyClaimedCard}>
-            <Celebration size={72} color={Colors.successDark} />
+            <Celebration size={72} color={Colors.primary} />
 
             <View style={styles.congratsSection}>
               <Text style={styles.congratsTitle}>¡Ya reclamaste tu subsidio!</Text>
@@ -247,7 +247,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             <Button
               onPress={() => navigation.goBack()}
               text="Volver"
-              type={BtnTypes.SECONDARY}
+              type={BtnTypes.PRIMARY}
               size={BtnSizes.FULL}
               style={styles.backButton}
             />
@@ -353,6 +353,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray2,
     ...getShadowStyle(Shadow.SoftLight),
+    zIndex: 1,
+    elevation: 3,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -450,6 +452,8 @@ const styles = StyleSheet.create({
     ...getShadowStyle(Shadow.Soft),
     borderWidth: 1,
     borderColor: Colors.gray2,
+    marginHorizontal: Spacing.Smallest8,
+    marginVertical: Spacing.Smallest8,
   },
   notEligibleTitle: {
     ...typeScale.titleMedium,
@@ -478,6 +482,7 @@ const styles = StyleSheet.create({
   },
   alreadyClaimedCard: {
     alignItems: 'center',
+    marginTop: Spacing.Large32,
   },
   eligibleContainer: {
     flex: 1,
