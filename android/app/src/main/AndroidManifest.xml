@@ -20,31 +20,45 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/deep_link_url_scheme" android:host="wallet" />
-      </intent-filter>
+
+      <!-- Deep link principal para la app -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="myapp" android:host="tucop" />
       </intent-filter>
+
+      <!-- WalletConnect deep links específicos -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="myapp" android:host="tucop" android:pathPrefix="/wc" />
+      </intent-filter>
+
+      <!-- WalletConnect deep links -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="wc" />
       </intent-filter>
+
+      <!-- Universal links para WalletConnect -->
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" android:host="tucop.xyz" />
-        <data android:pathPrefix="/wc" />
-        <data android:scheme="http" />
+        <data android:scheme="https" android:host="tucop.xyz" android:pathPrefix="/wc" />
+      </intent-filter>
+
+      <!-- HTTP fallback para universal links -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="http" android:host="tucop.xyz" android:pathPrefix="/wc" />
       </intent-filter>
     </activity>
 

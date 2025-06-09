@@ -2950,6 +2950,7 @@
   "ubiNotBeneficiary": "You are not eligible to receive the ReFi Medellín UBI subsidy",
   "ubiAlreadyClaimed": "You have already claimed your UBI subsidy this week",
   "ubiClaimError": "Error processing UBI subsidy claim. Please try again",
+  "insufficientFundsForGas": "Insufficient funds to pay for gas fees",
   "reFiMedellinUbi": {
     "title": "Claim your ReFi Medellín UBI",
     "subtitle": "Universal Basic Income Program",
