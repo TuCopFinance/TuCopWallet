@@ -10,6 +10,7 @@ import Celebration from 'src/icons/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
+import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
 import ReFiMedellinUBIContract, { UBIClaimStatus } from 'src/refi/ReFiMedellinUBIContract'
 import Colors from 'src/styles/colors'
@@ -93,44 +94,34 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
     try {
       setIsLoading(true)
+      Logger.debug(TAG, 'Starting claim process with biometric authentication')
 
-      // Primero necesitamos obtener el PIN del usuario
-      navigation.navigate(Screens.PincodeEnter, {
-        withVerification: true,
-        onSuccess: async (pin: string) => {
-          try {
-            Logger.debug(TAG, 'Starting claim process with PIN')
-            const result = await ReFiMedellinUBIContract.claimSubsidy(walletAddress as Address, pin)
+      // Usar el sistema de autenticación de la app que maneja automáticamente Face ID/Touch ID
+      const password = await getPassword(walletAddress, true, false)
 
-            Logger.debug(TAG, 'Claim result:', result)
+      Logger.debug(TAG, 'Authentication successful, proceeding with claim')
+      const result = await ReFiMedellinUBIContract.claimSubsidy(walletAddress as Address, password)
 
-            if (result.success) {
-              // Analítica
-              AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
+      Logger.debug(TAG, 'Claim result:', result)
 
-              // Actualizar el estado después del éxito
-              await checkUBIStatus()
+      if (result.success) {
+        // Analítica
+        AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
 
-              // Regresar a la pantalla anterior después del éxito
-              navigation.goBack()
-            } else {
-              Logger.warn(TAG, 'Claim failed:', result.error)
-              // El error ya se mostró en el contrato, solo actualizamos el estado
-              await checkUBIStatus()
-            }
-          } catch (error) {
-            Logger.error(TAG, 'Error claiming subsidy', error)
-            await checkUBIStatus()
-          } finally {
-            setIsLoading(false)
-          }
-        },
-        onCancel: () => {
-          setIsLoading(false)
-        },
-      })
+        // Actualizar el estado después del éxito
+        await checkUBIStatus()
+
+        // Regresar a la pantalla anterior después del éxito
+        navigation.goBack()
+      } else {
+        Logger.warn(TAG, 'Claim failed:', result.error)
+        // El error ya se mostró en el contrato, solo actualizamos el estado
+        await checkUBIStatus()
+      }
     } catch (error) {
       Logger.error(TAG, 'Error in claim process', error)
+      await checkUBIStatus()
+    } finally {
       setIsLoading(false)
     }
   }
