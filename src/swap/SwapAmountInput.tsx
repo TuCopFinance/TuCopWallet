@@ -165,7 +165,7 @@ const SwapAmountInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderColor: Colors.black,
+    borderColor: Colors.gray2,
     borderWidth: 1,
   },
   tokenInfo: {
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bottomContainer: {
-    borderColor: Colors.black,
+    borderColor: Colors.gray2,
     borderTopWidth: 1,
   },
   inputContainer: {
