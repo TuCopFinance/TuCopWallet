@@ -2970,6 +2970,18 @@
       "claimButton": "Reclamar Mi Subsidio",
       "claimingButton": "Reclamando...",
       "processingText": "Procesando transacción..."
+    },
+    "alreadyClaimed": {
+      "title": "¡Ya reclamaste tu subsidio!",
+      "subtitle": "Has reclamado exitosamente tu subsidio UBI esta semana",
+      "lastClaimTitle": "Último reclamo",
+      "nextClaimTitle": "Próximo reclamo disponible",
+      "backButton": "Volver"
+    },
+    "timeRemaining": {
+      "availableNow": "Disponible ahora",
+      "daysAndHours": "{{days}} día{{daysPlural}} y {{hours}} hora{{hoursPlural}}",
+      "hoursOnly": "{{hours}} hora{{hoursPlural}}"
     }
   },
   "ubiNotBeneficiary": "No eres elegible para recibir el subsidio UBI de ReFi Medellín",
