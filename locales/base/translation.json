@@ -2976,6 +2976,18 @@
       "claimButton": "Claim My Subsidy",
       "claimingButton": "Claiming...",
       "processingText": "Processing transaction..."
+    },
+    "alreadyClaimed": {
+      "title": "You have already claimed your subsidy!",
+      "subtitle": "You have successfully claimed your UBI subsidy this week",
+      "lastClaimTitle": "Last claim",
+      "nextClaimTitle": "Next claim available",
+      "backButton": "Back"
+    },
+    "timeRemaining": {
+      "availableNow": "Available now",
+      "daysAndHours": "{{days}} day{{daysPlural}} and {{hours}} hour{{hoursPlural}}",
+      "hoursOnly": "{{hours}} hour{{hoursPlural}}"
     }
   }
 }
