@@ -95,7 +95,9 @@ export default React.memo(function Button(props: ButtonProps) {
       offset={[0, 4]}
       distance={8}
       startColor="rgba(190, 201, 255, 0.28)"
-      disabled={type === BtnTypes.PRIMARY || type === BtnTypes.OUTLINE}
+      disabled={
+        type === BtnTypes.PRIMARY || type === BtnTypes.OUTLINE || type === BtnTypes.TERTIARY
+      }
     >
       <View style={getStyleForWrapper(size, style)}>
         {/* these Views cannot be combined as it will cause ripple to not respect the border radius */}
