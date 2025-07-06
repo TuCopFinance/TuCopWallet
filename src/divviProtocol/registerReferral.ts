@@ -2,14 +2,14 @@
  * Re-exporta el SDK oficial de Divvi para mantener la separación de responsabilidades en la arquitectura
  *
  * El SDK oficial maneja:
- * - Generación de sufijo de datos para transacciones (getDataSuffix)
+ * - Generación de sufijo de datos para transacciones (getReferralTag en v2)
  * - Envío de información de referidos a la API de Divvi (submitReferral)
  */
-import { getDataSuffix, submitReferral } from '@divvi/referral-sdk'
+import { getReferralTag, submitReferral } from '@divvi/referral-sdk'
 import Logger from 'src/utils/Logger'
 import { Address } from 'viem'
 
-export { getDataSuffix, submitReferral }
+export { getReferralTag, submitReferral }
 
 const TAG = 'divviProtocol/registerReferral'
 
@@ -67,21 +67,16 @@ export function appendDivviCalldata(
 }
 
 /**
- * Re-exportamos las funciones del SDK oficial de Divvi para facilitar su uso
- * y permitir mocks en pruebas
+ * Genera el sufijo de datos para una transacción de Divvi usando v2
  */
-
-/**
- * Genera el sufijo de datos para una transacción de Divvi
- */
-export function generateDataSuffix(config: { consumer: Address; providers: Address[] }): string {
+export function generateDataSuffix(config: { user: Address; consumer: Address }): string {
   try {
-    Logger.debug(TAG, 'Generando sufijo de datos con SDK de Divvi', {
-      consumer: config.consumer,
-      providersCount: config.providers.length,
+    Logger.debug(TAG, 'Generando sufijo de datos con SDK de Divvi v2', {
+      user: config.user.substring(0, 8) + '...',
+      consumer: config.consumer.substring(0, 8) + '...',
     })
 
-    const result = getDataSuffix(config)
+    const result = getReferralTag(config)
 
     Logger.debug(TAG, 'Sufijo de datos generado', {
       length: result.length,
