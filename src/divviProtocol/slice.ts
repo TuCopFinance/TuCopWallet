@@ -1,6 +1,7 @@
-import { getDataSuffix } from '@divvi/referral-sdk'
+import { getReferralTag } from '@divvi/referral-sdk'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'src/redux/reducers'
+import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
 
 // Definimos la interfaz para los referidos
@@ -12,6 +13,7 @@ export interface Referral {
   chainId?: number
   status: 'pending' | 'successful' | 'cancelled'
   timestamp: number
+  user?: Address // Agregamos el campo user para v2
 }
 
 interface DivviProtocolState {
@@ -43,31 +45,38 @@ const divviProtocolSlice = createSlice({
     },
     // Registra un nuevo referido
     referralSubmitted: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds } = action.payload
-      const key = getDataSuffix({
+      const { divviId, campaignIds, user } = action.payload
+
+      // En v2, usamos user y consumer (divviId) para generar la clave
+      const key = getReferralTag({
+        user: user || (divviId as Address), // Fallback al divviId si no hay user
         consumer: divviId as Address,
-        providers: campaignIds,
       })
+
       state.referrals[key] = action.payload
     },
     // Actualiza el estado de un referido a exitoso
     referralSuccessful: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds } = action.payload
-      const key = getDataSuffix({
+      const { divviId, campaignIds, user } = action.payload
+
+      const key = getReferralTag({
+        user: user || (divviId as Address), // Fallback al divviId si no hay user
         consumer: divviId as Address,
-        providers: campaignIds,
       })
+
       if (state.referrals[key]) {
         state.referrals[key].status = 'successful'
       }
     },
     // Actualiza el estado de un referido a cancelado
     referralCancelled: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds } = action.payload
-      const key = getDataSuffix({
+      const { divviId, campaignIds, user } = action.payload
+
+      const key = getReferralTag({
+        user: user || (divviId as Address), // Fallback al divviId si no hay user
         consumer: divviId as Address,
-        providers: campaignIds,
       })
+
       if (state.referrals[key]) {
         state.referrals[key].status = 'cancelled'
       }
@@ -90,7 +99,16 @@ export const hasReferralSucceededSelector = (
   divviId: Address,
   campaignIds: Address[]
 ) => {
-  const key = getDataSuffix({ consumer: divviId, providers: campaignIds })
+  const userAddress = walletAddressSelector(state)
+  if (!userAddress) {
+    return false
+  }
+
+  const key = getReferralTag({
+    user: userAddress as Address,
+    consumer: divviId,
+  })
+
   return state.divviProtocol.referrals[key]?.status === 'successful'
 }
 
