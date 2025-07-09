@@ -180,19 +180,26 @@ export class RegulatoryTerms extends React.Component<Props> {
         edges={Platform.select({ ios: ['bottom', 'left', 'right'] })}
       >
         <DevSkipButton nextScreen={Screens.PincodeSet} />
-        {variant === 'colloquial_terms' ? this.renderColloquialTerms() : this.renderTerms()}
-        <SafeAreaInsetsContext.Consumer>
-          {(insets) => (
-            <Button
-              style={[styles.button, insets && insets.bottom <= MARGIN && { marginBottom: MARGIN }]}
-              type={BtnTypes.PRIMARY}
-              size={BtnSizes.FULL}
-              text={t('accept')}
-              onPress={this.onPressAccept}
-              testID={'AcceptTermsButton'}
-            />
-          )}
-        </SafeAreaInsetsContext.Consumer>
+        <View style={styles.contentContainer}>
+          {variant === 'colloquial_terms' ? this.renderColloquialTerms() : this.renderTerms()}
+        </View>
+        <View style={styles.buttonContainer}>
+          <SafeAreaInsetsContext.Consumer>
+            {(insets) => (
+              <Button
+                style={[
+                  styles.button,
+                  insets && insets.bottom <= MARGIN && { marginBottom: MARGIN },
+                ]}
+                type={BtnTypes.PRIMARY}
+                size={BtnSizes.FULL}
+                text={t('accept')}
+                onPress={this.onPressAccept}
+                testID={'AcceptTermsButton'}
+              />
+            )}
+          </SafeAreaInsetsContext.Consumer>
+        </View>
       </SafeAreaView>
     )
   }
@@ -207,12 +214,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  contentContainer: {
+    flex: 1,
+  },
   scrollView: {
-    marginTop: 40,
+    flex: 1,
   },
   scrollContent: {
-    paddingTop: 40,
+    paddingTop: 20,
     paddingHorizontal: MARGIN,
+    paddingBottom: 20,
   },
   title: {
     ...typeScale.titleMedium,
@@ -230,9 +241,11 @@ const styles = StyleSheet.create({
   link: {
     textDecorationLine: 'underline',
   },
+  buttonContainer: {
+    paddingHorizontal: MARGIN,
+  },
   button: {
-    marginTop: MARGIN,
-    marginHorizontal: MARGIN,
+    marginTop: 16,
   },
   titleColloquial: {
     ...typeScale.titleSmall,

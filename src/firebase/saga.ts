@@ -23,6 +23,9 @@ const TAG = 'firebase/saga'
 const FIREBASE_CONNECT_RETRIES = 3
 
 export function* waitForFirebaseAuth() {
+  if (!FIREBASE_ENABLED) {
+    return
+  }
   yield takeWithInMemoryCache(Actions.AUTHORIZED)
 }
 
@@ -65,6 +68,9 @@ export function* initializeFirebase() {
 }
 
 export function* syncLanguageSelection() {
+  if (!FIREBASE_ENABLED) {
+    return
+  }
   yield* call(waitForFirebaseAuth)
   yield* call(handleUpdateAccountRegistration)
 }
@@ -74,6 +80,10 @@ export function* watchLanguage() {
 }
 
 export function* firebaseSaga() {
+  if (!FIREBASE_ENABLED) {
+    Logger.info(TAG, 'Firebase disabled, skipping Firebase saga')
+    return
+  }
   yield* spawn(initializeFirebase)
   yield* spawn(watchLanguage)
   yield* takeLatest(AppActions.APP_MOUNTED, safely(watchFirebaseNotificationChannel))

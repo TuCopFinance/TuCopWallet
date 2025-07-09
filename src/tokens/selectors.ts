@@ -409,7 +409,7 @@ export const swappableToTokensByNetworkIdSelector = createSelector(
 // )
 export const cashInTokensByNetworkIdSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
-  (tokens) => tokens
+  (tokens) => tokens.filter((token) => token.tokenId !== networkConfig.ccopTokenId)
 )
 
 export const cashOutTokensByNetworkIdSelector = createSelector(
