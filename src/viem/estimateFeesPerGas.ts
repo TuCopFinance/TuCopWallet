@@ -129,8 +129,8 @@ async function estimateCeloL2FeesPerGas(
   const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * CELO_GAS_MULTIPLIERS.maxFee))
 
   // Add additional safety margin to handle base fee volatility
-  // Base fee can increase by up to 12.5% per block, so we add extra buffer
-  const safetyBuffer = adjustedBaseFee / BigInt(4) // 25% of base fee as safety buffer
+  // For Celo L2, base fee is more stable, so we use a smaller buffer
+  const safetyBuffer = adjustedBaseFee / BigInt(10) // 10% of base fee as safety buffer
   const finalMaxFee = multipliedMaxFee + safetyBuffer
 
   Logger.debug('estimateFeesPerGas', 'Celo L2 calculation:', {
