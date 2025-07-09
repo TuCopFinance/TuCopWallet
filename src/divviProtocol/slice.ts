@@ -45,7 +45,7 @@ const divviProtocolSlice = createSlice({
     },
     // Registra un nuevo referido
     referralSubmitted: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds, user } = action.payload
+      const { divviId, user } = action.payload
 
       // En v2, usamos user y consumer (divviId) para generar la clave
       const key = getReferralTag({
@@ -57,7 +57,7 @@ const divviProtocolSlice = createSlice({
     },
     // Actualiza el estado de un referido a exitoso
     referralSuccessful: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds, user } = action.payload
+      const { divviId, user } = action.payload
 
       const key = getReferralTag({
         user: user || (divviId as Address), // Fallback al divviId si no hay user
@@ -70,7 +70,7 @@ const divviProtocolSlice = createSlice({
     },
     // Actualiza el estado de un referido a cancelado
     referralCancelled: (state, action: PayloadAction<Referral>) => {
-      const { divviId, campaignIds, user } = action.payload
+      const { divviId, user } = action.payload
 
       const key = getReferralTag({
         user: user || (divviId as Address), // Fallback al divviId si no hay user

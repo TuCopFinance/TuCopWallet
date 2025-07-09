@@ -142,6 +142,8 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "xyz.mobilestack"
 
+    // AGP 8.x configuration - removed obsolete aaptOptions
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -181,10 +183,8 @@ android {
 
     }
 
-    dexOptions {
-        javaMaxHeapSize "4g"
-        preDexLibraries true
-    }
+    // dexOptions removed - it's obsolete in newer Android Gradle Plugin versions
+    // The system now handles dexing optimization automatically
 
     signingConfigs {
         release {
@@ -292,9 +292,9 @@ android {
 
 
 dependencies {
-    // Use legacy tag so that Detox uses Java 11
-    // https://github.com/wix/Detox/releases/tag/20.18.5
-    androidTestImplementation('com.wix:detox-legacy:+') {
+    // Use the standard Detox dependency
+    // https://github.com/wix/Detox/releases
+    androidTestImplementation('com.wix:detox:+') {
         exclude group: 'com.google.android.material'
     }
     androidTestImplementation('com.linkedin.testbutler:test-butler-library:2.2.1')
