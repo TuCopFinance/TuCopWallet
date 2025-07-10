@@ -16,7 +16,6 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.util.Date;
-import org.devio.rn.splashscreen.SplashScreen;
 
 public class MainActivity extends ReactActivity {
 
@@ -66,7 +65,7 @@ public class MainActivity extends ReactActivity {
       );
 
     appStartedMillis = System.currentTimeMillis();
-    SplashScreen.show(this, R.style.SplashTheme, false);
+    // SplashScreen.show(this, R.style.SplashTheme, false); // Disabled for React Native 0.75 compatibility
     super.onCreate(null);
     CleverTapModule.setInitialUri(getIntent().getData());
   }
