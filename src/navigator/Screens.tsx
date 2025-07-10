@@ -112,6 +112,7 @@ export enum Screens {
   WithdrawSpend = 'WithdrawSpend',
   MarranitoStaking = 'MarranitoStaking',
   MarranitosMyStakes = 'MarranitosMyStakes',
+  NoProvidersScreen = 'NoProvidersScreen',
 }
 
 export const MarranitoStaking = 'MarranitoStaking'

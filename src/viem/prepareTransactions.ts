@@ -389,15 +389,18 @@ export async function prepareTransactions({
     const estimatedGasFee = getEstimatedGasFee(estimatedTransactions)
     const estimatedGasFeeInDecimal = estimatedGasFee?.shiftedBy(-feeDecimals)
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
-    if (maxGasFeeInDecimal.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
+    // Use estimated gas fee for balance validation (more realistic than max)
+    const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
+    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
       // Not enough balance to pay for gas, try next fee currency
       continue
     }
     const spendAmountDecimal = spendTokenAmount.shiftedBy(-(spendToken?.decimals ?? 0))
+    // For same-token transactions, use estimated gas fee for more accurate validation
     if (
       spendToken &&
       spendToken.tokenId === feeCurrency.tokenId &&
-      spendAmountDecimal.plus(maxGasFeeInDecimal).isGreaterThan(spendToken.balance) &&
+      spendAmountDecimal.plus(gasForValidation).isGreaterThan(spendToken.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for gas, try next fee currency
@@ -438,7 +441,9 @@ export async function prepareTransactions({
 
   // We can decrease the spend amount to pay for gas,
   // We'll ask the user if they want to proceed
-  const adjustedMaxGasFee = result.maxGasFeeInDecimal.times(decreasedAmountGasFeeMultiplier)
+  // Use estimated gas fee for more accurate max amount calculation
+  const gasForCalculation = result.estimatedGasFeeInDecimal || result.maxGasFeeInDecimal
+  const adjustedMaxGasFee = gasForCalculation.times(decreasedAmountGasFeeMultiplier)
   const maxAmount = spendToken.balance.minus(adjustedMaxGasFee)
 
   return {

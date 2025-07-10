@@ -48,14 +48,16 @@ export function getExperimentParams<T extends Record<string, StatsigParameter>>(
   try {
     const experiment = Statsig.getExperiment(experimentName)
     if (!isE2EEnv && experiment.getEvaluationDetails().reason === EvaluationReason.Uninitialized) {
-      Logger.warn(
-        TAG,
-        'getExperimentParams: SDK is uninitialized when getting experiment',
-        experiment
-      )
+      // SDK is uninitialized, return default values silently
+      return defaultValues
     }
     return getParams({ config: experiment, defaultValues })
   } catch (error) {
+    // Check if error is due to uninitialized SDK
+    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+      // SDK is uninitialized, return default values silently
+      return defaultValues
+    }
     Logger.warn(
       TAG,
       `getExperimentParams: Error getting params for experiment: ${experimentName}`,
@@ -75,23 +77,26 @@ function _getDynamicConfigParams<T extends Record<string, StatsigParameter>>({
   try {
     const config = Statsig.getConfig(configName)
     if (!isE2EEnv && config.getEvaluationDetails().reason === EvaluationReason.Uninitialized) {
-      Logger.warn(
-        TAG,
-        'getDynamicConfigParams: SDK is uninitialized when getting experiment',
-        config
-      )
+      // SDK is uninitialized, return default values silently
+      return defaultValues
     }
     return getParams({ config, defaultValues })
   } catch (error) {
+    // Check if error is due to uninitialized SDK
+    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+      // SDK is uninitialized, return default values silently
+      return defaultValues
+    }
     Logger.warn(TAG, `Error getting params for dynamic config: ${configName}`, error)
     return defaultValues
   }
 }
 
 export function getMultichainFeatures() {
-  const multichainParams = _getDynamicConfigParams(
-    DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES]
-  )
+  const multichainParams = _getDynamicConfigParams({
+    configName: StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES,
+    defaultValues: DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES].defaultValues
+  })
   const filteredParams = {} as { [key: string]: NetworkId[] }
   Object.entries(multichainParams).forEach(([key, value]) => {
     filteredParams[key] = value.filter((networkId) => networkId in NetworkId)
@@ -112,8 +117,17 @@ export function getDynamicConfigParams<T extends Record<string, StatsigParameter
 
 export function getFeatureGate(featureGateName: StatsigFeatureGates) {
   try {
-    return Statsig.checkGate(featureGateName)
+    const gate = Statsig.checkGate(featureGateName)
+    return gate
   } catch (error) {
+    // Check if error is due to uninitialized SDK
+    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+      // SDK is uninitialized, return default value silently
+      return (
+        featureGateName === StatsigFeatureGates.ALLOW_HOOKS_PREVIEW ||
+        featureGateName === StatsigFeatureGates.SHOW_ONBOARDING_PHONE_VERIFICATION
+      )
+    }
     Logger.warn(TAG, `Error getting feature gate: ${featureGateName}`, error)
     // gates should always default to false, this boolean is to just remain BC
     // with two gates defaulting to true

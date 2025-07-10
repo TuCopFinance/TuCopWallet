@@ -15,6 +15,7 @@ import { NetworkId, StandbyTransaction } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { safely } from 'src/utils/safely'
 import { networkIdToChainId } from 'src/web3/networkConfig'
+import { walletAddressSelector } from 'src/web3/selectors'
 import { call, put, select, spawn, takeEvery, takeLatest } from 'typed-redux-saga'
 import { Address, Hash } from 'viem'
 
@@ -44,7 +45,7 @@ const TucopAnalytics = {
  */
 export function* initializeDivviProtocol() {
   try {
-    Logger.info(TAG, 'Inicializando integración con Divvi Protocol')
+    Logger.info(TAG, 'Inicializando integración con Divvi Protocol v2')
 
     // Verificar si la configuración de Divvi está presente
     const divviConfig = yield* select(getDivviConfig)
@@ -73,9 +74,9 @@ export function* initializeDivviProtocol() {
     // Procesar referidos pendientes al inicializar
     yield* call(processPendingReferralsSaga)
 
-    Logger.info(TAG, 'Integración con Divvi Protocol inicializada correctamente')
+    Logger.info(TAG, 'Integración con Divvi Protocol v2 inicializada correctamente')
   } catch (error) {
-    Logger.error(TAG, 'Error al inicializar integración con Divvi Protocol', error)
+    Logger.error(TAG, 'Error al inicializar integración con Divvi Protocol v2', error)
     TucopAnalytics.track(AppEvents.DIVVI_SDK_INITIALIZED, {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -131,6 +132,7 @@ function* submitReferralSaga(action: ReturnType<typeof referralSubmitted>) {
       divviId: referral.divviId,
       campaignIds: referral.campaignIds.map((id) => id.substring(0, 8) + '...'),
       chainId: referral.chainId,
+      user: referral.user?.substring(0, 8) + '...',
       timestamp: new Date(referral.timestamp).toISOString(),
     })
 
@@ -206,7 +208,7 @@ export function* handleTransactionConfirmed({
   networkId: NetworkId
 }) {
   try {
-    Logger.info(TAG, 'Procesando transacción confirmada para Divvi', {
+    Logger.info(TAG, 'Procesando transacción confirmada para Divvi v2', {
       txHash,
       networkId,
       timestamp: new Date().toISOString(),
@@ -215,11 +217,18 @@ export function* handleTransactionConfirmed({
     // Verificar si la integración con Divvi está configurada
     const divviConfig = yield* select(getDivviConfig)
 
-    if (!divviConfig?.consumer || !divviConfig?.providers || !divviConfig?.providers.length) {
+    // Obtener la dirección del usuario
+    const userAddress = yield* select(walletAddressSelector)
+
+    if (!divviConfig?.consumer) {
       Logger.debug(TAG, 'Configuración de Divvi incompleta, omitiendo reporte de transacción', {
         consumer: divviConfig?.consumer || 'No definido',
-        providersLength: divviConfig?.providers?.length || 0,
       })
+      return
+    }
+
+    if (!userAddress) {
+      Logger.debug(TAG, 'No hay dirección de usuario disponible, omitiendo reporte')
       return
     }
 
@@ -233,18 +242,18 @@ export function* handleTransactionConfirmed({
       return
     }
 
-    Logger.info(TAG, 'Reportando transacción a Divvi', {
+    Logger.info(TAG, 'Reportando transacción a Divvi v2', {
       txHash,
       networkId,
       chainId,
       consumer: divviConfig.consumer.substring(0, 8) + '...',
-      providers: divviConfig.providers.map((p) => p.substring(0, 8) + '...'),
+      user: userAddress.substring(0, 8) + '...',
     })
 
-    // Convertir los providers a Address
-    const providersAsAddress = divviConfig.providers.map((provider) => provider as Address)
+    // Convertir los providers a Address (mantenemos para compatibilidad)
+    const providersAsAddress = divviConfig.providers?.map((provider) => provider as Address) || []
 
-    // Crear un objeto Referral y usar el flujo de referidos
+    // Crear un objeto Referral con el campo user para v2
     const referral: Referral = {
       divviId: divviConfig.consumer,
       campaignIds: providersAsAddress,
@@ -252,11 +261,13 @@ export function* handleTransactionConfirmed({
       chainId,
       status: 'pending',
       timestamp: Date.now(),
+      user: userAddress as Address, // Agregamos el campo user para v2
     }
 
-    Logger.info(TAG, 'Creado objeto Referral para enviar a Divvi', {
+    Logger.info(TAG, 'Creado objeto Referral para enviar a Divvi v2', {
       referralId: `${txHash.substring(0, 8)}-${chainId}`,
       campaignIdsCount: providersAsAddress.length,
+      user: userAddress.substring(0, 8) + '...',
     })
 
     // Enviar el referido para su procesamiento
@@ -267,7 +278,7 @@ export function* handleTransactionConfirmed({
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    Logger.error(TAG, 'Error al procesar transacción confirmada para Divvi', {
+    Logger.error(TAG, 'Error al procesar transacción confirmada para Divvi v2', {
       error,
       txHash,
       networkId,
@@ -278,7 +289,7 @@ export function* handleTransactionConfirmed({
 
 export function* watchDivviProtocol() {
   try {
-    Logger.info(TAG, 'Iniciando watchers de Divvi Protocol')
+    Logger.info(TAG, 'Iniciando watchers de Divvi Protocol v2')
 
     // Observar el evento de montaje de la aplicación para inicializar Divvi
     yield* takeLatest(AppEvents.APP_MOUNTED, initializeDivviProtocol)
@@ -290,7 +301,7 @@ export function* watchDivviProtocol() {
       transactionConfirmed.type,
       safely(function* (action: ReturnType<typeof transactionConfirmed>) {
         const { txId, receipt } = action.payload
-        Logger.info(TAG, '⚡ Acción transactionConfirmed detectada, procesando para Divvi', {
+        Logger.info(TAG, '⚡ Acción transactionConfirmed detectada, procesando para Divvi v2', {
           txId,
           transactionHash: receipt.transactionHash,
           timestamp: new Date().toISOString(),
@@ -323,7 +334,7 @@ export function* watchDivviProtocol() {
         } else {
           Logger.warn(
             TAG,
-            'No se pudo encontrar la información completa de la transacción para Divvi',
+            'No se pudo encontrar la información completa de la transacción para Divvi v2',
             {
               txId,
               transactionHash: receipt.transactionHash,
@@ -344,7 +355,7 @@ export function* watchDivviProtocol() {
       'SWAP/SWAP_COMPLETED',
       safely(function* (action: any) {
         if (action.hash && action.networkId) {
-          Logger.info(TAG, '🔄 Detectado swap completado, procesando para Divvi', {
+          Logger.info(TAG, '🔄 Detectado swap completado, procesando para Divvi v2', {
             txHash: action.hash,
             networkId: action.networkId,
             timestamp: new Date().toISOString(),
@@ -378,9 +389,9 @@ export function* watchDivviProtocol() {
     )
     Logger.info(TAG, 'Watcher para evento SWAP/SWAP_COMPLETED configurado')
 
-    Logger.info(TAG, 'Todos los watchers de Divvi Protocol iniciados correctamente')
+    Logger.info(TAG, 'Todos los watchers de Divvi Protocol v2 iniciados correctamente')
   } catch (error) {
-    Logger.error(TAG, 'Error al iniciar watchers de Divvi Protocol', {
+    Logger.error(TAG, 'Error al iniciar watchers de Divvi Protocol v2', {
       error,
       stack: error instanceof Error ? error.stack : 'No stack disponible',
     })
@@ -394,8 +405,8 @@ export function* divviProtocolSaga() {
     // Inicializar inmediatamente
     yield* call(initializeDivviProtocol)
 
-    Logger.info(TAG, 'Saga de Divvi Protocol inicializado')
+    Logger.info(TAG, 'Saga de Divvi Protocol v2 inicializado')
   } catch (error) {
-    Logger.error(TAG, 'Error al inicializar saga de Divvi Protocol', error)
+    Logger.error(TAG, 'Error al inicializar saga de Divvi Protocol v2', error)
   }
 }

@@ -88,7 +88,7 @@ export const TORUS_NETWORK =
     : TORUS_SAPPHIRE_NETWORK.SAPPHIRE_DEVNET
 
 // FEATURE FLAGS
-export const FIREBASE_ENABLED = stringToBoolean(Config.FIREBASE_ENABLED || 'false')
+export const FIREBASE_ENABLED = false
 export const SHOW_TESTNET_BANNER = stringToBoolean(Config.SHOW_TESTNET_BANNER || 'false')
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 

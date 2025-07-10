@@ -41,6 +41,7 @@ export function WebViewAndroidBottomSheet({
       useNativeDriverForBackdrop={true}
     >
       <View style={styles.centerContainer} testID="WebViewAndroidBottomSheet">
+        <View style={styles.handle} />
         <Pressable
           style={styles.pressable}
           onPress={openExternalLink}
@@ -49,7 +50,11 @@ export function WebViewAndroidBottomSheet({
         >
           <Text style={styles.bottomSheetText}>{t('webView.openExternal')}</Text>
         </Pressable>
-        <Pressable onPress={onClose} android_ripple={{ color: Colors.gray2, borderless: false }}>
+        <Pressable 
+          style={styles.pressable}
+          onPress={onClose} 
+          android_ripple={{ color: Colors.gray2, borderless: false }}
+        >
           <Text style={styles.bottomSheetText}>{t('dismiss')}</Text>
         </Pressable>
       </View>
@@ -64,16 +69,29 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     backgroundColor: Colors.white,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 8,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.gray3,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginVertical: 12,
   },
   // Needed to add icons in the pressable buttons
   pressable: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 56,
   },
   bottomSheetText: {
     ...typeScale.bodyMedium,
     textAlign: 'left',
     padding: variables.contentPadding,
+    flex: 1,
   },
 })
 

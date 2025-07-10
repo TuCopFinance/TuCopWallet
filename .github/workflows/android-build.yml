@@ -1,0 +1,225 @@
+name: Android Build & Deploy
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'android/**'
+      - 'src/**'
+      - 'package.json'
+      - 'yarn.lock'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'android/**'
+      - 'src/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Build environment'
+        required: true
+        default: 'mainnet'
+        type: choice
+        options:
+          - mainnet
+          - alfajores
+      upload_to_store:
+        description: 'Upload to Play Store'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20.17.0'
+  JAVA_VERSION: '17'
+  RUBY_VERSION: '3.0'
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "alfajores"]') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          build-tools: 35.0.0
+          cmake-version: 3.22.1
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          yarn postinstall
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Create environment file
+        run: |
+          if [ "${{ matrix.environment }}" = "mainnet" ]; then
+            cp .env.mainnet .env
+          else
+            cp .env.alfajores .env
+          fi
+
+      - name: Set build number
+        run: |
+          BUILD_NUMBER=$(date +%s)
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=$BUILD_NUMBER/" android/gradle.properties
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Clean and build Android Bundle
+        run: |
+          cd android
+          echo "🏗️ Building for environment: ${{ matrix.environment }}"
+          echo "📱 Target SDK: 35 (Android 15)"
+          echo "☕ Java version: $(java -version 2>&1 | head -n 1)"
+          echo "🐘 Gradle version: $(./gradlew --version | grep Gradle)"
+          
+          # Clean previous builds
+          ./gradlew clean
+          
+          # Build the bundle
+          ./gradlew bundle${{ matrix.environment }}Release \
+            -x generateAutolinkingPackageList \
+            --stacktrace \
+            --info \
+            --build-cache \
+            --parallel
+
+      - name: Verify build output
+        run: |
+          BUNDLE_PATH="android/app/build/outputs/bundle/${{ matrix.environment }}Release/"
+          if [ -f "${BUNDLE_PATH}app-${{ matrix.environment }}-release.aab" ]; then
+            echo "✅ Bundle created successfully"
+            ls -la "$BUNDLE_PATH"
+            echo "📦 Bundle size: $(du -h ${BUNDLE_PATH}app-${{ matrix.environment }}-release.aab | cut -f1)"
+          else
+            echo "❌ Bundle not found at $BUNDLE_PATH"
+            exit 1
+          fi
+
+      - name: Upload Android Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle-${{ matrix.environment }}-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/${{ matrix.environment }}Release/
+          retention-days: 30
+
+      - name: Build APK for testing
+        if: github.event_name == 'pull_request'
+        run: |
+          cd android
+          ./gradlew assemble${{ matrix.environment }}Release \
+            -x generateAutolinkingPackageList \
+            --stacktrace
+
+      - name: Upload APK for testing
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ matrix.environment }}-${{ github.run_number }}
+          path: android/app/build/outputs/apk/${{ matrix.environment }}Release/
+          retention-days: 7
+
+      - name: Deploy to Play Store
+        if: |
+          matrix.environment == 'mainnet' && 
+          (github.ref == 'refs/heads/main' || github.event.inputs.upload_to_store == 'true') &&
+          secrets.GOOGLE_PLAY_JSON_KEY != ''
+        run: |
+          echo "🚀 Deploying to Play Store Internal Track"
+          bundle exec fastlane android upload \
+            environment:${{ matrix.environment }} \
+            track:internal
+        env:
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+  notify-server:
+    needs: build-android
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Notify server about new build
+        run: |
+          ANDROID_SUCCESS="${{ needs.build-android.result == 'success' }}"
+          
+          curl -X POST "${{ secrets.RAILWAY_API_URL }}/api/update-version" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
+            -d '{
+              "platform": "android",
+              "version": "${{ steps.version.outputs.version }}",
+              "buildNumber": "'$BUILD_NUMBER'",
+              "success": '$ANDROID_SUCCESS',
+              "releaseNotes": "🚀 Android build v${{ steps.version.outputs.version }}\n\n📱 Compilado para Android 15 (API 35)\n🔧 Gradle 8.10.2 + AGP 8.7.2\n⚡ React Native 0.75.4\n\n✅ Estado: '${{ needs.build-android.result }}'",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "artifacts": {
+                "mainnet": true,
+                "alfajores": true
+              }
+            }' || echo "⚠️ Server notification failed but continuing..."
+
+      - name: Slack notification
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.build-android.result }}
+          channel: '#builds'
+          text: |
+            🚀 *Tu Cop Wallet Android Build*
+            
+            *Version:* ${{ steps.version.outputs.version }}
+            *Status:* ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }}
+            *Environment:* Android 15 (API 35)
+            *Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}[0:7]>
+            
+            ${{ needs.build-android.result == 'success' && '📦 Bundles ready for deployment' || '🔍 Check logs for build errors' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

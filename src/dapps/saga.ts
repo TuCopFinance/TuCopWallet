@@ -53,7 +53,7 @@ export function* handleOpenDapp(action: PayloadAction<DappSelectedAction>) {
 export function* handleFetchDappsList() {
   const dappsListApiUrl = yield* select(dappsListApiUrlSelector)
   if (!dappsListApiUrl) {
-    Logger.warn(TAG, 'dappsListApiUrl not found, skipping dapps list fetch')
+    Logger.debug(TAG, 'dappsListApiUrl not found, skipping dapps list fetch')
     return
   }
 

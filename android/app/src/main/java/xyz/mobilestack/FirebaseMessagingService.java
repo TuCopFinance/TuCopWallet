@@ -5,10 +5,10 @@ import android.util.Log;
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.clevertap.android.sdk.pushnotification.NotificationInfo;
 import com.google.firebase.messaging.RemoteMessage;
-import io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService;
 import java.util.Map;
 
-public class FirebaseMessagingService extends ReactNativeFirebaseMessagingService {
+public class FirebaseMessagingService
+  extends com.google.firebase.messaging.FirebaseMessagingService {
 
   static final String TAG = "FirebaseMessagingService";
 
@@ -24,7 +24,7 @@ public class FirebaseMessagingService extends ReactNativeFirebaseMessagingServic
         if (info.fromCleverTap) {
           // over here got is channel id which you will have to use while sending push notification from CleverTap Dashboard
           //and this is required for Android Os 8.0 and above.
-          CleverTapAPI.createNotification(getApplicationContext(), extras);
+          CleverTapAPI.createNotification(this, extras);
         } else {
           // not from CleverTap handle yourself or pass to another provider
           super.onMessageReceived(message);

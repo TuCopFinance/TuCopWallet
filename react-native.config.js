@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   project: {
     ios: {
@@ -5,6 +7,8 @@ module.exports = {
     },
     android: {
       sourceDir: './android',
+      packageName: 'xyz.mobilestack',
+      appName: 'app',
     },
   },
   assets: ['./assets/fonts/'],

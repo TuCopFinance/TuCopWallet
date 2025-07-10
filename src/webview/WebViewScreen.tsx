@@ -204,21 +204,24 @@ function WebViewScreen({ route, navigation }: Props) {
         keyboardVerticalOffset={headerHeight}
         testID="WebViewScreen/KeyboardAwareView"
       >
-        <WebView
-          ref={webViewRef}
-          originWhitelist={['https://*', `${DEEP_LINK_URL_SCHEME}://*`]}
-          onShouldStartLoadWithRequest={handleLoadRequest}
-          source={{ uri }}
-          startInLoadingState={true}
-          renderLoading={() => <ActivityIndicator style={styles.loading} size="large" />}
-          onNavigationStateChange={(navState) => {
-            setCanGoBack(navState.canGoBack)
-            setCanGoForward(navState.canGoForward)
-            handleSetNavigationTitle(navState.url, navState.title, navState.loading)
-          }}
-          mediaPlaybackRequiresUserAction={mediaPlaybackRequiresUserAction}
-          testID={activeDapp ? `WebViewScreen/${activeDapp.name}` : 'RNWebView'}
-        />
+        <View style={styles.webViewContainer}>
+          <WebView
+            ref={webViewRef}
+            originWhitelist={['https://*', `${DEEP_LINK_URL_SCHEME}://*`]}
+            onShouldStartLoadWithRequest={handleLoadRequest}
+            source={{ uri }}
+            startInLoadingState={true}
+            renderLoading={() => <ActivityIndicator style={styles.loading} size="large" />}
+            onNavigationStateChange={(navState) => {
+              setCanGoBack(navState.canGoBack)
+              setCanGoForward(navState.canGoForward)
+              handleSetNavigationTitle(navState.url, navState.title, navState.loading)
+            }}
+            mediaPlaybackRequiresUserAction={mediaPlaybackRequiresUserAction}
+            testID={activeDapp ? `WebViewScreen/${activeDapp.name}` : 'RNWebView'}
+            style={styles.webView}
+          />
+        </View>
         <KeyboardSpacer />
       </KeyboardAvoidingView>
       {Platform.OS === 'android' && (
@@ -268,14 +271,23 @@ const styles = StyleSheet.create({
   keyboardView: {
     flexGrow: 1,
   },
+  webViewContainer: {
+    flex: 1,
+    marginBottom: 52, // Altura de la barra de navegación
+  },
+  webView: {
+    flex: 1,
+  },
   loading: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 52, // Ajustado para no cubrir la barra de navegación
     top: 0,
   },
   navBar: {
+    position: 'absolute',
+    bottom: 0,
     height: 52,
     width: '100%',
     flexDirection: 'row',
@@ -284,6 +296,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderTopWidth: 1,
     borderColor: colors.gray2,
+    backgroundColor: colors.white,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
 })
 

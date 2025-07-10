@@ -168,7 +168,12 @@ export function* tagTxsWithProviderInfo(action: UpdateTransactionsPayload) {
 
 export function* importProviderLogos() {
   const providerLogos: ProviderLogos = yield readOnceFromFirebase('providerLogos')
-  yield* put(setProviderLogos(providerLogos))
+  if (providerLogos) {
+    yield* put(setProviderLogos(providerLogos))
+  } else {
+    // Firebase disabled or no data, use empty provider logos
+    yield* put(setProviderLogos({}))
+  }
 }
 
 export function* watchBidaliPaymentRequests() {

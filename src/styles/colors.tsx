@@ -42,8 +42,8 @@ enum Colors {
   lightShadow = 'rgba(48, 46, 37, 0.15)',
   barShadow = 'rgba(129, 134, 139, 0.5)',
 
-  /** @deprecated */
   infoDark = '#0768AE',
+
   /** @deprecated */
   infoLight = '#E8F8FF',
   /** @deprecated */

@@ -369,6 +369,10 @@ export function simpleReadChannel(key: string) {
 }
 
 export async function readOnceFromFirebase(path: string) {
+  if (!FIREBASE_ENABLED) {
+    Logger.debug(TAG, `Firebase disabled, returning null for path: ${path}`)
+    return null
+  }
   const timeout = new Promise<void>((_, reject) =>
     setTimeout(
       () => reject(Error(`Reading from Firebase @ ${path} timed out.`)),

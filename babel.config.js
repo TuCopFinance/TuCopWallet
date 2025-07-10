@@ -34,6 +34,8 @@ module.exports = {
     '@babel/plugin-proposal-numeric-separator',
     // Remove @babel/plugin-transform-named-capturing-groups-regex once hermes supports named capture groups (https://github.com/facebook/hermes/issues/696)
     '@babel/plugin-transform-named-capturing-groups-regex',
+    // Add private methods plugin for React Native 0.75.4 compatibility
+    ['@babel/plugin-transform-private-methods', { loose: true }],
     ...moduleResolverPluginConfig,
     'react-native-reanimated/plugin',
     // NOTE: Reanimated plugin has to be listed last.

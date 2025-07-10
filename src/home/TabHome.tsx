@@ -116,7 +116,7 @@ function TabHome(_props: Props) {
   const USDTToken = useUSDT()
 
   const onPressRecharge = React.useCallback(() => {
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
+    navigate(Screens.NoProvidersScreen)
   }, [])
 
   function onPressSendMoney() {
@@ -558,13 +558,12 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     gap: Spacing.Thick24,
     marginTop: Spacing.Large32,
-    marg: 'auto',
+    margin: 'auto',
   },
   actionButton: {
     flexDirection: 'column',
     backgroundColor: Colors.primary10,
     padding: 16,
-    background: '#EEEFFF',
     marginBottom: Spacing.Smallest8,
     borderRadius: 12,
   },

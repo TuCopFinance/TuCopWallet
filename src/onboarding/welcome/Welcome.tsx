@@ -99,48 +99,50 @@ export default function Welcome() {
         <View style={styles.contentContainer}>
           <WelcomeLogo />
         </View>
-        <View style={styles.buttonView}>
-          {showTermsCheckbox && (
-            <View style={styles.termsContainer}>
-              <TouchableOpacity onPress={() => toggleTermsCheckBox((prev: any) => !prev)}>
-                <CheckBox
-                  testID="TermsCheckbox"
-                  checked={termsCheckbox}
-                  checkedColor={colors.black}
-                  uncheckedColor={colors.black}
-                />
-              </TouchableOpacity>
-              <Text style={styles.termsText}>
-                <Trans i18nKey="welcome.agreeToTerms">
-                  <Text onPress={onPressTerms} style={styles.termsTextLink} />
-                </Trans>
-              </Text>
-            </View>
-          )}
+        <View style={styles.bottomContainer}>
+          <View style={styles.buttonView}>
+            {showTermsCheckbox && (
+              <View style={styles.termsContainer}>
+                <TouchableOpacity onPress={() => toggleTermsCheckBox((prev: any) => !prev)}>
+                  <CheckBox
+                    testID="TermsCheckbox"
+                    checked={termsCheckbox}
+                    checkedColor={colors.black}
+                    uncheckedColor={colors.black}
+                  />
+                </TouchableOpacity>
+                <Text style={styles.termsText}>
+                  <Trans i18nKey="welcome.agreeToTerms">
+                    <Text onPress={onPressTerms} style={styles.termsTextLink} />
+                  </Trans>
+                </Text>
+              </View>
+            )}
 
-          <Button
-            onPress={onPressCreateAccount}
-            text={t('welcome.createNewWallet')}
-            size={BtnSizes.FULL}
-            type={BtnTypes.PRIMARY}
-            style={styles.createAccountButton}
-            testID={'CreateAccountButton'}
-            disabled={buttonsDisabled}
-            textSize={TextSizes.SMALL}
-          />
-          <Button
-            onPress={onPressRestoreAccount}
-            text={t('welcome.hasWalletV1_88')}
-            size={BtnSizes.FULL}
-            type={BtnTypes.OUTLINE}
-            testID={'RestoreAccountButton'}
-            disabled={buttonsDisabled}
-            textBold
-            textSize={TextSizes.SMALL}
-          />
-        </View>
-        <View style={styles.msLogoContainer}>
-          <MSLogoFull />
+            <Button
+              onPress={onPressCreateAccount}
+              text={t('welcome.createNewWallet')}
+              size={BtnSizes.FULL}
+              type={BtnTypes.PRIMARY}
+              style={styles.createAccountButton}
+              testID={'CreateAccountButton'}
+              disabled={buttonsDisabled}
+              textSize={TextSizes.SMALL}
+            />
+            <Button
+              onPress={onPressRestoreAccount}
+              text={t('welcome.hasWalletV1_88')}
+              size={BtnSizes.FULL}
+              type={BtnTypes.OUTLINE}
+              testID={'RestoreAccountButton'}
+              disabled={buttonsDisabled}
+              textBold
+              textSize={TextSizes.SMALL}
+            />
+          </View>
+          <View style={styles.msLogoContainer}>
+            <MSLogoFull />
+          </View>
         </View>
       </SafeAreaView>
     </View> // Close main container View
@@ -162,13 +164,18 @@ const styles = StyleSheet.create({
     zIndex: -1, // Keep it behind other content if needed (might be optional now)
   },
   contentContainer: {
-    flexGrow: 1,
-    marginTop: 90,
+    flex: 1,
+    marginTop: 60,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
     backgroundColor: 'transparent', // Ensure SafeAreaView doesn't obscure the background
+  },
+  bottomContainer: {
+    justifyContent: 'flex-end',
+    paddingBottom: Spacing.Regular16,
   },
   createAccountButton: {
     marginBottom: Spacing.Smallest8,
@@ -190,11 +197,11 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     paddingHorizontal: Spacing.Thick24,
+    marginBottom: Spacing.Regular16,
   },
   msLogoContainer: {
     width: '100%',
-    marginTop: Spacing.Large32,
-    paddingBottom: Spacing.Large32,
     alignItems: 'center',
+    paddingBottom: Spacing.Regular16,
   },
 })

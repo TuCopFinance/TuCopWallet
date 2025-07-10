@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
@@ -348,7 +348,13 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
       <View style={styles.gradientDecoration} />
 
-      <View style={styles.content}>{renderContent()}</View>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderContent()}
+      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -407,8 +413,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.Thick24,
     paddingVertical: Spacing.Large32,
   },
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: Spacing.Large32,
+  },
   loadingContainer: {
-    flex: 1,
+    minHeight: 300,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -429,7 +439,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Regular16,
   },
   errorContainer: {
-    flex: 1,
+    minHeight: 300,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.Regular16,
@@ -453,7 +463,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Regular16,
   },
   notEligibleContainer: {
-    flex: 1,
+    minHeight: 300,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -490,16 +500,16 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   alreadyClaimedContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: Spacing.Regular16,
   },
   alreadyClaimedCard: {
     alignItems: 'center',
     marginTop: Spacing.Large32,
   },
   eligibleContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: Spacing.Regular16,
   },
   eligibleCard: {
     alignItems: 'center',
