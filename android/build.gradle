@@ -5,18 +5,18 @@ import org.apache.tools.ant.taskdefs.condition.Os
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 23
         compileSdkVersion = 35
         targetSdkVersion = 35
-        kotlinVersion = "1.7.22"
-        ndkVersion = "26.1.10909125"
+        kotlinVersion = "1.9.24"
+        ndkVersion = "25.2.9519653"
 
         // Add these version configurations for react-native-svg
         androidXVersion = "1.9.0"
         kotlinCompilerExtensionVersion = "1.5.3"
 
         // Add specific versions for react-native-svg
-        reactNativeVersion = "0.72.7"  // Update this to match your react-native version
+        reactNativeVersion = "0.75.4"  // Update this to match your react-native version
         androidXAnnotation = "1.6.0"
         androidXAppcompat = "1.6.1"
     }
@@ -25,7 +25,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:8.1.1"
+        classpath "com.android.tools.build:gradle:8.7.2"
         classpath "com.facebook.react:react-native-gradle-plugin"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
@@ -52,14 +52,14 @@ allprojects {
     // Add this configuration for all projects
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
-            jvmTarget = "11"  // Set to 11 to match Java compilation
+            jvmTarget = "17"  // Set to 17 to match Java compilation
         }
     }
 
     // For Java compilation
     tasks.withType(JavaCompile).configureEach {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

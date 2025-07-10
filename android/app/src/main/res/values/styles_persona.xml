@@ -3,6 +3,23 @@
   <style name="RN"/>
   <style name="RN.Persona"/>
   <style name="RN.Persona.Text"/>
+
+  <!-- Base styles for Persona SDK -->
+  <style name="Base.Persona.Inquiry2.Theme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <item name="android:windowLightStatusBar">true</item>
+  </style>
+
+  <style name="Persona.Inquiry2.Text.Body" parent="TextAppearance.MaterialComponents.Body1"/>
+
+  <style name="Persona.Inquiry2.EditText" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+  <style name="Persona.Inquiry2.Spinner" parent="Widget.AppCompat.Spinner"/>
+
+  <style name="Persona.Inquiry2.Button" parent="Widget.MaterialComponents.Button">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+  </style>
+
   <style name="Persona.Inquiry2.Theme" parent="Base.Persona.Inquiry2.Theme">
     <item name="colorPrimary">#1AB775</item>
 
