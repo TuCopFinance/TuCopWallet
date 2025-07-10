@@ -28,9 +28,9 @@ export default function Logos({ dappImageUrl, dappName }: Props) {
 
   return (
     <View style={styles.logoContainer}>
-      <View style={styles.logoShadow}>
-        <View style={styles.logoBackground}>
-          <Logo size={24} />
+      <View style={styles.tucopLogoShadow}>
+        <View style={styles.tucopLogoBackground}>
+          <Logo size={20} />
         </View>
       </View>
       <View style={styles.logoShadow}>
@@ -55,10 +55,18 @@ export default function Logos({ dappImageUrl, dappName }: Props) {
 const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.Regular16,
+    paddingStart: 25,
   },
   logoShadow: {
     ...getShadowStyle(Shadow.SoftLight),
     borderRadius: 100,
+  },
+  tucopLogoShadow: {
+    ...getShadowStyle(Shadow.SoftLight),
+    borderRadius: 16,
   },
   logoBackground: {
     justifyContent: 'center',
@@ -67,6 +75,15 @@ const styles = StyleSheet.create({
     width: DAPP_IMAGE_SIZE,
     borderRadius: 100,
     backgroundColor: Colors.white,
+  },
+  tucopLogoBackground: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: DAPP_IMAGE_SIZE,
+    width: DAPP_IMAGE_SIZE * 2.0, // Más ancho para acomodar el logo rectangular
+    borderRadius: 16, // Bordes más redondeados
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.Tiny4,
   },
   dappImage: {
     height: DAPP_IMAGE_SIZE,

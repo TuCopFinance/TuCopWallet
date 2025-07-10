@@ -2,27 +2,22 @@ package xyz.mobilestack;
 
 import android.util.Log;
 import androidx.multidex.MultiDexApplication;
-import cl.json.ShareApplication;
 import com.clevertap.android.sdk.ActivityLifecycleCallback;
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
-import io.sentry.react.RNSentryPackage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainApplication
-  extends MultiDexApplication
-  implements ShareApplication, ReactApplication {
+public class MainApplication extends MultiDexApplication implements ReactApplication {
 
   static final String TAG = "MainApplication";
 
@@ -73,10 +68,5 @@ public class MainApplication
     }
     ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
     OkHttpClientProvider.setOkHttpClientFactory(new UserAgentClientFactory(this));
-  }
-
-  @Override
-  public String getFileProviderAuthority() {
-    return BuildConfig.APPLICATION_ID + ".provider";
   }
 }
