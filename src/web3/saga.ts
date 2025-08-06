@@ -28,7 +28,7 @@ export function* getOrCreateAccount() {
       TAG + '@getOrCreateAccount',
       'Tried to create account twice, returning the existing one'
     )
-    return account
+    return { address: account, isNew: false, privateKey: undefined }
   }
 
   let privateKey: string | undefined
@@ -67,7 +67,7 @@ export function* getOrCreateAccount() {
 
     yield* call(storeMnemonic, mnemonic, accountAddress)
 
-    return accountAddress
+    return { address: accountAddress, isNew: true, privateKey }
   } catch (err) {
     const error = ensureError(err)
     const sanitizedError = Logger.sanitizeError(error, privateKey)
