@@ -369,11 +369,18 @@ export async function prepareTransactions({
     maxGasFeeInDecimal: BigNumber
     estimatedGasFeeInDecimal: BigNumber
   }> = []
+  // Import validation utilities
+  const balanceValidation = await import('./balanceValidation')
+  const { validateGasBalance } = balanceValidation
+
   for (const feeCurrency of feeCurrencies) {
-    if (feeCurrency.balance.isLessThanOrEqualTo(0) && !isGasSubsidized) {
-      // No balance, try next fee currency
+    // Initial balance check
+    const initialValidation = validateGasBalance(feeCurrency, new BigNumber(0), isGasSubsidized)
+    if (!initialValidation.isValid) {
+      Logger.debug(TAG, `Skipping ${feeCurrency.symbol}: ${initialValidation.reason}`)
       continue
     }
+
     const estimatedTransactions = await tryEstimateTransactions(
       baseTransactions,
       feeCurrency,
@@ -381,6 +388,7 @@ export async function prepareTransactions({
     )
     if (!estimatedTransactions) {
       // Not enough balance to pay for gas, try next fee currency
+      Logger.debug(TAG, `Failed to estimate transactions with ${feeCurrency.symbol}`)
       continue
     }
     const feeDecimals = getFeeDecimals(estimatedTransactions, feeCurrency)
@@ -389,10 +397,13 @@ export async function prepareTransactions({
     const estimatedGasFee = getEstimatedGasFee(estimatedTransactions)
     const estimatedGasFeeInDecimal = estimatedGasFee?.shiftedBy(-feeDecimals)
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
+
     // Use estimated gas fee for balance validation (more realistic than max)
     const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
-    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
-      // Not enough balance to pay for gas, try next fee currency
+    const gasValidation = validateGasBalance(feeCurrency, gasForValidation, isGasSubsidized)
+
+    if (!gasValidation.isValid) {
+      Logger.debug(TAG, `Insufficient balance for gas: ${gasValidation.reason}`)
       continue
     }
     const spendAmountDecimal = spendTokenAmount.shiftedBy(-(spendToken?.decimals ?? 0))
