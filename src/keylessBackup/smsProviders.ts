@@ -70,7 +70,7 @@ const walletProvider: SMSProvider = {
   name: 'WalletService',
   sendOTP: async (phoneNumber: string, apiKey: string) => {
     const response = await fetchWithRetry(
-      'https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp',
+      'https://api-wallet-tucop-production.up.railway.app/api/wallets/request-otp',
       {
         method: 'POST',
         headers: {
@@ -102,7 +102,7 @@ const walletProvider: SMSProvider = {
   },
   verifyOTP: async (phoneNumber: string, code: string, apiKey: string) => {
     const response = await fetchWithRetry(
-      'https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp',
+      'https://api-wallet-tucop-production.up.railway.app/api/wallets/verify-otp',
       {
         method: 'POST',
         headers: {
@@ -136,7 +136,7 @@ const walletProvider: SMSProvider = {
   },
   isAvailable: async () => {
     try {
-      const response = await fetch('https://api-wallet-tlf-production.up.railway.app/health', {
+      const response = await fetch('https://api-wallet-tucop-production.up.railway.app/health', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
