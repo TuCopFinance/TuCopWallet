@@ -123,3 +123,18 @@ ios/.xcode.env
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
+
+# Claude related files and directories
+.claude/
+.claude-flow/
+.hive-mind/
+CLAUDE.md
+claude.json
+.claude.json
+*.claude
+claude-*
+.claude-*
+__claude__/
+.claude-session/
+.claude-cache/
+.claude-config/

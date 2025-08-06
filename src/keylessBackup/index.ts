@@ -26,11 +26,19 @@ export async function storeEncryptedMnemonic({
 }) {
   Logger.debug(TAG, `Storing encrypted mnemonic for address: ${encryptionAddress}`)
   Logger.debug(TAG, `JWT length: ${jwt?.length || 0}`)
+  Logger.debug(TAG, `Phone: ${phone}`)
+  Logger.debug(TAG, `Wallet Address: ${walletAddress}`)
 
-  // Asegurarse de que el JWT existe
+  // Ensure JWT exists
   if (!jwt) {
     Logger.error(TAG, 'No JWT provided for storing encrypted mnemonic')
     throw new Error('No JWT provided for storing encrypted mnemonic')
+  }
+
+  // Ensure phone exists
+  if (!phone) {
+    Logger.error(TAG, 'No phone number provided for storing encrypted mnemonic')
+    throw new Error('No phone number provided for storing encrypted mnemonic')
   }
 
   const response = await fetchWithTimeout(networkConfig.cabStoreEncryptedMnemonicUrl, {
@@ -38,6 +46,7 @@ export async function storeEncryptedMnemonic({
     headers: {
       'Content-Type': 'application/json',
       'X-Session-Id': jwt,
+      'X-Phone': phone,
       walletAddress: walletAddress,
     },
     body: JSON.stringify({
@@ -45,6 +54,7 @@ export async function storeEncryptedMnemonic({
       encryptionAddress,
       token: jwt,
       phone,
+      walletAddress,
     }),
   })
 
@@ -64,6 +74,8 @@ export async function storeEncryptedMnemonic({
       `Failed to post encrypted mnemonic with status ${statusCode}, message ${errorMessage}`
     )
   }
+
+  Logger.debug(TAG, 'Successfully stored encrypted mnemonic')
 }
 
 function getSIWEClient(privateKey: Hex) {
@@ -94,50 +106,86 @@ export async function getEncryptedMnemonic({
   jwt: string
   phone: string
 }) {
-  const siweClient = getSIWEClient(encryptionPrivateKey)
-  await siweClient.login()
-  const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Session-Id': jwt,
-      'X-Phone': phone,
-    },
-  })
+  try {
+    // First try with SIWE authentication (new method)
+    const siweClient = getSIWEClient(encryptionPrivateKey)
+    await siweClient.login()
+    const response = await siweClient.fetch(networkConfig.cabGetEncryptedMnemonicUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': jwt,
+        'X-Phone': phone,
+      },
+    })
 
-  Logger.debug(TAG, `Response PHONE: ${phone}`)
-  Logger.debug(TAG, `Response status: ${response.status}`)
+    Logger.debug(TAG, `SIWE Response - Phone: ${phone}, Status: ${response.status}`)
 
-  // Check for 404 before trying to parse JSON
-  if (response.status === 404) {
-    return null
-  }
+    if (response.ok) {
+      const responseData = await response.json()
+      Logger.debug(TAG, `Response data: ${JSON.stringify(responseData)}`)
 
-  // Check for other errors before trying to parse JSON
-  if (!response.ok) {
-    let message = 'Unknown error'
-    try {
-      // Try to parse error response, consuming the body
-      const errorData = await response.json()
-      message = errorData?.message || message
-    } catch (e) {
-      Logger.error(TAG, 'Failed to parse error response', e)
+      if (!responseData.encryptedMnemonic) {
+        throw new Error('Response missing encrypted mnemonic')
+      }
+
+      return responseData.encryptedMnemonic
     }
 
-    throw new Error(
-      `Failed to get encrypted mnemonic with status ${response.status}, message ${message}`
-    )
+    // If SIWE method returns 404, try the legacy method
+    if (response.status === 404) {
+      Logger.debug(TAG, 'SIWE method returned 404, trying legacy method')
+    }
+  } catch (siweError) {
+    Logger.warn(TAG, 'SIWE authentication failed, trying legacy method', siweError)
   }
 
-  // Parse the response JSON only once here
-  const responseData = await response.json()
-  // Log the parsed data
-  Logger.debug(TAG, `Response data: ${JSON.stringify(responseData)}`)
+  // Fallback to legacy method (matching the storage method)
+  try {
+    const accountAddress = getWalletAddressFromPrivateKey(encryptionPrivateKey)
+    const legacyResponse = await fetchWithTimeout(networkConfig.cabGetEncryptedMnemonicUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': jwt,
+        walletAddress: accountAddress,
+      },
+    })
 
-  if (!responseData.encryptedMnemonic) {
-    throw new Error('Response missing encrypted mnemonic')
+    Logger.debug(TAG, `Legacy Response - Phone: ${phone}, Status: ${legacyResponse.status}`)
+
+    // Check for 404 before trying to parse JSON
+    if (legacyResponse.status === 404) {
+      return null
+    }
+
+    // Check for other errors before trying to parse JSON
+    if (!legacyResponse.ok) {
+      let message = 'Unknown error'
+      try {
+        const errorData = await legacyResponse.json()
+        message = errorData?.message || message
+      } catch (e) {
+        Logger.error(TAG, 'Failed to parse error response', e)
+      }
+
+      throw new Error(
+        `Failed to get encrypted mnemonic with status ${legacyResponse.status}, message ${message}`
+      )
+    }
+
+    // Parse the response JSON
+    const responseData = await legacyResponse.json()
+    Logger.debug(TAG, `Legacy response data: ${JSON.stringify(responseData)}`)
+
+    if (!responseData.encryptedMnemonic) {
+      throw new Error('Response missing encrypted mnemonic')
+    }
+
+    return responseData.encryptedMnemonic
+  } catch (legacyError) {
+    Logger.error(TAG, 'Both SIWE and legacy methods failed', legacyError)
+    throw legacyError
   }
-
-  return responseData.encryptedMnemonic
 }
 
 export async function deleteEncryptedMnemonic(encryptionPrivateKey: Hex) {

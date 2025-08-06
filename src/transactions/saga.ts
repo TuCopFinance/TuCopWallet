@@ -15,6 +15,7 @@ import {
 } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
+import { waitForTransactionReceiptWithTimeout } from 'src/viem/transaction'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { call, delay, fork, put, select, spawn } from 'typed-redux-saga'
 import { Hash, TransactionReceipt } from 'viem'
@@ -55,9 +56,11 @@ export function* getTransactionReceipt(
   const isSwapTransaction = type === TokenTransactionTypeV2.SwapTransaction
 
   try {
-    const receipt = yield* call([publicClient[network], 'waitForTransactionReceipt'], {
-      hash: transactionHash as Hash,
-    })
+    const receipt = yield* call(
+      waitForTransactionReceiptWithTimeout,
+      publicClient[network],
+      transactionHash as Hash
+    )
 
     yield* call(handleTransactionReceiptReceived, {
       txId: transaction.context.id,
