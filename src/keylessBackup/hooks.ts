@@ -7,6 +7,8 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { phoneNumberVerificationCompleted } from 'src/app/actions'
 import { appKeyshareIssued } from 'src/keylessBackup/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
+import { fetchWithRetry, validatePhoneNumber, checkServiceHealth } from 'src/keylessBackup/otpRetry'
+import { sendOTPWithFallback, verifyOTPWithFallback } from 'src/keylessBackup/smsProviders'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Logger from 'src/utils/Logger'
 import { PhoneNumberVerificationStatus } from 'src/verify/hooks'
@@ -74,6 +76,7 @@ export function useVerifyPhoneNumber(
   const [verificationStatus, setVerificationStatus] = useState(PhoneNumberVerificationStatus.NONE)
   const [issueCodeCompleted, setIssueCodeCompleted] = useState(false)
   const [smsCode, setSmsCode] = useState('')
+  const [smsProvider, setSmsProvider] = useState<string | undefined>()
 
   // Async hook to make request to get sms code
   useAsync(
@@ -88,27 +91,29 @@ export function useVerifyPhoneNumber(
         return
       }
 
+      // Validate phone number format
+      if (!validatePhoneNumber(phoneNumber)) {
+        throw new Error('Invalid phone number format. Please use E.164 format (e.g., +1234567890)')
+      }
+
       AppAnalytics.track(KeylessBackupEvents.cab_issue_sms_code_start, {
         keylessBackupFlow,
         origin,
       })
       Logger.debug(`${TAG}/issueSmsCode`, 'Initiating request')
-      Logger.debug(`${TAG}/token`, networkConfig.cabApiKey)
+      Logger.debug(`${TAG}/issueSmsCode`, `Phone number: ${phoneNumber}`)
 
-      const response = await fetch(networkConfig.cabIssueSmsCodeUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${networkConfig.cabApiKey}`,
-        },
-        body: JSON.stringify({
-          phone: phoneNumber,
-        }),
-      })
+      // Use fallback SMS providers
+      const { response, provider } = await sendOTPWithFallback(phoneNumber, networkConfig.cabApiKey)
+
       if (response.ok) {
+        setSmsProvider(provider)
+        Logger.info(`${TAG}/issueSmsCode`, `Successfully sent OTP using ${provider}`)
         return response
       } else {
-        throw new Error(await response.text())
+        const errorText = await response.text()
+        Logger.error(`${TAG}/issueSmsCode`, `Failed with status ${response.status}: ${errorText}`)
+        throw new Error(errorText || `Failed to send SMS code: ${response.status}`)
       }
     },
     [phoneNumber],
@@ -155,22 +160,24 @@ export function useVerifyPhoneNumber(
         'Initiating request to issueAppKeyshare to validate code and issue key share'
       )
 
-      const response = await fetch(networkConfig.cabIssueAppKeyshareUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${networkConfig.cabApiKey}`,
-        },
-        body: JSON.stringify({
-          phone: phoneNumber,
-          code: smsCode,
-        }),
-      })
+      // Use the same provider that sent the OTP for verification
+      const { response, provider } = await verifyOTPWithFallback(
+        phoneNumber,
+        smsCode,
+        networkConfig.cabApiKey,
+        smsProvider
+      )
 
       if (response.ok) {
+        Logger.info(`${TAG}/issueAppKeyshare`, `Successfully verified OTP using ${provider}`)
         return response
       } else {
-        throw new Error(await response.text())
+        const errorText = await response.text()
+        Logger.error(
+          `${TAG}/issueAppKeyshare`,
+          `Failed with status ${response.status}: ${errorText}`
+        )
+        throw new Error(errorText || `Failed to verify SMS code: ${response.status}`)
       }
     },
     [smsCode, phoneNumber, issueCodeCompleted],
