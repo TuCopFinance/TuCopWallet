@@ -118,3 +118,4 @@ src/
 - Android build issues: Check Java version and Android SDK setup
 - Redux state persistence: Increment migration version when changing state structure
 - React Native version-specific issues: Check patches/ directory for workarounds
+- 
