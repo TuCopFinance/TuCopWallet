@@ -1,4 +1,4 @@
-import org.apache.tools.ant.taskdefs.condition.Os
+
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
@@ -16,7 +16,7 @@ buildscript {
         kotlinCompilerExtensionVersion = "1.5.3"
 
         // Add specific versions for react-native-svg
-        reactNativeVersion = "0.75.4"  // Update this to match your react-native version
+        reactNativeVersion = "0.74.7"  // Update this to match your react-native version
         androidXAnnotation = "1.6.0"
         androidXAppcompat = "1.6.1"
     }
