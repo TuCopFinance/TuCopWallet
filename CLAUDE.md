@@ -98,6 +98,48 @@ src/
 - Runtime configuration via `src/config.ts`
 - Feature flags via Statsig integration
 
+### iOS Build Schemes
+The project includes 6 main iOS build schemes for different environments and purposes:
+
+#### **Network-Based Schemes:**
+- **`MobileStack-alfajores`**: Alfajores testnet with real transactions but test tokens
+  - Display Name: "TuCop Alfajores"
+  - Network: Celo Alfajores testnet
+  - Features: Shows testnet banner, Sentry enabled
+  - Use for: Testing with testnet tokens
+
+- **`MobileStack-mainnet`**: Production environment with real tokens
+  - Display Name: "TuCop"
+  - Network: Celo mainnet
+  - Features: No testnet banner, Sentry disabled
+  - Use for: Production releases
+
+- **`MobileStack-test`**: Test configuration on mainnet
+  - Display Name: "Mento (test)"
+  - Network: Mainnet with test settings
+  - Features: Dev settings enabled
+  - Use for: Testing configurations
+
+#### **Development Schemes:**
+- **`MobileStack-alfajoresdev`**: Development builds on testnet
+  - Display Name: "TuCoP Wallet (Alfajores)"
+  - Network: Alfajores testnet
+  - Features: Dev settings enabled, debug keystore, no Sentry
+  - Use for: **Primary development** (recommended)
+
+- **`MobileStack-mainnetdev`**: Development builds on mainnet
+  - Network: Mainnet with dev settings
+  - Use for: Advanced testing with real network
+
+- **`MobileStack-*nightly`**: Automated nightly builds for CI/CD
+
+#### **Scheme Selection Guidelines:**
+- **For Development**: Use `MobileStack-alfajoresdev` (safe testnet environment)
+- **For Testing**: Use `MobileStack-alfajores` (testnet with production-like settings)
+- **For Production**: Use `MobileStack-mainnet` (real network and tokens)
+
+Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags.
+
 ### Recent Important Changes
 - **Divvi Protocol v2**: Updated referral tracking system
 - **Version 1.107.0**: Current app version with enhanced CI/CD

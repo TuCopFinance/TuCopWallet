@@ -70,7 +70,14 @@ public class ReactNativeFlipper {
           }
         );
       } else {
-        client.addPlugin(new FrescoFlipperPlugin());
+        reactContext.runOnNativeModulesQueueThread(
+          new Runnable() {
+            @Override
+            public void run() {
+              client.addPlugin(new FrescoFlipperPlugin());
+            }
+          }
+        );
       }
     }
   }

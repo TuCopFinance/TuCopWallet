@@ -10,7 +10,8 @@ $RNFirebaseAsStaticFramework = true
 # Workaround for the following error:
 # `The 'Pods-MobileStack' target has transitive dependencies that include statically linked binaries [...]`
 $static_framework = [
-  'react-native-flipper',
+  # Temporarily disabled to fix build issues
+  # 'react-native-flipper',
   'FlipperKit',
   'Flipper',
   'Flipper-Folly',
@@ -56,12 +57,8 @@ end
 
 # Code to be added for react-native-video/Video
 # https://github.com/TheWidlarzGroup/react-native-video/issues/3737
-MIN_IOS_OVERRIDE = '15.0'
-if Gem::Version.new(MIN_IOS_OVERRIDE) > Gem::Version.new(min_ios_version_supported)
-  min_ios_version_supported = MIN_IOS_OVERRIDE
-end
-
-platform :ios, min_ios_version_supported
+platform :ios, '16.0'
+prepare_react_native_project!
 prepare_react_native_project!
 
 # linkage = ENV['USE_FRAMEWORKS']
@@ -85,21 +82,12 @@ target "MobileStack" do
   use_react_native!(
     :path => config[:reactNativePath],
     # Hermes is now enabled by default. Disable by setting this flag to false.
-    :hermes_enabled => flags[:hermes_enabled],
+    :hermes_enabled => false,
     :fabric_enabled => flags[:fabric_enabled],
-    # We're making use_frameworks! work with Flipper by using the following workaround:
-    # building all Flipper related pods as static libraries, linked against the main app.
-    # See $static_framework above
-    # :flipper_configuration => FlipperConfiguration.enabled(
-    #   ["Debug"],
-    #   {
-    #     # Use a specific version of Flipper-Glog which doesn't vendor glog as a dynamic library
-    #     # otherwise the main app fails to link (likely due to the 2 dynamic libraries with the same name)
-    #     # Flipper-Glog >= 0.3.7 uses a vendored dynamic library
-    #     # See https://github.com/CocoaPods/Specs/blob/86d45638f249b0cb766c8e674a98b1b504b1ac0e/Specs/2/7/2/Flipper-Glog/0.3.7/Flipper-Glog.podspec.json#L21
-    #     'Flipper-Glog' => '0.3.5',
-    #   }
-    # ),
+      # We're making use_frameworks! work with Flipper by using the following workaround:
+  # building all Flipper related pods as static libraries, linked against the main app.
+  # See $static_framework above
+  # Flipper configuration - using simple approach for compatibility
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
