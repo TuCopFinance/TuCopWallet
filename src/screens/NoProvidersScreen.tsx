@@ -11,7 +11,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 
 export default function NoProvidersScreen() {
-  const { t } = useTranslation()
+  const {} = useTranslation()
 
   const handleViewAddress = () => {
     navigate(Screens.QRNavigator, {
@@ -26,7 +26,8 @@ export default function NoProvidersScreen() {
         <Text style={styles.title}>Sin proveedores de recarga disponibles</Text>
         <Text style={styles.message}>
           En este momento no hay proveedores de OnRamp integrados en la app.{'\n\n'}
-          Por favor, envía fondos a tu Wallet utilizando la blockchain de Celo y los tokens cCOP o USDT.{'\n\n'}
+          Por favor, envía fondos a tu Wallet utilizando la blockchain de Celo y los tokens cCOP o
+          USDT.{'\n\n'}
           Gracias por tu comprensión.
         </Text>
         <Button
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: Spacing.Huge48,
+    marginBottom: Spacing.XLarge48,
   },
   button: {
     marginTop: Spacing.Large32,
