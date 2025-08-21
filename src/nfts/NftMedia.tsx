@@ -41,7 +41,6 @@ function Placeholder({
       borderRadius={borderRadius}
       backgroundColor={colors.gray2}
       highlightColor={colors.white}
-      testID={testID}
     >
       <View
         style={{

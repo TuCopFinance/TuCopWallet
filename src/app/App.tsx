@@ -1,5 +1,4 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import * as Sentry from '@sentry/react-native'
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import { LogBox, StatusBar } from 'react-native'
@@ -96,4 +95,4 @@ export class App extends React.Component<Props> {
   }
 }
 
-export default Sentry.wrap(App)
+export default App

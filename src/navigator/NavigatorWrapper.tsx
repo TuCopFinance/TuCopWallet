@@ -1,8 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLogger } from '@react-navigation/devtools'
 import { NavigationContainer, NavigationState } from '@react-navigation/native'
-import * as Sentry from '@sentry/react-native'
-import { SeverityLevel } from '@sentry/types'
 import * as React from 'react'
 import { useMemo } from 'react'
 import { Linking, Platform, StyleSheet, View } from 'react-native'
@@ -27,7 +25,6 @@ import { Screens } from 'src/navigator/Screens'
 import PincodeLock from 'src/pincode/PincodeLock'
 import HooksPreviewModeBanner from 'src/positions/HooksPreviewModeBanner'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { sentryRoutingInstrumentation } from 'src/sentry/Sentry'
 import { getDynamicConfigParams } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs } from 'src/statsig/types'
@@ -197,11 +194,8 @@ export const NavigatorWrapper = () => {
         currentScreen: currentRouteName,
       })
       dispatch(activeScreenChanged(currentRouteName as Screens))
-      Sentry.addBreadcrumb({
-        category: 'navigation',
-        message: `Navigated to ${currentRouteName}`,
-        level: 'info' as SeverityLevel,
-      })
+      // Navigation breadcrumb for debugging
+      Logger.debug('Navigation', `Navigated to ${currentRouteName}`)
     }
 
     // Save the current route name for later comparision
@@ -210,7 +204,7 @@ export const NavigatorWrapper = () => {
 
   const onReady = () => {
     navigatorIsReadyRef.current = true
-    sentryRoutingInstrumentation.registerNavigationContainer(navigationRef)
+    // Navigation container ready
   }
 
   // Función para navegar a la tienda de aplicaciones

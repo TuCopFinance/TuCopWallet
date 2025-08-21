@@ -530,6 +530,14 @@
     "@babel/helper-plugin-utils" "^7.13.0"
     "@babel/plugin-syntax-logical-assignment-operators" "^7.10.4"
 
+"@babel/plugin-proposal-logical-assignment-operators@^7.18.0":
+  version "7.20.7"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-logical-assignment-operators/-/plugin-proposal-logical-assignment-operators-7.20.7.tgz#dfbcaa8f7b4d37b51e8bfb46d94a5aea2bb89d83"
+  integrity sha512-y7C7cZgpMIjWlKE5T7eJwp+tnRYM89HmRvWM5EQuB5BoHEONjmQ8lSNmBUwOyy/GFRsohJED51YBF79hE1djug==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.20.2"
+    "@babel/plugin-syntax-logical-assignment-operators" "^7.10.4"
+
 "@babel/plugin-proposal-nullish-coalescing-operator@^7.13.8", "@babel/plugin-proposal-nullish-coalescing-operator@^7.18.0":
   version "7.18.6"
   resolved "https://registry.npmjs.org/@babel/plugin-proposal-nullish-coalescing-operator/-/plugin-proposal-nullish-coalescing-operator-7.18.6.tgz"
@@ -2869,16 +2877,6 @@
     execa "^5.0.0"
     fast-glob "^3.3.2"
 
-"@react-native-community/cli-clean@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-clean/-/cli-clean-14.1.0.tgz#fee1a178fa58c84dfe18e23ee79fd3110d974971"
-  integrity sha512-/C4j1yntLo6faztNgZnsDtgpGqa6j0+GYrxOY8LqaKAN03OCnoeUUKO6w78dycbYSGglc1xjJg2RZI/M2oF2AA==
-  dependencies:
-    "@react-native-community/cli-tools" "14.1.0"
-    chalk "^4.1.2"
-    execa "^5.0.0"
-    fast-glob "^3.3.2"
-
 "@react-native-community/cli-config@13.6.9":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-config/-/cli-config-13.6.9.tgz#d609a64d40a173c89bd7d24e31807bb7dcba69f9"
@@ -2891,29 +2889,10 @@
     fast-glob "^3.3.2"
     joi "^17.2.1"
 
-"@react-native-community/cli-config@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-config/-/cli-config-14.1.0.tgz#8cdebb890eeb3c25d6c117ee56c952e96ea2afbf"
-  integrity sha512-P3FK2rPUJBD1fmQHLgTqpHxsc111pnMdEEFR7KeqprCNz+Qr2QpPxfNy0V7s15tGL5rAv+wpbOGcioIV50EbxA==
-  dependencies:
-    "@react-native-community/cli-tools" "14.1.0"
-    chalk "^4.1.2"
-    cosmiconfig "^9.0.0"
-    deepmerge "^4.3.0"
-    fast-glob "^3.3.2"
-    joi "^17.2.1"
-
 "@react-native-community/cli-debugger-ui@13.6.9":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-debugger-ui/-/cli-debugger-ui-13.6.9.tgz#bc5727c51964206a00d417e5148b46331a81d5a5"
   integrity sha512-TkN7IdFmGPPvTpAo3nCAH9uwGCPxWBEAwpqEZDrq0NWllI7Tdie8vDpGdrcuCcKalmhq6OYnkXzeBah7O1Ztpw==
-  dependencies:
-    serve-static "^1.13.1"
-
-"@react-native-community/cli-debugger-ui@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-debugger-ui/-/cli-debugger-ui-14.1.0.tgz#0008039ad2c386730c415d9dfc6884d68fda2c93"
-  integrity sha512-+YbeCL0wLcBcqDwraJFGsqzcXu9S+bwTVrfImne/4mT6itfe3Oa93yrOVJgNbstrt5pJHuwpU76ZXfXoiuncsg==
   dependencies:
     serve-static "^1.13.1"
 
@@ -2933,28 +2912,6 @@
     envinfo "^7.10.0"
     execa "^5.0.0"
     hermes-profile-transformer "^0.0.6"
-    node-stream-zip "^1.9.1"
-    ora "^5.4.1"
-    semver "^7.5.2"
-    strip-ansi "^5.2.0"
-    wcwidth "^1.0.1"
-    yaml "^2.2.1"
-
-"@react-native-community/cli-doctor@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-doctor/-/cli-doctor-14.1.0.tgz#129b25a7792f7bb0ed1218d17665ce74bb995d08"
-  integrity sha512-xIf0oQDRKt7lufUenRwcLYdINGc0x1FSXHaHjd7lQDGT5FJnCEYlIkYEDDgAl5tnVJSvM/IL2c6O+mffkNEPzQ==
-  dependencies:
-    "@react-native-community/cli-config" "14.1.0"
-    "@react-native-community/cli-platform-android" "14.1.0"
-    "@react-native-community/cli-platform-apple" "14.1.0"
-    "@react-native-community/cli-platform-ios" "14.1.0"
-    "@react-native-community/cli-tools" "14.1.0"
-    chalk "^4.1.2"
-    command-exists "^1.2.8"
-    deepmerge "^4.3.0"
-    envinfo "^7.13.0"
-    execa "^5.0.0"
     node-stream-zip "^1.9.1"
     ora "^5.4.1"
     semver "^7.5.2"
@@ -2984,18 +2941,6 @@
     fast-xml-parser "^4.2.4"
     logkitty "^0.7.1"
 
-"@react-native-community/cli-platform-android@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-android/-/cli-platform-android-14.1.0.tgz#3545347a810d209bba24941f62f802fdc09e252f"
-  integrity sha512-4JnXkAV+ca8XdUhZ7xjgDhXAMwTVjQs8JqiwP7FTYVrayShXy2cBXm/C3HNDoe+oQOF5tPT2SqsDAF2vYTnKiQ==
-  dependencies:
-    "@react-native-community/cli-tools" "14.1.0"
-    chalk "^4.1.2"
-    execa "^5.0.0"
-    fast-glob "^3.3.2"
-    fast-xml-parser "^4.4.1"
-    logkitty "^0.7.1"
-
 "@react-native-community/cli-platform-apple@13.6.9":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-apple/-/cli-platform-apple-13.6.9.tgz#02fb5dc47d62acd85f4d7a852e93216927a772fa"
@@ -3008,31 +2953,12 @@
     fast-xml-parser "^4.0.12"
     ora "^5.4.1"
 
-"@react-native-community/cli-platform-apple@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-apple/-/cli-platform-apple-14.1.0.tgz#d232cd0fc1ec0bccd165e40dd7d8a3c4bec5f571"
-  integrity sha512-DExd+pZ7hHxXt8I6BBmckeYUxxq7PQ+o4YSmGIeQx0xUpi+f82obBct2WNC3VWU72Jw6obwfoN6Fwe6F7Wxp5Q==
-  dependencies:
-    "@react-native-community/cli-tools" "14.1.0"
-    chalk "^4.1.2"
-    execa "^5.0.0"
-    fast-glob "^3.3.2"
-    fast-xml-parser "^4.4.1"
-    ora "^5.4.1"
-
 "@react-native-community/cli-platform-ios@13.6.9":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-ios/-/cli-platform-ios-13.6.9.tgz#f37ceab41c2302e8f0d4bcbd3bf58b3353db4306"
   integrity sha512-CiUcHlGs8vE0CAB4oi1f+dzniqfGuhWPNrDvae2nm8dewlahTBwIcK5CawyGezjcJoeQhjBflh9vloska+nlnw==
   dependencies:
     "@react-native-community/cli-platform-apple" "13.6.9"
-
-"@react-native-community/cli-platform-ios@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-ios/-/cli-platform-ios-14.1.0.tgz#e3b7ae8a97b69da4c7c89d9767ea58fb90c9c05f"
-  integrity sha512-ah/ZTiJXUdCVHujyRJ4OmCL5nTq8OWcURcE3UXa1z0sIIiA8io06n+v5n299T9rtPKMwRtVJlQjtO/nbODABPQ==
-  dependencies:
-    "@react-native-community/cli-platform-apple" "14.1.0"
 
 "@react-native-community/cli-server-api@13.6.9":
   version "13.6.9"
@@ -3048,21 +2974,6 @@
     pretty-format "^26.6.2"
     serve-static "^1.13.1"
     ws "^6.2.2"
-
-"@react-native-community/cli-server-api@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-server-api/-/cli-server-api-14.1.0.tgz#b658f96014f6d725ddb50da69833eacdbb8263c8"
-  integrity sha512-1k2LBQaYsy9RDWFIfKVne3frOye73O33MV6eYMoRPff7wqxHCrsX1CYJQkmwpgVigZHxYwalHj+Axtu3gpomCA==
-  dependencies:
-    "@react-native-community/cli-debugger-ui" "14.1.0"
-    "@react-native-community/cli-tools" "14.1.0"
-    compression "^1.7.1"
-    connect "^3.6.5"
-    errorhandler "^1.5.1"
-    nocache "^3.0.1"
-    pretty-format "^26.6.2"
-    serve-static "^1.13.1"
-    ws "^6.2.3"
 
 "@react-native-community/cli-tools@13.6.9":
   version "13.6.9"
@@ -3081,22 +2992,6 @@
     shell-quote "^1.7.3"
     sudo-prompt "^9.0.0"
 
-"@react-native-community/cli-tools@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-tools/-/cli-tools-14.1.0.tgz#fbbd40e9ccd93842992c8e45c10dfd8eeb56ff4a"
-  integrity sha512-r1KxSu2+OSuhWFoE//1UR7aSTXMLww/UYWQprEw4bSo/kvutGX//4r9ywgXSWp+39udpNN4jQpNTHuWhGZd/Bg==
-  dependencies:
-    appdirsjs "^1.2.4"
-    chalk "^4.1.2"
-    execa "^5.0.0"
-    find-up "^5.0.0"
-    mime "^2.4.1"
-    open "^6.2.0"
-    ora "^5.4.1"
-    semver "^7.5.2"
-    shell-quote "^1.7.3"
-    sudo-prompt "^9.0.0"
-
 "@react-native-community/cli-types@13.6.9":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-types/-/cli-types-13.6.9.tgz#08bfb796eacf0daeb31e2de516e81e78a36a1a55"
@@ -3104,36 +2999,7 @@
   dependencies:
     joi "^17.2.1"
 
-"@react-native-community/cli-types@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-types/-/cli-types-14.1.0.tgz#0ea5dad716f30cd49d2edd5d9fdea8e552cb44e8"
-  integrity sha512-aJwZI9mGRx3HdP8U4CGhqjt3S4r8GmeOqv4kRagC1UHDk4QNMC+bZ8JgPA4W7FrGiPey+lJQHMDPAXOo51SOUw==
-  dependencies:
-    joi "^17.2.1"
-
-"@react-native-community/cli@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli/-/cli-14.1.0.tgz#bbcc14e9b7ee54589e645c7cd42da0cc79307f41"
-  integrity sha512-k7aTdKNZIec7WMSqMJn9bDVLWPPOaYmshXcnjWy6t5ItsJnREju9p2azMTR5tXY5uIeynose3cxettbhk2Tbnw==
-  dependencies:
-    "@react-native-community/cli-clean" "14.1.0"
-    "@react-native-community/cli-config" "14.1.0"
-    "@react-native-community/cli-debugger-ui" "14.1.0"
-    "@react-native-community/cli-doctor" "14.1.0"
-    "@react-native-community/cli-server-api" "14.1.0"
-    "@react-native-community/cli-tools" "14.1.0"
-    "@react-native-community/cli-types" "14.1.0"
-    chalk "^4.1.2"
-    commander "^9.4.1"
-    deepmerge "^4.3.0"
-    execa "^5.0.0"
-    find-up "^5.0.0"
-    fs-extra "^8.1.0"
-    graceful-fs "^4.1.3"
-    prompts "^2.4.2"
-    semver "^7.5.2"
-
-"@react-native-community/cli@^13.0.0":
+"@react-native-community/cli@13.6.9", "@react-native-community/cli@^13.0.0":
   version "13.6.9"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli/-/cli-13.6.9.tgz#ba6360b94e0aba9c4001bda256cf7e57e2ecb02c"
   integrity sha512-hFJL4cgLPxncJJd/epQ4dHnMg5Jy/7Q56jFvA3MHViuKpzzfTCJCB+pGY54maZbtym53UJON9WTGpM3S81UfjQ==
@@ -3218,17 +3084,17 @@
   resolved "https://registry.npmjs.org/@react-native-picker/picker/-/picker-2.10.2.tgz"
   integrity sha512-kr3OvCRwTYjR/OKlb52k4xmQVU7dPRIALqpyiihexdJxEgvc1smnepgqCeM9oXmNSG4YaV5/RSxFlLC5Z/T/Eg==
 
-"@react-native/assets-registry@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/assets-registry/-/assets-registry-0.75.4.tgz#d48b8765e030f8d305f34659d4ce50ebb82ccb34"
-  integrity sha512-WX6/LNHwyjislSFM+h3qQjBiPaXXPJW5ZV4TdgNKb6QOPO0g1KGYRQj44cI2xSpZ3fcWrvQFZfQgSMbVK9Sg7A==
+"@react-native/assets-registry@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/assets-registry/-/assets-registry-0.74.87.tgz#7dda64e48db14597e19e15f679e31abbb1c1fb4d"
+  integrity sha512-1XmRhqQchN+pXPKEKYdpJlwESxVomJOxtEnIkbo7GAlaN2sym84fHEGDXAjLilih5GVPpcpSmFzTy8jx3LtaFg==
 
-"@react-native/babel-plugin-codegen@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/babel-plugin-codegen/-/babel-plugin-codegen-0.75.4.tgz#c9916d1c2c043a0b777fe0134fe4aaee6a82ae6c"
-  integrity sha512-gu5ZRIdr7+ufi09DJROhfDtbF4biTnCDJqtqcmtsku4cXOXPHE36QbC/vAmKEZ0PMPURBI8lwF2wfaeHLn7gig==
+"@react-native/babel-plugin-codegen@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/babel-plugin-codegen/-/babel-plugin-codegen-0.74.87.tgz#44457f4de69911f37a6ac308a7783203a757574a"
+  integrity sha512-+vJYpMnENFrwtgvDfUj+CtVJRJuUnzAUYT0/Pb68Sq9RfcZ5xdcCuUgyf7JO+akW2VTBoJY427wkcxU30qrWWw==
   dependencies:
-    "@react-native/codegen" "0.75.4"
+    "@react-native/codegen" "0.74.87"
 
 "@react-native/babel-plugin-codegen@0.75.5":
   version "0.75.5"
@@ -3237,38 +3103,37 @@
   dependencies:
     "@react-native/codegen" "0.75.5"
 
-"@react-native/babel-preset@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/babel-preset/-/babel-preset-0.75.4.tgz#6e49a73dbbe70e2765686a67088c67fe83085e97"
-  integrity sha512-UtyYCDJ3rZIeggyFEfh/q5t/FZ5a1h9F8EI37Nbrwyk/OKPH+1XS4PbHROHJzBARlJwOAfmT75+ovYUO0eakJA==
+"@react-native/babel-preset@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/babel-preset/-/babel-preset-0.74.87.tgz#3d74517d2ea8898f83b5106027033607d5bda50d"
+  integrity sha512-hyKpfqzN2nxZmYYJ0tQIHG99FQO0OWXp/gVggAfEUgiT+yNKas1C60LuofUsK7cd+2o9jrpqgqW4WzEDZoBlTg==
   dependencies:
     "@babel/core" "^7.20.0"
+    "@babel/plugin-proposal-async-generator-functions" "^7.0.0"
+    "@babel/plugin-proposal-class-properties" "^7.18.0"
     "@babel/plugin-proposal-export-default-from" "^7.0.0"
+    "@babel/plugin-proposal-logical-assignment-operators" "^7.18.0"
+    "@babel/plugin-proposal-nullish-coalescing-operator" "^7.18.0"
+    "@babel/plugin-proposal-numeric-separator" "^7.0.0"
+    "@babel/plugin-proposal-object-rest-spread" "^7.20.0"
+    "@babel/plugin-proposal-optional-catch-binding" "^7.0.0"
+    "@babel/plugin-proposal-optional-chaining" "^7.20.0"
     "@babel/plugin-syntax-dynamic-import" "^7.8.0"
     "@babel/plugin-syntax-export-default-from" "^7.0.0"
     "@babel/plugin-syntax-flow" "^7.18.0"
     "@babel/plugin-syntax-nullish-coalescing-operator" "^7.0.0"
     "@babel/plugin-syntax-optional-chaining" "^7.0.0"
     "@babel/plugin-transform-arrow-functions" "^7.0.0"
-    "@babel/plugin-transform-async-generator-functions" "^7.24.3"
     "@babel/plugin-transform-async-to-generator" "^7.20.0"
     "@babel/plugin-transform-block-scoping" "^7.0.0"
-    "@babel/plugin-transform-class-properties" "^7.24.1"
     "@babel/plugin-transform-classes" "^7.0.0"
     "@babel/plugin-transform-computed-properties" "^7.0.0"
     "@babel/plugin-transform-destructuring" "^7.20.0"
     "@babel/plugin-transform-flow-strip-types" "^7.20.0"
-    "@babel/plugin-transform-for-of" "^7.0.0"
     "@babel/plugin-transform-function-name" "^7.0.0"
     "@babel/plugin-transform-literals" "^7.0.0"
-    "@babel/plugin-transform-logical-assignment-operators" "^7.24.1"
     "@babel/plugin-transform-modules-commonjs" "^7.0.0"
     "@babel/plugin-transform-named-capturing-groups-regex" "^7.0.0"
-    "@babel/plugin-transform-nullish-coalescing-operator" "^7.24.1"
-    "@babel/plugin-transform-numeric-separator" "^7.24.1"
-    "@babel/plugin-transform-object-rest-spread" "^7.24.5"
-    "@babel/plugin-transform-optional-catch-binding" "^7.24.1"
-    "@babel/plugin-transform-optional-chaining" "^7.24.5"
     "@babel/plugin-transform-parameters" "^7.0.0"
     "@babel/plugin-transform-private-methods" "^7.22.5"
     "@babel/plugin-transform-private-property-in-object" "^7.22.11"
@@ -3276,7 +3141,6 @@
     "@babel/plugin-transform-react-jsx" "^7.0.0"
     "@babel/plugin-transform-react-jsx-self" "^7.0.0"
     "@babel/plugin-transform-react-jsx-source" "^7.0.0"
-    "@babel/plugin-transform-regenerator" "^7.20.0"
     "@babel/plugin-transform-runtime" "^7.0.0"
     "@babel/plugin-transform-shorthand-properties" "^7.0.0"
     "@babel/plugin-transform-spread" "^7.0.0"
@@ -3284,7 +3148,7 @@
     "@babel/plugin-transform-typescript" "^7.5.0"
     "@babel/plugin-transform-unicode-regex" "^7.0.0"
     "@babel/template" "^7.0.0"
-    "@react-native/babel-plugin-codegen" "0.75.4"
+    "@react-native/babel-plugin-codegen" "0.74.87"
     babel-plugin-transform-flow-enums "^0.0.2"
     react-refresh "^0.14.0"
 
@@ -3339,19 +3203,18 @@
     babel-plugin-transform-flow-enums "^0.0.2"
     react-refresh "^0.14.0"
 
-"@react-native/codegen@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/codegen/-/codegen-0.75.4.tgz#2eae0800fbddfd2f3946d9f2a229cae21feacd45"
-  integrity sha512-0FplNAD/S5FUvm8YIn6uyarOcP4jdJPqWz17K4a/Gp2KSsG/JJKEskX3aj5wpePzVfNQl3WyvBJ0whODdCocIA==
+"@react-native/codegen@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/codegen/-/codegen-0.74.87.tgz#47f07a627d0294c8270a03aee098991ed91f8ae9"
+  integrity sha512-GMSYDiD+86zLKgMMgz9z0k6FxmRn+z6cimYZKkucW4soGbxWsbjUAZoZ56sJwt2FJ3XVRgXCrnOCgXoH/Bkhcg==
   dependencies:
     "@babel/parser" "^7.20.0"
     glob "^7.1.1"
-    hermes-parser "0.22.0"
+    hermes-parser "0.19.1"
     invariant "^2.2.4"
     jscodeshift "^0.14.0"
     mkdirp "^0.5.1"
     nullthrows "^1.1.1"
-    yargs "^17.6.2"
 
 "@react-native/codegen@0.75.5":
   version "0.75.5"
@@ -3367,37 +3230,38 @@
     nullthrows "^1.1.1"
     yargs "^17.6.2"
 
-"@react-native/community-cli-plugin@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/community-cli-plugin/-/community-cli-plugin-0.75.4.tgz#aaaebeaf3d39c9c3e39b5b2fc8779119be51c87e"
-  integrity sha512-k/hevYPjEpW0MNVVyb3v9PJosOP+FzenS7+oqYNLXdEmgTnGHrAtYX9ABrJJgzeJt7I6g8g+RDvm8PSE+tnM5w==
+"@react-native/community-cli-plugin@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/community-cli-plugin/-/community-cli-plugin-0.74.87.tgz#4d9798d51381912f3771acded9b6b2804987e952"
+  integrity sha512-EgJG9lSr8x3X67dHQKQvU6EkO+3ksVlJHYIVv6U/AmW9dN80BEFxgYbSJ7icXS4wri7m4kHdgeq2PQ7/3vvrTQ==
   dependencies:
-    "@react-native-community/cli-server-api" "14.1.0"
-    "@react-native-community/cli-tools" "14.1.0"
-    "@react-native/dev-middleware" "0.75.4"
-    "@react-native/metro-babel-transformer" "0.75.4"
+    "@react-native-community/cli-server-api" "13.6.9"
+    "@react-native-community/cli-tools" "13.6.9"
+    "@react-native/dev-middleware" "0.74.87"
+    "@react-native/metro-babel-transformer" "0.74.87"
     chalk "^4.0.0"
     execa "^5.1.1"
     metro "^0.80.3"
     metro-config "^0.80.3"
     metro-core "^0.80.3"
     node-fetch "^2.2.0"
+    querystring "^0.2.1"
     readline "^1.3.0"
 
-"@react-native/debugger-frontend@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/debugger-frontend/-/debugger-frontend-0.75.4.tgz#81b0aa239d171a41a7b14333bd45b3aa5e77072a"
-  integrity sha512-QfGurR5hV6bhMPn/6VxS2RomYrPRFGwA03jJr+zKyWHnxDAu5jOqYVyKAktIIbhYe5sPp78QVl1ZYuhcnsRbEw==
+"@react-native/debugger-frontend@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/debugger-frontend/-/debugger-frontend-0.74.87.tgz#0bb4f4f54365d04fc975349d5f635cb575f6a5d8"
+  integrity sha512-MN95DJLYTv4EqJc+9JajA3AJZSBYJz2QEJ3uWlHrOky2vKrbbRVaW1ityTmaZa2OXIvNc6CZwSRSE7xCoHbXhQ==
 
-"@react-native/dev-middleware@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/dev-middleware/-/dev-middleware-0.75.4.tgz#fee908bbafb9cb4fe20a3add755aadb16c440a60"
-  integrity sha512-UhyBeQOG2wNcvrUGw3+IBrHBk/lIu7hHGmWt4j8W9Aqv9BwktHKkPyko+5A1yoUeO1O/VDnHWYqWeOejcA9wpQ==
+"@react-native/dev-middleware@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/dev-middleware/-/dev-middleware-0.74.87.tgz#254807b579a3015ced659a14c374dbf029a9c04e"
+  integrity sha512-7TmZ3hTHwooYgIHqc/z87BMe1ryrIqAUi+AF7vsD+EHCGxHFdMjSpf1BZ2SUPXuLnF2cTiTfV2RwhbPzx0tYIA==
   dependencies:
     "@isaacs/ttlcache" "^1.4.1"
-    "@react-native/debugger-frontend" "0.75.4"
+    "@react-native/debugger-frontend" "0.74.87"
+    "@rnx-kit/chromium-edge-launcher" "^1.0.0"
     chrome-launcher "^0.15.2"
-    chromium-edge-launcher "^0.2.0"
     connect "^3.6.5"
     debug "^2.2.0"
     node-fetch "^2.2.0"
@@ -3405,31 +3269,32 @@
     open "^7.0.3"
     selfsigned "^2.4.1"
     serve-static "^1.13.1"
+    temp-dir "^2.0.0"
     ws "^6.2.2"
 
-"@react-native/gradle-plugin@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/gradle-plugin/-/gradle-plugin-0.75.4.tgz#357d7d4c22059393113d44b077bb8e904aa1cd2c"
-  integrity sha512-kKTmw7cF7p1raT30DC0L6N+xiVXN7dlRy0J+hYPiCRRVHplwgvyS7pszjxfzwXmHFqOxwpxQVI3du8opsma1Mg==
+"@react-native/gradle-plugin@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/gradle-plugin/-/gradle-plugin-0.74.87.tgz#a66c01fda7a938a116dc27447f0ccce285796b2a"
+  integrity sha512-T+VX0N1qP+U9V4oAtn7FTX7pfsoVkd1ocyw9swYXgJqU2fK7hC9famW7b3s3ZiufPGPr1VPJe2TVGtSopBjL6A==
 
-"@react-native/js-polyfills@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/js-polyfills/-/js-polyfills-0.75.4.tgz#de895d0728a14126d7b3c04fe17c0da7e806d994"
-  integrity sha512-NF5ID5FjcVHBYk1LQ4JMRjPmxBWEo4yoqW1m6vGOQZPT8D5Qs9afgx3f7gQatxbn3ivMh0FVbLW0zBx6LyxEzA==
+"@react-native/js-polyfills@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/js-polyfills/-/js-polyfills-0.74.87.tgz#d28090a4dae417a2e9ad14e065fcf8cf52cc482c"
+  integrity sha512-M5Evdn76CuVEF0GsaXiGi95CBZ4IWubHqwXxV9vG9CC9kq0PSkoM2Pn7Lx7dgyp4vT7ccJ8a3IwHbe+5KJRnpw==
 
 "@react-native/js-polyfills@0.75.5":
   version "0.75.5"
   resolved "https://registry.yarnpkg.com/@react-native/js-polyfills/-/js-polyfills-0.75.5.tgz#c87d96d72f8a6d005fa3bdc6131a5aa8b3ede4f9"
   integrity sha512-zDMMq2mtWZ1/P3CnOguBucMSsvzPSDuLHZPn33DjZv1VFSOjqyAbGy9F7ZEQ0Y+vNiApOH9tPcsBZRFuTATzng==
 
-"@react-native/metro-babel-transformer@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/metro-babel-transformer/-/metro-babel-transformer-0.75.4.tgz#9283418536db31db8e39a879c8497483cfc736dc"
-  integrity sha512-O0WMW/K8Ny/MAAeRebqGEQhrbzcioxcPHZtos+EH2hWeBTEKHQV8fMYYxfYDabpr392qdhSBwg3LlXUD4U3PXQ==
+"@react-native/metro-babel-transformer@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/metro-babel-transformer/-/metro-babel-transformer-0.74.87.tgz#f60958f5e7eb39008a2c01dc5248ab60240bdc01"
+  integrity sha512-UsJCO24sNax2NSPBmV1zLEVVNkS88kcgAiYrZHtYSwSjpl4WZ656tIeedBfiySdJ94Hr3kQmBYLipV5zk0NI1A==
   dependencies:
     "@babel/core" "^7.20.0"
-    "@react-native/babel-preset" "0.75.4"
-    hermes-parser "0.22.0"
+    "@react-native/babel-preset" "0.74.87"
+    hermes-parser "0.19.1"
     nullthrows "^1.1.1"
 
 "@react-native/metro-babel-transformer@0.75.5":
@@ -3452,15 +3317,15 @@
     metro-config "^0.80.3"
     metro-runtime "^0.80.3"
 
-"@react-native/normalize-colors@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.75.4.tgz#e5eb01ee4309f2895c2d3aaf1b6449a5439c0176"
-  integrity sha512-90QrQDLg0/k9xqYesaKuIkayOSjD+FKa0hsHollbwT5h3kuGMY+lU7UZxnb8tU55Y1PKdvjYxqQsYWI/ql79zA==
+"@react-native/normalize-colors@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.74.87.tgz#a814169d0ce4ce13ffebcda0a3a5a3f780ccd772"
+  integrity sha512-Xh7Nyk/MPefkb0Itl5Z+3oOobeG9lfLb7ZOY2DKpFnoCE1TzBmib9vMNdFaLdSxLIP+Ec6icgKtdzYg8QUPYzA==
 
-"@react-native/virtualized-lists@0.75.4":
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/@react-native/virtualized-lists/-/virtualized-lists-0.75.4.tgz#9c6603d916c165ad2730a54b66104c990a860347"
-  integrity sha512-iEauRiXjvWG/iOH8bV+9MfepCS+72cuL5rhkrenYZS0NUnDcNjF+wtaoS9+Gx5z1UJOfEXxSmyXRtQJZne8SnA==
+"@react-native/virtualized-lists@0.74.87":
+  version "0.74.87"
+  resolved "https://registry.yarnpkg.com/@react-native/virtualized-lists/-/virtualized-lists-0.74.87.tgz#31bc44d62617df7d893df22c4c57094f576677a0"
+  integrity sha512-lsGxoFMb0lyK/MiplNKJpD+A1EoEUumkLrCjH4Ht+ZlG8S0BfCxmskLZ6qXn3BiDSkLjfjI/qyZ3pnxNBvkXpQ==
   dependencies:
     invariant "^2.2.4"
     nullthrows "^1.1.1"
@@ -3603,6 +3468,18 @@
     "@walletconnect/types" "2.19.2"
     "@walletconnect/utils" "2.19.2"
 
+"@rnx-kit/chromium-edge-launcher@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@rnx-kit/chromium-edge-launcher/-/chromium-edge-launcher-1.0.0.tgz#c0df8ea00a902c7a417cd9655aab06de398b939c"
+  integrity sha512-lzD84av1ZQhYUS+jsGqJiCMaJO2dn9u+RTT9n9q6D3SaKVwWqv+7AoRKqBu19bkwyE+iFRl1ymr40QS90jVFYg==
+  dependencies:
+    "@types/node" "^18.0.0"
+    escape-string-regexp "^4.0.0"
+    is-wsl "^2.2.0"
+    lighthouse-logger "^1.0.0"
+    mkdirp "^1.0.4"
+    rimraf "^3.0.2"
+
 "@scure/base@1.2.6", "@scure/base@~1.2.5":
   version "1.2.6"
   resolved "https://registry.npmjs.org/@scure/base/-/base-1.2.6.tgz"
@@ -3723,212 +3600,6 @@
     dlv "^1.1.3"
     dset "^3.1.1"
     tiny-hashes "^1.0.1"
-
-"@sentry-internal/feedback@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry-internal/feedback/-/feedback-7.119.1.tgz"
-  integrity sha512-EPyW6EKZmhKpw/OQUPRkTynXecZdYl4uhZwdZuGqnGMAzswPOgQvFrkwsOuPYvoMfXqCH7YuRqyJrox3uBOrTA==
-  dependencies:
-    "@sentry/core" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry-internal/replay-canvas@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry-internal/replay-canvas/-/replay-canvas-7.119.1.tgz"
-  integrity sha512-O/lrzENbMhP/UDr7LwmfOWTjD9PLNmdaCF408Wx8SDuj7Iwc+VasGfHg7fPH4Pdr4nJON6oh+UqoV4IoG05u+A==
-  dependencies:
-    "@sentry/core" "7.119.1"
-    "@sentry/replay" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry-internal/tracing@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry-internal/tracing/-/tracing-7.119.1.tgz"
-  integrity sha512-cI0YraPd6qBwvUA3wQdPGTy8PzAoK0NZiaTN1LM3IczdPegehWOaEG5GVTnpGnTsmBAzn1xnBXNBhgiU4dgcrQ==
-  dependencies:
-    "@sentry/core" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry/babel-plugin-component-annotate@2.20.1":
-  version "2.20.1"
-  resolved "https://registry.npmjs.org/@sentry/babel-plugin-component-annotate/-/babel-plugin-component-annotate-2.20.1.tgz"
-  integrity sha512-4mhEwYTK00bIb5Y9UWIELVUfru587Vaeg0DQGswv4aIRHIiMKLyNqCEejaaybQ/fNChIZOKmvyqXk430YVd7Qg==
-
-"@sentry/browser@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/browser/-/browser-7.119.1.tgz"
-  integrity sha512-aMwAnFU4iAPeLyZvqmOQaEDHt/Dkf8rpgYeJ0OEi50dmP6AjG+KIAMCXU7CYCCQDn70ITJo8QD5+KzCoZPYz0A==
-  dependencies:
-    "@sentry-internal/feedback" "7.119.1"
-    "@sentry-internal/replay-canvas" "7.119.1"
-    "@sentry-internal/tracing" "7.119.1"
-    "@sentry/core" "7.119.1"
-    "@sentry/integrations" "7.119.1"
-    "@sentry/replay" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry/cli-darwin@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.npmjs.org/@sentry/cli-darwin/-/cli-darwin-2.36.6.tgz"
-  integrity sha512-2yKECENqMZKrJY5weA19g4gTgQfeuadWvVu7fVQVsgqoBRIaEhSHJc64ZgiHq2ur06qOuYcQr5FO1VrwUE1pZg==
-
-"@sentry/cli-linux-arm64@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-arm64/-/cli-linux-arm64-2.36.6.tgz#6f0c604b5401441e62e89c3fe4450784dd93fda6"
-  integrity sha512-sLmmbZRE7F6UksovwcqEQ7oYXVBejpeL1CtiKVFwNoq9XB5kTiKlVColn+3yPcfwKCNj4H4HoeKc+xMtdd7wow==
-
-"@sentry/cli-linux-arm@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-arm/-/cli-linux-arm-2.36.6.tgz#9cc4b041fc8e20e52f745128aa8acff2b3783fa9"
-  integrity sha512-6zB7w5NawmdzhPHxqkjlhbvQugCBiFrFaUGvb3u1Oo/VCehdmq/v4v8ob4PNN2cJhoDRqQj2mPTfL/ppYNMJuw==
-
-"@sentry/cli-linux-i686@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-i686/-/cli-linux-i686-2.36.6.tgz#7c7b1c0ac83f89eda844586d51809797a868827b"
-  integrity sha512-M1pdxv7eZdGoG1wDpRb28aRUs/qb0C5jAe+a7sWHIg463jRLAahM8NDkv2bRQv0Xhw3JIkEGGvr46mPkQrOuMQ==
-
-"@sentry/cli-linux-x64@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-x64/-/cli-linux-x64-2.36.6.tgz#eaec558b30acec0a295f737558db3a640cc02906"
-  integrity sha512-gVy/zAWY2DEERQ/i3V+oruMas/U29/tsRPcRkB67MIUWbW7W46+c3yH490O+t49qMYYhKYG2YfWoTzW6qMtSlA==
-
-"@sentry/cli-win32-i686@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-win32-i686/-/cli-win32-i686-2.36.6.tgz#29f586279e354c6fad932d09da5f32e57e883caf"
-  integrity sha512-urH+i+WtPeW8Dund0xY8zObvvbMM0XxeEIUS4oFBCB3EMYHVxgNw+woQUv9Vyv7v+OBjckB/r27nxlwNBj4pbg==
-
-"@sentry/cli-win32-x64@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.yarnpkg.com/@sentry/cli-win32-x64/-/cli-win32-x64-2.36.6.tgz#b283460682a0cb824c4e16fc803de5f538bd1fcb"
-  integrity sha512-ZauqOqwFAqb/Njyc8Kj2l9Fhbms7T5zB2yu5zwvq1uiqhXqLmsb9mRTF8WJWl9WmO5hwq/GTOEQowvrwK8gblw==
-
-"@sentry/cli@2.36.6":
-  version "2.36.6"
-  resolved "https://registry.npmjs.org/@sentry/cli/-/cli-2.36.6.tgz"
-  integrity sha512-1fcZVwe4H6a3Z1O+7m/z/2em1u67Tf0Zrt2oGEp82bqvCOHA904Wr2otc6GBEuFESB1/Mo8QgD/qwRd9Tv0Otw==
-  dependencies:
-    https-proxy-agent "^5.0.0"
-    node-fetch "^2.6.7"
-    progress "^2.0.3"
-    proxy-from-env "^1.1.0"
-    which "^2.0.2"
-  optionalDependencies:
-    "@sentry/cli-darwin" "2.36.6"
-    "@sentry/cli-linux-arm" "2.36.6"
-    "@sentry/cli-linux-arm64" "2.36.6"
-    "@sentry/cli-linux-i686" "2.36.6"
-    "@sentry/cli-linux-x64" "2.36.6"
-    "@sentry/cli-win32-i686" "2.36.6"
-    "@sentry/cli-win32-x64" "2.36.6"
-
-"@sentry/core@7.119.0":
-  version "7.119.0"
-  resolved "https://registry.npmjs.org/@sentry/core/-/core-7.119.0.tgz"
-  integrity sha512-CS2kUv9rAJJEjiRat6wle3JATHypB0SyD7pt4cpX5y0dN5dZ1JrF57oLHRMnga9fxRivydHz7tMTuBhSSwhzjw==
-  dependencies:
-    "@sentry/types" "7.119.0"
-    "@sentry/utils" "7.119.0"
-
-"@sentry/core@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/core/-/core-7.119.1.tgz"
-  integrity sha512-YUNnH7O7paVd+UmpArWCPH4Phlb5LwrkWVqzFWqL3xPyCcTSof2RL8UmvpkTjgYJjJ+NDfq5mPFkqv3aOEn5Sw==
-  dependencies:
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry/hub@7.119.0":
-  version "7.119.0"
-  resolved "https://registry.npmjs.org/@sentry/hub/-/hub-7.119.0.tgz"
-  integrity sha512-183h5B/rZosLxpB+ZYOvFdHk0rwZbKskxqKFtcyPbDAfpCUgCass41UTqyxF6aH1qLgCRxX8GcLRF7frIa/SOg==
-  dependencies:
-    "@sentry/core" "7.119.0"
-    "@sentry/types" "7.119.0"
-    "@sentry/utils" "7.119.0"
-
-"@sentry/integrations@7.119.0":
-  version "7.119.0"
-  resolved "https://registry.npmjs.org/@sentry/integrations/-/integrations-7.119.0.tgz"
-  integrity sha512-OHShvtsRW0A+ZL/ZbMnMqDEtJddPasndjq+1aQXw40mN+zeP7At/V1yPZyFaURy86iX7Ucxw5BtmzuNy7hLyTA==
-  dependencies:
-    "@sentry/core" "7.119.0"
-    "@sentry/types" "7.119.0"
-    "@sentry/utils" "7.119.0"
-    localforage "^1.8.1"
-
-"@sentry/integrations@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/integrations/-/integrations-7.119.1.tgz"
-  integrity sha512-CGmLEPnaBqbUleVqrmGYjRjf5/OwjUXo57I9t0KKWViq81mWnYhaUhRZWFNoCNQHns+3+GPCOMvl0zlawt+evw==
-  dependencies:
-    "@sentry/core" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-    localforage "^1.8.1"
-
-"@sentry/react-native@^5.33.2":
-  version "5.33.2"
-  resolved "https://registry.npmjs.org/@sentry/react-native/-/react-native-5.33.2.tgz"
-  integrity sha512-wjNiKYqtcW3JtA6Sg7VJ0xPTaVVMvKtb9R/rtkADjYqsvXFl740YUcwD4TfMHs7UoOvMkP6E941EU1kxGlD6jA==
-  dependencies:
-    "@sentry/babel-plugin-component-annotate" "2.20.1"
-    "@sentry/browser" "7.119.1"
-    "@sentry/cli" "2.36.6"
-    "@sentry/core" "7.119.1"
-    "@sentry/hub" "7.119.0"
-    "@sentry/integrations" "7.119.0"
-    "@sentry/react" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry/react@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/react/-/react-7.119.1.tgz"
-  integrity sha512-Bri314LnSVm16K3JATgn3Zsq6Uj3M/nIjdUb3nggBw0BMlFWMsyFjUCfmCio5d80KJK/lUjOIxRjzu79M6jOzQ==
-  dependencies:
-    "@sentry/browser" "7.119.1"
-    "@sentry/core" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-    hoist-non-react-statics "^3.3.2"
-
-"@sentry/replay@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/replay/-/replay-7.119.1.tgz"
-  integrity sha512-4da+ruMEipuAZf35Ybt2StBdV1S+oJbSVccGpnl9w6RoeQoloT4ztR6ML3UcFDTXeTPT1FnHWDCyOfST0O7XMw==
-  dependencies:
-    "@sentry-internal/tracing" "7.119.1"
-    "@sentry/core" "7.119.1"
-    "@sentry/types" "7.119.1"
-    "@sentry/utils" "7.119.1"
-
-"@sentry/types@7.119.0":
-  version "7.119.0"
-  resolved "https://registry.npmjs.org/@sentry/types/-/types-7.119.0.tgz"
-  integrity sha512-27qQbutDBPKGbuJHROxhIWc1i0HJaGLA90tjMu11wt0E4UNxXRX+UQl4Twu68v4EV3CPvQcEpQfgsViYcXmq+w==
-
-"@sentry/types@7.119.1", "@sentry/types@^7.111.0":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/types/-/types-7.119.1.tgz"
-  integrity sha512-4G2mcZNnYzK3pa2PuTq+M2GcwBRY/yy1rF+HfZU+LAPZr98nzq2X3+mJHNJoobeHRkvVh7YZMPi4ogXiIS5VNQ==
-
-"@sentry/utils@7.119.0":
-  version "7.119.0"
-  resolved "https://registry.npmjs.org/@sentry/utils/-/utils-7.119.0.tgz"
-  integrity sha512-ZwyXexWn2ZIe2bBoYnXJVPc2esCSbKpdc6+0WJa8eutXfHq3FRKg4ohkfCBpfxljQGEfP1+kfin945lA21Ka+A==
-  dependencies:
-    "@sentry/types" "7.119.0"
-
-"@sentry/utils@7.119.1":
-  version "7.119.1"
-  resolved "https://registry.npmjs.org/@sentry/utils/-/utils-7.119.1.tgz"
-  integrity sha512-ju/Cvyeu/vkfC5/XBV30UNet5kLEicZmXSyuLwZu95hEbL+foPdxN+re7pCI/eNqfe3B2vz7lvz5afLVOlQ2Hg==
-  dependencies:
-    "@sentry/types" "7.119.1"
 
 "@sideway/address@^4.1.3":
   version "4.1.3"
@@ -5318,6 +4989,13 @@
   version "16.11.26"
   resolved "https://registry.npmjs.org/@types/node/-/node-16.11.26.tgz"
   integrity sha512-GZ7bu5A6+4DtG7q9GsoHXy3ALcgeIHP4NnL0Vv2wu0uUB/yQex26v0tf6/na1mm0+bS9Uw+0DFex7aaKr2qawQ==
+
+"@types/node@^18.0.0":
+  version "18.19.123"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.123.tgz#08a3e4f5e0c73b8840c677b7635ce59d5dc1f76d"
+  integrity sha512-K7DIaHnh0mzVxreCR9qwgNxp3MH9dltPNIEddW9MYUlcKAzm+3grKNSTe2vCJHI1FaLpvpL5JGJrz1UZDKYvDg==
+  dependencies:
+    undici-types "~5.26.4"
 
 "@types/node@^20":
   version "20.16.5"
@@ -6940,18 +6618,6 @@ chrome-launcher@^0.15.2:
     is-wsl "^2.2.0"
     lighthouse-logger "^1.0.0"
 
-chromium-edge-launcher@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/chromium-edge-launcher/-/chromium-edge-launcher-0.2.0.tgz#0c378f28c99aefc360705fa155de0113997f62fc"
-  integrity sha512-JfJjUnq25y9yg4FABRRVPmBGWPZZi+AQXT4mxupb67766/0UlhG8PAZCz6xzEMXTbW3CsSoE8PcCWA49n35mKg==
-  dependencies:
-    "@types/node" "*"
-    escape-string-regexp "^4.0.0"
-    is-wsl "^2.2.0"
-    lighthouse-logger "^1.0.0"
-    mkdirp "^1.0.4"
-    rimraf "^3.0.2"
-
 ci-info@^1.5.0:
   version "1.6.0"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-1.6.0.tgz"
@@ -7386,16 +7052,6 @@ cosmiconfig@^8.1.3:
     parse-json "^5.2.0"
     path-type "^4.0.0"
 
-cosmiconfig@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.0.tgz#34c3fc58287b915f3ae905ab6dc3de258b55ad9d"
-  integrity sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==
-  dependencies:
-    env-paths "^2.2.1"
-    import-fresh "^3.3.0"
-    js-yaml "^4.1.0"
-    parse-json "^5.2.0"
-
 country-data@^0.0.31:
   version "0.0.31"
   resolved "https://registry.npmjs.org/country-data/-/country-data-0.0.31.tgz"
@@ -7541,8 +7197,8 @@ currency-symbol-map@~2:
 
 cycle@^1.0.3:
   version "1.0.3"
-  resolved "https://registry.npmjs.org/cycle/-/cycle-1.0.3.tgz"
-  integrity sha1-IegLK+hYD5i0aPN5QwZisEbDStI=
+  resolved "https://registry.yarnpkg.com/cycle/-/cycle-1.0.3.tgz#21e80b2be8580f98b468f379430662b046c34ad2"
+  integrity sha512-TVF6svNzeQCOpjCqsy0/CSy8VgObG3wXusJ73xW2GbG5rGx7lC8zxDSURicsXI2UsGdi2L0QNRCi745/wUDvsA==
 
 "d3-array@2 - 3", "d3-array@2.10.0 - 3", d3-array@^3.1.6:
   version "3.2.0"
@@ -8142,12 +7798,12 @@ entities@^4.2.0, entities@^4.4.0:
   resolved "https://registry.npmjs.org/entities/-/entities-4.5.0.tgz"
   integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
 
-env-paths@^2.2.0, env-paths@^2.2.1:
+env-paths@^2.2.0:
   version "2.2.1"
   resolved "https://registry.npmjs.org/env-paths/-/env-paths-2.2.1.tgz"
   integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
-envinfo@^7.10.0, envinfo@^7.13.0:
+envinfo@^7.10.0:
   version "7.14.0"
   resolved "https://registry.yarnpkg.com/envinfo/-/envinfo-7.14.0.tgz#26dac5db54418f2a4c1159153a0b2ae980838aae"
   integrity sha512-CO40UI41xDQzhLB1hWyqUKgFhs250pNcGbyGKe1l/e4FSaI/+YE4IMG76GDt0In67WLPACIITC+sOi08x4wIvg==
@@ -8814,7 +8470,7 @@ fast-xml-parser@^4.0.12:
   dependencies:
     strnum "^1.0.5"
 
-fast-xml-parser@^4.2.4, fast-xml-parser@^4.4.1:
+fast-xml-parser@^4.2.4:
   version "4.5.3"
   resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.5.3.tgz#c54d6b35aa0f23dc1ea60b6c884340c006dc6efb"
   integrity sha512-RKihhV+SHsIUGXObeVy9AXiBbFwkVk7Syp8XgwN5U3JV416+Gwp/GO9i0JYKmikykgz/UHRrrV4ROuZEo/T0ig==
@@ -9522,6 +9178,11 @@ hasown@^2.0.0:
   dependencies:
     function-bind "^1.1.2"
 
+hermes-estree@0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/hermes-estree/-/hermes-estree-0.19.1.tgz#d5924f5fac2bf0532547ae9f506d6db8f3c96392"
+  integrity sha512-daLGV3Q2MKk8w4evNMKwS8zBE/rcpA800nu1Q5kM08IKijoSnPe9Uo1iIxzPKRkn95IxxsgBMPeYHt3VG4ej2g==
+
 hermes-estree@0.22.0:
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/hermes-estree/-/hermes-estree-0.22.0.tgz#38559502b119f728901d2cfe2ef422f277802a1d"
@@ -9531,6 +9192,13 @@ hermes-estree@0.23.1:
   version "0.23.1"
   resolved "https://registry.yarnpkg.com/hermes-estree/-/hermes-estree-0.23.1.tgz#d0bac369a030188120ee7024926aabe5a9f84fdb"
   integrity sha512-eT5MU3f5aVhTqsfIReZ6n41X5sYn4IdQL0nvz6yO+MMlPxw49aSARHLg/MSehQftyjnrE8X6bYregzSumqc6cg==
+
+hermes-parser@0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/hermes-parser/-/hermes-parser-0.19.1.tgz#1044348097165b7c93dc198a80b04ed5130d6b1a"
+  integrity sha512-Vp+bXzxYJWrpEuJ/vXxUsLnt0+y4q9zyi4zUlkLqD8FKv4LjIfOvP69R/9Lty3dCyKh0E2BU7Eypqr63/rKT/A==
+  dependencies:
+    hermes-estree "0.19.1"
 
 hermes-parser@0.22.0:
   version "0.22.0"
@@ -9562,7 +9230,7 @@ hmac-drbg@^1.0.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-hoist-non-react-statics@^3.3.0, hoist-non-react-statics@^3.3.2:
+hoist-non-react-statics@^3.3.0:
   version "3.3.2"
   resolved "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz"
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
@@ -9701,11 +9369,6 @@ image-size@^1.0.2:
   integrity sha512-541xKlUw6jr/6gGuk92F+mYM5zaFAc5ahphvkqvNe2bQ6gVBkd6bfrmVJ2t4KDAfikAYZyIqTnktX3i6/aQDrQ==
   dependencies:
     queue "6.0.2"
-
-immediate@~3.0.5:
-  version "3.0.6"
-  resolved "https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz"
-  integrity sha1-nbHb0Pr43m++D13V5Wu2BigN5ps=
 
 immer@^10.0.3:
   version "10.0.3"
@@ -11308,13 +10971,6 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
-lie@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/lie/-/lie-3.1.1.tgz"
-  integrity sha1-mkNrLMd0bKWd56QfpGmz77dr2H4=
-  dependencies:
-    immediate "~3.0.5"
-
 lighthouse-logger@^1.0.0:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/lighthouse-logger/-/lighthouse-logger-1.4.2.tgz#aef90f9e97cd81db367c7634292ee22079280aaa"
@@ -11399,13 +11055,6 @@ load-json-file@^6.2.0:
     parse-json "^5.0.0"
     strip-bom "^4.0.0"
     type-fest "^0.6.0"
-
-localforage@^1.8.1:
-  version "1.10.0"
-  resolved "https://registry.npmjs.org/localforage/-/localforage-1.10.0.tgz"
-  integrity sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==
-  dependencies:
-    lie "3.1.1"
 
 locate-path@^3.0.0:
   version "3.0.0"
@@ -13347,11 +12996,6 @@ proto-list@~1.2.1:
   resolved "https://registry.npmjs.org/proto-list/-/proto-list-1.2.4.tgz"
   integrity sha1-IS1b/hMYMGpCD2QCuOJv85ZHqEk=
 
-proxy-from-env@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-1.1.0.tgz"
-  integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
-
 pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/pseudomap/-/pseudomap-1.0.2.tgz"
@@ -13425,6 +13069,11 @@ querystring@0.2.0, querystring@^0.2.0:
   resolved "https://registry.npmjs.org/querystring/-/querystring-0.2.0.tgz"
   integrity sha1-sgmEkgO7Jd+CDadW50cAWHhSFiA=
 
+querystring@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.1.tgz#40d77615bb09d16902a85c3e38aa8b5ed761c2dd"
+  integrity sha512-wkvS7mL/JMugcup3/rMitHmd9ecIGd2lhFhK9N3UUQ450h66d1r3Y9nvXzQAW1Lq+wyx61k/1pfKS5KuKiyEbg==
+
 querystringify@^2.1.1:
   version "2.2.0"
   resolved "https://registry.npmjs.org/querystringify/-/querystringify-2.2.0.tgz"
@@ -13485,7 +13134,7 @@ react-devtools-core@4.26.0:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-devtools-core@^5.3.1:
+react-devtools-core@^5.0.0:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-5.3.2.tgz#d5df92f8ef2a587986d094ef2c47d84cf4ae46ec"
   integrity sha512-crr9HkVrDiJ0A4zot89oS0Cgv0Oa4OG1Em4jit3P3ZxZSKPMYyMjfwMqgcJna9o625g8oN87rBm8SWWrSTBZxg==
@@ -13604,10 +13253,10 @@ react-native-fast-image@^8.6.3:
   resolved "https://registry.npmjs.org/react-native-fast-image/-/react-native-fast-image-8.6.3.tgz"
   integrity sha512-Sdw4ESidXCXOmQ9EcYguNY2swyoWmx53kym2zRsvi+VeFCHEdkO+WG1DK+6W81juot40bbfLNhkc63QnWtesNg==
 
-react-native-flipper@^0.212.0:
-  version "0.212.0"
-  resolved "https://registry.npmjs.org/react-native-flipper/-/react-native-flipper-0.212.0.tgz"
-  integrity sha512-bDRfIgE3v/jjEEdnvGP0T6maDD+bXhDAQ/SZUYTKd/CQ6YIU1c0EF+e0urU62LNMv6XEFQKz226McdddyVhYZA==
+react-native-flipper@^0.273.0:
+  version "0.273.0"
+  resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.273.0.tgz#20c6922d135705da65e00631ade6c1bb9ab7fc3c"
+  integrity sha512-Eq0GW5ng8MrrW8JQDPIuqf9NVZRMhOF6xOCA7+xsy1sYxDZ1q81x5Mt4jNkk4vAdqILT5u8l/0ONilEIbiWlBQ==
 
 react-native-fs@*, react-native-fs@^2.14.1, react-native-fs@^2.20.0:
   version "2.20.0"
@@ -13898,31 +13547,29 @@ react-native-webview@^13.12.4:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@0.75.4:
-  version "0.75.4"
-  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.75.4.tgz#40fc337b9c005521b5b7e039481bc4d444b009a9"
-  integrity sha512-Jehg4AMNIAXu9cn0/1jbTCoNg3tc+t6EekwucCalN8YoRmxGd/PY6osQTI/5fSAM40JQ4O8uv8Qg09Ycpb5sxQ==
+react-native@0.74.5:
+  version "0.74.5"
+  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.74.5.tgz#80e556690fc2583d46714d5618ecd30d93c24e81"
+  integrity sha512-Bgg2WvxaGODukJMTZFTZBNMKVaROHLwSb8VAGEdrlvKwfb1hHg/3aXTUICYk7dwgAnb+INbGMwnF8yeAgIUmqw==
   dependencies:
     "@jest/create-cache-key-function" "^29.6.3"
-    "@react-native-community/cli" "14.1.0"
-    "@react-native-community/cli-platform-android" "14.1.0"
-    "@react-native-community/cli-platform-ios" "14.1.0"
-    "@react-native/assets-registry" "0.75.4"
-    "@react-native/codegen" "0.75.4"
-    "@react-native/community-cli-plugin" "0.75.4"
-    "@react-native/gradle-plugin" "0.75.4"
-    "@react-native/js-polyfills" "0.75.4"
-    "@react-native/normalize-colors" "0.75.4"
-    "@react-native/virtualized-lists" "0.75.4"
+    "@react-native-community/cli" "13.6.9"
+    "@react-native-community/cli-platform-android" "13.6.9"
+    "@react-native-community/cli-platform-ios" "13.6.9"
+    "@react-native/assets-registry" "0.74.87"
+    "@react-native/codegen" "0.74.87"
+    "@react-native/community-cli-plugin" "0.74.87"
+    "@react-native/gradle-plugin" "0.74.87"
+    "@react-native/js-polyfills" "0.74.87"
+    "@react-native/normalize-colors" "0.74.87"
+    "@react-native/virtualized-lists" "0.74.87"
     abort-controller "^3.0.0"
     anser "^1.4.9"
     ansi-regex "^5.0.0"
     base64-js "^1.5.1"
     chalk "^4.0.0"
-    commander "^9.4.1"
     event-target-shim "^5.0.1"
     flow-enums-runtime "^0.0.6"
-    glob "^7.1.1"
     invariant "^2.2.4"
     jest-environment-node "^29.6.3"
     jsc-android "^250231.0.0"
@@ -13933,11 +13580,11 @@ react-native@0.75.4:
     nullthrows "^1.1.1"
     pretty-format "^26.5.2"
     promise "^8.3.0"
-    react-devtools-core "^5.3.1"
+    react-devtools-core "^5.0.0"
     react-refresh "^0.14.0"
+    react-shallow-renderer "^16.15.0"
     regenerator-runtime "^0.13.2"
     scheduler "0.24.0-canary-efb381bbf-20230505"
-    semver "^7.1.3"
     stacktrace-parser "^0.1.10"
     whatwg-fetch "^3.0.0"
     ws "^6.2.2"
@@ -14097,10 +13744,10 @@ redux-devtools-instrument@^1.9.4:
     lodash "^4.17.19"
     symbol-observable "^1.2.0"
 
-redux-flipper@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.npmjs.org/redux-flipper/-/redux-flipper-1.4.2.tgz"
-  integrity sha512-VfSdmWATaZD2BHAiMOEzxk+KSiSTAv/N5AyY64+dU+qif/KfinSHWW3+YVMCO+5rxne1Fr92YwsYJl8l9injDA==
+redux-flipper@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/redux-flipper/-/redux-flipper-2.0.3.tgz#5373af20bd0efd91b5a1f9efa92c3338780f5732"
+  integrity sha512-JpNEZnBnBE9kGiZZrmzi23cFD9gjRUFoJE6nX0MPfmMVeIqfvkJWMATnbqRsTn8xwBXvWtOk+7Qbs8u4RZZcVw==
   dependencies:
     cycle "^1.0.3"
     dayjs "^1.8.29"
@@ -14623,11 +14270,6 @@ semver@^7.0.0, semver@^7.1.1, semver@^7.3.2, semver@^7.3.5, semver@^7.3.7, semve
   version "7.6.3"
   resolved "https://registry.npmjs.org/semver/-/semver-7.6.3.tgz"
   integrity sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==
-
-semver@^7.1.3:
-  version "7.7.2"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.2.tgz#67d99fdcd35cec21e6f8b87a7fd515a33f982b58"
-  integrity sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==
 
 send@0.18.0:
   version "0.18.0"
@@ -15449,6 +15091,11 @@ temp-dir@^1.0.0:
   resolved "https://registry.npmjs.org/temp-dir/-/temp-dir-1.0.0.tgz"
   integrity sha1-CnwOom06Oa+n4OvqnB/AvE2qAR0=
 
+temp-dir@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/temp-dir/-/temp-dir-2.0.0.tgz#bde92b05bdfeb1516e804c9c00ad45177f31321e"
+  integrity sha512-aoBAniQmmwtcKp/7BzsH8Cxzv8OL736p7v1ihGb5e9DJ9kTwGWHrQrVB5+lfVDzfGrdRzXch+ig7LHaY1JTOrg==
+
 temp@^0.8.4:
   version "0.8.4"
   resolved "https://registry.npmjs.org/temp/-/temp-0.8.4.tgz"
@@ -15958,6 +15605,11 @@ underscore@>1.4.4:
   version "1.13.7"
   resolved "https://registry.npmjs.org/underscore/-/underscore-1.13.7.tgz"
   integrity sha512-GMXzWtsc57XAtguZgaQViUOzs0KTkk8ojr3/xAxXLITqf/3EMwxC0inyETfDFjH/Krbhuep0HNbbjI9i/q3F3g==
+
+undici-types@~5.26.4:
+  version "5.26.5"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-5.26.5.tgz#bcd539893d00b56e964fd2657a4866b221a65617"
+  integrity sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==
 
 undici-types@~6.19.2:
   version "6.19.8"
@@ -16834,7 +16486,7 @@ which@^1.2.9, which@^1.3.1:
   dependencies:
     isexe "^2.0.0"
 
-which@^2.0.1, which@^2.0.2:
+which@^2.0.1:
   version "2.0.2"
   resolved "https://registry.npmjs.org/which/-/which-2.0.2.tgz"
   integrity sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==
@@ -16949,7 +16601,7 @@ ws@8.18.2:
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.2.tgz"
   integrity sha512-DMricUmwGZUVr++AEAe2uiVM7UoO9MAVZMDu05UQOaUII0lp+zOzLLU4Xqh/JvTqklB1T4uELaaPBKyjE1r4fQ==
 
-ws@^6.2.2, ws@^6.2.3:
+ws@^6.2.2:
   version "6.2.3"
   resolved "https://registry.npmjs.org/ws/-/ws-6.2.3.tgz"
   integrity sha512-jmTjYU0j60B+vHey6TfR3Z7RD61z/hmxBS3VMSGIrroOWXQEneK1zNuotOUrGyBHQj0yrpsLHPWtigEFd13ndA==

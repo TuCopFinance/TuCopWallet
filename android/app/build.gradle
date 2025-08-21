@@ -78,7 +78,7 @@ apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.grad
 def isDetoxTestBuild = Boolean.valueOf(project.properties['isDetoxBuild'] ?: 'false')
 
 if (!isDetoxTestBuild) {
-  apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+  // apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 }
 
 /**
@@ -147,6 +147,20 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    // Task to remove duplicate autolinking PackageList
+    task deleteAutolinkingPackageList {
+        doLast {
+            delete fileTree(dir: "build/generated/autolinking", include: "**/PackageList.java")
+        }
+    }
+    
+    // Make compilation depend on removing the duplicate file
+    tasks.whenTaskAdded { task ->
+        if (task.name.startsWith('compile') && task.name.contains('JavaWithJavac')) {
+            task.dependsOn deleteAutolinkingPackageList
+        }
     }
     
     lint {
@@ -337,6 +351,10 @@ dependencies {
         exclude group:'com.squareup.okhttp3', module:'okhttp'
     }
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
+    
+    // Add Fresco dependencies explicitly for Flipper - updated for RN 0.75.4 compatibility
+    debugImplementation 'com.facebook.fresco:fresco:3.2.0'
+    debugImplementation 'com.facebook.fresco:imagepipeline:3.2.0'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

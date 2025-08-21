@@ -8,21 +8,15 @@ import Logger from 'src/utils/Logger'
 import Config from 'react-native-config'
 import { stringToBoolean } from 'src/utils/parsing'
 import App from 'src/app/App'
-import * as Sentry from '@sentry/react-native'
 import 'react-native-gesture-handler'
 import { Text, TextInput } from 'react-native'
 import 'intl-pluralrules'
-
-const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 Logger.overrideConsoleLogs()
 Logger.cleanupOldLogs()
 
 const defaultErrorHandler = ErrorUtils.getGlobalHandler()
 const customErrorHandler = (e, isFatal) => {
-  if (SENTRY_ENABLED) {
-    Sentry.captureException(e)
-  }
   Logger.error('RootErrorHandler', `Unhandled error. isFatal: ${isFatal}`, e)
   defaultErrorHandler(e, isFatal)
 }

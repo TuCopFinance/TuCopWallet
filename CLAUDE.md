@@ -7,8 +7,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Development
 ```bash
 yarn dev:android          # Run on Android simulator/device
-yarn dev:ios              # Run on iOS simulator/device
+yarn dev:ios              # Run on iOS simulator/device (may have React Native CLI issues)
 yarn dev:android:mainnet  # Run on mainnet (production data)
+
+# iOS Development - Alternative Methods (if yarn dev:ios fails)
+# Method 1: Direct Xcode build and run
+xcodebuild -workspace ios/MobileStack.xcworkspace -scheme MobileStack-mainnet -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15 Pro' build
+xcrun simctl install <SIMULATOR_ID> <PATH_TO_APP>
+xcrun simctl launch <SIMULATOR_ID> org.tucop
+
+# Method 2: Find simulator ID and use direct build
+xcrun simctl list devices | grep "iPhone 15 Pro"  # Get simulator ID
+xcodebuild -workspace ios/MobileStack.xcworkspace -scheme MobileStack-mainnet -configuration Debug -destination 'platform=iOS Simulator,id=<SIMULATOR_ID>' build install
 ```
 
 ### Testing
@@ -118,4 +128,19 @@ src/
 - Android build issues: Check Java version and Android SDK setup
 - Redux state persistence: Increment migration version when changing state structure
 - React Native version-specific issues: Check patches/ directory for workarounds
-- 
+
+### iOS Development Troubleshooting
+- **React Native CLI Issues**: `yarn dev:ios` may fail with "unknown option '--configuration'" error
+- **Bundle Identifier**: App uses `org.tucop` as bundle identifier
+- **Build Path**: Built app located at `DerivedData/MobileStack-*/Build/Products/Debug-iphonesimulator/TuCop.app`
+- **Simulator Management**: Use `xcrun simctl list devices` to find simulator IDs
+- **App Launch Issues**: If app installs but won't launch, try direct installation with `xcrun simctl install` then `xcrun simctl launch`
+- **Build vs Install**: Xcode build may succeed but require separate install step for simulator
+- **App Crashes**: Check iOS simulator console and Metro bundler logs for crash details
+
+### iOS Build Process
+1. Ensure simulator is running: `open -a Simulator`
+2. Build with Xcode: `xcodebuild -workspace ios/MobileStack.xcworkspace -scheme MobileStack-mainnet -configuration Debug -destination 'platform=iOS Simulator,id=<SIMULATOR_ID>' build`
+3. Install to simulator: `xcrun simctl install <SIMULATOR_ID> <PATH_TO_APP>`
+4. Launch app: `xcrun simctl launch <SIMULATOR_ID> org.tucop`
+5. Check logs if crashes occur: iOS Simulator → Device → Console

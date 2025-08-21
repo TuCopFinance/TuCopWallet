@@ -124,7 +124,6 @@ function ValueWithLoading({ value, isLoading }: { value: React.ReactNode; isLoad
               borderRadius={100}
               backgroundColor={colors.gray2}
               highlightColor={colors.white}
-              testID="SwapTransactionDetails/ExchangeRate/Loader"
             >
               <View style={styles.loader} />
             </SkeletonPlaceholder>
