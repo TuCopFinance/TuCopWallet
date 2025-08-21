@@ -11,7 +11,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 
 export default function NoProvidersScreen() {
-  const { t } = useTranslation()
+  const {} = useTranslation()
 
   const handleViewAddress = () => {
     navigate(Screens.QRNavigator, {

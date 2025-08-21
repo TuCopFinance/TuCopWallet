@@ -5,7 +5,7 @@ import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
 import { Address, Hex } from 'viem'
-import { call, delay, put } from 'typed-redux-saga'
+import { call, delay } from 'typed-redux-saga'
 
 const TAG = 'jumpstart/newWalletFunding'
 
