@@ -34,8 +34,6 @@ import {
   triggerShortcutSuccess,
 } from 'src/positions/slice'
 import { Position, Shortcut } from 'src/positions/types'
-import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
-import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
@@ -186,7 +184,6 @@ export function* fetchPositionsSaga() {
     // }
 
     yield* put(fetchPositionsStart())
-    SentryTransactionHub.startTransaction(SentryTransaction.fetch_positions)
     const hooksApiUrl = yield* select(hooksApiUrlSelector)
     const language = (yield* select(currentLanguageSelector)) || 'en'
     const shortLanguage = language.split('-')[0]
@@ -200,7 +197,6 @@ export function* fetchPositionsSaga() {
     Logger.debug(TAG, 'walletAddress>>>', hooksApiUrl)
     Logger.debug(TAG, 'positions>>>', positions)
 
-    SentryTransactionHub.finishTransaction(SentryTransaction.fetch_positions)
     yield* put(fetchPositionsSuccess({ positions, earnPositionIds, fetchedAt: Date.now() }))
   } catch (err) {
     const error = ensureError(err)

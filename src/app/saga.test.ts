@@ -44,7 +44,6 @@ import { Screens } from 'src/navigator/Screens'
 import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { handlePaymentDeeplink } from 'src/send/utils'
-import { initializeSentry } from 'src/sentry/Sentry'
 import { getDynamicConfigParams, getFeatureGate, patchUpdateStatsigUser } from 'src/statsig'
 import { NetworkId } from 'src/transactions/types'
 import { navigateToURI } from 'src/utils/linking'
@@ -59,8 +58,6 @@ import { createMockStore } from 'test/utils'
 import { mockAccount, mockTokenBalances } from 'test/values'
 
 jest.mock('src/analytics/AppAnalytics')
-jest.mock('src/sentry/Sentry')
-jest.mock('src/sentry/SentryTransactionHub')
 jest.mock('src/statsig')
 jest.mock('src/jumpstart/jumpstartLinkHandler')
 jest.mock('src/positions/saga')
@@ -558,7 +555,6 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
     // Ensure the right context is used
     // Note: switch to mock.contexts[0] when we upgrade to jest >= 28
@@ -577,7 +573,6 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
     expect(initI18n).toHaveBeenCalledWith('de-DE', true, '1')
   })
@@ -590,7 +585,6 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
     expect(initI18n).toHaveBeenCalledWith('en-US', true, '1')
   })

@@ -37,7 +37,6 @@ import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { initializeSentryUserContext } from 'src/sentry/actions'
 import Colors from 'src/styles/colors'
 import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -96,7 +95,7 @@ function TabHome(_props: Props) {
 
   useEffect(() => {
     // TODO find a better home for this, its unrelated to wallet home
-    dispatch(initializeSentryUserContext())
+    // Sentry user context removed
     if (SHOW_TESTNET_BANNER) {
       showTestnetBanner()
     }

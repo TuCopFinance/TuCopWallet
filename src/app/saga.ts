@@ -52,9 +52,6 @@ import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { Actions as SendActions } from 'src/send/actions'
 import { handlePaymentDeeplink } from 'src/send/utils'
-import { initializeSentry } from 'src/sentry/Sentry'
-import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
-import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { getFeatureGate, patchUpdateStatsigUser, setupOverridesFromLaunchArgs } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapSuccess } from 'src/swap/slice'
@@ -101,15 +98,12 @@ const REVIEW_INTERVAL = ONE_DAY_IN_MILLIS * 120 // 120 days
 // Work that's done before other sagas are initalized
 // Be mindful to not put long blocking tasks here
 export function* appInit() {
-  SentryTransactionHub.startTransaction(SentryTransaction.app_init_saga)
-
   const allowOtaTranslations = yield* select(allowOtaTranslationsSelector)
   const otaTranslationsAppVersion = yield* select(otaTranslationsAppVersionSelector)
   const language = yield* select(currentLanguageSelector)
   const bestLanguage = findBestLanguageTag(Object.keys(locales))?.languageTag
 
   yield* all([
-    call(initializeSentry),
     call([AppAnalytics, 'init']),
     call(
       initI18n,
@@ -131,8 +125,6 @@ export function* appInit() {
   if (isE2EEnv) {
     setupOverridesFromLaunchArgs()
   }
-
-  SentryTransactionHub.finishTransaction(SentryTransaction.app_init_saga)
 }
 
 // Check the availability of Google Mobile Services and Huawei Mobile Services, an alternative to

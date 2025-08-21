@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-import * as Sentry from '@sentry/react-native'
-import { SeverityLevel } from '@sentry/types'
 import { format } from 'date-fns'
 import { Platform } from 'react-native'
 import * as RNFS from 'react-native-fs'
@@ -74,30 +72,17 @@ class Logger {
 
     // prevent genuine network errors from being sent to Sentry
     if (!isNetworkError || (this.isNetworkConnected && isNetworkError)) {
-      const captureContext = {
-        level: 'error' as SeverityLevel,
-        extra: {
-          tag,
-          // TODO: the toString() can be removed after upgrading TS to v4. It is
-          // needed for now because the try/catch errors are typed as any, and we
-          // don't get warnings from calling this function like
-          // `Logger.error(TAG, error)`
-          message: message?.toString(),
-          errorMsg,
-          source: 'Logger.error',
-          networkConnected: this.isNetworkConnected,
-        },
+      // Error captured for logging purposes only
+      const errorInfo = {
+        tag,
+        message: message?.toString(),
+        errorMsg,
+        source: 'Logger.error',
+        networkConnected: this.isNetworkConnected,
       }
 
-      // If we don't have an error object call Sentry.captureMessage. That will
-      // group events without an error by message (accounting for some parameters
-      // in the message). Sentry.captureException sentry will group all events
-      // without an error object together.
-      if (error) {
-        Sentry.captureException(error, captureContext)
-      } else {
-        Sentry.captureMessage(message, captureContext)
-      }
+      // Log the error info for debugging
+      console.error('Logger captured error:', errorInfo)
     }
     console.error(
       `${tag} :: ${message} :: ${errorMsg} :: network connected ${this.isNetworkConnected}`
