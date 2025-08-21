@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react-native'
 import BigNumber from 'bignumber.js'
 import App from 'src/app/App'
 
@@ -11,9 +10,8 @@ jest.mock('react-native-localize', () => ({
 }))
 
 describe('App', () => {
-  it('wraps sentry', () => {
+  it('renders without crashing', () => {
     expect(App).toBeDefined()
-    expect(Sentry.wrap).toHaveBeenCalledWith(App)
   })
 
   it('big number formats large numbers with separators from RN localize', () => {

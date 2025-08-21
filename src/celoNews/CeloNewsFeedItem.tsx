@@ -60,7 +60,6 @@ CeloNewsFeedItem.Skeleton = () => (
     borderRadius={4}
     backgroundColor={colors.gray2}
     highlightColor={colors.white}
-    testID="CeloNewsFeedItemSkeleton"
   >
     <View style={styles.contentContainer}>
       <View style={{ ...styles.author, width: 60 }} />
