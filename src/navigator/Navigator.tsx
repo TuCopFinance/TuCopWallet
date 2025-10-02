@@ -128,7 +128,6 @@ import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
 import WebViewScreen from 'src/webview/WebViewScreen'
-import NoProvidersScreen from 'src/screens/NoProvidersScreen'
 
 const TAG = 'Navigator'
 
@@ -672,11 +671,6 @@ function MainStackScreen() {
       <Stack.Screen
         name={Screens.MarranitoStaking}
         component={MarranitoStaking}
-        options={headerWithBackButton}
-      />
-      <Stack.Screen
-        name={Screens.NoProvidersScreen}
-        component={NoProvidersScreen}
         options={headerWithBackButton}
       />
     </Stack.Navigator>

@@ -1,15 +1,9 @@
-const path = require('path')
-
 module.exports = {
-  project: {
-    ios: {
-      sourceDir: './ios',
-    },
-    android: {
-      sourceDir: './android',
-      packageName: 'xyz.mobilestack',
-      appName: 'app',
+  dependencies: {
+    detox: {
+      platforms: {
+        android: null, // disable Android platform for detox
+      },
     },
   },
-  assets: ['./assets/fonts/'],
-}
+};

@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   countryFlagStyle: {
     backgroundColor: Colors.white,
-    borderColor: Colors.black,
+    border: Colors.black,
     borderWidth: 1,
   },
 })

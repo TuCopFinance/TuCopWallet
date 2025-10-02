@@ -204,16 +204,16 @@ function SignInWithEmail({ route, navigation }: Props) {
               eventName={KeylessBackupEvents.cab_sign_in_with_email_screen_cancel}
             />
           ) : // This includes Onboarding and Restore
-          canGoBack ? (
-            <BackButton
-              testID="SignInWithEmail/BackButton"
-              eventName={KeylessBackupEvents.cab_sign_in_with_email_screen_cancel}
-              eventProperties={{
-                keylessBackupFlow,
-                origin,
-              }}
-            />
-          ) : undefined
+            canGoBack ? (
+              <BackButton
+                testID="SignInWithEmail/BackButton"
+                eventName={KeylessBackupEvents.cab_sign_in_with_email_screen_cancel}
+                eventProperties={{
+                  keylessBackupFlow,
+                  origin,
+                }}
+              />
+            ) : undefined
         }
         title={
           isSetupInOnboarding ? (

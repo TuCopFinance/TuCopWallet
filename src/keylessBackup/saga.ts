@@ -149,29 +149,13 @@ function* handleKeylessBackupSetup({
     // Registrar información antes de almacenar
     Logger.debug(TAG, `Storing encrypted mnemonic for address: ${encryptionAddress}`)
 
-    // Dynamic import for retry utilities
-    let retryWithBackoff: any
-    try {
-      const cloudBackupRetry = yield* call(() => import('./cloudBackupRetry'))
-      retryWithBackoff = cloudBackupRetry.retryWithBackoff
-    } catch (error) {
-      Logger.warn(TAG, 'Failed to import cloudBackupRetry, using direct call', error)
-      // Fallback to direct call
-      retryWithBackoff = (operation: () => any) => call(operation)
-    }
-
-    yield* call(
-      retryWithBackoff,
-      () =>
-        storeEncryptedMnemonic({
-          encryptedMnemonic,
-          encryptionAddress,
-          jwt,
-          walletAddress: walletAddress as string,
-          phone: phone as string,
-        }),
-      'storeEncryptedMnemonic'
-    )
+    yield* call(storeEncryptedMnemonic, {
+      encryptedMnemonic,
+      encryptionAddress,
+      jwt,
+      walletAddress: walletAddress as string,
+      phone: phone as string,
+    })
 
     yield* call(storeSECP256k1PrivateKey, encryptionPrivateKey, walletAddress)
 
@@ -195,32 +179,13 @@ function* handleKeylessBackupRestore({
   jwt: string
   phone: string
 }) {
-  // Dynamic import for retry utilities
-  let retryWithBackoff: any
-  let validateBackupData: any
-  try {
-    const cloudBackupRetry = yield* call(() => import('./cloudBackupRetry'))
-    retryWithBackoff = cloudBackupRetry.retryWithBackoff
-    validateBackupData = cloudBackupRetry.validateBackupData
-  } catch (error) {
-    Logger.warn(TAG, 'Failed to import cloudBackupRetry, using direct calls', error)
-    // Fallback to direct calls
-    retryWithBackoff = (operation: () => any) => call(operation)
-    validateBackupData = (data: string) => !!data
-  }
+  const encryptedMnemonic = yield* call(getEncryptedMnemonic, {
+    encryptionPrivateKey: encryptionPrivateKey as Hex,
+    jwt: jwt as string,
+    phone: phone as string,
+  })
 
-  const encryptedMnemonic = yield* call(
-    retryWithBackoff,
-    () =>
-      getEncryptedMnemonic({
-        encryptionPrivateKey: encryptionPrivateKey as Hex,
-        jwt: jwt as string,
-        phone: phone as string,
-      }),
-    'getEncryptedMnemonic'
-  )
-
-  Logger.debug(TAG, `Encrypted mnemonic retrieved: ${encryptedMnemonic ? 'success' : 'null'}`)
+  Logger.debug(TAG, `Encrypted mnemonic in handleKey: ${encryptedMnemonic}`)
 
   if (!encryptedMnemonic) {
     AppAnalytics.track(KeylessBackupEvents.cab_restore_mnemonic_not_found)
@@ -228,24 +193,11 @@ function* handleKeylessBackupRestore({
     return
   }
 
-  // Validate the encrypted mnemonic before attempting decryption
-  const isValid = yield* call(validateBackupData, encryptedMnemonic)
-  if (!isValid) {
-    Logger.error(TAG, 'Invalid encrypted mnemonic format')
-    // Track invalid mnemonic event (event may not exist yet)
-    try {
-      AppAnalytics.track(KeylessBackupEvents.cab_restore_mnemonic_not_found)
-    } catch {
-      Logger.warn(TAG, 'Analytics event not available')
-    }
-    yield* put(keylessBackupFailed())
-    return
-  }
-
   const decryptedMnemonic = yield* call(
-    retryWithBackoff,
-    () => decryptPassphrase(torusKeyshareBuffer, appKeyshareBuffer, encryptedMnemonic),
-    'decryptPassphrase'
+    decryptPassphrase,
+    torusKeyshareBuffer,
+    appKeyshareBuffer,
+    encryptedMnemonic
   )
 
   const { privateKey } = yield* call(generateKeysFromMnemonic, decryptedMnemonic)

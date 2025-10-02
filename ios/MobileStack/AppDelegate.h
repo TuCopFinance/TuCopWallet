@@ -9,9 +9,10 @@
 
 #import <RCTAppDelegate.h>
 #import <UIKit/UIKit.h>
+#import <UserNotifications/UserNotifications.h>
 #import <CleverTapSDK/CleverTap.h>  // Cambiar a esta importación
 #import <CleverTapReact/CleverTapReactManager.h>
 
-@interface AppDelegate : RCTAppDelegate
+@interface AppDelegate : RCTAppDelegate <UNUserNotificationCenterDelegate>
 
 @end
