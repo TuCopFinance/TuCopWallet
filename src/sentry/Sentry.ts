@@ -11,9 +11,48 @@ const TAG = 'sentry/Sentry'
 
 // Set this to true, if you want to test Sentry on dev builds
 // Set tracesSampleRate: 1 to capture all events for testing performance metrics in Sentry
-export const sentryRoutingInstrumentation = new Sentry.ReactNavigationInstrumentation()
+let _sentryRoutingInstrumentation: Sentry.ReactNavigationInstrumentation | undefined
 
-export function* initializeSentry() {
+function createSentryRoutingInstrumentation() {
+  if (!_sentryRoutingInstrumentation) {
+    // Only create real instrumentation if Sentry is enabled
+    if (!SENTRY_ENABLED) {
+      _sentryRoutingInstrumentation = {
+        registerNavigationContainer: () => {},
+        onRouteWillChange: () => {},
+      } as Sentry.ReactNavigationInstrumentation
+    } else {
+      try {
+        _sentryRoutingInstrumentation = new Sentry.ReactNavigationInstrumentation()
+      } catch (error) {
+        // Sentry not available - create a no-op instrumentation with required methods
+        _sentryRoutingInstrumentation = {
+          registerNavigationContainer: () => {},
+          onRouteWillChange: () => {},
+        } as Sentry.ReactNavigationInstrumentation
+      }
+    }
+  }
+  return _sentryRoutingInstrumentation
+}
+
+// Lazy-loaded export using Proxy with proper method binding
+export const sentryRoutingInstrumentation: Sentry.ReactNavigationInstrumentation =
+  new Proxy({} as Sentry.ReactNavigationInstrumentation, {
+    get: (target, prop) => {
+      const instance = createSentryRoutingInstrumentation()
+      const value = instance[prop as keyof Sentry.ReactNavigationInstrumentation]
+      // If it's a function, bind it to the instance
+      if (typeof value === 'function') {
+        return value.bind(instance)
+      }
+      return value
+    }
+  })
+
+// Initialize Sentry early, before App component mounts
+// This prevents the "Sentry.wrap called before Sentry.init" warning
+export function initializeSentryEarly() {
   if (!SENTRY_ENABLED) {
     Logger.info(TAG, 'Sentry not enabled')
     return
@@ -33,7 +72,6 @@ export function* initializeSentry() {
     return
   }
 
-  const tracesSampleRate = yield* select(sentryTracesSampleRateSelector)
   // tracingOrigins is an array of regexes to match domain names against:
   //   https://docs.sentry.io/platforms/javascript/performance/instrumentation/automatic-instrumentation/#tracingorigins
   // If you want to match against a specific domain (which we do) make sure to
@@ -51,14 +89,33 @@ export function* initializeSentry() {
     enableAutoSessionTracking: true,
     integrations: [
       new Sentry.ReactNativeTracing({
-        routingInstrumentation: sentryRoutingInstrumentation,
+        routingInstrumentation: createSentryRoutingInstrumentation(),
         tracingOrigins,
       }),
     ],
-    tracesSampleRate,
+    tracesSampleRate: 0.2, // Default sample rate, can be updated later
   })
 
   Logger.info(TAG, 'installSentry', 'Sentry installation complete')
+}
+
+export function* initializeSentry() {
+  // Sentry.init is already called in initializeSentryEarly()
+  // This saga now only updates the sample rate if needed
+  if (!SENTRY_ENABLED) {
+    return
+  }
+
+  const tracesSampleRate = yield* select(sentryTracesSampleRateSelector)
+
+  // Update the sample rate if it's different from the default
+  if (tracesSampleRate !== 0.2) {
+    const client = Sentry.getCurrentHub().getClient()
+    if (client && client.getOptions()) {
+      client.getOptions().tracesSampleRate = tracesSampleRate
+      Logger.info(TAG, 'Updated Sentry tracesSampleRate to', tracesSampleRate)
+    }
+  }
 }
 
 // This should not be called at cold start since it can slow down the cold start.

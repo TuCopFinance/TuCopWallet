@@ -10,8 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { connect } from 'react-redux'
 import { initializeAccount, setPincodeSuccess } from 'src/account/actions'
 import { PincodeType } from 'src/account/reducer'
-import { OnboardingEvents, SettingsEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import { OnboardingEvents, SettingsEvents } from 'src/analytics/Events'
 import { supportedBiometryTypeSelector } from 'src/app/selectors'
 import DevSkipButton from 'src/components/DevSkipButton'
 import i18n, { withTranslation } from 'src/i18n'
@@ -97,9 +97,9 @@ export class PincodeSet extends React.Component<Props, State> {
             changePin || route.params?.choseToRestoreAccount
               ? undefined
               : i18n.t('registrationSteps', {
-                  step: route.params?.registrationStep?.step,
-                  totalSteps: route.params?.registrationStep?.totalSteps,
-                })
+                step: route.params?.registrationStep?.step,
+                totalSteps: route.params?.registrationStep?.totalSteps,
+              })
           }
         />
       ),
