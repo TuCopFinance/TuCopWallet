@@ -1173,7 +1173,7 @@ SPEC CHECKSUMS:
   react-native-compat: 4a33a5f7263e7d83fb9b84b9046d87cd7a46fe80
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-contacts: 5eeeb8bff95a0e1680a11329e15653eb73d29a1d
-  react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
+  react-native-cookies: f7772e020f2d61cbbb591cf769ac352b8c1517e6
   react-native-in-app-review: b3d1eed3d1596ebf6539804778272c4c65e4a400
   react-native-launch-arguments: d4759f7591e2766e6c5ec746b7032429edaf7058
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
