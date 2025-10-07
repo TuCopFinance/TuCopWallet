@@ -178,7 +178,7 @@ export async function tryEstimateTransaction({
       baseFeePerGas,
     })
   } catch (e) {
-    if (
+    const isInsufficientFundsError =
       e instanceof EstimateGasExecutionError &&
       (e.cause instanceof InsufficientFundsError ||
         (e.cause instanceof ExecutionRevertedError && // viem does not reliably label node errors as InsufficientFundsError when the user has enough to pay for the transfer, but not for the transfer + gas
@@ -186,9 +186,37 @@ export async function tryEstimateTransaction({
             /transfer amount exceeds balance/.test(e.cause.details))) ||
         (e.cause instanceof InvalidInputRpcError &&
           /gas required exceeds allowance/.test(e.cause.details)))
-    ) {
-      // too much gas was needed
-      Logger.warn(TAG, `Couldn't estimate gas with feeCurrency ${feeCurrencySymbol}`, e)
+
+    if (isInsufficientFundsError) {
+      // Gas estimation failed due to insufficient funds
+      // For ERC20 transfers, use a fallback estimate instead of rejecting outright
+      // Standard ERC20 transfer typically uses ~50,000-65,000 gas
+      const isERC20Transfer = tx.data && (tx.data as string).startsWith('0xa9059cbb')
+
+      if (isERC20Transfer) {
+        const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
+        Logger.warn(TAG, `Using fallback gas estimate for ERC20 transfer with feeCurrency ${feeCurrencySymbol}`, {
+          fallbackGas: fallbackGas.toString(),
+          txValue: tx.value?.toString(),
+          feeCurrency: tx.feeCurrency,
+          from: tx.from,
+          to: tx.to,
+        })
+        tx.gas = fallbackGas
+        tx._estimatedGasUse = fallbackGas
+        tx._baseFeePerGas = baseFeePerGas
+        return tx
+      }
+
+      // For non-ERC20 transactions, return null to try next fee currency
+      Logger.warn(TAG, `Couldn't estimate gas with feeCurrency ${feeCurrencySymbol}`, {
+        error: e,
+        txValue: tx.value?.toString(),
+        txData: tx.data?.toString().substring(0, 100),
+        feeCurrency: tx.feeCurrency,
+        from: tx.from,
+        to: tx.to,
+      })
       return null
     }
     throw e
@@ -391,16 +419,23 @@ export async function prepareTransactions({
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
     // Use estimated gas fee for balance validation (more realistic than max)
     const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
-    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
-      // Not enough balance to pay for gas, try next fee currency
-      continue
-    }
     const spendAmountDecimal = spendTokenAmount.shiftedBy(-(spendToken?.decimals ?? 0))
-    // For same-token transactions, use estimated gas fee for more accurate validation
+
+    // For same-token transactions, check if amount + gas exceeds balance
     if (
       spendToken &&
       spendToken.tokenId === feeCurrency.tokenId &&
       spendAmountDecimal.plus(gasForValidation).isGreaterThan(spendToken.balance) &&
+      !isGasSubsidized
+    ) {
+      // Not enough balance to pay for amount + gas, try next fee currency
+      continue
+    }
+
+    // For different-token transactions or when no spend token, check if gas alone exceeds fee currency balance
+    if (
+      (!spendToken || spendToken.tokenId !== feeCurrency.tokenId) &&
+      gasForValidation.isGreaterThan(feeCurrency.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for gas, try next fee currency
