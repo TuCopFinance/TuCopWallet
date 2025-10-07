@@ -21,7 +21,8 @@ TuCOP Wallet es una aplicación móvil React Native que proporciona servicios de
 
 ## 📋 Requerimientos Mínimos
 
-- **Node.js**: v18 o superior
+- **Node.js**: v20.17.0 (versión específica requerida)
+- **NVM**: Para gestión de versiones de Node.js
 - **JDK**: v17
 - **Yarn**: v1.22 o superior
 - **React Native CLI**: Última versión
@@ -30,20 +31,45 @@ TuCOP Wallet es una aplicación móvil React Native que proporciona servicios de
 
 ## 🚀 Instalación y Configuración
 
-### 1. Clonar el Repositorio
+### 1. Instalar Node.js v20.17.0 con NVM
+
+Primero, instala NVM (Node Version Manager) si no lo tienes:
+
+```bash
+# Para macOS/Linux
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Reinicia tu terminal o ejecuta:
+source ~/.bashrc  # o ~/.zshrc si usas zsh
+```
+
+Luego, instala y configura Node.js v20.17.0:
+
+```bash
+# Instalar Node.js v20.17.0
+nvm install 20.17.0
+
+# Establecer como versión por defecto
+nvm alias default 20.17.0
+
+# Verificar la versión instalada
+node --version  # Debe mostrar v20.17.0
+```
+
+### 2. Clonar el Repositorio
 
 ```bash
 git clone https://github.com/TuCopFinance/TuCopWallet.git
 cd TuCopWallet
 ```
 
-### 2. Instalar Dependencias
+### 3. Instalar Dependencias
 
 ```bash
 yarn install
 ```
 
-### 3. Configurar Secrets
+### 4. Configurar Secrets
 
 ```bash
 # Renombrar archivo de configuración
@@ -52,13 +78,75 @@ cp secrets.json.template secrets.json
 # Editar secrets.json con tus configuraciones
 ```
 
-### 4. Configuración de Plataformas
+### 5. Iniciar Emuladores
+
+Antes de ejecutar la aplicación, necesitas iniciar el emulador correspondiente.
+
+#### 📱 iOS Simulator (solo macOS)
+
+**Opción 1: Inicio Automático**
+```bash
+npx react-native run-ios
+# Abre automáticamente el simulador y ejecuta la app
+```
+
+**Opción 2: Abrir Simulador Primero**
+```bash
+open -a Simulator
+```
+
+**Opción 3: Especificar un Dispositivo**
+```bash
+# Listar dispositivos disponibles
+xcrun simctl list devices
+
+# Iniciar con dispositivo específico
+npx react-native run-ios --simulator="iPhone 15 Pro"
+```
+
+**Opción 4: Usando xcrun Directamente**
+```bash
+# Iniciar simulador específico
+xcrun simctl boot "iPhone 15 Pro"
+
+# Abrir aplicación Simulator
+open -a Simulator
+
+# Ejecutar la app
+npx react-native run-ios
+```
+
+#### 🤖 Android Emulator
+
+**Opción A: Desde Android Studio**
+1. Abre Android Studio
+2. Ve a `Tools → Device Manager`
+3. Selecciona un dispositivo y haz clic en el botón ▶️ (Play)
+
+**Opción B: Desde Línea de Comandos**
+```bash
+# Listar emuladores disponibles
+emulator -list-avds
+
+# Iniciar emulador específico
+emulator -avd <nombre_del_dispositivo>
+
+# Ejemplo:
+emulator -avd Pixel_API_29_AOSP_x86_64
+```
+
+**Nota**: Asegúrate de que el emulador esté completamente iniciado antes de ejecutar la aplicación.
+
+### 6. Ejecutar la Aplicación
 
 #### Android
 
 ```bash
-# Desarrollo
+# Desarrollo (Alfajores testnet)
 yarn dev:android
+
+# Mainnet
+yarn dev:android:mainnet
 
 # Windows
 yarn win:dev:android
@@ -67,8 +155,11 @@ yarn win:dev:android
 #### iOS
 
 ```bash
-# Solo macOS
+# Desarrollo (Alfajores testnet)
 yarn dev:ios
+
+# Mainnet
+yarn dev:ios:mainnet
 ```
 
 ## 🔧 Scripts Disponibles
