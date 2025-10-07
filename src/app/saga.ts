@@ -101,8 +101,6 @@ const REVIEW_INTERVAL = ONE_DAY_IN_MILLIS * 120 // 120 days
 // Work that's done before other sagas are initalized
 // Be mindful to not put long blocking tasks here
 export function* appInit() {
-  SentryTransactionHub.startTransaction(SentryTransaction.app_init_saga)
-
   const allowOtaTranslations = yield* select(allowOtaTranslationsSelector)
   const otaTranslationsAppVersion = yield* select(otaTranslationsAppVersionSelector)
   const language = yield* select(currentLanguageSelector)
@@ -118,6 +116,8 @@ export function* appInit() {
       otaTranslationsAppVersion
     ),
   ])
+
+  SentryTransactionHub.startTransaction(SentryTransaction.app_init_saga)
 
   // This step is important if the user is offline and unable to fetch remote
   // config values, we can use the persisted value instead of an empty one

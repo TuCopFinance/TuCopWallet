@@ -122,11 +122,7 @@ const styles = StyleSheet.create({
     height: Platform.select({ ios: 49, android: 53 }),
     paddingVertical: Spacing.Smallest8,
     flex: 1,
-    ...Platform.select({
-      android: {
-        android_ripple: { color: 'transparent' },
-      },
-    }),
+    android_ripple: { color: 'transparent' },
   },
   activityContainer: {
     marginLeft: Platform.select({ ios: 0, android: -44 }),
