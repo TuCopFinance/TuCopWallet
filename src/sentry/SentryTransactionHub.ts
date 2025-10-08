@@ -1,11 +1,10 @@
 import * as Sentry from '@sentry/react-native'
-import Logger from 'src/utils/Logger'
 import { SentryTransaction, SentryTransactions } from 'src/sentry/SentryTransactions'
 import { SENTRY_ENABLED } from 'src/config'
 
-const TAG = 'sentry/SentryTransactionHub'
-
-let transactions = [] as Array<ReturnType<typeof Sentry.startTransaction>>
+// Store active spans for transaction tracking
+type SpanWithOp = { span: ReturnType<typeof Sentry.startInactiveSpan> | undefined; op: string }
+let activeSpans = [] as Array<SpanWithOp>
 
 export const SentryTransactionHub = {
   startTransaction(name: SentryTransaction) {
@@ -13,13 +12,15 @@ export const SentryTransactionHub = {
     if (!SENTRY_ENABLED) {
       return
     }
-    // Check if Sentry.startTransaction is available
-    if (typeof Sentry.startTransaction !== 'function') {
-      return
-    }
     try {
-      const transaction = Sentry.startTransaction({ ...SentryTransactions[name], trimEnd: true })
-      transactions.push(transaction)
+      const transactionConfig = SentryTransactions[name]
+      // Use startInactiveSpan with the transaction configuration
+      const span = Sentry.startInactiveSpan({
+        name: transactionConfig.name,
+        op: transactionConfig.op,
+        forceTransaction: true,
+      })
+      activeSpans.push({ span, op: transactionConfig.op })
     } catch (error) {
       // Silently fail in development
     }
@@ -32,19 +33,19 @@ export const SentryTransactionHub = {
     // get transaction operation - 'op'
     const op = SentryTransactions[name].op
 
-    // Find first the transaction with this op.
-    const selectedTransaction = transactions.find(
-      (transaction) => transaction && transaction.op === SentryTransactions[name].op
+    // Find first the span with this op.
+    const selectedSpanObj = activeSpans.find(
+      (spanObj) => spanObj && spanObj.op === SentryTransactions[name].op
     )
 
-    // Finish the selected transaction
+    // Finish the selected span
     try {
-      selectedTransaction?.finish()
+      selectedSpanObj?.span?.end()
     } catch (error) {
       // Silently fail in development
     }
 
-    // Remove all transactions matching op from the transaction hub
-    transactions = transactions.filter((transaction) => transaction && transaction.op !== op)
+    // Remove all spans matching op from the hub
+    activeSpans = activeSpans.filter((spanObj) => spanObj && spanObj.op !== op)
   },
 }
