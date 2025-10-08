@@ -134,6 +134,22 @@ post_install do |installer|
       if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
       end
+
+      # Fix RCT-Folly C++17 compatibility issue with Xcode 16
+      # https://github.com/facebook/react-native/issues/37748
+      if target.name == 'RCT-Folly'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_CLOCK_GETTIME=1'
+      end
+    end
+
+    # Strip bitcode from frameworks that contain it
+    if target.name == 'OpenSSL-Universal' || target.name == 'PersonaInquirySDK2'
+      target.build_configurations.each do |config|
+        config.build_settings['ENABLE_BITCODE'] = 'NO'
+        config.build_settings['STRIP_BITCODE_FROM_COPIED_FILES'] = 'YES'
+      end
     end
 
     # Fix for Xcode 14, see https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693
