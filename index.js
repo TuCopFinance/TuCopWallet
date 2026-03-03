@@ -8,12 +8,35 @@ import Logger from 'src/utils/Logger'
 import Config from 'react-native-config'
 import { stringToBoolean } from 'src/utils/parsing'
 import App from 'src/app/App'
+import * as Sentry from '@sentry/react-native'
+import { initializeSentryEarly } from 'src/sentry/Sentry'
 import 'react-native-gesture-handler'
 import { Text, TextInput } from 'react-native'
 import 'intl-pluralrules'
 
 Logger.overrideConsoleLogs()
 Logger.cleanupOldLogs()
+
+// Filter out Sentry warnings in development mode
+if (__DEV__ && !SENTRY_ENABLED) {
+  const originalConsoleWarn = console.warn
+  console.warn = (...args) => {
+    const message = args.join(' ')
+    // Skip Sentry-related warnings when Sentry is disabled
+    if (
+      message.includes('Sentry') ||
+      message.includes('sentry/') ||
+      message.includes('App Start Span')
+    ) {
+      return
+    }
+    originalConsoleWarn(...args)
+  }
+}
+
+// Initialize Sentry early, before App component registration
+// This prevents "Sentry.wrap called before Sentry.init" warning
+initializeSentryEarly()
 
 const defaultErrorHandler = ErrorUtils.getGlobalHandler()
 const customErrorHandler = (e, isFatal) => {

@@ -76,42 +76,12 @@ export function* initializeAccountSaga() {
   Logger.debug(TAG + '@initializeAccountSaga', 'Creating account')
   try {
     AppAnalytics.track(OnboardingEvents.initialize_account_start)
-    const accountResult = yield* call(getOrCreateAccount)
+    yield* call(getOrCreateAccount)
     yield* call(generateSignedMessage)
 
     const choseToRestoreAccount = yield* select(choseToRestoreAccountSelector)
     if (choseToRestoreAccount) {
       yield* call(handlePreviouslyVerifiedPhoneNumber)
-    }
-
-    // Check if this is a new wallet and needs initial funding
-    const walletAddress = yield* select(walletAddressSelector)
-    if (
-      walletAddress &&
-      accountResult &&
-      typeof accountResult === 'object' &&
-      'isNew' in accountResult
-    ) {
-      const { isNew, privateKey } = accountResult as {
-        isNew: boolean
-        privateKey?: string
-        address: string
-      }
-      if (isNew && privateKey) {
-        Logger.debug(
-          TAG + '@initializeAccountSaga',
-          'New wallet detected, attempting initial funding'
-        )
-        try {
-          // Import and call new wallet funding in the background
-          const { checkAndFundNewWallet } = yield* call(
-            () => import('src/jumpstart/newWalletFunding')
-          )
-          yield* spawn(checkAndFundNewWallet, privateKey, walletAddress, true)
-        } catch (error) {
-          Logger.warn(TAG + '@initializeAccountSaga', 'Failed to import newWalletFunding', error)
-        }
-      }
     }
 
     Logger.debug(TAG + '@initializeAccountSaga', 'Account creation success')
