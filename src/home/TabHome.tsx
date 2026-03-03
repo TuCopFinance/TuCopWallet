@@ -296,7 +296,7 @@ function TabHome(_props: Props) {
 
             <FlatCard testID="FlatCard/ReFiMedellinUBI" onPress={onPressReFiMedellinUBI}>
               <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
-                <Image source={require('./refi-medellin-logo.webp')} style={styles.refiLogo} />
+                <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
                 <View style={styles.textColumn}>
                   <Text style={styles.ctaText}>{t('tabHome.reFiMedellinUbi.button')}</Text>
                   <Text style={styles.ctaSubText}>{t('tabHome.reFiMedellinUbi.subtitle')}</Text>
@@ -577,6 +577,7 @@ const styles = StyleSheet.create({
   refiLogo: {
     width: 48,
     height: 48,
+    borderRadius: 24,
   },
   ubiRow: {
     alignItems: 'center',

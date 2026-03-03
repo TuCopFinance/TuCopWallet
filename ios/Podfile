@@ -137,6 +137,18 @@ post_install do |installer|
     end
   end
 
+  # Strip bitcode from pre-built frameworks (Apple rejects bitcode since Xcode 14)
+  bitcode_strip_path = `xcrun --find bitcode_strip`.chomp
+  def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+    framework_path = File.join(Dir.pwd, framework_relative_path)
+    if File.exist?(framework_path)
+      system("#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}")
+      puts "Stripped bitcode from: #{framework_relative_path}"
+    end
+  end
+  strip_bitcode_from_framework(bitcode_strip_path, "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_armv7/OpenSSL.framework/OpenSSL")
+  strip_bitcode_from_framework(bitcode_strip_path, "Pods/PersonaInquirySDK2/Persona2.xcframework/ios-arm64/Persona2.framework/Persona2")
+
   projects = installer.aggregate_targets
     .map{ |t| t.user_project }
     .uniq{ |p| p.path }
