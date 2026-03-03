@@ -111,7 +111,7 @@ state.app.publicConfig.divviProtocol
 
 Realiza una transacción (envío de tokens, swap, etc.) y verifica en los logs que se esté agregando el sufijo de datos de Divvi a la transacción:
 
-```
+```text
 [DEBUG] divviProtocol/divviService - Generando sufijo de datos de Divvi
 [DEBUG] viem/prepareTransactions - Se agregó sufijo de datos de Divvi a la transacción
 ```
@@ -120,7 +120,7 @@ Realiza una transacción (envío de tokens, swap, etc.) y verifica en los logs q
 
 Una vez que la transacción se confirme, verifica en los logs que se esté reportando correctamente a Divvi:
 
-```
+```text
 [INFO] divviProtocol/saga - Transacción 0x123... reportada exitosamente a Divvi
 ```
 

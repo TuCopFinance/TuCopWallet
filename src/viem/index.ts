@@ -8,7 +8,6 @@ import {
 import { Network } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
 import { PublicClient, Transport, createPublicClient, http } from 'viem'
-import { VIEM_TRANSPORT_CONFIG } from './config'
 
 export const INTERNAL_RPC_SUPPORTED_NETWORKS = [Network.Arbitrum] as const
 
@@ -16,9 +15,6 @@ export const viemTransports: Record<Network, Transport> = {
   [Network.Celo]: http(
     'https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9',
     {
-      timeout: VIEM_TRANSPORT_CONFIG.timeout,
-      retryCount: VIEM_TRANSPORT_CONFIG.retryCount,
-      retryDelay: VIEM_TRANSPORT_CONFIG.retryDelay,
       fetchOptions: {
         headers: {
           'Content-Type': 'application/json',

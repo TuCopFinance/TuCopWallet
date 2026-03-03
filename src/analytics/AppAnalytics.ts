@@ -134,9 +134,16 @@ class AppAnalytics {
       let overrideStableID: string = E2E_TEST_STATSIG_ID
       if (!isE2EEnv) {
         if (!this.segmentClient) {
-          throw new Error('segmentClient is undefined, cannot get anonymous ID')
+          // Segment client is not initialized (commented out above)
+          // Use device unique ID as fallback for anonymous ID
+          // Only log in production builds
+          if (!__DEV__) {
+            Logger.warn(TAG, 'segmentClient is undefined, using device uniqueID as fallback')
+          }
+          overrideStableID = uniqueID || E2E_TEST_STATSIG_ID
+        } else {
+          overrideStableID = this.segmentClient.userInfo.get().anonymousId
         }
-        overrideStableID = this.segmentClient.userInfo.get().anonymousId
       }
       Logger.debug(TAG, 'Statsig stable ID', overrideStableID)
 

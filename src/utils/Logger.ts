@@ -50,6 +50,13 @@ class Logger {
     if (this.level < LoggerLevel.Warn) {
       return
     }
+    // Filter out Sentry-related warnings in development mode
+    if (__DEV__ && tag === 'sentry/Sentry') {
+      return
+    }
+    if (__DEV__ && tag === 'sentry/SentryTransactionHub') {
+      return
+    }
     console.warn(tag, ...messages)
   }
 

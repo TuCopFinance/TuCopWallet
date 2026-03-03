@@ -6,15 +6,17 @@ import {
   recoveringFromStoreWipeSelector,
 } from 'src/account/selectors'
 import { phoneNumberVerifiedSelector, supportedBiometryTypeSelector } from 'src/app/selectors'
-import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
+import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
 import * as NavigationService from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { updateStatsigAndNavigate } from 'src/onboarding/actions'
-import { store } from 'src/redux/store'
+import {
+  onboardingCompleted,
+  updateLastOnboardingScreen,
+  updateStatsigAndNavigate,
+} from 'src/onboarding/actions'
 import { ToggleableOnboardingFeatures } from 'src/onboarding/types'
-import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
-import { onboardingCompleted, updateLastOnboardingScreen } from 'src/onboarding/actions'
+import { store } from 'src/redux/store'
 
 const END_OF_ONBOARDING_SCREENS = [Screens.TabHome, Screens.ChooseYourAdventure]
 
@@ -128,7 +130,10 @@ export function getOnboardingStepValues(screen: Screens, onboardingProps: Onboar
     // dummy navigation function to help determine what onboarding step the user is on, without triggering side effects like actually cycling them back through the first few onboarding screens
     const [nextScreen] = args
     if (!END_OF_ONBOARDING_SCREENS.includes(nextScreen)) {
-      totalCounter++
+      // changed 02/10/2025
+      // to show Step 1 of 1 in the onboarding screen
+      // totalCounter++
+      totalCounter = 1
       if (currentScreen === screen) {
         reachedStep = true
       }
@@ -244,9 +249,17 @@ function _getStepInfo({ firstScreenInStep, navigator, dispatch, props }: GetStep
             navigateImportOrImportSelect()
           } else if (showCloudAccountBackupSetup) {
             dispatch(initializeAccount())
-            wrapNavigate(Screens.SignInWithEmail, {
-              keylessBackupFlow: KeylessBackupFlow.Setup,
-              origin: KeylessBackupOrigin.Onboarding,
+
+            // changed 02/10/2025
+            // Originally this go to the step where the user can sign in with email
+            // wrapNavigate(Screens.SignInWithEmail, {
+            //   keylessBackupFlow: KeylessBackupFlow.Setup,
+            //   origin: KeylessBackupOrigin.Onboarding,
+            // })
+
+            // BYPASS: Go directly to AccountKeyEducation instead of SignInWithEmail
+            wrapNavigate(Screens.AccountKeyEducation, {
+              origin: 'cabOnboarding',
             })
           } else {
             dispatch(initializeAccount())
@@ -265,9 +278,17 @@ function _getStepInfo({ firstScreenInStep, navigator, dispatch, props }: GetStep
             navigateImportOrImportSelect()
           } else if (showCloudAccountBackupSetup) {
             dispatch(initializeAccount())
-            wrapNavigate(Screens.SignInWithEmail, {
-              keylessBackupFlow: KeylessBackupFlow.Setup,
-              origin: KeylessBackupOrigin.Onboarding,
+
+            // changed 02/10/2025
+            // Originally this go to the step where the user can sign in with email
+            // wrapNavigate(Screens.SignInWithEmail, {
+            //   keylessBackupFlow: KeylessBackupFlow.Setup,
+            //   origin: KeylessBackupOrigin.Onboarding,
+            // })
+
+            // BYPASS: Go directly to AccountKeyEducation instead of SignInWithEmail
+            wrapNavigate(Screens.AccountKeyEducation, {
+              origin: 'cabOnboarding',
             })
           } else {
             dispatch(initializeAccount())
@@ -325,6 +346,17 @@ function _getStepInfo({ firstScreenInStep, navigator, dispatch, props }: GetStep
       return {
         next: () => {
           if (skipVerification) {
+            finishOnboarding(Screens.ChooseYourAdventure)
+          } else {
+            wrapNavigate(Screens.VerificationStartScreen)
+          }
+        },
+      }
+    case Screens.AccountKeyEducation:
+      // changed 02/10/2025
+      return {
+        next: () => {
+          if (skipVerification || numberAlreadyVerifiedCentrally) {
             finishOnboarding(Screens.ChooseYourAdventure)
           } else {
             wrapNavigate(Screens.VerificationStartScreen)

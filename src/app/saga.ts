@@ -113,6 +113,8 @@ export function* appInit() {
     ),
   ])
 
+  SentryTransactionHub.startTransaction(SentryTransaction.app_init_saga)
+
   // This step is important if the user is offline and unable to fetch remote
   // config values, we can use the persisted value instead of an empty one
   const sentryNetworkErrors = yield* select(sentryNetworkErrorsSelector)
