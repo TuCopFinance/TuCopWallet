@@ -54,7 +54,10 @@ export function getExperimentParams<T extends Record<string, StatsigParameter>>(
     return getParams({ config: experiment, defaultValues })
   } catch (error) {
     // Check if error is due to uninitialized SDK
-    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Call and wait for initialize() to finish first')
+    ) {
       // SDK is uninitialized, return default values silently
       return defaultValues
     }
@@ -83,7 +86,10 @@ function _getDynamicConfigParams<T extends Record<string, StatsigParameter>>({
     return getParams({ config, defaultValues })
   } catch (error) {
     // Check if error is due to uninitialized SDK
-    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Call and wait for initialize() to finish first')
+    ) {
       // SDK is uninitialized, return default values silently
       return defaultValues
     }
@@ -95,7 +101,8 @@ function _getDynamicConfigParams<T extends Record<string, StatsigParameter>>({
 export function getMultichainFeatures() {
   const multichainParams = _getDynamicConfigParams({
     configName: StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES,
-    defaultValues: DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES].defaultValues
+    defaultValues:
+      DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES].defaultValues,
   })
   const filteredParams = {} as { [key: string]: NetworkId[] }
   Object.entries(multichainParams).forEach(([key, value]) => {
@@ -121,7 +128,10 @@ export function getFeatureGate(featureGateName: StatsigFeatureGates) {
     return gate
   } catch (error) {
     // Check if error is due to uninitialized SDK
-    if (error instanceof Error && error.message.includes('Call and wait for initialize() to finish first')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Call and wait for initialize() to finish first')
+    ) {
       // SDK is uninitialized, return default value silently
       return (
         featureGateName === StatsigFeatureGates.ALLOW_HOOKS_PREVIEW ||
@@ -173,6 +183,15 @@ export async function patchUpdateStatsigUser(statsigUser?: StatsigUser) {
     const defaultUser = getDefaultStatsigUser()
     await Statsig.updateUser(_.merge(defaultUser, statsigUser))
   } catch (error) {
+    // Check if error is due to uninitialized SDK
+    if (
+      error instanceof Error &&
+      error.message.includes('Call and wait for initialize() to finish first')
+    ) {
+      // SDK is not yet initialized, skip the update silently
+      Logger.debug(TAG, 'Statsig not initialized yet, skipping user update')
+      return
+    }
     Logger.error(TAG, 'Failed to update Statsig user', error)
   }
 }
