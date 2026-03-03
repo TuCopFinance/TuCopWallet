@@ -337,7 +337,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           <TuCOPLogo width={100} height={32} />
           <View style={styles.logoSeparator} />
           <Image
-            source={require('../home/refi-medellin-logo.webp')}
+            source={require('../home/refi-colombia-logo.webp')}
             style={styles.reFiLogo}
             resizeMode="contain"
           />
@@ -389,6 +389,7 @@ const styles = StyleSheet.create({
   reFiLogo: {
     width: 48,
     height: 48,
+    borderRadius: 24,
   },
   headerTitle: {
     ...typeScale.titleLarge,
