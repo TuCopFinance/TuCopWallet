@@ -57,20 +57,12 @@ async function estimateCeloL2FeesPerGas(
     feeCurrency: feeCurrency || 'native',
   })
 
-  // Apply minimum gas price if needed, with extra safety margin
+  // Apply minimum gas price if needed
   const minGasPrice = CELO_MIN_GAS_PRICES.CELO
   let adjustedBaseFee = currentBaseFee
   if (adjustedBaseFee < minGasPrice) {
-    Logger.debug('estimateFeesPerGas', 'Base fee below minimum, adjusting:', {
-      currentBaseFee: currentBaseFee.toString(),
-      minGasPrice: minGasPrice.toString(),
-    })
     adjustedBaseFee = minGasPrice
   }
-
-  // Add extra safety margin for base fee volatility
-  const baseFeeSafetyMargin = adjustedBaseFee / BigInt(10) // 10% safety margin
-  adjustedBaseFee = adjustedBaseFee + baseFeeSafetyMargin
 
   let priorityFee: bigint
 
