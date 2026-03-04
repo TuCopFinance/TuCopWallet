@@ -38,6 +38,6 @@ export const WALLET_CRYPTO_TO_FIATCONNECT_CRYPTO: Record<string, CryptoType | un
   cEUR: CryptoType.cEUR,
   cUSD: CryptoType.cUSD,
   cREAL: CryptoType.cREAL,
-  cCOP: 'cCOP',
+  COPm: 'COPm',
   USDT: 'USDT',
 } as any

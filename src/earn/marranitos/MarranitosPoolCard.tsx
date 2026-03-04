@@ -12,7 +12,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
-import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import MarranitoAvatar from './marranito.svg'
 
 export default function MarranitosPoolCard({
@@ -37,7 +37,7 @@ export default function MarranitosPoolCard({
 
       Logger.debug('balance', balance)
 
-      const balanceAmount = new BigNumber(balance.replace('cCOP', ''))
+      const balanceAmount = new BigNumber(balance.replace('COPm', ''))
 
       setPoolBalance(balanceAmount)
 
@@ -86,7 +86,7 @@ export default function MarranitosPoolCard({
               <TokenDisplay
                 style={styles.valueTextBold}
                 amount={poolBalance}
-                tokenId={CCOP_TOKEN_ID_MAINNET}
+                tokenId={COPM_TOKEN_ID_MAINNET}
                 showSymbol={true}
                 hideSign={true}
                 showLocalAmount={true}

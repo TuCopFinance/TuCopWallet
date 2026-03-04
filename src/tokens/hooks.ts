@@ -39,8 +39,8 @@ export function useTokenInfoByAddress(tokenAddress?: string | null) {
   return tokenAddress ? tokens[tokenAddress] : undefined
 }
 
-export function useCCOP() {
-  return useTokenInfo(networkConfig.ccopTokenId)
+export function useCOPm() {
+  return useTokenInfo(networkConfig.copmTokenId)
 }
 
 export function useUSDT() {

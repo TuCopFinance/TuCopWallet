@@ -17,7 +17,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AssetsEvents, FiatExchangeEvents, HomeEvents } from 'src/analytics/Events'
 import { toggleHideBalances } from 'src/app/actions'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
-import { formatValueToDisplay } from 'src/components/TokenDisplay'
+import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import { useShowOrHideAnimation } from 'src/components/useShowOrHideAnimation'
@@ -109,7 +109,8 @@ function TokenBalance({
           <TotalTokenBalance balanceDisplay={balanceDisplay ?? '-'} />
           {!hideBalance && (
             <Text style={styles.tokenBalance}>
-              {formatValueToDisplay(tokenBalance)} {tokensWithUsdValue[0].symbol}
+              {formatValueToDisplay(tokenBalance)}{' '}
+              {tokensWithUsdValue[0].symbol === 'cCOP' ? 'COPm' : tokensWithUsdValue[0].symbol}
             </Text>
           )}
         </View>

@@ -622,7 +622,7 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [TabHomeEvents.send_money]: 'When a user taps "Send Money" on the home screen',
   [TabHomeEvents.withdraw]: 'When a user taps "Withdraw from your wallet" on the home screen',
   [TabHomeEvents.refi_medellin_ubi_pressed]:
-    'When a user taps "Reclama tu UBI de ReFiMedellin" button on the home screen',
+    'When a user taps "ReFi Colombia Subsidies" button on the home screen',
   // Legacy event docs
   //  The below events had docs, but are no longer produced by the latest app version.
   // [HomeEvents.home_send]: `when "send" button is pressed from home screen send or request bar (NOT from home screen actions)`,

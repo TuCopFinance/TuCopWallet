@@ -1938,7 +1938,7 @@ export const mockLegacyMobileMoneyProvider: LegacyMobileMoneyProvider = {
     countries: [],
     url: 'fake-url-1',
   },
-  ccop: {
+  copm: {
     cashIn: true,
     cashOut: true,
     countries: [],
