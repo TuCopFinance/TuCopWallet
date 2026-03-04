@@ -394,7 +394,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\nSENTRY_XCODE=\"../node_modules/@sentry/react-native/scripts/sentry-xcode.sh\"\nBUNDLE_REACT_NATIVE=\"/bin/sh $SENTRY_XCODE $REACT_NATIVE_XCODE\"\n\nif [[ \"$APP_BUNDLE_ID\" = \"org.celo.mobile.test\" ]]; then\n    /bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\nelse\n    /bin/sh -c \"$WITH_ENVIRONMENT \\\"$BUNDLE_REACT_NATIVE\\\"\"\nfi\n";
+			shellScript = "set -e\n\nexport SENTRY_DISABLE_AUTO_UPLOAD=true\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\nSENTRY_XCODE=\"../node_modules/@sentry/react-native/scripts/sentry-xcode.sh\"\nBUNDLE_REACT_NATIVE=\"/bin/sh $SENTRY_XCODE $REACT_NATIVE_XCODE\"\n\nif [[ \"$APP_BUNDLE_ID\" = \"org.celo.mobile.test\" ]]; then\n    /bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\nelse\n    /bin/sh -c \"$WITH_ENVIRONMENT \\\"$BUNDLE_REACT_NATIVE\\\"\"\nfi\n";
 		};
 		0F7B9F928CA65473B6466E1B /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -613,7 +613,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ \"$CONFIGURATION\" = *Debug* ]]; then\n    echo \"Debug build; skipping upload debug symbols.\"\n    exit 0\nfi\n\nif [[ \"$APP_BUNDLE_ID\" = \"org.celo.mobile.test\" ]]; then\n    echo \"Test build; skipping upload debug symbols.\"\n    exit 0\nfi\n\n/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh\n";
+			shellScript = "export SENTRY_DISABLE_AUTO_UPLOAD=true\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n    echo \"Debug build; skipping upload debug symbols.\"\n    exit 0\nfi\n\nif [[ \"$APP_BUNDLE_ID\" = \"org.celo.mobile.test\" ]]; then\n    echo \"Test build; skipping upload debug symbols.\"\n    exit 0\nfi\n\n/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh\n";
 		};
 		FB78E348ABB463689A76559F /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

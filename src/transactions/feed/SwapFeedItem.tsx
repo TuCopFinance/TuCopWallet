@@ -36,7 +36,7 @@ function SwapFeedItem({ transaction }: Props) {
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
 
   const getTokenName = (token: any) => {
-    if (token.tokenId === networkConfig.ccopTokenId) {
+    if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
 

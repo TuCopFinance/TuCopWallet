@@ -24,7 +24,7 @@ import TokenDisplay from 'src/components/TokenDisplay'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { getPassword } from 'src/pincode/authentication'
-import { CCOP_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 const TAG = 'earn/marranitos/MarranitoStaking'
 
@@ -130,8 +130,8 @@ const MarranitoStaking = () => {
               <Text style={styles.poolInfoValue}>
                 <TokenDisplay
                   style={styles.poolInfoValue}
-                  amount={BigNumber(tokenBalance.replace('cCOP', ''))}
-                  tokenId={CCOP_TOKEN_ID_MAINNET}
+                  amount={BigNumber(tokenBalance.replace('COPm', ''))}
+                  tokenId={COPM_TOKEN_ID_MAINNET}
                   showSymbol={true}
                   hideSign={true}
                   showLocalAmount={true}
