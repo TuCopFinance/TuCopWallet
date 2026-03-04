@@ -73,7 +73,7 @@ export enum Screens {
   QRNavigator = 'QRNavigator',
   QRScanner = 'QRScanner',
   RegulatoryTerms = 'RegulatoryTerms',
-  ReFiMedellinUBI = 'ReFiMedellinUBI',
+  ReFiColombiaSubsidies = 'ReFiColombiaSubsidies',
   SanctionedCountryErrorScreen = 'SanctionedCountryErrorScreen',
   SelectCountry = 'SelectCountry',
   SelectLocalCurrency = 'SelectLocalCurrency',

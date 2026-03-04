@@ -261,7 +261,7 @@ export const tokensByCurrencySelector = createSelector(
   (tokens): CurrencyTokens => {
     const cUsdTokenInfo = tokens.find((token) => token?.symbol === Currency.Dollar)
     const cEurTokenInfo = tokens.find((token) => token?.symbol === Currency.Euro)
-    const ccopTokenInfo = tokens.find((token) => token?.symbol === Currency.COP)
+    const copmTokenInfo = tokens.find((token) => token?.symbol === Currency.COP)
     // Currency.Celo === 'cGLD' for legacy reasons, so we just use a hard-coded string.
     const celoTokenInfo = tokens.find((token) => token?.symbol === 'CELO')
     const usdtTokenInfo = tokens.find((token) => token?.symbol === Currency.USDT)
@@ -270,7 +270,7 @@ export const tokensByCurrencySelector = createSelector(
       [Currency.Dollar]: cUsdTokenInfo,
       [Currency.Euro]: cEurTokenInfo,
       [Currency.Celo]: celoTokenInfo,
-      [Currency.COP]: ccopTokenInfo,
+      [Currency.COP]: copmTokenInfo,
       [Currency.USDT]: usdtTokenInfo,
     }
   }
@@ -409,7 +409,7 @@ export const swappableToTokensByNetworkIdSelector = createSelector(
 // )
 export const cashInTokensByNetworkIdSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
-  (tokens) => tokens.filter((token) => token.tokenId !== networkConfig.ccopTokenId)
+  (tokens) => tokens.filter((token) => token.tokenId !== networkConfig.copmTokenId)
 )
 
 export const cashOutTokensByNetworkIdSelector = createSelector(
@@ -469,12 +469,12 @@ export const sortedTokensWithBalanceOrShowZeroBalanceSelector = createSelector(
     })
 )
 
-export const cCOPFirstTokensListSelector = createSelector(
+export const COPmFirstTokensListSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
   (tokens) =>
     tokens.sort((token1, _token2) => {
-      // Puts cCOP first
-      return token1.tokenId === networkConfig.ccopTokenId ? -1 : 1
+      // Puts COPm first
+      return token1.tokenId === networkConfig.copmTokenId ? -1 : 1
     })
 )
 

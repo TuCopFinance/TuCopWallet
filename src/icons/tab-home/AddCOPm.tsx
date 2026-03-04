@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Svg, { ClipPath, Defs, G, Path, RadialGradient, Rect, Stop } from 'react-native-svg'
-const AddCCOP = () => (
+const AddCOPm = () => (
   <Svg width="49" height="48" viewBox="0 0 49 48" fill="none">
     <Rect width="49" height="48" rx="24" fill="url(#paint0_radial_2105_980)" />
     <G clip-path="url(#clip0_2105_980)">
@@ -22,7 +22,7 @@ const AddCCOP = () => (
         fy="0%"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop offset="0%" stopColor="#2F4ACD" stopOpacity="1" />
+        <Stop offset="0%" stopColor="#7005FC" stopOpacity="1" />
         <Stop offset="100%" stopColor="#0D0D0D" stopOpacity="1" />
       </RadialGradient>
       <ClipPath id="clip0_2105_980">
@@ -31,4 +31,4 @@ const AddCCOP = () => (
     </Defs>
   </Svg>
 )
-export default AddCCOP
+export default AddCOPm

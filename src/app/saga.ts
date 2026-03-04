@@ -56,6 +56,8 @@ import { getFeatureGate, patchUpdateStatsigUser, setupOverridesFromLaunchArgs } 
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapSuccess } from 'src/swap/slice'
 import { NetworkId } from 'src/transactions/types'
+import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
+import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { isDeepLink, navigateToURI } from 'src/utils/linking'

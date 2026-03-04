@@ -106,7 +106,7 @@ import PointsHome from 'src/points/PointsHome'
 import PointsIntro from 'src/points/PointsIntro'
 import { RootState } from 'src/redux/reducers'
 import { store } from 'src/redux/store'
-import ReFiMedellinUBIScreen from 'src/refi/ReFiMedellinUBIScreen'
+import ReFiColombiaSubsidiesScreen from 'src/subsidies/ReFiColombiaSubsidiesScreen'
 import SendConfirmation, { sendConfirmationScreenNavOptions } from 'src/send/SendConfirmation'
 import SendEnterAmount from 'src/send/SendEnterAmount'
 import SendSelectRecipient from 'src/send/SendSelectRecipient'
@@ -542,8 +542,8 @@ const generalScreens = (Navigator: typeof Stack) => (
       options={SettingsMenu.navigationOptions as NativeStackNavigationOptions}
     />
     <Navigator.Screen
-      name={Screens.ReFiMedellinUBI}
-      component={ReFiMedellinUBIScreen}
+      name={Screens.ReFiColombiaSubsidies}
+      component={ReFiColombiaSubsidiesScreen}
       options={headerWithBackButton}
     />
     <Navigator.Screen name={Screens.Invite} component={Invite} options={noHeader} />

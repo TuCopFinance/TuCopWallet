@@ -505,8 +505,8 @@ function TransactionDetails({
     case 'USDT':
       tokenDisplay = 'USDT'
       break
-    case 'cCOP':
-      tokenDisplay = 'cCOP'
+    case 'COPm':
+      tokenDisplay = 'COPm'
       break
     default:
       tokenDisplay = t('total')

@@ -1,4 +1,4 @@
-const cCOPStaking = {
+const COPmStaking = {
   abi: [
     {
       inputs: [
@@ -814,4 +814,4 @@ const cCOPStaking = {
   ],
 } as const
 
-export default cCOPStaking
+export default COPmStaking

@@ -45,7 +45,7 @@ export enum CloudFunctionDigitalAsset {
   CREAL = 'CREAL',
   ETH = 'ETH',
   USDT = 'USDT',
-  CCOP = 'CCOP',
+  COPM = 'COPM',
 }
 interface ProviderRequestData {
   userLocation: UserLocationData
@@ -106,7 +106,7 @@ export interface LegacyMobileMoneyProvider {
     countries: string[]
     url: string
   }
-  ccop: {
+  copm: {
     cashIn: boolean
     cashOut: boolean
     countries: string[]
@@ -279,7 +279,7 @@ export const filterLegacyMobileMoneyProviders = (
   // if (
   //   !providers ||
   //   !userCountry ||
-  //   ![networkConfig.cusdTokenId, networkConfig.celoTokenId, networkConfig.ccopTokenId, networkConfig.usdtTokenId].includes(selectedTokenId)
+  //   ![networkConfig.cusdTokenId, networkConfig.celoTokenId, networkConfig.copmTokenId, networkConfig.usdtTokenId].includes(selectedTokenId)
   // ) {
   //   return []
   // }

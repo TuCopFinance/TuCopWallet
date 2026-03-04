@@ -12,7 +12,9 @@ import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
-import ReFiMedellinUBIContract, { UBIClaimStatus } from 'src/refi/ReFiMedellinUBIContract'
+import ReFiColombiaSubsidiesContract, {
+  UBIClaimStatus,
+} from 'src/subsidies/ReFiColombiaSubsidiesContract'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { getShadowStyle, Shadow, Spacing } from 'src/styles/styles'
@@ -20,11 +22,11 @@ import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
 
-const TAG = 'ReFiMedellinUBIScreen'
+const TAG = 'ReFiColombiaSubsidiesScreen'
 
-type Props = NativeStackScreenProps<StackParamList, Screens.ReFiMedellinUBI>
+type Props = NativeStackScreenProps<StackParamList, Screens.ReFiColombiaSubsidies>
 
-export default function ReFiMedellinUBIScreen({ navigation }: Props) {
+export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const { t } = useTranslation()
   const walletAddress = useSelector(walletAddressSelector)
   const [ubiStatus, setUbiStatus] = useState<UBIClaimStatus | null>(null)
@@ -39,7 +41,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
   const runDebugInfo = async () => {
     try {
-      await ReFiMedellinUBIContract.debugContractInfo()
+      await ReFiColombiaSubsidiesContract.debugContractInfo()
     } catch (error) {
       Logger.error(TAG, 'Error running debug info', error)
     }
@@ -56,11 +58,11 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
       try {
         // Intentar obtener el estado completo con eventos
-        status = await ReFiMedellinUBIContract.getUBIStatus(walletAddress as Address)
+        status = await ReFiColombiaSubsidiesContract.getUBIStatus(walletAddress as Address)
       } catch (error) {
         Logger.warn(TAG, 'Could not get full UBI status, falling back to basic status:', error)
         // Si falla, usar la función básica como fallback
-        status = await ReFiMedellinUBIContract.getBasicUBIStatus(walletAddress as Address)
+        status = await ReFiColombiaSubsidiesContract.getBasicUBIStatus(walletAddress as Address)
       }
 
       setUbiStatus(status)
@@ -100,7 +102,10 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       const password = await getPassword(walletAddress, true, false)
 
       Logger.debug(TAG, 'Authentication successful, proceeding with claim')
-      const result = await ReFiMedellinUBIContract.claimSubsidy(walletAddress as Address, password)
+      const result = await ReFiColombiaSubsidiesContract.claimSubsidy(
+        walletAddress as Address,
+        password
+      )
 
       Logger.debug(TAG, 'Claim result:', result)
 
@@ -130,20 +135,20 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
     const now = Math.floor(Date.now() / 1000)
     const remaining = timestamp - now
 
-    if (remaining <= 0) return t('reFiMedellinUbi.timeRemaining.availableNow')
+    if (remaining <= 0) return t('reFiColombiaSubsidies.timeRemaining.availableNow')
 
     const days = Math.floor(remaining / (24 * 60 * 60))
     const hours = Math.floor((remaining % (24 * 60 * 60)) / (60 * 60))
 
     if (days > 0) {
-      return t('reFiMedellinUbi.timeRemaining.daysAndHours', {
+      return t('reFiColombiaSubsidies.timeRemaining.daysAndHours', {
         days,
         daysPlural: days > 1 ? 's' : '',
         hours,
         hoursPlural: hours > 1 ? 's' : '',
       })
     } else {
-      return t('reFiMedellinUbi.timeRemaining.hoursOnly', {
+      return t('reFiColombiaSubsidies.timeRemaining.hoursOnly', {
         hours,
         hoursPlural: hours > 1 ? 's' : '',
       })
@@ -155,8 +160,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       return (
         <View style={styles.loadingContainer}>
           <Celebration size={48} color={Colors.primary} />
-          <Text style={styles.loadingText}>{t('reFiMedellinUbi.checking.title')}</Text>
-          <Text style={styles.loadingSubtext}>{t('reFiMedellinUbi.checking.subtitle')}</Text>
+          <Text style={styles.loadingText}>{t('reFiColombiaSubsidies.checking.title')}</Text>
+          <Text style={styles.loadingSubtext}>{t('reFiColombiaSubsidies.checking.subtitle')}</Text>
           <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
         </View>
       )
@@ -166,8 +171,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
       return (
         <View style={styles.errorContainer}>
           <Celebration size={48} color={Colors.error} />
-          <Text style={styles.errorTitle}>{t('reFiMedellinUbi.error.title')}</Text>
-          <Text style={styles.errorText}>{t('reFiMedellinUbi.error.description')}</Text>
+          <Text style={styles.errorTitle}>{t('reFiColombiaSubsidies.error.title')}</Text>
+          <Text style={styles.errorText}>{t('reFiColombiaSubsidies.error.description')}</Text>
           {!!debugInfo && (
             <View style={styles.debugContainer}>
               <Text style={styles.debugTitle}>Debug Info:</Text>
@@ -176,7 +181,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           )}
           <Button
             onPress={checkUBIStatus}
-            text={t('reFiMedellinUbi.error.retry')}
+            text={t('reFiColombiaSubsidies.error.retry')}
             type={BtnTypes.SECONDARY}
             size={BtnSizes.MEDIUM}
             style={styles.retryButton}
@@ -190,11 +195,13 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
         <View style={styles.notEligibleContainer}>
           <View style={styles.notEligibleCard}>
             <Celebration size={56} color={Colors.gray3} />
-            <Text style={styles.notEligibleTitle}>{t('reFiMedellinUbi.notEligible.title')}</Text>
-            <Text style={styles.notEligibleDescription}>
-              {t('reFiMedellinUbi.notEligible.description')}
+            <Text style={styles.notEligibleTitle}>
+              {t('reFiColombiaSubsidies.notEligible.title')}
             </Text>
-            <Text style={styles.contactInfo}>{t('reFiMedellinUbi.notEligible.contact')}</Text>
+            <Text style={styles.notEligibleDescription}>
+              {t('reFiColombiaSubsidies.notEligible.description')}
+            </Text>
+            <Text style={styles.contactInfo}>{t('reFiColombiaSubsidies.notEligible.contact')}</Text>
             {!!debugInfo && (
               <View style={styles.debugContainer}>
                 <Text style={styles.debugTitle}>Debug Info:</Text>
@@ -214,16 +221,18 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             <Celebration size={72} color={Colors.primary} />
 
             <View style={styles.congratsSection}>
-              <Text style={styles.congratsTitle}>{t('reFiMedellinUbi.alreadyClaimed.title')}</Text>
+              <Text style={styles.congratsTitle}>
+                {t('reFiColombiaSubsidies.alreadyClaimed.title')}
+              </Text>
               <Text style={styles.congratsSubtitle}>
-                {t('reFiMedellinUbi.alreadyClaimed.subtitle')}
+                {t('reFiColombiaSubsidies.alreadyClaimed.subtitle')}
               </Text>
             </View>
 
             {!!ubiStatus.lastClaimTimestamp && (
               <View style={styles.claimInfoCard}>
                 <Text style={styles.claimInfoTitle}>
-                  {t('reFiMedellinUbi.alreadyClaimed.lastClaimTitle')}
+                  {t('reFiColombiaSubsidies.alreadyClaimed.lastClaimTitle')}
                 </Text>
                 <Text style={styles.claimInfoDate}>
                   {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
@@ -241,7 +250,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             {!!ubiStatus.nextClaimAvailable && (
               <View style={styles.nextClaimCard}>
                 <Text style={styles.nextClaimTitle}>
-                  {t('reFiMedellinUbi.alreadyClaimed.nextClaimTitle')}
+                  {t('reFiColombiaSubsidies.alreadyClaimed.nextClaimTitle')}
                 </Text>
                 <Text style={styles.nextClaimTime}>
                   {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
@@ -258,7 +267,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
             <Button
               onPress={() => navigation.goBack()}
-              text={t('reFiMedellinUbi.alreadyClaimed.backButton')}
+              text={t('reFiColombiaSubsidies.alreadyClaimed.backButton')}
               type={BtnTypes.PRIMARY}
               size={BtnSizes.FULL}
               style={styles.backButton}
@@ -276,22 +285,26 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
 
           <View style={styles.congratsSection}>
             <Text style={styles.congratsTitle}>
-              {t('reFiMedellinUbi.eligible.congratulations')}
+              {t('reFiColombiaSubsidies.eligible.congratulations')}
             </Text>
-            <Text style={styles.congratsSubtitle}>{t('reFiMedellinUbi.eligible.subtitle')}</Text>
+            <Text style={styles.congratsSubtitle}>
+              {t('reFiColombiaSubsidies.eligible.subtitle')}
+            </Text>
           </View>
 
           <View style={styles.benefitCard}>
-            <Text style={styles.benefitTitle}>{t('reFiMedellinUbi.eligible.benefitTitle')}</Text>
+            <Text style={styles.benefitTitle}>
+              {t('reFiColombiaSubsidies.eligible.benefitTitle')}
+            </Text>
             <Text style={styles.benefitDescription}>
-              {t('reFiMedellinUbi.eligible.benefitDescription')}
+              {t('reFiColombiaSubsidies.eligible.benefitDescription')}
             </Text>
           </View>
 
           {!!ubiStatus.lastClaimTimestamp && (
             <View style={styles.lastClaimInfo}>
               <Text style={styles.lastClaimText}>
-                {t('reFiMedellinUbi.alreadyClaimed.lastClaimTitle')}:{' '}
+                {t('reFiColombiaSubsidies.alreadyClaimed.lastClaimTitle')}:{' '}
                 {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString()}
               </Text>
             </View>
@@ -301,8 +314,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             onPress={handleClaimSubsidy}
             text={
               isLoading
-                ? t('reFiMedellinUbi.eligible.claimingButton')
-                : t('reFiMedellinUbi.eligible.claimButton')
+                ? t('reFiColombiaSubsidies.eligible.claimingButton')
+                : t('reFiColombiaSubsidies.eligible.claimButton')
             }
             type={BtnTypes.PRIMARY}
             size={BtnSizes.FULL}
@@ -314,7 +327,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             <View style={styles.processingContainer}>
               <ActivityIndicator size="small" color={Colors.primary} />
               <Text style={styles.processingText}>
-                {t('reFiMedellinUbi.eligible.processingText')}
+                {t('reFiColombiaSubsidies.eligible.processingText')}
               </Text>
             </View>
           )}
@@ -342,8 +355,8 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.headerTitle}>{t('reFiMedellinUbi.title')}</Text>
-        <Text style={styles.headerSubtitle}>{t('reFiMedellinUbi.subtitle')}</Text>
+        <Text style={styles.headerTitle}>{t('reFiColombiaSubsidies.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('reFiColombiaSubsidies.subtitle')}</Text>
       </View>
 
       <View style={styles.gradientDecoration} />

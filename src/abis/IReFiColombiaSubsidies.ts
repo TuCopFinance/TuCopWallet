@@ -1,4 +1,4 @@
-const ReFiMedellinUBI = {
+const ReFiColombiaSubsidies = {
   abi: [
     {
       inputs: [
@@ -48,4 +48,4 @@ const ReFiMedellinUBI = {
   ],
 } as const
 
-export default ReFiMedellinUBI
+export default ReFiColombiaSubsidies

@@ -33,7 +33,7 @@ export const TokenBalanceItem = ({
   const { t } = useTranslation()
 
   const getTokenName = (token: any) => {
-    if (token.tokenId === networkConfig.ccopTokenId) {
+    if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
 

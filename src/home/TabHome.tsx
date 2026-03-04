@@ -20,7 +20,7 @@ import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
-import { CICOFlow } from 'src/fiatExchanges/utils'
+import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import i18n from 'src/i18n'
 import Add from 'src/icons/quick-actions/Add'
@@ -41,9 +41,9 @@ import Colors from 'src/styles/colors'
 import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCCOP, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
+import { useCOPm, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
-import Earn from './earn-v2.png'
+import EarnGrowIcon from 'src/icons/EarnGrowIcon'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -55,7 +55,7 @@ function TabHome(_props: Props) {
   const isNumberVerified = useSelector(phoneNumberVerifiedSelector)
 
   const dispatch = useDispatch()
-  const addCCOPBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const addCOPmBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   const [refreshing, setRefreshing] = React.useState(false)
 
@@ -111,7 +111,7 @@ function TabHome(_props: Props) {
     }
   }, [appState])
 
-  const cCCOPToken: any = useCCOP()
+  const COPmToken: any = useCOPm()
   const USDTToken = useUSDT()
 
   const onPressRecharge = React.useCallback(() => {
@@ -121,7 +121,7 @@ function TabHome(_props: Props) {
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
     navigate(Screens.SendSelectRecipient, {
-      defaultTokenIdOverride: cCCOPToken.tokenId,
+      defaultTokenIdOverride: COPmToken.tokenId,
     })
   }
 
@@ -141,10 +141,10 @@ function TabHome(_props: Props) {
 
   function onPressHoldUSD() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
-    !!cCCOPToken &&
+    !!COPmToken &&
       !!USDTToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: cCCOPToken.tokenId,
+        fromTokenId: COPmToken.tokenId,
         toTokenId: USDTToken.tokenId,
       })
   }
@@ -153,16 +153,16 @@ function TabHome(_props: Props) {
     navigate(Screens.EarnHome)
   }
 
-  function onPressReFiMedellinUBI() {
+  function onPressReFiColombiaSubsidies() {
     AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
-    navigate(Screens.ReFiMedellinUBI)
+    navigate(Screens.ReFiColombiaSubsidies)
   }
 
   function onPressWithdraw() {
     // navigate(Screens.FiatExchangeAmount, {
-    //   tokenId: cCCOPToken.tokenId,
+    //   tokenId: COPmToken.tokenId,
     //   flow: CICOFlow.CashOut,
-    //   tokenSymbol: cCCOPToken.symbol,
+    //   tokenSymbol: COPmToken.symbol,
     // })
 
     navigate(Screens.WebViewScreen, {
@@ -234,12 +234,12 @@ function TabHome(_props: Props) {
                   </Text>
                 </FlatCard>
 
-                <FlatCard type="scrollmenu" testID="FlatCard/AddCCOP" onPress={onPressRecharge}>
+                <FlatCard type="scrollmenu" testID="FlatCard/AddCOPm" onPress={onPressRecharge}>
                   <View style={styles.actionButton}>
                     <Recharge />
                   </View>
                   <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.addCCOP')}
+                    {t('tabHome.addCOPm')}
                   </Text>
                 </FlatCard>
 
@@ -283,7 +283,7 @@ function TabHome(_props: Props) {
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
               <View style={[styles.row, { paddingVertical: 8 }]}>
-                <Image source={Earn} />
+                <EarnGrowIcon size={36} />
                 <Text style={styles.ctaText}>
                   <Trans
                     i18n={i18n}
@@ -294,12 +294,17 @@ function TabHome(_props: Props) {
               </View>
             </FlatCard>
 
-            <FlatCard testID="FlatCard/ReFiMedellinUBI" onPress={onPressReFiMedellinUBI}>
+            <FlatCard
+              testID="FlatCard/ReFiColombiaSubsidies"
+              onPress={onPressReFiColombiaSubsidies}
+            >
               <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
                 <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
                 <View style={styles.textColumn}>
-                  <Text style={styles.ctaText}>{t('tabHome.reFiMedellinUbi.button')}</Text>
-                  <Text style={styles.ctaSubText}>{t('tabHome.reFiMedellinUbi.subtitle')}</Text>
+                  <Text style={styles.ctaText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
+                  <Text style={styles.ctaSubText}>
+                    {t('tabHome.reFiColombiaSubsidies.subtitle')}
+                  </Text>
                 </View>
               </View>
             </FlatCard>
@@ -314,7 +319,7 @@ function TabHome(_props: Props) {
         </Shadow>
       </ScrollView>
 
-      <AddCCOPBottomSheet forwardedRef={addCCOPBottomSheetRef} />
+      <AddCOPmBottomSheet forwardedRef={addCOPmBottomSheetRef} />
     </SafeAreaView>
   )
 }
@@ -353,42 +358,42 @@ export function FlatCard({
   )
 }
 
-function AddCCOPBottomSheet({
+function AddCOPmBottomSheet({
   forwardedRef,
 }: {
   forwardedRef: React.RefObject<BottomSheetModalRefType>
 }) {
   const { t } = useTranslation()
-  const cCCOPToken = useCCOP()
+  const COPmToken = useCOPm()
   const USDTToken = useUSDT()
 
   function onPressSwapFromCusd() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
     !!USDTToken &&
-      !!cCCOPToken &&
+      !!COPmToken &&
       navigate(Screens.SwapScreenWithBack, {
         fromTokenId: USDTToken.tokenId,
-        toTokenId: cCCOPToken.tokenId,
+        toTokenId: COPmToken.tokenId,
       })
     forwardedRef.current?.dismiss()
   }
 
-  function onPressPurchaseCCOP() {
+  function onPressPurchaseCOPm() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_cash_in)
-    !!cCCOPToken &&
+    !!COPmToken &&
       navigate(Screens.FiatExchangeAmount, {
-        tokenId: cCCOPToken.tokenId,
+        tokenId: COPmToken.tokenId,
         flow: CICOFlow.CashIn,
-        tokenSymbol: cCCOPToken.symbol,
+        tokenSymbol: COPmToken.symbol,
       })
     forwardedRef.current?.dismiss()
   }
 
   return (
     <BottomSheet
-      title={t('tabHome.addCCOP')}
+      title={t('tabHome.addCOPm')}
       forwardedRef={forwardedRef}
-      testId="AddCCOPBottomSheet"
+      testId="AddCOPmBottomSheet"
     >
       <View style={styles.bottomSheetContainer}>
         <FlatCard testID="FlatCard/AddFromCUSD" onPress={onPressSwapFromCusd}>
@@ -404,7 +409,7 @@ function AddCCOPBottomSheet({
             </View>
           </View>
         </FlatCard>
-        <FlatCard testID="FlatCard/PurchaseCCOP" onPress={onPressPurchaseCCOP}>
+        <FlatCard testID="FlatCard/PurchaseCOPm" onPress={onPressPurchaseCOPm}>
           <View style={styles.row}>
             <Add color={Colors.black} />
             <View style={styles.flex}>

@@ -5,7 +5,7 @@ import Share from 'src/icons/Share'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { TopBarIconButtonV2 } from 'src/navigator/TopBarIconButtonV2'
-import { useCCOP } from 'src/tokens/hooks'
+import { useCOPm } from 'src/tokens/hooks'
 
 interface Props {
   style?: StyleProp<ViewStyle>
@@ -14,11 +14,11 @@ interface Props {
 }
 
 export default function SendButton({ testID, size = 23, style }: Props) {
-  const cCCOPToken: any = useCCOP()
+  const COPmToken: any = useCOPm()
 
   const onPress = () => {
     navigate(Screens.SendSelectRecipient, {
-      defaultTokenIdOverride: cCCOPToken.tokenId,
+      defaultTokenIdOverride: COPmToken.tokenId,
     })
   }
 
