@@ -91,7 +91,7 @@ interface NetworkConfig {
   celoGasPriceMinimumAddress: Address
   alchemyRpcUrl: Record<Exclude<Network, Network.Celo>, string>
   usdtTokenId: string
-  ccopTokenId: string
+  copmTokenId: string
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
@@ -157,8 +157,8 @@ const CREAL_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xe8537a3d056da4466
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
 
-const CCOP_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72BD25A935E9762397ed41eF67`
-const CCOP_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
+const COPM_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72BD25A935E9762397ed41eF67`
+const COPM_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
 
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
 export const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
@@ -415,7 +415,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_STAGING,
       [Currency.Celo]: CELO_TOKEN_ID_STAGING,
       [CiCoCurrency.USDT]: USDT_TOKEN_ID_STAGING,
-      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_STAGING,
+      [CiCoCurrency.COPm]: COPM_TOKEN_ID_STAGING,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_STAGING,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_STAGING,
@@ -429,9 +429,9 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_STAGING,
     crealTokenId: CREAL_TOKEN_ID_STAGING,
     celoTokenId: CELO_TOKEN_ID_STAGING,
-    ccopTokenId: CCOP_TOKEN_ID_STAGING,
+    copmTokenId: COPM_TOKEN_ID_STAGING,
     usdtTokenId: USDT_TOKEN_ID_STAGING,
-    spendTokenIds: [USDT_TOKEN_ID_STAGING, CCOP_TOKEN_ID_STAGING],
+    spendTokenIds: [USDT_TOKEN_ID_STAGING, COPM_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
     getPointsConfigUrl: GET_POINTS_CONFIG_ALFAJORES,
     internalRpcUrl: {
@@ -521,7 +521,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_MAINNET,
       [Currency.Celo]: CELO_TOKEN_ID_MAINNET,
       [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET,
-      [CiCoCurrency.cCOP]: CCOP_TOKEN_ID_MAINNET,
+      [CiCoCurrency.COPm]: COPM_TOKEN_ID_MAINNET,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_MAINNET,
     celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_MAINNET,
@@ -535,7 +535,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     ceurTokenId: CEUR_TOKEN_ID_MAINNET,
     crealTokenId: CREAL_TOKEN_ID_MAINNET,
     celoTokenId: CELO_TOKEN_ID_MAINNET,
-    ccopTokenId: CCOP_TOKEN_ID_MAINNET,
+    copmTokenId: COPM_TOKEN_ID_MAINNET,
     usdtTokenId: USDT_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
@@ -686,7 +686,7 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
 
 Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
 
-export { CCOP_TOKEN_ID_MAINNET }
+export { COPM_TOKEN_ID_MAINNET }
 
 export default networkConfigs[DEFAULT_TESTNET]
 

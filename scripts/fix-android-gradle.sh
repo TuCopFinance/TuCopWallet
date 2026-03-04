@@ -42,11 +42,26 @@ find node_modules -name "build.gradle" \( -path "*/android/build.gradle" -o -pat
 done
 
 # Remove package attributes from AndroidManifest.xml files
+# Only remove if the corresponding build.gradle already has a namespace defined
 echo "Removing package attributes from AndroidManifest.xml..."
 find node_modules -name "AndroidManifest.xml" 2>/dev/null | while read manifest; do
     if grep -q "package=" "$manifest"; then
-        sed -i.bak 's/package="[^"]*"//g' "$manifest"
-        rm -f "${manifest}.bak"
+        # Find the corresponding build.gradle
+        pkg_dir=$(dirname "$manifest")
+        # Walk up to find build.gradle with namespace
+        has_namespace=false
+        check_dir="$pkg_dir"
+        for i in 1 2 3 4; do
+            if [ -f "$check_dir/build.gradle" ] && grep -q "namespace" "$check_dir/build.gradle"; then
+                has_namespace=true
+                break
+            fi
+            check_dir=$(dirname "$check_dir")
+        done
+        if [ "$has_namespace" = true ]; then
+            sed -i.bak 's/package="[^"]*"//g' "$manifest"
+            rm -f "${manifest}.bak"
+        fi
     fi
 done
 

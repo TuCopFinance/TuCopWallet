@@ -4,6 +4,7 @@ import FastImage from 'react-native-fast-image'
 import { Token } from 'src/positions/types'
 import colors from 'src/styles/colors'
 import { BaseToken } from 'src/tokens/slice'
+import COPm from './copm-logo.png'
 import USD from './v2.png'
 
 export enum IconSize {
@@ -74,7 +75,8 @@ export default function TokenIcon({
 
   const getTokenImagen = (token: BaseToken | Token) => {
     const symbols: Record<string, any> = {
-      // cCOP: '',
+      COPm: COPm,
+      cCOP: COPm,
       'USD₮': USD,
     }
 
@@ -155,5 +157,5 @@ const styles = StyleSheet.create({
     color: colors.black,
     textAlign: 'center',
   },
-  defaultViewStyle: { borderColor: colors.black, borderWidth: 1, borderRadius: 20 },
+  defaultViewStyle: { borderRadius: 20 },
 })

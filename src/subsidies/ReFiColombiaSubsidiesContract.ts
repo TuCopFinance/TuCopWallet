@@ -8,12 +8,13 @@ import { getKeychainAccounts } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
 import { Address, parseEventLogs } from 'viem'
 
-import ReFiMedellinUBI from 'src/abis/IReFiMedellinUBI'
+import ReFiColombiaSubsidies from 'src/abis/IReFiColombiaSubsidies'
 
-const TAG = 'refi/ReFiMedellinUBIContract'
+const TAG = 'subsidies/ReFiColombiaSubsidiesContract'
 
-// Dirección del contrato ReFi Medellín UBI
-export const REFI_MEDELLIN_UBI_ADDRESS = '0x947c6db1569edc9fd37b017b791ca0f008ab4946' as Address
+// Dirección del contrato ReFi Colombia Subsidies
+export const REFI_COLOMBIA_SUBSIDIES_ADDRESS =
+  '0x947c6db1569edc9fd37b017b791ca0f008ab4946' as Address
 
 export interface UBIClaimStatus {
   isBeneficiary: boolean
@@ -22,15 +23,15 @@ export interface UBIClaimStatus {
   nextClaimAvailable?: number
 }
 
-export class ReFiMedellinUBIContract {
-  private static instance: ReFiMedellinUBIContract
+export class ReFiColombiaSubsidiesContract {
+  private static instance: ReFiColombiaSubsidiesContract
   private client = publicClient.celo
 
-  static getInstance(): ReFiMedellinUBIContract {
-    if (!ReFiMedellinUBIContract.instance) {
-      ReFiMedellinUBIContract.instance = new ReFiMedellinUBIContract()
+  static getInstance(): ReFiColombiaSubsidiesContract {
+    if (!ReFiColombiaSubsidiesContract.instance) {
+      ReFiColombiaSubsidiesContract.instance = new ReFiColombiaSubsidiesContract()
     }
-    return ReFiMedellinUBIContract.instance
+    return ReFiColombiaSubsidiesContract.instance
   }
 
   /**
@@ -38,7 +39,7 @@ export class ReFiMedellinUBIContract {
    */
   async isContractDeployed(): Promise<boolean> {
     try {
-      const code = await this.client.getCode({ address: REFI_MEDELLIN_UBI_ADDRESS })
+      const code = await this.client.getCode({ address: REFI_COLOMBIA_SUBSIDIES_ADDRESS })
       const isDeployed = !!(code && code !== '0x')
       Logger.debug(TAG, `Contract deployed: ${isDeployed}, code length: ${code?.length || 0}`)
       return isDeployed
@@ -58,8 +59,8 @@ export class ReFiMedellinUBIContract {
       // Intentar hacer una llamada de prueba para ver si puede reclamar
       try {
         await this.client.simulateContract({
-          address: REFI_MEDELLIN_UBI_ADDRESS,
-          abi: ReFiMedellinUBI.abi,
+          address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+          abi: ReFiColombiaSubsidies.abi,
           functionName: 'claimSubsidy',
           args: [],
           account: address,
@@ -94,8 +95,8 @@ export class ReFiMedellinUBIContract {
       // Verificar si el contrato está desplegado
       const isDeployed = await this.isContractDeployed()
       if (!isDeployed) {
-        Logger.error(TAG, `Contract not deployed at ${REFI_MEDELLIN_UBI_ADDRESS}`)
-        throw new Error(`No contract deployed at address ${REFI_MEDELLIN_UBI_ADDRESS}`)
+        Logger.error(TAG, `Contract not deployed at ${REFI_COLOMBIA_SUBSIDIES_ADDRESS}`)
+        throw new Error(`No contract deployed at address ${REFI_COLOMBIA_SUBSIDIES_ADDRESS}`)
       }
 
       // Verificar si es beneficiario
@@ -130,7 +131,7 @@ export class ReFiMedellinUBIContract {
         )
 
         const claimEvents = await this.client.getLogs({
-          address: REFI_MEDELLIN_UBI_ADDRESS,
+          address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
           event: {
             type: 'event',
             name: 'SubsidyClaimed',
@@ -152,7 +153,7 @@ export class ReFiMedellinUBIContract {
           // Obtener el evento más reciente
           const latestEvent = claimEvents[claimEvents.length - 1]
           const eventArgs = parseEventLogs({
-            abi: ReFiMedellinUBI.abi,
+            abi: ReFiColombiaSubsidies.abi,
             logs: [latestEvent],
           })[0]?.args as any
 
@@ -193,8 +194,8 @@ export class ReFiMedellinUBIContract {
       Logger.debug(TAG, `Checking if address ${walletAddress} is beneficiary`)
 
       const isBeneficiaryResult = (await this.client.readContract({
-        address: REFI_MEDELLIN_UBI_ADDRESS,
-        abi: ReFiMedellinUBI.abi,
+        address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+        abi: ReFiColombiaSubsidies.abi,
         functionName: 'isBeneficiary',
         args: [walletAddress],
       })) as boolean
@@ -266,8 +267,8 @@ export class ReFiMedellinUBIContract {
 
       // Ejecutar la transacción de claim
       const claimTx = await (wallet as any).writeContract({
-        address: REFI_MEDELLIN_UBI_ADDRESS,
-        abi: ReFiMedellinUBI.abi,
+        address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+        abi: ReFiColombiaSubsidies.abi,
         functionName: 'claimSubsidy',
         args: [],
       })
@@ -284,7 +285,7 @@ export class ReFiMedellinUBIContract {
 
       // Parsear eventos usando viem
       const parsedLogs = parseEventLogs({
-        abi: ReFiMedellinUBI.abi,
+        abi: ReFiColombiaSubsidies.abi,
         logs: receipt.logs,
       })
 
@@ -364,7 +365,7 @@ export class ReFiMedellinUBIContract {
   async debugContractInfo(): Promise<void> {
     try {
       Logger.debug(TAG, '=== DEBUG CONTRACT INFO ===')
-      Logger.debug(TAG, `Contract address: ${REFI_MEDELLIN_UBI_ADDRESS}`)
+      Logger.debug(TAG, `Contract address: ${REFI_COLOMBIA_SUBSIDIES_ADDRESS}`)
 
       const isDeployed = await this.isContractDeployed()
       Logger.debug(TAG, `Contract deployed: ${isDeployed}`)
@@ -376,7 +377,7 @@ export class ReFiMedellinUBIContract {
         // Intentar obtener algunos eventos recientes con un rango más pequeño
         try {
           const recentEvents = await this.client.getLogs({
-            address: REFI_MEDELLIN_UBI_ADDRESS,
+            address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
             fromBlock: currentBlock - BigInt(1000), // Solo últimos 1000 bloques
             toBlock: 'latest',
           })
@@ -407,8 +408,8 @@ export class ReFiMedellinUBIContract {
       // Verificar si el contrato está desplegado
       const isDeployed = await this.isContractDeployed()
       if (!isDeployed) {
-        Logger.error(TAG, `Contract not deployed at ${REFI_MEDELLIN_UBI_ADDRESS}`)
-        throw new Error(`No contract deployed at address ${REFI_MEDELLIN_UBI_ADDRESS}`)
+        Logger.error(TAG, `Contract not deployed at ${REFI_COLOMBIA_SUBSIDIES_ADDRESS}`)
+        throw new Error(`No contract deployed at address ${REFI_COLOMBIA_SUBSIDIES_ADDRESS}`)
       }
 
       // Verificar si es beneficiario
@@ -427,4 +428,4 @@ export class ReFiMedellinUBIContract {
   }
 }
 
-export default ReFiMedellinUBIContract.getInstance()
+export default ReFiColombiaSubsidiesContract.getInstance()
