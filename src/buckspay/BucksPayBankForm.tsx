@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Linking, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { bucksPayLastBankDetailsSelector } from 'src/buckspay/selectors'
 import {
@@ -164,6 +164,18 @@ function BucksPayBankForm({ navigation }: Props) {
             <Text style={styles.disabledText}>{bankCountry}</Text>
           </View>
         </View>
+
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            {t('buckspay.poweredBy')}{' '}
+            <Text
+              style={styles.disclaimerLink}
+              onPress={() => Linking.openURL('https://buckspay.xyz')}
+            >
+              BucksPay
+            </Text>
+          </Text>
+        </View>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
@@ -234,6 +246,20 @@ const styles = StyleSheet.create({
   disabledText: {
     ...typeScale.bodyMedium,
     color: Colors.gray4,
+  },
+  disclaimerContainer: {
+    alignItems: 'center',
+    marginTop: Spacing.Small12,
+    marginBottom: Spacing.Regular16,
+  },
+  disclaimerText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+  },
+  disclaimerLink: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
+    textDecorationLine: 'underline',
   },
   buttonContainer: {
     padding: Spacing.Thick24,
