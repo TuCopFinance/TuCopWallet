@@ -22,7 +22,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -52,7 +52,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields, mockNftMinimumFields],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -106,7 +106,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -122,7 +122,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftNullMetadata],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -136,7 +136,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields, mockNftNullMetadata],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -162,7 +162,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftMinimumFields],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>
@@ -211,7 +211,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [noTokenId],
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
           })}
         />
       </Provider>

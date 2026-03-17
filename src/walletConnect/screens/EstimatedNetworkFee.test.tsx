@@ -9,7 +9,7 @@ import { parseGwei } from 'viem'
 describe('EstimatedNetworkFee', () => {
   const mockTransaction = {
     from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     data: '0x3d18b912',
     to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
     gas: '100000',
@@ -27,7 +27,7 @@ describe('EstimatedNetworkFee', () => {
       <Provider store={store}>
         <EstimatedNetworkFee
           isLoading={false}
-          networkId={NetworkId['celo-alfajores']}
+          networkId={NetworkId['celo-sepolia']}
           transactions={[mockTransaction]}
         />
       </Provider>
@@ -49,7 +49,7 @@ describe('EstimatedNetworkFee', () => {
       <Provider store={store}>
         <EstimatedNetworkFee
           isLoading={true}
-          networkId={NetworkId['celo-alfajores']}
+          networkId={NetworkId['celo-sepolia']}
           transactions={[]}
         />
       </Provider>
@@ -68,7 +68,7 @@ describe('EstimatedNetworkFee', () => {
       <Provider store={store}>
         <EstimatedNetworkFee
           isLoading={false}
-          networkId={NetworkId['celo-alfajores']}
+          networkId={NetworkId['celo-sepolia']}
           transactions={[
             {
               ...mockTransaction,
