@@ -3041,6 +3041,9 @@
     "insufficientBalance": "Saldo COPm insuficiente (disponible: {{balance}})",
     "apiSubmitFailed": "Tu crypto fue enviada pero no pudimos registrar la transacción. Por favor contacta a soporte con tu hash de transacción.",
     "pollingTimeout": "Tu retiro aún está siendo procesado por BucksPay. Esto puede tomar hasta 24 horas. Puedes cerrar esta pantalla y volver más tarde.",
-    "contactSupport": "Soporte BucksPay"
+    "contactSupport": "Soporte BucksPay",
+    "minimize": "Cerrar",
+    "pendingTransaction": "Tienes un retiro pendiente",
+    "poweredBy": "Con la tecnología de"
   }
 }

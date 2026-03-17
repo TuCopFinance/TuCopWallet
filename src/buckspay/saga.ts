@@ -18,7 +18,7 @@ import { Screens } from 'src/navigator/Screens'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { BUCKSPAY_CELO_NETWORK_ID } from 'src/web3/networkConfig'
+import { BUCKSPAY_CELO_NETWORK_ID, BUCKSPAY_WEB_APP_URL } from 'src/web3/networkConfig'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { call, cancelled, delay, put, race, select, take, takeLeading } from 'typed-redux-saga'
@@ -30,29 +30,31 @@ const API_SUBMIT_MAX_RETRIES = 3
 const API_SUBMIT_RETRY_DELAY = 5_000 // 5 seconds
 
 export function* checkUserRegistrationSaga() {
-  try {
-    const walletAddress: string | null = yield* select(walletAddressSelector)
-    if (!walletAddress) {
-      Logger.warn(TAG, 'No wallet address found')
-      yield* put(checkUserComplete())
-      return
-    }
+  const walletAddress: string | null = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    Logger.error(TAG, 'No wallet address for registration check')
+    return
+  }
 
+  try {
     const result = yield* call(checkUserExists, walletAddress)
 
     if (result.exists) {
-      Logger.info(TAG, 'User is registered on BucksPay')
+      // Wallet is registered — go to native bank form
       yield* put(checkUserComplete())
       navigate(Screens.BucksPayBankForm)
     } else {
-      Logger.info(TAG, 'User not registered, opening WebView')
+      // Wallet is NOT registered — open BucksPay web app to register
+      Logger.info(TAG, 'Wallet not registered on BucksPay, opening web app')
       yield* put(checkUserComplete())
-      navigate(Screens.WebViewScreen, { uri: 'https://app.buckspay.xyz/' })
+      navigate(Screens.WebViewScreen, { uri: BUCKSPAY_WEB_APP_URL })
     }
-  } catch (error) {
-    Logger.warn(TAG, 'User check failed, falling back to WebView', error)
+  } catch (error: any) {
+    // If the check fails (network error, etc.) — still allow native flow
+    // The API submission step will surface any real registration issues
+    Logger.warn(TAG, 'Registration check failed, proceeding to bank form', error)
     yield* put(checkUserComplete())
-    navigate(Screens.WebViewScreen, { uri: 'https://app.buckspay.xyz/' })
+    navigate(Screens.BucksPayBankForm)
   }
 }
 

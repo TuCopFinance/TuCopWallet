@@ -690,6 +690,7 @@ Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
 export const BUCKSPAY_RECEIVER_ADDRESS = '0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0' as Address
 export const BUCKSPAY_CELO_NETWORK_ID = 6
 export const BUCKSPAY_API_BASE_URL = 'https://buckspay-webhook-production-ad81.up.railway.app'
+export const BUCKSPAY_WEB_APP_URL = 'https://app.buckspay.xyz/'
 
 export { COPM_TOKEN_ID_MAINNET }
 
