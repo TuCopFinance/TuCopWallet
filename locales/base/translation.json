@@ -2989,5 +2989,37 @@
       "daysAndHours": "{{days}} day{{daysPlural}} and {{hours}} hour{{hoursPlural}}",
       "hoursOnly": "{{hours}} hour{{hoursPlural}}"
     }
+  },
+  "buckspay": {
+    "selectProvider": "Withdraw Funds",
+    "selectProviderSubtitle": "Choose a provider to convert your crypto to local currency.",
+    "providerDescription": "Convert COPm to Colombian Pesos",
+    "bankFormTitle": "Bank Details",
+    "bankFormSubtitle": "Enter the amount and your bank account details to receive your funds.",
+    "amountLabel": "Amount (COPm)",
+    "amountPlaceholder": "Enter amount",
+    "bankNameLabel": "Bank Name",
+    "bankNamePlaceholder": "e.g. Bancolombia",
+    "accountNumberLabel": "Account Number",
+    "accountNumberPlaceholder": "Enter account number",
+    "bankCountryLabel": "Country",
+    "continue": "Continue",
+    "confirmTitle": "Review & Confirm",
+    "confirmSubtitle": "Please review your withdrawal details before confirming.",
+    "receiverLabel": "Receiver Wallet",
+    "confirm": "Confirm Withdrawal",
+    "statusTracking": "Processing Withdrawal",
+    "statusCompleted": "Withdrawal Complete",
+    "statusError": "Withdrawal Failed",
+    "processingTransaction": "Your transaction is being processed...",
+    "transactionHash": "Transaction Hash",
+    "viewReceipt": "View Receipt",
+    "done": "Done",
+    "unknownError": "An unexpected error occurred. Please try again.",
+    "status_PENDING": "Pending",
+    "status_INPROGRESS": "In Progress",
+    "status_STARTED": "Started",
+    "status_PAYED": "Payment Sent",
+    "status_FINISHED": "Completed"
   }
 }
