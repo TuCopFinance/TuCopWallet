@@ -2890,6 +2890,8 @@
     "amountBelowMin": "Minimum amount is {{min}} COPm",
     "amountAboveMax": "Maximum amount is {{max}} COPm",
     "insufficientBalance": "Insufficient COPm balance (available: {{balance}})",
-    "apiSubmitFailed": "Your crypto was sent but we couldn't register the transaction. Please contact support with your transaction hash."
+    "apiSubmitFailed": "Your crypto was sent but we couldn't register the transaction. Please contact support with your transaction hash.",
+    "pollingTimeout": "Your withdrawal is still being processed by BucksPay. This can take up to 24 hours. You can close this screen and check back later.",
+    "contactSupport": "Contact BucksPay Support"
   }
 }

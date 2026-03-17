@@ -85,6 +85,9 @@ export const slice = createSlice({
       state.flowStatus = 'error'
       state.error = action.payload
     },
+    resumeTracking: (state) => {
+      state.flowStatus = 'tracking'
+    },
     resetFlow: (state) => {
       state.flowStatus = 'idle'
       state.transactionHash = null
@@ -95,17 +98,23 @@ export const slice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
-      ...state,
-      ...getRehydratePayload(action, 'buckspay'),
-      // Reset transient state on rehydrate
-      flowStatus: 'idle' as const,
-      transactionHash: null,
-      bucksPayCode: null,
-      bucksPayStatus: null,
-      certificateUrl: null,
-      error: null,
-    }))
+    builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
+      const persisted = getRehydratePayload(action, 'buckspay')
+      const hasActiveFlow =
+        persisted.flowStatus === 'tracking' || persisted.flowStatus === 'submitting-to-api'
+
+      return {
+        ...state,
+        ...persisted,
+        // Preserve tracking state so we can resume polling on app restart
+        flowStatus: hasActiveFlow ? persisted.flowStatus : ('idle' as const),
+        transactionHash: hasActiveFlow ? persisted.transactionHash : null,
+        bucksPayCode: hasActiveFlow ? persisted.bucksPayCode : null,
+        bucksPayStatus: hasActiveFlow ? persisted.bucksPayStatus : null,
+        certificateUrl: hasActiveFlow ? persisted.certificateUrl : null,
+        error: null,
+      }
+    })
   },
 })
 
@@ -117,6 +126,7 @@ export const {
   apiSubmitted,
   statusUpdated,
   offrampError,
+  resumeTracking,
   resetFlow,
 } = slice.actions
 

@@ -66,6 +66,10 @@ function BucksPayStatus() {
     }
   }
 
+  function onPressContactSupport() {
+    Linking.openURL('https://chat.whatsapp.com/HB8QATWElAPIgcqeiA4TAK')
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.content}>
@@ -79,7 +83,9 @@ function BucksPayStatus() {
 
         {isError && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error || t('buckspay.unknownError')}</Text>
+            <Text style={styles.errorText}>
+              {error?.startsWith('buckspay.') ? t(error) : error || t('buckspay.unknownError')}
+            </Text>
           </View>
         )}
 
@@ -132,6 +138,14 @@ function BucksPayStatus() {
       </View>
 
       <View style={styles.buttonContainer}>
+        <Button
+          onPress={onPressContactSupport}
+          text={t('buckspay.contactSupport')}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          style={styles.supportButton}
+          testID="buckspay-contact-support"
+        />
         {isCompleted && certificateUrl && (
           <Button
             onPress={onPressViewReceipt}
@@ -246,6 +260,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     padding: Spacing.Thick24,
+  },
+  supportButton: {
+    marginBottom: Spacing.Small12,
   },
   receiptButton: {
     marginBottom: Spacing.Small12,
