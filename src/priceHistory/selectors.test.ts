@@ -14,7 +14,7 @@ const celoPrices = [
 
 const state: any = {
   priceHistory: {
-    ['celo-alfajores:0xusd']: {
+    ['celo-sepolia:0xusd']: {
       prices: celoPrices,
       status: 'success',
     },
@@ -24,13 +24,13 @@ const state: any = {
 describe('Price History Selectors', () => {
   describe('tokenPriceHistorySelector', () => {
     it('returns the right tokens', () => {
-      const tokenPriceHistory = priceHistoryPricesSelector(state, 'celo-alfajores:0xusd')
+      const tokenPriceHistory = priceHistoryPricesSelector(state, 'celo-sepolia:0xusd')
       expect(tokenPriceHistory).toStrictEqual(celoPrices)
     })
 
     it('avoids unnecessary recomputation', () => {
-      const tokenPriceHistory = priceHistoryPricesSelector(state, 'celo-alfajores:0xusd')
-      const tokenPriceHistory2 = priceHistoryPricesSelector(state, 'celo-alfajores:0xusd')
+      const tokenPriceHistory = priceHistoryPricesSelector(state, 'celo-sepolia:0xusd')
+      const tokenPriceHistory2 = priceHistoryPricesSelector(state, 'celo-sepolia:0xusd')
       expect(tokenPriceHistory).toEqual(tokenPriceHistory2)
       expect(priceHistoryPricesSelector.recomputations()).toEqual(1)
     })
@@ -38,13 +38,13 @@ describe('Price History Selectors', () => {
 
   describe('tokenPriceHistoryStatusSelector', () => {
     it('returns the right status', () => {
-      const tokenPriceHistoryStatus = priceHistoryStatusSelector(state, 'celo-alfajores:0xusd')
+      const tokenPriceHistoryStatus = priceHistoryStatusSelector(state, 'celo-sepolia:0xusd')
       expect(tokenPriceHistoryStatus).toStrictEqual('success')
     })
 
     it('avoids unnecessary recomputation', () => {
-      const tokenPriceHistoryStatus = priceHistoryStatusSelector(state, 'celo-alfajores:0xusd')
-      const tokenPriceHistoryStatus2 = priceHistoryStatusSelector(state, 'celo-alfajores:0xusd')
+      const tokenPriceHistoryStatus = priceHistoryStatusSelector(state, 'celo-sepolia:0xusd')
+      const tokenPriceHistoryStatus2 = priceHistoryStatusSelector(state, 'celo-sepolia:0xusd')
       expect(tokenPriceHistoryStatus).toEqual(tokenPriceHistoryStatus2)
       expect(priceHistoryStatusSelector.recomputations()).toEqual(1)
     })

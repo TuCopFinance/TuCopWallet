@@ -79,7 +79,7 @@ describe('EarnPoolInfoScreen', () => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
       showCico: [NetworkId['arbitrum-sepolia']],
-      showSwap: [NetworkId['celo-alfajores'], NetworkId['arbitrum-sepolia']],
+      showSwap: [NetworkId['celo-sepolia'], NetworkId['arbitrum-sepolia']],
     })
     jest
       .mocked(getFeatureGate)

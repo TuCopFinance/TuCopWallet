@@ -134,13 +134,13 @@ export const mockAaveArbUsdcAddress = '0x460b97BD498E1157530AEb3086301d5225b9121
 export const mockArbArbAddress = '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase()
 export const mockCkesAddress = '0x1e0433c1769271eccf4cff9fddd515eefe6cdf92'.toLowerCase()
 
-export const mockCusdTokenId = `celo-alfajores:${mockCusdAddress}`
-export const mockCeurTokenId = `celo-alfajores:${mockCeurAddress}`
-export const mockCeloTokenId = `celo-alfajores:native`
-export const mockPoofTokenId = `celo-alfajores:${mockPoofAddress}`
-export const mockTestTokenTokenId = `celo-alfajores:${mockTestTokenAddress}`
-export const mockCrealTokenId = `celo-alfajores:${mockCrealAddress}`
-export const mockWBTCTokenId = `celo-alfajores:${mockWBTCAddress}`
+export const mockCusdTokenId = `celo-sepolia:${mockCusdAddress}`
+export const mockCeurTokenId = `celo-sepolia:${mockCeurAddress}`
+export const mockCeloTokenId = `celo-sepolia:native`
+export const mockPoofTokenId = `celo-sepolia:${mockPoofAddress}`
+export const mockTestTokenTokenId = `celo-sepolia:${mockTestTokenAddress}`
+export const mockCrealTokenId = `celo-sepolia:${mockCrealAddress}`
+export const mockWBTCTokenId = `celo-sepolia:${mockWBTCAddress}`
 export const mockEthTokenId = 'ethereum-sepolia:native'
 export const mockUSDCTokenId = `ethereum-sepolia:${mockUSDCAddress}`
 export const mockArbEthTokenId = `arbitrum-sepolia:native`
@@ -148,7 +148,7 @@ export const mockOPTokenId = `op-sepolia:native`
 export const mockArbUsdcTokenId = `arbitrum-sepolia:${mockUSDCAddress}`
 export const mockArbArbTokenId = `arbitrum-sepolia:${mockArbArbAddress}`
 export const mockAaveArbUsdcTokenId = `arbitrum-sepolia:${mockAaveArbUsdcAddress}`
-export const mockCkesTokenId = `celo-alfajores:${mockCkesAddress}`
+export const mockCkesTokenId = `celo-sepolia:${mockCkesAddress}`
 
 export const mockQrCodeData2 = {
   address: mockAccount2Invite,
@@ -415,7 +415,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '0.1',
     address: mockPoofAddress,
     tokenId: mockPoofTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     symbol: 'POOF',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_POOF.png',
@@ -428,7 +428,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '1.16',
     address: mockCeurAddress,
     tokenId: mockCeurTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     symbol: 'cEUR',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cEUR.png',
@@ -446,7 +446,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '1.001',
     address: mockCusdAddress,
     tokenId: mockCusdTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     symbol: 'cUSD',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cUSD.png',
@@ -465,7 +465,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '13.25085583155252100584',
     address: mockCeloAddress,
     tokenId: mockCeloTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     symbol: 'CELO', // NOT cGLD, see https://github.com/valora-inc/address-metadata/blob/c84ef7056fa066ef86f9b4eb295ae248f363f67a/src/data/mainnet/tokens-info.json#L173
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/CELO.png',
     name: 'Celo native asset',
@@ -483,7 +483,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '0.17',
     address: mockCrealAddress,
     tokenId: mockCrealTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     symbol: 'cREAL',
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/cREAL.png',
     name: 'Celo Real',
@@ -589,7 +589,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockCkesTokenId]: {
     name: 'cKES',
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     tokenId: mockCkesTokenId,
     address: mockCkesAddress,
     symbol: 'cKES',
@@ -1977,7 +1977,7 @@ export const mockNftAllFields: NftWithMetadata = {
   ownerAddress: mockAccount,
   tokenId: '1',
   tokenUri: 'https://example.com/1',
-  networkId: NetworkId['celo-alfajores'],
+  networkId: NetworkId['celo-sepolia'],
 }
 
 export const mockNftMinimumFields: Nft = {
