@@ -1988,4 +1988,15 @@ export const migrations = {
       error: null,
     },
   }),
+  239: (state: any) => ({
+    ...state,
+    buckspay: {
+      ...state.buckspay,
+      // One-time: resume pending BucksPay transaction
+      flowStatus: 'tracking',
+      transactionHash: '0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe',
+      bucksPayCode: 'P5Y1',
+      bucksPayStatus: 'PENDING',
+    },
+  }),
 }
