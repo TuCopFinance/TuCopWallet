@@ -43,7 +43,7 @@ describe('ActionRequest with WalletConnect V2', () => {
     controller: 'b991206845c62280479fd1f24087e9c6f0df3921b5f9d94f4619fbf995a81149',
     namespaces: {
       eip155: {
-        accounts: ['eip155:44787:0x047154ac4d7e01b1dc9ddeea9e8996b57895a747'],
+        accounts: ['eip155:11142220:0x047154ac4d7e01b1dc9ddeea9e8996b57895a747'],
         methods: [
           'eth_sendTransaction',
           'eth_signTransaction',
@@ -66,7 +66,7 @@ describe('ActionRequest with WalletConnect V2', () => {
           'personal_sign',
           'eth_signTypedData',
         ],
-        chains: ['eip155:44787'],
+        chains: ['eip155:11142220'],
         events: ['chainChanged', 'accountsChanged'],
       },
     },
@@ -78,7 +78,7 @@ describe('ActionRequest with WalletConnect V2', () => {
     id: 1669810746892321,
     topic: 'd8afe1f5c3efa38bbb62c68005f572a7218afcd48703e4b02bdc5df2549ac5b5',
     params: {
-      chainId: 'eip155:44787',
+      chainId: 'eip155:11142220',
       request: {
         method: 'personal_sign',
         params: [
@@ -118,7 +118,7 @@ describe('ActionRequest with WalletConnect V2', () => {
     _baseFeePerGas: '5000000000',
   }
 
-  const supportedChains = ['eip155:44787']
+  const supportedChains = ['eip155:11142220']
 
   describe('eth_sendTransaction', () => {
     const store = createMockStore({

@@ -54,7 +54,7 @@ describe('JumpstartTransactionDetailsScreen', () => {
 
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        [NetworkId['celo-alfajores']]: {
+        [NetworkId['celo-sepolia']]: {
           contractAddress: mockJumpstartAdddress,
           retiredContractAddresses: [mockRetiredContractAddress],
         },
@@ -117,7 +117,7 @@ describe('JumpstartTransactionDetailsScreen', () => {
     status?: TransactionStatus
   }): TokenTransfer {
     return {
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       type,
       transactionHash: mockTransactionHash,
       timestamp: 1542306118,
@@ -145,7 +145,7 @@ describe('JumpstartTransactionDetailsScreen', () => {
     expect(getByTestId('JumpstartContent/AmountValue')).toHaveTextContent('10.00 cUSD')
     expect(fetchClaimStatus).toHaveBeenCalledWith(
       mockJumpstartAdddress,
-      'celo-alfajores',
+      'celo-sepolia',
       mockTransactionHash
     )
   })
@@ -259,7 +259,7 @@ describe('JumpstartTransactionDetailsScreen', () => {
     await waitFor(() =>
       expect(fetchClaimStatus).toHaveBeenCalledWith(
         mockRetiredContractAddress,
-        'celo-alfajores',
+        'celo-sepolia',
         mockTransactionHash
       )
     )

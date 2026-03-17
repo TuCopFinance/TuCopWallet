@@ -19,7 +19,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -30,7 +30,7 @@ const mockBalances = {
       [mockCusdTokenId]: {
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'cUSD',
         decimals: 18,
         balance: '1',
@@ -42,7 +42,7 @@ const mockBalances = {
       },
       [mockCkesTokenId]: {
         name: 'cKES',
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         tokenId: mockCkesTokenId,
         address: mockCkesAddress,
         symbol: 'cKES',

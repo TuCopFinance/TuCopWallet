@@ -107,7 +107,7 @@ describe('fiatExchanges utils', () => {
           Coinbase: true,
           FiatConnectMobileMoney: true,
         },
-        networkId: 'celo-alfajores',
+        networkId: 'celo-sepolia',
       })
     })
 
@@ -146,7 +146,7 @@ describe('fiatExchanges utils', () => {
           Coinbase: false,
           FiatConnectMobileMoney: true,
         },
-        networkId: 'celo-alfajores',
+        networkId: 'celo-sepolia',
       })
     })
   })
