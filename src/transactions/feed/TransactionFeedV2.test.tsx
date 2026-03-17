@@ -38,7 +38,7 @@ const mockFetch = fetch as FetchMock
 
 function mockTransaction(data?: Partial<TokenTransaction | StandbyTransaction>): TokenTransaction {
   return {
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     address: '0xd68360cce1f1ff696d898f58f03e0f1252f2ea33',
     amount: {
       tokenId: mockCusdTokenId,
@@ -98,14 +98,14 @@ beforeEach(() => {
   mockFetch.resetMocks()
   jest.clearAllMocks()
   jest.mocked(getMultichainFeatures).mockReturnValue({
-    showCico: [NetworkId['celo-alfajores']],
-    showBalances: [NetworkId['celo-alfajores']],
-    showTransfers: [NetworkId['celo-alfajores']],
-    showApprovalTxsInHomefeed: [NetworkId['celo-alfajores']],
+    showCico: [NetworkId['celo-sepolia']],
+    showBalances: [NetworkId['celo-sepolia']],
+    showTransfers: [NetworkId['celo-sepolia']],
+    showApprovalTxsInHomefeed: [NetworkId['celo-sepolia']],
   })
   jest.mocked(getDynamicConfigParams).mockReturnValue({
     jumpstartContracts: {
-      ['celo-alfajores']: { contractAddress: '0x7bf3fefe9881127553d23a8cd225a2c2442c438c' },
+      ['celo-sepolia']: { contractAddress: '0x7bf3fefe9881127553d23a8cd225a2c2442c438c' },
     },
   })
   jest.mocked(getFeatureGate).mockReturnValue(false)
@@ -518,7 +518,7 @@ describe('TransactionFeedV2', () => {
       const newPendingTransaction = addStandbyTransaction({
         context: { id: pendingStandByTransactionHash2 },
         type: TokenTransactionTypeV2.Sent,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         amount: {
           value: BigNumber(10).negated().toString(),
           tokenAddress: mockCusdAddress,
@@ -551,7 +551,7 @@ describe('TransactionFeedV2', () => {
       transactionHash: hash,
       type: TokenTransactionTypeV2.CrossChainSwapTransaction,
       status: TransactionStatus.Pending,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       inAmount: { value: '0.1', tokenId: 'op-mainnet:native' },
       outAmount: { value: '0.2', tokenId: 'base-mainnet:native' },
       timestamp: Date.now(),

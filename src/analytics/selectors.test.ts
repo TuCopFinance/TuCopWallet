@@ -45,10 +45,10 @@ const mockState = {
   },
   tokens: {
     tokenBalances: {
-      'celo-alfajores:0xcusd': {
+      'celo-sepolia:0xcusd': {
         name: 'Celo Dollars',
-        tokenId: 'celo-alfajores:0xcusd',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xcusd',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xcusd',
         symbol: 'cUSD',
         decimals: 18,
@@ -58,10 +58,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-alfajores:0xceur': {
+      'celo-sepolia:0xceur': {
         name: 'Celo Euros',
-        tokenId: 'celo-alfajores:0xceur',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xceur',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xceur',
         symbol: 'cEUR',
         decimals: 18,
@@ -71,10 +71,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-alfajores:native': {
+      'celo-sepolia:native': {
         name: 'Celo',
-        tokenId: 'celo-alfajores:native',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:native',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xcelo',
         symbol: 'CELO',
         decimals: 18,
@@ -85,10 +85,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-alfajores:0xa': {
+      'celo-sepolia:0xa': {
         name: 'a',
-        tokenId: 'celo-alfajores:0xa',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xa',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xa',
         symbol: 'A',
         decimals: 18,
@@ -97,10 +97,10 @@ const mockState = {
         balance: '1',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xb': {
+      'celo-sepolia:0xb': {
         name: 'b',
-        tokenId: 'celo-alfajores:0xb',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xb',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xb',
         symbol: 'B',
         decimals: 18,
@@ -109,10 +109,10 @@ const mockState = {
         balance: '3',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xc': {
+      'celo-sepolia:0xc': {
         name: 'c',
-        tokenId: 'celo-alfajores:0xc',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xc',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xc',
         symbol: 'C',
         decimals: 18,
@@ -121,10 +121,10 @@ const mockState = {
         balance: '2',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xd': {
+      'celo-sepolia:0xd': {
         name: 'd',
-        tokenId: 'celo-alfajores:0xd',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xd',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xd',
         symbol: 'D',
         decimals: 18,
@@ -133,10 +133,10 @@ const mockState = {
         balance: '0.01',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xe': {
+      'celo-sepolia:0xe': {
         name: 'e',
-        tokenId: 'celo-alfajores:0xe',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xe',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xe',
         symbol: 'E',
         decimals: 18,
@@ -145,10 +145,10 @@ const mockState = {
         balance: '7',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xf': {
+      'celo-sepolia:0xf': {
         name: 'f',
-        tokenId: 'celo-alfajores:0xf',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xf',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xf',
         symbol: 'F',
         decimals: 18,
@@ -157,10 +157,10 @@ const mockState = {
         balance: '6',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xg': {
+      'celo-sepolia:0xg': {
         name: 'g',
-        tokenId: 'celo-alfajores:0xg',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xg',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xg',
         symbol: 'G',
         decimals: 18,
@@ -169,10 +169,10 @@ const mockState = {
         balance: '10',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xh': {
+      'celo-sepolia:0xh': {
         name: 'h',
-        tokenId: 'celo-alfajores:0xh',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xh',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xh',
         symbol: 'H',
         decimals: 18,
@@ -181,10 +181,10 @@ const mockState = {
         balance: '9.123456789',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xi': {
+      'celo-sepolia:0xi': {
         name: 'i',
-        tokenId: 'celo-alfajores:0xi',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xi',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xi',
         symbol: 'I',
         decimals: 18,
@@ -193,10 +193,10 @@ const mockState = {
         balance: '1000',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xj': {
+      'celo-sepolia:0xj': {
         name: 'j',
-        tokenId: 'celo-alfajores:0xj',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xj',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xj',
         symbol: '', // Empty on purpose, will end up using the address
         decimals: 18,
@@ -205,10 +205,10 @@ const mockState = {
         balance: '11.003',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xk': {
+      'celo-sepolia:0xk': {
         name: 'k',
-        tokenId: 'celo-alfajores:0xk',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xk',
+        networkId: NetworkId['celo-sepolia'],
         address: '0xk',
         symbol: 'K',
         decimals: 18,
@@ -232,7 +232,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-alfajores:0xa',
+            tokenId: 'celo-sepolia:0xa',
             balance: '1',
             priceUsd: '10',
           },
@@ -249,7 +249,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-alfajores:0xb',
+            tokenId: 'celo-sepolia:0xb',
             balance: '1',
             priceUsd: '1.11',
           },
@@ -266,7 +266,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-alfajores:0xc',
+            tokenId: 'celo-sepolia:0xc',
             balance: '1',
             priceUsd: '2.22',
           },
@@ -283,7 +283,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-alfajores:0xd',
+            tokenId: 'celo-sepolia:0xd',
             balance: '1',
             priceUsd: '0.01234',
           },
@@ -300,7 +300,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-alfajores:0xe',
+            tokenId: 'celo-sepolia:0xe',
             balance: '10',
             priceUsd: '7',
           },
@@ -357,7 +357,7 @@ describe('getCurrentUserTraits', () => {
   it('returns the current user traits with tokens from multiple networks', () => {
     const state = getMockStoreData(mockState)
     expect(
-      getCurrentUserTraits(state, [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']])
+      getCurrentUserTraits(state, [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']])
     ).toStrictEqual(expectedTraitsForAllNetworks)
   })
   it('sets correct hasTokenBalance fields if all tokens in one network have no balance', () => {
@@ -374,7 +374,7 @@ describe('getCurrentUserTraits', () => {
     }
     const state = getMockStoreData({ ...mockState, tokens: { tokenBalances: mockTokenBalances } })
     expect(
-      getCurrentUserTraits(state, [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']])
+      getCurrentUserTraits(state, [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']])
     ).toStrictEqual({
       ...expectedTraitsForAllNetworks,
       ethBalance: 0,

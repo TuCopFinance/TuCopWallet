@@ -2202,7 +2202,7 @@
                 "arbitrum-sepolia",
                 "base-mainnet",
                 "base-sepolia",
-                "celo-alfajores",
+                "celo-sepolia",
                 "celo-mainnet",
                 "ethereum-mainnet",
                 "ethereum-sepolia",
@@ -6820,7 +6820,7 @@
                     },
                     "type": "array"
                 },
-                "celo-alfajores": {
+                "celo-sepolia": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },
