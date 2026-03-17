@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
   bucksPayCertificateUrlSelector,
@@ -48,6 +48,10 @@ function BucksPayStatus() {
   const isCompleted = flowStatus === 'completed'
   const currentStepIndex = getStepIndex(bucksPayStatus)
 
+  function onPressClose() {
+    navigateHome()
+  }
+
   function onPressDone() {
     dispatch(resetFlow())
     navigateHome()
@@ -71,7 +75,14 @@ function BucksPayStatus() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {!isCompleted && !isError && (
+        <View style={styles.headerRow}>
+          <Pressable onPress={onPressClose} hitSlop={12}>
+            <Text style={styles.closeText}>{t('buckspay.minimize')}</Text>
+          </Pressable>
+        </View>
+      )}
       <View style={styles.content}>
         <Text style={styles.title}>
           {isError
@@ -174,6 +185,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: Spacing.Thick24,
+    paddingTop: Spacing.Small12,
+  },
+  closeText: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
   },
   content: {
     flex: 1,
