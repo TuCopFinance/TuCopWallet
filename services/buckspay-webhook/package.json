@@ -1,0 +1,12 @@
+{
+  "name": "buckspay-webhook",
+  "version": "1.0.0",
+  "description": "BucksPay webhook receiver for TuCOP Wallet",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
