@@ -1976,4 +1976,16 @@ export const migrations = {
       identity: _.omit(state.identity, 'hasSeenVerificationNux'),
     }
   },
+  238: (state: any) => ({
+    ...state,
+    buckspay: {
+      flowStatus: 'idle',
+      lastBankDetails: null,
+      transactionHash: null,
+      bucksPayCode: null,
+      bucksPayStatus: null,
+      certificateUrl: null,
+      error: null,
+    },
+  }),
 }
