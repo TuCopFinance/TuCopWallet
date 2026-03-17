@@ -1,22 +1,22 @@
-# Security
-
-## Security Announcements
-
-Public announcements of new releases with security fixes and of disclosure of any vulnerabilities will be made in the Celo Forum's [Security Announcements](https://forum.celo.org/c/security-announcements/) channel.
+# Security - TuCOP Wallet
 
 ## Reporting a Vulnerability
 
-We’re extremely grateful for security researchers and users that report vulnerabilities to the Celo community. All reports are thoroughly investigated.
+We're extremely grateful for security researchers and users that report vulnerabilities. All reports are thoroughly investigated.
 
 **Please do not file a public ticket** mentioning any vulnerability.
 
-The Celo community asks that all suspected vulnerabilities be privately and responsibly disclosed.
+All suspected vulnerabilities should be privately and responsibly disclosed.
 
-To make a report, submit your vulnerability to [Celo on HackerOne](https://hackerone.com/celo).
+To report a vulnerability in TuCOP Wallet, please open a private security advisory on [GitHub](https://github.com/TuCopFinance/TuCopWallet/security/advisories/new) or email the team directly.
 
-You can also email the [security@celo.org](mailto:security@celo.org) list with the details of reproducing the vulnerability as well as the usual details expected for all bug reports.
+## Celo Ecosystem
 
-While the primary focus of this disclosure program is the Celo protocol and the Celo wallet, the team may be able to assist in coordinating a response to a vulnerability in the third-party apps or tools in the Celo ecosystem.
+TuCOP Wallet is built on the Celo network. For vulnerabilities related to the Celo protocol itself (not specific to TuCOP), you can also report to:
+
+- [Celo on HackerOne](https://hackerone.com/celo)
+- [security@celo.org](mailto:security@celo.org)
+- [Celo Security Announcements](https://forum.celo.org/c/security-announcements/)
 
 You may encrypt your email to this list using this GPG key (but encryption using GPG is NOT required to make a disclosure):
 

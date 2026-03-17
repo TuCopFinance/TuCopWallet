@@ -69,15 +69,20 @@ src/
 ├── identity/            # User identity and verification
 ├── onboarding/          # User onboarding flows
 ├── account/             # Account management and settings
+├── buckspay/            # BucksPay offramp (COPm → COP bank transfer)
+├── subsidies/           # ReFi Colombia UBI/subsidy claims
 ├── divviProtocol/       # Referral tracking (v2 integration)
-└── refi/                # ReFi Medellín UBI integration
+├── points/              # Points/rewards system
+├── jumpstart/           # Jumpstart referral rewards
+├── nfts/                # NFT support and display
+└── dapps/               # DApp connector and catalog
 ```
 
 ### State Management
 - **Redux Toolkit** with strict TypeScript typing
 - **Redux Saga** for async operations and side effects
-- **Redux Persist** with file system storage and migrations (current version: 237)
-- Key slices: `tokens`, `send`, `earn`, `swap`, `account`, `identity`, `web3`
+- **Redux Persist** with file system storage and migrations (current version: 238)
+- Key slices: `tokens`, `send`, `earn`, `swap`, `account`, `identity`, `web3`, `buckspay`
 
 ### Navigation Architecture
 - **React Navigation 7.x** with native stack and bottom tabs
@@ -86,10 +91,10 @@ src/
 - Onboarding flow: `src/onboarding/registration/RegistrationNavigator.tsx`
 
 ### Blockchain Integration
-- **Celo network** (mainnet and alfajores testnet)
-- **Viem** for web3 interactions (replacing web3.js)
+- **Celo network** only (mainnet + Celo Sepolia testnet; Alfajores is deprecated)
+- **Viem** for web3 interactions
 - **WalletConnect** for DApp connectivity
-- Multi-network support with environment-based configuration
+- Key token: COPm (Colombian Peso stablecoin on Celo, renamed from cCOP)
 
 ### Component Patterns
 - Use `useAppSelector` and `useAppDispatch` for Redux
@@ -112,9 +117,9 @@ src/
 The project includes 6 main iOS build schemes for different environments and purposes:
 
 #### **Network-Based Schemes:**
-- **`MobileStack-alfajores`**: Alfajores testnet with real transactions but test tokens
+- **`MobileStack-alfajores`**: Testnet with real transactions but test tokens (legacy scheme name)
   - Display Name: "TuCop Alfajores"
-  - Network: Celo Alfajores testnet
+  - Network: Celo Sepolia testnet (Alfajores is deprecated)
   - Features: Shows testnet banner, Sentry enabled
   - Use for: Testing with testnet tokens
 
@@ -131,9 +136,9 @@ The project includes 6 main iOS build schemes for different environments and pur
   - Use for: Testing configurations
 
 #### **Development Schemes:**
-- **`MobileStack-alfajoresdev`**: Development builds on testnet
+- **`MobileStack-alfajoresdev`**: Development builds on testnet (legacy scheme name)
   - Display Name: "TuCoP Wallet (Alfajores)"
-  - Network: Alfajores testnet
+  - Network: Celo Sepolia testnet (Alfajores is deprecated)
   - Features: Dev settings enabled, debug keystore, no Sentry
   - Use for: **Primary development** (recommended)
 
@@ -151,9 +156,12 @@ The project includes 6 main iOS build schemes for different environments and pur
 Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags.
 
 ### Recent Important Changes
-- **Divvi Protocol v2**: Updated referral tracking system
-- **Version 1.107.0**: Current app version with enhanced CI/CD
-- **Viem Migration**: Ongoing migration from web3.js to Viem for blockchain operations
+- **Version 1.116.0**: Current app version
+- **BucksPay Offramp**: Native COPm → COP bank transfer integration via BucksPay API
+- **COPm Token**: Renamed from cCOP to COPm across the app
+- **ReFi Colombia Subsidies**: UBI/subsidy claims via `src/subsidies/`
+- **Divvi Protocol v2**: Referral tracking system
+- **Celo Sepolia**: New testnet (replaces deprecated Alfajores)
 
 ### Development Notes
 - Always run `yarn build:ts` before committing to catch TypeScript errors

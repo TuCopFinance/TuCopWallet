@@ -7,7 +7,7 @@ TuCOP Wallet es una aplicación móvil React Native que proporciona servicios de
 - **Billetera Digital Completa**: Gestión de transacciones y pagos
 - **Sistema de Actualizaciones Inteligente**: Verificación automática desde backend propio
 - **CI/CD Automatizado**: Despliegue automático a Play Store y TestFlight
-- **Soporte Multi-Red**: Mainnet y Alfajores (Testnet)
+- **Soporte Multi-Red**: Mainnet y Celo Sepolia (Testnet)
 - **Arquitectura Moderna**: React Native con TypeScript
 
 ## 🛠️ Tecnologías
@@ -148,7 +148,7 @@ emulator -avd Pixel_API_29_AOSP_x86_64
 #### Android
 
 ```bash
-# Desarrollo (Alfajores testnet)
+# Desarrollo (Celo Sepolia testnet)
 yarn dev:android
 
 # Mainnet
@@ -161,7 +161,7 @@ yarn win:dev:android
 #### iOS
 
 ```bash
-# Desarrollo (Alfajores testnet)
+# Desarrollo (Celo Sepolia testnet)
 yarn dev:ios
 
 # Mainnet
@@ -174,10 +174,10 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 
 #### **Esquemas por Red:**
 
-- **`MobileStack-alfajores`**: Red de prueba Alfajores
+- **`MobileStack-alfajores`**: Red de prueba (legacy scheme name)
 
   - Nombre: "TuCop Alfajores"
-  - Red: Celo Alfajores (testnet)
+  - Red: Celo Sepolia (testnet)
   - Uso: Pruebas con tokens de testnet
 
 - **`MobileStack-mainnet`**: Red principal de producción
@@ -195,7 +195,7 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 - **`MobileStack-alfajoresdev`**: Desarrollo en testnet ⭐ **Recomendado**
 
   - Nombre: "TuCoP Wallet (Alfajores)"
-  - Red: Alfajores (testnet)
+  - Red: Celo Sepolia (testnet)
   - Características: Configuración de desarrollo, sin Sentry
   - Uso: **Desarrollo principal**
 
@@ -309,7 +309,7 @@ git push origin main --follow-tags
 ### Lo que Sucede Automáticamente
 
 1. **GitHub Actions** detecta el cambio de versión
-2. **Compila** para Android e iOS (mainnet + alfajores)
+2. **Compila** para Android e iOS (mainnet + testnet)
 3. **Despliega** a Google Play Store (Internal) y TestFlight
 4. **Actualiza** el backend de Railway
 5. **Crea** GitHub Release automáticamente
@@ -317,7 +317,7 @@ git push origin main --follow-tags
 
 **Tiempo total**: 45-60 minutos (solo 5 minutos de trabajo manual)
 
-📖 **Guía Completa**: Ver [PROCESO-NUEVA-VERSION.md](./PROCESO-NUEVA-VERSION.md)
+📖 **Guía Completa**: Ver [docs/release-process.md](./docs/release-process.md)
 
 ## 🌐 URLs y Endpoints
 
@@ -508,8 +508,8 @@ Este proyecto está bajo la licencia MIT. Ver [LICENSE](./LICENSE) para más det
 - ✅ **Despliegue a Tiendas**: Automático
 - ✅ **Documentación**: Completa y actualizada
 
-**Versión Actual**: 1.103.0
-**Última Actualización**: Enero 2025
+**Versión Actual**: 1.116.0
+**Última Actualización**: Marzo 2026
 **Estado**: 🟢 Producción Estable
 
 ---

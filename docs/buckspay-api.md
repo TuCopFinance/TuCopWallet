@@ -17,13 +17,13 @@ All endpoints except registration require two headers:
 
 ## Supported Networks
 
-| Network ID | Chain     | Token    | Crypto   | Currency |
-| ---------- | --------- | -------- | -------- | -------- |
-| 0          | Base      | USDC     | usdc     | USD      |
-| 1          | Avalanche | USDC     | usdc     | USD      |
-| 4          | Polygon   | USDT     | usdt     | USD      |
-| **6**      | **Celo**  | **CCOP** | **ccop** | **COP**  |
-| 7          | Lisk      | USDC     | usdc     | USD      |
+| Network ID | Chain     | Token                  | Crypto   | Currency |
+| ---------- | --------- | ---------------------- | -------- | -------- |
+| 0          | Base      | USDC                   | usdc     | USD      |
+| 1          | Avalanche | USDC                   | usdc     | USD      |
+| 4          | Polygon   | USDT                   | usdt     | USD      |
+| **6**      | **Celo**  | **COPm** (CCOP in API) | **ccop** | **COP**  |
+| 7          | Lisk      | USDC                   | usdc     | USD      |
 
 ## Receiver Wallet
 
@@ -517,7 +517,9 @@ PENDING → INPROGRESS → STARTED → PAYED → FINISHED
 
 ---
 
-## Integration Flow for TuCOP Wallet (Celo/CCOP)
+## Integration Flow for TuCOP Wallet (Celo/COPm)
+
+> **Note**: BucksPay API uses "CCOP"/"ccop" as the crypto identifier. In the TuCOP app, this token is called **COPm** (renamed from cCOP).
 
 ### Native Offramp Flow:
 
@@ -525,7 +527,7 @@ PENDING → INPROGRESS → STARTED → PAYED → FINISHED
    - If `exists: false` → redirect to BucksPay WebView for registration
    - If `exists: true` → continue
 2. **Collect bank details**: Show form for bank name, account number, country (Colombia)
-3. **Send CCOP**: Transfer CCOP tokens to `0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0` on Celo (network 6)
+3. **Send COPm**: Transfer COPm tokens to `0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0` on Celo (network 6)
 4. **Wait for confirmations**: Need at least 3 block confirmations
 5. **Submit transaction**: `POST /external/transaction` with trxHash, bank details, network=6
 6. **Track status**: Poll `GET /external/transaction/{trxHash}` for status updates
