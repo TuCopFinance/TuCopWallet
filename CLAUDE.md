@@ -114,46 +114,45 @@ src/
 - Feature flags via Statsig integration
 
 ### iOS Build Schemes
-The project includes 6 main iOS build schemes for different environments and purposes:
+The project has 7 iOS build schemes. Only 4 are active — the rest are marked unused.
 
-#### **Network-Based Schemes:**
-- **`MobileStack-alfajores`**: Testnet with real transactions but test tokens (legacy scheme name)
-  - Display Name: "TuCop Alfajores"
-  - Network: Celo Sepolia testnet (Alfajores is deprecated)
+> **Testnet**: Celo Sepolia (chain ID 11142220). Alfajores is deprecated.
+> Reference: [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)
+
+#### **Active Schemes:**
+
+- **`MobileStack-alfajores`**: Celo Sepolia testnet (legacy scheme name)
+  - Display Name: "TuCop Celo Sepolia"
   - Features: Shows testnet banner, Sentry enabled
   - Use for: Testing with testnet tokens
+
+- **`MobileStack-alfajoresdev`**: Celo Sepolia testnet dev (legacy scheme name)
+  - Display Name: "TuCop (Celo Sepolia dev)"
+  - Features: Dev settings enabled, debug keystore, no Sentry
+  - Use for: **Primary development** (recommended)
 
 - **`MobileStack-mainnet`**: Production environment with real tokens
   - Display Name: "TuCop"
   - Network: Celo mainnet
-  - Features: No testnet banner, Sentry disabled
   - Use for: Production releases
 
-- **`MobileStack-test`**: Test configuration on mainnet
-  - Display Name: "Mento (test)"
-  - Network: Mainnet with test settings
-  - Features: Dev settings enabled
-  - Use for: Testing configurations
-
-#### **Development Schemes:**
-- **`MobileStack-alfajoresdev`**: Development builds on testnet (legacy scheme name)
-  - Display Name: "TuCoP Wallet (Alfajores)"
-  - Network: Celo Sepolia testnet (Alfajores is deprecated)
-  - Features: Dev settings enabled, debug keystore, no Sentry
-  - Use for: **Primary development** (recommended)
-
 - **`MobileStack-mainnetdev`**: Development builds on mainnet
-  - Network: Mainnet with dev settings
+  - Display Name: "TuCop (dev)"
   - Use for: Advanced testing with real network
 
-- **`MobileStack-*nightly`**: Automated nightly builds for CI/CD
+#### **Unused Schemes (marked with "(unused)" suffix):**
+
+- `MobileStack-alfajoresnightly (unused)` — nightly CI disabled
+- `MobileStack-mainnetnightly (unused)` — nightly CI disabled
+- `MobileStack-test (unused)` — legacy Mento test config
 
 #### **Scheme Selection Guidelines:**
-- **For Development**: Use `MobileStack-alfajoresdev` (safe testnet environment)
-- **For Testing**: Use `MobileStack-alfajores` (testnet with production-like settings)
+
+- **For Development**: Use `MobileStack-alfajoresdev` (safe Celo Sepolia testnet)
+- **For Testing**: Use `MobileStack-alfajores` (Celo Sepolia with production-like settings)
 - **For Production**: Use `MobileStack-mainnet` (real network and tokens)
 
-Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags.
+Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags. Scheme filenames still use "alfajores" for legacy reasons — a full rename is planned.
 
 ### Recent Important Changes
 - **Version 1.116.0**: Current app version
@@ -161,7 +160,7 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 - **COPm Token**: Renamed from cCOP to COPm across the app
 - **ReFi Colombia Subsidies**: UBI/subsidy claims via `src/subsidies/`
 - **Divvi Protocol v2**: Referral tracking system
-- **Celo Sepolia**: New testnet (replaces deprecated Alfajores)
+- **Celo Sepolia**: Active testnet (chain ID 11142220, replaces deprecated Alfajores)
 
 ### Development Notes
 - Always run `yarn build:ts` before committing to catch TypeScript errors
