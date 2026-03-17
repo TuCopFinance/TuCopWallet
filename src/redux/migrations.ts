@@ -1673,7 +1673,7 @@ export const migrations = {
       }
       // users inactive since before 4/2 have 'network' in their state
       if (network) {
-        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-alfajores']
+        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
       }
       // should never happen, but only celo mainnet has been released so far
       return NetworkId['celo-mainnet']
@@ -1691,7 +1691,7 @@ export const migrations = {
       }
       if (networks) {
         return networks.map((network) =>
-          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-alfajores']
+          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
         )
       }
       // should never happen, but only celo mainnet has been released so far
