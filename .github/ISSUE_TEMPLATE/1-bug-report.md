@@ -1,16 +1,12 @@
 ---
 name: '🐛 Bug report'
-about: Report a bug found while using Valora.
+about: Report a bug found while using TuCOP Wallet.
 title: ''
 labels: 'bug'
 assignees: ''
 ---
 
-<!-- 👋 Use the template below to report a bug. Fill in as much info as possible.
-
-Have an issue that needs support, e.g. transaction issues specific to an account? Contact our support team in-app, the preferred method, by shaking your device or navigating to: ☰ > (?) Help > Contact. Alternatively, contact support from our website 👉 https://valoraapp.com/support
-
-As an open source project - it may take some time for your issue to be addressed. Please be patient and we will respond as soon as we can. 🙏 -->
+<!-- 👋 Use the template below to report a bug. Fill in as much info as possible. -->
 
 ### Current behavior
 
@@ -18,13 +14,12 @@ As an open source project - it may take some time for your issue to be addressed
 
 ### Desired behavior
 
-<!-- Please provide a clear description of what should happen.-->
+<!-- Please provide a clear description of what should happen. -->
 
 ### Steps to Reproduce
 
-<!-- Provide steps that we emulate on our machine to see the issue. -->
+<!-- Provide steps that we can follow on our machine to see the issue. -->
 
 ### Versions
 
-<!-- Valora version, operating system e.g. iOS (15.0) or Android (11), device e.g. iPhone 12 Max and any additional information as needed -->
-<!-- If possible, please update Valora to latest version and check if the bug is still present. -->
+<!-- TuCOP Wallet version, operating system e.g. iOS (17.0) or Android (14), device e.g. iPhone 15 Pro -->

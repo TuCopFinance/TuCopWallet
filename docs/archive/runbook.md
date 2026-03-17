@@ -1,6 +1,8 @@
 # Mobile Stack Runbook
 
-This document outlines the steps to spin up a new Mobile Stack app, beginning with the [mobilestack-runtime](https://github.com/mobilestack-xyz/mobilestack-runtime) repository; it is primarily aimed at Valora employees, however these steps should be possible to follow (with modifications) for non-employees as well.
+> **Note**: This runbook is inherited from the Mobile Stack / Valora fork. It documents the generic process for spinning up a new Mobile Stack app. TuCOP-specific setup is in [wallet-setup.md](../wallet-setup.md) and [README.md](../../README.md).
+
+This document outlines the steps to spin up a new Mobile Stack app, beginning with the [mobilestack-runtime](https://github.com/mobilestack-xyz/mobilestack-runtime) repository.
 
 ## Setup
 
@@ -58,7 +60,7 @@ Configuring Cloud Account Backup is a multi-step process, and overlaps somewhat 
 
 First, make sure the Google developer account that will be used for releases is set up. Make sure App Signing is configured, and download the signing certificate. Next, clone [this repo](https://github.com/michalbrz/sms-retriever-hash-generator), which will be used to generate app signature hashes required by CAB. Once it's cloned, you can run `ruby google_play_sign.rb --package <PACKAGE_NAME> --google-play-key <PATH_TO_SIGNING_KEY>` _for each package name you will be releasing_ in order to generate the correct hash. Once you've done this for all relevant packages, update the `SMS_RETRIEVER_APP_SIGNATURE` value in the relevant `*.env` files (see [here](https://github.com/mobilestack-xyz/mobilestack-shefi/pull/5/files#diff-74d2ea44fe6a1adb583215badb22e7e37b68ad0b4aa27db10a2948ddb9e7dc2fL4)). For each of these packages, update the mapping in the CAB backend [here](https://github.com/valora-inc/cloud-account-backup/pull/287/files) as well.
 
-Now, in the Auth0 dashboard, for both Alfajores and Mainnet update both the "Allowed Callback URLs" and "Allowed Logout URLs" for the new app. This will just involve copying existing links and prefixing them with the desired package names. Note that since we use the same Auth0 project for all Mobile Stack apps, there's
+Now, in the Auth0 dashboard, for both Celo Sepolia (testnet) and Mainnet update both the "Allowed Callback URLs" and "Allowed Logout URLs" for the new app. This will just involve copying existing links and prefixing them with the desired package names. Note that since we use the same Auth0 project for all Mobile Stack apps, there's
 no need to update the Auth0 API key in the `secrets.json` file.
 
 ### Configure the Android build
