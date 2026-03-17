@@ -172,13 +172,21 @@ yarn dev:ios:mainnet
 
 El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 
-#### **Esquemas por Red:**
+> **Testnet**: Celo Sepolia (chain ID 11142220). Alfajores está deprecado.
+> Referencia: [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)
 
-- **`MobileStack-alfajores`**: Red de prueba (legacy scheme name)
+#### **Esquemas Activos:**
 
-  - Nombre: "TuCop Alfajores"
-  - Red: Celo Sepolia (testnet)
+- **`MobileStack-alfajores`**: Celo Sepolia testnet (nombre legacy)
+
+  - Nombre: "TuCop Celo Sepolia"
   - Uso: Pruebas con tokens de testnet
+
+- **`MobileStack-alfajoresdev`**: Celo Sepolia testnet dev (nombre legacy) ⭐ **Recomendado**
+
+  - Nombre: "TuCop (Celo Sepolia dev)"
+  - Características: Configuración de desarrollo, sin Sentry
+  - Uso: **Desarrollo principal**
 
 - **`MobileStack-mainnet`**: Red principal de producción
 
@@ -186,33 +194,24 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
   - Red: Celo mainnet
   - Uso: Versión de producción
 
-- **`MobileStack-test`**: Configuración de pruebas
-  - Nombre: "Mento (test)"
-  - Uso: Pruebas de configuración
-
-#### **Esquemas de Desarrollo:**
-
-- **`MobileStack-alfajoresdev`**: Desarrollo en testnet ⭐ **Recomendado**
-
-  - Nombre: "TuCoP Wallet (Alfajores)"
-  - Red: Celo Sepolia (testnet)
-  - Características: Configuración de desarrollo, sin Sentry
-  - Uso: **Desarrollo principal**
-
 - **`MobileStack-mainnetdev`**: Desarrollo en mainnet
 
-  - Red: Mainnet con configuración de desarrollo
+  - Nombre: "TuCop (dev)"
   - Uso: Pruebas avanzadas
 
-- **`MobileStack-*nightly`**: Builds automáticos nocturnos
+#### **Esquemas No Usados (marcados con sufijo "(unused)"):**
+
+- `MobileStack-alfajoresnightly (unused)` — CI nightly deshabilitado
+- `MobileStack-mainnetnightly (unused)` — CI nightly deshabilitado
+- `MobileStack-test (unused)` — configuración legacy de Mento
 
 #### **Selección de Esquema:**
 
-- **Para Desarrollo**: `MobileStack-alfajoresdev` (entorno seguro de testnet)
-- **Para Pruebas**: `MobileStack-alfajores` (testnet con configuración de producción)
+- **Para Desarrollo**: `MobileStack-alfajoresdev` (Celo Sepolia testnet)
+- **Para Pruebas**: `MobileStack-alfajores` (Celo Sepolia con configuración de producción)
 - **Para Producción**: `MobileStack-mainnet` (red real)
 
-Cada esquema carga un archivo `.env.*` correspondiente que configura endpoints, nombres y características.
+Cada esquema carga un archivo `.env.*` correspondiente. Los nombres de archivos aún usan "alfajores" por razones legacy — un renombrado completo está planeado.
 
 ## 🔧 Scripts Disponibles
 
