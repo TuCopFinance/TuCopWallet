@@ -17,8 +17,6 @@ Example: add any manual testing steps or scenarios (if not obvious), screenshots
 
 <!-- Brief explanation of why these changes are/are not backwards compatible. -->
 
-### Network scalability
+### Celo compatibility
 
-If a new NetworkId and/or Network are added in the future, the changes in this PR will:
-
-- [ ] Continue to work without code changes, OR trigger a compilation error (guaranteeing we find it when a new network is added)
+- [ ] Changes are compatible with Celo mainnet and Celo Sepolia testnet

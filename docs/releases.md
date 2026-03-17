@@ -1,19 +1,31 @@
-# Releases
+# Releases - TuCOP Wallet
 
-The `Release - Production` workflow in github can be run to release new versions of Mento. iOS is automated and Android requires a few extra steps.
+The CI/CD pipeline handles releases for TuCOP Wallet. iOS is automated via TestFlight and Android requires uploading to Play Store.
 
 ## Android - (internal testers)
 
-Android builds can be manually released by running the `Release - Production` workflow, downloading the bundle from github, and uploading the bundle to the playstore.
+Android builds can be manually released by running the CI workflow, downloading the bundle from GitHub, and uploading to the Play Store.
 
-1. Run the [Release - Production Action](https://github.com/mobilestack-xyz/mobilestack-mento/actions/workflows/release-production.yml) against the `main` branch
-1. Download and unzip the android bundle which you can find in the build logs under android => fastlane-android (mainnet) => Upload Android build artifacts.
-1. Navigate to [Internal Testing on the Google Play Console](https://play.google.com/console/u/0/developers/5695387721434163201/app/4974536396935190989/tracks/internal-testing) (Reach out to Silas or Jacob if you need access) and click `Create new release`. Upload the app bundle that you just dowloaded and unzipped and click `Next`. Click `Save and Publish` on the next screen.
-1. You're done! Internal testers should be able to download the latest version of Mento on their android devices.
+1. Run the release workflow against the `main` branch
+2. Download and unzip the Android bundle from the build artifacts
+3. Navigate to Internal Testing on the Google Play Console and click `Create new release`. Upload the app bundle and click `Next`, then `Save and Publish`.
+4. Internal testers should be able to download the latest version on their Android devices.
 
-## iOS - (Testflight)
+## iOS - (TestFlight)
 
-iOS builds can be manually released by running the `Release - Production` workflow.
+iOS builds are released via TestFlight after running the release workflow.
 
-1. Run the [Release - Production Action](https://github.com/mobilestack-xyz/mobilestack-mento/actions/workflows/release-production.yml) against the `main` branch
-1. You're done! Users that have access to [Mento in Testflight](https://appstoreconnect.apple.com/teams/dcfc5c64-36b5-46a2-af36-84acc93d2b62/apps/6738967491/testflight/ios) will autmatically recieve the latest build on their iOS device.
+1. Run the release workflow against the `main` branch
+2. TestFlight users will automatically receive the latest build on their iOS devices.
+
+## Quick Release
+
+```bash
+# 1. Bump version
+yarn version --patch
+
+# 2. Push (triggers CI/CD automatically)
+git push origin main --follow-tags
+```
+
+See [release-process.md](release-process.md) and [ci-cd.md](ci-cd.md) for detailed release procedures.
