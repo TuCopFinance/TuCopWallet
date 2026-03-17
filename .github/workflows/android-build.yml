@@ -22,7 +22,7 @@ on:
         type: choice
         options:
           - mainnet
-          - alfajores
+          - testnet
       upload_to_store:
         description: 'Upload to Play Store'
         required: false
@@ -40,8 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "alfajores"]') }}
-    
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "testnet"]') }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
           if [ "${{ matrix.environment }}" = "mainnet" ]; then
             cp .env.mainnet .env
           else
-            cp .env.alfajores .env
+            cp .env.testnet .env
           fi
 
       - name: Set build number
@@ -113,10 +113,10 @@ jobs:
           echo "📱 Target SDK: 35 (Android 15)"
           echo "☕ Java version: $(java -version 2>&1 | head -n 1)"
           echo "🐘 Gradle version: $(./gradlew --version | grep Gradle)"
-          
+
           # Clean previous builds
           ./gradlew clean
-          
+
           # Build the bundle
           ./gradlew bundle${{ matrix.environment }}Release \
             -x generateAutolinkingPackageList \
@@ -187,7 +187,7 @@ jobs:
       - name: Notify server about new build
         run: |
           ANDROID_SUCCESS="${{ needs.build-android.result == 'success' }}"
-          
+
           curl -X POST "${{ secrets.RAILWAY_API_URL }}/api/update-version" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
@@ -202,7 +202,7 @@ jobs:
               "branch": "${{ github.ref_name }}",
               "artifacts": {
                 "mainnet": true,
-                "alfajores": true
+                "testnet": true
               }
             }' || echo "⚠️ Server notification failed but continuing..."
 
@@ -214,12 +214,12 @@ jobs:
           channel: '#builds'
           text: |
             🚀 *Tu Cop Wallet Android Build*
-            
+
             *Version:* ${{ steps.version.outputs.version }}
             *Status:* ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }}
             *Environment:* Android 15 (API 35)
             *Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}[0:7]>
-            
+
             ${{ needs.build-android.result == 'success' && '📦 Bundles ready for deployment' || '🔍 Check logs for build errors' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
