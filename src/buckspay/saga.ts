@@ -1,0 +1,142 @@
+import { PayloadAction } from '@reduxjs/toolkit'
+import { checkUserExists, getTransactionStatus, submitTransaction } from 'src/buckspay/api'
+import {
+  apiSubmitted,
+  checkUserComplete,
+  checkUserStart,
+  cryptoSent,
+  offrampError,
+  offrampStart,
+  statusUpdated,
+} from 'src/buckspay/slice'
+import { BankDetails } from 'src/buckspay/types'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
+import { sendPreparedTransactions } from 'src/viem/saga'
+import { walletAddressSelector } from 'src/web3/selectors'
+import { BUCKSPAY_CELO_NETWORK_ID } from 'src/web3/networkConfig'
+import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
+import { call, delay, put, select, takeLeading } from 'typed-redux-saga'
+
+const TAG = 'buckspay/saga'
+const STATUS_POLL_INTERVAL = 10_000 // 10 seconds
+const STATUS_POLL_TIMEOUT = 30 * 60_000 // 30 minutes
+
+function* checkUserRegistrationSaga() {
+  try {
+    const walletAddress: string | null = yield* select(walletAddressSelector)
+    if (!walletAddress) {
+      Logger.warn(TAG, 'No wallet address found')
+      yield* put(checkUserComplete())
+      return
+    }
+
+    const result = yield* call(checkUserExists, walletAddress)
+
+    if (result.exists) {
+      Logger.info(TAG, 'User is registered on BucksPay')
+      yield* put(checkUserComplete())
+      navigate(Screens.BucksPayBankForm)
+    } else {
+      Logger.info(TAG, 'User not registered, opening WebView')
+      yield* put(checkUserComplete())
+      navigate(Screens.WebViewScreen, { uri: 'https://app.buckspay.xyz/' })
+    }
+  } catch (error) {
+    Logger.warn(TAG, 'User check failed, falling back to WebView', error)
+    yield* put(checkUserComplete())
+    navigate(Screens.WebViewScreen, { uri: 'https://app.buckspay.xyz/' })
+  }
+}
+
+function* offrampSaga(action: PayloadAction<{ bankDetails: BankDetails }>) {
+  const { bankDetails } = action.payload
+
+  try {
+    const walletAddress: string | null = yield* select(walletAddressSelector)
+    if (!walletAddress) {
+      throw new Error('No wallet address')
+    }
+
+    // Step 1: Send CCOP to BucksPay wallet
+    Logger.info(TAG, 'Sending crypto to BucksPay wallet')
+    // The prepared transactions are passed via navigation params to the saga
+    // We get them from the confirm screen which prepares them
+    const state = yield* select()
+    const preparedTxs = (state as any)._bucksPayPreparedTxs
+    if (!preparedTxs || preparedTxs.length === 0) {
+      throw new Error('No prepared transactions')
+    }
+
+    const txHashes = yield* call(
+      sendPreparedTransactions,
+      preparedTxs,
+      NetworkId['celo-mainnet'],
+      []
+    )
+
+    const txHash = txHashes[txHashes.length - 1]
+    if (!txHash) {
+      throw new Error('No transaction hash returned')
+    }
+
+    yield* put(cryptoSent({ transactionHash: txHash }))
+    navigate(Screens.BucksPayStatus)
+
+    // Step 2: Submit to BucksPay API
+    Logger.info(TAG, 'Submitting to BucksPay API')
+    const apiResult = yield* call(submitTransaction, {
+      address: walletAddress,
+      trxHash: txHash,
+      network: BUCKSPAY_CELO_NETWORK_ID,
+      type: 'transfer',
+      number: bankDetails.accountNumber,
+      bankName: bankDetails.bankName,
+      bankCountry: bankDetails.bankCountry || 'Colombia',
+      nationalCurrency: 'COP',
+    })
+
+    yield* put(apiSubmitted({ code: apiResult.code }))
+
+    // Step 3: Poll for status
+    Logger.info(TAG, 'Starting status polling')
+    const startTime = Date.now()
+
+    while (Date.now() - startTime < STATUS_POLL_TIMEOUT) {
+      yield* delay(STATUS_POLL_INTERVAL)
+
+      try {
+        const statusResult = yield* call(getTransactionStatus, txHash)
+
+        if (statusResult.status === 'NOT_FOUND') {
+          continue
+        }
+
+        yield* put(
+          statusUpdated({
+            status: statusResult.status as any,
+            certificateUrl: statusResult.transaction?.certificate,
+          })
+        )
+
+        if (statusResult.status === 'FINISHED') {
+          Logger.info(TAG, 'Transaction finished')
+          return
+        }
+      } catch (pollError) {
+        Logger.warn(TAG, 'Status poll error, will retry', pollError)
+      }
+    }
+
+    Logger.warn(TAG, 'Status polling timed out')
+  } catch (error: any) {
+    Logger.error(TAG, 'Offramp failed', error)
+    yield* put(offrampError(error.message || 'Unknown error'))
+  }
+}
+
+export function* bucksPaySaga() {
+  yield* takeLeading(checkUserStart.type, checkUserRegistrationSaga)
+  yield* takeLeading(offrampStart.type, offrampSaga)
+}

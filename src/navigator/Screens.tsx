@@ -112,6 +112,10 @@ export enum Screens {
   WithdrawSpend = 'WithdrawSpend',
   MarranitoStaking = 'MarranitoStaking',
   MarranitosMyStakes = 'MarranitosMyStakes',
+  SelectOfframpProvider = 'SelectOfframpProvider',
+  BucksPayBankForm = 'BucksPayBankForm',
+  BucksPayConfirm = 'BucksPayConfirm',
+  BucksPayStatus = 'BucksPayStatus',
 }
 
 export const MarranitoStaking = 'MarranitoStaking'
