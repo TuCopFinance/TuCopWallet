@@ -127,6 +127,10 @@ import VerificationCodeInputScreen from 'src/verify/VerificationCodeInputScreen'
 import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
+import BucksPayBankForm from 'src/buckspay/BucksPayBankForm'
+import BucksPayConfirm from 'src/buckspay/BucksPayConfirm'
+import BucksPayStatus from 'src/buckspay/BucksPayStatus'
+import SelectOfframpProvider from 'src/fiatExchanges/SelectOfframpProvider'
 import WebViewScreen from 'src/webview/WebViewScreen'
 
 const TAG = 'Navigator'
@@ -614,6 +618,27 @@ const pointsScreens = (Navigator: typeof Stack) => (
     <Navigator.Screen name={Screens.PointsIntro} component={PointsIntro} options={noHeader} />
   </>
 )
+const bucksPayScreens = (Navigator: typeof Stack) => (
+  <>
+    <Navigator.Screen
+      name={Screens.SelectOfframpProvider}
+      component={SelectOfframpProvider}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.BucksPayBankForm}
+      component={BucksPayBankForm}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.BucksPayConfirm}
+      component={BucksPayConfirm}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen name={Screens.BucksPayStatus} component={BucksPayStatus} options={noHeader} />
+  </>
+)
+
 const mapStateToProps = (state: RootState) => {
   return {
     language: currentLanguageSelector(state),
@@ -668,6 +693,7 @@ function MainStackScreen() {
       {nftScreens(Stack)}
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
+      {bucksPayScreens(Stack)}
       <Stack.Screen
         name={Screens.MarranitoStaking}
         component={MarranitoStaking}
