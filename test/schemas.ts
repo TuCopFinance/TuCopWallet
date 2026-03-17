@@ -3602,6 +3602,21 @@ export const v238Schema = {
   },
 }
 
+export const v239Schema = {
+  ...v238Schema,
+  _persist: {
+    ...v238Schema._persist,
+    version: 239,
+  },
+  buckspay: {
+    ...v238Schema.buckspay,
+    flowStatus: 'tracking',
+    transactionHash: '0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe',
+    bucksPayCode: 'P5Y1',
+    bucksPayStatus: 'PENDING',
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v238Schema as Partial<RootState>
+  return v239Schema as Partial<RootState>
 }
