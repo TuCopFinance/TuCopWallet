@@ -47,12 +47,14 @@ function SelectOfframpProvider() {
             onPress={provider.onPress}
             testID={`offramp-provider-${provider.id}`}
           >
-            <Image source={provider.logo} style={styles.providerLogo} resizeMode="contain" />
-            <View style={styles.providerInfo}>
-              <Text style={styles.providerName}>{provider.name}</Text>
-              <Text style={styles.providerDescription}>{t(provider.descriptionKey)}</Text>
+            <View style={styles.providerRow}>
+              <Image source={provider.logo} style={styles.providerLogo} resizeMode="contain" />
+              <View style={styles.providerInfo}>
+                <Text style={styles.providerName}>{provider.name}</Text>
+                <Text style={styles.providerDescription}>{t(provider.descriptionKey)}</Text>
+              </View>
+              <Text style={styles.chevron}>{'>'}</Text>
             </View>
-            <Text style={styles.chevron}>{'>'}</Text>
           </Touchable>
         ))}
       </View>
@@ -80,13 +82,15 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Thick24,
   },
   providerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: Spacing.Regular16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.gray2,
     backgroundColor: Colors.white,
+  },
+  providerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   providerLogo: {
     width: 40,

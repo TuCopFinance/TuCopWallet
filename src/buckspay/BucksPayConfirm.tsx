@@ -1,17 +1,25 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React from 'react'
+import BigNumber from 'bignumber.js'
+import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { offrampStart } from 'src/buckspay/slice'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { InLineNotification, NotificationVariant } from 'src/components/InLineNotification'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { useDispatch } from 'src/redux/hooks'
+import { useDispatch, useSelector } from 'src/redux/hooks'
+import { usePrepareSendTransactions } from 'src/send/usePrepareSendTransactions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { useCOPm } from 'src/tokens/hooks'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
+import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { BUCKSPAY_RECEIVER_ADDRESS } from 'src/web3/networkConfig'
+import { walletAddressSelector } from 'src/web3/selectors'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.BucksPayConfirm>
 
@@ -20,10 +28,62 @@ function BucksPayConfirm({ route }: Props) {
   const dispatch = useDispatch()
   const { amount, bankDetails } = route.params
 
+  const walletAddress = useSelector(walletAddressSelector)
+  const copmToken = useCOPm()
+  const feeCurrencies = useSelector((state) =>
+    feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
+  )
+
+  const {
+    prepareTransactionsResult,
+    refreshPreparedTransactions,
+    prepareTransactionError,
+    prepareTransactionLoading,
+  } = usePrepareSendTransactions()
+
+  useEffect(() => {
+    if (walletAddress && copmToken) {
+      refreshPreparedTransactions({
+        amount: new BigNumber(amount),
+        token: copmToken,
+        recipientAddress: BUCKSPAY_RECEIVER_ADDRESS,
+        walletAddress,
+        feeCurrencies,
+      })
+    }
+  }, [walletAddress, copmToken, amount])
+
+  const isPossible = prepareTransactionsResult?.type === 'possible'
+  const isNotEnoughGas = prepareTransactionsResult?.type === 'not-enough-balance-for-gas'
+  const isNeedDecrease = prepareTransactionsResult?.type === 'need-decrease-spend-amount-for-gas'
+  const disableConfirm = !isPossible || prepareTransactionLoading
+
+  const errorMessage = useMemo(() => {
+    if (prepareTransactionError) {
+      return t('buckspay.errorPreparingTransaction')
+    }
+    if (isNotEnoughGas) {
+      return t('buckspay.notEnoughGas')
+    }
+    if (isNeedDecrease) {
+      return t('buckspay.needDecreaseAmount')
+    }
+    return null
+  }, [prepareTransactionError, isNotEnoughGas, isNeedDecrease, t])
+
   function onPressConfirm() {
+    if (prepareTransactionsResult?.type !== 'possible') {
+      return
+    }
+
+    const serializedTxs = getSerializablePreparedTransactions(
+      prepareTransactionsResult.transactions
+    )
+
     dispatch(
       offrampStart({
         bankDetails,
+        preparedTransactions: serializedTxs,
       })
     )
   }
@@ -46,7 +106,18 @@ function BucksPayConfirm({ route }: Props) {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>{t('buckspay.accountNumberLabel')}</Text>
+            <Text style={styles.rowLabel}>{t('buckspay.accountTypeLabel')}</Text>
+            <Text style={styles.rowValue}>
+              {t(`buckspay.accountType_${bankDetails.accountType}`)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>
+              {bankDetails.accountType === 'nequi'
+                ? t('buckspay.phoneNumberLabel')
+                : t('buckspay.accountNumberLabel')}
+            </Text>
             <Text style={styles.rowValue}>{bankDetails.accountNumber}</Text>
           </View>
           <View style={styles.divider} />
@@ -62,6 +133,21 @@ function BucksPayConfirm({ route }: Props) {
             </Text>
           </View>
         </View>
+
+        {prepareTransactionLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={Colors.primary} />
+            <Text style={styles.loadingText}>{t('buckspay.preparingTransaction')}</Text>
+          </View>
+        )}
+
+        {errorMessage && (
+          <InLineNotification
+            variant={NotificationVariant.Error}
+            description={errorMessage}
+            style={styles.errorNotification}
+          />
+        )}
       </View>
 
       <View style={styles.buttonContainer}>
@@ -70,6 +156,8 @@ function BucksPayConfirm({ route }: Props) {
           text={t('buckspay.confirm')}
           type={BtnTypes.PRIMARY}
           size={BtnSizes.FULL}
+          disabled={disableConfirm}
+          showLoading={prepareTransactionLoading}
           testID="buckspay-confirm-button"
         />
       </View>
@@ -127,6 +215,20 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     padding: Spacing.Thick24,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.Regular16,
+    gap: Spacing.Smallest8,
+  },
+  loadingText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+  },
+  errorNotification: {
+    marginTop: Spacing.Regular16,
   },
 })
 

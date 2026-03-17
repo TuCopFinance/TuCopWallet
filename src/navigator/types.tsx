@@ -342,6 +342,7 @@ export type StackParamList = {
     bankDetails: {
       bankName: string
       accountNumber: string
+      accountType: 'savings' | 'checking' | 'nequi'
       bankCountry: string
     }
   }

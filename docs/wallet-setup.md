@@ -88,14 +88,15 @@ xcrun simctl launch <SIMULATOR_ID> org.tucop
 
 ### iOS Build Schemes
 
-| Scheme                     | Network                | Use for                 |
-| -------------------------- | ---------------------- | ----------------------- |
-| `MobileStack-alfajoresdev` | Celo Sepolia (testnet) | **Primary development** |
-| `MobileStack-alfajores`    | Celo Sepolia (testnet) | Testing                 |
-| `MobileStack-mainnet`      | Celo mainnet           | Production              |
-| `MobileStack-mainnetdev`   | Celo mainnet           | Advanced testing        |
+| Scheme                     | Network                | Display Name             | Use for                 |
+| -------------------------- | ---------------------- | ------------------------ | ----------------------- |
+| `MobileStack-alfajoresdev` | Celo Sepolia (testnet) | TuCop (Celo Sepolia dev) | **Primary development** |
+| `MobileStack-alfajores`    | Celo Sepolia (testnet) | TuCop Celo Sepolia       | Testing                 |
+| `MobileStack-mainnet`      | Celo mainnet           | TuCop                    | Production              |
+| `MobileStack-mainnetdev`   | Celo mainnet           | TuCop (dev)              | Advanced testing        |
 
-> Note: Scheme names still reference "alfajores" for legacy reasons. The actual testnet is Celo Sepolia.
+> **Testnet**: Celo Sepolia (chain ID 11142220). Scheme names still use "alfajores" for legacy reasons — a full rename is planned.
+> Reference: [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)
 
 ## Debugging
 

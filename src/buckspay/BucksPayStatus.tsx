@@ -15,6 +15,8 @@ import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { navigateHome } from 'src/navigator/NavigationService'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
+import { NetworkId } from 'src/transactions/types'
+import { blockExplorerUrls } from 'src/web3/networkConfig'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
@@ -54,6 +56,13 @@ function BucksPayStatus() {
   function onPressViewReceipt() {
     if (certificateUrl) {
       Linking.openURL(certificateUrl)
+    }
+  }
+
+  function onPressTransactionHash() {
+    if (transactionHash) {
+      const explorerUrl = blockExplorerUrls[NetworkId['celo-mainnet']].baseTxUrl
+      Linking.openURL(`${explorerUrl}${transactionHash}`)
     }
   }
 
@@ -110,7 +119,12 @@ function BucksPayStatus() {
         {transactionHash && (
           <View style={styles.txHashContainer}>
             <Text style={styles.txHashLabel}>{t('buckspay.transactionHash')}</Text>
-            <Text style={styles.txHashValue} numberOfLines={1} ellipsizeMode="middle">
+            <Text
+              style={styles.txHashLink}
+              numberOfLines={1}
+              ellipsizeMode="middle"
+              onPress={onPressTransactionHash}
+            >
               {transactionHash}
             </Text>
           </View>
@@ -225,9 +239,10 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
     marginBottom: Spacing.Tiny4,
   },
-  txHashValue: {
+  txHashLink: {
     ...typeScale.bodyXSmall,
-    color: Colors.black,
+    color: Colors.primary,
+    textDecorationLine: 'underline',
   },
   buttonContainer: {
     padding: Spacing.Thick24,

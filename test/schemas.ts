@@ -3585,6 +3585,23 @@ export const v237Schema = {
   identity: _.omit(v236Schema.identity, 'hasSeenVerificationNux'),
 }
 
+export const v238Schema = {
+  ...v237Schema,
+  _persist: {
+    ...v237Schema._persist,
+    version: 238,
+  },
+  buckspay: {
+    flowStatus: 'idle',
+    lastBankDetails: null,
+    transactionHash: null,
+    bucksPayCode: null,
+    bucksPayStatus: null,
+    certificateUrl: null,
+    error: null,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v237Schema as Partial<RootState>
+  return v238Schema as Partial<RootState>
 }

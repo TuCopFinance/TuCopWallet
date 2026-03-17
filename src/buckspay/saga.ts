@@ -7,23 +7,27 @@ import {
   cryptoSent,
   offrampError,
   offrampStart,
+  resetFlow,
   statusUpdated,
 } from 'src/buckspay/slice'
-import { BankDetails } from 'src/buckspay/types'
+import { BankDetails, BucksPayTransactionStatus } from 'src/buckspay/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { BUCKSPAY_CELO_NETWORK_ID } from 'src/web3/networkConfig'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
-import { call, delay, put, select, takeLeading } from 'typed-redux-saga'
+import { call, cancelled, delay, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
 const TAG = 'buckspay/saga'
 const STATUS_POLL_INTERVAL = 10_000 // 10 seconds
 const STATUS_POLL_TIMEOUT = 30 * 60_000 // 30 minutes
+const API_SUBMIT_MAX_RETRIES = 3
+const API_SUBMIT_RETRY_DELAY = 5_000 // 5 seconds
 
-function* checkUserRegistrationSaga() {
+export function* checkUserRegistrationSaga() {
   try {
     const walletAddress: string | null = yield* select(walletAddressSelector)
     if (!walletAddress) {
@@ -50,8 +54,74 @@ function* checkUserRegistrationSaga() {
   }
 }
 
-function* offrampSaga(action: PayloadAction<{ bankDetails: BankDetails }>) {
-  const { bankDetails } = action.payload
+function* submitWithRetry(walletAddress: string, txHash: string, bankDetails: BankDetails) {
+  let lastError: Error | null = null
+
+  for (let attempt = 1; attempt <= API_SUBMIT_MAX_RETRIES; attempt++) {
+    try {
+      Logger.info(TAG, `Submitting to BucksPay API (attempt ${attempt}/${API_SUBMIT_MAX_RETRIES})`)
+      const apiResult = yield* call(submitTransaction, {
+        address: walletAddress,
+        trxHash: txHash,
+        network: BUCKSPAY_CELO_NETWORK_ID,
+        type: 'transfer',
+        number: bankDetails.accountNumber,
+        bankName: bankDetails.bankName,
+        bankCountry: bankDetails.bankCountry || 'Colombia',
+        nationalCurrency: 'COP',
+      })
+      return apiResult
+    } catch (error: any) {
+      lastError = error
+      Logger.warn(TAG, `API submit attempt ${attempt} failed`, error)
+      if (attempt < API_SUBMIT_MAX_RETRIES) {
+        yield* delay(API_SUBMIT_RETRY_DELAY * attempt)
+      }
+    }
+  }
+
+  throw lastError ?? new Error('API submit failed after retries')
+}
+
+function* pollStatusSaga(txHash: string) {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < STATUS_POLL_TIMEOUT) {
+    yield* delay(STATUS_POLL_INTERVAL)
+
+    try {
+      const statusResult = yield* call(getTransactionStatus, txHash)
+
+      if (statusResult.status === 'NOT_FOUND') {
+        continue
+      }
+
+      yield* put(
+        statusUpdated({
+          status: statusResult.status as BucksPayTransactionStatus,
+          certificateUrl: statusResult.transaction?.certificate,
+        })
+      )
+
+      if (statusResult.status === 'FINISHED') {
+        Logger.info(TAG, 'Transaction finished')
+        return
+      }
+    } catch (pollError) {
+      Logger.warn(TAG, 'Status poll error, will retry', pollError)
+    }
+  }
+
+  Logger.warn(TAG, 'Status polling timed out')
+}
+
+export function* offrampSaga(
+  action: PayloadAction<{
+    bankDetails: BankDetails
+    preparedTransactions: SerializableTransactionRequest[]
+  }>
+) {
+  const { bankDetails, preparedTransactions } = action.payload
 
   try {
     const walletAddress: string | null = yield* select(walletAddressSelector)
@@ -59,21 +129,18 @@ function* offrampSaga(action: PayloadAction<{ bankDetails: BankDetails }>) {
       throw new Error('No wallet address')
     }
 
-    // Step 1: Send CCOP to BucksPay wallet
-    Logger.info(TAG, 'Sending crypto to BucksPay wallet')
-    // The prepared transactions are passed via navigation params to the saga
-    // We get them from the confirm screen which prepares them
-    const state = yield* select()
-    const preparedTxs = (state as any)._bucksPayPreparedTxs
-    if (!preparedTxs || preparedTxs.length === 0) {
+    if (!preparedTransactions || preparedTransactions.length === 0) {
       throw new Error('No prepared transactions')
     }
 
+    // Step 1: Send COPm to BucksPay wallet
+    Logger.info(TAG, 'Sending crypto to BucksPay wallet')
+
     const txHashes = yield* call(
       sendPreparedTransactions,
-      preparedTxs,
+      preparedTransactions,
       NetworkId['celo-mainnet'],
-      []
+      preparedTransactions.map(() => () => null)
     )
 
     const txHash = txHashes[txHashes.length - 1]
@@ -84,55 +151,22 @@ function* offrampSaga(action: PayloadAction<{ bankDetails: BankDetails }>) {
     yield* put(cryptoSent({ transactionHash: txHash }))
     navigate(Screens.BucksPayStatus)
 
-    // Step 2: Submit to BucksPay API
-    Logger.info(TAG, 'Submitting to BucksPay API')
-    const apiResult = yield* call(submitTransaction, {
-      address: walletAddress,
-      trxHash: txHash,
-      network: BUCKSPAY_CELO_NETWORK_ID,
-      type: 'transfer',
-      number: bankDetails.accountNumber,
-      bankName: bankDetails.bankName,
-      bankCountry: bankDetails.bankCountry || 'Colombia',
-      nationalCurrency: 'COP',
-    })
-
+    // Step 2: Submit to BucksPay API (with retry)
+    const apiResult = yield* call(submitWithRetry, walletAddress, txHash, bankDetails)
     yield* put(apiSubmitted({ code: apiResult.code }))
 
-    // Step 3: Poll for status
-    Logger.info(TAG, 'Starting status polling')
-    const startTime = Date.now()
-
-    while (Date.now() - startTime < STATUS_POLL_TIMEOUT) {
-      yield* delay(STATUS_POLL_INTERVAL)
-
-      try {
-        const statusResult = yield* call(getTransactionStatus, txHash)
-
-        if (statusResult.status === 'NOT_FOUND') {
-          continue
-        }
-
-        yield* put(
-          statusUpdated({
-            status: statusResult.status as any,
-            certificateUrl: statusResult.transaction?.certificate,
-          })
-        )
-
-        if (statusResult.status === 'FINISHED') {
-          Logger.info(TAG, 'Transaction finished')
-          return
-        }
-      } catch (pollError) {
-        Logger.warn(TAG, 'Status poll error, will retry', pollError)
-      }
-    }
-
-    Logger.warn(TAG, 'Status polling timed out')
+    // Step 3: Poll for status (cancellable via resetFlow)
+    yield* race({
+      poll: call(pollStatusSaga, txHash),
+      cancel: take(resetFlow.type),
+    })
   } catch (error: any) {
     Logger.error(TAG, 'Offramp failed', error)
     yield* put(offrampError(error.message || 'Unknown error'))
+  } finally {
+    if (yield* cancelled()) {
+      Logger.info(TAG, 'Offramp saga was cancelled')
+    }
   }
 }
 

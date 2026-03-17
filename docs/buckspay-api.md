@@ -517,18 +517,4 @@ PENDING → INPROGRESS → STARTED → PAYED → FINISHED
 
 ---
 
-## Integration Flow for TuCOP Wallet (Celo/COPm)
-
-> **Note**: BucksPay API uses "CCOP"/"ccop" as the crypto identifier. In the TuCOP app, this token is called **COPm** (renamed from cCOP).
-
-### Native Offramp Flow:
-
-1. **Check user**: `GET /external/check/{walletAddress}`
-   - If `exists: false` → redirect to BucksPay WebView for registration
-   - If `exists: true` → continue
-2. **Collect bank details**: Show form for bank name, account number, country (Colombia)
-3. **Send COPm**: Transfer COPm tokens to `0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0` on Celo (network 6)
-4. **Wait for confirmations**: Need at least 3 block confirmations
-5. **Submit transaction**: `POST /external/transaction` with trxHash, bank details, network=6
-6. **Track status**: Poll `GET /external/transaction/{trxHash}` for status updates
-7. **Webhook**: Receive completion notification at registered webhook URL
+> For TuCOP Wallet implementation details, architecture, and infrastructure setup, see [buckspay-implementation.md](buckspay-implementation.md).

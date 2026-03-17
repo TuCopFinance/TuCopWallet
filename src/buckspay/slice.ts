@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
 import { getRehydratePayload } from 'src/redux/persist-helper'
 import { BankDetails, BucksPayTransactionStatus } from 'src/buckspay/types'
+import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 
 export type BucksPayFlowStatus =
   | 'idle'
@@ -43,7 +44,13 @@ export const slice = createSlice({
     checkUserComplete: (state) => {
       state.flowStatus = 'idle'
     },
-    offrampStart: (state, action: PayloadAction<{ bankDetails: BankDetails }>) => {
+    offrampStart: (
+      state,
+      action: PayloadAction<{
+        bankDetails: BankDetails
+        preparedTransactions: SerializableTransactionRequest[]
+      }>
+    ) => {
       state.flowStatus = 'sending-crypto'
       state.lastBankDetails = action.payload.bankDetails
       state.error = null

@@ -240,6 +240,13 @@
   "backupQuizWordCountV1_83": "¿Cuál es la <0>{{wordNumber}}</0> palabra de tu Frase de recuperación?",
   "importBackupFailed": "No se pudo importar la cuenta",
   "backupQuizFailed": "La Frase de recuperación ingresada es incorrecta. Vuelve a intentarlo.",
+  "backupQuizSkip": {
+    "skip": "Saltar verificación bajo mi propio riesgo",
+    "title": "¿Saltar verificación?",
+    "message": "Si omites este paso, no verificarás que guardaste tu Frase de recuperación correctamente. Si pierdes acceso a tu billetera, podrías no poder recuperar tus fondos. ¿Estás seguro de que deseas continuar?",
+    "cancel": "Volver",
+    "confirm": "Saltar bajo mi riesgo"
+  },
   "invalidBackupPhrase": "La Frase de recuperación no es válida.",
   "invalidWordsInBackupPhrase": "Algunas palabras en la Frase de recuperación no son válidas: {{ invalidWords }}",
   "backupComplete": {
@@ -2996,10 +3003,16 @@
     "bankFormSubtitle": "Ingresa el monto y los datos de tu cuenta bancaria para recibir tus fondos.",
     "amountLabel": "Monto (COPm)",
     "amountPlaceholder": "Ingresa el monto",
-    "bankNameLabel": "Nombre del Banco",
+    "bankNameLabel": "Banco",
     "bankNamePlaceholder": "ej. Bancolombia",
+    "accountTypeLabel": "Tipo de Cuenta",
+    "accountType_savings": "Cuenta de Ahorros",
+    "accountType_checking": "Cuenta Corriente",
+    "accountType_nequi": "Nequi",
     "accountNumberLabel": "Número de Cuenta",
     "accountNumberPlaceholder": "Ingresa el número de cuenta",
+    "phoneNumberLabel": "Número de Celular",
+    "phoneNumberPlaceholder": "Ingresa el número de celular",
     "bankCountryLabel": "País",
     "continue": "Continuar",
     "confirmTitle": "Revisar y Confirmar",
@@ -3018,6 +3031,14 @@
     "status_INPROGRESS": "En Progreso",
     "status_STARTED": "Iniciado",
     "status_PAYED": "Pago Enviado",
-    "status_FINISHED": "Completado"
+    "status_FINISHED": "Completado",
+    "preparingTransaction": "Preparando transacción...",
+    "errorPreparingTransaction": "Error al preparar la transacción. Por favor intenta de nuevo.",
+    "notEnoughGas": "Saldo insuficiente para pagar las tarifas de red.",
+    "needDecreaseAmount": "El monto es muy alto. Reduce para cubrir las tarifas de red.",
+    "amountBelowMin": "El monto mínimo es {{min}} COPm",
+    "amountAboveMax": "El monto máximo es {{max}} COPm",
+    "insufficientBalance": "Saldo COPm insuficiente (disponible: {{balance}})",
+    "apiSubmitFailed": "Tu crypto fue enviada pero no pudimos registrar la transacción. Por favor contacta a soporte con tu hash de transacción."
   }
 }
