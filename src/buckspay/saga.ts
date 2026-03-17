@@ -8,8 +8,10 @@ import {
   offrampError,
   offrampStart,
   resetFlow,
+  resumeTracking,
   statusUpdated,
 } from 'src/buckspay/slice'
+import { bucksPayFlowStatusSelector, bucksPayTransactionHashSelector } from 'src/buckspay/selectors'
 import { BankDetails, BucksPayTransactionStatus } from 'src/buckspay/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -22,8 +24,8 @@ import Logger from 'src/utils/Logger'
 import { call, cancelled, delay, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
 const TAG = 'buckspay/saga'
-const STATUS_POLL_INTERVAL = 10_000 // 10 seconds
-const STATUS_POLL_TIMEOUT = 30 * 60_000 // 30 minutes
+const STATUS_POLL_INTERVAL = 30_000 // 30 seconds
+const STATUS_POLL_TIMEOUT = 24 * 60 * 60_000 // 24 hours
 const API_SUBMIT_MAX_RETRIES = 3
 const API_SUBMIT_RETRY_DELAY = 5_000 // 5 seconds
 
@@ -113,6 +115,7 @@ function* pollStatusSaga(txHash: string) {
   }
 
   Logger.warn(TAG, 'Status polling timed out')
+  throw new Error('POLLING_TIMEOUT')
 }
 
 export function* offrampSaga(
@@ -162,7 +165,8 @@ export function* offrampSaga(
     })
   } catch (error: any) {
     Logger.error(TAG, 'Offramp failed', error)
-    yield* put(offrampError(error.message || 'Unknown error'))
+    const errorKey = error.message === 'POLLING_TIMEOUT' ? 'buckspay.pollingTimeout' : undefined
+    yield* put(offrampError(errorKey || error.message || 'Unknown error'))
   } finally {
     if (yield* cancelled()) {
       Logger.info(TAG, 'Offramp saga was cancelled')
@@ -170,7 +174,31 @@ export function* offrampSaga(
   }
 }
 
+function* resumeTrackingSaga() {
+  const flowStatus = yield* select(bucksPayFlowStatusSelector)
+  const txHash = yield* select(bucksPayTransactionHashSelector)
+
+  if ((flowStatus === 'tracking' || flowStatus === 'submitting-to-api') && txHash) {
+    Logger.info(TAG, `Resuming tracking for tx ${txHash}`)
+    yield* put(resumeTracking())
+    navigate(Screens.BucksPayStatus)
+
+    try {
+      yield* race({
+        poll: call(pollStatusSaga, txHash),
+        cancel: take(resetFlow.type),
+      })
+    } catch (error: any) {
+      Logger.error(TAG, 'Resume tracking failed', error)
+      const errorKey = error.message === 'POLLING_TIMEOUT' ? 'buckspay.pollingTimeout' : undefined
+      yield* put(offrampError(errorKey || error.message || 'Unknown error'))
+    }
+  }
+}
+
 export function* bucksPaySaga() {
   yield* takeLeading(checkUserStart.type, checkUserRegistrationSaga)
   yield* takeLeading(offrampStart.type, offrampSaga)
+  // Check if there's an active flow to resume after app restart
+  yield* call(resumeTrackingSaga)
 }
