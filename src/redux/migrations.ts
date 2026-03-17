@@ -1999,4 +1999,10 @@ export const migrations = {
       bucksPayStatus: 'PENDING',
     },
   }),
+  240: (state: any) => {
+    // Migrate persisted state from deprecated Alfajores (celo-alfajores) to Celo Sepolia (celo-sepolia)
+    const stateStr = JSON.stringify(state)
+    const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
+    return JSON.parse(migratedStr)
+  },
 }
