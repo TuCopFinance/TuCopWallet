@@ -159,17 +159,7 @@ function TabHome(_props: Props) {
   }
 
   function onPressWithdraw() {
-    // navigate(Screens.FiatExchangeAmount, {
-    //   tokenId: COPmToken.tokenId,
-    //   flow: CICOFlow.CashOut,
-    //   tokenSymbol: COPmToken.symbol,
-    // })
-
-    navigate(Screens.WebViewScreen, {
-      uri: 'https://app.buckspay.xyz/',
-    })
-
-    // AppAnalytics.track(TabHomeEvents.withdraw)
+    navigate(Screens.SelectOfframpProvider)
   }
 
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
