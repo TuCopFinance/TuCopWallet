@@ -31,7 +31,7 @@ const _baseFeePerGas = parseGwei('1')
 const transactions = [
   {
     from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     data: '0x3d18b912',
     to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
   } as const,
@@ -111,7 +111,7 @@ const mockSwapDepositResponseBody = {
     ],
     dataProps: {
       swapTransaction: {
-        chainId: 44787,
+        chainId: 11142220,
         buyAmount: '994820',
         sellAmount: '1785876928077378476',
         buyTokenAddress: mockArbArbAddress,
@@ -184,7 +184,7 @@ const expectedSwapDepositPrepareTransactionsResult = {
     appFeePercentageIncludedInPrice: '0.6',
     buyAmount: '994820',
     buyTokenAddress: mockArbArbAddress,
-    chainId: 44787,
+    chainId: 11142220,
     data: '0x0',
     estimatedGasUse: '971972',
     estimatedPriceImpact: '0.0',

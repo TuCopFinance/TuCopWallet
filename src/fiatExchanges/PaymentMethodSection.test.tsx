@@ -29,7 +29,7 @@ const mockStore = createMockStore({
       [mockCusdTokenId]: {
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'cUSD',
         priceUsd: '1',
         balance: '10',
@@ -47,7 +47,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })

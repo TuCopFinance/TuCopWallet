@@ -25,7 +25,7 @@ const mockTokenInfo = {
   symbol: 'cUSD',
   address: mockCusdAddress,
   tokenId: mockCusdTokenId,
-  networkId: NetworkId['celo-alfajores'],
+  networkId: NetworkId['celo-sepolia'],
   isFeeCurrency: true,
   canTransferWithComment: true,
   priceFetchedAt: Date.now(),

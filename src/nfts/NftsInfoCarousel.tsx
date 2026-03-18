@@ -123,7 +123,7 @@ export default function NftsInfoCarousel({ route }: Props) {
     const tokenId = BigInt(activeNft.tokenId).toString()
     switch (networkId) {
       case NetworkId['celo-mainnet']:
-      case NetworkId['celo-alfajores']:
+      case NetworkId['celo-sepolia']:
         return `${blockExplorerUrls[networkId].baseNftUrl}${activeNft.contractAddress}/instance/${tokenId}/metadata`
       case NetworkId['ethereum-mainnet']:
       case NetworkId['ethereum-sepolia']:
@@ -150,7 +150,7 @@ export default function NftsInfoCarousel({ route }: Props) {
 
   const networkIdToExplorerString: Record<NetworkId, string> = {
     [NetworkId['celo-mainnet']]: t('nftInfoCarousel.viewOnCeloExplorer'),
-    [NetworkId['celo-alfajores']]: t('nftInfoCarousel.viewOnCeloExplorer'),
+    [NetworkId['celo-sepolia']]: t('nftInfoCarousel.viewOnCeloExplorer'),
     [NetworkId['ethereum-mainnet']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['ethereum-sepolia']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['arbitrum-one']]: t('viewOnArbiscan'),

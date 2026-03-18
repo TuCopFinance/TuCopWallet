@@ -31,7 +31,7 @@ describe('usePrepareJumpstartTransactions', () => {
     jest.clearAllMocks()
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        'celo-alfajores': {
+        'celo-sepolia': {
           contractAddress: jumpstartContractAddress,
           depositERC20GasEstimate: '300000',
         },

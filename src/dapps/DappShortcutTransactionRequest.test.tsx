@@ -44,7 +44,7 @@ describe('DappShortcutTransactionRequest', () => {
   const transactions = [
     {
       from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       data: '0x3d18b912',
       to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
     } as const,

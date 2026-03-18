@@ -35,10 +35,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-alfajores',
+        celo: 'celo-sepolia',
         ethereum: 'ethereum-sepolia',
       },
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -52,7 +52,7 @@ const mockTokens = {
     [mockCusdTokenId]: {
       address: mockCusdAddress,
       tokenId: mockCusdTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'cUSD',
       balance: '1000',
       priceUsd: '1',
@@ -62,7 +62,7 @@ const mockTokens = {
     [mockCeurTokenId]: {
       address: mockCeurAddress,
       tokenId: mockCeurTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'cEUR',
       balance: '100',
       priceUsd: '1.2',
@@ -72,7 +72,7 @@ const mockTokens = {
     [mockCeloTokenId]: {
       address: mockCeloAddress,
       tokenId: mockCeloTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'CELO',
       balance: '200',
       priceUsd: '5',

@@ -54,10 +54,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-alfajores',
+        celo: 'celo-sepolia',
         ethereum: 'ethereuim-sepolia',
       },
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -68,7 +68,7 @@ describe('TransferFeedItem', () => {
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        [NetworkId['celo-alfajores']]: {
+        [NetworkId['celo-sepolia']]: {
           contractAddress: mockJumpstartAdddress,
           retiredContractAddresses: [mockRetiredJumpstartAdddress],
         },
@@ -104,7 +104,7 @@ describe('TransferFeedItem', () => {
       <Provider store={store}>
         <TransferFeedItem
           transfer={{
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             type,
             status,
             transactionHash: MOCK_TX_HASH,
@@ -431,7 +431,7 @@ describe('TransferFeedItem', () => {
             [mockTestTokenTokenId]: {
               address: mockTestTokenAddress,
               tokenId: mockTestTokenTokenId,
-              networkId: NetworkId['celo-alfajores'],
+              networkId: NetworkId['celo-sepolia'],
               symbol: 'TT',
               balance: '50',
             },

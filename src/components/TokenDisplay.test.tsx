@@ -20,22 +20,22 @@ describe('TokenDisplay', () => {
       },
       tokens: {
         tokenBalances: {
-          ['celo-alfajores:0xusd']: {
+          ['celo-sepolia:0xusd']: {
             address: '0xusd',
-            tokenId: 'celo-alfajores:0xusd',
+            tokenId: 'celo-sepolia:0xusd',
             symbol: 'cUSD',
             balance: '50',
             priceUsd: '1',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             priceFetchedAt: Date.now(),
           },
-          ['celo-alfajores:0xeur']: {
+          ['celo-sepolia:0xeur']: {
             address: '0xeur',
-            tokenId: 'celo-alfajores:0xeur',
+            tokenId: 'celo-sepolia:0xeur',
             symbol: 'cEUR',
             balance: '50',
             priceUsd: '1.2',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             priceFetchedAt: Date.now(),
           },
           ['ethereum-sepolia:native']: {
@@ -59,7 +59,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -73,7 +73,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -101,7 +101,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={0.00000182421}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -116,7 +116,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -131,7 +131,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -164,7 +164,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             showExplicitPositiveSign={true}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -178,7 +178,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={-10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -189,7 +189,7 @@ describe('TokenDisplay', () => {
     it('shows a dash by default when the token doesnt exist', () => {
       const { getByTestId } = render(
         <Provider store={store()}>
-          <TokenDisplay amount={10} tokenId={'celo-alfajores:does-not-exist'} testID="test" />
+          <TokenDisplay amount={10} tokenId={'celo-sepolia:does-not-exist'} testID="test" />
         </Provider>
       )
       expect(getElementText(getByTestId('test'))).toEqual('-')
@@ -200,7 +200,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-alfajores:does-not-exist'}
+            tokenId={'celo-sepolia:does-not-exist'}
             testID="test"
             errorFallback="$ --"
           />
@@ -214,7 +214,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-alfajores:does-not-exist'}
+            tokenId={'celo-sepolia:does-not-exist'}
             localAmount={{
               currencyCode: LocalCurrencyCode.PHP,
               exchangeRate: '0.5',
@@ -234,7 +234,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             hideSign={true}
             amount={-10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             testID="test"
           />
         </Provider>
@@ -248,7 +248,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-alfajores:0xusd'}
+            tokenId={'celo-sepolia:0xusd'}
             showApprox={true}
             testID="test"
           />

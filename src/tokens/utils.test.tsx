@@ -206,12 +206,12 @@ describe(convertTokenToLocalAmount, () => {
 
 describe(getTokenId, () => {
   it('returns Celo native token correctly', () => {
-    const tokenId = getTokenId(NetworkId['celo-alfajores'], networkConfig.celoTokenAddress)
-    expect(tokenId).toEqual('celo-alfajores:native')
+    const tokenId = getTokenId(NetworkId['celo-sepolia'], networkConfig.celoTokenAddress)
+    expect(tokenId).toEqual('celo-sepolia:native')
   })
   it('returns normal Celo token correctly', () => {
-    const tokenId = getTokenId(NetworkId['celo-alfajores'], '0xsomeaddress')
-    expect(tokenId).toEqual('celo-alfajores:0xsomeaddress')
+    const tokenId = getTokenId(NetworkId['celo-sepolia'], '0xsomeaddress')
+    expect(tokenId).toEqual('celo-sepolia:0xsomeaddress')
   })
   it('returns Ethereum native token correctly', () => {
     const tokenId = getTokenId(NetworkId['ethereum-sepolia'])

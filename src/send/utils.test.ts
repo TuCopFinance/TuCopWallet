@@ -32,7 +32,7 @@ describe('send/utils', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-        showSend: [NetworkId['celo-alfajores']],
+        showSend: [NetworkId['celo-sepolia']],
       })
     })
 

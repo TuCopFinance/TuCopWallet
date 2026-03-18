@@ -75,9 +75,8 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
         style={
           [
             {
+              "alignSelf": "stretch",
               "borderRadius": 15,
-              "flexGrow": 1,
-              "width": "100%",
             },
             {},
           ]
@@ -153,6 +152,7 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
                     "flexDirection": "row",
                     "height": 48,
                     "justifyContent": "center",
+                    "maxHeight": 56,
                     "minWidth": 120,
                     "opacity": 1,
                     "paddingHorizontal": 24,
@@ -318,9 +318,8 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
         style={
           [
             {
+              "alignSelf": "stretch",
               "borderRadius": 15,
-              "flexGrow": 1,
-              "width": "100%",
             },
             {},
           ]
@@ -396,6 +395,7 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
                     "flexDirection": "row",
                     "height": 48,
                     "justifyContent": "center",
+                    "maxHeight": 56,
                     "minWidth": 120,
                     "opacity": 1,
                     "paddingHorizontal": 24,

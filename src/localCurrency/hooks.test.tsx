@@ -19,36 +19,36 @@ function createStore(usdToLocalRate: string | null = '2') {
   return createMockStore({
     tokens: {
       tokenBalances: {
-        'celo-alfajores:0xcUSD': {
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: 'celo-alfajores:0xcUSD',
+        'celo-sepolia:0xcUSD': {
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: 'celo-sepolia:0xcUSD',
           address: '0xcUSD',
           symbol: 'cUSD',
           balance: '0',
           priceUsd: '1',
           priceFetchedAt: Date.now(),
         },
-        'celo-alfajores:native': {
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: 'celo-alfajores:native',
+        'celo-sepolia:native': {
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: 'celo-sepolia:native',
           address: '0xCELO',
           symbol: 'CELO',
           balance: '0',
           priceUsd: '5',
           priceFetchedAt: Date.now(),
         },
-        'celo-alfajores:0xT1': {
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: 'celo-alfajores:0xT1',
+        'celo-sepolia:0xT1': {
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: 'celo-sepolia:0xT1',
           address: '0xT1',
           symbol: 'T1',
           balance: '0',
           priceUsd: '5',
           priceFetchedAt: Date.now(),
         },
-        'celo-alfajores:0xT2': {
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: 'celo-alfajores:0xT2',
+        'celo-sepolia:0xT2': {
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: 'celo-sepolia:0xT2',
           address: '0xT2',
           symbol: 'T2',
           priceUsd: '5',

@@ -15,7 +15,7 @@ export enum Network {
 
 export enum NetworkId {
   'celo-mainnet' = 'celo-mainnet',
-  'celo-alfajores' = 'celo-alfajores',
+  'celo-sepolia' = 'celo-sepolia',
   'ethereum-mainnet' = 'ethereum-mainnet',
   'ethereum-sepolia' = 'ethereum-sepolia',
   'arbitrum-one' = 'arbitrum-one',

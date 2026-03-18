@@ -11,7 +11,7 @@ import { createMockStore, getElementText } from 'test/utils'
 import { mockCusdAddress, mockCusdTokenId } from 'test/values'
 
 const mockBtcAddress = '0xbtc'
-const mockBtcTokenId = `celo-alfajores:${mockBtcAddress}`
+const mockBtcTokenId = `celo-sepolia:${mockBtcAddress}`
 
 const defaultAmount = new BigNumber(10)
 const defaultTokenId = mockCusdTokenId
@@ -47,7 +47,7 @@ describe('TokenTotalLineItem', () => {
           tokens: {
             tokenBalances: {
               [mockCusdTokenId]: {
-                networkId: NetworkId['celo-alfajores'],
+                networkId: NetworkId['celo-sepolia'],
                 address: mockCusdAddress,
                 tokenId: mockCusdTokenId,
                 symbol: 'cUSD',
@@ -56,7 +56,7 @@ describe('TokenTotalLineItem', () => {
                 priceFetchedAt: Date.now(),
               },
               [mockBtcTokenId]: {
-                networkId: NetworkId['celo-alfajores'],
+                networkId: NetworkId['celo-sepolia'],
                 address: mockBtcAddress,
                 tokenId: mockBtcTokenId,
                 symbol: 'WBTC',
