@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { checkUserStart } from 'src/buckspay/slice'
 import Touchable from 'src/components/Touchable'
@@ -10,6 +10,25 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 const BucksPayLogo = require('./buckspay-logo.png')
+
+const BUCKSPAY_SERVICE_START_HOUR = 8 // 8 AM Colombia time
+const BUCKSPAY_SERVICE_END_HOUR = 20 // 8 PM Colombia time
+
+function getColombiaTimeFormatted(): string {
+  return new Date().toLocaleTimeString('en-US', {
+    timeZone: 'America/Bogota',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function isBucksPayServiceAvailable(): boolean {
+  const now = new Date()
+  const colombiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+  const hour = colombiaTime.getHours()
+  return hour >= BUCKSPAY_SERVICE_START_HOUR && hour < BUCKSPAY_SERVICE_END_HOUR
+}
 
 interface OfframpProvider {
   id: string
@@ -30,6 +49,13 @@ function SelectOfframpProvider() {
       descriptionKey: 'buckspay.providerDescription',
       logo: BucksPayLogo,
       onPress: () => {
+        if (!isBucksPayServiceAvailable()) {
+          Alert.alert(
+            t('buckspay.outsideHoursTitle'),
+            t('buckspay.outsideHoursMessage', { currentTime: getColombiaTimeFormatted() })
+          )
+          return
+        }
         dispatch(checkUserStart())
       },
     },
