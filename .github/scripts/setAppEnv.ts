@@ -1,5 +1,5 @@
 // Add some app variables to the GITHUB_ENV from a given env name. For example:
-// yarn ts-node .github/scripts/setAppEnv.ts "alfajores"
+// yarn ts-node .github/scripts/setAppEnv.ts "testnet"
 
 import * as dotenv from 'dotenv'
 import { appendFileSync, existsSync } from 'fs'

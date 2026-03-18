@@ -1891,7 +1891,7 @@ describe('Fiatconnect saga', () => {
         expect(mockedSendPreparedTransactions).toHaveBeenCalledTimes(1)
         expect(mockedSendPreparedTransactions).toHaveBeenCalledWith(
           [serializablePreparedTransaction],
-          NetworkId['celo-alfajores'],
+          NetworkId['celo-sepolia'],
           expect.arrayContaining([expect.any(Function)])
         )
       }
@@ -2004,7 +2004,7 @@ describe('Fiatconnect saga', () => {
       const transactionHash = '0xabc'
       const transferId = 'transferId12345'
       const fiatAccountId = 'account1'
-      const networkId = NetworkId['celo-alfajores']
+      const networkId = NetworkId['celo-sepolia']
       const mockBaseSerializablePreparedTransaction: SerializableTransactionRequest = {
         gas: '51613',
         _baseFeePerGas: '25000000000',

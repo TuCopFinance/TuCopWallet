@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [mainnet, alfajores]
+        environment: [mainnet, testnet]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -124,7 +124,7 @@ jobs:
         with:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: true
-          
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -186,7 +186,7 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        environment: [mainnet, alfajores]
+        environment: [mainnet, testnet]
     steps:
       - uses: actions/checkout@v4
         with:
