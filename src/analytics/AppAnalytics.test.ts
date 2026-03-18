@@ -38,7 +38,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -56,7 +56,7 @@ const state = getMockStoreData({
       [mockCusdTokenId]: {
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'cUSD',
         priceUsd: '1',
         balance: '10',
@@ -66,7 +66,7 @@ const state = getMockStoreData({
       [mockCeurTokenId]: {
         address: mockCeurAddress,
         tokenId: mockCeurTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'cEUR',
         priceUsd: '1.2',
         balance: '20',
@@ -76,7 +76,7 @@ const state = getMockStoreData({
       [mockCeloTokenId]: {
         address: mockCeloAddress,
         tokenId: mockCeloTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'CELO',
         priceUsd: '5',
         balance: '0',
@@ -86,24 +86,24 @@ const state = getMockStoreData({
       [mockTestTokenTokenId]: {
         address: mockTestTokenAddress,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'TT',
         balance: '10',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xMOO': {
+      'celo-sepolia:0xMOO': {
         address: '0xMOO',
-        tokenId: 'celo-alfajores:0xMOO',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xMOO',
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'MOO',
         priceUsd: '4',
         balance: '0',
         priceFetchedAt: Date.now(),
       },
-      'celo-alfajores:0xUBE': {
+      'celo-sepolia:0xUBE': {
         address: '0xUBE',
-        tokenId: 'celo-alfajores:0xUBE',
-        networkId: NetworkId['celo-alfajores'],
+        tokenId: 'celo-sepolia:0xUBE',
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'UBE',
         priceUsd: '2',
         balance: '1',
@@ -161,17 +161,17 @@ const defaultSuperProperties = {
   sTokenCount: 4,
   sTopTenPositions: 'ubeswap-G$ / cUSD:4.08,ubeswap-MOO / CELO:2.51,ubeswap-CELO / cUSD:1.32',
   sTotalBalanceUsd: 36,
-  sTotalCeloAlfajoresBalanceUsd: 36,
+  sTotalCeloSepoliaBalanceUsd: 36,
   sTotalPositionsBalanceUsd: 7.910872728527196,
   sWalletAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
   sHasTokenBalance: true,
-  sHasCeloAlfajoresTokenBalance: true,
+  sHasCeloSepoliaTokenBalance: true,
   sPointsBalance: '50',
 }
 
 const defaultProperties = {
   ...defaultSuperProperties,
-  celoNetwork: 'alfajores',
+  celoNetwork: 'testnet',
   sessionId: expectedSessionId,
   timestamp: 1482363367071,
   userAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
@@ -209,7 +209,7 @@ describe('AppAnalytics', () => {
     mockStore.getState.mockImplementation(() => state)
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showBalances: [NetworkId['celo-alfajores']],
+      showBalances: [NetworkId['celo-sepolia']],
     })
   })
 

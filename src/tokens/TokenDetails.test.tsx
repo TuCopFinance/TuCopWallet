@@ -22,9 +22,9 @@ import {
 jest.mock('src/statsig', () => ({
   getMultichainFeatures: jest.fn(() => {
     return {
-      showCico: ['celo-alfajores', 'ethereum-sepolia'],
-      showSend: ['celo-alfajores', 'ethereum-sepolia'],
-      showSwap: ['celo-alfajores', 'ethereum-sepolia'],
+      showCico: ['celo-sepolia', 'ethereum-sepolia'],
+      showSend: ['celo-sepolia', 'ethereum-sepolia'],
+      showSwap: ['celo-sepolia', 'ethereum-sepolia'],
     }
   }),
   getFeatureGate: jest.fn().mockReturnValue(true),
@@ -474,7 +474,7 @@ describe('TokenDetails', () => {
             tokenId: mockTestTokenTokenId,
             balance: '10',
             isManuallyImported: true,
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             symbol: 'TT',
           },
         },

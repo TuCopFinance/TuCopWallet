@@ -72,19 +72,19 @@ platform :android do
     )
   end
 
-  desc 'Ship Alfajores to Playstore Internal'
-  lane :alfajores do
-    env = 'alfajores'
+  desc 'Ship Testnet to Playstore Internal'
+  lane :testnet do
+    env = 'testnet'
     build(environment: env)
     # upload(environment: env, track: 'internal')
   end
 
-  desc 'Ship Alfajores Nightly to Playstore Internal'
-  lane :alfajoresnightly do
-    env = 'alfajoresnightly'
+  desc 'Ship Testnet Nightly to Playstore Internal'
+  lane :testnetnightly do
+    env = 'testnetnightly'
     build(environment: env)
     # upload(environment: env, track: 'internal')
-  end 
+  end
 
   desc 'Ship Mainnet to Playstore Internal'
   lane :mainnet do
@@ -158,16 +158,16 @@ platform :ios do
     )
   end
 
-  desc 'Ship Alfajores to TestFlight'
-  lane :alfajores do
-    env = 'alfajores'
+  desc 'Ship Testnet to TestFlight'
+  lane :testnet do
+    env = 'testnet'
     build(environment: env)
     upload(environment: env)
   end
 
-  desc 'Ship Alfajores Nightly to TestFlight'
-  lane :alfajoresnightly do
-    env = 'alfajoresnightly'
+  desc 'Ship Testnet Nightly to TestFlight'
+  lane :testnetnightly do
+    env = 'testnetnightly'
     build(environment: env)
     upload(environment: env)
   end
