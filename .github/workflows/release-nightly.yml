@@ -35,7 +35,7 @@ jobs:
   #   uses: ./.github/workflows/release-fastlane-ios.yml
   #   with:
   #     branch: main
-  #     lanes: '["alfajoresnightly", "mainnetnightly"]'
+  #     lanes: '["testnetnightly", "mainnetnightly"]'
   #   secrets:
   #     gcp-service-account-key: ${{ secrets.GCP_MAINNET_RELEASE_AUTOMATION_SERVICE_ACCOUNT_KEY }}
 
@@ -45,7 +45,7 @@ jobs:
     uses: ./.github/workflows/release-fastlane-android.yml
     with:
       branch: main
-      lanes: '["alfajoresnightly", "mainnetnightly"]'
+      lanes: '["testnetnightly", "mainnetnightly"]'
     secrets:
       gcp-service-account-key: ${{ secrets.GCP_MAINNET_RELEASE_AUTOMATION_SERVICE_ACCOUNT_KEY }}
 
