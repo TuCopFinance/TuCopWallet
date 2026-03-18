@@ -407,7 +407,7 @@ describe('EnterAmount', () => {
     )
 
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('POOF')
-    expect(getByText('POOF on Celo Alfajores')).toBeTruthy()
+    expect(getByText('POOF on Celo Sepolia')).toBeTruthy()
     fireEvent.press(getByTestId('SendEnterAmount/TokenSelect'))
     await waitFor(() => expect(getByText('Ether')).toBeTruthy())
     fireEvent.press(getByText('Ether'))
@@ -846,7 +846,7 @@ describe('EnterAmount', () => {
       </Provider>
     )
     expect(queryByTestId('SendEnterAmount/Fee')).toBeFalsy()
-    expect(getByText('CELO on Celo Alfajores')).toBeTruthy()
+    expect(getByText('CELO on Celo Sepolia')).toBeTruthy()
 
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '8')
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '9')

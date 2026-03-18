@@ -594,7 +594,7 @@ describe('SwapScreen', () => {
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
     expect(
       getByText(
-        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Alfajores","tokenSymbol":"CELO","tokenAmount":"1"}'
+        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Sepolia","tokenSymbol":"CELO","tokenAmount":"1"}'
       )
     ).toBeTruthy()
   })
@@ -629,7 +629,7 @@ describe('SwapScreen', () => {
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
     expect(
       getByText(
-        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Alfajores","tokenSymbol":"CELO","tokenAmount":"1"}'
+        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Sepolia","tokenSymbol":"CELO","tokenAmount":"1"}'
       )
     ).toBeTruthy()
   })
@@ -1500,11 +1500,11 @@ describe('SwapScreen', () => {
     selectSingleSwapToken(swapFromContainer, 'cUSD', swapScreen, Field.FROM)
 
     expect(
-      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Celo Alfajores"}')
+      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Celo Sepolia"}')
     ).toBeTruthy()
     expect(
       getByText(
-        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Celo Alfajores","context":"swapTo"}'
+        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Celo Sepolia","context":"swapTo"}'
       )
     ).toBeTruthy()
   })
@@ -1849,7 +1849,7 @@ describe('SwapScreen', () => {
       fireEvent.press(within(tokenBottomSheet).getByText('tokenBottomSheet.filters.selectNetwork'))
 
       // select celo filter
-      fireEvent.press(within(networkMultiSelect).getByTestId('Celo Alfajores-icon'))
+      fireEvent.press(within(networkMultiSelect).getByTestId('Celo Sepolia-icon'))
 
       expectedCeloTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
