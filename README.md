@@ -7,7 +7,7 @@ TuCOP Wallet es una aplicación móvil React Native que proporciona servicios de
 - **Billetera Digital Completa**: Gestión de transacciones y pagos
 - **Sistema de Actualizaciones Inteligente**: Verificación automática desde backend propio
 - **CI/CD Automatizado**: Despliegue automático a Play Store y TestFlight
-- **Soporte Multi-Red**: Mainnet y Alfajores (Testnet)
+- **Soporte Multi-Red**: Mainnet y Celo Sepolia (Testnet)
 - **Arquitectura Moderna**: React Native con TypeScript
 
 ## 🛠️ Tecnologías
@@ -148,7 +148,7 @@ emulator -avd Pixel_API_29_AOSP_x86_64
 #### Android
 
 ```bash
-# Desarrollo (Alfajores testnet)
+# Desarrollo (Celo Sepolia testnet)
 yarn dev:android
 
 # Mainnet
@@ -161,7 +161,7 @@ yarn win:dev:android
 #### iOS
 
 ```bash
-# Desarrollo (Alfajores testnet)
+# Desarrollo (Celo Sepolia testnet)
 yarn dev:ios
 
 # Mainnet
@@ -172,13 +172,21 @@ yarn dev:ios:mainnet
 
 El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 
-#### **Esquemas por Red:**
+> **Testnet**: Celo Sepolia (chain ID 11142220). Alfajores está deprecado.
+> Referencia: [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)
 
-- **`MobileStack-alfajores`**: Red de prueba Alfajores
+#### **Esquemas Activos:**
 
-  - Nombre: "TuCop Alfajores"
-  - Red: Celo Alfajores (testnet)
+- **`MobileStack-alfajores`**: Celo Sepolia testnet (nombre legacy)
+
+  - Nombre: "TuCop Celo Sepolia"
   - Uso: Pruebas con tokens de testnet
+
+- **`MobileStack-alfajoresdev`**: Celo Sepolia testnet dev (nombre legacy) ⭐ **Recomendado**
+
+  - Nombre: "TuCop (Celo Sepolia dev)"
+  - Características: Configuración de desarrollo, sin Sentry
+  - Uso: **Desarrollo principal**
 
 - **`MobileStack-mainnet`**: Red principal de producción
 
@@ -186,33 +194,24 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
   - Red: Celo mainnet
   - Uso: Versión de producción
 
-- **`MobileStack-test`**: Configuración de pruebas
-  - Nombre: "Mento (test)"
-  - Uso: Pruebas de configuración
-
-#### **Esquemas de Desarrollo:**
-
-- **`MobileStack-alfajoresdev`**: Desarrollo en testnet ⭐ **Recomendado**
-
-  - Nombre: "TuCoP Wallet (Alfajores)"
-  - Red: Alfajores (testnet)
-  - Características: Configuración de desarrollo, sin Sentry
-  - Uso: **Desarrollo principal**
-
 - **`MobileStack-mainnetdev`**: Desarrollo en mainnet
 
-  - Red: Mainnet con configuración de desarrollo
+  - Nombre: "TuCop (dev)"
   - Uso: Pruebas avanzadas
 
-- **`MobileStack-*nightly`**: Builds automáticos nocturnos
+#### **Esquemas No Usados (marcados con sufijo "(unused)"):**
+
+- `MobileStack-alfajoresnightly (unused)` — CI nightly deshabilitado
+- `MobileStack-mainnetnightly (unused)` — CI nightly deshabilitado
+- `MobileStack-test (unused)` — configuración legacy de Mento
 
 #### **Selección de Esquema:**
 
-- **Para Desarrollo**: `MobileStack-alfajoresdev` (entorno seguro de testnet)
-- **Para Pruebas**: `MobileStack-alfajores` (testnet con configuración de producción)
+- **Para Desarrollo**: `MobileStack-alfajoresdev` (Celo Sepolia testnet)
+- **Para Pruebas**: `MobileStack-alfajores` (Celo Sepolia con configuración de producción)
 - **Para Producción**: `MobileStack-mainnet` (red real)
 
-Cada esquema carga un archivo `.env.*` correspondiente que configura endpoints, nombres y características.
+Cada esquema carga un archivo `.env.*` correspondiente. Los nombres de archivos aún usan "alfajores" por razones legacy — un renombrado completo está planeado.
 
 ## 🔧 Scripts Disponibles
 
@@ -309,7 +308,7 @@ git push origin main --follow-tags
 ### Lo que Sucede Automáticamente
 
 1. **GitHub Actions** detecta el cambio de versión
-2. **Compila** para Android e iOS (mainnet + alfajores)
+2. **Compila** para Android e iOS (mainnet + testnet)
 3. **Despliega** a Google Play Store (Internal) y TestFlight
 4. **Actualiza** el backend de Railway
 5. **Crea** GitHub Release automáticamente
@@ -317,7 +316,7 @@ git push origin main --follow-tags
 
 **Tiempo total**: 45-60 minutos (solo 5 minutos de trabajo manual)
 
-📖 **Guía Completa**: Ver [PROCESO-NUEVA-VERSION.md](./PROCESO-NUEVA-VERSION.md)
+📖 **Guía Completa**: Ver [docs/release-process.md](./docs/release-process.md)
 
 ## 🌐 URLs y Endpoints
 
@@ -508,8 +507,8 @@ Este proyecto está bajo la licencia MIT. Ver [LICENSE](./LICENSE) para más det
 - ✅ **Despliegue a Tiendas**: Automático
 - ✅ **Documentación**: Completa y actualizada
 
-**Versión Actual**: 1.103.0
-**Última Actualización**: Enero 2025
+**Versión Actual**: 1.116.0
+**Última Actualización**: Marzo 2026
 **Estado**: 🟢 Producción Estable
 
 ---

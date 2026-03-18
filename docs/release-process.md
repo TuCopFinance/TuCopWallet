@@ -70,8 +70,8 @@ yarn version --major
 
 ```json
 {
-  "name": "@valora/wallet",
-  "version": "1.103.0" // ← Cambiar aquí
+  "name": "tucop-wallet",
+  "version": "1.116.0" // ← Cambiar aquí
   // ...
 }
 ```
@@ -80,8 +80,8 @@ yarn version --major
 
 ```bash
 git add package.json
-git commit -m "chore: bump version to 1.103.0"
-git tag v1.103.0
+git commit -m "chore: bump version to 1.116.0"
+git tag v1.116.0
 ```
 
 ---
@@ -123,14 +123,14 @@ gh run view [run-id]
 
 ### 3. Build Android
 
-- ✅ Se compila para **mainnet** y **alfajores**
+- ✅ Se compila para **mainnet** y **testnet**
 - ✅ Se genera AAB (Android App Bundle)
 - ✅ Se sube a **Google Play Store (Internal Track)**
 - ✅ Se guarda artifact en GitHub
 
 ### 4. Build iOS
 
-- ✅ Se compila para **mainnet** y **alfajores**
+- ✅ Se compila para **mainnet** y **testnet**
 - ✅ Se genera IPA
 - ✅ Se sube a **TestFlight**
 - ✅ Se guarda artifact en GitHub
@@ -160,7 +160,7 @@ curl -H "X-Platform: android" -H "X-Bundle-ID: org.tucop" \
 
 # Respuesta esperada:
 # {
-#   "latestVersion": "1.103.0",
+#   "latestVersion": "1.116.0",
 #   "minRequiredVersion": "1.95.0",
 #   "isForced": false,
 #   "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop"
@@ -184,7 +184,7 @@ gh run view [run-id] --log
 gh release list
 
 # Ver detalles de un release
-gh release view v1.103.0
+gh release view v1.116.0
 ```
 
 ### 4. Verificar Deployments
@@ -211,7 +211,7 @@ gh release view v1.103.0
 
 ```bash
 # 1. Crear branch de hotfix
-git checkout -b hotfix/1.103.0
+git checkout -b hotfix/1.116.1
 
 # 2. Hacer cambios críticos
 # ... editar archivos ...
@@ -219,19 +219,19 @@ git add .
 git commit -m "fix: critical security issue"
 
 # 3. Push del hotfix
-git push origin hotfix/1.103.0
+git push origin hotfix/1.116.1
 
 # 4. Merge a main
 git checkout main
-git merge hotfix/1.103.0
+git merge hotfix/1.116.1
 
 # 5. Versionar y desplegar
 yarn version --patch
 git push origin main --follow-tags
 
 # 6. Limpiar branch
-git branch -d hotfix/1.103.0
-git push origin --delete hotfix/1.103.0
+git branch -d hotfix/1.116.1
+git push origin --delete hotfix/1.116.1
 ```
 
 ### Build Manual (Sin cambio de versión)
@@ -241,7 +241,7 @@ git push origin --delete hotfix/1.103.0
 gh api repos/:owner/:repo/dispatches \
   --method POST \
   --field event_type='auto-build' \
-  --field client_payload='{"version":"1.103.0","reason":"manual-build"}'
+  --field client_payload='{"version":"1.116.0","reason":"manual-build"}'
 ```
 
 ### Rollback de Versión

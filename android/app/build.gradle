@@ -55,9 +55,9 @@ react {
 
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
-    alfajoresnightly: ".env.alfajoresnightly",
-    alfajoresdev: ".env.alfajoresdev",
-    alfajores: ".env.alfajores",
+    testnetnightly: ".env.testnetnightly",
+    testnetdev: ".env.testnetdev",
+    testnet: ".env.testnet",
     mainnetnightly: ".env.mainnetnightly",
     mainnetdev: ".env.mainnetdev",
     mainnet: ".env.mainnet",
@@ -158,7 +158,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
-        versionName "1.108.0"
+        versionName "1.117.0"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
@@ -234,13 +234,13 @@ android {
     }
     flavorDimensions "default"
     productFlavors {
-        alfajores {
+        testnet {
             dimension "default"
         }
-        alfajoresdev {
+        testnetdev {
             dimension "default"
         }
-        alfajoresnightly {
+        testnetnightly {
             dimension "default"
         }
         mainnet {

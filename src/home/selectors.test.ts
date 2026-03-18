@@ -174,7 +174,7 @@ describe('nftCelebrationSelector', () => {
     const state = getMockStoreData({
       home: {
         nftCelebration: {
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           contractAddress: '0xTEST',
         },
       },
@@ -182,7 +182,7 @@ describe('nftCelebrationSelector', () => {
 
     const data = nftCelebrationSelector(state)
     expect(data).toEqual({
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       contractAddress: '0xTEST',
     })
   })

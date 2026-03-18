@@ -22,7 +22,7 @@ Este sistema automatiza completamente el proceso de compilación, versionado y d
 
    - Compila para Android (Play Store Bundle)
    - Compila para iOS (TestFlight Archive)
-   - Soporta múltiples environments (mainnet, alfajores)
+   - Soporta múltiples environments (mainnet, testnet)
 
 4. **Distribución Automática**
 

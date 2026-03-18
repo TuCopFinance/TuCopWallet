@@ -20,7 +20,7 @@ describe(SessionRequest, () => {
       requiredNamespaces: {
         eip155: {
           methods: ['eth_sendTransaction', 'personal_sign'],
-          chains: ['eip155:11155111', 'eip155:44787'],
+          chains: ['eip155:11155111', 'eip155:11142220'],
           events: ['chainChanged', 'accountsChanged'],
         },
       },
@@ -54,15 +54,15 @@ describe(SessionRequest, () => {
     proposal: pendingSession.params,
     supportedNamespaces: {
       eip155: {
-        chains: ['eip155:11155111', 'eip155:44787'],
+        chains: ['eip155:11155111', 'eip155:11142220'],
         methods: Object.values(SupportedActions) as string[],
         events: Object.values(SupportedEvents) as string[],
-        accounts: [`eip155:11155111:${mockAccount}`, `eip155:44787:${mockAccount}`],
+        accounts: [`eip155:11155111:${mockAccount}`, `eip155:11142220:${mockAccount}`],
       },
     },
   })
 
-  const supportedChains = ['eip155:44787']
+  const supportedChains = ['eip155:11142220']
 
   const store = createMockStore({})
 
@@ -78,7 +78,7 @@ describe(SessionRequest, () => {
             version={2}
             pendingSession={pendingSession}
             namespacesToApprove={namespacesToApprove}
-            supportedChains={['eip155:11155111', 'eip155:44787']}
+            supportedChains={['eip155:11155111', 'eip155:11142220']}
           />
         </Provider>
       )
@@ -88,7 +88,7 @@ describe(SessionRequest, () => {
       expect(getByText('walletConnectRequest.connectWalletAction')).toBeTruthy()
       expect(queryByText('dismiss')).toBeFalsy()
       const networkChips = queryByTestId('SessionRequest/NetworkChips')
-      expect(networkChips?.children[0]).toHaveTextContent('Celo Alfajores')
+      expect(networkChips?.children[0]).toHaveTextContent('Celo Sepolia')
       expect(networkChips?.children[1]).toHaveTextContent('Ethereum Sepolia')
       expect(getByText(mockAccount.toLowerCase())).toBeTruthy()
     })

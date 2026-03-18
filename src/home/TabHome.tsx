@@ -30,6 +30,7 @@ import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
 import Recharge from 'src/icons/tab-home/Recharge'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
+import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
@@ -158,18 +159,14 @@ function TabHome(_props: Props) {
     navigate(Screens.ReFiColombiaSubsidies)
   }
 
+  const bucksPayFlowStatus = useSelector(bucksPayFlowStatusSelector)
+
   function onPressWithdraw() {
-    // navigate(Screens.FiatExchangeAmount, {
-    //   tokenId: COPmToken.tokenId,
-    //   flow: CICOFlow.CashOut,
-    //   tokenSymbol: COPmToken.symbol,
-    // })
-
-    navigate(Screens.WebViewScreen, {
-      uri: 'https://app.buckspay.xyz/',
-    })
-
-    // AppAnalytics.track(TabHomeEvents.withdraw)
+    if (bucksPayFlowStatus === 'tracking' || bucksPayFlowStatus === 'submitting-to-api') {
+      navigate(Screens.BucksPayStatus)
+    } else {
+      navigate(Screens.SelectOfframpProvider)
+    }
   }
 
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)

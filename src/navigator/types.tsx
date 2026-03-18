@@ -335,6 +335,18 @@ export type StackParamList = {
   }
   [Screens.MarranitosMyStakes]: undefined
   [Screens.NoProvidersScreen]: undefined
+  [Screens.SelectOfframpProvider]: undefined
+  [Screens.BucksPayBankForm]: undefined
+  [Screens.BucksPayConfirm]: {
+    amount: string
+    bankDetails: {
+      bankName: string
+      accountNumber: string
+      accountType: 'savings' | 'checking' | 'nequi'
+      bankCountry: string
+    }
+  }
+  [Screens.BucksPayStatus]: undefined
 }
 
 export type QRTabParamList = {

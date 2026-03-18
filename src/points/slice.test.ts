@@ -18,7 +18,7 @@ const pendingSwapEvent: PendingPointsEvent = {
   event: {
     activityId: 'swap',
     transactionHash: '0xTEST',
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     toTokenId: 'mockToTokenId',
     fromTokenId: 'mockFromTokenId',
   },

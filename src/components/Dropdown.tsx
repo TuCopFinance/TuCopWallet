@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import Touchable from 'src/components/Touchable'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
 import Colors from 'src/styles/colors'
@@ -9,6 +9,7 @@ import { Spacing } from 'src/styles/styles'
 interface Props<T> {
   options: { value: T; label: string }[]
   onValueSelected(value: T): void
+  defaultLabel?: string
   testId?: string
 }
 
@@ -17,7 +18,7 @@ interface Props<T> {
 function Dropdown<T>(props: Props<T>) {
   const testID = props.testId ? props.testId : 'Dropdown'
   const [isOpen, setIsOpen] = useState(false)
-  const [labelSelected, setLabelSelected] = useState<string | undefined>()
+  const [labelSelected, setLabelSelected] = useState<string | undefined>(props.defaultLabel)
 
   const toggleOpen = () => {
     setIsOpen((prev) => !prev)
@@ -40,8 +41,8 @@ function Dropdown<T>(props: Props<T>) {
         </View>
       </Touchable>
       {isOpen && (
-        <View>
-          <View style={styles.optionsContainer}>
+        <View style={styles.optionsWrapper}>
+          <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
             {props.options.map((option) => {
               return (
                 <Touchable
@@ -58,7 +59,7 @@ function Dropdown<T>(props: Props<T>) {
                 </Touchable>
               )
             })}
-          </View>
+          </ScrollView>
         </View>
       )}
     </View>
@@ -75,6 +76,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  optionsWrapper: {
+    position: 'relative',
+    zIndex: 10,
+  },
   optionsContainer: {
     position: 'absolute',
     top: 0,
@@ -82,8 +87,10 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.Tiny4,
     borderWidth: 1,
     backgroundColor: Colors.white,
-    flexDirection: 'column',
     width: '100%',
+    maxHeight: 250,
+    zIndex: 10,
+    elevation: 5,
   },
   optionText: {
     ...typeScale.bodyMedium,

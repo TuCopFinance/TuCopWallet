@@ -32,9 +32,9 @@ function updateTestTokenInfo(tokenInfo: any): any {
   const isNative = tokenInfo.symbol === 'CELO'
   return {
     ...tokenInfo,
-    tokenId: `celo-alfajores:${isNative ? 'native' : tokenInfo.address}`,
+    tokenId: `celo-sepolia:${isNative ? 'native' : tokenInfo.address}`,
     isNative,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
   }
 }
 
@@ -3585,6 +3585,38 @@ export const v237Schema = {
   identity: _.omit(v236Schema.identity, 'hasSeenVerificationNux'),
 }
 
+export const v238Schema = {
+  ...v237Schema,
+  _persist: {
+    ...v237Schema._persist,
+    version: 238,
+  },
+  buckspay: {
+    flowStatus: 'idle',
+    lastBankDetails: null,
+    transactionHash: null,
+    bucksPayCode: null,
+    bucksPayStatus: null,
+    certificateUrl: null,
+    error: null,
+  },
+}
+
+export const v239Schema = {
+  ...v238Schema,
+  _persist: {
+    ...v238Schema._persist,
+    version: 239,
+  },
+  buckspay: {
+    ...v238Schema.buckspay,
+    flowStatus: 'tracking',
+    transactionHash: '0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe',
+    bucksPayCode: 'P5Y1',
+    bucksPayStatus: 'PENDING',
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v237Schema as Partial<RootState>
+  return v239Schema as Partial<RootState>
 }
