@@ -155,10 +155,25 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
       style={
         {
           "backgroundColor": "#FFFFFF",
+          "borderTopLeftRadius": 16,
+          "borderTopRightRadius": 16,
+          "paddingBottom": 8,
         }
       }
       testID="WebViewAndroidBottomSheet"
     >
+      <View
+        style={
+          {
+            "alignSelf": "center",
+            "backgroundColor": "#757575",
+            "borderRadius": 2,
+            "height": 4,
+            "marginVertical": 12,
+            "width": 40,
+          }
+        }
+      />
       <View
         accessibilityState={
           {
@@ -193,6 +208,7 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "minHeight": 56,
           }
         }
         testID="OpenInExternalBrowser"
@@ -200,6 +216,7 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
         <Text
           style={
             {
+              "flex": 1,
               "fontFamily": "RedHatDisplayRegular",
               "fontSize": 12,
               "lineHeight": 24,
@@ -241,10 +258,18 @@ exports[`WebViewAndroidBottomSheet renders correctly when visible 1`] = `
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 56,
+          }
+        }
       >
         <Text
           style={
             {
+              "flex": 1,
               "fontFamily": "RedHatDisplayRegular",
               "fontSize": 12,
               "lineHeight": 24,

@@ -34,7 +34,7 @@ describe('EstimatedNetworkFee', () => {
     )
 
     expect(
-      getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo Alfajores"}')
+      getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo Sepolia"}')
     ).toBeTruthy()
 
     expect(getByTestId('EstimatedNetworkFee/Amount')).toHaveTextContent('0.0001 CELO') // gas * _baseFeePerGas
@@ -56,7 +56,7 @@ describe('EstimatedNetworkFee', () => {
     )
 
     expect(
-      getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo Alfajores"}')
+      getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo Sepolia"}')
     ).toBeTruthy()
 
     expect(getByTestId('EstimatedNetworkFee/Loading')).toBeTruthy()

@@ -179,9 +179,8 @@ exports[`Education renders correctly 1`] = `
           style={
             [
               {
+                "alignSelf": "stretch",
                 "borderRadius": 15,
-                "flexGrow": 1,
-                "width": "100%",
               },
               {},
             ]
@@ -192,6 +191,7 @@ exports[`Education renders correctly 1`] = `
               [
                 {
                   "flexDirection": "column",
+                  "width": "100%",
                 },
                 undefined,
               ]
@@ -252,6 +252,7 @@ exports[`Education renders correctly 1`] = `
                       "flexGrow": 1,
                       "height": 48,
                       "justifyContent": "center",
+                      "maxHeight": 56,
                       "opacity": 1,
                       "paddingHorizontal": 24,
                       "paddingVertical": 5,

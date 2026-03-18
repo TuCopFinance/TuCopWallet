@@ -899,7 +899,7 @@ describe('TransactionDetailsScreen', () => {
     expect(getByText('swapTransactionDetailPage.network')).toBeTruthy()
     expect(
       getByText(
-        'swapTransactionDetailPage.networkValue, {"fromNetwork":"Celo Alfajores","toNetwork":"Ethereum Sepolia"}'
+        'swapTransactionDetailPage.networkValue, {"fromNetwork":"Celo Sepolia","toNetwork":"Ethereum Sepolia"}'
       )
     ).toBeTruthy()
 

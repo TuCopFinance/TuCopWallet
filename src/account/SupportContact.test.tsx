@@ -82,7 +82,7 @@ describe('Contact', () => {
         deviceModel: 'someModel',
         hooksPreviewEnabled: false,
         multichainBetaStatus: 'OptedOut',
-        network: 'alfajores',
+        network: 'testnet',
         numberVerifiedCentralized: false,
         os: 'android',
         region: null,

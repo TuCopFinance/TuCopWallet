@@ -19,7 +19,7 @@ describe('NetworkMultiSelectBottomSheet', () => {
     const selectedNetworkIds = [NetworkId['celo-sepolia']]
     const expectedOptions = [
       {
-        text: 'Celo Alfajores',
+        text: 'Celo Sepolia',
         iconUrl: 'url-for-cusd-icon',
         id: NetworkId['celo-sepolia'],
       },

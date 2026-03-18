@@ -170,7 +170,7 @@ describe('NftsInfoCarousel', () => {
 
     fireEvent.press(getByTestId('ViewOnExplorer'))
     expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
-      uri: `https://explorer.celo.org/alfajores/token/${mockNftMinimumFields.contractAddress}/instance/${mockNftMinimumFields.tokenId}/metadata`,
+      uri: `https://sepolia.celoscan.io/token/${mockNftMinimumFields.contractAddress}/instance/${mockNftMinimumFields.tokenId}/metadata`,
     })
   })
 

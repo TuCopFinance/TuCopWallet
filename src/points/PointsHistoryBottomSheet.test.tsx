@@ -113,7 +113,7 @@ describe(PointsHistoryBottomSheet, () => {
     await waitFor(() => expect(tree.getByTestId('PointsHistoryList').props.data.length).toBe(2))
 
     expect(
-      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo Alfajores"}')
+      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo Sepolia"}')
     ).toBeTruthy()
     expect(
       tree.getByText('points.history.cards.createLiveLink.subtitle.erc20, {"tokenSymbol":"CELO"}')

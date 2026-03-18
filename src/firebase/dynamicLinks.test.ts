@@ -29,7 +29,7 @@ describe('dynamic links', () => {
     const result = await createJumpstartLink('0xprivateKey', NetworkId['celo-sepolia'])
 
     expect(result).toEqual(
-      `${mockBaseLink}https%3A%2F%2Fcelo%2Eorg%2Fjumpstart%2F0xprivateKey%2Fcelo%2Dalfajores`
+      `${mockBaseLink}https%3A%2F%2Fcelo%2Eorg%2Fjumpstart%2F0xprivateKey%2Fcelo%2Dsepolia`
     )
   })
 })
