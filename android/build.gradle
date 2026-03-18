@@ -72,6 +72,15 @@ subprojects {
             }
         }
     }
+    afterEvaluate {
+        if (it.hasProperty("android")) {
+            android {
+                buildFeatures {
+                    buildConfig true
+                }
+            }
+        }
+    }
 }
 
 afterEvaluate { project ->
