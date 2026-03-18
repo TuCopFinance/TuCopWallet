@@ -2,7 +2,7 @@ import { Address } from 'viem'
 
 // Celo network IDs (L2)
 export const CELO_MAINNET_ID = 42220
-export const CELO_ALFAJORES_ID = 44787
+export const CELO_SEPOLIA_ID = 11142220
 
 // Gas estimation multipliers for Celo L2 (optimized for low-cost L2)
 export const CELO_GAS_MULTIPLIERS = {
@@ -38,13 +38,14 @@ export const CELO_FEE_CURRENCIES = {
   USDT: '0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72' as Address, // USDT Adapter
 } as const
 
-// Fee currency addresses on Alfajores L2 Testnet
-export const CELO_ALFAJORES_FEE_CURRENCIES = {
-  CELO: '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9' as Address,
-  cUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1' as Address,
-  cEUR: '0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F' as Address,
-  cREAL: '0xE4D517785D091D3c54818832dB6094bcc2744545' as Address,
-  // USDC adapter for Alfajores
+// Fee currency addresses on Celo Sepolia Testnet
+// From https://docs.celo.org/token-addresses
+export const CELO_SEPOLIA_FEE_CURRENCIES = {
+  CELO: '0x471EcE3750Da237f93B8E339c536989b8978a438' as Address,
+  cUSD: '0xEF4d55D6dE8e8d73232827Cd1e9b2F2dBb45bC80' as Address,
+  cEUR: '0x6B172e333e2978484261D7eCC3DE491E79764BbC' as Address,
+  cREAL: '0x2294298942fdc79417DE9E0D740A4957E0e7783a' as Address,
+  // USDC adapter for Celo Sepolia
   USDC: '0x4822e58de6f5e485eF90df51C41CE01721331dC0' as Address, // USDC Adapter
 } as const
 
@@ -55,8 +56,8 @@ export function getFeeCurrencies(chainId: number) {
   switch (chainId) {
     case CELO_MAINNET_ID:
       return CELO_FEE_CURRENCIES
-    case CELO_ALFAJORES_ID:
-      return CELO_ALFAJORES_FEE_CURRENCIES
+    case CELO_SEPOLIA_ID:
+      return CELO_SEPOLIA_FEE_CURRENCIES
     default:
       throw new Error(`Unsupported Celo chain ID: ${chainId}`)
   }
@@ -66,7 +67,7 @@ export function getFeeCurrencies(chainId: number) {
  * Check if a chain ID is a Celo network (L2)
  */
 export function isCeloNetwork(chainId?: number): boolean {
-  return chainId === CELO_MAINNET_ID || chainId === CELO_ALFAJORES_ID
+  return chainId === CELO_MAINNET_ID || chainId === CELO_SEPOLIA_ID
 }
 
 /**

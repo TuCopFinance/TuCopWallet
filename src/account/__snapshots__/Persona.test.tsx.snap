@@ -9,9 +9,8 @@ exports[`Persona renders correctly 1`] = `
     style={
       [
         {
+          "alignSelf": "stretch",
           "borderRadius": 15,
-          "flexGrow": 1,
-          "width": "100%",
         },
         {},
       ]
@@ -81,6 +80,7 @@ exports[`Persona renders correctly 1`] = `
                 "flexDirection": "row",
                 "height": 48,
                 "justifyContent": "center",
+                "maxHeight": 56,
                 "minWidth": 120,
                 "opacity": 0.25,
                 "paddingHorizontal": 24,

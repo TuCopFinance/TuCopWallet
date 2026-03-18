@@ -124,14 +124,14 @@ describe(handleNotification, () => {
 
       expect(navigate).toHaveBeenCalledWith(Screens.TransactionDetailsScreen, {
         transaction: {
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           type: 'RECEIVED',
           transactionHash: '0xTXHASH',
           timestamp: 1,
           block: '42',
           address: '0xtest',
           amount: {
-            tokenId: 'celo-alfajores:0xCUSD',
+            tokenId: 'celo-sepolia:0xCUSD',
             value: '10',
             tokenAddress: '0xCUSD',
           },

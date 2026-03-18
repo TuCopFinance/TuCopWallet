@@ -67,7 +67,7 @@ export const TIME_UNTIL_TOKEN_INFO_BECOMES_STALE = 12 * ONE_HOUR_IN_MILLIS
 export const DEFAULT_FORNO_URL =
   DEFAULT_TESTNET === 'mainnet'
     ? 'https://forno.celo.org/'
-    : 'https://alfajores-forno.celo-testnet.org/'
+    : 'https://forno.celo-sepolia.celo-testnet.org/'
 
 export const APP_BUNDLE_ID = configOrThrow('APP_BUNDLE_ID')
 export const DEEP_LINK_URL_SCHEME = configOrThrow('DEEP_LINK_URL_SCHEME')

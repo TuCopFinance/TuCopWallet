@@ -66,7 +66,7 @@ jest.mock('src/viem/saga', () => ({
   sendPreparedTransactions: jest.fn().mockResolvedValue(['0x1', '0x2']),
 }))
 
-const networkId = NetworkId['celo-alfajores']
+const networkId = NetworkId['celo-sepolia']
 const network = Network.Celo
 
 const mockPublicKey = mockAccountInvite
@@ -279,7 +279,7 @@ describe('dispatchPendingERC20Transactions', () => {
     expect(Logger.warn).toHaveBeenCalledWith(
       'WalletJumpstart/saga',
       'Claimed unknown tokenId',
-      'celo-alfajores:0xunknown'
+      'celo-sepolia:0xunknown'
     )
   })
 })
@@ -395,9 +395,9 @@ describe('sendJumpstartTransactions', () => {
     amountInUsd: '1.00',
     localCurrency: 'PHP',
     localCurrencyExchangeRate: '1.33',
-    networkId: 'celo-alfajores',
+    networkId: 'celo-sepolia',
     tokenAmount: '1000000000000000000',
-    tokenId: 'celo-alfajores:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+    tokenId: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
     tokenSymbol: 'cUSD',
   }
 
@@ -433,7 +433,7 @@ describe('sendJumpstartTransactions', () => {
 
     expect(sendPreparedTransactions).toHaveBeenCalledWith(
       serializablePreparedTransactions,
-      'celo-alfajores',
+      'celo-sepolia',
       expect.any(Array)
     )
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -464,7 +464,7 @@ describe('sendJumpstartTransactions', () => {
 
     expect(sendPreparedTransactions).toHaveBeenCalledWith(
       serializablePreparedTransactions,
-      'celo-alfajores',
+      'celo-sepolia',
       expect.any(Array)
     )
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -490,7 +490,7 @@ describe('jumpstartReclaim', () => {
     data: '0x0',
     gas: BigInt(59_480),
   })
-  const networkId = NetworkId['celo-alfajores']
+  const networkId = NetworkId['celo-sepolia']
   const depositTxHash = '0xaaa'
 
   it('should send the reclaim transaction and dispatch the success action on success', async () => {
@@ -500,7 +500,7 @@ describe('jumpstartReclaim', () => {
         tokenAmount: {
           value: 1000,
           tokenAddress: '0x123',
-          tokenId: 'celo-alfajores:0x123',
+          tokenId: 'celo-sepolia:0x123',
         },
         networkId,
         reclaimTx: mockSerializablePreparedTransaction,
@@ -533,7 +533,7 @@ describe('jumpstartReclaim', () => {
         tokenAmount: {
           value: 1000,
           tokenAddress: '0x123',
-          tokenId: 'celo-alfajores:0x123',
+          tokenId: 'celo-sepolia:0x123',
         },
         networkId,
         reclaimTx: mockSerializablePreparedTransaction,

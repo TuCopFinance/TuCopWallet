@@ -95,7 +95,7 @@ describe('SendEnterAmount', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSend: [NetworkId['celo-alfajores']],
+      showSend: [NetworkId['celo-sepolia']],
     })
   })
 
@@ -159,7 +159,7 @@ describe('SendEnterAmount', () => {
       localCurrency: 'PHP',
       localCurrencyAmount: '140.99',
       localCurrencyExchangeRate: '1.33',
-      networkId: 'celo-alfajores',
+      networkId: 'celo-sepolia',
       origin: 'app_send_flow',
       recipientType: 'Address',
       tokenId: mockCeloTokenId,

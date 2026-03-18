@@ -1308,5 +1308,60 @@ exports[`BackupQuiz renders correctly 1`] = `
       </View>
     </View>
   </RCTScrollView>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    focusable={true}
+    nativeBackgroundAndroid={
+      {
+        "attribute": "selectableItemBackground",
+        "rippleRadius": undefined,
+        "type": "ThemeAttrAndroid",
+      }
+    }
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "paddingVertical": 16,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#666666",
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 14,
+          "lineHeight": 20,
+          "textDecorationLine": "underline",
+        }
+      }
+    >
+      backupQuizSkip.skip
+    </Text>
+  </View>
 </RNCSafeAreaView>
 `;

@@ -76,7 +76,7 @@ const getMockStoreTokenBalances = (): Record<string, StoredTokenBalance> => ({
     // token with no price
     balance: '10',
     tokenId: mockTestTokenTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     showZeroBalance: false,
     isNative: false,
     symbol: 'TST',
@@ -407,7 +407,7 @@ describe('EnterAmount', () => {
     )
 
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('POOF')
-    expect(getByText('POOF on Celo Alfajores')).toBeTruthy()
+    expect(getByText('POOF on Celo Sepolia')).toBeTruthy()
     fireEvent.press(getByTestId('SendEnterAmount/TokenSelect'))
     await waitFor(() => expect(getByText('Ether')).toBeTruthy())
     fireEvent.press(getByText('Ether'))
@@ -415,7 +415,7 @@ describe('EnterAmount', () => {
     expect(getByText('ETH on Ethereum Sepolia')).toBeTruthy()
     expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
     expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.token_dropdown_opened, {
-      currentNetworkId: NetworkId['celo-alfajores'],
+      currentNetworkId: NetworkId['celo-sepolia'],
       currentTokenAddress: mockPoofAddress,
       currentTokenId: mockPoofTokenId,
     })
@@ -621,7 +621,7 @@ describe('EnterAmount', () => {
       expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(expectedLocalAmount)
       expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
       expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_percentage_selected, {
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         tokenAddress: mockPoofAddress,
         tokenId: mockPoofTokenId,
         percentage,
@@ -846,7 +846,7 @@ describe('EnterAmount', () => {
       </Provider>
     )
     expect(queryByTestId('SendEnterAmount/Fee')).toBeFalsy()
-    expect(getByText('CELO on Celo Alfajores')).toBeTruthy()
+    expect(getByText('CELO on Celo Sepolia')).toBeTruthy()
 
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '8')
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '9')

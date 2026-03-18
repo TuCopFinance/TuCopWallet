@@ -46,7 +46,7 @@ const serializablePreparedTransactions = getSerializablePreparedTransactions(pre
 const mockStandbyTransactions: BaseStandbyTransaction[] = [
   {
     context: { id: 'mockContext1' },
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     type: TokenTransactionTypeV2.Approval,
     tokenId: mockCusdTokenId,
     approvedAmount: '1',
@@ -54,7 +54,7 @@ const mockStandbyTransactions: BaseStandbyTransaction[] = [
   {
     context: { id: 'mockContext2' },
     type: TokenTransactionTypeV2.Sent,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     amount: {
       value: BigNumber(10).negated().toString(),
       tokenAddress: mockCeloAddress,

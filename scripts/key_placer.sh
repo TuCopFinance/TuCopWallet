@@ -4,10 +4,10 @@ echo "Processing encrypted files"
 
 # Set list of secret files to encrypt and decrypt.
 files=(
-  "android/sentry.properties:celo-mobile-alfajores"
-  "ios/sentry.properties:celo-mobile-alfajores"
-  "secrets.json:celo-mobile-alfajores"
-  "e2e/.env:celo-mobile-alfajores"
+  "android/sentry.properties:celo-mobile-testnet"
+  "ios/sentry.properties:celo-mobile-testnet"
+  "secrets.json:celo-mobile-testnet"
+  "e2e/.env:celo-mobile-testnet"
 )
 
 if [[ -z "$1" ]]; then

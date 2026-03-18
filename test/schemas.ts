@@ -32,9 +32,9 @@ function updateTestTokenInfo(tokenInfo: any): any {
   const isNative = tokenInfo.symbol === 'CELO'
   return {
     ...tokenInfo,
-    tokenId: `celo-alfajores:${isNative ? 'native' : tokenInfo.address}`,
+    tokenId: `celo-sepolia:${isNative ? 'native' : tokenInfo.address}`,
     isNative,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
   }
 }
 

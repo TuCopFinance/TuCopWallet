@@ -17,7 +17,7 @@ on:
         type: choice
         options:
           - mainnet
-          - alfajores
+          - testnet
       deploy_stores:
         description: 'Deploy to app stores'
         required: false
@@ -38,7 +38,7 @@ jobs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Get version info
         id: version
         run: |
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet"]') }}
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -129,7 +129,7 @@ jobs:
     strategy:
       matrix:
         environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet"]') }}
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -189,7 +189,7 @@ jobs:
         run: |
           ANDROID_SUCCESS="${{ needs.build-android.result == 'success' }}"
           IOS_SUCCESS="${{ needs.build-ios.result == 'success' }}"
-          
+
           curl -X POST "${{ secrets.RAILWAY_API_URL || 'https://api.example.com' }}/api/update-version" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY || 'demo-key' }}" \
@@ -216,23 +216,23 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ needs.prepare.outputs.version }}-${{ needs.prepare.outputs.build-number }}
-          name: "🚀 Tu Cop Wallet v${{ needs.prepare.outputs.version }}"
+          name: '🚀 Tu Cop Wallet v${{ needs.prepare.outputs.version }}'
           body: |
             ## 📱 Tu Cop Wallet v${{ needs.prepare.outputs.version }}
-            
+
             **Build:** ${{ needs.prepare.outputs.build-number }}
             **Commit:** ${{ github.sha }}
-            
+
             ### 🏗️ Build Status
             - **Android:** ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }}
             - **iOS:** ${{ needs.build-ios.result == 'success' && '✅ Success' || '❌ Failed' }}
-            
+
             ### 🔧 Technical Details
             - **Android 15** (API 35) compatible
             - **Gradle** 8.10.2 + AGP 8.7.2
             - **React Native** 0.75.4
             - **Java** 17
-            
+
             ### 📦 Artifacts
             ${{ needs.build-android.result == 'success' && '- Android Bundle (.aab)' || '' }}
             ${{ needs.build-ios.result == 'success' && '- iOS Archive (.xcarchive)' || '' }}
@@ -244,7 +244,7 @@ jobs:
         run: |
           ANDROID_ICON="${{ needs.build-android.result == 'success' && '✅' || '❌' }}"
           IOS_ICON="${{ needs.build-ios.result == 'success' && '✅' || '❌' }}"
-          
+
           curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d '{
