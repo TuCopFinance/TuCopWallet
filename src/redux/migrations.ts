@@ -1673,7 +1673,7 @@ export const migrations = {
       }
       // users inactive since before 4/2 have 'network' in their state
       if (network) {
-        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-alfajores']
+        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
       }
       // should never happen, but only celo mainnet has been released so far
       return NetworkId['celo-mainnet']
@@ -1691,7 +1691,7 @@ export const migrations = {
       }
       if (networks) {
         return networks.map((network) =>
-          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-alfajores']
+          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
         )
       }
       // should never happen, but only celo mainnet has been released so far
@@ -1999,4 +1999,10 @@ export const migrations = {
       bucksPayStatus: 'PENDING',
     },
   }),
+  240: (state: any) => {
+    // Migrate persisted state from deprecated Alfajores (celo-alfajores) to Celo Sepolia (celo-sepolia)
+    const stateStr = JSON.stringify(state)
+    const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
+    return JSON.parse(migratedStr)
+  },
 }

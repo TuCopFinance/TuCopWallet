@@ -19,7 +19,8 @@ import {
   mockCusdTokenId,
   mockTypedData,
 } from 'test/values'
-import { celoAlfajores, sepolia as ethereumSepolia } from 'viem/chains'
+import { sepolia as ethereumSepolia } from 'viem/chains'
+import { celoSepolia } from 'src/viem/celoSepolia'
 
 jest.mock('src/web3/networkConfig', () => {
   const originalModule = jest.requireActual('src/web3/networkConfig')
@@ -28,7 +29,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -38,7 +39,7 @@ const signTransactionRequest = {
     method: SupportedActions.eth_signTransaction,
     params: [{ from: '0xTEST', to: '0xTEST', data: '0x', nonce: 7, gas: '0x5208', value: '0x01' }],
   },
-  chainId: 'eip155:44787',
+  chainId: 'eip155:11142220',
 }
 const serializableTransactionRequest = signTransactionRequest.request
   .params[0] as SerializableTransactionRequest
@@ -47,7 +48,7 @@ const sendTransactionRequest = {
     method: SupportedActions.eth_sendTransaction,
     params: [{ from: '0xTEST', to: '0xTEST', data: '0x', nonce: 7, gas: '0x5208', value: '0x01' }],
   },
-  chainId: 'eip155:44787',
+  chainId: 'eip155:11142220',
 }
 const serializableSendTransactionRequest = sendTransactionRequest.request
   .params[0] as SerializableTransactionRequest
@@ -56,21 +57,21 @@ const personalSignRequest = {
     method: SupportedActions.personal_sign,
     params: ['Some message', '0xdeadbeef'],
   },
-  chainId: 'eip155:44787',
+  chainId: 'eip155:11142220',
 }
 const signTypedDataRequest = {
   request: {
     method: SupportedActions.eth_signTypedData,
     params: ['0xdeadbeef', JSON.stringify(mockTypedData)],
   },
-  chainId: 'eip155:44787',
+  chainId: 'eip155:11142220',
 }
 const signTypedDataV4Request = {
   request: {
     method: SupportedActions.eth_signTypedData_v4,
     params: ['0xdeadbeef', JSON.stringify(mockTypedData)],
   },
-  chainId: 'eip155:44787',
+  chainId: 'eip155:11142220',
 }
 
 const state = createMockStore({
@@ -83,7 +84,7 @@ const state = createMockStore({
         symbol: 'cUSD',
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -93,7 +94,7 @@ const state = createMockStore({
         symbol: 'cEUR',
         address: mockCeurAddress,
         tokenId: mockCeurTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -103,7 +104,7 @@ const state = createMockStore({
         symbol: 'CELO',
         address: mockCeloAddress,
         tokenId: mockCeloTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -115,7 +116,7 @@ describe(handleRequest, () => {
   let viemWallet: Partial<ViemWallet>
 
   beforeAll(function* () {
-    viemWallet = yield* getViemWallet(celoAlfajores)
+    viemWallet = yield* getViemWallet(celoSepolia)
   })
 
   beforeEach(() => {
@@ -126,12 +127,12 @@ describe(handleRequest, () => {
     await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11155111' })
       .withState(state)
       .call(getViemWallet, ethereumSepolia)
-      .not.call(getViemWallet, celoAlfajores)
+      .not.call(getViemWallet, celoSepolia)
       .run()
 
-    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:44787' })
+    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11142220' })
       .withState(state)
-      .call(getViemWallet, celoAlfajores)
+      .call(getViemWallet, celoSepolia)
       .not.call(getViemWallet, ethereumSepolia)
       .run()
   })
