@@ -1284,7 +1284,7 @@ describe('Redux persist migrations', () => {
         standbyTransactions: [
           {
             context: { id: 'test' },
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             type: TokenTransactionTypeV2.Sent,
             status: TransactionStatus.Pending,
             value: '0.5',
@@ -1297,7 +1297,7 @@ describe('Redux persist migrations', () => {
         transactions: [
           {
             __typename: 'TokenTransferV3',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             type: TokenTransactionTypeV2.Sent,
             transactionHash: '123',
             timestamp: 456,
@@ -1374,7 +1374,7 @@ describe('Redux persist migrations', () => {
     preMigrationSchema.transactions.standbyTransactions = [
       {
         context: { id: 'someId' },
-        networkId: 'celo-alfajores',
+        networkId: 'celo-sepolia',
         type: 'SENT',
         status: TransactionStatus.Pending,
         value: '123',
@@ -1393,7 +1393,7 @@ describe('Redux persist migrations', () => {
         __typename: 'TokenTransferV3',
         type: TokenTransactionTypeV2.Sent,
         context: { id: 'someId' },
-        networkId: 'celo-alfajores',
+        networkId: 'celo-sepolia',
         amount: {
           value: '123',
           tokenId: 'someTokenId',
@@ -1417,7 +1417,7 @@ describe('Redux persist migrations', () => {
     const celoSwap = {
       __typename: 'TokenExchangeV3',
       type: 'SWAP_TRANSACTION',
-      networkId: 'celo-alfajores',
+      networkId: 'celo-sepolia',
       block: '22127052',
       transactionHash: '0x28fc7261a01bbbe97d5cc1f4c41ccf278bb9980ab12b4cd4bf62b76f137a6691',
     }
@@ -1439,7 +1439,7 @@ describe('Redux persist migrations', () => {
     const migratedSchema = migrations[165](preMigrationSchema)
 
     expect(migratedSchema.transactions.transactionsByNetworkId).toEqual({
-      [NetworkId['celo-alfajores']]: [celoSwap, celoTransfer],
+      [NetworkId['celo-sepolia']]: [celoSwap, celoTransfer],
       [NetworkId['ethereum-sepolia']]: [ethereumTransfer],
     })
     expect('transactions' in migratedSchema.transactions).toBe(false)
@@ -1482,43 +1482,35 @@ describe('Redux persist migrations', () => {
     const migratedSchema = migrations[175](oldSchema)
 
     // CELO
-    const celoToken = migratedSchema.tokens.tokenBalances['celo-alfajores:native']
+    const celoToken = migratedSchema.tokens.tokenBalances['celo-sepolia:native']
     expect(celoToken).not.toHaveProperty('isCoreToken')
     expect(celoToken).toHaveProperty('isFeeCurrency', true)
     expect(celoToken).toHaveProperty('canTransferWithComment', true)
 
     // cUSD
     const cUSDToken =
-      migratedSchema.tokens.tokenBalances[
-        'celo-alfajores:0x874069fa1eb16d44d622f2e0ca25eea172369bc1'
-      ]
+      migratedSchema.tokens.tokenBalances['celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1']
     expect(cUSDToken).not.toHaveProperty('isCoreToken')
     expect(cUSDToken).toHaveProperty('isFeeCurrency', true)
     expect(cUSDToken).toHaveProperty('canTransferWithComment', true)
 
     // cEUR
     const cEURToken =
-      migratedSchema.tokens.tokenBalances[
-        'celo-alfajores:0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f'
-      ]
+      migratedSchema.tokens.tokenBalances['celo-sepolia:0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f']
     expect(cEURToken).not.toHaveProperty('isCoreToken')
     expect(cEURToken).toHaveProperty('isFeeCurrency', true)
     expect(cEURToken).toHaveProperty('canTransferWithComment', true)
 
     // Test Token
     const testToken =
-      migratedSchema.tokens.tokenBalances[
-        'celo-alfajores:0x048f47d358ec521a6cf384461d674750a3cb58c8'
-      ]
+      migratedSchema.tokens.tokenBalances['celo-sepolia:0x048f47d358ec521a6cf384461d674750a3cb58c8']
     expect(testToken).not.toHaveProperty('isCoreToken')
     expect(testToken).not.toHaveProperty('isFeeCurrency')
     expect(testToken).not.toHaveProperty('canTransferWithComment')
 
     // Moola
     const moolaToken =
-      migratedSchema.tokens.tokenBalances[
-        'celo-alfajores:0x17700282592D6917F6A73D0bF8AcCf4D578c131e'
-      ]
+      migratedSchema.tokens.tokenBalances['celo-sepolia:0x17700282592D6917F6A73D0bF8AcCf4D578c131e']
     expect(moolaToken).not.toHaveProperty('isCoreToken')
     expect(moolaToken).not.toHaveProperty('isFeeCurrency')
     expect(moolaToken).not.toHaveProperty('canTransferWithComment')
@@ -1574,7 +1566,7 @@ describe('Redux persist migrations', () => {
       home: {
         ...v197Schema.home,
         nftCelebration: {
-          networkId: 'celo-alfajores',
+          networkId: 'celo-sepolia',
           contractAddress: '0xTEST',
           displayed: true,
         },

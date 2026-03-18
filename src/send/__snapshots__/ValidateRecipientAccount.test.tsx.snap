@@ -130,9 +130,8 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
             style={
               [
                 {
+                  "alignSelf": "stretch",
                   "borderRadius": 15,
-                  "flexGrow": 1,
-                  "width": "100%",
                 },
                 {},
               ]
@@ -204,6 +203,7 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
                         "flexDirection": "row",
                         "height": 48,
                         "justifyContent": "center",
+                        "maxHeight": 56,
                         "minWidth": 120,
                         "opacity": 0.25,
                         "paddingHorizontal": 24,
@@ -700,9 +700,8 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
             style={
               [
                 {
+                  "alignSelf": "stretch",
                   "borderRadius": 15,
-                  "flexGrow": 1,
-                  "width": "100%",
                 },
                 {},
               ]
@@ -774,6 +773,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                         "flexDirection": "row",
                         "height": 48,
                         "justifyContent": "center",
+                        "maxHeight": 56,
                         "minWidth": 120,
                         "opacity": 0.25,
                         "paddingHorizontal": 24,
