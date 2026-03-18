@@ -127,10 +127,15 @@ function BucksPayStatus() {
         )}
 
         {!isError && !isCompleted && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={Colors.primary} />
-            <Text style={styles.loadingText}>{t('buckspay.processingTransaction')}</Text>
-          </View>
+          <>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={Colors.primary} />
+              <Text style={styles.loadingText}>{t('buckspay.processingTransaction')}</Text>
+            </View>
+            <View style={styles.warningContainer}>
+              <Text style={styles.warningText}>{t('buckspay.processingWarning')}</Text>
+            </View>
+          </>
         )}
 
         {transactionHash && (
@@ -265,6 +270,16 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
+  },
+  warningContainer: {
+    backgroundColor: Colors.warningLight,
+    padding: Spacing.Regular16,
+    borderRadius: 8,
+    marginBottom: Spacing.Regular16,
+  },
+  warningText: {
+    ...typeScale.bodySmall,
+    color: Colors.warningDark,
   },
   txHashContainer: {
     marginTop: Spacing.Regular16,
