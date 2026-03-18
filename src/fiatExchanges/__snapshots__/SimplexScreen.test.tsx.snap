@@ -490,9 +490,8 @@ exports[`SimplexScreen renders correctly 1`] = `
         style={
           [
             {
+              "alignSelf": "stretch",
               "borderRadius": 15,
-              "flexGrow": 1,
-              "width": "100%",
             },
             {},
           ]
@@ -503,6 +502,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "flexDirection": "column",
+                "width": "100%",
               },
               {
                 "margin": 16,
@@ -565,6 +565,7 @@ exports[`SimplexScreen renders correctly 1`] = `
                     "flexGrow": 1,
                     "height": 48,
                     "justifyContent": "center",
+                    "maxHeight": 56,
                     "opacity": 0.25,
                     "paddingHorizontal": 24,
                     "paddingVertical": 5,
@@ -1078,9 +1079,8 @@ exports[`SimplexScreen renders correctly 2`] = `
         style={
           [
             {
+              "alignSelf": "stretch",
               "borderRadius": 15,
-              "flexGrow": 1,
-              "width": "100%",
             },
             {},
           ]
@@ -1091,6 +1091,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "flexDirection": "column",
+                "width": "100%",
               },
               {
                 "margin": 16,
@@ -1153,6 +1154,7 @@ exports[`SimplexScreen renders correctly 2`] = `
                     "flexGrow": 1,
                     "height": 48,
                     "justifyContent": "center",
+                    "maxHeight": 56,
                     "opacity": 0.25,
                     "paddingHorizontal": 24,
                     "paddingVertical": 5,

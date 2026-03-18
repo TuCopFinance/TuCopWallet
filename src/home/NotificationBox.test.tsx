@@ -27,10 +27,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-alfajores',
+        celo: 'celo-sepolia',
         ethereum: 'ethereuim-sepolia',
       },
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })

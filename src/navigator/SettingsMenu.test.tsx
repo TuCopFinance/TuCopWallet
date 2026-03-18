@@ -13,7 +13,7 @@ import { mockE164Number } from 'test/values'
 jest.mock('src/statsig', () => ({
   getFeatureGate: jest.fn().mockReturnValue(false),
   getMultichainFeatures: jest.fn(() => ({
-    showBalances: ['celo-alfajores'],
+    showBalances: ['celo-sepolia'],
   })),
 }))
 

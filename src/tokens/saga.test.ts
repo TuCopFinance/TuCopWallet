@@ -57,10 +57,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-alfajores',
+        celo: 'celo-sepolia',
         ethereum: 'ethereum-sepolia',
       },
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
@@ -112,11 +112,11 @@ describe('getTokensInfo', () => {
       JSON.stringify({
         [networkConfig.copmTokenId]: 'COPm token info',
         [networkConfig.usdtTokenId]: 'USDT token info',
-        'celo-alfajores:native': 'CELO token info',
+        'celo-sepolia:native': 'CELO token info',
       })
     )
 
-    const result = await getTokensInfo([NetworkId['celo-alfajores']])
+    const result = await getTokensInfo([NetworkId['celo-sepolia']])
     expect(result).toEqual({
       [networkConfig.copmTokenId]: 'COPm token info',
       [networkConfig.usdtTokenId]: 'USDT token info',
@@ -124,7 +124,7 @@ describe('getTokensInfo', () => {
   })
   it('throws if request does not complete within timeout', async () => {
     mockFetch.mockResponseOnce('error!', { status: 500, statusText: 'some error' })
-    await expect(getTokensInfo([NetworkId['celo-alfajores']])).rejects.toEqual(
+    await expect(getTokensInfo([NetworkId['celo-sepolia']])).rejects.toEqual(
       new Error('Failure response fetching token info. 500  some error')
     )
     expect(Logger.error).toHaveBeenCalledTimes(1)
@@ -152,7 +152,7 @@ describe(fetchTokenBalancesSaga, () => {
       tokenId: mockTestTokenTokenId,
       balance: new BigNumber(0),
       showZeroBalance: true,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       isManuallyImported: true,
       networkIconUrl: 'oldCeloUrl',
     },
@@ -171,7 +171,7 @@ describe(fetchTokenBalancesSaga, () => {
   }
 
   it('get token info successfully', async () => {
-    const supportedNetworks = [NetworkId['celo-alfajores']]
+    const supportedNetworks = [NetworkId['celo-sepolia']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -192,7 +192,7 @@ describe(fetchTokenBalancesSaga, () => {
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
         [select(walletAddressSelector), null],
-        [call(getTokensInfo, [NetworkId['celo-alfajores']]), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, [NetworkId['celo-sepolia']]), mockBlockchainApiTokenInfo],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
       .not.call(getTokensInfo)
@@ -201,7 +201,7 @@ describe(fetchTokenBalancesSaga, () => {
   })
 
   it("fires an event if there's an error", async () => {
-    const supportedNetworks = [NetworkId['celo-alfajores']]
+    const supportedNetworks = [NetworkId['celo-sepolia']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -226,7 +226,7 @@ describe(fetchTokenBalancesSaga, () => {
   })
 
   it('includes imported tokens for multiple networks', async () => {
-    const supportedNetworks = [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']]
+    const supportedNetworks = [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -254,7 +254,7 @@ describe(fetchTokenBalancesSaga, () => {
         [
           select(networksIconSelector),
           {
-            [NetworkId['celo-alfajores']]: 'newCeloUrl',
+            [NetworkId['celo-sepolia']]: 'newCeloUrl',
             [NetworkId['ethereum-sepolia']]: 'newEthUrl',
           },
         ],
@@ -291,7 +291,7 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
 
   it('returns token balances for a single chain', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-alfajores']],
+      showBalances: [NetworkId['celo-sepolia']],
     })
     mockFetch.mockResponseOnce(
       JSON.stringify([
@@ -312,13 +312,13 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
     })
     expect(mockFetch.mock.calls.length).toEqual(1)
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-alfajores'
+      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-sepolia'
     )
   })
 
   it('returns token balances for multiple chains', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
     mockFetch.mockResponseOnce(
       JSON.stringify([
@@ -349,13 +349,13 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
     })
     expect(mockFetch.mock.calls.length).toEqual(1)
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-alfajores%2Cethereum-sepolia'
+      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-sepolia%2Cethereum-sepolia'
     )
   })
 
   it('throws when received status is other than 200', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-alfajores']],
+      showBalances: [NetworkId['celo-sepolia']],
     })
     mockFetch.mockResponseOnce('error', { status: 500, statusText: 'some error' })
 
@@ -371,7 +371,7 @@ describe(fetchImportedTokenBalances, () => {
         address: mockTestTokenAddress,
         decimals: 18,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         balance: new BigNumber(0),
         name: 'TestToken',
         symbol: 'TT',
@@ -383,7 +383,7 @@ describe(fetchImportedTokenBalances, () => {
         address: mockPoofAddress,
         decimals: 18,
         tokenId: mockPoofTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         balance: new BigNumber(0),
         name: 'PoofToken',
         symbol: 'Poof',
@@ -471,11 +471,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('dispatches the account funded event if the account is funded', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
           dynamic(balances(new BigNumber(0), new BigNumber(10))),
         ],
       ])
@@ -490,11 +490,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('dispatches the account liquidated event when the account is liquidated', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
           dynamic(balances(new BigNumber(10), new BigNumber(0))),
         ],
       ])
@@ -509,11 +509,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('does not dispatch the account funded event for an account restore', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
           dynamic(balances(null, new BigNumber(10))),
         ],
       ])
@@ -527,16 +527,16 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('does not dispatch the account funded event when network ID added', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
       })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]), new BigNumber(0)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(0)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-alfajores'],
+            NetworkId['celo-sepolia'],
             NetworkId['ethereum-sepolia'],
           ]),
           new BigNumber(10),
@@ -553,15 +553,15 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]), new BigNumber(0)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(0)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-alfajores'],
+            NetworkId['celo-sepolia'],
             NetworkId['ethereum-sepolia'],
           ]),
           new BigNumber(10),
@@ -578,15 +578,15 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]), new BigNumber(10)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(10)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-alfajores'],
+            NetworkId['celo-sepolia'],
             NetworkId['ethereum-sepolia'],
           ]),
           new BigNumber(0),
@@ -604,15 +604,15 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValue({
-        showBalances: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-alfajores']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-alfajores']]), new BigNumber(10)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(10)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-alfajores'],
+            NetworkId['celo-sepolia'],
             NetworkId['ethereum-sepolia'],
           ]),
           new BigNumber(0),

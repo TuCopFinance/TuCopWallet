@@ -26,7 +26,7 @@ jest.mock('src/statsig', () => {
   return {
     getFeatureGate: jest.fn(),
     getMultichainFeatures: jest.fn(() => ({
-      showBalances: ['celo-alfajores', 'ethereum-sepolia'],
+      showBalances: ['celo-sepolia', 'ethereum-sepolia'],
     })),
   }
 })
@@ -46,13 +46,13 @@ const storeWithAssets = {
       },
       ['token1']: {
         tokenId: 'token1',
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         balance: '10',
         symbol: 'TK1',
       },
       ['token2']: {
         tokenId: 'token2',
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         balance: '0',
         symbol: 'TK2',
       },
@@ -69,9 +69,9 @@ const storeWithAssets = {
   },
   nfts: {
     nfts: [
-      { ...mockNftAllFields, networkId: NetworkId['celo-alfajores'] },
+      { ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] },
       { ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] },
-      { ...mockNftNullMetadata, networkId: NetworkId['celo-alfajores'] },
+      { ...mockNftNullMetadata, networkId: NetworkId['celo-sepolia'] },
     ],
     nftsLoading: false,
     nftsError: null,
@@ -217,8 +217,8 @@ describe('AssetList', () => {
     fireEvent.press(getAllByTestId('NftGallery/NftImage')[1])
     expect(navigate).toHaveBeenCalledTimes(2)
     expect(navigate).toHaveBeenCalledWith(Screens.NftsInfoCarousel, {
-      nfts: [{ ...mockNftAllFields, networkId: NetworkId['celo-alfajores'] }],
-      networkId: NetworkId['celo-alfajores'],
+      nfts: [{ ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] }],
+      networkId: NetworkId['celo-sepolia'],
     })
     expect(navigate).toHaveBeenCalledWith(Screens.NftsInfoCarousel, {
       nfts: [{ ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] }],

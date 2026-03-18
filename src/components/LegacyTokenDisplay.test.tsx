@@ -38,7 +38,7 @@ describe('LegacyTokenDisplay', () => {
             symbol: 'cUSD',
             balance: '50',
             priceUsd: '1',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             priceFetchedAt: Date.now(),
           },
           [mockCeurTokenId]: {
@@ -47,7 +47,7 @@ describe('LegacyTokenDisplay', () => {
             symbol: 'cEUR',
             balance: '50',
             priceUsd: '1.2',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             priceFetchedAt: Date.now(),
           },
           [mockCeloTokenId]: {
@@ -56,7 +56,7 @@ describe('LegacyTokenDisplay', () => {
             symbol: 'CELO',
             balance: '10',
             priceUsd: '5',
-            networkId: NetworkId['celo-alfajores'],
+            networkId: NetworkId['celo-sepolia'],
             priceFetchedAt: Date.now(),
           },
         },

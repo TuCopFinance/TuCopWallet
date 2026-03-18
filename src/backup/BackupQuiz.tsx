@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { chunk, flatMap, shuffle, times } from 'lodash'
 import * as React from 'react'
 import { Trans, WithTranslation } from 'react-i18next'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { connect } from 'react-redux'
 import { setBackupCompleted } from 'src/account/actions'
@@ -208,6 +208,23 @@ export class BackupQuiz extends React.Component<Props, State> {
     this.props.setBackupCompleted()
   }
 
+  onPressSkipVerification = () => {
+    const { t } = this.props
+    Alert.alert(t('backupQuizSkip.title'), t('backupQuizSkip.message'), [
+      { text: t('backupQuizSkip.cancel'), style: 'cancel' },
+      {
+        text: t('backupQuizSkip.confirm'),
+        style: 'destructive',
+        onPress: () => {
+          Logger.debug(TAG, 'User chose to skip backup quiz')
+          this.props.setBackupCompleted()
+          const isAccountRemoval = this.props.route.params?.isAccountRemoval ?? false
+          navigate(Screens.BackupComplete, { isAccountRemoval })
+        },
+      },
+    ])
+  }
+
   render() {
     const { t } = this.props
     const { mnemonicWords: mnemonicWordButtons, userChosenWords, mnemonicLength } = this.state
@@ -270,6 +287,9 @@ export class BackupQuiz extends React.Component<Props, State> {
             isQuizComplete={isQuizComplete}
             mode={this.state.mode}
           />
+          <Touchable onPress={this.onPressSkipVerification} style={styles.skipButton}>
+            <Text style={styles.skipButtonText}>{t('backupQuizSkip.skip')}</Text>
+          </Touchable>
         </>
       </SafeAreaView>
     )
@@ -421,6 +441,15 @@ const styles = StyleSheet.create({
   resetButton: { alignItems: 'center', padding: 24, marginTop: 8 },
   cancelButton: {
     color: colors.gray4,
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  skipButtonText: {
+    ...typeScale.bodySmall,
+    color: colors.gray4,
+    textDecorationLine: 'underline',
   },
 })
 
