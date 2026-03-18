@@ -1,5 +1,6 @@
 import { reducer as account } from 'src/account/reducer'
 import { reducer as alert } from 'src/alert/reducer'
+import bucksPayReducer from 'src/buckspay/slice'
 import { appReducer as app } from 'src/app/reducers'
 import dappsReducer from 'src/dapps/slice'
 import divviProtocolReducer from 'src/divviProtocol/slice'
@@ -54,4 +55,5 @@ export const reducersList = {
   points: pointsReducer,
   earn: earnReducer,
   divviProtocol: divviProtocolReducer,
+  buckspay: bucksPayReducer,
 } as const
