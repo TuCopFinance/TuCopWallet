@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { celoSepolia } from 'src/viem/celoSepolia'
 import { Environment as PersonaEnvironment } from 'react-native-persona'
 import {
   APP_REGISTRY_NAME,
@@ -17,7 +18,7 @@ import {
   base,
   baseSepolia,
   celo,
-  celoAlfajores,
+  // celoAlfajores removed — using custom celoSepolia from src/viem/celoSepolia.ts
   mainnet as ethereum,
   sepolia as ethereumSepolia,
   optimism,
@@ -28,7 +29,7 @@ import {
 } from 'viem/chains'
 
 export enum Testnets {
-  alfajores = 'alfajores',
+  testnet = 'testnet',
   mainnet = 'mainnet',
 }
 
@@ -142,25 +143,25 @@ const CELO_TOKEN_ADDRESS_MAINNET = '0x471ece3750da237f93b8e339c536989b8978a438'
 const CELO_GAS_PRICE_MINIMUM_ADDRESS_STAGING = '0xd0bf87a5936ee17014a057143a494dc5c5d51e5e'
 const CELO_GAS_PRICE_MINIMUM_ADDRESS_MAINNET = '0xdfca3a8d7699d8bafe656823ad60c17cb8270ecc'
 
-const CELO_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:native`
+const CELO_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:native`
 const CELO_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:native`
 
-const CUSD_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x874069fa1eb16d44d622f2e0ca25eea172369bc1`
+const CUSD_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0xef4d55d6de8e8d73232827cd1e9b2f2dbb45bc80`
 const CUSD_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x765de816845861e75a25fca122bb6898b8b1282a`
 
-const CEUR_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f`
+const CEUR_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0x6b172e333e2978484261d7ecc3de491e79764bbc`
 const CEUR_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73`
 
-const CREAL_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xe4d517785d091d3c54818832db6094bcc2744545`
+const CREAL_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0x2294298942fdc79417de9e0d740a4957e0e7783a`
 const CREAL_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xe8537a3d056da446677b9e9d6c5db704eaab4787`
 
 const ETH_TOKEN_ID_STAGING = `${NetworkId['ethereum-sepolia']}:native`
 const ETH_TOKEN_ID_MAINNET = `${NetworkId['ethereum-mainnet']}:native`
 
-const COPM_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xF0B11c888CbC5F72BD25A935E9762397ed41eF67`
+const COPM_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0x5f8d55c3627d2dc0a2b4afa798f877242f382f67`
 const COPM_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd748ab832081c45de4041ea`
 
-const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-alfajores']}:0xD29b6645bB2150789e7dC53e933f2478aCcb742C`
+const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0xd077a400968890eacc75cdc901f0356c943e4fdb`
 export const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
 
 const CLOUD_FUNCTIONS_STAGING = 'https://api.alfajores.valora.xyz'
@@ -182,19 +183,19 @@ const CURRENT_MTW_IMPLEMENTATION_ADDRESS_MAINNET: Address =
 const CURRENT_MTW_IMPLEMENTATION_ADDRESS_STAGING: Address =
   '0x5C9a6E3c3E862eD306E2E3348EBC8b8310A99e5A'
 
-const GET_TOKENS_INFO_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getTokensInfoWithPrices`
+const GET_TOKENS_INFO_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getTokensInfoWithPrices`
 const GET_TOKENS_INFO_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getTokensInfoWithPrices`
 
-const FETCH_EXCHANGES_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getExchanges`
+const FETCH_EXCHANGES_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getExchanges`
 const FETCH_EXCHANGES_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getExchanges`
 
-const PROVIDER_FETCH_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/fetchProviders`
+const PROVIDER_FETCH_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/fetchProviders`
 const PROVIDER_FETCH_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/fetchProviders`
 
-const GET_FIAT_CONNECT_PROVIDERS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getFiatConnectProviders`
+const GET_FIAT_CONNECT_PROVIDERS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getFiatConnectProviders`
 const GET_FIAT_CONNECT_PROVIDERS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getFiatConnectProviders`
 
-const GET_FIAT_CONNECT_QUOTES_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getQuotes`
+const GET_FIAT_CONNECT_QUOTES_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getQuotes`
 const GET_FIAT_CONNECT_QUOTES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getQuotes`
 
 const SIMPLEX_API_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/processSimplexRequest`
@@ -203,34 +204,34 @@ const SIMPLEX_API_URL_PROD = `${CLOUD_FUNCTIONS_MAINNET}/processSimplexRequest`
 const FETCH_USER_LOCATION_DATA_STAGING = `${CLOUD_FUNCTIONS_STAGING}/fetchUserLocationData`
 const FETCH_USER_LOCATION_DATA_PROD = `${CLOUD_FUNCTIONS_MAINNET}/fetchUserLocationData`
 
-const SET_REGISTRATION_PROPERTIES_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/setRegistrationProperties`
+const SET_REGISTRATION_PROPERTIES_STAGING = `${CLOUD_FUNCTIONS_STAGING}/setRegistrationProperties`
 const SET_REGISTRATION_PROPERTIES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/setRegistrationProperties`
 
-const VERIFY_PHONE_NUMBER_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
+const VERIFY_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
 const VERIFY_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
 
-const VERIFY_SMS_CODE_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
+const VERIFY_SMS_CODE_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
 const VERIFY_SMS_CODE_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
 
-const RESOLVE_PHONE_NUMBER_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
+const RESOLVE_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
 const RESOLVE_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
 
-const LOOKUP_PHONE_NUMBER_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/lookupPhoneNumber`
+const LOOKUP_PHONE_NUMBER_STAGING = `${CLOUD_FUNCTIONS_STAGING}/lookupPhoneNumber`
 const LOOKUP_PHONE_NUMBER_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupPhoneNumber`
 
-const LOOKUP_ADDRESS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/lookupAddress`
+const LOOKUP_ADDRESS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/lookupAddress`
 const LOOKUP_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupAddress`
 
-const REVOKE_PHONE_NUMBER_ALFAJORES = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
+const REVOKE_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
 const REVOKE_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/unlink`
 
-const MIGRATE_PHONE_VERIFICATION_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/migrateASv1Verification`
+const MIGRATE_PHONE_VERIFICATION_STAGING = `${CLOUD_FUNCTIONS_STAGING}/migrateASv1Verification`
 const MIGRATE_PHONE_VERIFICATION_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/migrateASv1Verification`
 
-const CHECK_ADDRESS_VERIFIED_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/checkAddressVerified`
+const CHECK_ADDRESS_VERIFIED_STAGING = `${CLOUD_FUNCTIONS_STAGING}/checkAddressVerified`
 const CHECK_ADDRESS_VERIFIED_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/checkAddressVerified`
 
-const RESOLVE_ID_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/resolveId`
+const RESOLVE_ID_STAGING = `${CLOUD_FUNCTIONS_STAGING}/resolveId`
 const RESOLVE_ID_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/resolveId`
 
 const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
@@ -238,65 +239,65 @@ const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
 const GET_SWAP_QUOTE_URL = `${CLOUD_FUNCTIONS_MAINNET}/getSwapQuote`
 
 const HOOKS_API_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/hooks-api`
-const HOOKS_API_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/hooks-api`
+const HOOKS_API_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/hooks-api`
 
-const JUMPSTART_CLAIM_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/walletJumpstart`
+const JUMPSTART_CLAIM_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/walletJumpstart`
 const JUMPSTART_CLAIM_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/walletJumpstart`
 
-const GET_NFTS_BY_OWNER_ADDRESS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getNfts`
+const GET_NFTS_BY_OWNER_ADDRESS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getNfts`
 const GET_NFTS_BY_OWNER_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getNfts`
 
 const CAB_API_KEY_MAINNET =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiY2xpZW50SWQiOiJkZWZhdWx0LWNsaWVudC1hcHAiLCJhcHBWZXJzaW9uIjoiMS4wLjAiLCJpYXQiOjE3NDUwODM0NjB9.oGiu-AmR08zj52leaGw6oJt6qUkPEYVl0tgLav8UeLs'
-const CAB_API_KEY_ALFAJORES =
+const CAB_API_KEY_STAGING =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiY2xpZW50SWQiOiJkZWZhdWx0LWNsaWVudC1hcHAiLCJhcHBWZXJzaW9uIjoiMS4wLjAiLCJpYXQiOjE3NDUwODM0NjB9.oGiu-AmR08zj52leaGw6oJt6qUkPEYVl0tgLav8UeLs'
 
-const CAB_ISSUE_SMS_CODE_ALFAJORES = `https://twilio-service.up.railway.app/otp/send`
+const CAB_ISSUE_SMS_CODE_STAGING = `https://twilio-service.up.railway.app/otp/send`
 const CAB_ISSUE_SMS_CODE_MAINNET = `https://twilio-service.up.railway.app/otp/send`
-const CAB_STORE_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup`
+const CAB_STORE_ENCRYPTED_MNEMONIC_STAGING = `https://twilio-service.up.railway.app/keyless-backup`
 const CAB_STORE_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup`
 
-const CAB_ISSUE_APP_KEYSHARE_ALFAJORES = `https://twilio-service.up.railway.app/otp/verify`
+const CAB_ISSUE_APP_KEYSHARE_STAGING = `https://twilio-service.up.railway.app/otp/verify`
 const CAB_ISSUE_APP_KEYSHARE_MAINNET = `https://twilio-service.up.railway.app/otp/verify`
 
-const CAB_LOGIN_ALFAJORES = `https://twilio-service.up.railway.app/siwe/login`
+const CAB_LOGIN_STAGING = `https://twilio-service.up.railway.app/siwe/login`
 const CAB_LOGIN_MAINNET = `https://twilio-service.up.railway.app/siwe/login`
 
-const CAB_CLOCK_ALFAJORES = `https://twilio-service.up.railway.app/siwe/clock`
+const CAB_CLOCK_STAGING = `https://twilio-service.up.railway.app/siwe/clock`
 const CAB_CLOCK_MAINNET = `https://twilio-service.up.railway.app/siwe/clock`
 
-const CAB_GET_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup`
+const CAB_GET_ENCRYPTED_MNEMONIC_STAGING = `https://twilio-service.up.railway.app/keyless-backup`
 const CAB_GET_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup`
 
-const CAB_DELETE_ENCRYPTED_MNEMONIC_ALFAJORES = `https://twilio-service.up.railway.app/keyless-backup/delete`
+const CAB_DELETE_ENCRYPTED_MNEMONIC_STAGING = `https://twilio-service.up.railway.app/keyless-backup/delete`
 const CAB_DELETE_ENCRYPTED_MNEMONIC_MAINNET = `https://twilio-service.up.railway.app/keyless-backup/delete`
 
-const SAVE_CONTACTS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/saveContacts`
+const SAVE_CONTACTS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/saveContacts`
 const SAVE_CONTACTS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/saveContacts`
 
-const GET_POINTS_HISTORY_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getPointsHistory`
+const GET_POINTS_HISTORY_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getPointsHistory`
 const GET_POINTS_HISTORY_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getPointsHistory`
 
-const GET_POINTS_CONFIG_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getPointsConfig`
+const GET_POINTS_CONFIG_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getPointsConfig`
 const GET_POINTS_CONFIG_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getPointsConfig`
-const TRACK_POINTS_EVENT_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/trackPointsEvent`
+const TRACK_POINTS_EVENT_STAGING = `${CLOUD_FUNCTIONS_STAGING}/trackPointsEvent`
 const TRACK_POINTS_EVENT_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/trackPointsEvent`
-const GET_POINTS_BALANCE_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getPointsBalance`
+const GET_POINTS_BALANCE_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getPointsBalance`
 const GET_POINTS_BALANCE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getPointsBalance`
 
-const SIMULATE_TRANSACTIONS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/simulateTransactions`
+const SIMULATE_TRANSACTIONS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/simulateTransactions`
 const SIMULATE_TRANSACTIONS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/simulateTransactions`
 
 const INTERNAL_ARBITRUM_RPC_URL_STAGING = `${CLOUD_FUNCTIONS_STAGING}/rpc/${NetworkId['arbitrum-sepolia']}`
 const INTERNAL_ARBITRUM_RPC_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/rpc/${NetworkId['arbitrum-one']}`
 
-const GET_WALLET_TRANSACTIONS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getWalletTransactions`
+const GET_WALLET_TRANSACTIONS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getWalletTransactions`
 const GET_WALLET_TRANSACTIONS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getWalletTransactions`
 
-const GET_WALLET_BALANCES_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getWalletBalances`
+const GET_WALLET_BALANCES_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getWalletBalances`
 const GET_WALLET_BALANCES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getWalletBalances`
 
-const GET_EXCHANGE_RATE_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getExchangeRate`
+const GET_EXCHANGE_RATE_STAGING = `${CLOUD_FUNCTIONS_STAGING}/getExchangeRate`
 const GET_EXCHANGE_RATE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getExchangeRate`
 
 const WEB3_AUTH_VERIFIER = 'valora-cab-auth0'
@@ -326,32 +327,32 @@ const SET_REGISTRATION_PROPERTIES_AUTH_MAINNET = {
     chainId: 42220,
   },
 } as const
-const SET_REGISTRATION_PROPERTIES_AUTH_ALFAJORES = {
+const SET_REGISTRATION_PROPERTIES_AUTH_STAGING = {
   ...BASE_SET_REGISTRATION_PROPERTIES_AUTH,
   domain: {
     ...BASE_SET_REGISTRATION_PROPERTIES_AUTH.domain,
-    chainId: 44787,
+    chainId: 11142220,
   },
 } as const
 
 const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 
 const networkConfigs: { [testnet: string]: NetworkConfig } = {
-  [Testnets.alfajores]: {
-    networkId: '44787',
+  [Testnets.testnet]: {
+    networkId: '11142220',
     networkToNetworkId: {
-      [Network.Celo]: NetworkId['celo-alfajores'],
+      [Network.Celo]: NetworkId['celo-sepolia'],
       [Network.Ethereum]: NetworkId['ethereum-sepolia'],
       [Network.Arbitrum]: NetworkId['arbitrum-sepolia'],
       [Network.Optimism]: NetworkId['op-sepolia'],
       [Network.PolygonPoS]: NetworkId['polygon-pos-amoy'],
       [Network.Base]: NetworkId['base-sepolia'],
     },
-    defaultNetworkId: NetworkId['celo-alfajores'],
+    defaultNetworkId: NetworkId['celo-sepolia'],
     // blockchainApiUrl: 'http://127.0.0.1:8080',
     blockchainApiUrl: BLOCKCHAIN_API_STAGING,
     cloudFunctionsUrl: CLOUD_FUNCTIONS_STAGING,
-    hooksApiUrl: HOOKS_API_URL_ALFAJORES,
+    hooksApiUrl: HOOKS_API_URL_STAGING,
     sentryTracingUrls: [
       DEFAULT_FORNO_URL,
       BLOCKCHAIN_API_STAGING,
@@ -362,45 +363,45 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     currentMtwImplementationAddress: CURRENT_MTW_IMPLEMENTATION_ADDRESS_STAGING,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY,
     bidaliUrl: BIDALI_URL,
-    providerFetchUrl: PROVIDER_FETCH_URL_ALFAJORES,
-    getFiatConnectProvidersUrl: GET_FIAT_CONNECT_PROVIDERS_ALFAJORES,
-    getFiatConnectQuotesUrl: GET_FIAT_CONNECT_QUOTES_ALFAJORES,
+    providerFetchUrl: PROVIDER_FETCH_URL_STAGING,
+    getFiatConnectProvidersUrl: GET_FIAT_CONNECT_PROVIDERS_STAGING,
+    getFiatConnectQuotesUrl: GET_FIAT_CONNECT_QUOTES_STAGING,
     simplexApiUrl: SIMPLEX_API_URL_STAGING,
     fetchUserLocationDataUrl: FETCH_USER_LOCATION_DATA_STAGING,
     walletConnectEndpoint: 'wss://relay.walletconnect.org',
     personaEnvironment: PersonaEnvironment.SANDBOX,
     inHouseLiquidityURL: 'https://liquidity-dot-celo-mobile-alfajores.appspot.com',
-    setRegistrationPropertiesUrl: SET_REGISTRATION_PROPERTIES_ALFAJORES,
-    setRegistrationPropertiesAuth: SET_REGISTRATION_PROPERTIES_AUTH_ALFAJORES,
-    fetchExchangesUrl: FETCH_EXCHANGES_URL_ALFAJORES,
+    setRegistrationPropertiesUrl: SET_REGISTRATION_PROPERTIES_STAGING,
+    setRegistrationPropertiesAuth: SET_REGISTRATION_PROPERTIES_AUTH_STAGING,
+    fetchExchangesUrl: FETCH_EXCHANGES_URL_STAGING,
     nftsAppUrl: NFTS_APP_URL,
     getSwapQuoteUrl: GET_SWAP_QUOTE_URL,
-    walletJumpstartUrl: JUMPSTART_CLAIM_URL_ALFAJORES,
-    verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_ALFAJORES,
-    verifySmsCodeUrl: VERIFY_SMS_CODE_ALFAJORES,
-    resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_ALFAJORES,
-    lookupPhoneNumberUrl: LOOKUP_PHONE_NUMBER_ALFAJORES,
-    lookupAddressUrl: LOOKUP_ADDRESS_ALFAJORES,
-    checkAddressVerifiedUrl: CHECK_ADDRESS_VERIFIED_ALFAJORES,
-    revokePhoneNumberUrl: REVOKE_PHONE_NUMBER_ALFAJORES,
-    migratePhoneVerificationUrl: MIGRATE_PHONE_VERIFICATION_ALFAJORES,
-    resolveId: RESOLVE_ID_ALFAJORES,
-    getNftsByOwnerAddressUrl: GET_NFTS_BY_OWNER_ADDRESS_ALFAJORES,
-    cabApiKey: CAB_API_KEY_ALFAJORES,
-    cabIssueSmsCodeUrl: CAB_ISSUE_SMS_CODE_ALFAJORES,
-    cabIssueAppKeyshareUrl: CAB_ISSUE_APP_KEYSHARE_ALFAJORES,
-    cabStoreEncryptedMnemonicUrl: CAB_STORE_ENCRYPTED_MNEMONIC_ALFAJORES,
-    cabGetEncryptedMnemonicUrl: CAB_GET_ENCRYPTED_MNEMONIC_ALFAJORES,
-    cabDeleteEncryptedMnemonicUrl: CAB_DELETE_ENCRYPTED_MNEMONIC_ALFAJORES,
-    cabLoginUrl: CAB_LOGIN_ALFAJORES,
-    cabClockUrl: CAB_CLOCK_ALFAJORES,
-    getTokensInfoUrl: GET_TOKENS_INFO_URL_ALFAJORES,
-    getPointsHistoryUrl: GET_POINTS_HISTORY_ALFAJORES,
-    trackPointsEventUrl: TRACK_POINTS_EVENT_ALFAJORES,
-    getPointsBalanceUrl: GET_POINTS_BALANCE_ALFAJORES,
-    simulateTransactionsUrl: SIMULATE_TRANSACTIONS_ALFAJORES,
+    walletJumpstartUrl: JUMPSTART_CLAIM_URL_STAGING,
+    verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_STAGING,
+    verifySmsCodeUrl: VERIFY_SMS_CODE_STAGING,
+    resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_STAGING,
+    lookupPhoneNumberUrl: LOOKUP_PHONE_NUMBER_STAGING,
+    lookupAddressUrl: LOOKUP_ADDRESS_STAGING,
+    checkAddressVerifiedUrl: CHECK_ADDRESS_VERIFIED_STAGING,
+    revokePhoneNumberUrl: REVOKE_PHONE_NUMBER_STAGING,
+    migratePhoneVerificationUrl: MIGRATE_PHONE_VERIFICATION_STAGING,
+    resolveId: RESOLVE_ID_STAGING,
+    getNftsByOwnerAddressUrl: GET_NFTS_BY_OWNER_ADDRESS_STAGING,
+    cabApiKey: CAB_API_KEY_STAGING,
+    cabIssueSmsCodeUrl: CAB_ISSUE_SMS_CODE_STAGING,
+    cabIssueAppKeyshareUrl: CAB_ISSUE_APP_KEYSHARE_STAGING,
+    cabStoreEncryptedMnemonicUrl: CAB_STORE_ENCRYPTED_MNEMONIC_STAGING,
+    cabGetEncryptedMnemonicUrl: CAB_GET_ENCRYPTED_MNEMONIC_STAGING,
+    cabDeleteEncryptedMnemonicUrl: CAB_DELETE_ENCRYPTED_MNEMONIC_STAGING,
+    cabLoginUrl: CAB_LOGIN_STAGING,
+    cabClockUrl: CAB_CLOCK_STAGING,
+    getTokensInfoUrl: GET_TOKENS_INFO_URL_STAGING,
+    getPointsHistoryUrl: GET_POINTS_HISTORY_STAGING,
+    trackPointsEventUrl: TRACK_POINTS_EVENT_STAGING,
+    getPointsBalanceUrl: GET_POINTS_BALANCE_STAGING,
+    simulateTransactionsUrl: SIMULATE_TRANSACTIONS_STAGING,
     viemChain: {
-      [Network.Celo]: celoAlfajores,
+      [Network.Celo]: celoSepolia,
       [Network.Ethereum]: ethereumSepolia,
       [Network.Arbitrum]: arbitrumSepolia,
       [Network.Optimism]: optimismSepolia,
@@ -432,17 +433,17 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     copmTokenId: COPM_TOKEN_ID_STAGING,
     usdtTokenId: USDT_TOKEN_ID_STAGING,
     spendTokenIds: [USDT_TOKEN_ID_STAGING, COPM_TOKEN_ID_STAGING],
-    saveContactsUrl: SAVE_CONTACTS_ALFAJORES,
-    getPointsConfigUrl: GET_POINTS_CONFIG_ALFAJORES,
+    saveContactsUrl: SAVE_CONTACTS_STAGING,
+    getPointsConfigUrl: GET_POINTS_CONFIG_STAGING,
     internalRpcUrl: {
       [Network.Arbitrum]: INTERNAL_ARBITRUM_RPC_URL_STAGING,
     },
     authHeaderIssuer: APP_REGISTRY_NAME,
     web3AuthVerifier: WEB3_AUTH_VERIFIER,
     crossChainExplorerUrl: CROSS_CHAIN_EXPLORER_URL,
-    getWalletTransactionsUrl: GET_WALLET_TRANSACTIONS_ALFAJORES,
-    getWalletBalancesUrl: GET_WALLET_BALANCES_ALFAJORES,
-    getExchangeRateUrl: GET_EXCHANGE_RATE_ALFAJORES,
+    getWalletTransactionsUrl: GET_WALLET_TRANSACTIONS_STAGING,
+    getWalletBalancesUrl: GET_WALLET_BALANCES_STAGING,
+    getExchangeRateUrl: GET_EXCHANGE_RATE_STAGING,
   },
   [Testnets.mainnet]: {
     networkId: '42220',
@@ -552,7 +553,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
   },
 }
 
-const CELOSCAN_BASE_URL_ALFAJORES = 'https://alfajores.celoscan.io'
+const CELOSCAN_BASE_URL_STAGING = 'https://sepolia.celoscan.io'
 const CELOSCAN_BASE_URL_MAINNET = 'https://celoscan.io'
 
 const ETHERSCAN_BASE_URL_SEPOLIA = 'https://sepolia.etherscan.io'
@@ -577,11 +578,11 @@ export const blockExplorerUrls: BlockExplorerUrls = {
     baseTokenUrl: `${CELOSCAN_BASE_URL_MAINNET}/token/`,
     baseNftUrl: 'https://explorer.celo.org/mainnet/token/',
   },
-  [NetworkId['celo-alfajores']]: {
-    baseTxUrl: `${CELOSCAN_BASE_URL_ALFAJORES}/tx/`,
-    baseAddressUrl: `${CELOSCAN_BASE_URL_ALFAJORES}/address/`,
-    baseTokenUrl: `${CELOSCAN_BASE_URL_ALFAJORES}/token/`,
-    baseNftUrl: 'https://explorer.celo.org/alfajores/token/',
+  [NetworkId['celo-sepolia']]: {
+    baseTxUrl: `${CELOSCAN_BASE_URL_STAGING}/tx/`,
+    baseAddressUrl: `${CELOSCAN_BASE_URL_STAGING}/address/`,
+    baseTokenUrl: `${CELOSCAN_BASE_URL_STAGING}/token/`,
+    baseNftUrl: 'https://sepolia.celoscan.io/token/',
   },
   [NetworkId['ethereum-mainnet']]: {
     baseTxUrl: `${ETHERSCAN_BASE_URL_MAINNET}/tx/`,
@@ -647,7 +648,7 @@ export const blockExplorerUrls: BlockExplorerUrls = {
 
 export const networkIdToNetwork: NetworkIdToNetwork = {
   [NetworkId['celo-mainnet']]: Network.Celo,
-  [NetworkId['celo-alfajores']]: Network.Celo,
+  [NetworkId['celo-sepolia']]: Network.Celo,
   [NetworkId['ethereum-mainnet']]: Network.Ethereum,
   [NetworkId['ethereum-sepolia']]: Network.Ethereum,
   [NetworkId['arbitrum-one']]: Network.Arbitrum,
@@ -661,7 +662,7 @@ export const networkIdToNetwork: NetworkIdToNetwork = {
 }
 
 export const networkIdToWalletConnectChainId: Record<NetworkId, string> = {
-  [NetworkId['celo-alfajores']]: 'eip155:44787',
+  [NetworkId['celo-sepolia']]: 'eip155:11142220',
   [NetworkId['celo-mainnet']]: 'eip155:42220',
   [NetworkId['ethereum-mainnet']]: 'eip155:1',
   [NetworkId['ethereum-sepolia']]: 'eip155:11155111',
@@ -685,6 +686,12 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
 }
 
 Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
+
+// BucksPay offramp constants
+export const BUCKSPAY_RECEIVER_ADDRESS = '0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0' as Address
+export const BUCKSPAY_CELO_NETWORK_ID = 6
+export const BUCKSPAY_API_BASE_URL = 'https://buckspay-webhook-production-ad81.up.railway.app'
+export const BUCKSPAY_WEB_APP_URL = 'https://app.buckspay.xyz/'
 
 export { COPM_TOKEN_ID_MAINNET }
 
