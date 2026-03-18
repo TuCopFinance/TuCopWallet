@@ -14,19 +14,23 @@ const BucksPayLogo = require('./buckspay-logo.png')
 const BUCKSPAY_SERVICE_START_HOUR = 8 // 8 AM Colombia time
 const BUCKSPAY_SERVICE_END_HOUR = 20 // 8 PM Colombia time
 
+const COLOMBIA_UTC_OFFSET = -5 // Colombia is always UTC-5 (no daylight saving)
+
+function getColombiaDate(): Date {
+  const now = new Date()
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000
+  return new Date(utcMs + COLOMBIA_UTC_OFFSET * 3600000)
+}
+
 function getColombiaTimeFormatted(): string {
-  return new Date().toLocaleTimeString('en-US', {
-    timeZone: 'America/Bogota',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+  const colombia = getColombiaDate()
+  const h = colombia.getHours().toString().padStart(2, '0')
+  const m = colombia.getMinutes().toString().padStart(2, '0')
+  return `${h}:${m}`
 }
 
 function isBucksPayServiceAvailable(): boolean {
-  const now = new Date()
-  const colombiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
-  const hour = colombiaTime.getHours()
+  const hour = getColombiaDate().getHours()
   return hour >= BUCKSPAY_SERVICE_START_HOUR && hour < BUCKSPAY_SERVICE_END_HOUR
 }
 
