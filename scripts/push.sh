@@ -6,8 +6,8 @@
 #####
 
 
-# celo-mobile-alfajores
-# https://console.firebase.google.com/project/celo-mobile-alfajores/settings/cloudmessaging/ios:org.celo.mobile.alfajores
+# celo-mobile-testnet
+# https://console.firebase.google.com/project/celo-mobile-testnet/settings/cloudmessaging/ios:org.celo.mobile.testnet
 FCM_SERVER_KEY=""
 # to get your token you can add a log in src/firebase/firebase.ts registerTokenToDb
 USER_FCM_TOKEN=""

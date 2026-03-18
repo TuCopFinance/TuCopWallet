@@ -24,8 +24,8 @@ describe('TokenBalanceItem', () => {
       decimals: 18,
       name: 'Celo Dollar',
       imageUrl: '',
-      tokenId: `celo-alfajores:${mockCusdAddress}`,
-      networkId: 'celo-alfajores',
+      tokenId: `celo-sepolia:${mockCusdAddress}`,
+      networkId: 'celo-sepolia',
     } as any
   })
 
@@ -108,7 +108,7 @@ describe('TokenBalanceItem', () => {
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(AssetsEvents.tap_asset, {
       assetType: 'token',
-      tokenId: `celo-alfajores:${mockCusdAddress}`,
+      tokenId: `celo-sepolia:${mockCusdAddress}`,
       networkId: mockTokenInfo.networkId,
       address: mockTokenInfo.address,
       balanceUsd: 10,

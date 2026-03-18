@@ -55,9 +55,9 @@ react {
 
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
-    alfajoresnightly: ".env.alfajoresnightly",
-    alfajoresdev: ".env.alfajoresdev",
-    alfajores: ".env.alfajores",
+    testnetnightly: ".env.testnetnightly",
+    testnetdev: ".env.testnetdev",
+    testnet: ".env.testnet",
     mainnetnightly: ".env.mainnetnightly",
     mainnetdev: ".env.mainnetdev",
     mainnet: ".env.mainnet",
@@ -234,13 +234,13 @@ android {
     }
     flavorDimensions "default"
     productFlavors {
-        alfajores {
+        testnet {
             dimension "default"
         }
-        alfajoresdev {
+        testnetdev {
             dimension "default"
         }
-        alfajoresnightly {
+        testnetnightly {
             dimension "default"
         }
         mainnet {
