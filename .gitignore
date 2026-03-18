@@ -102,6 +102,7 @@ coverage/
 
 android/keystore.properties
 android/app/celo-release-key.keystore
+upload_certificate.pem
 android/app/.settings
 android/.settings
 
