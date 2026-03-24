@@ -177,12 +177,12 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 
 #### **Esquemas Activos:**
 
-- **`MobileStack-alfajores`**: Celo Sepolia testnet (nombre legacy)
+- **`MobileStack-testnet`**: Celo Sepolia testnet
 
   - Nombre: "TuCop Celo Sepolia"
   - Uso: Pruebas con tokens de testnet
 
-- **`MobileStack-alfajoresdev`**: Celo Sepolia testnet dev (nombre legacy) ⭐ **Recomendado**
+- **`MobileStack-testnetdev`**: Celo Sepolia testnet dev ⭐ **Recomendado**
 
   - Nombre: "TuCop (Celo Sepolia dev)"
   - Características: Configuración de desarrollo, sin Sentry
@@ -201,17 +201,17 @@ El proyecto incluye 6 esquemas de iOS para diferentes entornos:
 
 #### **Esquemas No Usados (marcados con sufijo "(unused)"):**
 
-- `MobileStack-alfajoresnightly (unused)` — CI nightly deshabilitado
+- `MobileStack-testnetnightly (unused)` — CI nightly deshabilitado
 - `MobileStack-mainnetnightly (unused)` — CI nightly deshabilitado
 - `MobileStack-test (unused)` — configuración legacy de Mento
 
 #### **Selección de Esquema:**
 
-- **Para Desarrollo**: `MobileStack-alfajoresdev` (Celo Sepolia testnet)
-- **Para Pruebas**: `MobileStack-alfajores` (Celo Sepolia con configuración de producción)
+- **Para Desarrollo**: `MobileStack-testnetdev` (Celo Sepolia testnet)
+- **Para Pruebas**: `MobileStack-testnet` (Celo Sepolia con configuración de producción)
 - **Para Producción**: `MobileStack-mainnet` (red real)
 
-Cada esquema carga un archivo `.env.*` correspondiente. Los nombres de archivos aún usan "alfajores" por razones legacy — un renombrado completo está planeado.
+Cada esquema carga un archivo `.env.*` correspondiente.
 
 ## 🔧 Scripts Disponibles
 
@@ -507,7 +507,7 @@ Este proyecto está bajo la licencia MIT. Ver [LICENSE](./LICENSE) para más det
 - ✅ **Despliegue a Tiendas**: Automático
 - ✅ **Documentación**: Completa y actualizada
 
-**Versión Actual**: 1.116.0
+**Versión Actual**: 1.117.0
 **Última Actualización**: Marzo 2026
 **Estado**: 🟢 Producción Estable
 
