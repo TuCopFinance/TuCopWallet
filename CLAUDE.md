@@ -121,12 +121,12 @@ The project has 7 iOS build schemes. Only 4 are active — the rest are marked u
 
 #### **Active Schemes:**
 
-- **`MobileStack-alfajores`**: Celo Sepolia testnet (legacy scheme name)
+- **`MobileStack-testnet`**: Celo Sepolia testnet
   - Display Name: "TuCop Celo Sepolia"
   - Features: Shows testnet banner, Sentry enabled
   - Use for: Testing with testnet tokens
 
-- **`MobileStack-alfajoresdev`**: Celo Sepolia testnet dev (legacy scheme name)
+- **`MobileStack-testnetdev`**: Celo Sepolia testnet dev
   - Display Name: "TuCop (Celo Sepolia dev)"
   - Features: Dev settings enabled, debug keystore, no Sentry
   - Use for: **Primary development** (recommended)
@@ -142,25 +142,39 @@ The project has 7 iOS build schemes. Only 4 are active — the rest are marked u
 
 #### **Unused Schemes (marked with "(unused)" suffix):**
 
-- `MobileStack-alfajoresnightly (unused)` — nightly CI disabled
+- `MobileStack-testnetnightly (unused)` — nightly CI disabled
 - `MobileStack-mainnetnightly (unused)` — nightly CI disabled
 - `MobileStack-test (unused)` — legacy Mento test config
 
 #### **Scheme Selection Guidelines:**
 
-- **For Development**: Use `MobileStack-alfajoresdev` (safe Celo Sepolia testnet)
-- **For Testing**: Use `MobileStack-alfajores` (Celo Sepolia with production-like settings)
+- **For Development**: Use `MobileStack-testnetdev` (safe Celo Sepolia testnet)
+- **For Testing**: Use `MobileStack-testnet` (Celo Sepolia with production-like settings)
 - **For Production**: Use `MobileStack-mainnet` (real network and tokens)
 
-Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags. Scheme filenames still use "alfajores" for legacy reasons — a full rename is planned.
+Each scheme loads a corresponding `.env.*` file that configures network endpoints, display names, bundle IDs, and feature flags.
+
+### Android Build Configuration
+
+- **AGP**: 8.5.1 | **Gradle**: 8.7 | **Kotlin**: 1.9.22
+- **NDK**: 26.1.10909125 | **Build Tools**: 35.0.0
+- **Min SDK**: 24 | **Target/Compile SDK**: 35
+- **Hermes**: enabled | **ProGuard/R8**: enabled in release
+- **16 KB page size**: Supported via AGP 8.5.1 + `useLegacyPackaging = true`
+- **Release build**: `cd android && ./gradlew bundleMainnetRelease`
+- **AAB output**: `android/app/build/outputs/bundle/mainnetRelease/app-mainnet-release.aab`
+- **Signing**: `tucop.keystore` (alias: `tucop`), password via `KEYSTORE_PASSWORD` env var
 
 ### Recent Important Changes
-- **Version 1.116.0**: Current app version
+
+- **Version 1.117.0**: Current app version (build code: 1021081753)
+- **AGP 8.5.1 Upgrade**: For Google Play 16 KB page size compliance
 - **BucksPay Offramp**: Native COPm → COP bank transfer integration via BucksPay API
 - **COPm Token**: Renamed from cCOP to COPm across the app
 - **ReFi Colombia Subsidies**: UBI/subsidy claims via `src/subsidies/`
 - **Divvi Protocol v2**: Referral tracking system
 - **Celo Sepolia**: Active testnet (chain ID 11142220, replaces deprecated Alfajores)
+- **Scheme rename**: iOS schemes renamed from alfajores → testnet
 
 ### Development Notes
 - Always run `yarn build:ts` before committing to catch TypeScript errors
