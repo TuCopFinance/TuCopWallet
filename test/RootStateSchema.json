@@ -2,6 +2,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
     "definitions": {
+        "AccountType": {
+            "enum": [
+                "checking",
+                "nequi",
+                "savings"
+            ],
+            "type": "string"
+        },
         "ActiveDapp": {
             "additionalProperties": false,
             "properties": {
@@ -254,6 +262,7 @@
                                 "importBackupFailed",
                                 "importContactsFailed",
                                 "incorrectPin",
+                                "insufficientFundsForGas",
                                 "invalidBackupPhrase",
                                 "invalidWordsInBackupPhrase",
                                 "inviteWithUrl.error",
@@ -270,7 +279,10 @@
                                 "sendPaymentFailed",
                                 "simplexPurchaseFetchFailed",
                                 "swapScreen.fetchSwapQuoteFailed",
-                                "transactionTimeout"
+                                "transactionTimeout",
+                                "ubiAlreadyClaimed",
+                                "ubiClaimError",
+                                "ubiNotBeneficiary"
                             ],
                             "type": "string"
                         },
@@ -514,6 +526,30 @@
             ],
             "type": "object"
         },
+        "BankDetails": {
+            "additionalProperties": false,
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "accountType": {
+                    "$ref": "#/definitions/AccountType"
+                },
+                "bankCountry": {
+                    "type": "string"
+                },
+                "bankName": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "accountNumber",
+                "accountType",
+                "bankCountry",
+                "bankName"
+            ],
+            "type": "object"
+        },
         "BaseToken": {
             "additionalProperties": false,
             "properties": {
@@ -616,6 +652,18 @@
                     ]
                 }
             ]
+        },
+        "BucksPayFlowStatus": {
+            "enum": [
+                "checking-user",
+                "completed",
+                "error",
+                "idle",
+                "sending-crypto",
+                "submitting-to-api",
+                "tracking"
+            ],
+            "type": "string"
         },
         "CICOFlow": {
             "enum": [
@@ -778,9 +826,9 @@
         "CiCoCurrency": {
             "enum": [
                 "CELO",
+                "COPm",
                 "ETH",
                 "USDT",
-                "COPm",
                 "cEUR",
                 "cREAL",
                 "cUSD"
@@ -2202,8 +2250,8 @@
                 "arbitrum-sepolia",
                 "base-mainnet",
                 "base-sepolia",
-                "celo-sepolia",
                 "celo-mainnet",
+                "celo-sepolia",
                 "ethereum-mainnet",
                 "ethereum-sepolia",
                 "op-mainnet",
@@ -3840,6 +3888,9 @@
                 "BackupPhrase",
                 "BackupQuiz",
                 "BidaliScreen",
+                "BucksPayBankForm",
+                "BucksPayConfirm",
+                "BucksPayStatus",
                 "CashInSuccess",
                 "ChooseYourAdventure",
                 "CoinbasePayScreen",
@@ -3906,11 +3957,13 @@
                 "QRCode",
                 "QRNavigator",
                 "QRScanner",
+                "ReFiColombiaSubsidies",
                 "RegulatoryTerms",
                 "SanctionedCountryErrorScreen",
                 "SecuritySubmenu",
                 "SelectCountry",
                 "SelectLocalCurrency",
+                "SelectOfframpProvider",
                 "SelectProvider",
                 "SendConfirmation",
                 "SendConfirmationModal",
@@ -5885,6 +5938,75 @@
             ],
             "type": "object"
         },
+        "State_26": {
+            "additionalProperties": false,
+            "properties": {
+                "bucksPayCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "bucksPayStatus": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "FINISHED",
+                                "INPROGRESS",
+                                "PAYED",
+                                "PENDING",
+                                "STARTED"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "certificateUrl": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "error": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "flowStatus": {
+                    "$ref": "#/definitions/BucksPayFlowStatus"
+                },
+                "lastBankDetails": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/BankDetails"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "transactionHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "bucksPayCode",
+                "bucksPayStatus",
+                "certificateUrl",
+                "error",
+                "flowStatus",
+                "lastBankDetails",
+                "transactionHash"
+            ],
+            "type": "object"
+        },
         "State_3": {
             "anyOf": [
                 {
@@ -6157,6 +6279,9 @@
                         "BackupPhrase",
                         "BackupQuiz",
                         "BidaliScreen",
+                        "BucksPayBankForm",
+                        "BucksPayConfirm",
+                        "BucksPayStatus",
                         "CashInSuccess",
                         "ChooseYourAdventure",
                         "CoinbasePayScreen",
@@ -6221,11 +6346,13 @@
                         "ProfileSubmenu",
                         "ProtectWallet",
                         "QRNavigator",
+                        "ReFiColombiaSubsidies",
                         "RegulatoryTerms",
                         "SanctionedCountryErrorScreen",
                         "SecuritySubmenu",
                         "SelectCountry",
                         "SelectLocalCurrency",
+                        "SelectOfframpProvider",
                         "SelectProvider",
                         "SendConfirmation",
                         "SendConfirmationModal",
@@ -6820,13 +6947,13 @@
                     },
                     "type": "array"
                 },
-                "celo-sepolia": {
+                "celo-mainnet": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },
                     "type": "array"
                 },
-                "celo-mainnet": {
+                "celo-sepolia": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },
@@ -7743,6 +7870,9 @@
         "app": {
             "$ref": "#/definitions/State"
         },
+        "buckspay": {
+            "$ref": "#/definitions/State_26"
+        },
         "dapps": {
             "$ref": "#/definitions/State_16"
         },
@@ -7844,6 +7974,7 @@
         "account",
         "alert",
         "app",
+        "buckspay",
         "dapps",
         "divviProtocol",
         "earn",
