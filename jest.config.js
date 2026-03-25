@@ -12,6 +12,7 @@ module.exports = {
     defaultPlatform: 'android',
   },
   moduleNameMapper: {
+    '\\.svg$': '<rootDir>/__mocks__/svgMock.tsx',
     'react-native-svg': '<rootDir>/node_modules/react-native-svg-mock',
     // For some reason jest doesn't pick it up automatically from the __mocks__ folder
     // like the other modules, adding it here fixes it
@@ -41,6 +42,6 @@ module.exports = {
     '^.+\\.(txt)$': require.resolve('./node_modules/react-native/jest/assetFileTransformer.js'),
   },
   transformIgnorePatterns: [
-    'node_modules/(?!@?react-native|@react-navigation|@react-native-community|uuid|statsig-js|@react-native-firebase|react-navigation|redux-persist|date-fns|victory-*|@walletconnect/react-native-compat|react-redux|@segment/analytics-react-native/node_modules/uuid)',
+    'node_modules/(?!@?react-native|@react-navigation|@react-native-community|uuid|statsig-js|@react-native-firebase|react-navigation|redux-persist|date-fns|victory-*|@walletconnect/react-native-compat|react-redux|@segment/analytics-react-native/node_modules/uuid|react-native-shadow-2|colord)',
   ],
 }
