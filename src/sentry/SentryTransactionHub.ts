@@ -1,11 +1,9 @@
-import * as Sentry from '@sentry/react-native'
-import Logger from 'src/utils/Logger'
+import { startInactiveSpan, spanToJSON } from '@sentry/core'
+import type { Span } from '@sentry/core'
 import { SentryTransaction, SentryTransactions } from 'src/sentry/SentryTransactions'
 import { SENTRY_ENABLED } from 'src/config'
 
-const TAG = 'sentry/SentryTransactionHub'
-
-let transactions = [] as Array<ReturnType<typeof Sentry.startTransaction>>
+let spans = [] as Array<Span>
 
 export const SentryTransactionHub = {
   startTransaction(name: SentryTransaction) {
@@ -13,13 +11,9 @@ export const SentryTransactionHub = {
     if (!SENTRY_ENABLED) {
       return
     }
-    // Check if Sentry.startTransaction is available
-    if (typeof Sentry.startTransaction !== 'function') {
-      return
-    }
     try {
-      const transaction = Sentry.startTransaction({ ...SentryTransactions[name], trimEnd: true })
-      transactions.push(transaction)
+      const span = startInactiveSpan({ ...SentryTransactions[name] })
+      spans.push(span)
     } catch (error) {
       // Silently fail in development
     }
@@ -32,19 +26,17 @@ export const SentryTransactionHub = {
     // get transaction operation - 'op'
     const op = SentryTransactions[name].op
 
-    // Find first the transaction with this op.
-    const selectedTransaction = transactions.find(
-      (transaction) => transaction && transaction.op === SentryTransactions[name].op
-    )
+    // Find first the span with this op.
+    const selectedSpan = spans.find((span) => span && spanToJSON(span).op === op)
 
-    // Finish the selected transaction
+    // End the selected span
     try {
-      selectedTransaction?.finish()
+      selectedSpan?.end()
     } catch (error) {
       // Silently fail in development
     }
 
-    // Remove all transactions matching op from the transaction hub
-    transactions = transactions.filter((transaction) => transaction && transaction.op !== op)
+    // Remove all spans matching op from the hub
+    spans = spans.filter((span) => span && spanToJSON(span).op !== op)
   },
 }
