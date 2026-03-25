@@ -9,7 +9,6 @@ import {
   cryptoSent,
   offrampError,
   offrampStart,
-  statusUpdated,
 } from 'src/buckspay/slice'
 import { checkUserRegistrationSaga, offrampSaga } from 'src/buckspay/saga'
 import { BankDetails } from 'src/buckspay/types'
