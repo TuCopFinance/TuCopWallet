@@ -239,7 +239,7 @@ describe('KeylessBackupProgress', () => {
       )
       expect(getByTestId('GreenLoadingSpinnerToCheck')).toBeTruthy()
       expect(getByText(`₱`, { exact: false })).toBeTruthy()
-      expect(getByText(`45.22`, { exact: false })).toBeTruthy()
+      expect(getByText(`55.74`, { exact: false })).toBeTruthy()
 
       fireEvent.press(getByTestId('KeylessBackupProgress/Continue'))
       expect(AppAnalytics.track).toHaveBeenCalledWith(

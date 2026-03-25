@@ -65,7 +65,8 @@ describe('AppInitGate', () => {
     })
 
     await waitFor(() => expect(getByText('App')).toBeTruthy())
-    expect(store.getActions()).toEqual([appMounted()])
+    // TuCOP always sets language to es-419 on init
+    expect(store.getActions()).toEqual([setLanguage('es-419'), appMounted()])
     expect(AppAnalytics.startSession).toHaveBeenCalledWith(
       'app_launched',
       expect.objectContaining({
@@ -79,14 +80,11 @@ describe('AppInitGate', () => {
   })
 
   it('should update the language if none was set', async () => {
-    jest
-      .spyOn(RNLocalize, 'findBestLanguageTag')
-      .mockReturnValue({ languageTag: 'de-DE', isRTL: true })
-
     const { getByText, store } = renderAppInitGate(null)
 
     await waitFor(() => expect(getByText('App')).toBeTruthy())
-    expect(store.getActions()).toEqual([setLanguage('de-DE'), appMounted()])
+    // TuCOP defaults to es-419 (Spanish) regardless of device locale
+    expect(store.getActions()).toEqual([setLanguage('es-419'), appMounted()])
     expect(navigateToError).not.toHaveBeenCalled()
   })
 

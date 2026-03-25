@@ -22,7 +22,7 @@ describe('TabNavigator', () => {
 
     // By Text
     expect(queryByText('bottomTabsNavigator.wallet.tabName')).toBeTruthy()
-    expect(queryByText('bottomTabsNavigator.home.tabName')).toBeTruthy()
+    // Home tab uses an icon only (no text label)
     expect(queryByText('bottomTabsNavigator.activity.tabName')).toBeTruthy()
 
     // By testId - useful for e2e tests
@@ -66,13 +66,14 @@ describe('TabNavigator', () => {
 
   it('does not attempt navigate to current screen', async () => {
     const store = createMockStore({})
-    const { getByText, getByTestId } = render(
+    const { getByTestId } = render(
       <Provider store={store}>
         <MockedNavigator component={TabNavigator} />
       </Provider>
     )
 
-    expect(getByTestId('Tab/Home')).toContainElement(getByText('bottomTabsNavigator.home.tabName'))
+    // Home tab is the initial screen (icon only, no text label)
+    expect(getByTestId('Tab/Home')).toBeTruthy()
     await fireEvent.press(getByTestId('Tab/Home'))
     expect(CommonActions.navigate).not.toHaveBeenCalled()
   })
