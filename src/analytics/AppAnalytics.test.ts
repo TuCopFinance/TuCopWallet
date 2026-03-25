@@ -132,54 +132,6 @@ const state = getMockStoreData({
 // @ts-ignore
 global.__DEV__ = false
 
-const defaultSuperProperties = {
-  sAccountAddress: mockWalletAddress, // test for backwards compatibility (this field is NOT lower-cased)
-  sAppBuildNumber: '1',
-  sAppBundleId: 'org.celo.mobile.debug',
-  sAppVersion: '0.0.1',
-  sCeloBalance: 0,
-  sCeurBalance: 20,
-  sCountryCodeAlpha2: 'US',
-  sCurrentScreenId: undefined,
-  sCusdBalance: 10,
-  sDeviceId: mockDeviceId,
-  sDeviceLanguage: 'en-US',
-  sHasCompletedBackup: false,
-  sHasVerifiedNumberCPV: true,
-  sHooksPreviewEnabled: false,
-  sLanguage: 'es-419',
-  sLocalCurrencyCode: 'PHP',
-  sNetWorthUsd: 43.910872728527195,
-  sOtherTenTokens: 'UBE:1,TT:10',
-  sPhoneCountryCallingCode: '+1',
-  sPhoneCountryCodeAlpha2: 'US',
-  sPincodeType: 'CustomPin',
-  sPositionsAppsCount: 1,
-  sPositionsCount: 3,
-  sPositionsTopTenApps: 'ubeswap:7.91',
-  sPrevScreenId: undefined,
-  sTokenCount: 4,
-  sTopTenPositions: 'ubeswap-G$ / cUSD:4.08,ubeswap-MOO / CELO:2.51,ubeswap-CELO / cUSD:1.32',
-  sTotalBalanceUsd: 36,
-  sTotalCeloSepoliaBalanceUsd: 36,
-  sTotalPositionsBalanceUsd: 7.910872728527196,
-  sWalletAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
-  sHasTokenBalance: true,
-  sHasCeloSepoliaTokenBalance: true,
-  sPointsBalance: '50',
-}
-
-const defaultProperties = {
-  ...defaultSuperProperties,
-  celoNetwork: 'testnet',
-  sessionId: expectedSessionId,
-  timestamp: 1482363367071,
-  userAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
-  statsigEnvironment: {
-    tier: 'development',
-  },
-}
-
 beforeAll(() => {
   jest.useFakeTimers({ now: 1482363367071 })
 })

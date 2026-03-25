@@ -1,4 +1,5 @@
-import dynamicLinks from '@react-native-firebase/dynamic-links'
+// dynamicLinks import kept for jest.mock side-effect
+import '@react-native-firebase/dynamic-links'
 import { render, waitFor } from '@testing-library/react-native'
 import CleverTap from 'clevertap-react-native'
 import * as React from 'react'

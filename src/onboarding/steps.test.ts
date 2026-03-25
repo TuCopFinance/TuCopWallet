@@ -83,7 +83,7 @@ describe('onboarding steps', () => {
       // totalCounter is intentionally hardcoded to 1 in steps.ts
       // to show "Step 1 of 1" in the onboarding screen
       screens.forEach((screen, index) => {
-        const { totalSteps, step } = getOnboardingStepValues(screen, onboardingProps)
+        const { totalSteps } = getOnboardingStepValues(screen, onboardingProps)
         try {
           expect(totalSteps).toEqual(1)
         } catch (error) {

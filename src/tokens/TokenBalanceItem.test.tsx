@@ -30,7 +30,7 @@ describe('TokenBalanceItem', () => {
   })
 
   it('displays correctly', () => {
-    const { getByText, getByTestId, queryByTestId } = render(
+    const { getByText, queryByTestId } = render(
       <Provider store={createMockStore({})}>
         <TokenBalanceItem token={mockTokenInfo} />
       </Provider>
@@ -67,7 +67,7 @@ describe('TokenBalanceItem', () => {
   })
 
   it('displays correctly when the token network is provided', () => {
-    const { getByText, getByTestId } = render(
+    const { getByText } = render(
       <Provider store={createMockStore({})}>
         <TokenBalanceItem token={mockTokenInfo} />
       </Provider>
