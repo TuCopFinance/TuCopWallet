@@ -398,9 +398,9 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
           style={
             [
               {
-                "color": "#5061E8",
-                "fontFamily": "Inter-Regular",
-                "fontSize": 16,
+                "color": "#2F4ACD",
+                "fontFamily": "RedHatDisplayRegular",
+                "fontSize": 12,
                 "lineHeight": 24,
               },
               [
@@ -473,9 +473,9 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
         <Text
           style={
             {
-              "color": "#5061E8",
-              "fontFamily": "Inter-Regular",
-              "fontSize": 16,
+              "color": "#2F4ACD",
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
               "lineHeight": 24,
             }
           }
@@ -514,7 +514,7 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
             <Text
               style={
                 {
-                  "fontFamily": "Inter-Bold",
+                  "fontFamily": "RedHatDisplayBold",
                   "fontSize": 20,
                   "lineHeight": 28,
                   "marginBottom": 16,
@@ -546,8 +546,8 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
       <Text
         style={
           {
-            "fontFamily": "Inter-Regular",
-            "fontSize": 16,
+            "fontFamily": "RedHatDisplayRegular",
+            "fontSize": 12,
             "lineHeight": 24,
             "marginTop": 16,
           }
@@ -577,7 +577,7 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
       testID="backupKeySavedSwitch"
       thumbTintColor="#E6E6E6"
       trackColorForFalse="#757575"
-      trackColorForTrue="#5061E8"
+      trackColorForTrue="#2F4ACD"
       trackTintColor="#757575"
     />
     <Text
@@ -585,8 +585,8 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
       style={
         {
           "flex": 1,
-          "fontFamily": "Inter-Regular",
-          "fontSize": 16,
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
           "lineHeight": 24,
           "paddingLeft": 8,
         }
@@ -596,100 +596,122 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
     </Text>
   </View>
   <View
-    style={
+    disabled={false}
+    distance={8}
+    offset={
       [
-        {
-          "flexDirection": "column",
-        },
-        {
-          "paddingBottom": 16,
-          "paddingHorizontal": 16,
-        },
+        0,
+        4,
       ]
+    }
+    startColor="rgba(190, 201, 255, 0.28)"
+    style={
+      {
+        "alignSelf": "stretch",
+        "borderRadius": 15,
+      }
     }
   >
     <View
       style={
         [
           {
-            "overflow": "hidden",
+            "flexDirection": "column",
+            "width": "100%",
           },
           {
-            "borderRadius": 100,
+            "paddingBottom": 16,
+            "paddingHorizontal": 16,
           },
         ]
       }
     >
       <View
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": true,
-            "expanded": undefined,
-            "selected": undefined,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        focusable={false}
-        nativeBackgroundAndroid={
-          {
-            "attribute": "selectableItemBackground",
-            "rippleRadius": undefined,
-            "type": "ThemeAttrAndroid",
-          }
-        }
-        onClick={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
         style={
           [
             {
-              "alignItems": "center",
-              "backgroundColor": "#FFFFFF",
-              "borderColor": "#2E3338",
-              "borderRadius": 100,
-              "borderWidth": 1,
-              "flexDirection": "row",
-              "flexGrow": 1,
-              "height": 48,
-              "justifyContent": "center",
-              "opacity": 0.5,
-              "paddingHorizontal": 24,
-              "paddingVertical": 5,
+              "overflow": "hidden",
             },
-            undefined,
+            {
+              "borderRadius": 100,
+            },
           ]
         }
-        testID="backupKeyContinue"
       >
-        <Text
-          maxFontSizeMultiplier={1}
-          style={
+        <View
+          accessibilityState={
             {
-              "color": "#2E3338",
-              "fontFamily": "Inter-SemiBold",
-              "fontSize": 16,
-              "lineHeight": 24,
-              "marginLeft": 0,
-              "marginRight": 0,
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": true,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          focusable={false}
+          nativeBackgroundAndroid={
+            {
+              "attribute": "selectableItemBackground",
+              "rippleRadius": undefined,
+              "type": "ThemeAttrAndroid",
+            }
+          }
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "backgroundColor": "#FFFFFF",
+                "borderColor": "#FFFFFF",
+                "borderRadius": 100,
+                "borderWidth": 1,
+                "flexDirection": "row",
+                "flexGrow": 1,
+                "height": 48,
+                "justifyContent": "center",
+                "maxHeight": 56,
+                "opacity": 0.5,
+                "paddingHorizontal": 24,
+                "paddingVertical": 5,
+                "width": "100%",
+              },
+              undefined,
+            ]
+          }
+          testID="backupKeyContinue"
         >
-          continue
-        </Text>
+          <Text
+            maxFontSizeMultiplier={1}
+            style={
+              {
+                "color": "#2F4ACD",
+                "fontFamily": "RedHatDisplaySemiBold",
+                "fontSize": 12,
+                "fontWeight": "normal",
+                "lineHeight": 24,
+                "marginLeft": 0,
+                "marginRight": 0,
+              }
+            }
+          >
+            continue
+          </Text>
+        </View>
       </View>
     </View>
   </View>

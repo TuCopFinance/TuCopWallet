@@ -2,96 +2,116 @@
 
 exports[`Button when type is SECONDARY renders 1`] = `
 <View
-  style={
+  disabled={false}
+  distance={8}
+  offset={
     [
-      {
-        "flexDirection": "row",
-      },
-      undefined,
+      0,
+      4,
     ]
+  }
+  startColor="rgba(190, 201, 255, 0.28)"
+  style={
+    {
+      "alignSelf": "stretch",
+      "borderRadius": 15,
+    }
   }
 >
   <View
     style={
       [
         {
-          "overflow": "hidden",
+          "flexDirection": "row",
         },
-        {
-          "borderRadius": 100,
-        },
+        undefined,
       ]
     }
   >
     <View
-      accessibilityState={
-        {
-          "busy": undefined,
-          "checked": undefined,
-          "disabled": undefined,
-          "expanded": undefined,
-          "selected": undefined,
-        }
-      }
-      accessibilityValue={
-        {
-          "max": undefined,
-          "min": undefined,
-          "now": undefined,
-          "text": undefined,
-        }
-      }
-      accessible={true}
-      focusable={true}
-      nativeBackgroundAndroid={
-        {
-          "attribute": "selectableItemBackground",
-          "rippleRadius": undefined,
-          "type": "ThemeAttrAndroid",
-        }
-      }
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
       style={
         [
           {
-            "alignItems": "center",
-            "backgroundColor": "#FFFFFF",
-            "borderColor": "#2E3338",
-            "borderRadius": 100,
-            "borderWidth": 1,
-            "flexDirection": "row",
-            "height": 48,
-            "justifyContent": "center",
-            "minWidth": 120,
-            "opacity": 1,
-            "paddingHorizontal": 24,
-            "paddingVertical": 5,
+            "overflow": "hidden",
           },
-          undefined,
+          {
+            "borderRadius": 100,
+          },
         ]
       }
     >
-      <Text
-        maxFontSizeMultiplier={1}
-        style={
+      <View
+        accessibilityState={
           {
-            "color": "#2E3338",
-            "fontFamily": "Inter-SemiBold",
-            "fontSize": 16,
-            "lineHeight": 24,
-            "marginLeft": 0,
-            "marginRight": 0,
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
           }
         }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        focusable={true}
+        nativeBackgroundAndroid={
+          {
+            "attribute": "selectableItemBackground",
+            "rippleRadius": undefined,
+            "type": "ThemeAttrAndroid",
+          }
+        }
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "backgroundColor": "#FFFFFF",
+              "borderColor": "#FFFFFF",
+              "borderRadius": 100,
+              "borderWidth": 1,
+              "flexDirection": "row",
+              "height": 48,
+              "justifyContent": "center",
+              "maxHeight": 56,
+              "minWidth": 120,
+              "opacity": 1,
+              "paddingHorizontal": 24,
+              "paddingVertical": 5,
+            },
+            undefined,
+          ]
+        }
       >
-        Button
-      </Text>
+        <Text
+          maxFontSizeMultiplier={1}
+          style={
+            {
+              "color": "#2F4ACD",
+              "fontFamily": "RedHatDisplaySemiBold",
+              "fontSize": 12,
+              "fontWeight": "normal",
+              "lineHeight": 24,
+              "marginLeft": 0,
+              "marginRight": 0,
+            }
+          }
+        >
+          Button
+        </Text>
+      </View>
     </View>
   </View>
 </View>
@@ -99,17 +119,29 @@ exports[`Button when type is SECONDARY renders 1`] = `
 
 exports[`Button when type is TERTIARY and text size is small renders 1`] = `
 <View
-  pointerEvents="box-none"
+  disabled={true}
+  distance={8}
+  offset={
+    [
+      0,
+      4,
+    ]
+  }
+  startColor="rgba(190, 201, 255, 0.28)"
+  style={
+    {
+      "alignSelf": "stretch",
+      "borderRadius": 15,
+    }
+  }
 >
   <View
-    pointerEvents="box-none"
     style={
       [
         {
-          "alignSelf": "stretch",
-          "borderRadius": 15,
+          "flexDirection": "row",
         },
-        {},
+        undefined,
       ]
     }
   >
@@ -117,96 +149,85 @@ exports[`Button when type is TERTIARY and text size is small renders 1`] = `
       style={
         [
           {
-            "flexDirection": "row",
+            "overflow": "hidden",
           },
-          undefined,
+          {
+            "borderRadius": 100,
+          },
         ]
       }
     >
       <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        focusable={true}
+        nativeBackgroundAndroid={
+          {
+            "attribute": "selectableItemBackground",
+            "rippleRadius": undefined,
+            "type": "ThemeAttrAndroid",
+          }
+        }
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
-              "overflow": "hidden",
-            },
-            {
+              "alignItems": "center",
+              "backgroundColor": "#FFFFFF",
+              "borderColor": "#E6E6E6",
               "borderRadius": 100,
+              "borderWidth": 1,
+              "flexDirection": "row",
+              "height": 48,
+              "justifyContent": "center",
+              "maxHeight": 56,
+              "minWidth": 120,
+              "opacity": 1,
+              "paddingHorizontal": 24,
+              "paddingVertical": 5,
             },
+            undefined,
           ]
         }
       >
-        <View
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": undefined,
-              "expanded": undefined,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          focusable={true}
-          nativeBackgroundAndroid={
-            {
-              "attribute": "selectableItemBackground",
-              "rippleRadius": undefined,
-              "type": "ThemeAttrAndroid",
-            }
-          }
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+        <Text
+          maxFontSizeMultiplier={1}
           style={
-            [
-              {
-                "alignItems": "center",
-                "backgroundColor": "#FFFFFF",
-                "borderColor": "#E6E6E6",
-                "borderRadius": 100,
-                "borderWidth": 1,
-                "flexDirection": "row",
-                "height": 48,
-                "justifyContent": "center",
-                "maxHeight": 56,
-                "minWidth": 120,
-                "opacity": 1,
-                "paddingHorizontal": 24,
-                "paddingVertical": 5,
-              },
-              undefined,
-            ]
+            {
+              "color": "#2E3338",
+              "fontFamily": "RedHatDisplaySemiBold",
+              "fontSize": 14,
+              "fontWeight": "normal",
+              "lineHeight": 20,
+              "marginLeft": 0,
+              "marginRight": 0,
+            }
           }
         >
-          <Text
-            maxFontSizeMultiplier={1}
-            style={
-              {
-                "color": "#2E3338",
-                "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 14,
-                "fontWeight": "normal",
-                "lineHeight": 20,
-                "marginLeft": 0,
-                "marginRight": 0,
-              }
-            }
-          >
-            Button
-          </Text>
-        </View>
+          Button
+        </Text>
       </View>
     </View>
   </View>
@@ -215,17 +236,29 @@ exports[`Button when type is TERTIARY and text size is small renders 1`] = `
 
 exports[`Button when type not given defaults to primary 1`] = `
 <View
-  pointerEvents="box-none"
+  disabled={true}
+  distance={8}
+  offset={
+    [
+      0,
+      4,
+    ]
+  }
+  startColor="rgba(190, 201, 255, 0.28)"
+  style={
+    {
+      "alignSelf": "stretch",
+      "borderRadius": 15,
+    }
+  }
 >
   <View
-    pointerEvents="box-none"
     style={
       [
         {
-          "alignSelf": "stretch",
-          "borderRadius": 15,
+          "flexDirection": "row",
         },
-        {},
+        undefined,
       ]
     }
   >
@@ -233,77 +266,109 @@ exports[`Button when type not given defaults to primary 1`] = `
       style={
         [
           {
-            "flexDirection": "row",
+            "overflow": "hidden",
           },
-          undefined,
+          {
+            "borderRadius": 100,
+          },
         ]
       }
     >
       <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        focusable={true}
+        nativeBackgroundAndroid={
+          {
+            "attribute": "selectableItemBackground",
+            "rippleRadius": undefined,
+            "type": "ThemeAttrAndroid",
+          }
+        }
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
-              "overflow": "hidden",
+              "alignItems": "center",
+              "backgroundColor": "#2F4ACD",
+              "flexDirection": "row",
+              "height": 48,
+              "justifyContent": "center",
+              "maxHeight": 56,
+              "minWidth": 120,
+              "opacity": 1,
+              "paddingHorizontal": 24,
+              "paddingVertical": 5,
             },
-            {
-              "borderRadius": 100,
-            },
+            undefined,
           ]
         }
       >
         <View
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": undefined,
-              "expanded": undefined,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          focusable={true}
-          nativeBackgroundAndroid={
-            {
-              "attribute": "selectableItemBackground",
-              "rippleRadius": undefined,
-              "type": "ThemeAttrAndroid",
-            }
-          }
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
-            [
-              {
-                "alignItems": "center",
-                "backgroundColor": "#2F4ACD",
-                "flexDirection": "row",
-                "height": 48,
-                "justifyContent": "center",
-                "maxHeight": 56,
-                "minWidth": 120,
-                "opacity": 1,
-                "paddingHorizontal": 24,
-                "paddingVertical": 5,
-              },
-              undefined,
-            ]
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            }
           }
         >
-          <View
+          <BVLinearGradient
+            borderRadii={
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+              ]
+            }
+            colors={
+              [
+                -13677875,
+                -15194777,
+              ]
+            }
+            endPoint={
+              [
+                1,
+                0,
+              ]
+            }
+            locations={null}
+            startPoint={
+              [
+                0,
+                0,
+              ]
+            }
             style={
               {
                 "bottom": 0,
@@ -313,67 +378,24 @@ exports[`Button when type not given defaults to primary 1`] = `
                 "top": 0,
               }
             }
-          >
-            <BVLinearGradient
-              borderRadii={
-                [
-                  0,
-                  0,
-                  0,
-                  0,
-                  0,
-                  0,
-                  0,
-                  0,
-                ]
-              }
-              colors={
-                [
-                  -13677875,
-                  -15194777,
-                ]
-              }
-              endPoint={
-                [
-                  1,
-                  0,
-                ]
-              }
-              locations={null}
-              startPoint={
-                [
-                  0,
-                  0,
-                ]
-              }
-              style={
-                {
-                  "bottom": 0,
-                  "left": 0,
-                  "position": "absolute",
-                  "right": 0,
-                  "top": 0,
-                }
-              }
-            />
-          </View>
-          <Text
-            maxFontSizeMultiplier={1}
-            style={
-              {
-                "color": "#FFFFFF",
-                "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
-                "fontWeight": "normal",
-                "lineHeight": 24,
-                "marginLeft": 0,
-                "marginRight": 0,
-              }
-            }
-          >
-            Button
-          </Text>
+          />
         </View>
+        <Text
+          maxFontSizeMultiplier={1}
+          style={
+            {
+              "color": "#FFFFFF",
+              "fontFamily": "RedHatDisplaySemiBold",
+              "fontSize": 12,
+              "fontWeight": "normal",
+              "lineHeight": 24,
+              "marginLeft": 0,
+              "marginRight": 0,
+            }
+          }
+        >
+          Button
+        </Text>
       </View>
     </View>
   </View>

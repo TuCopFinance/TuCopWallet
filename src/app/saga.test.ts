@@ -29,7 +29,7 @@ import {
   inAppReviewLastInteractionTimestampSelector,
   sentryNetworkErrorsSelector,
 } from 'src/app/selectors'
-import { DEEP_LINK_URL_SCHEME } from 'src/config'
+import { DEEP_LINK_URL_SCHEME, WALLETCONNECT_UNIVERSAL_LINK } from 'src/config'
 import { activeDappSelector } from 'src/dapps/selectors'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { initI18n } from 'src/i18n'
@@ -299,7 +299,7 @@ describe('WalletConnect deeplinks', () => {
     },
     {
       name: 'iOS universal link',
-      link: `https://valoraapp.com/wc?uri=${connectionString}`,
+      link: `${WALLETCONNECT_UNIVERSAL_LINK}?uri=${connectionString}`,
     },
   ]
 
@@ -374,7 +374,7 @@ describe('WalletConnect deeplinks', () => {
   const actionLinks = [
     { name: 'Android', link: actionString },
     { name: 'iOS deeplink', link: `${DEEP_LINK_URL_SCHEME}://wallet/wc?uri=${actionString}` },
-    { name: 'iOS universal link', link: `https://valoraapp.com/wc?uri=${actionString}` },
+    { name: 'iOS universal link', link: `${WALLETCONNECT_UNIVERSAL_LINK}?uri=${actionString}` },
   ]
   for (const { name, link } of actionLinks) {
     it(`handles ${name} action links correctly`, async () => {
@@ -586,7 +586,7 @@ describe('appInit', () => {
       .run()
 
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
-    expect(initI18n).toHaveBeenCalledWith('en-US', true, '1')
+    expect(initI18n).toHaveBeenCalledWith('es-LA', true, '1')
   })
 })
 
