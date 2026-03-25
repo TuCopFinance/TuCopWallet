@@ -483,17 +483,32 @@ exports[`SimplexScreen renders correctly 1`] = `
       </View>
     </View>
     <View
-      pointerEvents="box-none"
+      disabled={true}
+      distance={8}
+      offset={
+        [
+          0,
+          4,
+        ]
+      }
+      startColor="rgba(190, 201, 255, 0.28)"
+      style={
+        {
+          "alignSelf": "stretch",
+          "borderRadius": 15,
+        }
+      }
     >
       <View
-        pointerEvents="box-none"
         style={
           [
             {
-              "alignSelf": "stretch",
-              "borderRadius": 15,
+              "flexDirection": "column",
+              "width": "100%",
             },
-            {},
+            {
+              "margin": 16,
+            },
           ]
         }
       >
@@ -501,86 +516,72 @@ exports[`SimplexScreen renders correctly 1`] = `
           style={
             [
               {
-                "flexDirection": "column",
-                "width": "100%",
+                "overflow": "hidden",
               },
               {
-                "margin": 16,
+                "borderRadius": 100,
               },
             ]
           }
         >
           <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": true,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            focusable={false}
+            nativeBackgroundAndroid={
+              {
+                "attribute": "selectableItemBackground",
+                "rippleRadius": undefined,
+                "type": "ThemeAttrAndroid",
+              }
+            }
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
             style={
               [
                 {
-                  "overflow": "hidden",
+                  "alignItems": "center",
+                  "backgroundColor": "#2F4ACD",
+                  "flexDirection": "row",
+                  "flexGrow": 1,
+                  "height": 48,
+                  "justifyContent": "center",
+                  "maxHeight": 56,
+                  "opacity": 0.25,
+                  "paddingHorizontal": 24,
+                  "paddingVertical": 5,
+                  "width": "100%",
                 },
-                {
-                  "borderRadius": 100,
-                },
+                undefined,
               ]
             }
           >
-            <View
-              accessibilityState={
-                {
-                  "busy": undefined,
-                  "checked": undefined,
-                  "disabled": true,
-                  "expanded": undefined,
-                  "selected": undefined,
-                }
-              }
-              accessibilityValue={
-                {
-                  "max": undefined,
-                  "min": undefined,
-                  "now": undefined,
-                  "text": undefined,
-                }
-              }
-              accessible={true}
-              focusable={false}
-              nativeBackgroundAndroid={
-                {
-                  "attribute": "selectableItemBackground",
-                  "rippleRadius": undefined,
-                  "type": "ThemeAttrAndroid",
-                }
-              }
-              onClick={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
-              style={
-                [
-                  {
-                    "alignItems": "center",
-                    "backgroundColor": "#2F4ACD",
-                    "flexDirection": "row",
-                    "flexGrow": 1,
-                    "height": 48,
-                    "justifyContent": "center",
-                    "maxHeight": 56,
-                    "opacity": 0.25,
-                    "paddingHorizontal": 24,
-                    "paddingVertical": 5,
-                    "width": "100%",
-                  },
-                  undefined,
-                ]
-              }
-            >
-              <ActivityIndicator
-                color="#FFFFFF"
-                size="small"
-                testID="Button/Loading"
-              />
-            </View>
+            <ActivityIndicator
+              color="#FFFFFF"
+              size="small"
+              testID="Button/Loading"
+            />
           </View>
         </View>
       </View>
@@ -1072,17 +1073,32 @@ exports[`SimplexScreen renders correctly 2`] = `
       </View>
     </View>
     <View
-      pointerEvents="box-none"
+      disabled={true}
+      distance={8}
+      offset={
+        [
+          0,
+          4,
+        ]
+      }
+      startColor="rgba(190, 201, 255, 0.28)"
+      style={
+        {
+          "alignSelf": "stretch",
+          "borderRadius": 15,
+        }
+      }
     >
       <View
-        pointerEvents="box-none"
         style={
           [
             {
-              "alignSelf": "stretch",
-              "borderRadius": 15,
+              "flexDirection": "column",
+              "width": "100%",
             },
-            {},
+            {
+              "margin": 16,
+            },
           ]
         }
       >
@@ -1090,81 +1106,110 @@ exports[`SimplexScreen renders correctly 2`] = `
           style={
             [
               {
-                "flexDirection": "column",
-                "width": "100%",
+                "overflow": "hidden",
               },
               {
-                "margin": 16,
+                "borderRadius": 100,
               },
             ]
           }
         >
           <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": true,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            focusable={false}
+            nativeBackgroundAndroid={
+              {
+                "attribute": "selectableItemBackground",
+                "rippleRadius": undefined,
+                "type": "ThemeAttrAndroid",
+              }
+            }
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
             style={
               [
                 {
-                  "overflow": "hidden",
+                  "alignItems": "center",
+                  "backgroundColor": "#2F4ACD",
+                  "flexDirection": "row",
+                  "flexGrow": 1,
+                  "height": 48,
+                  "justifyContent": "center",
+                  "maxHeight": 56,
+                  "opacity": 0.25,
+                  "paddingHorizontal": 24,
+                  "paddingVertical": 5,
+                  "width": "100%",
                 },
-                {
-                  "borderRadius": 100,
-                },
+                undefined,
               ]
             }
           >
             <View
-              accessibilityState={
-                {
-                  "busy": undefined,
-                  "checked": undefined,
-                  "disabled": true,
-                  "expanded": undefined,
-                  "selected": undefined,
-                }
-              }
-              accessibilityValue={
-                {
-                  "max": undefined,
-                  "min": undefined,
-                  "now": undefined,
-                  "text": undefined,
-                }
-              }
-              accessible={true}
-              focusable={false}
-              nativeBackgroundAndroid={
-                {
-                  "attribute": "selectableItemBackground",
-                  "rippleRadius": undefined,
-                  "type": "ThemeAttrAndroid",
-                }
-              }
-              onClick={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "backgroundColor": "#2F4ACD",
-                    "flexDirection": "row",
-                    "flexGrow": 1,
-                    "height": 48,
-                    "justifyContent": "center",
-                    "maxHeight": 56,
-                    "opacity": 0.25,
-                    "paddingHorizontal": 24,
-                    "paddingVertical": 5,
-                    "width": "100%",
-                  },
-                  undefined,
-                ]
+                {
+                  "bottom": 0,
+                  "left": 0,
+                  "position": "absolute",
+                  "right": 0,
+                  "top": 0,
+                }
               }
             >
-              <View
+              <BVLinearGradient
+                borderRadii={
+                  [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                  ]
+                }
+                colors={
+                  [
+                    -13677875,
+                    -15194777,
+                  ]
+                }
+                endPoint={
+                  [
+                    1,
+                    0,
+                  ]
+                }
+                locations={null}
+                startPoint={
+                  [
+                    0,
+                    0,
+                  ]
+                }
                 style={
                   {
                     "bottom": 0,
@@ -1174,67 +1219,24 @@ exports[`SimplexScreen renders correctly 2`] = `
                     "top": 0,
                   }
                 }
-              >
-                <BVLinearGradient
-                  borderRadii={
-                    [
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                    ]
-                  }
-                  colors={
-                    [
-                      -13677875,
-                      -15194777,
-                    ]
-                  }
-                  endPoint={
-                    [
-                      1,
-                      0,
-                    ]
-                  }
-                  locations={null}
-                  startPoint={
-                    [
-                      0,
-                      0,
-                    ]
-                  }
-                  style={
-                    {
-                      "bottom": 0,
-                      "left": 0,
-                      "position": "absolute",
-                      "right": 0,
-                      "top": 0,
-                    }
-                  }
-                />
-              </View>
-              <Text
-                maxFontSizeMultiplier={1}
-                style={
-                  {
-                    "color": "#FFFFFF",
-                    "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
-                    "fontWeight": "normal",
-                    "lineHeight": 24,
-                    "marginLeft": 0,
-                    "marginRight": 0,
-                  }
-                }
-              >
-                continueToProvider, {"provider":"Simplex"}
-              </Text>
+              />
             </View>
+            <Text
+              maxFontSizeMultiplier={1}
+              style={
+                {
+                  "color": "#FFFFFF",
+                  "fontFamily": "RedHatDisplaySemiBold",
+                  "fontSize": 12,
+                  "fontWeight": "normal",
+                  "lineHeight": 24,
+                  "marginLeft": 0,
+                  "marginRight": 0,
+                }
+              }
+            >
+              continueToProvider, {"provider":"Simplex"}
+            </Text>
           </View>
         </View>
       </View>
