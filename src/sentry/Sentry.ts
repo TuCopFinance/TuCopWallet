@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native'
+import { getClient } from '@sentry/core'
 import DeviceInfo from 'react-native-device-info'
 import { sentryTracesSampleRateSelector } from 'src/app/selectors'
 import { APP_BUNDLE_ID, SENTRY_CLIENT_URL, SENTRY_ENABLED } from 'src/config'
@@ -11,7 +12,7 @@ const TAG = 'sentry/Sentry'
 
 // Set this to true, if you want to test Sentry on dev builds
 // Set tracesSampleRate: 1 to capture all events for testing performance metrics in Sentry
-let _sentryRoutingInstrumentation: Sentry.ReactNavigationInstrumentation | undefined
+let _sentryRoutingInstrumentation: ReturnType<typeof Sentry.reactNavigationIntegration> | undefined
 
 function createSentryRoutingInstrumentation() {
   if (!_sentryRoutingInstrumentation) {
@@ -19,17 +20,15 @@ function createSentryRoutingInstrumentation() {
     if (!SENTRY_ENABLED) {
       _sentryRoutingInstrumentation = {
         registerNavigationContainer: () => {},
-        onRouteWillChange: () => {},
-      } as Sentry.ReactNavigationInstrumentation
+      } as unknown as ReturnType<typeof Sentry.reactNavigationIntegration>
     } else {
       try {
-        _sentryRoutingInstrumentation = new Sentry.ReactNavigationInstrumentation()
+        _sentryRoutingInstrumentation = Sentry.reactNavigationIntegration()
       } catch (error) {
         // Sentry not available - create a no-op instrumentation with required methods
         _sentryRoutingInstrumentation = {
           registerNavigationContainer: () => {},
-          onRouteWillChange: () => {},
-        } as Sentry.ReactNavigationInstrumentation
+        } as unknown as ReturnType<typeof Sentry.reactNavigationIntegration>
       }
     }
   }
@@ -37,20 +36,18 @@ function createSentryRoutingInstrumentation() {
 }
 
 // Lazy-loaded export using Proxy with proper method binding
-export const sentryRoutingInstrumentation: Sentry.ReactNavigationInstrumentation = new Proxy(
-  {} as Sentry.ReactNavigationInstrumentation,
-  {
+export const sentryRoutingInstrumentation: ReturnType<typeof Sentry.reactNavigationIntegration> =
+  new Proxy({} as ReturnType<typeof Sentry.reactNavigationIntegration>, {
     get: (target, prop) => {
       const instance = createSentryRoutingInstrumentation()
-      const value = instance[prop as keyof Sentry.ReactNavigationInstrumentation]
+      const value = instance[prop as keyof ReturnType<typeof Sentry.reactNavigationIntegration>]
       // If it's a function, bind it to the instance
       if (typeof value === 'function') {
         return value.bind(instance)
       }
       return value
     },
-  }
-)
+  })
 
 // Initialize Sentry early, before App component mounts
 // This prevents the "Sentry.wrap called before Sentry.init" warning
@@ -85,14 +82,18 @@ export function initializeSentryEarly() {
     return new URL(url).hostname
   })
 
+  const navigationIntegration = createSentryRoutingInstrumentation()
+
   Sentry.init({
     dsn: SENTRY_CLIENT_URL,
     environment: DeviceInfo.getBundleId(),
     enableAutoSessionTracking: true,
     integrations: [
-      new Sentry.ReactNativeTracing({
-        routingInstrumentation: createSentryRoutingInstrumentation(),
-        tracingOrigins,
+      navigationIntegration,
+      Sentry.reactNativeTracingIntegration({
+        shouldCreateSpanForRequest: (url) => {
+          return tracingOrigins.some((origin) => url.includes(origin))
+        },
       }),
     ],
     tracesSampleRate: 0.2, // Default sample rate, can be updated later
@@ -112,7 +113,7 @@ export function* initializeSentry() {
 
   // Update the sample rate if it's different from the default
   if (tracesSampleRate !== 0.2) {
-    const client = Sentry.getCurrentHub().getClient()
+    const client = getClient()
     if (client && client.getOptions()) {
       client.getOptions().tracesSampleRate = tracesSampleRate
       Logger.info(TAG, 'Updated Sentry tracesSampleRate to', tracesSampleRate)
