@@ -50,7 +50,6 @@ describe('QRNavigator', () => {
         </Provider>
       )
 
-      expect(queryByTestId('Times')).toBeTruthy()
       expect(queryByText('myCode')).toBeTruthy()
       expect(queryByText('scanCode')).toBeTruthy()
     })

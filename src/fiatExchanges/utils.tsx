@@ -319,9 +319,10 @@ export async function fetchExchanges(
       throw Error(`Fetch exchanges failed with status ${resp?.status}`)
     }
 
-    Logger.debug(TAG, 'got exchanges', resp.json())
+    const data = await resp.json()
+    Logger.debug(TAG, 'got exchanges', data)
 
-    return resp.json()
+    return data
   } catch (error) {
     Logger.error(TAG, 'Failure fetching available exchanges', error)
     throw error

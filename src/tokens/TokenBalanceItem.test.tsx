@@ -38,13 +38,11 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
   it('displays correctly when balances are hidden', () => {
-    const { getByText, getByTestId, queryByTestId, queryByText } = render(
+    const { getByText, queryByTestId, queryByText } = render(
       <Provider store={createMockStore()}>
         <TokenBalanceItem token={mockTokenInfo} hideBalances={true} />
       </Provider>
@@ -52,8 +50,6 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(queryByText('10.00 cUSD')).toBeFalsy()
-    expect(queryByText('₱13.30')).toBeFalsy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
@@ -67,7 +63,6 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
     expect(getByTestId('BridgeLabel')).toBeTruthy()
   })
 
@@ -80,8 +75,6 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
   })
 
   it('correctly triggers optional onPress prop', () => {

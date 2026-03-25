@@ -596,7 +596,6 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
     </Text>
   </View>
   <View
-    disabled={false}
     distance={8}
     offset={
       [

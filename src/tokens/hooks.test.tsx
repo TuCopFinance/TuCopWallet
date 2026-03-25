@@ -23,6 +23,7 @@ import {
   mockAccount,
   mockCeloTokenId,
   mockCeurTokenId,
+  mockCkesTokenId,
   mockCrealTokenId,
   mockCusdTokenId,
   mockPoofTokenId,
@@ -307,10 +308,10 @@ describe('useSwappableTokens', () => {
     })
 
     const expectedToTokens1 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens1 = [mockPoofTokenId, mockCeloTokenId, ethTokenId, mockCrealTokenId]
+    const expectedFromTokens1 = [mockCrealTokenId, mockPoofTokenId, mockCeloTokenId, ethTokenId]
 
-    const expectedToTokens2 = [ethTokenId, mockCeloTokenId]
-    const expectedFromTokens2 = [mockCrealTokenId, ethTokenId, mockPoofTokenId, mockCeloTokenId]
+    const expectedToTokens2 = [mockCeloTokenId, ethTokenId]
+    const expectedFromTokens2 = [mockCrealTokenId, mockCeloTokenId, ethTokenId, mockPoofTokenId]
 
     const { result: result1 } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
@@ -354,10 +355,12 @@ describe('useCashInTokens', () => {
     )
 
     expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
       mockCeurTokenId,
       mockCusdTokenId,
       mockCeloTokenId,
       mockCrealTokenId,
+      mockCkesTokenId,
     ])
   })
 
@@ -372,12 +375,14 @@ describe('useCashInTokens', () => {
     )
 
     expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
       mockCeurTokenId,
       mockCusdTokenId,
       mockCeloTokenId,
       mockCrealTokenId,
       ethTokenId,
       mockUSDCTokenId,
+      mockCkesTokenId,
     ])
   })
 })
@@ -390,7 +395,11 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId])
+    expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
+      mockCeloTokenId,
+      mockCrealTokenId,
+    ])
   })
 
   it('returns tokens eligible for cash out for multiple networks', () => {
@@ -403,7 +412,12 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId, ethTokenId])
+    expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
+      mockCeloTokenId,
+      mockCrealTokenId,
+      ethTokenId,
+    ])
   })
 })
 

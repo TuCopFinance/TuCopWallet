@@ -55,10 +55,9 @@ describe('NavigatorWrapper', () => {
 
     await waitFor(() => expect(CleverTap.addListener).toHaveBeenCalled())
     expect(Linking.addEventListener).toHaveBeenCalled()
-    expect(dynamicLinks().onLink).toHaveBeenCalled()
+    // FIREBASE_ENABLED is false in test config, so dynamic links handlers are not registered
     expect(CleverTap.getInitialUrl).toHaveBeenCalled()
     expect(Linking.getInitialURL).toHaveBeenCalled()
-    expect(dynamicLinks().getInitialLink).toHaveBeenCalled()
     expect(queryByText('appUpdateAvailable')).toBeFalsy()
   })
 

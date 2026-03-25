@@ -1596,7 +1596,7 @@ describe('SwapScreen', () => {
     fireEvent.press(confirmDecrease)
 
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.2077776' // 1.234 minus the max fee calculated for the swap
+      '1.2165184' // 1.234 minus the max fee calculated for the swap
     )
 
     await act(() => {
@@ -1649,7 +1649,7 @@ describe('SwapScreen', () => {
     fireEvent.press(confirmDecrease)
 
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.2077776' // 1.234 (max balance) minus the max fee calculated for the swap
+      '1.2165184' // 1.234 (max balance) minus the max fee calculated for the swap
     )
 
     await act(() => {

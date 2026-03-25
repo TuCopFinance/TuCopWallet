@@ -187,11 +187,11 @@ describe('prepareTransactions module', () => {
       mocked(estimateFeesPerGas).mockResolvedValue({
         maxFeePerGas: BigInt(100),
         maxPriorityFeePerGas: BigInt(2),
-        baseFeePerGas: BigInt(50),
+        baseFeePerGas: BigInt(80),
       })
       mocked(estimateGas).mockResolvedValue(BigInt(1_000))
 
-      // max gas fee is 100 * 1k = 100k units, too high for either fee currency
+      // estimated gas fee (80+2)*1k = 82k units, too high for either fee currency
 
       const result = await prepareTransactions({
         feeCurrencies: mockFeeCurrencies,

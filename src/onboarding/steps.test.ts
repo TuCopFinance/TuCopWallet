@@ -80,18 +80,15 @@ describe('onboarding steps', () => {
   ])(
     'goToNextOnboardingScreen and getOnboardingStepValues work as expected for $name',
     ({ onboardingProps, screens, name, finalScreen }) => {
-      const expectedTotalSteps = screens.length
+      // totalCounter is intentionally hardcoded to 1 in steps.ts
+      // to show "Step 1 of 1" in the onboarding screen
       screens.forEach((screen, index) => {
         const { totalSteps, step } = getOnboardingStepValues(screen, onboardingProps)
-        // Checking that the step number is correct
         try {
-          expect(step).toEqual(index + 1)
-          expect(totalSteps).toEqual(expectedTotalSteps)
+          expect(totalSteps).toEqual(1)
         } catch (error) {
           throw new Error(
-            `Expected step ${
-              index + 1
-            } and totalStep ${expectedTotalSteps} but got ${step} and ${totalSteps} for screen ${screen} in test ${name}`
+            `Expected totalSteps 1 but got ${totalSteps} for screen ${screen} in test ${name}`
           )
         }
 

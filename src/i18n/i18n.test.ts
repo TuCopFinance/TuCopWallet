@@ -90,11 +90,11 @@ describe('i18n', () => {
     })
 
     it('displays the bundled translation if cached translation is for a different language', async () => {
-      await i18n.changeLanguage('pt-BR')
-      expect(i18n.t('someKey')).toEqual('Oi!')
+      await i18n.changeLanguage('es-419')
+      expect(i18n.t('someKey')).toEqual('¡Hola!')
       expect(enLoaded).toBe(true) // i18n was initialised with en-US in the beforeEach
-      expect(esLoaded).toBe(false)
-      expect(ptLoaded).toBe(true)
+      expect(esLoaded).toBe(true)
+      expect(ptLoaded).toBe(false)
     })
 
     it('displays bundled translation values if they are missing from cached translations', () => {
