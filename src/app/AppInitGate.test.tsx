@@ -1,7 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react-native'
 import * as React from 'react'
 import { Text } from 'react-native'
-import * as RNLocalize from 'react-native-localize'
+// RNLocalize import kept for jest.mock but not directly referenced
+import 'react-native-localize'
 import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { appMounted } from 'src/app/actions'
