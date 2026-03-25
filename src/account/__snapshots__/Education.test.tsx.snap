@@ -172,7 +172,6 @@ exports[`Education renders correctly 1`] = `
       }
     >
       <View
-        disabled={true}
         distance={8}
         offset={
           [

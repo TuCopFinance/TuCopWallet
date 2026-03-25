@@ -17,32 +17,30 @@ import { createMockStore } from 'test/utils'
 import { mockAccount, mockAccount2 } from 'test/values'
 
 describe('ChooseYourAdventure', () => {
+  // With LearnPoints removed, the shuffled order for mockAccount is: add, profile, earn
   const orderOptions = [
     {
       address: mockAccount,
       testIDs: [
-        'AdventureCard/0/chooseYourAdventure.options.earn',
-        'AdventureCard/1/chooseYourAdventure.options.add',
-        'AdventureCard/2/chooseYourAdventure.options.learnPoints',
-        'AdventureCard/3/chooseYourAdventure.options.profile',
+        'AdventureCard/0/chooseYourAdventure.options.add',
+        'AdventureCard/1/chooseYourAdventure.options.profile',
+        'AdventureCard/2/chooseYourAdventure.options.earn',
       ],
     },
     {
       address: mockAccount2,
       testIDs: [
-        'AdventureCard/0/chooseYourAdventure.options.learnPoints',
-        'AdventureCard/1/chooseYourAdventure.options.profile',
-        'AdventureCard/2/chooseYourAdventure.options.earn',
-        'AdventureCard/3/chooseYourAdventure.options.add',
+        'AdventureCard/0/chooseYourAdventure.options.profile',
+        'AdventureCard/1/chooseYourAdventure.options.earn',
+        'AdventureCard/2/chooseYourAdventure.options.add',
       ],
     },
   ]
 
   const expectedCardOrder = [
-    AdventureCardName.Earn,
     AdventureCardName.Add,
-    AdventureCardName.LearnPoints,
     AdventureCardName.Profile,
+    AdventureCardName.Earn,
   ]
 
   const store = createMockStore({
@@ -74,51 +72,20 @@ describe('ChooseYourAdventure', () => {
     }
   )
 
-  it('navigates to the correct screen for earn', () => {
-    const { getByTestId } = render(
-      <Provider store={store}>
-        <ChooseYourAdventure />
-      </Provider>
-    )
-
-    fireEvent.press(getByTestId('AdventureCard/0/chooseYourAdventure.options.earn'))
-    expect(navigateHomeAndThenToScreen).toHaveBeenLastCalledWith(Screens.EarnInfoScreen)
-    expect(AppAnalytics.track).toHaveBeenLastCalledWith(OnboardingEvents.cya_button_press, {
-      position: 1,
-      cardName: AdventureCardName.Earn,
-      cardOrder: expectedCardOrder,
-    })
-  })
-
   it('navigates to the correct screen for add', () => {
     const { getByTestId } = render(
       <Provider store={store}>
         <ChooseYourAdventure />
       </Provider>
     )
-    fireEvent.press(getByTestId('AdventureCard/1/chooseYourAdventure.options.add'))
+    fireEvent.press(getByTestId('AdventureCard/0/chooseYourAdventure.options.add'))
     expect(navigateHome).toHaveBeenLastCalledWith()
     expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeCurrencyBottomSheet, {
       flow: FiatExchangeFlow.CashIn,
     })
     expect(AppAnalytics.track).toHaveBeenLastCalledWith(OnboardingEvents.cya_button_press, {
-      position: 2,
+      position: 1,
       cardName: AdventureCardName.Add,
-      cardOrder: expectedCardOrder,
-    })
-  })
-
-  it('navigates to the correct screen for learn', () => {
-    const { getByTestId } = render(
-      <Provider store={store}>
-        <ChooseYourAdventure />
-      </Provider>
-    )
-    fireEvent.press(getByTestId('AdventureCard/2/chooseYourAdventure.options.learnPoints'))
-    expect(navigateHomeAndThenToScreen).toHaveBeenLastCalledWith(Screens.PointsIntro)
-    expect(AppAnalytics.track).toHaveBeenLastCalledWith(OnboardingEvents.cya_button_press, {
-      position: 3,
-      cardName: AdventureCardName.LearnPoints,
       cardOrder: expectedCardOrder,
     })
   })
@@ -129,11 +96,27 @@ describe('ChooseYourAdventure', () => {
         <ChooseYourAdventure />
       </Provider>
     )
-    fireEvent.press(getByTestId('AdventureCard/3/chooseYourAdventure.options.profile'))
+    fireEvent.press(getByTestId('AdventureCard/1/chooseYourAdventure.options.profile'))
     expect(navigateHomeAndThenToScreen).toHaveBeenLastCalledWith(Screens.Profile)
     expect(AppAnalytics.track).toHaveBeenLastCalledWith(OnboardingEvents.cya_button_press, {
-      position: 4,
+      position: 2,
       cardName: AdventureCardName.Profile,
+      cardOrder: expectedCardOrder,
+    })
+  })
+
+  it('navigates to the correct screen for earn', () => {
+    const { getByTestId } = render(
+      <Provider store={store}>
+        <ChooseYourAdventure />
+      </Provider>
+    )
+
+    fireEvent.press(getByTestId('AdventureCard/2/chooseYourAdventure.options.earn'))
+    expect(navigateHomeAndThenToScreen).toHaveBeenLastCalledWith(Screens.EarnInfoScreen)
+    expect(AppAnalytics.track).toHaveBeenLastCalledWith(OnboardingEvents.cya_button_press, {
+      position: 3,
+      cardName: AdventureCardName.Earn,
       cardOrder: expectedCardOrder,
     })
   })

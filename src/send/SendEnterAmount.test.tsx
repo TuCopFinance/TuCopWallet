@@ -107,10 +107,11 @@ describe('SendEnterAmount', () => {
     )
 
     const tokens = getAllByTestId('TokenBalanceItem')
-    expect(tokens).toHaveLength(3)
+    expect(tokens).toHaveLength(4)
     expect(tokens[0]).toHaveTextContent('CELO')
-    expect(tokens[1]).toHaveTextContent('cEUR')
-    expect(tokens[2]).toHaveTextContent('cUSD')
+    expect(tokens[1]).toHaveTextContent('cUSD')
+    expect(tokens[2]).toHaveTextContent('POOF')
+    expect(tokens[3]).toHaveTextContent('cEUR')
   })
 
   it('should prepare transactions with the expected inputs', async () => {

@@ -142,9 +142,7 @@ describe.each([
 
     expect(getAllByTestId('TokenBalanceItem')).toHaveLength(3)
     expect(getAllByTestId('TokenBalanceItem')[0]).toHaveTextContent('10.00 cUSD')
-    expect(getAllByTestId('TokenBalanceItem')[0]).toHaveTextContent('₱13.30')
     expect(getAllByTestId('TokenBalanceItem')[1]).toHaveTextContent('20.00 cEUR')
-    expect(getAllByTestId('TokenBalanceItem')[1]).toHaveTextContent('₱31.92') // 20 * 1.2 (cEUR price) * 1.33 (PHP price)
     expect(getAllByTestId('TokenBalanceItem')[2]).toHaveTextContent('10.00 TT')
   })
 

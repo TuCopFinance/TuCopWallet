@@ -2,12 +2,13 @@ import { getLocalCurrencyCode } from 'src/localCurrency/selectors'
 
 describe(getLocalCurrencyCode, () => {
   describe('when no preferred currency is set', () => {
-    it('returns the first supported local currency for the country of the phone number', () => {
+    it('returns the default COP for a country whose currency is not supported', () => {
       const state: any = {
         account: { e164PhoneNumber: '+231881551952' },
         localCurrency: { preferredCurrencyCode: undefined },
       }
-      expect(getLocalCurrencyCode(state)).toEqual('LRD')
+      // LRD (Liberian Dollar) was removed from supported currencies, so fallback to COP
+      expect(getLocalCurrencyCode(state)).toEqual('COP')
     })
 
     it('returns USD for US phone numbers', () => {

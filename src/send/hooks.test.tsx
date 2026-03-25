@@ -50,12 +50,13 @@ const getStore = (phoneNumberVerified: boolean = true) =>
 describe('useResolvedRecipients', () => {
   beforeEach(() => {
     jest.mocked(resolveId).mockImplementation(async (id) => {
+      // 5555555555 is not a valid US phone number (555 prefix), so parsePhoneNumber
+      // returns null and the raw input is used as the search query
       const resolutions =
         id === '5555555555'
           ? [
               {
-                kind: ResolutionKind.Address,
-                address: mockAccount,
+                wallet_address: mockAccount,
               },
             ]
           : []

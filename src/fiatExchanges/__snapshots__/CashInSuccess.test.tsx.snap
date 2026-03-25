@@ -68,7 +68,6 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
     }
   >
     <View
-      disabled={true}
       distance={8}
       offset={
         [
@@ -312,7 +311,6 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
     }
   >
     <View
-      disabled={true}
       distance={8}
       offset={
         [

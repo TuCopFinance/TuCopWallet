@@ -57,6 +57,7 @@ jest.mock('src/firebase/firebase', () => ({
 }))
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getExperimentParams: jest.fn(),
   getFeatureGate: jest.fn(),
   getDynamicConfigParams: jest.fn().mockReturnValue({
@@ -364,19 +365,19 @@ describe(SelectProviderScreen, () => {
     // Exchange card is not visible as no exchanges are available
     expect(queryByText('selectProviderScreen.cryptoExchange')).toBeFalsy()
   })
-  it('shows no payment screen when no providers or exchanges are available', async () => {
+  it('shows disclaimer when no providers or exchanges are available', async () => {
     jest.mocked(fetchProviders).mockResolvedValue([])
     jest.mocked(fetchLegacyMobileMoneyProviders).mockResolvedValue([])
     jest.mocked(fetchExchanges).mockResolvedValue([])
-    const { queryByText, getByTestId } = render(
+    const { queryByText } = render(
       <Provider store={mockStore}>
         <SelectProviderScreen {...mockScreenProps()} />
       </Provider>
     )
     await waitFor(() => expect(fetchLegacyMobileMoneyProviders).toHaveBeenCalled())
 
-    // Only no payment method screen components are visible when no exchanges or providers are available
-    expect(getByTestId('NoPaymentMethods')).toBeTruthy()
+    // Shows disclaimer when no exchanges or providers are available
+    expect(queryByText('selectProviderScreen.disclaimerWithSomePaymentsUnavailable')).toBeTruthy()
     expect(queryByText('selectProviderScreen.bank')).toBeFalsy()
     expect(queryByText('selectProviderScreen.card')).toBeFalsy()
     expect(queryByText('selectProviderScreen.cryptoExchange')).toBeFalsy()

@@ -459,7 +459,6 @@ exports[`AccountKeyEducation renders correctly 1`] = `
       }
     >
       <View
-        disabled={false}
         distance={8}
         offset={
           [

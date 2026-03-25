@@ -25,6 +25,7 @@ import {
 import { CICOFlow } from './utils'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn(),
 }))
 jest.mock('src/web3/networkConfig', () => {
@@ -42,6 +43,10 @@ jest.mock('src/web3/networkConfig', () => {
     },
   }
 })
+
+// Get the usdtTokenId from networkConfig for mock token setup
+const networkConfigActual = jest.requireActual('src/web3/networkConfig')
+const mockUsdtTokenId: string = networkConfigActual.default.usdtTokenId
 
 const usdToUsdRate = '1'
 const usdToEurRate = '0.862'
@@ -87,6 +92,15 @@ const mockTokens = {
       balance: '1',
       priceUsd: '1000',
       isFeeCurrency: true,
+      priceFetchedAt: Date.now(),
+    },
+    [mockUsdtTokenId]: {
+      address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
+      tokenId: mockUsdtTokenId,
+      networkId: NetworkId['celo-sepolia'],
+      symbol: 'USDT',
+      balance: '0',
+      priceUsd: '1',
       priceFetchedAt: Date.now(),
     },
   },

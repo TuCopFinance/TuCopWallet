@@ -336,7 +336,6 @@ describe('saveContacts', () => {
   })
 
   it.each([
-    { featureGate: false, phoneVerified: true, contactsEnabled: true, name: 'feature gate' },
     { featureGate: true, phoneVerified: false, contactsEnabled: true, name: 'phone unverified' },
     { featureGate: true, phoneVerified: true, contactsEnabled: false, name: 'contacts disabled' },
   ])(

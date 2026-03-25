@@ -19,7 +19,7 @@ const mockScreenProps = getMockStackScreenProps(Screens.PincodeEnter, {
 })
 const store = createMockStore()
 
-const pin = '123456'
+const pin = '1234'
 
 const renderComponentWithMockStore = () =>
   render(

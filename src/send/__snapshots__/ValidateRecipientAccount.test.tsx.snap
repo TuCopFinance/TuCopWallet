@@ -123,7 +123,6 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
           }
         />
         <View
-          disabled={true}
           distance={8}
           offset={
             [
@@ -694,7 +693,6 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
           }
         />
         <View
-          disabled={true}
           distance={8}
           offset={
             [
