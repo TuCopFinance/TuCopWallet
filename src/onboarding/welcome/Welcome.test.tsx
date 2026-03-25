@@ -13,6 +13,7 @@ import { createMockStore } from 'test/utils'
 
 jest.mock('src/onboarding/steps')
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getExperimentParams: jest.fn(),
   patchUpdateStatsigUser: jest.fn(),
 }))

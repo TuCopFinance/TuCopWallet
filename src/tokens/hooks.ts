@@ -90,7 +90,7 @@ export function useTokenPricesAreStale(networkIds: NetworkId[]) {
 }
 
 export function useSwappableTokens() {
-  const networkIdsForSwap = getMultichainFeatures().showSwap
+  const networkIdsForSwap = getMultichainFeatures()?.showSwap ?? [networkConfig.defaultNetworkId]
   const shouldShuffleTokens = getFeatureGate(StatsigFeatureGates.SHUFFLE_SWAP_TOKENS_ORDER)
 
   const walletAddress = useSelector(walletAddressSelector)
@@ -117,19 +117,19 @@ export function useSwappableTokens() {
 }
 
 export function useCashInTokens() {
-  const networkIdsForCico = [NetworkId['celo-mainnet']]
+  const networkIdsForCico = getMultichainFeatures()?.showCico ?? [networkConfig.defaultNetworkId]
   return useSelector((state) => cashInTokensByNetworkIdSelector(state, networkIdsForCico))
 }
 
 export function useCashOutTokens(showZeroBalanceTokens: boolean = false) {
-  const networkIdsForCico = getMultichainFeatures().showCico
+  const networkIdsForCico = getMultichainFeatures()?.showCico ?? [networkConfig.defaultNetworkId]
   return useSelector((state) =>
     cashOutTokensByNetworkIdSelector(state, networkIdsForCico, showZeroBalanceTokens)
   )
 }
 
 export function useSpendTokens() {
-  const networkIdsForCico = getMultichainFeatures().showCico
+  const networkIdsForCico = getMultichainFeatures()?.showCico ?? [networkConfig.defaultNetworkId]
   return useSelector((state) => spendTokensByNetworkIdSelector(state, networkIdsForCico))
 }
 

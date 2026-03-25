@@ -52,7 +52,7 @@ function ActionCard({
       offset={[0, 0]}
       startColor="rgba(190, 201, 255, 0.28)"
     >
-      <Touchable borderRadius={21} style={styles.touchable} onPress={onPress}>
+      <Touchable borderRadius={21} style={styles.touchable} onPress={onPress} testID={testID}>
         <View style={styles.topLine}>
           <View>{icon}</View>
           <View style={{ flex: 1 }}>

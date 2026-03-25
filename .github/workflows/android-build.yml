@@ -162,10 +162,13 @@ jobs:
 
       - name: Deploy to Play Store
         if: |
-          matrix.environment == 'mainnet' && 
-          (github.ref == 'refs/heads/main' || github.event.inputs.upload_to_store == 'true') &&
-          secrets.GOOGLE_PLAY_JSON_KEY != ''
+          matrix.environment == 'mainnet' &&
+          (github.ref == 'refs/heads/main' || github.event.inputs.upload_to_store == 'true')
         run: |
+          if [ -z "$GOOGLE_PLAY_JSON_KEY" ]; then
+            echo "⚠️ GOOGLE_PLAY_JSON_KEY not set, skipping deployment"
+            exit 0
+          fi
           echo "🚀 Deploying to Play Store Internal Track"
           bundle exec fastlane android upload \
             environment:${{ matrix.environment }} \
@@ -178,6 +181,8 @@ jobs:
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get version info
         id: version
         run: |
@@ -185,29 +190,33 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Notify server about new build
+        continue-on-error: true
         run: |
+          if [ -z "$RAILWAY_API_URL" ]; then
+            echo "⚠️ RAILWAY_API_URL not set, skipping server notification"
+            exit 0
+          fi
           ANDROID_SUCCESS="${{ needs.build-android.result == 'success' }}"
 
-          curl -X POST "${{ secrets.RAILWAY_API_URL }}/api/update-version" \
+          curl -X POST "$RAILWAY_API_URL/api/update-version" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
+            -H "Authorization: Bearer $RAILWAY_API_KEY" \
             -d '{
               "platform": "android",
               "version": "${{ steps.version.outputs.version }}",
-              "buildNumber": "'$BUILD_NUMBER'",
               "success": '$ANDROID_SUCCESS',
-              "releaseNotes": "🚀 Android build v${{ steps.version.outputs.version }}\n\n📱 Compilado para Android 15 (API 35)\n🔧 Gradle 8.10.2 + AGP 8.7.2\n⚡ React Native 0.75.4\n\n✅ Estado: '${{ needs.build-android.result }}'",
+              "releaseNotes": "Android build v${{ steps.version.outputs.version }}",
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
               "commit": "${{ github.sha }}",
-              "branch": "${{ github.ref_name }}",
-              "artifacts": {
-                "mainnet": true,
-                "testnet": true
-              }
+              "branch": "${{ github.ref_name }}"
             }' || echo "⚠️ Server notification failed but continuing..."
+        env:
+          RAILWAY_API_URL: ${{ secrets.RAILWAY_API_URL }}
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
 
       - name: Slack notification
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        if: always()
+        continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ needs.build-android.result }}

@@ -57,11 +57,26 @@ describe(PointsIntro, () => {
   })
 
   it('tracks analytics event when navigated back', () => {
-    const { getByTestId } = renderPointsIntro()
-
-    fireEvent.press(getByTestId('BackChevron'))
-    waitFor(() => {
-      expect(AppAnalytics.track).toHaveBeenCalledWith(PointsEvents.points_intro_back)
+    let beforeRemoveCallback: (() => void) | undefined
+    const mockAddListener = jest.fn((event: string, callback: () => void) => {
+      if (event === 'beforeRemove') {
+        beforeRemoveCallback = callback
+      }
+      return jest.fn() // unsubscribe function
     })
+    const mockProps = getMockStackScreenProps(Screens.PointsIntro)
+    const store = createMockStore()
+    render(
+      <Provider store={store}>
+        <PointsIntro
+          {...mockProps}
+          navigation={{ ...mockProps.navigation, addListener: mockAddListener } as any}
+        />
+      </Provider>
+    )
+
+    expect(beforeRemoveCallback).toBeDefined()
+    beforeRemoveCallback!()
+    expect(AppAnalytics.track).toHaveBeenCalledWith(PointsEvents.points_intro_back)
   })
 })
