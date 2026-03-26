@@ -2,8 +2,14 @@ module.exports = {
   dependencies: {
     detox: {
       platforms: {
-        android: null, // disable Android platform for detox
+        android: null,
+        ios: null,
+      },
+    },
+    'react-native-flipper': {
+      platforms: {
+        ios: null,
       },
     },
   },
-};
+}

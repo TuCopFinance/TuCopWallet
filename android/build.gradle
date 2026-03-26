@@ -1,4 +1,4 @@
-import org.apache.tools.ant.taskdefs.condition.Os
+
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
@@ -8,7 +8,7 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 35
         targetSdkVersion = 35
-        kotlinVersion = "1.8.22"
+        kotlinVersion = "1.9.22"
         ndkVersion = "26.1.10909125"
 
         // Add these version configurations for react-native-svg
@@ -16,7 +16,7 @@ buildscript {
         kotlinCompilerExtensionVersion = "1.5.3"
 
         // Add specific versions for react-native-svg
-        reactNativeVersion = "0.72.7"  // Update this to match your react-native version
+        reactNativeVersion = "0.72.15"  // Must match installed react-native version
         androidXAnnotation = "1.6.0"
         androidXAppcompat = "1.6.1"
     }
@@ -25,7 +25,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:8.1.1"
+        classpath "com.android.tools.build:gradle:8.5.1"
         classpath "com.facebook.react:react-native-gradle-plugin"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
@@ -69,6 +69,15 @@ subprojects {
         buildscript {
             dependencies {
                 classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+            }
+        }
+    }
+    afterEvaluate {
+        if (it.hasProperty("android")) {
+            android {
+                buildFeatures {
+                    buildConfig true
+                }
             }
         }
     }

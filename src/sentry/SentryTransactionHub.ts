@@ -1,10 +1,9 @@
-import * as Sentry from '@sentry/react-native'
+import { startInactiveSpan, spanToJSON } from '@sentry/core'
+import type { Span } from '@sentry/core'
 import { SentryTransaction, SentryTransactions } from 'src/sentry/SentryTransactions'
 import { SENTRY_ENABLED } from 'src/config'
 
-// Store active spans for transaction tracking
-type SpanWithOp = { span: ReturnType<typeof Sentry.startInactiveSpan> | undefined; op: string }
-let activeSpans = [] as Array<SpanWithOp>
+let spans = [] as Array<Span>
 
 export const SentryTransactionHub = {
   startTransaction(name: SentryTransaction) {
@@ -13,14 +12,8 @@ export const SentryTransactionHub = {
       return
     }
     try {
-      const transactionConfig = SentryTransactions[name]
-      // Use startInactiveSpan with the transaction configuration
-      const span = Sentry.startInactiveSpan({
-        name: transactionConfig.name,
-        op: transactionConfig.op,
-        forceTransaction: true,
-      })
-      activeSpans.push({ span, op: transactionConfig.op })
+      const span = startInactiveSpan({ ...SentryTransactions[name] })
+      spans.push(span)
     } catch (error) {
       // Silently fail in development
     }
@@ -34,18 +27,16 @@ export const SentryTransactionHub = {
     const op = SentryTransactions[name].op
 
     // Find first the span with this op.
-    const selectedSpanObj = activeSpans.find(
-      (spanObj) => spanObj && spanObj.op === SentryTransactions[name].op
-    )
+    const selectedSpan = spans.find((span) => span && spanToJSON(span).op === op)
 
-    // Finish the selected span
+    // End the selected span
     try {
-      selectedSpanObj?.span?.end()
+      selectedSpan?.end()
     } catch (error) {
       // Silently fail in development
     }
 
     // Remove all spans matching op from the hub
-    activeSpans = activeSpans.filter((spanObj) => spanObj && spanObj.op !== op)
+    spans = spans.filter((span) => span && spanToJSON(span).op !== op)
   },
 }

@@ -69,7 +69,7 @@ export default function TokenDetailsScreen({ route }: Props) {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
 
   const getTokenName = (token: any) => {
-    if (token.tokenId === networkConfig.ccopTokenId) {
+    if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
 

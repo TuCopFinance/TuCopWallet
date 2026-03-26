@@ -2,8 +2,6 @@ import BigNumber from 'bignumber.js'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AppEvents } from 'src/analytics/Events'
 import { DOLLAR_MIN_AMOUNT_ACCOUNT_FUNDED } from 'src/config'
-import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
-import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import {
   importedTokensSelector,
@@ -91,7 +89,6 @@ export function* fetchTokenBalancesSaga() {
       Logger.debug(TAG, 'Skipping fetching tokens since no address was found')
       return
     }
-    SentryTransactionHub.startTransaction(SentryTransaction.fetch_balances)
 
     const supportedNetworks = getSupportedNetworkIdsForTokenBalances()
     const importedTokens = yield* select(importedTokensSelector, supportedNetworks)
@@ -135,7 +132,6 @@ export function* fetchTokenBalancesSaga() {
         ...supportedTokens,
       })
     )
-    SentryTransactionHub.finishTransaction(SentryTransaction.fetch_balances)
     AppAnalytics.track(AppEvents.fetch_balance, {})
   } catch (err) {
     const error = ensureError(err)

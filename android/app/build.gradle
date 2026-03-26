@@ -55,9 +55,9 @@ react {
 
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
-    alfajoresnightly: ".env.alfajoresnightly",
-    alfajoresdev: ".env.alfajoresdev",
-    alfajores: ".env.alfajores",
+    sepoliaTestnetnightly: ".env.testnetnightly",
+    sepoliaTestnetdev: ".env.testnetdev",
+    sepoliaTestnet: ".env.testnet",
     mainnetnightly: ".env.mainnetnightly",
     mainnetdev: ".env.mainnetdev",
     mainnet: ".env.mainnet",
@@ -78,7 +78,7 @@ apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.grad
 def isDetoxTestBuild = Boolean.valueOf(project.properties['isDetoxBuild'] ?: 'false')
 
 if (!isDetoxTestBuild) {
-  apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+  // apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 }
 
 /**
@@ -158,10 +158,11 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
-        versionName "1.108.0"
+        versionName "1.117.0"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            debugSymbolLevel 'FULL'
         }
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -188,10 +189,18 @@ android {
 
     signingConfigs {
         release {
-          storeFile file('tucop.keystore')
-          storePassword System.getenv("KEYSTORE_PASSWORD") ?: 'clavedelakey'
-          keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
-          keyPassword System.getenv("KEY_PASSWORD") ?: 'clavedelakey'
+          if (file('tucop.keystore').exists()) {
+            storeFile file('tucop.keystore')
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
+            keyPassword System.getenv("KEYSTORE_PASSWORD")
+          } else {
+            // CI fallback: use debug keystore when release keystore is not available
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+          }
         }
 
         debug {
@@ -234,13 +243,13 @@ android {
     }
     flavorDimensions "default"
     productFlavors {
-        alfajores {
+        sepoliaTestnet {
             dimension "default"
         }
-        alfajoresdev {
+        sepoliaTestnetdev {
             dimension "default"
         }
-        alfajoresnightly {
+        sepoliaTestnetnightly {
             dimension "default"
         }
         mainnet {
@@ -277,6 +286,10 @@ android {
         // Prevents clashes with other libraries that use OpenSSL
         // See https://github.com/margelo/react-native-quick-crypto/blob/de94007239bbb6dd9655f8a9bb13c14254a082eb/docs/troubleshooting.md#android-build-errors
         pickFirst '**/libcrypto.so'
+        // Enable 16 KB page size support for Google Play (compresses native libs)
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 
     buildFeatures {
@@ -306,8 +319,6 @@ dependencies {
 
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     implementation 'com.clevertap.android:clevertap-android-sdk:5.2.2'
     //For CleverTap Android SDK v3.6.4 and above add the following -
@@ -349,6 +360,10 @@ dependencies {
         exclude group:'com.squareup.okhttp3', module:'okhttp'
     }
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
+    
+    // Add Fresco dependencies explicitly for Flipper - updated for RN 0.75.4 compatibility
+    debugImplementation 'com.facebook.fresco:fresco:3.2.0'
+    debugImplementation 'com.facebook.fresco:imagepipeline:3.2.0'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

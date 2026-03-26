@@ -10,6 +10,10 @@ import { createMockStore } from 'test/utils'
 import Invite from './Invite'
 
 jest.mock('src/analytics/AppAnalytics')
+jest.mock('src/config', () => ({
+  ...(jest.requireActual('src/config') as any),
+  FIREBASE_ENABLED: true,
+}))
 const mockShare = jest.spyOn(Share, 'share')
 const mockCreateInviteLink = jest.spyOn(InviteUtils, 'createInviteLink')
 

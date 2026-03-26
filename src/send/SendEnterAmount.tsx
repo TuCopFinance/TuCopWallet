@@ -11,9 +11,9 @@ import { useSelector } from 'src/redux/hooks'
 import EnterAmount, { ProceedArgs, SendProceed } from 'src/send/EnterAmount'
 import { lastUsedTokenIdSelector } from 'src/send/selectors'
 import { usePrepareSendTransactions } from 'src/send/usePrepareSendTransactions'
-import { cCOPFirstTokensListSelector } from 'src/tokens/selectors'
+import { COPmFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
-import { NetworkId } from 'src/transactions/types'
+import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
 
@@ -23,10 +23,10 @@ const TAG = 'SendEnterAmount'
 
 function SendEnterAmount({ route }: Props) {
   const { defaultTokenIdOverride, origin, recipient, isFromScan, forceTokenId } = route.params
-  const supportedNetworkIds = [NetworkId['celo-mainnet']]
+  const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
   // explicitly allow zero state tokens to be shown for exploration purposes for
   // new users with no balance
-  const tokens = useSelector((state) => cCOPFirstTokensListSelector(state, supportedNetworkIds))
+  const tokens = useSelector((state) => COPmFirstTokensListSelector(state, supportedNetworkIds))
 
   const lastUsedTokenId = useSelector(lastUsedTokenIdSelector)
 

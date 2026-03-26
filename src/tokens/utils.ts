@@ -156,7 +156,7 @@ export function convertTokenToLocalAmount({
 }
 
 export function getSupportedNetworkIdsForTokenBalances(): NetworkId[] {
-  return getMultichainFeatures().showBalances
+  return getMultichainFeatures()?.showBalances ?? [networkConfig.defaultNetworkId]
 }
 
 export function getTokenId(networkId: NetworkId, tokenAddress?: string): string {
@@ -171,21 +171,22 @@ export function getTokenId(networkId: NetworkId, tokenAddress?: string): string 
 }
 
 export function getSupportedNetworkIdsForSend(): NetworkId[] {
-  return getMultichainFeatures().showSend
+  return getMultichainFeatures()?.showSend ?? [networkConfig.defaultNetworkId]
 }
 
 export function getSupportedNetworkIdsForSwap(): NetworkId[] {
-  Logger.debug(`getSupportedNetworkIdsForSwap`, `${getMultichainFeatures().showSwap}`)
+  const features = getMultichainFeatures()
+  Logger.debug(`getSupportedNetworkIdsForSwap`, `${features?.showSwap}`)
 
-  return getMultichainFeatures().showSwap
+  return features?.showSwap ?? [networkConfig.defaultNetworkId]
 }
 
 export function getSupportedNetworkIdsForWalletConnect(): NetworkId[] {
-  return getMultichainFeatures().showWalletConnect
+  return getMultichainFeatures()?.showWalletConnect ?? [networkConfig.defaultNetworkId]
 }
 
 export function getSupportedNetworkIdsForApprovalTxsInHomefeed(): NetworkId[] {
-  return getMultichainFeatures().showApprovalTxsInHomefeed
+  return getMultichainFeatures()?.showApprovalTxsInHomefeed ?? []
 }
 
 export function getTokenAnalyticsProps(token: TokenBalance): TokenProperties {

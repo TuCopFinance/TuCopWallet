@@ -10,7 +10,7 @@ import { getKeychainAccounts } from 'src/web3/contracts'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { Address, formatEther, parseEther, parseUnits } from 'viem'
 
-import cCOPStaking from 'src/abis/ICCOPStaking'
+import COPmStaking from 'src/abis/ICOPmStaking'
 import IERC20 from 'src/abis/IERC20'
 
 const TAG = 'earn/marranitos/MarranitosContract'
@@ -58,7 +58,7 @@ export class MarranitosContract {
 
       const stakes = (await this.client.readContract({
         address: STAKING_ADDRESS,
-        abi: cCOPStaking.abi,
+        abi: COPmStaking.abi,
         functionName: 'getUserStakes',
         args: [walletAddress],
       })) as any[]
@@ -72,7 +72,7 @@ export class MarranitosContract {
   }
 
   /**
-   * Obtiene el balance de tokens CCOP del usuario
+   * Obtiene el balance de tokens COPm del usuario
    */
   async getTokenBalance(walletAddress: Address): Promise<string> {
     try {
@@ -100,7 +100,7 @@ export class MarranitosContract {
       return `${Number(formatEther(balance)).toFixed(4)} ${symbol}`
     } catch (error) {
       Logger.error(TAG, 'Error getting token balance', error)
-      return '0 CCOP'
+      return '0 COPm'
     }
   }
 
@@ -202,7 +202,7 @@ export class MarranitosContract {
         const stakeTx = await (wallet as any)
           .writeContract({
             address: STAKING_ADDRESS,
-            abi: cCOPStaking.abi,
+            abi: COPmStaking.abi,
             functionName: 'stake',
             args: [parseUnits(amount, 18), duration as any],
           })
@@ -313,7 +313,7 @@ export class MarranitosContract {
         // @ts-ignore - Los tipos de viem están siendo demasiado estrictos, el código es correcto
         tx = await (wallet as any).writeContract({
           address: STAKING_ADDRESS,
-          abi: cCOPStaking.abi,
+          abi: COPmStaking.abi,
           functionName: 'earlyWithdraw',
           args: [BigInt(stakeIndex)],
         })
@@ -323,7 +323,7 @@ export class MarranitosContract {
         // @ts-ignore - Los tipos de viem están siendo demasiado estrictos, el código es correcto
         tx = await (wallet as any).writeContract({
           address: STAKING_ADDRESS,
-          abi: cCOPStaking.abi,
+          abi: COPmStaking.abi,
           functionName: 'withdraw',
           args: [BigInt(stakeIndex)],
         })

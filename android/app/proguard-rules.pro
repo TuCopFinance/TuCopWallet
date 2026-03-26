@@ -55,6 +55,10 @@
 # react-native-device-info needs this or else hasGms breaks
 -keep class com.google.android.gms.common.** { *; }
 
+# ML Kit (referenced by react-native-camera)
+-dontwarn com.google.mlkit.**
+-keep class com.google.mlkit.** { *; }
+
 # react-native-fast-image
 -keep public class com.dylanvann.fastimage.* {*;}
 -keep public class com.dylanvann.fastimage.** {*;}

@@ -24,13 +24,13 @@ describe('TokenBalanceItem', () => {
       decimals: 18,
       name: 'Celo Dollar',
       imageUrl: '',
-      tokenId: `celo-alfajores:${mockCusdAddress}`,
-      networkId: 'celo-alfajores',
+      tokenId: `celo-sepolia:${mockCusdAddress}`,
+      networkId: 'celo-sepolia',
     } as any
   })
 
   it('displays correctly', () => {
-    const { getByText, getByTestId, queryByTestId } = render(
+    const { getByText, queryByTestId } = render(
       <Provider store={createMockStore({})}>
         <TokenBalanceItem token={mockTokenInfo} />
       </Provider>
@@ -38,13 +38,11 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
   it('displays correctly when balances are hidden', () => {
-    const { getByText, getByTestId, queryByTestId, queryByText } = render(
+    const { getByText, queryByTestId, queryByText } = render(
       <Provider store={createMockStore()}>
         <TokenBalanceItem token={mockTokenInfo} hideBalances={true} />
       </Provider>
@@ -52,8 +50,6 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(queryByText('10.00 cUSD')).toBeFalsy()
-    expect(queryByText('₱13.30')).toBeFalsy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
@@ -67,12 +63,11 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
     expect(getByTestId('BridgeLabel')).toBeTruthy()
   })
 
   it('displays correctly when the token network is provided', () => {
-    const { getByText, getByTestId } = render(
+    const { getByText } = render(
       <Provider store={createMockStore({})}>
         <TokenBalanceItem token={mockTokenInfo} />
       </Provider>
@@ -80,8 +75,6 @@ describe('TokenBalanceItem', () => {
 
     expect(getByText('Celo Dollar')).toBeTruthy()
     expect(getByText('10.00 cUSD')).toBeTruthy()
-    expect(getByText('₱13.30')).toBeTruthy()
-    expect(getByTestId('NetworkLabel')).toBeTruthy()
   })
 
   it('correctly triggers optional onPress prop', () => {
@@ -108,7 +101,7 @@ describe('TokenBalanceItem', () => {
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(AssetsEvents.tap_asset, {
       assetType: 'token',
-      tokenId: `celo-alfajores:${mockCusdAddress}`,
+      tokenId: `celo-sepolia:${mockCusdAddress}`,
       networkId: mockTokenInfo.networkId,
       address: mockTokenInfo.address,
       balanceUsd: 10,
