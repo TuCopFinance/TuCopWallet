@@ -123,14 +123,14 @@ gh run view [run-id]
 
 ### 3. Build Android
 
-- ✅ Se compila para **mainnet** y **alfajores**
+- ✅ Se compila para **mainnet** y **testnet (Celo Sepolia)**
 - ✅ Se genera AAB (Android App Bundle)
 - ✅ Se sube a **Google Play Store (Internal Track)**
 - ✅ Se guarda artifact en GitHub
 
 ### 4. Build iOS
 
-- ✅ Se compila para **mainnet** y **alfajores**
+- ✅ Se compila para **mainnet** y **testnet (Celo Sepolia)**
 - ✅ Se genera IPA
 - ✅ Se sube a **TestFlight**
 - ✅ Se guarda artifact en GitHub
