@@ -194,6 +194,12 @@ android {
             storePassword System.getenv("KEYSTORE_PASSWORD")
             keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
             keyPassword System.getenv("KEYSTORE_PASSWORD")
+          } else {
+            // CI fallback: use debug keystore when release keystore is not available
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
           }
         }
 
