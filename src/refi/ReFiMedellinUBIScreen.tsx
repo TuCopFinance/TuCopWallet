@@ -8,7 +8,6 @@ import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Celebration from 'src/icons/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
-import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
@@ -22,7 +21,7 @@ import { Address } from 'viem'
 
 const TAG = 'ReFiMedellinUBIScreen'
 
-type Props = NativeStackScreenProps<StackParamList, Screens.ReFiMedellinUBI>
+type Props = NativeStackScreenProps<StackParamList, any>
 
 export default function ReFiMedellinUBIScreen({ navigation }: Props) {
   const { t } = useTranslation()

@@ -123,18 +123,30 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
           }
         />
         <View
-          pointerEvents="box-none"
+          distance={8}
+          offset={
+            [
+              0,
+              4,
+            ]
+          }
+          startColor="rgba(190, 201, 255, 0.28)"
+          style={
+            {
+              "alignSelf": "stretch",
+              "borderRadius": 15,
+            }
+          }
         >
           <View
-            pointerEvents="box-none"
             style={
               [
                 {
-                  "borderRadius": 15,
-                  "flexGrow": 1,
-                  "width": "100%",
+                  "flexDirection": "row",
                 },
-                {},
+                {
+                  "paddingVertical": 16,
+                },
               ]
             }
           >
@@ -142,79 +154,110 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
               style={
                 [
                   {
-                    "flexDirection": "row",
+                    "overflow": "hidden",
                   },
                   {
-                    "paddingVertical": 16,
+                    "borderRadius": 100,
                   },
                 ]
               }
             >
               <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": true,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                focusable={false}
+                nativeBackgroundAndroid={
+                  {
+                    "attribute": "selectableItemBackground",
+                    "rippleRadius": undefined,
+                    "type": "ThemeAttrAndroid",
+                  }
+                }
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
                 style={
                   [
                     {
-                      "overflow": "hidden",
+                      "alignItems": "center",
+                      "backgroundColor": "#2F4ACD",
+                      "flexDirection": "row",
+                      "height": 48,
+                      "justifyContent": "center",
+                      "maxHeight": 56,
+                      "minWidth": 120,
+                      "opacity": 0.25,
+                      "paddingHorizontal": 24,
+                      "paddingVertical": 5,
                     },
-                    {
-                      "borderRadius": 100,
-                    },
+                    undefined,
                   ]
                 }
+                testID="ConfirmAccountButton"
               >
                 <View
-                  accessibilityState={
-                    {
-                      "busy": undefined,
-                      "checked": undefined,
-                      "disabled": true,
-                      "expanded": undefined,
-                      "selected": undefined,
-                    }
-                  }
-                  accessibilityValue={
-                    {
-                      "max": undefined,
-                      "min": undefined,
-                      "now": undefined,
-                      "text": undefined,
-                    }
-                  }
-                  accessible={true}
-                  focusable={false}
-                  nativeBackgroundAndroid={
-                    {
-                      "attribute": "selectableItemBackground",
-                      "rippleRadius": undefined,
-                      "type": "ThemeAttrAndroid",
-                    }
-                  }
-                  onClick={[Function]}
-                  onResponderGrant={[Function]}
-                  onResponderMove={[Function]}
-                  onResponderRelease={[Function]}
-                  onResponderTerminate={[Function]}
-                  onResponderTerminationRequest={[Function]}
-                  onStartShouldSetResponder={[Function]}
                   style={
-                    [
-                      {
-                        "alignItems": "center",
-                        "backgroundColor": "#2F4ACD",
-                        "flexDirection": "row",
-                        "height": 48,
-                        "justifyContent": "center",
-                        "minWidth": 120,
-                        "opacity": 0.25,
-                        "paddingHorizontal": 24,
-                        "paddingVertical": 5,
-                      },
-                      undefined,
-                    ]
+                    {
+                      "bottom": 0,
+                      "left": 0,
+                      "position": "absolute",
+                      "right": 0,
+                      "top": 0,
+                    }
                   }
-                  testID="ConfirmAccountButton"
                 >
-                  <View
+                  <BVLinearGradient
+                    borderRadii={
+                      [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                      ]
+                    }
+                    colors={
+                      [
+                        -13677875,
+                        -15194777,
+                      ]
+                    }
+                    endPoint={
+                      [
+                        1,
+                        0,
+                      ]
+                    }
+                    locations={null}
+                    startPoint={
+                      [
+                        0,
+                        0,
+                      ]
+                    }
                     style={
                       {
                         "bottom": 0,
@@ -224,67 +267,24 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
                         "top": 0,
                       }
                     }
-                  >
-                    <BVLinearGradient
-                      borderRadii={
-                        [
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                        ]
-                      }
-                      colors={
-                        [
-                          -13677875,
-                          -15194777,
-                        ]
-                      }
-                      endPoint={
-                        [
-                          1,
-                          0,
-                        ]
-                      }
-                      locations={null}
-                      startPoint={
-                        [
-                          0,
-                          0,
-                        ]
-                      }
-                      style={
-                        {
-                          "bottom": 0,
-                          "left": 0,
-                          "position": "absolute",
-                          "right": 0,
-                          "top": 0,
-                        }
-                      }
-                    />
-                  </View>
-                  <Text
-                    maxFontSizeMultiplier={1}
-                    style={
-                      {
-                        "color": "#FFFFFF",
-                        "fontFamily": "RedHatDisplaySemiBold",
-                        "fontSize": 12,
-                        "fontWeight": "normal",
-                        "lineHeight": 24,
-                        "marginLeft": 0,
-                        "marginRight": 0,
-                      }
-                    }
-                  >
-                    confirmAccountNumber.submit
-                  </Text>
+                  />
                 </View>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={
+                    {
+                      "color": "#FFFFFF",
+                      "fontFamily": "RedHatDisplaySemiBold",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "lineHeight": 24,
+                      "marginLeft": 0,
+                      "marginRight": 0,
+                    }
+                  }
+                >
+                  confirmAccountNumber.submit
+                </Text>
               </View>
             </View>
           </View>
@@ -693,18 +693,30 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
           }
         />
         <View
-          pointerEvents="box-none"
+          distance={8}
+          offset={
+            [
+              0,
+              4,
+            ]
+          }
+          startColor="rgba(190, 201, 255, 0.28)"
+          style={
+            {
+              "alignSelf": "stretch",
+              "borderRadius": 15,
+            }
+          }
         >
           <View
-            pointerEvents="box-none"
             style={
               [
                 {
-                  "borderRadius": 15,
-                  "flexGrow": 1,
-                  "width": "100%",
+                  "flexDirection": "row",
                 },
-                {},
+                {
+                  "paddingVertical": 16,
+                },
               ]
             }
           >
@@ -712,79 +724,110 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
               style={
                 [
                   {
-                    "flexDirection": "row",
+                    "overflow": "hidden",
                   },
                   {
-                    "paddingVertical": 16,
+                    "borderRadius": 100,
                   },
                 ]
               }
             >
               <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": true,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                focusable={false}
+                nativeBackgroundAndroid={
+                  {
+                    "attribute": "selectableItemBackground",
+                    "rippleRadius": undefined,
+                    "type": "ThemeAttrAndroid",
+                  }
+                }
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
                 style={
                   [
                     {
-                      "overflow": "hidden",
+                      "alignItems": "center",
+                      "backgroundColor": "#2F4ACD",
+                      "flexDirection": "row",
+                      "height": 48,
+                      "justifyContent": "center",
+                      "maxHeight": 56,
+                      "minWidth": 120,
+                      "opacity": 0.25,
+                      "paddingHorizontal": 24,
+                      "paddingVertical": 5,
                     },
-                    {
-                      "borderRadius": 100,
-                    },
+                    undefined,
                   ]
                 }
+                testID="ConfirmAccountButton"
               >
                 <View
-                  accessibilityState={
-                    {
-                      "busy": undefined,
-                      "checked": undefined,
-                      "disabled": true,
-                      "expanded": undefined,
-                      "selected": undefined,
-                    }
-                  }
-                  accessibilityValue={
-                    {
-                      "max": undefined,
-                      "min": undefined,
-                      "now": undefined,
-                      "text": undefined,
-                    }
-                  }
-                  accessible={true}
-                  focusable={false}
-                  nativeBackgroundAndroid={
-                    {
-                      "attribute": "selectableItemBackground",
-                      "rippleRadius": undefined,
-                      "type": "ThemeAttrAndroid",
-                    }
-                  }
-                  onClick={[Function]}
-                  onResponderGrant={[Function]}
-                  onResponderMove={[Function]}
-                  onResponderRelease={[Function]}
-                  onResponderTerminate={[Function]}
-                  onResponderTerminationRequest={[Function]}
-                  onStartShouldSetResponder={[Function]}
                   style={
-                    [
-                      {
-                        "alignItems": "center",
-                        "backgroundColor": "#2F4ACD",
-                        "flexDirection": "row",
-                        "height": 48,
-                        "justifyContent": "center",
-                        "minWidth": 120,
-                        "opacity": 0.25,
-                        "paddingHorizontal": 24,
-                        "paddingVertical": 5,
-                      },
-                      undefined,
-                    ]
+                    {
+                      "bottom": 0,
+                      "left": 0,
+                      "position": "absolute",
+                      "right": 0,
+                      "top": 0,
+                    }
                   }
-                  testID="ConfirmAccountButton"
                 >
-                  <View
+                  <BVLinearGradient
+                    borderRadii={
+                      [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                      ]
+                    }
+                    colors={
+                      [
+                        -13677875,
+                        -15194777,
+                      ]
+                    }
+                    endPoint={
+                      [
+                        1,
+                        0,
+                      ]
+                    }
+                    locations={null}
+                    startPoint={
+                      [
+                        0,
+                        0,
+                      ]
+                    }
                     style={
                       {
                         "bottom": 0,
@@ -794,67 +837,24 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                         "top": 0,
                       }
                     }
-                  >
-                    <BVLinearGradient
-                      borderRadii={
-                        [
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                        ]
-                      }
-                      colors={
-                        [
-                          -13677875,
-                          -15194777,
-                        ]
-                      }
-                      endPoint={
-                        [
-                          1,
-                          0,
-                        ]
-                      }
-                      locations={null}
-                      startPoint={
-                        [
-                          0,
-                          0,
-                        ]
-                      }
-                      style={
-                        {
-                          "bottom": 0,
-                          "left": 0,
-                          "position": "absolute",
-                          "right": 0,
-                          "top": 0,
-                        }
-                      }
-                    />
-                  </View>
-                  <Text
-                    maxFontSizeMultiplier={1}
-                    style={
-                      {
-                        "color": "#FFFFFF",
-                        "fontFamily": "RedHatDisplaySemiBold",
-                        "fontSize": 12,
-                        "fontWeight": "normal",
-                        "lineHeight": 24,
-                        "marginLeft": 0,
-                        "marginRight": 0,
-                      }
-                    }
-                  >
-                    confirmAccountNumber.submit
-                  </Text>
+                  />
                 </View>
+                <Text
+                  maxFontSizeMultiplier={1}
+                  style={
+                    {
+                      "color": "#FFFFFF",
+                      "fontFamily": "RedHatDisplaySemiBold",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "lineHeight": 24,
+                      "marginLeft": 0,
+                      "marginRight": 0,
+                    }
+                  }
+                >
+                  confirmAccountNumber.submit
+                </Text>
               </View>
             </View>
           </View>

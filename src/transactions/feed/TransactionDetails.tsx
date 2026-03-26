@@ -65,7 +65,7 @@ function TransactionDetails({ transaction, title, subtitle, children, retryHandl
 
   const networkIdToExplorerString: Record<NetworkId, string> = {
     [NetworkId['celo-mainnet']]: t('viewOnCeloScan'),
-    [NetworkId['celo-alfajores']]: t('viewOnCeloScan'),
+    [NetworkId['celo-sepolia']]: t('viewOnCeloScan'),
     [NetworkId['ethereum-mainnet']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['ethereum-sepolia']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['arbitrum-one']]: t('viewOnArbiscan'),

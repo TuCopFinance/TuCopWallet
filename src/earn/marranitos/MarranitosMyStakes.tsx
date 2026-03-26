@@ -191,7 +191,7 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
           <View style={styles.stakeDetails}>
             <View style={styles.stakeRow}>
               <Text style={styles.stakeLabel}>{t('earnFlow.myStakes.amount')}</Text>
-              <Text style={styles.stakeValue}>{amount} CCOP</Text>
+              <Text style={styles.stakeValue}>{amount} COPm</Text>
             </View>
 
             <View style={styles.stakeRow}>

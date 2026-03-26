@@ -62,7 +62,8 @@ public class ReactNativeFlipper {
                 new Runnable() {
                   @Override
                   public void run() {
-                    client.addPlugin(new FrescoFlipperPlugin());
+                    // Temporarily disabled FrescoFlipperPlugin due to ImagePerfDataListener compatibility issue with RN 0.75.4
+                    // client.addPlugin(new FrescoFlipperPlugin());
                   }
                 }
               );
@@ -70,7 +71,8 @@ public class ReactNativeFlipper {
           }
         );
       } else {
-        client.addPlugin(new FrescoFlipperPlugin());
+        // Temporarily disabled FrescoFlipperPlugin due to ImagePerfDataListener compatibility issue with RN 0.75.4
+        // client.addPlugin(new FrescoFlipperPlugin());
       }
     }
   }

@@ -9,7 +9,7 @@ import { Screens } from 'src/navigator/Screens'
 import { getRehydratePayload, REHYDRATE, RehydrateAction } from 'src/redux/persist-helper'
 
 const PERSISTED_DEEP_LINKS = [
-  'https://valoraapp.com/share',
+  'https://tucop.xyz/share',
   `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart`,
 ]
 

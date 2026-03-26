@@ -237,7 +237,7 @@ Este proyecto está configurado con un sistema completo de CI/CD que automatiza:
 ### 3. Fastlane
 - **Android**: Build y upload a Play Store
 - **iOS**: Build y upload a TestFlight
-- **Environments**: mainnet, alfajores
+- **Environments**: mainnet, testnet
 
 ## Flujo de Trabajo
 

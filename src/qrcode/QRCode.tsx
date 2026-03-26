@@ -17,6 +17,7 @@ import { typeScale } from 'src/styles/fonts'
 import { vibrateInformative } from 'src/styles/hapticFeedback'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
+import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
@@ -60,7 +61,7 @@ export default function QRCodeDisplay(props: Props) {
   }
 
   const getSupportedNetworks = () => {
-    const supportedNetworkIds = [NetworkId['celo-mainnet']]
+    const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
     const networks = supportedNetworkIds.map((networkId: NetworkId) => {
       return NETWORK_NAMES[networkId]
     })

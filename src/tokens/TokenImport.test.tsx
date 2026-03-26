@@ -53,7 +53,7 @@ describe('TokenImport', () => {
 
   describe('when only Celo network is enabled', () => {
     beforeEach(() => {
-      mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([NetworkId['celo-alfajores']])
+      mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([NetworkId['celo-sepolia']])
     })
 
     it('renders correctly', () => {
@@ -111,11 +111,11 @@ describe('TokenImport', () => {
       const mockStore = {
         tokens: {
           tokenBalances: {
-            ['celo-alfajores:0x123']: {
+            ['celo-sepolia:0x123']: {
               networkIconUrl: 'celoNativeTokenImageUrl',
               balance: '10',
-              networkId: NetworkId['celo-alfajores'],
-              tokenId: 'celo-alfajores:0x123',
+              networkId: NetworkId['celo-sepolia'],
+              tokenId: 'celo-sepolia:0x123',
             },
           },
         },
@@ -146,8 +146,8 @@ describe('TokenImport', () => {
           symbol: 'ABC',
           name: 'ABC Coin',
           decimals: 18,
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: `celo-alfajores:${mockPoofAddress}`,
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: `celo-sepolia:${mockPoofAddress}`,
           networkIconUrl: 'celoNativeTokenImageUrl',
         })
       )
@@ -255,7 +255,7 @@ describe('TokenImport', () => {
   describe('when more than one network is enabled', () => {
     beforeEach(() => {
       mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([
-        NetworkId['celo-alfajores'],
+        NetworkId['celo-sepolia'],
         NetworkId['ethereum-sepolia'],
       ])
     })

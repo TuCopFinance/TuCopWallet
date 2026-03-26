@@ -36,7 +36,7 @@ describe('watchPendingTransactions', () => {
 
   const pendingTransaction: StandbyTransaction = {
     context: { id: transactionId },
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     type: TokenTransactionTypeV2.Sent,
     metadata: {},
     amount: {
@@ -119,7 +119,7 @@ describe('watchPendingTransactions', () => {
         id: transactionId,
       },
       status: TransactionStatus.Pending,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       type: TokenTransactionTypeV2.SwapTransaction,
       transactionHash,
       timestamp: 1234,
@@ -158,7 +158,7 @@ describe('watchPendingTransactions', () => {
         trackPointsEvent({
           activityId: 'swap',
           transactionHash,
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           toTokenId: mockCeurTokenId,
           fromTokenId: mockCusdTokenId,
         })
@@ -271,9 +271,9 @@ describe('watchPendingTransactions', () => {
       .provide([
         [
           call(getSupportedNetworkIdsForSend),
-          [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+          [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
         ],
-        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-alfajores']]],
+        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-sepolia']]],
         [matchers.spawn.fn(watchPendingTransactionsInNetwork), null],
       ])
       .run()
@@ -290,8 +290,8 @@ describe('watchPendingTransactions', () => {
   it('does spawn a watching loop for only allowed network', async () => {
     await expectSaga(watchPendingTransactions)
       .provide([
-        [call(getSupportedNetworkIdsForSend), [NetworkId['celo-alfajores']]],
-        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-alfajores']]],
+        [call(getSupportedNetworkIdsForSend), [NetworkId['celo-sepolia']]],
+        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-sepolia']]],
         [matchers.spawn.fn(watchPendingTransactionsInNetwork), null],
       ])
       .run()

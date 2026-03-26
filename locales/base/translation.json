@@ -2834,8 +2834,8 @@
       }
     },
     "staking": {
-      "title": "Stake CCOP",
-      "subtitle": "Earn rewards by staking your CCOP tokens",
+      "title": "Stake COPm",
+      "subtitle": "Earn rewards by staking your COPm tokens",
       "poolTitle": "Staking Pools",
       "myStakes": "My Stakes",
       "enterAmount": "Enter Amount",
@@ -2871,7 +2871,7 @@
       "success": "Success",
       "successMessage": "Your stake has been withdrawn successfully",
       "earlyWithdrawTitle": "Early Withdrawal Confirmation",
-      "earlyWithdrawConfirmation": "You are withdrawing {{amount}} CCOP before the end of the staking period ({{days}} days remaining). A 20% penalty of {{penalty}} CCOP will be applied. You will receive {{finalAmount}} CCOP. Do you want to continue?",
+      "earlyWithdrawConfirmation": "You are withdrawing {{amount}} COPm before the end of the staking period ({{days}} days remaining). A 20% penalty of {{penalty}} COPm will be applied. You will receive {{finalAmount}} COPm. Do you want to continue?",
       "connectRequired": "Wallet Connection Required",
       "connectToStake": "You need to connect a wallet to stake tokens.",
       "withdrawSuccess": "Withdrawal Successful",
@@ -2923,23 +2923,23 @@
   "duration_yearMonth_other": "{{count}} years, {{count2}} months",
   "tabHome": {
     "myWallet": "My Wallet",
-    "addCCOP": "Add cCOP",
+    "addCOPm": "Add COPm",
     "sendMoney": "Send Money",
     "receiveMoney": "Receive Money",
     "spendMoney": "Spend Money",
     "holdUSD": "Hold US Dollars",
-    "swapToUSD": "Swap your cCOP for USDT",
+    "swapToUSD": "Swap your COPm for USDT",
     "withdraw": "Withdraw From Your Wallet",
-    "earn": "Earn with your cCOP or USDT",
-    "reFiMedellinUbi": {
-      "button": "Claim your UBI",
-      "subtitle": "from ReFiMedellin"
+    "earn": "Earn with your COPm or USDT",
+    "reFiColombiaSubsidies": {
+      "button": "Claim your Subsidy",
+      "subtitle": "from ReFi Colombia"
     },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "From My USDT Balance",
-      "bySwapping": "Add cCOP by swapping from your USDT",
-      "purchase": "Purchase cCOP",
-      "purchaseDescription": "Add cCOP by purchasing through one of our trusted providers"
+      "bySwapping": "Add COPm by swapping from your USDT",
+      "purchase": "Purchase COPm",
+      "purchaseDescription": "Add COPm by purchasing through one of our trusted providers"
     }
   },
   "tokenEnterAmount": {
@@ -2947,16 +2947,16 @@
     "selectToken": "Select token",
     "fiatPriceUnavailable": "Price unavailable"
   },
-  "ubiNotBeneficiary": "You are not eligible to receive the ReFi Medellín UBI subsidy",
+  "ubiNotBeneficiary": "You are not eligible to receive the ReFi Colombia subsidy",
   "ubiAlreadyClaimed": "You have already claimed your UBI subsidy this week",
   "ubiClaimError": "Error processing UBI subsidy claim. Please try again",
   "insufficientFundsForGas": "Insufficient funds to pay for gas fees",
-  "reFiMedellinUbi": {
-    "title": "Claim your ReFi Medellín UBI",
-    "subtitle": "Universal Basic Income Program",
+  "reFiColombiaSubsidies": {
+    "title": "Claim your ReFi Colombia Subsidy",
+    "subtitle": "Subsidies Program",
     "checking": {
       "title": "Checking your eligibility...",
-      "subtitle": "Connecting to the ReFi Medellín contract"
+      "subtitle": "Connecting to the ReFi Colombia contract"
     },
     "error": {
       "title": "Connection error",
@@ -2964,15 +2964,15 @@
       "retry": "Retry"
     },
     "notEligible": {
-      "title": "You are not eligible to receive the ReFi Medellín UBI subsidy",
-      "description": "Your wallet address is not registered as a beneficiary of the ReFi Medellín UBI program.",
-      "contact": "If you believe this is an error, contact the ReFi Medellín team."
+      "title": "You are not eligible to receive the ReFi Colombia subsidy",
+      "description": "Your wallet address is not registered as a beneficiary of the ReFi Colombia program.",
+      "contact": "If you believe this is an error, contact the ReFi Colombia team."
     },
     "eligible": {
       "congratulations": "Congratulations!",
-      "subtitle": "You are eligible to receive your UBI",
-      "benefitTitle": "Universal Basic Income",
-      "benefitDescription": "As a registered beneficiary of the ReFi Medellín program, you can claim your subsidy safely and directly to your wallet.",
+      "subtitle": "You are eligible to receive your subsidy",
+      "benefitTitle": "Subsidies",
+      "benefitDescription": "As a registered beneficiary of the ReFi Colombia program, you can claim your subsidy safely and directly to your wallet.",
       "claimButton": "Claim My Subsidy",
       "claimingButton": "Claiming...",
       "processingText": "Processing transaction..."
@@ -2989,5 +2989,40 @@
       "daysAndHours": "{{days}} day{{daysPlural}} and {{hours}} hour{{hoursPlural}}",
       "hoursOnly": "{{hours}} hour{{hoursPlural}}"
     }
+  },
+  "buckspay": {
+    "selectProvider": "Withdraw Funds",
+    "selectProviderSubtitle": "Choose a provider to convert your crypto to local currency.",
+    "providerDescription": "Convert COPm to Colombian Pesos",
+    "bankFormTitle": "Bank Details",
+    "bankFormSubtitle": "Enter the amount and your bank account details to receive your funds.",
+    "amountLabel": "Amount (COPm)",
+    "amountPlaceholder": "Enter amount",
+    "bankNameLabel": "Bank Name",
+    "bankNamePlaceholder": "e.g. Bancolombia",
+    "accountNumberLabel": "Account Number",
+    "accountNumberPlaceholder": "Enter account number",
+    "bankCountryLabel": "Country",
+    "continue": "Continue",
+    "confirmTitle": "Review & Confirm",
+    "confirmSubtitle": "Please review your withdrawal details before confirming.",
+    "receiverLabel": "Receiver Wallet",
+    "confirm": "Confirm Withdrawal",
+    "statusTracking": "Processing Withdrawal",
+    "statusCompleted": "Withdrawal Complete",
+    "statusError": "Withdrawal Failed",
+    "processingTransaction": "Your transaction is being processed...",
+    "processingWarning": "The order may take a few minutes to be picked up. You can leave this screen and come back later to check the status.",
+    "outsideHoursTitle": "Service Unavailable",
+    "outsideHoursMessage": "BucksPay is available from 08:00 to 20:00 (Colombia time). Current time in Colombia: {{currentTime}}. Please try again during service hours.",
+    "transactionHash": "Transaction Hash",
+    "viewReceipt": "View Receipt",
+    "done": "Done",
+    "unknownError": "An unexpected error occurred. Please try again.",
+    "status_PENDING": "Pending",
+    "status_INPROGRESS": "In Progress",
+    "status_STARTED": "Started",
+    "status_PAYED": "Payment Sent",
+    "status_FINISHED": "Completed"
   }
 }

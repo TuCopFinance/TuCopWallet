@@ -1,5 +1,5 @@
 # This workflow is responsible for generating Valora's IPA
-# and APK files for Alfajores and Mainnet and upload them
+# and APK files for Celo Sepolia testnet and Mainnet and upload them
 # to TestFlight and Google Play.
 name: Release - Production
 

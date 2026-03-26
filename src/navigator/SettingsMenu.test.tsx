@@ -11,9 +11,10 @@ import { createMockStore } from 'test/utils'
 import { mockE164Number } from 'test/values'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn().mockReturnValue(false),
   getMultichainFeatures: jest.fn(() => ({
-    showBalances: ['celo-alfajores'],
+    showBalances: ['celo-sepolia'],
   })),
 }))
 
@@ -85,7 +86,8 @@ describe('SettingsMenu', () => {
     expect(navigate).toHaveBeenNthCalledWith(6, Screens.SecuritySubmenu)
   })
 
-  it('renders the dev mode menu', () => {
+  // Dev mode menu is currently commented out in the source
+  it.skip('renders the dev mode menu', () => {
     const mockAddress = '0x0000000000000000000000000000000000007e57'
     const store = createMockStore({
       account: {

@@ -29,7 +29,7 @@ import {
   inAppReviewLastInteractionTimestampSelector,
   sentryNetworkErrorsSelector,
 } from 'src/app/selectors'
-import { DEEP_LINK_URL_SCHEME } from 'src/config'
+import { DEEP_LINK_URL_SCHEME, WALLETCONNECT_UNIVERSAL_LINK } from 'src/config'
 import { activeDappSelector } from 'src/dapps/selectors'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { initI18n } from 'src/i18n'
@@ -44,7 +44,6 @@ import { Screens } from 'src/navigator/Screens'
 import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { handlePaymentDeeplink } from 'src/send/utils'
-import { initializeSentry } from 'src/sentry/Sentry'
 import { getDynamicConfigParams, getFeatureGate, patchUpdateStatsigUser } from 'src/statsig'
 import { NetworkId } from 'src/transactions/types'
 import { navigateToURI } from 'src/utils/linking'
@@ -59,8 +58,6 @@ import { createMockStore } from 'test/utils'
 import { mockAccount, mockTokenBalances } from 'test/values'
 
 jest.mock('src/analytics/AppAnalytics')
-jest.mock('src/sentry/Sentry')
-jest.mock('src/sentry/SentryTransactionHub')
 jest.mock('src/statsig')
 jest.mock('src/jumpstart/jumpstartLinkHandler')
 jest.mock('src/positions/saga')
@@ -232,10 +229,10 @@ describe('handleDeepLink', () => {
   })
 
   it('Handles jumpstart links', async () => {
-    const deepLink = `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart/0xPrivateKey/celo-alfajores`
+    const deepLink = `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart/0xPrivateKey/celo-sepolia`
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        [NetworkId['celo-alfajores']]: { contractAddress: '0xTEST' },
+        [NetworkId['celo-sepolia']]: { contractAddress: '0xTEST' },
       },
     })
     await expectSaga(handleDeepLink, openDeepLink(deepLink))
@@ -250,7 +247,7 @@ describe('handleDeepLink', () => {
       .run()
 
     expect(jumpstartLinkHandler).toHaveBeenCalledWith(
-      'celo-alfajores',
+      'celo-sepolia',
       '0xTEST',
       '0xPrivateKey',
       '0xwallet'
@@ -302,7 +299,7 @@ describe('WalletConnect deeplinks', () => {
     },
     {
       name: 'iOS universal link',
-      link: `https://valoraapp.com/wc?uri=${connectionString}`,
+      link: `${WALLETCONNECT_UNIVERSAL_LINK}?uri=${connectionString}`,
     },
   ]
 
@@ -377,7 +374,7 @@ describe('WalletConnect deeplinks', () => {
   const actionLinks = [
     { name: 'Android', link: actionString },
     { name: 'iOS deeplink', link: `${DEEP_LINK_URL_SCHEME}://wallet/wc?uri=${actionString}` },
-    { name: 'iOS universal link', link: `https://valoraapp.com/wc?uri=${actionString}` },
+    { name: 'iOS universal link', link: `${WALLETCONNECT_UNIVERSAL_LINK}?uri=${actionString}` },
   ]
   for (const { name, link } of actionLinks) {
     it(`handles ${name} action links correctly`, async () => {
@@ -558,7 +555,6 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
     // Ensure the right context is used
     // Note: switch to mock.contexts[0] when we upgrade to jest >= 28
@@ -577,7 +573,6 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
     expect(initI18n).toHaveBeenCalledWith('de-DE', true, '1')
   })
@@ -590,9 +585,8 @@ describe('appInit', () => {
       .put(setSupportedBiometryType(BIOMETRY_TYPE.TOUCH_ID))
       .run()
 
-    expect(initializeSentry).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.init).toHaveBeenCalledTimes(1)
-    expect(initI18n).toHaveBeenCalledWith('en-US', true, '1')
+    expect(initI18n).toHaveBeenCalledWith('es-LA', true, '1')
   })
 })
 

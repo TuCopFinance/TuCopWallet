@@ -14,7 +14,7 @@ export const REMOTE_CONFIG_VALUES_DEFAULTS: Omit<
   allowOtaTranslations: false,
   sentryTracesSampleRate: 0.2,
   sentryNetworkErrors: '',
-  dappListApiUrl: 'https://us-central1-celo-mobile-alfajores.cloudfunctions.net/dappList',
+  dappListApiUrl: 'https://us-central1-celo-mobile-testnet.cloudfunctions.net/dappList',
   maxNumRecentDapps: 4,
   dappsWebViewEnabled: true,
   fiatConnectCashInEnabled: false,

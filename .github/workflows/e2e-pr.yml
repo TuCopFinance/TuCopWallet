@@ -13,7 +13,8 @@ concurrency:
 
 jobs:
   android:
-    if: true
+    # Enable when Namespace Cloud runners are configured
+    if: false
     name: Android
     uses: ./.github/workflows/e2e-android.yml
     with:

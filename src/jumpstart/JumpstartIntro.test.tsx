@@ -54,7 +54,7 @@ describe('JumpstartIntro', () => {
     fireEvent.press(getByText('addFundsActions.add'))
     expect(navigate).toHaveBeenLastCalledWith('FiatExchangeCurrencyBottomSheet', {
       flow: 'CashIn',
-      networkId: 'celo-alfajores',
+      networkId: 'celo-sepolia',
     })
 
     fireEvent.press(getByText('addFundsActions.transfer'))
@@ -64,7 +64,7 @@ describe('JumpstartIntro', () => {
 
     fireEvent.press(getByText('addFundsActions.swap'))
     expect(navigate).toHaveBeenLastCalledWith('SwapScreenWithBack', {
-      toTokenNetworkId: 'celo-alfajores',
+      toTokenNetworkId: 'celo-sepolia',
     })
   })
 })

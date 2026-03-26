@@ -23,6 +23,7 @@ import {
   mockAccount,
   mockCeloTokenId,
   mockCeurTokenId,
+  mockCkesTokenId,
   mockCrealTokenId,
   mockCusdTokenId,
   mockPoofTokenId,
@@ -36,24 +37,24 @@ beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(getFeatureGate).mockReturnValue(true)
   jest.mocked(getMultichainFeatures).mockReturnValue({
-    showCico: [NetworkId['celo-alfajores']],
-    showSend: [NetworkId['celo-alfajores']],
-    showSwap: [NetworkId['celo-alfajores']],
-    showBalances: [NetworkId['celo-alfajores']],
+    showCico: [NetworkId['celo-sepolia']],
+    showSend: [NetworkId['celo-sepolia']],
+    showSwap: [NetworkId['celo-sepolia']],
+    showBalances: [NetworkId['celo-sepolia']],
   })
 })
 
 const tokenAddressWithPriceAndBalance = '0x001'
-const tokenIdWithPriceAndBalance = `celo-alfajores:${tokenAddressWithPriceAndBalance}`
+const tokenIdWithPriceAndBalance = `celo-sepolia:${tokenAddressWithPriceAndBalance}`
 const tokenAddressWithoutBalance = '0x002'
-const tokenIdWithoutBalance = `celo-alfajores:${tokenAddressWithoutBalance}`
+const tokenIdWithoutBalance = `celo-sepolia:${tokenAddressWithoutBalance}`
 const ethTokenId = 'ethereum-sepolia:native'
 
 function TestComponent({ tokenId }: { tokenId: string }) {
   const tokenAmount = useLocalToTokenAmount(new BigNumber(1), tokenId)
   const localAmount = useTokenToLocalAmount(new BigNumber(1), tokenId)
   const usdAmount = useAmountAsUsd(new BigNumber(1), tokenId)
-  const tokenPricesAreStale = useTokenPricesAreStale([NetworkId['celo-alfajores']])
+  const tokenPricesAreStale = useTokenPricesAreStale([NetworkId['celo-sepolia']])
 
   return (
     <View>
@@ -78,7 +79,7 @@ const store = (usdToLocalRate: string | null, priceFetchedAt: number) =>
         [tokenIdWithPriceAndBalance]: {
           address: tokenAddressWithPriceAndBalance,
           tokenId: tokenIdWithPriceAndBalance,
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           symbol: 'T1',
           balance: '0',
           priceUsd: '5',
@@ -87,7 +88,7 @@ const store = (usdToLocalRate: string | null, priceFetchedAt: number) =>
         [tokenIdWithoutBalance]: {
           address: tokenAddressWithoutBalance,
           tokenId: tokenIdWithoutBalance,
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           symbol: 'T2',
           priceUsd: '5',
           balance: null,
@@ -135,8 +136,8 @@ const storeWithMultipleNetworkTokens = (walletAddress?: string) =>
       positions: [
         {
           type: 'app-token' as const,
-          networkId: NetworkId['celo-alfajores'],
-          tokenId: 'celo-alfajores:0xa',
+          networkId: NetworkId['celo-sepolia'],
+          tokenId: 'celo-sepolia:0xa',
           address: '0xa',
           priceUsd: '60',
           balance: '3',
@@ -145,14 +146,14 @@ const storeWithMultipleNetworkTokens = (walletAddress?: string) =>
           },
           tokens: [
             {
-              networkId: NetworkId['celo-alfajores'],
-              tokenId: 'celo-alfajores:0xb',
+              networkId: NetworkId['celo-sepolia'],
+              tokenId: 'celo-sepolia:0xb',
               balance: '1',
               priceUsd: '30',
             },
             {
-              networkId: NetworkId['celo-alfajores'],
-              tokenId: 'celo-alfajores:0xc',
+              networkId: NetworkId['celo-sepolia'],
+              tokenId: 'celo-sepolia:0xc',
               balance: '2',
               priceUsd: '20',
             },
@@ -279,7 +280,7 @@ describe('useSwappableTokens', () => {
         (featureGate) => featureGate !== StatsigFeatureGates.SHUFFLE_SWAP_TOKENS_ORDER
       )
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showSwap: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
     const { result } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
@@ -303,14 +304,14 @@ describe('useSwappableTokens', () => {
 
   it('returns deterministically shuffled tokens for each user in the holdout group', () => {
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSwap: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
 
     const expectedToTokens1 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens1 = [mockPoofTokenId, mockCeloTokenId, ethTokenId, mockCrealTokenId]
+    const expectedFromTokens1 = [mockCrealTokenId, mockPoofTokenId, mockCeloTokenId, ethTokenId]
 
-    const expectedToTokens2 = [ethTokenId, mockCeloTokenId]
-    const expectedFromTokens2 = [mockCrealTokenId, ethTokenId, mockPoofTokenId, mockCeloTokenId]
+    const expectedToTokens2 = [mockCeloTokenId, ethTokenId]
+    const expectedFromTokens2 = [mockCrealTokenId, mockCeloTokenId, ethTokenId, mockPoofTokenId]
 
     const { result: result1 } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
@@ -354,16 +355,18 @@ describe('useCashInTokens', () => {
     )
 
     expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
       mockCeurTokenId,
       mockCusdTokenId,
       mockCeloTokenId,
       mockCrealTokenId,
+      mockCkesTokenId,
     ])
   })
 
   it('returns tokens eligible for cash in for multiple networks', () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showCico: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
     const { getByTestId } = render(
       <Provider store={storeWithMultipleNetworkTokens()}>
@@ -372,12 +375,14 @@ describe('useCashInTokens', () => {
     )
 
     expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
       mockCeurTokenId,
       mockCusdTokenId,
       mockCeloTokenId,
       mockCrealTokenId,
       ethTokenId,
       mockUSDCTokenId,
+      mockCkesTokenId,
     ])
   })
 })
@@ -390,12 +395,16 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId])
+    expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
+      mockCeloTokenId,
+      mockCrealTokenId,
+    ])
   })
 
   it('returns tokens eligible for cash out for multiple networks', () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showCico: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
     const { getByTestId } = render(
       <Provider store={storeWithMultipleNetworkTokens()}>
@@ -403,7 +412,12 @@ describe('useCashOutTokens', () => {
       </Provider>
     )
 
-    expect(getByTestId('tokenIDs').props.children).toEqual([mockCeloTokenId, ethTokenId])
+    expect(getByTestId('tokenIDs').props.children).toEqual([
+      mockPoofTokenId,
+      mockCeloTokenId,
+      mockCrealTokenId,
+      ethTokenId,
+    ])
   })
 })
 
@@ -421,7 +435,7 @@ describe('useTokenInfo', () => {
   })
 
   it('returns position tokens when they exist', () => {
-    const { result } = renderHook(() => useTokenInfo('celo-alfajores:0xb'), {
+    const { result } = renderHook(() => useTokenInfo('celo-sepolia:0xb'), {
       wrapper: (component) => (
         <Provider store={storeWithMultipleNetworkTokens()}>
           {component?.children ? component.children : component}
@@ -429,7 +443,7 @@ describe('useTokenInfo', () => {
       ),
     })
 
-    expect(result.current?.tokenId).toEqual('celo-alfajores:0xb')
+    expect(result.current?.tokenId).toEqual('celo-sepolia:0xb')
   })
 
   it('returns undefined if the tokenId is not found', () => {
@@ -460,19 +474,16 @@ describe('useTokensInfo', () => {
   })
 
   it('returns position tokens when they exist', () => {
-    const { result } = renderHook(
-      () => useTokensInfo(['celo-alfajores:0xb', 'celo-alfajores:0xc']),
-      {
-        wrapper: (component) => (
-          <Provider store={storeWithMultipleNetworkTokens()}>
-            {component?.children ? component.children : component}
-          </Provider>
-        ),
-      }
-    )
+    const { result } = renderHook(() => useTokensInfo(['celo-sepolia:0xb', 'celo-sepolia:0xc']), {
+      wrapper: (component) => (
+        <Provider store={storeWithMultipleNetworkTokens()}>
+          {component?.children ? component.children : component}
+        </Provider>
+      ),
+    })
 
-    expect(result.current[0]?.tokenId).toEqual('celo-alfajores:0xb')
-    expect(result.current[1]?.tokenId).toEqual('celo-alfajores:0xc')
+    expect(result.current[0]?.tokenId).toEqual('celo-sepolia:0xb')
+    expect(result.current[1]?.tokenId).toEqual('celo-sepolia:0xc')
   })
 
   it('returns empty array if the tokenId is not found', () => {
