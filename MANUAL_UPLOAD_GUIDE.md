@@ -53,7 +53,7 @@ In Xcode toolbar:
 1. **Scheme**: Select the environment you want to build:
 
    - `MobileStack-mainnet` → Production (App Store)
-   - `MobileStack-alfajores` → Testnet (for testing)
+   - `MobileStack-testnet` → Testnet (Celo Sepolia, for testing)
    - `MobileStack-mainnetnightly` → Nightly mainnet build
 
 2. **Destination**: Select **Any iOS Device (arm64)**

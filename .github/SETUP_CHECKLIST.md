@@ -1,62 +1,62 @@
-# 🚀 Checklist de Configuración CI/CD
+# 🚀 CI/CD Setup Checklist
 
 ## ✅ GitHub Secrets (Settings → Secrets and variables → Actions)
 
-### API/Servidor
+### API/Server
 
-- [ ] `RAILWAY_API_URL` - URL de tu servidor Railway
-- [ ] `RAILWAY_API_KEY` - API key para autenticación
+- [ ] `RAILWAY_API_URL` - Your Railway server URL
+- [ ] `RAILWAY_API_KEY` - API key for authentication
 
 ### Android
 
-- [ ] `GOOGLE_PLAY_JSON_KEY` - JSON del service account de Google Play
-- [ ] `KEYSTORE_PASSWORD` - Password del keystore de release
-- [ ] `KEY_ALIAS` - Alias de la key de firma
-- [ ] `KEY_PASSWORD` - Password de la key de firma
+- [ ] `GOOGLE_PLAY_JSON_KEY` - Google Play service account JSON
+- [ ] `KEYSTORE_PASSWORD` - Release keystore password
+- [ ] `KEY_ALIAS` - Signing key alias
+- [ ] `KEY_PASSWORD` - Signing key password
 
 ### iOS
 
 - [ ] `APPLE_CONNECT_KEY_ID` - App Store Connect API Key ID
 - [ ] `APPLE_CONNECT_ISSUER_ID` - App Store Connect Issuer ID
-- [ ] `APPLE_CONNECT_CERTIFICATE_PATH` - Ruta al certificado
+- [ ] `APPLE_CONNECT_CERTIFICATE_PATH` - Path to the certificate
 
-### Notificaciones
+### Notifications
 
-- [ ] `SLACK_WEBHOOK_URL` - Webhook de Slack para notificaciones
-- [ ] `SECRETS_PASSWORD` - Password para decrypt de secrets (si aplica)
+- [ ] `SLACK_WEBHOOK_URL` - Slack webhook for notifications
+- [ ] `SECRETS_PASSWORD` - Password for secrets decryption (if applicable)
 
-## ✅ Archivos del Repositorio
+## ✅ Repository Files
 
 ### Android
 
-- [ ] `android/app/tucop.keystore` - Keystore de producción
-- [ ] `android/app/debug.keystore` - Keystore de debug
-- [ ] `android/gradle.properties` - Con VERSION_CODE configurado
-- [ ] `.env.mainnet` - Variables de ambiente para producción
-- [ ] `.env.testnet` - Variables de ambiente para testnet
+- [ ] `android/app/tucop.keystore` - Production keystore
+- [ ] `android/app/debug.keystore` - Debug keystore
+- [ ] `android/gradle.properties` - With VERSION_CODE configured
+- [ ] `.env.mainnet` - Environment variables for production
+- [ ] `.env.testnet` - Environment variables for testnet
 
 ### iOS
 
-- [ ] `ios/TuCopWallet.xcworkspace` - Workspace configurado
-- [ ] `ios/Podfile` - Dependencias actualizadas
-- [ ] Certificados de firma configurados en Xcode
+- [ ] `ios/TuCopWallet.xcworkspace` - Configured workspace
+- [ ] `ios/Podfile` - Updated dependencies
+- [ ] Signing certificates configured in Xcode
 
 ### General
 
-- [ ] `package.json` - Con script `pre-deploy` si existe
-- [ ] `yarn.lock` - Actualizado y committeado
-- [ ] `.gitignore` - Excluye archivos sensibles
+- [ ] `package.json` - With `pre-deploy` script if it exists
+- [ ] `yarn.lock` - Updated and committed
+- [ ] `.gitignore` - Excludes sensitive files
 
-## ✅ Configuración del Servidor
+## ✅ Server Configuration
 
-### Endpoint requerido
+### Required Endpoint
 
-- [ ] `POST /api/update-version` implementado
-- [ ] Acepta JSON con estructura definida
-- [ ] Maneja autenticación Bearer token
-- [ ] Responde con status 200/201 en éxito
+- [ ] `POST /api/update-version` implemented
+- [ ] Accepts JSON with defined structure
+- [ ] Handles Bearer token authentication
+- [ ] Responds with status 200/201 on success
 
-### Estructura del payload esperada:
+### Expected payload structure:
 
 ```json
 {
@@ -65,76 +65,76 @@
   "buildNumber": "1704729600",
   "android": { "success": true, "buildTime": "ISO-date" },
   "ios": { "success": true, "buildTime": "ISO-date" },
-  "releaseNotes": "Descripción del build...",
+  "releaseNotes": "Build description...",
   "commit": "commit-hash",
   "branch": "branch-name",
   "workflow": "workflow-run-id"
 }
 ```
 
-## ✅ Configuración de Tiendas
+## ✅ Store Configuration
 
 ### Google Play Console
 
-- [ ] App creada en Google Play Console
-- [ ] Service Account con permisos de upload
-- [ ] Internal testing track configurado
-- [ ] App Bundle habilitado
+- [ ] App created in Google Play Console
+- [ ] Service Account with upload permissions
+- [ ] Internal testing track configured
+- [ ] App Bundle enabled
 
 ### App Store Connect
 
-- [ ] App registrada en App Store Connect
-- [ ] Certificados de distribución válidos
-- [ ] TestFlight configurado
-- [ ] API Key con permisos de upload
+- [ ] App registered in App Store Connect
+- [ ] Valid distribution certificates
+- [ ] TestFlight configured
+- [ ] API Key with upload permissions
 
-## ✅ Verificación de Funcionamiento
+## ✅ Verification
 
-### Pruebas locales
+### Local Tests
 
-- [ ] `cd android && ./gradlew bundleMainnetRelease` funciona
-- [ ] `cd ios && pod install` funciona sin errores
-- [ ] Variables de ambiente se cargan correctamente
+- [ ] `cd android && ./gradlew bundleMainnetRelease` works
+- [ ] `cd ios && pod install` works without errors
+- [ ] Environment variables load correctly
 
 ### GitHub Actions
 
-- [ ] Workflow se ejecuta en push a main
-- [ ] Builds de Android completan exitosamente
-- [ ] Builds de iOS completan exitosamente
-- [ ] Notificaciones al servidor funcionan
-- [ ] Artefactos se suben correctamente
+- [ ] Workflow runs on push to main
+- [ ] Android builds complete successfully
+- [ ] iOS builds complete successfully
+- [ ] Server notifications work
+- [ ] Artifacts are uploaded correctly
 
-### Notificaciones
+### Notifications
 
-- [ ] Slack recibe mensajes del bot
-- [ ] Servidor recibe y procesa webhooks
-- [ ] GitHub releases se crean automáticamente
+- [ ] Slack receives bot messages
+- [ ] Server receives and processes webhooks
+- [ ] GitHub releases are created automatically
 
-## 🚨 Troubleshooting Común
+## 🚨 Common Troubleshooting
 
 ### Android
 
-- **Error de Gradle:** Verificar Java 11 y Gradle 8.7
-- **Keystore no encontrado:** Verificar rutas y secrets (fallback a debug.keystore en CI)
-- **Autolinking:** NO usar `-x generateAutolinkingPackageList` (Gradle 8.7 falla si el task no existe)
+- **Gradle error:** Verify Java 11 and Gradle 8.7
+- **Keystore not found:** Verify paths and secrets (falls back to debug.keystore in CI)
+- **Autolinking:** Do NOT use `-x generateAutolinkingPackageList` (Gradle 8.7 fails if the task does not exist)
 
 ### iOS
 
-- **Pod install falla:** Actualizar CocoaPods y Xcode
-- **Certificados inválidos:** Renovar en Apple Developer
-- **Archive falla:** Verificar code signing settings
+- **Pod install fails:** Update CocoaPods and Xcode
+- **Invalid certificates:** Renew in Apple Developer
+- **Archive fails:** Verify code signing settings
 
 ### API
 
-- **401 Unauthorized:** Verificar RAILWAY_API_KEY
-- **404 Not Found:** Verificar RAILWAY_API_URL
-- **Timeout:** Verificar conectividad del servidor
+- **401 Unauthorized:** Verify RAILWAY_API_KEY
+- **404 Not Found:** Verify RAILWAY_API_URL
+- **Timeout:** Verify server connectivity
 
-## 📞 Soporte
+## 📞 Support
 
-Si algún step falla:
+If any step fails:
 
-1. Revisar logs del workflow en GitHub Actions
-2. Verificar que todos los secrets estén configurados
-3. Probar builds localmente primero
-4. Verificar conectividad con APIs externas
+1. Review workflow logs in GitHub Actions
+2. Verify that all secrets are configured
+3. Test builds locally first
+4. Verify connectivity with external APIs

@@ -1,37 +1,37 @@
-# Sistema de Verificación Telefónica Integrado
+# Integrated Phone Verification System
 
-## Resumen del Problema
+## Problem Summary
 
-Anteriormente, TuCOP Wallet tenía dos sistemas de verificación telefónica completamente separados:
+Previously, TuCOP Wallet had two completely separate phone verification systems:
 
-1. **Sistema Regular** (`api-wallet-tlf-production.up.railway.app`)
+1. **Regular System** (`api-wallet-tlf-production.up.railway.app`)
 
-   - Solo vincula número telefónico con dirección de wallet
-   - Usado en configuraciones y verificación básica
+   - Only links phone number to wallet address
+   - Used in settings and basic verification
 
-2. **Sistema Keyless Backup** (`twilio-service.up.railway.app`)
-   - Genera keyshares para encriptar/desencriptar mnemonic
-   - Usado para backup y restore sin frase de recuperación
+2. **Keyless Backup System** (`twilio-service.up.railway.app`)
+   - Generates keyshares to encrypt/decrypt the mnemonic
+   - Used for backup and restore without a recovery phrase
 
-**Problema:** Los usuarios que hacían keyless backup no tenían su número vinculado al perfil, y viceversa.
+**Problem:** Users who performed keyless backup did not have their number linked to their profile, and vice versa.
 
-## Solución Implementada
+## Implemented Solution
 
-### Integración Bidireccional
+### Bidirectional Integration
 
-#### 1. Keyless Backup → Sistema Regular
+#### 1. Keyless Backup → Regular System
 
-**Archivo:** `src/keylessBackup/hooks.ts`
+**File:** `src/keylessBackup/hooks.ts`
 
-Cuando un usuario completa exitosamente la verificación SMS en keyless backup:
+When a user successfully completes SMS verification in keyless backup:
 
-1. Se genera el keyshare normalmente
-2. **NUEVO:** Se registra automáticamente el número en el sistema regular
-3. Se dispara `phoneNumberVerificationCompleted()` para actualizar el estado
-4. El número queda vinculado al perfil
+1. The keyshare is generated normally
+2. **NEW:** The number is automatically registered in the regular system
+3. `phoneNumberVerificationCompleted()` is dispatched to update the state
+4. The number becomes linked to the profile
 
 ```typescript
-// Después de verificar SMS en keyless backup
+// After verifying SMS in keyless backup
 const registeredInRegularSystem = await registerPhoneInRegularSystem(phoneNumber, walletAddress)
 
 if (registeredInRegularSystem) {
@@ -40,96 +40,96 @@ if (registeredInRegularSystem) {
 }
 ```
 
-#### 2. Sistema Regular → Keyless Backup
+#### 2. Regular System → Keyless Backup
 
-**Archivo:** `src/verify/hooks.ts`
+**File:** `src/verify/hooks.ts`
 
-Cuando un usuario intenta verificar su número en el sistema regular:
+When a user attempts to verify their number in the regular system:
 
-1. **NUEVO:** Primero consulta si el número ya existe en keyless backup
-2. Si existe, auto-verifica sin necesidad de SMS
-3. Si no existe, procede con verificación normal
+1. **NEW:** First checks if the number already exists in keyless backup
+2. If it exists, auto-verifies without requiring SMS
+3. If it does not exist, proceeds with normal verification
 
 ```typescript
-// Antes de solicitar SMS
+// Before requesting SMS
 const existsInKeylessBackup = await checkPhoneInKeylessBackupSystem(phoneNumber, address)
 if (existsInKeylessBackup) {
-  await handleAlreadyVerified() // Auto-verifica
+  await handleAlreadyVerified() // Auto-verifies
   return
 }
 ```
 
-## Flujos de Usuario
+## User Flows
 
-### Escenario 1: Usuario hace Keyless Backup primero
+### Scenario 1: User performs Keyless Backup first
 
-1. Usuario configura keyless backup (Google/Apple + SMS)
-2. ✅ **AUTOMÁTICO:** Número se vincula al perfil
-3. Usuario va a Settings → Ve número ya verificado
-4. Usuario puede hacer restore sin problemas
+1. User sets up keyless backup (Google/Apple + SMS)
+2. ✅ **AUTOMATIC:** Number is linked to the profile
+3. User goes to Settings → Sees number already verified
+4. User can restore without issues
 
-### Escenario 2: Usuario verifica número en Settings primero
+### Scenario 2: User verifies number in Settings first
 
-1. Usuario va a Settings → Verificar número telefónico
-2. ✅ **AUTOMÁTICO:** Sistema consulta keyless backup
-3. Si ya hizo backup antes, se auto-verifica
-4. Si no, procede con verificación normal
+1. User goes to Settings → Verify phone number
+2. ✅ **AUTOMATIC:** System queries keyless backup
+3. If backup was done before, auto-verifies
+4. If not, proceeds with normal verification
 
-### Escenario 3: Usuario hace Restore
+### Scenario 3: User performs Restore
 
-1. Usuario inicia restore con Google/Apple + SMS
-2. ✅ **AUTOMÁTICO:** Número se vincula al perfil durante restore
-3. Recupera wallet y tiene número verificado
+1. User initiates restore with Google/Apple + SMS
+2. ✅ **AUTOMATIC:** Number is linked to the profile during restore
+3. Wallet is recovered with the number already verified
 
-## Beneficios
+## Benefits
 
-### Para el Usuario
+### For the User
 
-- **Experiencia unificada:** Un solo proceso de verificación
-- **Sin duplicación:** No necesita verificar el mismo número dos veces
-- **Consistencia:** El número siempre aparece verificado en el perfil
+- **Unified experience:** A single verification process
+- **No duplication:** No need to verify the same number twice
+- **Consistency:** The number always appears verified in the profile
 
-### Para el Sistema
+### For the System
 
-- **Datos sincronizados:** Ambos sistemas conocen los números verificados
-- **Backup completo:** Keyless backup incluye vinculación de perfil
-- **Compatibilidad:** Funciona con usuarios existentes de ambos sistemas
+- **Synchronized data:** Both systems know which numbers are verified
+- **Complete backup:** Keyless backup includes profile linking
+- **Compatibility:** Works with existing users from both systems
 
-## Implementación Técnica
+## Technical Implementation
 
-### Funciones Auxiliares
+### Helper Functions
 
 #### `registerPhoneInRegularSystem()`
 
 ```typescript
-// Registra número verificado en keyless backup al sistema regular
+// Registers a number verified in keyless backup into the regular system
 async function registerPhoneInRegularSystem(phoneNumber: string, walletAddress: string)
 ```
 
 #### `checkPhoneInKeylessBackupSystem()`
 
 ```typescript
-// Verifica si número ya existe en sistema keyless backup
+// Checks if a number already exists in the keyless backup system
 async function checkPhoneInKeylessBackupSystem(phoneNumber: string, walletAddress: string)
 ```
 
-### Endpoints Utilizados
+### Endpoints Used
 
-1. **Sistema Regular:**
+1. **Regular System:**
 
-   - `POST /api/wallets/request-otp` - Solicitar código
-   - `POST /api/wallets/verify-otp` - Verificar código
+   - `POST /api/wallets/request-otp` - Request code
+   - `POST /api/wallets/verify-otp` - Verify code
 
-2. **Sistema Keyless Backup:**
-   - `POST /otp/send` - Enviar SMS
-   - `POST /otp/verify` - Verificar y obtener keyshare
-   - `POST /keyless-backup/check-phone` - **NUEVO:** Verificar existencia
+2. **Keyless Backup System:**
+   - `POST /otp/send` - Send SMS
+   - `POST /otp/verify` - Verify and obtain keyshare
+   - `POST /keyless-backup/check-phone` - **NEW:** Check existence
 
-## Consideraciones de Backend
+## Backend Considerations
 
-### Endpoint Requerido en Keyless Backup
+### Required Endpoint in Keyless Backup
 
-El sistema necesita un nuevo endpoint para consultar si un número existe:
+The system needs a new endpoint to query whether a number exists:
 
 ```
 POST /keyless-backup/check-phone
@@ -144,48 +144,48 @@ Response:
 }
 ```
 
-### Manejo de Errores
+### Error Handling
 
-- Si falla registro en sistema regular → Continúa con keyless backup
-- Si falla consulta a keyless backup → Continúa con verificación normal
-- Logs detallados para debugging
+- If registration in the regular system fails → Continues with keyless backup
+- If the keyless backup query fails → Continues with normal verification
+- Detailed logs for debugging
 
 ## Testing
 
-### Casos de Prueba
+### Test Cases
 
-1. ✅ Keyless backup → Verificar que número aparece en perfil
-2. ✅ Verificación regular → Verificar que consulta keyless backup
-3. ✅ Usuario existente con keyless backup → Auto-verificación
-4. ✅ Usuario nuevo → Verificación normal
-5. ✅ Errores de red → Fallback apropiado
+1. ✅ Keyless backup → Verify that the number appears in the profile
+2. ✅ Regular verification → Verify that keyless backup is queried
+3. ✅ Existing user with keyless backup → Auto-verification
+4. ✅ New user → Normal verification
+5. ✅ Network errors → Appropriate fallback
 
-### Logs de Debug
+### Debug Logs
 
 ```
 keylessBackup/hooks/registerPhoneInRegularSystem
 verify/hooks/checkPhoneInKeylessBackupSystem
 ```
 
-## Migración de Usuarios Existentes
+## Migration of Existing Users
 
-### Usuarios con Keyless Backup sin Verificación
+### Users with Keyless Backup without Verification
 
-- Al abrir Settings → Número aparece automáticamente verificado
-- No necesitan hacer nada adicional
+- Upon opening Settings → Number automatically appears as verified
+- No additional action required
 
-### Usuarios con Verificación sin Keyless Backup
+### Users with Verification without Keyless Backup
 
-- Pueden hacer keyless backup normalmente
-- El sistema reconoce que ya están verificados
+- They can perform keyless backup normally
+- The system recognizes that they are already verified
 
-## Próximos Pasos
+## Next Steps
 
-1. **Implementar endpoint** `/keyless-backup/check-phone` en backend
-2. **Testing exhaustivo** de todos los flujos
-3. **Monitoreo** de logs para detectar problemas
-4. **Documentación** para el equipo de backend
+1. **Implement endpoint** `/keyless-backup/check-phone` on the backend
+2. **Exhaustive testing** of all flows
+3. **Monitoring** of logs to detect issues
+4. **Documentation** for the backend team
 
-## Conclusión
+## Conclusion
 
-Esta integración elimina la fragmentación entre sistemas y proporciona una experiencia de usuario coherente, donde la verificación telefónica funciona de manera transparente independientemente del punto de entrada del usuario.
+This integration eliminates the fragmentation between systems and provides a coherent user experience, where phone verification works seamlessly regardless of the user's entry point.
