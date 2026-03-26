@@ -36,6 +36,8 @@ import EarnConfirmationScreen from 'src/earn/EarnConfirmationScreen'
 import EarnEnterAmount from 'src/earn/EarnEnterAmount'
 import EarnHome from 'src/earn/EarnHome'
 import EarnInfoScreen from 'src/earn/EarnInfoScreen'
+import GoldHome from 'src/gold/GoldHome'
+import GoldInfoScreen from 'src/gold/GoldInfoScreen'
 import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
 import EarnPoolInfoScreen from 'src/earn/poolInfoScreen/EarnPoolInfoScreen'
 import BidaliScreen from 'src/fiatExchanges/BidaliScreen'
@@ -639,6 +641,21 @@ const bucksPayScreens = (Navigator: typeof Stack) => (
   </>
 )
 
+const goldScreens = (Navigator: typeof Stack) => (
+  <>
+    <Navigator.Screen
+      name={Screens.GoldInfoScreen}
+      component={GoldInfoScreen}
+      options={GoldInfoScreen.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldHome}
+      component={GoldHome}
+      options={GoldHome.navigationOptions}
+    />
+  </>
+)
+
 const mapStateToProps = (state: RootState) => {
   return {
     language: currentLanguageSelector(state),
@@ -694,6 +711,7 @@ function MainStackScreen() {
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
       {bucksPayScreens(Stack)}
+      {goldScreens(Stack)}
       <Stack.Screen
         name={Screens.MarranitoStaking}
         component={MarranitoStaking}
