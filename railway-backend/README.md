@@ -1,86 +1,86 @@
 # TuCOP Wallet Version API
 
-API robusta y segura para gestionar versiones de la aplicación móvil TuCOP Wallet, construida con Express.js, Prisma y PostgreSQL.
+Robust and secure API for managing TuCOP Wallet mobile application versions, built with Express.js, Prisma, and PostgreSQL.
 
-> **⚠️ IMPORTANTE**: Este API backend se encuentra en el directorio `railway-backend/` del proyecto TuCOP Wallet. Asegúrate de ejecutar todos los comandos desde este directorio.
+> **⚠️ IMPORTANT**: This API backend is located in the `railway-backend/` directory of the TuCOP Wallet project. Make sure to run all commands from this directory.
 
-## 📊 Estado del Proyecto
+## 📊 Project Status
 
-✅ **Implementado y Funcionando**:
+✅ **Implemented and Running**:
 
-- Backend completo con Express.js y PostgreSQL
-- Autenticación segura con API keys hasheadas
-- Base de datos configurada con Prisma ORM
-- Endpoints públicos y protegidos
-- Rate limiting y headers de seguridad
-- Logging completo de requests
-- Integración con GitHub (webhooks y auto-updates)
-- Validación robusta de datos
-- Health checks y monitoreo
-- Script de configuración inicial
+- Complete backend with Express.js and PostgreSQL
+- Secure authentication with hashed API keys
+- Database configured with Prisma ORM
+- Public and protected endpoints
+- Rate limiting and security headers
+- Complete request logging
+- GitHub integration (webhooks and auto-updates)
+- Robust data validation
+- Health checks and monitoring
+- Initial setup script
 
-🎯 **Versión Actual**: `1.0.0`
-📅 **Última Actualización**: Enero 2025
-🏗️ **Listo para**: Desarrollo y Producción
+🎯 **Current Version**: `1.0.0`
+📅 **Last Updated**: January 2025
+🏗️ **Ready for**: Development and Production
 
-## 🚀 Características
+## 🚀 Features
 
-- **Base de datos PostgreSQL** con Prisma ORM
-- **Autenticación segura** con API keys hasheadas
-- **Rate limiting** para prevenir abuso
-- **Logging completo** de requests y eventos
-- **Validación robusta** de datos de entrada
-- **Integración con GitHub** para actualizaciones automáticas
-- **Webhooks** para eventos de GitHub
-- **Health checks** y monitoreo
-- **Manejo de errores** centralizado
-- **Compresión** y optimizaciones de rendimiento
+- **PostgreSQL database** with Prisma ORM
+- **Secure authentication** with hashed API keys
+- **Rate limiting** to prevent abuse
+- **Complete logging** of requests and events
+- **Robust validation** of input data
+- **GitHub integration** for automatic updates
+- **Webhooks** for GitHub events
+- **Health checks** and monitoring
+- **Centralized error handling**
+- **Compression** and performance optimizations
 
-## ⚡ Inicio Rápido
+## ⚡ Quick Start
 
 ```bash
-# 1. Navegar al directorio del backend
+# 1. Navigate to the backend directory
 cd railway-backend
 
-# 2. Instalar dependencias
+# 2. Install dependencies
 npm install
 
-# 3. Configurar variables de entorno (ver sección de configuración)
+# 3. Configure environment variables (see configuration section)
 cp .env.example .env
-# Editar .env con tus valores
+# Edit .env with your values
 
-# 4. Configurar base de datos y generar cliente
+# 4. Set up database and generate client
 npm run db:generate
 npm run db:migrate
 
-# 5. Configuración inicial (crear primera API key)
+# 5. Initial setup (create first API key)
 npm run setup
 
-# 6. Iniciar servidor
+# 6. Start server
 npm run dev
 ```
 
-## 📋 Prerequisitos
+## 📋 Prerequisites
 
-- **Node.js** 18.x o superior (probado con Node.js 20.x)
-- **PostgreSQL** 13 o superior
-- **Cuenta de GitHub** con token de acceso personal (opcional para integración)
+- **Node.js** 18.x or higher (tested with Node.js 20.x)
+- **PostgreSQL** 13 or higher
+- **GitHub account** with personal access token (optional for integration)
 
-## 🛠️ Instalación Detallada
+## 🛠️ Detailed Installation
 
-### 1. Clonar e instalar dependencias
+### 1. Clone and install dependencies
 
 ```bash
-# Desde el directorio raíz del proyecto TuCOP Wallet
+# From the TuCOP Wallet project root directory
 cd railway-backend
 npm install
 ```
 
-> **💡 Tip**: Si tienes errores de versión de Node.js, el proyecto soporta Node.js >=18.x
+> **💡 Tip**: If you encounter Node.js version errors, the project supports Node.js >=18.x
 
-### 2. Configurar variables de entorno
+### 2. Configure environment variables
 
-Crea un archivo `.env` con las siguientes variables:
+Create a `.env` file with the following variables:
 
 ```bash
 # ================================
@@ -106,7 +106,7 @@ API_KEY=your-super-secret-api-key-here-minimum-32-characters-long
 ALLOWED_ORIGINS=https://your-frontend-domain.com
 
 # ================================
-# GITHUB INTEGRATION (Opcional)
+# GITHUB INTEGRATION (Optional)
 # ================================
 # GitHub Personal Access Token with 'repo' and 'workflow' permissions
 GITHUB_TOKEN=ghp_your_github_personal_access_token_here
@@ -118,61 +118,61 @@ GITHUB_REPO=your-username/tu-cop-wallet-2
 LOG_RETENTION_DAYS=30
 ```
 
-**Variables importantes:**
+**Important variables:**
 
-- **`DATABASE_URL`**: Conexión a PostgreSQL (requerida)
-- **`API_KEY`**: Clave de API para autenticación (requerida)
-- **`GITHUB_TOKEN`**: Token para integración con GitHub (opcional)
-- **`ALLOWED_ORIGINS`**: Dominios permitidos para CORS (opcional)
+- **`DATABASE_URL`**: PostgreSQL connection string (required)
+- **`API_KEY`**: API key for authentication (required)
+- **`GITHUB_TOKEN`**: Token for GitHub integration (optional)
+- **`ALLOWED_ORIGINS`**: Allowed domains for CORS (optional)
 
-### 3. Configurar la base de datos
+### 3. Set up the database
 
 ```bash
-# Generar el cliente de Prisma
+# Generate the Prisma client
 npm run db:generate
 
-# Ejecutar las migraciones
+# Run migrations
 npm run db:migrate
 
-# (Opcional) Abrir Prisma Studio para administrar datos
+# (Optional) Open Prisma Studio to manage data
 npm run db:studio
 ```
 
-### 4. Configuración inicial
+### 4. Initial setup
 
 ```bash
-# Ejecutar el script de setup para crear la primera API key
+# Run the setup script to create the first API key
 npm run setup
 ```
 
-Este script:
+This script:
 
-- Verifica la conexión a la base de datos
-- Crea la primera API key de administrador
-- Inicializa las versiones por defecto (Android e iOS: 1.102.1)
-- Muestra información importante de configuración
+- Verifies the database connection
+- Creates the first admin API key
+- Initializes default versions (Android and iOS: 1.102.1)
+- Displays important configuration information
 
-**⚠️ IMPORTANTE**: Guarda la API key que se muestra en la consola en un lugar seguro.
+**⚠️ IMPORTANT**: Save the API key displayed in the console in a secure location.
 
-### 5. Iniciar el servidor
+### 5. Start the server
 
 ```bash
-# Desarrollo (con hot reload)
+# Development (with hot reload)
 npm run dev
 
-# Producción
+# Production
 npm start
 ```
 
-El servidor estará disponible en `http://localhost:3000`
+The server will be available at `http://localhost:3000`
 
 ## 📡 API Endpoints
 
-### Públicos
+### Public
 
 #### `GET /health`
 
-Health check del servidor y base de datos.
+Server and database health check.
 
 ```json
 {
@@ -190,19 +190,19 @@ Health check del servidor y base de datos.
 
 #### `GET /api/app-version`
 
-Obtiene información de versión para la aplicación móvil.
+Retrieves version information for the mobile application.
 
 **Headers:**
 
-- `x-platform`: `ios` | `android` (opcional, default: `android`)
-- `x-bundle-id`: ID del bundle de la app (opcional)
-- `x-app-version`: Versión actual de la app (opcional)
+- `x-platform`: `ios` | `android` (optional, default: `android`)
+- `x-bundle-id`: App bundle ID (optional)
+- `x-app-version`: Current app version (optional)
 
 ```json
 {
   "latestVersion": "1.102.1",
   "minRequiredVersion": "1.95.0",
-  "releaseNotes": "Mejoras de rendimiento y corrección de errores",
+  "releaseNotes": "Performance improvements and bug fixes",
   "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop",
   "releaseDate": "2024-01-01T00:00:00.000Z",
   "isForced": false,
@@ -214,7 +214,7 @@ Obtiene información de versión para la aplicación móvil.
 
 #### `GET /api/version-info`
 
-Información detallada de todas las plataformas.
+Detailed information for all platforms.
 
 ```json
 {
@@ -222,7 +222,7 @@ Información detallada de todas las plataformas.
     "ios": {
       "latestVersion": "1.102.1",
       "minRequiredVersion": "1.95.0",
-      "releaseNotes": "Mejoras de rendimiento",
+      "releaseNotes": "Performance improvements",
       "downloadUrl": "https://apps.apple.com/app/tucop-wallet/id1234567890",
       "releaseDate": "2024-01-01T00:00:00.000Z",
       "isForced": false,
@@ -239,20 +239,20 @@ Información detallada de todas las plataformas.
 }
 ```
 
-### Protegidos (Requieren API Key)
+### Protected (Require API Key)
 
-Incluir la API key en el header `x-api-key` o en el body como `apiKey`.
+Include the API key in the `x-api-key` header or in the body as `apiKey`.
 
 #### `POST /api/update-version`
 
-Actualiza la versión de una plataforma.
+Updates the version for a platform.
 
 ```json
 {
   "platform": "android",
   "version": "1.103.0",
   "minRequired": "1.95.0",
-  "releaseNotes": "Nueva funcionalidad agregada",
+  "releaseNotes": "New feature added",
   "isForced": false,
   "downloadUrl": "https://play.google.com/store/apps/details?id=org.tucop"
 }
@@ -260,7 +260,7 @@ Actualiza la versión de una plataforma.
 
 #### `POST /api/admin/create-api-key`
 
-Crea una nueva API key.
+Creates a new API key.
 
 ```json
 {
@@ -272,7 +272,7 @@ Crea una nueva API key.
 
 #### `GET /api/admin/api-keys`
 
-Lista todas las API keys (sin mostrar el hash).
+Lists all API keys (without showing the hash).
 
 ```json
 {
@@ -293,123 +293,123 @@ Lista todas las API keys (sin mostrar el hash).
 
 #### `POST /api/github-webhook`
 
-Webhook para eventos de GitHub (push, release, etc.).
+Webhook for GitHub events (push, release, etc.).
 
-## 🔒 Seguridad
+## 🔒 Security
 
 ### API Keys
 
-- Las API keys se almacenan hasheadas con bcrypt (12 salt rounds)
-- Soporte para expiración de keys
-- Logging de uso de API keys
-- Rate limiting estricto para endpoints administrativos
+- API keys are stored hashed with bcrypt (12 salt rounds)
+- Key expiration support
+- API key usage logging
+- Strict rate limiting for administrative endpoints
 
 ### Rate Limiting
 
-- **General**: 100 requests/15min por IP
-- **Administrativos**: 10 requests/15min por IP
-- Headers de rate limit incluidos en respuestas
+- **General**: 100 requests/15min per IP
+- **Administrative**: 10 requests/15min per IP
+- Rate limit headers included in responses
 
-### Headers de Seguridad
+### Security Headers
 
 - Content Security Policy (CSP)
 - HTTP Strict Transport Security (HSTS)
 - X-Frame-Options, X-Content-Type-Options, etc.
 
-### Validación
+### Validation
 
-- Validación estricta de entrada con express-validator
-- Sanitización de versiones para prevenir injection
-- Validación de URLs y formatos de fecha
+- Strict input validation with express-validator
+- Version sanitization to prevent injection
+- URL and date format validation
 
-## 📊 Logging y Monitoreo
+## 📊 Logging and Monitoring
 
 ### Request Logging
 
-Todos los requests se registran en la base de datos con:
+All requests are recorded in the database with:
 
-- Método HTTP y endpoint
-- Plataforma y User-Agent
-- IP address y tiempo de respuesta
-- Código de estado HTTP
+- HTTP method and endpoint
+- Platform and User-Agent
+- IP address and response time
+- HTTP status code
 
 ### Webhook Events
 
-Todos los eventos de webhook se almacenan para auditoría:
+All webhook events are stored for auditing:
 
-- Tipo de evento y payload completo
-- Estado de procesamiento y errores
-- Timestamps de recepción y procesamiento
+- Event type and full payload
+- Processing status and errors
+- Reception and processing timestamps
 
-### Cleanup Automático
+### Automatic Cleanup
 
-- Los logs se limpian automáticamente después de 30 días
-- Tarea programada que se ejecuta diariamente a las 2 AM
+- Logs are automatically cleaned up after 30 days
+- Scheduled task that runs daily at 2 AM
 
-## 🔄 Integración con GitHub
+## 🔄 GitHub Integration
 
-### Configuración del Token
+### Token Configuration
 
-1. Crear un Personal Access Token en GitHub con permisos:
+1. Create a Personal Access Token on GitHub with permissions:
 
-   - `repo` (acceso completo al repositorio)
-   - `workflow` (para disparar builds automáticos)
+   - `repo` (full repository access)
+   - `workflow` (to trigger automatic builds)
 
-2. Configurar webhook en GitHub:
+2. Configure webhook on GitHub:
    - URL: `https://your-api-domain.com/api/github-webhook`
    - Content type: `application/json`
-   - Eventos: `Push`, `Releases`
+   - Events: `Push`, `Releases`
 
-### Funcionalidades
+### Features
 
-- **Detección automática** de nuevas versiones en `package.json`
-- **Actualización automática** cuando se publican releases
-- **Trigger de builds** automáticos via repository dispatch
-- **Sincronización** cada hora via cron job
+- **Automatic detection** of new versions in `package.json`
+- **Automatic update** when releases are published
+- **Automatic build triggering** via repository dispatch
+- **Synchronization** every hour via cron job
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
 ```
 railway-backend/
 ├── src/
-│   ├── middleware/          # Middleware personalizado
-│   │   ├── auth.js         # Autenticación con API keys
-│   │   └── logging.js      # Logging de requests
-│   ├── services/           # Lógica de negocio
-│   │   └── versionService.js # Gestión de versiones
-│   ├── utils/              # Utilidades
-│   │   └── auth.js         # Funciones de autenticación
-│   └── validators/         # Validadores
-│       └── version.js      # Validación de datos
+│   ├── middleware/          # Custom middleware
+│   │   ├── auth.js         # API key authentication
+│   │   └── logging.js      # Request logging
+│   ├── services/           # Business logic
+│   │   └── versionService.js # Version management
+│   ├── utils/              # Utilities
+│   │   └── auth.js         # Authentication functions
+│   └── validators/         # Validators
+│       └── version.js      # Data validation
 ├── scripts/
-│   └── setup.js           # Script de configuración inicial
+│   └── setup.js           # Initial setup script
 ├── prisma/
-│   └── schema.prisma      # Esquema de base de datos
-├── index.js               # Servidor principal
+│   └── schema.prisma      # Database schema
+├── index.js               # Main server
 └── package.json
 ```
 
-## 🗄️ Esquema de Base de Datos
+## 🗄️ Database Schema
 
 ### `app_versions`
 
-Almacena las versiones de cada plataforma.
+Stores the versions for each platform.
 
 ### `api_keys`
 
-Gestiona las API keys de autenticación.
+Manages authentication API keys.
 
 ### `request_logs`
 
-Logs de todas las peticiones HTTP.
+Logs of all HTTP requests.
 
 ### `webhook_events`
 
-Eventos recibidos de GitHub webhooks.
+Events received from GitHub webhooks.
 
-## 🚀 Deployment en Railway
+## 🚀 Deployment on Railway
 
-### Variables de Entorno Requeridas
+### Required Environment Variables
 
 ```bash
 DATABASE_URL=postgresql://...
@@ -418,107 +418,107 @@ GITHUB_TOKEN=ghp_...
 GITHUB_REPO=your-username/tu-cop-wallet-2
 ```
 
-### Build y Deploy
+### Build and Deploy
 
-Railway detecta automáticamente el proyecto Node.js y ejecuta:
+Railway automatically detects the Node.js project and runs:
 
 1. `npm install`
-2. `npm run build` (genera cliente Prisma)
-3. `npm start` (ejecuta migraciones y inicia servidor)
+2. `npm run build` (generates Prisma client)
+3. `npm start` (runs migrations and starts server)
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar linter
+# Run linter
 npm run lint
 
-# Corregir errores de lint automáticamente
+# Auto-fix lint errors
 npm run lint:fix
 
-# Tests (a implementar)
+# Tests (to be implemented)
 npm test
 ```
 
-## 📚 Scripts Disponibles
+## 📚 Available Scripts
 
-- `npm start` - Inicia en producción (con migraciones)
-- `npm run dev` - Inicia en desarrollo con nodemon
-- `npm run setup` - Configuración inicial
-- `npm run build` - Genera cliente Prisma
-- `npm run db:migrate` - Ejecuta migraciones
-- `npm run db:reset` - Resetea la base de datos
-- `npm run db:studio` - Abre Prisma Studio
-- `npm run lint` - Ejecuta ESLint
-- `npm run lint:fix` - Corrige errores de lint
+- `npm start` - Start in production (with migrations)
+- `npm run dev` - Start in development with nodemon
+- `npm run setup` - Initial setup
+- `npm run build` - Generate Prisma client
+- `npm run db:migrate` - Run migrations
+- `npm run db:reset` - Reset the database
+- `npm run db:studio` - Open Prisma Studio
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix lint errors
 
 ## 🆘 Troubleshooting
 
 ### Error: "Missing script: start"
 
-Si ejecutas `npm start` desde el directorio raíz del proyecto en lugar del directorio `railway-backend/`:
+If you run `npm start` from the project root directory instead of the `railway-backend/` directory:
 
 ```bash
-# ❌ Incorrecto (desde tu-cop-wallet-2/)
+# ❌ Incorrect (from tu-cop-wallet-2/)
 npm start
 
-# ✅ Correcto (desde railway-backend/)
+# ✅ Correct (from railway-backend/)
 cd railway-backend
 npm start
 ```
 
-### Error de versión de Node.js
+### Node.js version error
 
-Si obtienes errores sobre versiones incompatibles de Node.js:
+If you get errors about incompatible Node.js versions:
 
 ```bash
-# Verificar tu versión de Node.js
+# Check your Node.js version
 node --version
 
-# El proyecto soporta Node.js >=18.x (probado con 20.x)
-# Si tienes una versión menor, actualiza Node.js
+# The project supports Node.js >=18.x (tested with 20.x)
+# If you have a lower version, update Node.js
 ```
 
-### Error de conexión a base de datos
+### Database connection error
 
-1. **Verificar `DATABASE_URL`**:
+1. **Verify `DATABASE_URL`**:
 
    ```bash
-   # Verificar que la URL esté correctamente configurada
+   # Verify that the URL is correctly configured
    echo $DATABASE_URL
    ```
 
-2. **PostgreSQL no ejecutándose**:
+2. **PostgreSQL not running**:
 
    ```bash
-   # Verificar que PostgreSQL esté corriendo
-   # macOS con Homebrew:
+   # Verify that PostgreSQL is running
+   # macOS with Homebrew:
    brew services start postgresql
 
    # Linux/Ubuntu:
    sudo systemctl start postgresql
    ```
 
-3. **Aplicar migraciones**:
+3. **Apply migrations**:
    ```bash
    npm run db:migrate
    ```
 
-### Error de autenticación
+### Authentication error
 
-1. **API key no encontrada**:
+1. **API key not found**:
 
    ```bash
-   # Crear nueva API key
+   # Create a new API key
    npm run setup
    ```
 
-2. **Formato de autenticación**:
+2. **Authentication format**:
 
    ```bash
-   # Usar header x-api-key
+   # Use x-api-key header
    curl -H "x-api-key: your-api-key-here" http://localhost:3000/api/admin/api-keys
 
-   # O en el body de la petición
+   # Or in the request body
    curl -X POST http://localhost:3000/api/update-version \
      -H "Content-Type: application/json" \
      -d '{"apiKey": "your-api-key-here", "platform": "android", "version": "1.103.0"}'
@@ -527,47 +527,47 @@ node --version
 ### Error: "Prisma Client not generated"
 
 ```bash
-# Generar el cliente Prisma
+# Generate the Prisma client
 npm run db:generate
 
-# O ejecutar setup completo
+# Or run full setup
 npm run db:migrate
 ```
 
 ### Rate limiting
 
-1. **Demasiadas peticiones**:
+1. **Too many requests**:
 
-   - **General**: Máximo 100 requests/15min por IP
-   - **Admin**: Máximo 10 requests/15min por IP
+   - **General**: Maximum 100 requests/15min per IP
+   - **Admin**: Maximum 10 requests/15min per IP
 
-2. **Soluciones**:
-   - Esperar 15 minutos para que se resetee el límite
-   - Usar diferentes IPs para testing
-   - Implementar backoff en tu cliente
+2. **Solutions**:
+   - Wait 15 minutes for the limit to reset
+   - Use different IPs for testing
+   - Implement backoff in your client
 
-### Puerto en uso
+### Port in use
 
 ```bash
 # Error: EADDRINUSE :::3000
-# Cambiar puerto en .env
+# Change port in .env
 PORT=3001
 
-# O matar proceso que usa el puerto
+# Or kill the process using the port
 lsof -ti:3000 | xargs kill -9
 ```
 
-## 📖 Ejemplos de Uso
+## 📖 Usage Examples
 
-### Verificar versión (público)
+### Check version (public)
 
 ```bash
-# Obtener versión para Android
+# Get version for Android
 curl -H "x-platform: android" \
      -H "x-app-version: 1.103.0" \
      http://localhost:3000/api/app-version
 
-# Respuesta:
+# Response:
 {
   "latestVersion": "1.102.1",
   "minRequiredVersion": "1.95.0",
@@ -577,7 +577,7 @@ curl -H "x-platform: android" \
 }
 ```
 
-### Actualizar versión (requiere API key)
+### Update version (requires API key)
 
 ```bash
 curl -X POST http://localhost:3000/api/update-version \
@@ -587,7 +587,7 @@ curl -X POST http://localhost:3000/api/update-version \
     "platform": "android",
     "version": "1.103.0",
     "minRequired": "1.95.0",
-    "releaseNotes": "Nueva funcionalidad agregada",
+    "releaseNotes": "New feature added",
     "isForced": false
   }'
 ```
@@ -597,7 +597,7 @@ curl -X POST http://localhost:3000/api/update-version \
 ```bash
 curl http://localhost:3000/health
 
-# Respuesta:
+# Response:
 {
   "status": "healthy",
   "uptime": 3600,
@@ -609,7 +609,7 @@ curl http://localhost:3000/health
 }
 ```
 
-### Crear nueva API key
+### Create new API key
 
 ```bash
 curl -X POST http://localhost:3000/api/admin/create-api-key \
@@ -622,18 +622,18 @@ curl -X POST http://localhost:3000/api/admin/create-api-key \
   }'
 ```
 
-## 📄 Licencia
+## 📄 License
 
-MIT License - Ver archivo LICENSE para detalles.
+MIT License - See LICENSE file for details.
 
-## 👥 Contribuir
+## 👥 Contributing
 
-1. Fork el proyecto
-2. Crear branch para feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-**TuCOP Wallet Version API** - Gestión robusta y segura de versiones para aplicaciones móviles.
+**TuCOP Wallet Version API** - Robust and secure version management for mobile applications.
