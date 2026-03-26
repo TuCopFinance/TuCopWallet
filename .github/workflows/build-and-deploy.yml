@@ -17,7 +17,7 @@ on:
         type: choice
         options:
           - mainnet
-          - testnet
+          - sepoliaTestnet
       deploy_stores:
         description: 'Deploy to app stores'
         required: false
@@ -101,14 +101,20 @@ jobs:
 
       - name: Setup environment
         run: |
-          cp .env.${{ matrix.environment }} .env
+          if [ "${{ matrix.environment }}" = "sepoliaTestnet" ]; then
+            cp .env.testnet .env
+          else
+            cp .env.${{ matrix.environment }} .env
+          fi
           sed -i "s/^VERSION_CODE=.*/VERSION_CODE=${{ needs.prepare.outputs.build-number }}/" android/gradle.properties
+
+      - name: Exclude Detox from native modules
+        run: rm -rf node_modules/detox/android
 
       - name: Build Android
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean
           ./gradlew bundle${{ matrix.environment }}Release \
             -x generateAutolinkingPackageList \
             --stacktrace \
@@ -156,7 +162,12 @@ jobs:
           yarn postinstall
 
       - name: Setup environment
-        run: cp .env.${{ matrix.environment }} .env
+        run: |
+          if [ "${{ matrix.environment }}" = "sepoliaTestnet" ]; then
+            cp .env.testnet .env
+          else
+            cp .env.${{ matrix.environment }} .env
+          fi
 
       - name: Install CocoaPods
         run: |
@@ -166,10 +177,10 @@ jobs:
       - name: Build iOS
         run: |
           cd ios
-          xcodebuild -workspace TuCopWallet.xcworkspace \
-            -scheme TuCopWallet-${{ matrix.environment }} \
+          xcodebuild -workspace MobileStack.xcworkspace \
+            -scheme MobileStack-${{ matrix.environment }} \
             -configuration Release \
-            -archivePath build/TuCopWallet.xcarchive \
+            -archivePath build/MobileStack.xcarchive \
             archive \
             CODE_SIGNING_ALLOWED=NO
 
@@ -205,7 +216,7 @@ jobs:
                 "success": '$IOS_SUCCESS',
                 "buildTime": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
               },
-              "releaseNotes": "🚀 Tu Cop Wallet v${{ needs.prepare.outputs.version }}\n\n📱 Android 15 (API 35) compatible\n🍎 iOS 15+ compatible\n⚡ React Native 0.75.4\n🔧 Gradle 8.10.2 + AGP 8.7.2\n\n✅ Android: '${{ needs.build-android.result }}'\n✅ iOS: '${{ needs.build-ios.result }}'",
+              "releaseNotes": "🚀 Tu Cop Wallet v${{ needs.prepare.outputs.version }}\n\n📱 Android 15 (API 35) compatible\n🍎 iOS 15+ compatible\n⚡ React Native 0.72.15\n🔧 Gradle 8.7 + AGP 8.5.1\n\n✅ Android: '${{ needs.build-android.result }}'\n✅ iOS: '${{ needs.build-ios.result }}'",
               "commit": "${{ github.sha }}",
               "branch": "${{ github.ref_name }}",
               "workflow": "${{ github.run_id }}"
@@ -229,9 +240,9 @@ jobs:
 
             ### 🔧 Technical Details
             - **Android 15** (API 35) compatible
-            - **Gradle** 8.10.2 + AGP 8.7.2
-            - **React Native** 0.75.4
-            - **Java** 17
+            - **Gradle** 8.7 + AGP 8.5.1
+            - **React Native** 0.72.15
+            - **Java** 11
 
             ### 📦 Artifacts
             ${{ needs.build-android.result == 'success' && '- Android Bundle (.aab)' || '' }}
