@@ -110,7 +110,7 @@ exports[`PriceHistoryChart renders while update is in progress 1`] = `
       >
         <g>
           <defs>
-            <clipPath
+            <clippath
               id="victory-clip-2"
             >
               <rect
@@ -120,7 +120,7 @@ exports[`PriceHistoryChart renders while update is in progress 1`] = `
                 x={0}
                 y={0}
               />
-            </clipPath>
+            </clippath>
           </defs>
         </g>
         <path
@@ -319,7 +319,7 @@ exports[`PriceHistoryChart renders with history 1`] = `
       >
         <g>
           <defs>
-            <clipPath
+            <clippath
               id="victory-clip-4"
             >
               <rect
@@ -329,7 +329,7 @@ exports[`PriceHistoryChart renders with history 1`] = `
                 x={0}
                 y={0}
               />
-            </clipPath>
+            </clippath>
           </defs>
         </g>
         <path

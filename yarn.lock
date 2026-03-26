@@ -12807,7 +12807,7 @@ react-native-config@^1.5.3:
 
 "react-native-contacts@git+https://github.com/celo-org/react-native-contacts.git#9940121":
   version "5.0.0"
-  resolved "git+ssh://git@github.com/celo-org/react-native-contacts.git#9940121a0512d00fa771273805e2c41996af6b23"
+  resolved "git+https://github.com/celo-org/react-native-contacts.git#9940121a0512d00fa771273805e2c41996af6b23"
 
 react-native-device-info@^13.0.0:
   version "13.0.0"

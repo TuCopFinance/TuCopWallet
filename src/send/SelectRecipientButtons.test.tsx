@@ -33,7 +33,7 @@ describe('SelectRecipientButtons', () => {
     jest.clearAllMocks()
     jest.mocked(check).mockResolvedValue(RESULTS.DENIED)
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      showBalances: ['celo-alfajores'],
+      showBalances: ['celo-sepolia'],
       jumpstartContracts: {},
     })
   })

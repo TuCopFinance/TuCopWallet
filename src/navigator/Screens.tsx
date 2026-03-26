@@ -73,7 +73,7 @@ export enum Screens {
   QRNavigator = 'QRNavigator',
   QRScanner = 'QRScanner',
   RegulatoryTerms = 'RegulatoryTerms',
-  ReFiMedellinUBI = 'ReFiMedellinUBI',
+  ReFiColombiaSubsidies = 'ReFiColombiaSubsidies',
   SanctionedCountryErrorScreen = 'SanctionedCountryErrorScreen',
   SelectCountry = 'SelectCountry',
   SelectLocalCurrency = 'SelectLocalCurrency',
@@ -112,6 +112,10 @@ export enum Screens {
   WithdrawSpend = 'WithdrawSpend',
   MarranitoStaking = 'MarranitoStaking',
   MarranitosMyStakes = 'MarranitosMyStakes',
+  SelectOfframpProvider = 'SelectOfframpProvider',
+  BucksPayBankForm = 'BucksPayBankForm',
+  BucksPayConfirm = 'BucksPayConfirm',
+  BucksPayStatus = 'BucksPayStatus',
 }
 
 export const MarranitoStaking = 'MarranitoStaking'

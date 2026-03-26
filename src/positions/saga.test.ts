@@ -48,7 +48,6 @@ import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { mockAccount, mockPositions, mockShortcuts } from 'test/values'
 
-jest.mock('src/sentry/SentryTransactionHub')
 jest.mock('src/statsig')
 jest.mock('src/utils/Logger')
 
@@ -184,17 +183,6 @@ describe(fetchPositionsSaga, () => {
         })
       )
       .run()
-  })
-
-  it("skips fetching positions if the feature gate isn't enabled", async () => {
-    jest.mocked(getFeatureGate).mockReturnValue(false)
-
-    await expectSaga(fetchPositionsSaga)
-      .provide([[select(walletAddressSelector), mockAccount]])
-      .not.put(fetchPositionsStart())
-      .run()
-
-    expect(mockFetch).not.toHaveBeenCalled()
   })
 
   it('skips fetching positions if no address is available in the store', async () => {

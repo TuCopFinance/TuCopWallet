@@ -32,7 +32,7 @@ export async function getCeloTokensBalance(walletAddress: Address) {
       'cEUR',
       'CELO',
       'cREAL',
-      'cCOP',
+      'COPm',
       'usdt',
       'USDT',
     ]

@@ -26,7 +26,7 @@ describe('IconWithNetworkBadge', () => {
 
     const { queryByTestId } = render(
       <Provider store={store}>
-        <IconWithNetworkBadge networkId={NetworkId['celo-alfajores']} testID="Icon">
+        <IconWithNetworkBadge networkId={NetworkId['celo-sepolia']} testID="Icon">
           <></>
         </IconWithNetworkBadge>
       </Provider>
@@ -39,7 +39,7 @@ describe('IconWithNetworkBadge', () => {
 
     const { queryByTestId } = render(
       <Provider store={store}>
-        <IconWithNetworkBadge networkId={NetworkId['celo-alfajores']} testID="Icon">
+        <IconWithNetworkBadge networkId={NetworkId['celo-sepolia']} testID="Icon">
           <></>
         </IconWithNetworkBadge>
       </Provider>

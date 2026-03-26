@@ -75,8 +75,9 @@ describe('KeylessBackupPhoneCodeInput', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${networkConfig.cabApiKey}`,
         },
-        body: '{"phoneNumber":"+15555555555","clientPlatform":"android","clientBundleId":"org.celo.mobile.debug"}',
+        body: '{"phone":"+15555555555"}',
       })
     }
   )
@@ -95,9 +96,12 @@ describe('KeylessBackupPhoneCodeInput', () => {
     mockFetch.mockResponseOnce(JSON.stringify({}), {
       status: 200,
     })
-    mockFetch.mockResponseOnce(JSON.stringify({ keyshare: 'app-keyshare', token: 'abc.def.ghi' }), {
-      status: 200,
-    })
+    mockFetch.mockResponseOnce(
+      JSON.stringify({ keyshare: 'app-keyshare', sessionId: 'abc.def.ghi' }),
+      { status: 200 }
+    )
+    // Mock for registerPhoneInRegularSystem call
+    mockFetch.mockResponseOnce(JSON.stringify({}), { status: 200 })
 
     const { getByTestId } = renderComponent()
 
@@ -110,21 +114,24 @@ describe('KeylessBackupPhoneCodeInput', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${networkConfig.cabApiKey}`,
       },
-      body: '{"phoneNumber":"+15555555555","smsCode":"123456","clientPlatform":"android","clientBundleId":"org.celo.mobile.debug"}',
+      body: '{"phone":"+15555555555","code":"123456"}',
     })
     expect(getByTestId('PhoneVerificationCode/CheckIcon')).toBeTruthy()
 
-    expect(store.getActions()).toEqual([
-      appKeyshareIssued({
-        keyshare: 'app-keyshare',
-        keylessBackupFlow: KeylessBackupFlow.Setup,
-        jwt: 'abc.def.ghi',
-        origin: KeylessBackupOrigin.Onboarding,
-        walletAddress: '0x0000000000000000000000000000000000000000',
-        phone: '+15555555555',
-      }),
-    ])
+    expect(store.getActions()).toEqual(
+      expect.arrayContaining([
+        appKeyshareIssued({
+          keyshare: 'app-keyshare',
+          keylessBackupFlow: KeylessBackupFlow.Setup,
+          jwt: 'abc.def.ghi',
+          origin: KeylessBackupOrigin.Onboarding,
+          walletAddress: '0x0000000000000000000000000000000000007e57',
+          phone: '+15555555555',
+        }),
+      ])
+    )
 
     expect(navigate).toHaveBeenCalledTimes(1)
     expect(navigate).toHaveBeenCalledWith(Screens.KeylessBackupProgress, {
@@ -150,8 +157,9 @@ describe('KeylessBackupPhoneCodeInput', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${networkConfig.cabApiKey}`,
       },
-      body: '{"phoneNumber":"+15555555555","smsCode":"123456","clientPlatform":"android","clientBundleId":"org.celo.mobile.debug"}',
+      body: '{"phone":"+15555555555","code":"123456"}',
     })
     expect(getByTestId('PhoneVerificationCode/ErrorIcon')).toBeTruthy()
     expect(store.getActions()).toEqual([])

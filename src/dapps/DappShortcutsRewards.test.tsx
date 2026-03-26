@@ -10,6 +10,7 @@ import { createMockStore } from 'test/utils'
 import { mockCusdAddress, mockCusdTokenId, mockPositions, mockShortcuts } from 'test/values'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn(() => true),
 }))
 jest.mock('src/web3/networkConfig', () => {
@@ -19,15 +20,15 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
 
 const mockCeloAddress = '0x471ece3750da237f93b8e339c536989b8978a438'
 const mockUbeAddress = '0x00be915b9dcf56a3cbe739d9b9c202ca692409ec'
-const mockCeloTokenId = `celo-alfajores:${mockCeloAddress}`
-const mockUbeTokenId = `celo-alfajores:${mockUbeAddress}`
+const mockCeloTokenId = `celo-sepolia:${mockCeloAddress}`
+const mockUbeTokenId = `celo-sepolia:${mockUbeAddress}`
 
 const getPositionWithClaimableBalance = (balance?: string): Position => ({
   type: 'contract-position',
@@ -44,10 +45,10 @@ const getPositionWithClaimableBalance = (balance?: string): Position => ({
   tokens: [
     {
       type: 'app-token',
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       address: '0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e',
-      tokenId: `${NetworkId['celo-alfajores']}:0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e`,
-      positionId: `${NetworkId['celo-alfajores']}:0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e`,
+      tokenId: `${NetworkId['celo-sepolia']}:0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e`,
+      positionId: `${NetworkId['celo-sepolia']}:0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e`,
       appId: 'ubeswap',
       symbol: 'ULP',
       decimals: 18,
@@ -60,9 +61,9 @@ const getPositionWithClaimableBalance = (balance?: string): Position => ({
       tokens: [
         {
           type: 'base-token',
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           address: '0x471ece3750da237f93b8e339c536989b8978a438',
-          tokenId: `${NetworkId['celo-alfajores']}:0x471ece3750da237f93b8e339c536989b8978a438`,
+          tokenId: `${NetworkId['celo-sepolia']}:0x471ece3750da237f93b8e339c536989b8978a438`,
           symbol: 'CELO',
           decimals: 18,
           priceUsd: '0.6959536890241361',
@@ -71,9 +72,9 @@ const getPositionWithClaimableBalance = (balance?: string): Position => ({
         },
         {
           type: 'base-token',
-          networkId: NetworkId['celo-alfajores'],
+          networkId: NetworkId['celo-sepolia'],
           address: '0x765de816845861e75a25fca122bb6898b8b1282a',
-          tokenId: `${NetworkId['celo-alfajores']}:0x765de816845861e75a25fca122bb6898b8b1282a`,
+          tokenId: `${NetworkId['celo-sepolia']}:0x765de816845861e75a25fca122bb6898b8b1282a`,
           symbol: 'cUSD',
           decimals: 18,
           priceUsd: '1',
@@ -91,11 +92,11 @@ const getPositionWithClaimableBalance = (balance?: string): Position => ({
       type: 'base-token',
       category: 'claimable',
       decimals: 18,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       balance: balance ?? '0.098322815093446616',
       symbol: 'UBE',
       address: '0x00be915b9dcf56a3cbe739d9b9c202ca692409ec',
-      tokenId: `${NetworkId['celo-alfajores']}:0x00be915b9dcf56a3cbe739d9b9c202ca692409ec`,
+      tokenId: `${NetworkId['celo-sepolia']}:0x00be915b9dcf56a3cbe739d9b9c202ca692409ec`,
     },
   ],
   balanceUsd: '1.3207590254762067',
@@ -112,7 +113,7 @@ const defaultState = {
       [mockCeloTokenId]: {
         address: mockCeloAddress,
         tokenId: mockCeloTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'CELO',
         priceUsd: '0.6959536890241361', // matches data in mockPositions
         balance: '10',
@@ -122,7 +123,7 @@ const defaultState = {
       [mockUbeTokenId]: {
         address: mockUbeAddress,
         tokenId: mockUbeTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'UBE',
         priceUsd: '0.00904673476946796903', // matches data in mockPositions
         balance: '10',
@@ -131,7 +132,7 @@ const defaultState = {
       [mockCusdTokenId]: {
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         symbol: 'cUSD',
         priceUsd: '1',
         balance: '10',

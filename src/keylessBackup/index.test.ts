@@ -1,5 +1,4 @@
 import { SiweClient } from '@fiatconnect/fiatconnect-sdk'
-import AppAnalytics from 'src/analytics/AppAnalytics'
 import {
   deleteEncryptedMnemonic,
   getEncryptedMnemonic,
@@ -20,11 +19,12 @@ jest.mock('@fiatconnect/fiatconnect-sdk', () => ({
   })),
 }))
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getDynamicConfigParams: jest.fn().mockReturnValue({ default: 10 }),
 }))
 
 describe(storeEncryptedMnemonic, () => {
-  it('throws error and logs analytics event if error status', async () => {
+  it('throws error if error status', async () => {
     // 500 error
     jest.mocked(fetchWithTimeout).mockResolvedValueOnce({
       status: 500,
@@ -40,9 +40,6 @@ describe(storeEncryptedMnemonic, () => {
         phone: '+15555555555',
       })
     ).rejects.toThrow('Failed to post encrypted mnemonic with status 500, message bad news')
-    expect(AppAnalytics.track).toHaveBeenCalledWith('cab_post_encrypted_mnemonic_failed', {
-      backupAlreadyExists: false,
-    })
 
     // 409 error (backup exists)
     jest.mocked(fetchWithTimeout).mockResolvedValueOnce({
@@ -59,9 +56,6 @@ describe(storeEncryptedMnemonic, () => {
         phone: '+15555555555',
       })
     ).rejects.toThrow('Failed to post encrypted mnemonic with status 409, message backup exists')
-    expect(AppAnalytics.track).toHaveBeenCalledWith('cab_post_encrypted_mnemonic_failed', {
-      backupAlreadyExists: true,
-    })
   })
   it('resolves if success status', async () => {
     jest.mocked(fetchWithTimeout).mockResolvedValueOnce({ status: 200, ok: true } as any)
@@ -92,16 +86,22 @@ describe(getEncryptedMnemonic, () => {
       })
     ).toEqual('encrypted-mnemonic')
     expect(mockSiweLogin).toHaveBeenCalledWith()
-    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl)
+    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': 'abc.def.ghi',
+        'X-Phone': '+15555555555',
+      },
+    })
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 44787,
+        chainId: 11142220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
         statement: 'Sign in with Ethereum',
-        timeout: 10000,
+        timeout: 60000,
         version: '1',
       },
       expect.any(Function)
@@ -124,16 +124,22 @@ describe(getEncryptedMnemonic, () => {
       'Failed to get encrypted mnemonic with status 500, message internal server error'
     )
     expect(mockSiweLogin).toHaveBeenCalledWith()
-    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl)
+    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': 'abc.def.ghi',
+        'X-Phone': '+15555555555',
+      },
+    })
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 44787,
+        chainId: 11142220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
         statement: 'Sign in with Ethereum',
-        timeout: 10000,
+        timeout: 60000,
         version: '1',
       },
       expect.any(Function)
@@ -153,16 +159,22 @@ describe(getEncryptedMnemonic, () => {
       })
     ).toBeNull()
     expect(mockSiweLogin).toHaveBeenCalledWith()
-    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl)
+    expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabGetEncryptedMnemonicUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': 'abc.def.ghi',
+        'X-Phone': '+15555555555',
+      },
+    })
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 44787,
+        chainId: 11142220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
         statement: 'Sign in with Ethereum',
-        timeout: 10000,
+        timeout: 60000,
         version: '1',
       },
       expect.any(Function)
@@ -183,16 +195,19 @@ describe(deleteEncryptedMnemonic, () => {
     expect(mockSiweLogin).toHaveBeenCalledWith()
     expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabDeleteEncryptedMnemonicUrl, {
       method: 'DELETE',
+      headers: expect.objectContaining({
+        Authorization: expect.any(String),
+      }),
     })
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 44787,
+        chainId: 11142220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
         statement: 'Sign in with Ethereum',
-        timeout: 10000,
+        timeout: 60000,
         version: '1',
       },
       expect.any(Function)
@@ -210,16 +225,19 @@ describe(deleteEncryptedMnemonic, () => {
     expect(mockSiweLogin).toHaveBeenCalledWith()
     expect(mockSiweFetch).toHaveBeenCalledWith(networkConfig.cabDeleteEncryptedMnemonicUrl, {
       method: 'DELETE',
+      headers: expect.objectContaining({
+        Authorization: expect.any(String),
+      }),
     })
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 44787,
+        chainId: 11142220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
         statement: 'Sign in with Ethereum',
-        timeout: 10000,
+        timeout: 60000,
         version: '1',
       },
       expect.any(Function)

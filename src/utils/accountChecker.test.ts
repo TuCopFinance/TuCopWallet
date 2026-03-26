@@ -31,7 +31,8 @@ describe('resetStateOnInvalidStoredAccount', () => {
 
     expect(result === invalidState).toEqual(true)
     expect(clearStoredAccounts).toHaveBeenCalledTimes(0)
-    expect(Sentry.captureException).toHaveBeenCalledTimes(1)
+    // Sentry is disabled, so no exception is captured
+    expect(Sentry.captureException).toHaveBeenCalledTimes(0)
   })
 
   it('returns the same state when given an undefined state', async () => {

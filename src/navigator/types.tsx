@@ -228,7 +228,7 @@ export type StackParamList = {
   [Screens.SettingsMenu]: undefined
   [Screens.QRNavigator]: NestedNavigatorParams<QRTabParamList> | undefined
   [Screens.RegulatoryTerms]: undefined
-  [Screens.ReFiMedellinUBI]: undefined
+  [Screens.ReFiColombiaSubsidies]: undefined
   [Screens.SanctionedCountryErrorScreen]: undefined
   [Screens.SelectCountry]: {
     countries: Countries
@@ -334,6 +334,18 @@ export type StackParamList = {
     walletAddress: string
   }
   [Screens.MarranitosMyStakes]: undefined
+  [Screens.SelectOfframpProvider]: undefined
+  [Screens.BucksPayBankForm]: undefined
+  [Screens.BucksPayConfirm]: {
+    amount: string
+    bankDetails: {
+      bankName: string
+      accountNumber: string
+      accountType: 'savings' | 'checking' | 'nequi'
+      bankCountry: string
+    }
+  }
+  [Screens.BucksPayStatus]: undefined
 }
 
 export type QRTabParamList = {

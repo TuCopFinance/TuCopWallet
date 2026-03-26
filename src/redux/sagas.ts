@@ -4,6 +4,7 @@ import { sleep } from 'src/utils/sleep'
 import { REHYDRATE } from 'redux-persist'
 import { Actions as AccountActions } from 'src/account/actions'
 import { accountSaga } from 'src/account/saga'
+import { bucksPaySaga } from 'src/buckspay/saga'
 import { devModeSelector } from 'src/account/selectors'
 import { analyticsSaga } from 'src/analytics/saga'
 import { Actions as AppActions } from 'src/app/actions'
@@ -43,7 +44,7 @@ import {
 } from 'src/recipients/reducer'
 import { recipientsSaga } from 'src/recipients/saga'
 import { sendSaga } from 'src/send/saga'
-import { sentrySaga } from 'src/sentry/saga'
+// import { sentrySaga } from 'src/sentry/saga' // Commented out - Sentry disabled
 import { swapSaga } from 'src/swap/saga'
 import { tokensSaga } from 'src/tokens/saga'
 import { setTokenBalances } from 'src/tokens/slice'
@@ -122,7 +123,7 @@ export function* rootSaga() {
     yield* spawn(loggerSaga)
     yield* spawn(appSaga)
     yield* spawn(i18nSaga)
-    yield* spawn(sentrySaga)
+    // yield* spawn(sentrySaga) // Commented out - Sentry disabled
     yield* spawn(networkInfoSaga)
     yield* spawn(accountSaga)
     yield* spawn(firebaseSaga)
@@ -149,6 +150,7 @@ export function* rootSaga() {
     yield* spawn(priceHistorySaga)
     yield* spawn(pointsSaga)
     yield* spawn(earnSaga)
+    yield* spawn(bucksPaySaga)
   } catch (error) {
     Logger.error('@rootSaga', 'Error while initializing sagas', error)
     // Propagate so it's handled by Sentry

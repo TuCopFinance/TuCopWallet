@@ -20,6 +20,7 @@ cd /Users/osx/Projects/TuCop/TuCopWallet/ios
 ```
 
 You should see:
+
 ```
 ✅ Persona2 is bitcode-free
 ✅ OpenSSL is bitcode-free
@@ -48,7 +49,9 @@ open ios/MobileStack.xcworkspace
 ### Step 4: Select Scheme & Device
 
 In Xcode toolbar:
+
 1. **Scheme**: Select the environment you want to build:
+
    - `MobileStack-mainnet` → Production (App Store)
    - `MobileStack-alfajores` → Testnet (for testing)
    - `MobileStack-mainnetnightly` → Nightly mainnet build
@@ -90,23 +93,28 @@ In the **Organizer** window:
 ### Common Issues & Solutions
 
 #### 1. Bitcode Validation Error
+
 ```
 Invalid Executable. The executable contains bitcode.
 ```
 
 **Solution**:
+
 ```bash
 cd ios
 ./fix_bitcode_ios.sh
 ```
+
 Then archive again.
 
 #### 2. Code Signing Error
+
 ```
 No signing certificate "iOS Distribution" found
 ```
 
 **Solution**:
+
 - Go to Xcode → Settings → Accounts
 - Select your Apple ID
 - Click "Manage Certificates"
@@ -114,11 +122,13 @@ No signing certificate "iOS Distribution" found
 - Try archiving again
 
 #### 3. Provisioning Profile Error
+
 ```
 No profiles for 'com.tucopfinance.app' were found
 ```
 
 **Solution**:
+
 - In Xcode, select the project
 - Go to **Signing & Capabilities** tab
 - Ensure **Automatically manage signing** is checked
@@ -126,11 +136,13 @@ No profiles for 'com.tucopfinance.app' were found
 - Xcode will create/download the profile
 
 #### 4. RCT-Folly Compilation Error
+
 ```
 No template named 'unary_function' in namespace 'std'
 ```
 
 **Solution**: Already fixed in Podfile! If you see this:
+
 ```bash
 cd ios
 pod install
@@ -172,6 +184,7 @@ Before each archive, verify:
 ## 📝 Version & Build Numbers
 
 - **Version**: Displayed to users (e.g., 1.107.0)
+
   - Update in Xcode: Project Settings → General → Version
 
 - **Build**: Internal tracking (must be unique for each upload)
@@ -206,6 +219,7 @@ open ios/MobileStack.xcworkspace
 ## 📞 Support
 
 If you encounter issues not covered here:
+
 1. Check build logs in Xcode
 2. Verify certificates in App Store Connect
 3. Ensure all frameworks are bitcode-free

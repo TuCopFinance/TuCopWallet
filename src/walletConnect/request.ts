@@ -1,6 +1,4 @@
 import { WalletKitTypes } from '@reown/walletkit'
-import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
-import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { Network } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ViemWallet } from 'src/viem/getLockableWallet'
@@ -45,8 +43,6 @@ export function* handleRequest(
   )
   const account = yield* call(getWalletAddress)
   yield* call(unlockAccount, account)
-  // Call Sentry performance monitoring after entering pin if required
-  SentryTransactionHub.startTransaction(SentryTransaction.wallet_connect_transaction)
 
   switch (method) {
     case SupportedActions.eth_signTransaction: {

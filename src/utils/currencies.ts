@@ -2,7 +2,7 @@ export enum Currency {
   Celo = 'cGLD',
   Dollar = 'cUSD',
   Euro = 'cEUR',
-  COP = 'cCOP',
+  COP = 'COPm',
   USDT = 'USDT',
 }
 
@@ -11,7 +11,7 @@ export enum Currency {
 export enum CiCoCurrency {
   CELO = 'CELO',
   cUSD = 'cUSD',
-  cCOP = 'cCOP',
+  COPm = 'COPm',
   USDT = 'USDT',
   cEUR = 'cEUR',
   cREAL = 'cREAL',
@@ -55,7 +55,7 @@ export const CURRENCIES: CurrencyObject = {
   [Currency.COP]: {
     symbol: '$',
     displayDecimals: 2,
-    cashTag: 'cCOP',
+    cashTag: 'COPm',
   },
   [Currency.Euro]: {
     symbol: '€',
@@ -70,7 +70,7 @@ export function resolveCurrency(currencyCode: string): Currency | undefined {
     CGLD: Currency.Celo,
     CUSD: Currency.Dollar,
     CEUR: Currency.Euro,
-    CCOP: Currency.COP,
+    COPM: Currency.COP,
     USDT: Currency.USDT,
   }
   return mapping[currencyCode.toUpperCase()]
@@ -84,7 +84,7 @@ export function resolveCICOCurrency(currencyCode: string): CiCoCurrency {
     CEUR: CiCoCurrency.cEUR,
     CREAL: CiCoCurrency.cREAL,
     USDT: CiCoCurrency.USDT,
-    CCOP: CiCoCurrency.cCOP,
+    COPM: CiCoCurrency.COPm,
   }
   return mapping[currencyCode.toUpperCase()] || CiCoCurrency.CELO
 }

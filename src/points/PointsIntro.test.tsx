@@ -6,7 +6,6 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { Screens } from 'src/navigator/Screens'
 import PointsIntro from 'src/points/PointsIntro'
 import { pointsIntroDismissed } from 'src/points/slice'
-import { waitFor } from 'src/redux/sagas-helpers'
 import { RootState } from 'src/redux/store'
 import MockedNavigator from 'test/MockedNavigator'
 import { RecursivePartial, createMockStore, getMockStackScreenProps } from 'test/utils'
@@ -57,11 +56,26 @@ describe(PointsIntro, () => {
   })
 
   it('tracks analytics event when navigated back', () => {
-    const { getByTestId } = renderPointsIntro()
-
-    fireEvent.press(getByTestId('BackChevron'))
-    waitFor(() => {
-      expect(AppAnalytics.track).toHaveBeenCalledWith(PointsEvents.points_intro_back)
+    let beforeRemoveCallback: (() => void) | undefined
+    const mockAddListener = jest.fn((event: string, callback: () => void) => {
+      if (event === 'beforeRemove') {
+        beforeRemoveCallback = callback
+      }
+      return jest.fn() // unsubscribe function
     })
+    const mockProps = getMockStackScreenProps(Screens.PointsIntro)
+    const store = createMockStore()
+    render(
+      <Provider store={store}>
+        <PointsIntro
+          {...mockProps}
+          navigation={{ ...mockProps.navigation, addListener: mockAddListener } as any}
+        />
+      </Provider>
+    )
+
+    expect(beforeRemoveCallback).toBeDefined()
+    beforeRemoveCallback!()
+    expect(AppAnalytics.track).toHaveBeenCalledWith(PointsEvents.points_intro_back)
   })
 })

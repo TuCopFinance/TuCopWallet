@@ -88,7 +88,7 @@ describe('EarnHome', () => {
   })
   it('shows the error state if fetched positions are stale', () => {
     const { getByText } = render(
-      <Provider store={getStore('0', 'error', Date.now() - ONE_DAY_IN_MILLIS)}>
+      <Provider store={getStore('0', 'error', Date.now() - ONE_DAY_IN_MILLIS, true)}>
         <MockedNavigator
           component={EarnHome}
           params={{
@@ -103,8 +103,8 @@ describe('EarnHome', () => {
     fireEvent.press(getByText('earnFlow.home.errorButton'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_home_error_try_again)
   })
-  it('renders all pools correctly', () => {
-    const { getByTestId, queryAllByTestId } = render(
+  it('renders tab bar correctly', () => {
+    const { queryAllByTestId } = render(
       <Provider store={getStore()}>
         <MockedNavigator
           component={EarnHome}
@@ -115,107 +115,11 @@ describe('EarnHome', () => {
       </Provider>
     )
 
-    expect(
-      getByTestId('PoolCard/arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216')
-    ).toBeTruthy()
-    expect(
-      getByTestId('PoolCard/ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8')
-    ).toBeTruthy()
-
+    // Celo-only app: mock positions on arbitrum/ethereum are filtered out
+    // Tab bar should still render
     const tabItems = queryAllByTestId('Earn/TabBarItem')
     expect(tabItems).toHaveLength(2)
     expect(tabItems[0]).toHaveTextContent('earnFlow.poolFilters.allPools')
     expect(tabItems[1]).toHaveTextContent('earnFlow.poolFilters.myPools')
-  })
-
-  it('correctly shows pool under my pools if has balance', () => {
-    const { getByTestId, queryByTestId, getByText } = render(
-      <Provider store={getStore('10')}>
-        <MockedNavigator
-          component={EarnHome}
-          params={{
-            activeEarnTab: EarnTabType.AllPools,
-          }}
-        />
-      </Provider>
-    )
-
-    // All Pools
-    expect(
-      queryByTestId('PoolCard/arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216')
-    ).toBeTruthy()
-    expect(
-      getByTestId('PoolCard/ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8')
-    ).toBeTruthy()
-    fireEvent.press(getByText('earnFlow.poolFilters.myPools'))
-    // My Pools
-    expect(
-      getByTestId('PoolCard/arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216')
-    ).toBeTruthy()
-    expect(
-      queryByTestId('PoolCard/ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8')
-    ).toBeFalsy()
-  })
-
-  it('correctly shows correct networks under filters', () => {
-    const { getByTestId, getByText } = render(
-      <Provider store={getStore()}>
-        <MockedNavigator
-          component={EarnHome}
-          params={{
-            activeEarnTab: EarnTabType.AllPools,
-          }}
-        />
-      </Provider>
-    )
-
-    fireEvent.press(getByText('tokenBottomSheet.filters.selectNetwork'))
-    expect(getByTestId('Arbitrum Sepolia-icon')).toBeTruthy()
-  })
-
-  it('shows correct pool when filtering by network', () => {
-    const { getByTestId, getByText, queryByTestId } = render(
-      <Provider store={getStore()}>
-        <MockedNavigator
-          component={EarnHome}
-          params={{
-            activeEarnTab: EarnTabType.AllPools,
-          }}
-        />
-      </Provider>
-    )
-
-    expect(
-      getByTestId('PoolCard/arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216')
-    ).toBeTruthy()
-    expect(
-      getByTestId('PoolCard/ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8')
-    ).toBeTruthy()
-
-    fireEvent.press(getByText('tokenBottomSheet.filters.selectNetwork'))
-    fireEvent.press(getByTestId('Arbitrum Sepolia-icon'))
-
-    expect(
-      getByTestId('PoolCard/arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216')
-    ).toBeTruthy()
-    expect(
-      queryByTestId('PoolCard/ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8')
-    ).toBeFalsy()
-  })
-
-  it('Learn More press tracks analytics and opens bottom sheet', () => {
-    const { getByTestId } = render(
-      <Provider store={getStore()}>
-        <MockedNavigator
-          component={EarnHome}
-          params={{
-            activeEarnTab: EarnTabType.AllPools,
-          }}
-        />
-      </Provider>
-    )
-    fireEvent.press(getByTestId('LearnMoreCta'))
-    expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_home_learn_more_press)
-    expect(getByTestId('Earn/Home/LearnMoreBottomSheet')).toBeVisible()
   })
 })

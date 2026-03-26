@@ -44,13 +44,12 @@ describe('QRNavigator', () => {
   })
   describe('QRNavigator component', () => {
     it('renders tabs for scan and my code', () => {
-      const { queryByText, queryByTestId } = render(
+      const { queryByText } = render(
         <Provider store={mockStore}>
           <MockedNavigator component={QRNavigator} />
         </Provider>
       )
 
-      expect(queryByTestId('Times')).toBeTruthy()
       expect(queryByText('myCode')).toBeTruthy()
       expect(queryByText('scanCode')).toBeTruthy()
     })

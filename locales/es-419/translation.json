@@ -240,6 +240,13 @@
   "backupQuizWordCountV1_83": "¿Cuál es la <0>{{wordNumber}}</0> palabra de tu Frase de recuperación?",
   "importBackupFailed": "No se pudo importar la cuenta",
   "backupQuizFailed": "La Frase de recuperación ingresada es incorrecta. Vuelve a intentarlo.",
+  "backupQuizSkip": {
+    "skip": "Saltar verificación bajo mi propio riesgo",
+    "title": "¿Saltar verificación?",
+    "message": "Si omites este paso, no verificarás que guardaste tu Frase de recuperación correctamente. Si pierdes acceso a tu billetera, podrías no poder recuperar tus fondos. ¿Estás seguro de que deseas continuar?",
+    "cancel": "Volver",
+    "confirm": "Saltar bajo mi riesgo"
+  },
   "invalidBackupPhrase": "La Frase de recuperación no es válida.",
   "invalidWordsInBackupPhrase": "Algunas palabras en la Frase de recuperación no son válidas: {{ invalidWords }}",
   "backupComplete": {
@@ -2830,8 +2837,8 @@
       }
     },
     "staking": {
-      "title": "Stake CCOP",
-      "subtitle": "Gana recompensas haciendo stake de tus tokens CCOP",
+      "title": "Stake COPm",
+      "subtitle": "Gana recompensas haciendo stake de tus tokens COPm",
       "poolTitle": "Pools de Staking",
       "myStakes": "Mis Stakes",
       "enterAmount": "Ingresa Cantidad",
@@ -2867,7 +2874,7 @@
       "success": "Éxito",
       "successMessage": "Tu stake ha sido retirado exitosamente",
       "earlyWithdrawTitle": "Confirmación de Retiro Anticipado",
-      "earlyWithdrawConfirmation": "Estás retirando {{amount}} CCOP antes del final del período de staking ({{days}} días restantes). Se aplicará una penalización del 20% de {{penalty}} CCOP. Recibirás {{finalAmount}} CCOP. ¿Deseas continuar?",
+      "earlyWithdrawConfirmation": "Estás retirando {{amount}} COPm antes del final del período de staking ({{days}} días restantes). Se aplicará una penalización del 20% de {{penalty}} COPm. Recibirás {{finalAmount}} COPm. ¿Deseas continuar?",
       "connectRequired": "Se Requiere Conexión de Wallet",
       "connectToStake": "Necesitas conectar una wallet para hacer stake de tokens.",
       "withdrawSuccess": "Retiro Exitoso",
@@ -2926,7 +2933,7 @@
   "celoDollarAmount_plural": "<0></0> Celo Dollars",
   "tabHome": {
     "myWallet": "Mi billetera",
-    "addCCOP": "Recarga",
+    "addCOPm": "Recarga",
     "sendMoney": "Envia",
     "receiveMoney": "Recibe",
     "spendMoney": "Gasta",
@@ -2934,23 +2941,23 @@
     "swapToUSD": "Intercambia tus divisas",
     "earn": "Haz crecer <0>tu dinero</0>",
     "withdraw": "Retirar de tu billetera",
-    "reFiMedellinUbi": {
-      "button": "Reclama tu UBI",
-      "subtitle": "de ReFiMedellin"
+    "reFiColombiaSubsidies": {
+      "button": "Reclama tu Subsidio",
+      "subtitle": "Patrocinado por ReFi Colombia"
     },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
       "bySwapping": "Recargar tu billetara intercambiando desde tu USDT",
-      "purchase": "Comprar cCOP",
+      "purchase": "Comprar COPm",
       "purchaseDescription": "Recargar tu billetara comprando a través de uno de nuestros proveedores de confianza"
     }
   },
-  "reFiMedellinUbi": {
-    "title": "Reclama tu UBI de ReFi Medellín",
-    "subtitle": "Programa de Subsidio Universal Básico",
+  "reFiColombiaSubsidies": {
+    "title": "Reclama tu Subsidio de ReFi Colombia",
+    "subtitle": "Programa de Subsidios ReFi Colombia",
     "checking": {
       "title": "Verificando tu elegibilidad...",
-      "subtitle": "Conectando con el contrato de ReFi Medellín"
+      "subtitle": "Conectando con el contrato de ReFi Colombia"
     },
     "error": {
       "title": "Error de conexión",
@@ -2958,22 +2965,22 @@
       "retry": "Reintentar"
     },
     "notEligible": {
-      "title": "No eres elegible para recibir el subsidio UBI de ReFi Medellín",
-      "description": "Tu dirección de wallet no está registrada como beneficiaria del programa UBI de ReFi Medellín.",
-      "contact": "Si crees que esto es un error, contacta al equipo de ReFi Medellín."
+      "title": "No eres elegible para recibir el subsidio de ReFi Colombia",
+      "description": "Tu dirección de wallet no está registrada como beneficiaria del programa de ReFi Colombia.",
+      "contact": "Si crees que esto es un error, contacta al equipo de ReFi Colombia."
     },
     "eligible": {
       "congratulations": "¡Felicidades!",
-      "subtitle": "Eres elegible para recibir tu UBI",
-      "benefitTitle": "Subsidio Universal Básico",
-      "benefitDescription": "Como beneficiario registrado del programa de ReFi Medellín, puedes reclamar tu subsidio de forma segura y directa a tu wallet.",
+      "subtitle": "Eres elegible para recibir tu subsidio",
+      "benefitTitle": "Subsidio ReFi Colombia",
+      "benefitDescription": "Como beneficiario registrado del programa de ReFi Colombia, puedes reclamar tu subsidio de forma segura y directa a tu wallet.",
       "claimButton": "Reclamar Mi Subsidio",
       "claimingButton": "Reclamando...",
       "processingText": "Procesando transacción..."
     },
     "alreadyClaimed": {
       "title": "¡Ya reclamaste tu subsidio!",
-      "subtitle": "Has reclamado exitosamente tu subsidio UBI esta semana",
+      "subtitle": "Has reclamado exitosamente tu subsidio esta semana",
       "lastClaimTitle": "Último reclamo",
       "nextClaimTitle": "Próximo reclamo disponible",
       "backButton": "Volver"
@@ -2984,8 +2991,62 @@
       "hoursOnly": "{{hours}} hora{{hoursPlural}}"
     }
   },
-  "ubiNotBeneficiary": "No eres elegible para recibir el subsidio UBI de ReFi Medellín",
-  "ubiAlreadyClaimed": "Ya has reclamado tu subsidio UBI esta semana",
-  "ubiClaimError": "Error procesando el reclamo del subsidio UBI. Por favor intenta de nuevo",
-  "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas"
+  "ubiNotBeneficiary": "No eres elegible para recibir el subsidio de ReFi Colombia",
+  "ubiAlreadyClaimed": "Ya has reclamado tu subsidio esta semana",
+  "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
+  "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
+  "buckspay": {
+    "selectProvider": "Retirar Fondos",
+    "selectProviderSubtitle": "Elige un proveedor para convertir tus criptomonedas a moneda local.",
+    "providerDescription": "Convierte COPm a Pesos Colombianos",
+    "bankFormTitle": "Datos Bancarios",
+    "bankFormSubtitle": "Ingresa el monto y los datos de tu cuenta bancaria para recibir tus fondos.",
+    "amountLabel": "Monto (COPm)",
+    "amountPlaceholder": "Ingresa el monto",
+    "bankNameLabel": "Banco",
+    "bankNamePlaceholder": "ej. Bancolombia",
+    "accountTypeLabel": "Tipo de Cuenta",
+    "accountType_savings": "Cuenta de Ahorros",
+    "accountType_checking": "Cuenta Corriente",
+    "accountType_nequi": "Nequi",
+    "accountNumberLabel": "Número de Cuenta",
+    "accountNumberPlaceholder": "Ingresa el número de cuenta",
+    "phoneNumberLabel": "Número de Celular",
+    "phoneNumberPlaceholder": "Ingresa el número de celular",
+    "bankCountryLabel": "País",
+    "continue": "Continuar",
+    "confirmTitle": "Revisar y Confirmar",
+    "confirmSubtitle": "Revisa los detalles de tu retiro antes de confirmar.",
+    "receiverLabel": "Billetera Receptora",
+    "confirm": "Confirmar Retiro",
+    "statusTracking": "Procesando Retiro",
+    "statusCompleted": "Retiro Completado",
+    "statusError": "Retiro Fallido",
+    "processingTransaction": "Tu transacción está siendo procesada...",
+    "processingWarning": "La orden puede demorar unos minutos en ser tomada. Puedes salir de esta pantalla y regresar luego para verificar el estado.",
+    "outsideHoursTitle": "Servicio No Disponible",
+    "outsideHoursMessage": "BucksPay está disponible de 08:00 a 20:00 (hora Colombia). Hora actual en Colombia: {{currentTime}}. Por favor intenta de nuevo en horario de servicio.",
+    "transactionHash": "Hash de Transacción",
+    "viewReceipt": "Ver Recibo",
+    "done": "Listo",
+    "unknownError": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
+    "status_PENDING": "Pendiente",
+    "status_INPROGRESS": "En Progreso",
+    "status_STARTED": "Iniciado",
+    "status_PAYED": "Pago Enviado",
+    "status_FINISHED": "Completado",
+    "preparingTransaction": "Preparando transacción...",
+    "errorPreparingTransaction": "Error al preparar la transacción. Por favor intenta de nuevo.",
+    "notEnoughGas": "Saldo insuficiente para pagar las tarifas de red.",
+    "needDecreaseAmount": "El monto es muy alto. Reduce para cubrir las tarifas de red.",
+    "amountBelowMin": "El monto mínimo es {{min}} COPm",
+    "amountAboveMax": "El monto máximo es {{max}} COPm",
+    "insufficientBalance": "Saldo COPm insuficiente (disponible: {{balance}})",
+    "apiSubmitFailed": "Tu crypto fue enviada pero no pudimos registrar la transacción. Por favor contacta a soporte con tu hash de transacción.",
+    "pollingTimeout": "Tu retiro aún está siendo procesado por BucksPay. Esto puede tomar hasta 24 horas. Puedes cerrar esta pantalla y volver más tarde.",
+    "contactSupport": "Soporte BucksPay",
+    "minimize": "Cerrar",
+    "pendingTransaction": "Tienes un retiro pendiente",
+    "poweredBy": "Con la tecnología de"
+  }
 }

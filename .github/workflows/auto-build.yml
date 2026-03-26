@@ -17,8 +17,8 @@ env:
   NODE_VERSION: '20.17.0'
   JAVA_VERSION: '17'
   RUBY_VERSION: '3.0'
-  GRADLE_VERSION: '8.10.2'
-  AGP_VERSION: '8.7.2'
+  GRADLE_VERSION: '8.7'
+  AGP_VERSION: '8.5.1'
 
 jobs:
   detect-changes:
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [mainnet, alfajores]
+        environment: [mainnet, sepoliaTestnet]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -124,7 +124,7 @@ jobs:
         with:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: true
-          
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -157,14 +157,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
+      - name: Exclude Detox from native modules
+        run: rm -rf node_modules/detox/android
+
       - name: Build Android Bundle
         run: |
           cd android
           echo "Building for environment: ${{ matrix.environment }}"
           ./gradlew clean
-          ./gradlew bundle${{ matrix.environment }}Release -x generateAutolinkingPackageList --stacktrace --info
+          ./gradlew bundle${{ matrix.environment }}Release --stacktrace --info
         env:
           GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
       - name: Upload Android Bundle
         uses: actions/upload-artifact@v4
@@ -186,7 +191,7 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        environment: [mainnet, alfajores]
+        environment: [mainnet, testnet]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -251,7 +256,7 @@ jobs:
               "platform": "both",
               "version": "${{ needs.bump-version.outputs.new-version }}",
               "buildNumber": "'$APP_VERSION_CODE'",
-              "releaseNotes": "🚀 Build automático v${{ needs.bump-version.outputs.new-version }}\n\n✅ Android: ${{ needs.build-android.result }}\n✅ iOS: ${{ needs.build-ios.result }}\n\n📱 Compilado para Android 15 (API 35)\n🔧 Gradle 8.10.2 + AGP 8.7.2\n⚡ React Native 0.75.4",
+              "releaseNotes": "🚀 Build automático v${{ needs.bump-version.outputs.new-version }}\n\n✅ Android: ${{ needs.build-android.result }}\n✅ iOS: ${{ needs.build-ios.result }}\n\n📱 Compilado para Android 15 (API 35)\n🔧 Gradle 8.7 + AGP 8.5.1\n⚡ React Native 0.72.15",
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
               "commit": "${{ github.sha }}",
               "branch": "${{ github.ref_name }}",

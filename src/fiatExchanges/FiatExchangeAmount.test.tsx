@@ -25,6 +25,7 @@ import {
 import { CICOFlow } from './utils'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn(),
 }))
 jest.mock('src/web3/networkConfig', () => {
@@ -35,13 +36,17 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-alfajores',
+        celo: 'celo-sepolia',
         ethereum: 'ethereum-sepolia',
       },
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
     },
   }
 })
+
+// Get the usdtTokenId from networkConfig for mock token setup
+const networkConfigActual = jest.requireActual('src/web3/networkConfig')
+const mockUsdtTokenId: string = networkConfigActual.default.usdtTokenId
 
 const usdToUsdRate = '1'
 const usdToEurRate = '0.862'
@@ -52,7 +57,7 @@ const mockTokens = {
     [mockCusdTokenId]: {
       address: mockCusdAddress,
       tokenId: mockCusdTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'cUSD',
       balance: '1000',
       priceUsd: '1',
@@ -62,7 +67,7 @@ const mockTokens = {
     [mockCeurTokenId]: {
       address: mockCeurAddress,
       tokenId: mockCeurTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'cEUR',
       balance: '100',
       priceUsd: '1.2',
@@ -72,7 +77,7 @@ const mockTokens = {
     [mockCeloTokenId]: {
       address: mockCeloAddress,
       tokenId: mockCeloTokenId,
-      networkId: NetworkId['celo-alfajores'],
+      networkId: NetworkId['celo-sepolia'],
       symbol: 'CELO',
       balance: '200',
       priceUsd: '5',
@@ -87,6 +92,15 @@ const mockTokens = {
       balance: '1',
       priceUsd: '1000',
       isFeeCurrency: true,
+      priceFetchedAt: Date.now(),
+    },
+    [mockUsdtTokenId]: {
+      address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
+      tokenId: mockUsdtTokenId,
+      networkId: NetworkId['celo-sepolia'],
+      symbol: 'USDT',
+      balance: '0',
+      priceUsd: '1',
       priceFetchedAt: Date.now(),
     },
   },

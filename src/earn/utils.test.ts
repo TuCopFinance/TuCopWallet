@@ -26,14 +26,14 @@ describe('isGasSubsidizedForNetwork', () => {
       .mocked(getFeatureGate)
       .mockImplementation((gate) => gate === StatsigFeatureGates.SUBSIDIZE_STABLECOIN_EARN_GAS_FEES)
     expect(isGasSubsidizedForNetwork(NetworkId['celo-mainnet'])).toEqual(false)
-    expect(isGasSubsidizedForNetwork(NetworkId['celo-alfajores'])).toEqual(false)
+    expect(isGasSubsidizedForNetwork(NetworkId['celo-sepolia'])).toEqual(false)
   })
 
   it('should return false for any network if feature gate is off', () => {
     expect(isGasSubsidizedForNetwork(NetworkId['arbitrum-one'])).toEqual(false)
     expect(isGasSubsidizedForNetwork(NetworkId['arbitrum-sepolia'])).toEqual(false)
     expect(isGasSubsidizedForNetwork(NetworkId['celo-mainnet'])).toEqual(false)
-    expect(isGasSubsidizedForNetwork(NetworkId['celo-alfajores'])).toEqual(false)
+    expect(isGasSubsidizedForNetwork(NetworkId['celo-sepolia'])).toEqual(false)
   })
 })
 

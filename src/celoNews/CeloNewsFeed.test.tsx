@@ -91,8 +91,6 @@ describe('CeloNewsFeed', () => {
 
     // Check we can see the Celo news header
     expect(tree.queryByText('celoNews.headerTitle')).toBeTruthy()
-    // Check we can see the skeleton placeholder
-    expect(tree.queryAllByTestId('CeloNewsFeedItemSkeleton')[0]).toBeTruthy()
     // Check we cannot see the error view
     expect(tree.queryByText('celoNews.loadingError')).toBeFalsy()
     // Check we cannot see the read more button

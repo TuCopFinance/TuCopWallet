@@ -16,7 +16,7 @@ import { mockCeurTokenId, mockCusdTokenId, mockEthTokenId, mockTokenBalances } f
 const MOCK_TX_HASH = '0x006b866d20452a24d1d90c7514422188cc7c5d873e2f1ed661ec3f810ad5331c'
 
 const swapTransaction: TokenExchange = {
-  networkId: NetworkId['celo-alfajores'],
+  networkId: NetworkId['celo-sepolia'],
   type: TokenTransactionTypeV2.SwapTransaction,
   transactionHash: MOCK_TX_HASH,
   timestamp: 1234,
@@ -56,7 +56,7 @@ describe('SwapFeedItem', () => {
 
     expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('swapScreen.title')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPath, {"token1":"cUSD","token2":"cEUR"}'
+      'feedItemSwapPath, {"token1":"Celo Dollars","token2":"Celo Euros"}'
     )
     expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 cEUR')
     expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')

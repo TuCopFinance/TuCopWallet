@@ -71,7 +71,7 @@ describe('Given Nfts saga', () => {
       mockFetch.resetMocks()
       jest.clearAllMocks()
       jest.mocked(getMultichainFeatures).mockReturnValue({
-        showNfts: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+        showNfts: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
       })
     })
 
@@ -84,7 +84,7 @@ describe('Given Nfts saga', () => {
         .put(
           fetchNftsCompleted({
             nfts: [
-              { ...mockNftAllFields, networkId: NetworkId['celo-alfajores'] },
+              { ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] },
               { ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] },
             ],
           })
@@ -92,7 +92,7 @@ describe('Given Nfts saga', () => {
         .run()
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=celo-alfajores`,
+        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=celo-sepolia`,
         {
           headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
           method: 'GET',
@@ -131,8 +131,7 @@ describe('Given Nfts saga', () => {
         .provide([[select(walletAddressSelector), '0xabc']])
         .put(
           fetchNftsFailed({
-            error:
-              'Unable to fetch NFTs for celo-alfajores: 500 {"message":"something went wrong"}',
+            error: 'Unable to fetch NFTs for celo-sepolia: 500 {"message":"something went wrong"}',
           })
         )
         .run()

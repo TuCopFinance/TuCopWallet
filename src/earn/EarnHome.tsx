@@ -38,6 +38,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
@@ -112,8 +113,9 @@ export default function EarnHome({ navigation, route }: Props) {
     paddingBottom: Math.max(insets.bottom, Spacing.Regular16),
   }
 
-  const supportedNetworkIds = [NetworkId['celo-mainnet']]
-  const allTokens = useSelector((state) => tokensByIdSelector(state, supportedNetworkIds))
+  const allTokens = useSelector((state) =>
+    tokensByIdSelector(state, getSupportedNetworkIdsForTokenBalances())
+  )
 
   // Scroll Aware Header
   const scrollPosition = useSharedValue(0)

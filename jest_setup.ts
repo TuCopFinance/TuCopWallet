@@ -1,5 +1,6 @@
 import '@testing-library/jest-native/extend-expect'
-import 'react-native-svg-mock'
+// react-native-svg is mocked via moduleNameMapper in jest.config.js
+// BigInt serialization polyfill is loaded early via setupFiles (jest_bigint_setup.js)
 
 beforeAll(() => {
   jest.useFakeTimers()
@@ -49,8 +50,8 @@ jest.mock('react-native-shake', () => ({
 
 jest.mock('@react-native-clipboard/clipboard', () => ({
   setString: jest.fn(),
-  getString: jest.fn(),
-  hasString: jest.fn(),
+  getString: jest.fn().mockResolvedValue(''),
+  hasString: jest.fn().mockResolvedValue(false),
 }))
 
 // this mock defaults to granting all permissions

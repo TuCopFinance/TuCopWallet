@@ -102,6 +102,8 @@ coverage/
 
 android/keystore.properties
 android/app/celo-release-key.keystore
+upload_certificate.pem
+changelogs.txt
 android/app/.settings
 android/.settings
 
@@ -120,9 +122,13 @@ secrets.json
 !__mocks__/secrets.json
 
 ios/.xcode.env
+ios/.xcode.env.local
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
+
+# Task tracking and plans
+tasks/
 
 # Claude related files and directories
 .claude/

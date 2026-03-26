@@ -1,7 +1,6 @@
 import React from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import FastImage from 'react-native-fast-image'
-import EarnImage from 'src/home/earn-v2.png'
+import EarnGrowIcon from 'src/icons/EarnGrowIcon'
 
 interface Props {
   viewStyle?: StyleProp<ViewStyle>
@@ -12,18 +11,7 @@ interface Props {
 const EarnIcon = ({ viewStyle, testID, size = 24 }: Props) => {
   return (
     <View testID={testID} style={[styles.container, viewStyle]}>
-      <FastImage
-        source={EarnImage}
-        style={[
-          styles.image,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-          },
-        ]}
-        testID={testID ? `${testID}/EarnIcon` : 'EarnIcon'}
-      />
+      <EarnGrowIcon size={size} testID={testID ? `${testID}/EarnIcon` : 'EarnIcon'} />
     </View>
   )
 }
@@ -31,11 +19,6 @@ const EarnIcon = ({ viewStyle, testID, size = 24 }: Props) => {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-  },
-  image: {
-    position: 'relative',
-    top: 0,
-    left: 0,
   },
 })
 

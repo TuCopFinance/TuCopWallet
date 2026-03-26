@@ -33,10 +33,10 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-alfajores',
+      defaultNetworkId: 'celo-sepolia',
       spendTokenIds: [
-        'celo-alfajores:0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1'.toLowerCase(),
-        'celo-alfajores:0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F'.toLowerCase(),
+        'celo-sepolia:0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1'.toLowerCase(),
+        'celo-sepolia:0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F'.toLowerCase(),
       ],
     },
   }
@@ -51,7 +51,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
     jest.mocked(getFeatureGate).mockReturnValue(false)
     jest.mocked(getMultichainFeatures).mockReturnValue({
       ...DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES].defaultValues,
-      showCico: [NetworkId['celo-alfajores'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
     })
     jest.mocked(getDynamicConfigParams).mockImplementation(({ configName, defaultValues }) => {
       switch (configName) {
@@ -83,8 +83,8 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(6)
-    ;['ETH', 'CELO', 'cUSD', 'cEUR', 'cREAL', 'USDC'].forEach((token, index) => {
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
+    ;['ETH', 'CELO', 'cUSD', 'cEUR', 'cREAL', 'POOF', 'USDC', 'cKES'].forEach((token, index) => {
       expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
     })
   })
@@ -97,7 +97,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(5)
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
   })
   it('shows the correct tokens for cash spend', () => {
     const { getAllByTestId } = render(
@@ -108,10 +108,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(2)
-    ;['cUSD', 'cEUR'].forEach((token, index) => {
-      expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
-    })
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
   })
   it('shows the correct order when cicoOrder missing/same value', () => {
     jest.mocked(getDynamicConfigParams).mockImplementation(({ configName, defaultValues }) => {
@@ -135,8 +132,8 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(6)
-    ;['cUSD', 'cREAL', 'cEUR', 'CELO', 'ETH', 'USDC'].forEach((token, index) => {
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
+    ;['cUSD', 'cREAL', 'cEUR', 'CELO', 'POOF', 'ETH', 'USDC', 'cKES'].forEach((token, index) => {
       expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
     })
   })

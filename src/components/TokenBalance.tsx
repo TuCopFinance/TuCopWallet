@@ -109,7 +109,8 @@ function TokenBalance({
           <TotalTokenBalance balanceDisplay={balanceDisplay ?? '-'} />
           {!hideBalance && (
             <Text style={styles.tokenBalance}>
-              {formatValueToDisplay(tokenBalance)} {tokensWithUsdValue[0].symbol}
+              {formatValueToDisplay(tokenBalance)}{' '}
+              {tokensWithUsdValue[0].symbol === 'cCOP' ? 'COPm' : tokensWithUsdValue[0].symbol}
             </Text>
           )}
         </View>

@@ -25,6 +25,7 @@ import {
 } from 'test/values'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn(),
   getFeatureGate: jest.fn(),
 }))
@@ -79,7 +80,7 @@ describe('EarnPoolInfoScreen', () => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
       showCico: [NetworkId['arbitrum-sepolia']],
-      showSwap: [NetworkId['celo-alfajores'], NetworkId['arbitrum-sepolia']],
+      showSwap: [NetworkId['celo-sepolia'], NetworkId['arbitrum-sepolia']],
     })
     jest
       .mocked(getFeatureGate)

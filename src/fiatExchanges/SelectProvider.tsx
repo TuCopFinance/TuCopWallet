@@ -60,7 +60,7 @@ import { useTokenInfo } from 'src/tokens/hooks'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
-import networkConfig, { CCOP_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import networkConfig, { COPM_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 import { uuidV4 } from 'web3-utils'
 import {
@@ -121,7 +121,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   const insets = useSafeAreaInsets()
 
   const [isUSDT, setIsUSDT] = useState(false)
-  const [isCCOP, setCCOP] = useState(false)
+  const [isCOPm, setCOPm] = useState(false)
   const [transakLoading, setTransakLoading] = useState(false)
 
   useEffect(() => {
@@ -140,8 +140,8 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       setIsUSDT(true)
     }
 
-    if (tokenInfo.tokenId === CCOP_TOKEN_ID_MAINNET) {
-      setCCOP(true)
+    if (tokenInfo.tokenId === COPM_TOKEN_ID_MAINNET) {
+      setCOPm(true)
     }
 
     Logger.debug(TAG, 'token info', tokenInfo)
@@ -325,7 +325,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       <AmountSpentInfo {...route.params} />
 
       <ListItem>
-        {isCCOP && (
+        {isCOPm && (
           <Touchable
             onPress={() => {
               navigate(Screens.WebViewScreen, {
@@ -401,7 +401,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
         />
       ))}
       {(tokenInfo.networkId === NetworkId['celo-mainnet'] ||
-        tokenInfo.networkId === NetworkId['celo-alfajores']) && (
+        tokenInfo.networkId === NetworkId['celo-sepolia']) && (
         <LegacyMobileMoneySection
           providers={legacyMobileMoneyProviders || []}
           tokenId={tokenInfo.tokenId}
@@ -639,7 +639,7 @@ function LegacyMobileMoneySection({
       isLowestFee: undefined,
       ...analyticsData,
     })
-    navigateToURI(provider[tokenId === networkConfig.ccopTokenId ? 'ccop' : 'usdt'].url)
+    navigateToURI(provider[tokenId === networkConfig.copmTokenId ? 'copm' : 'usdt'].url)
   }
 
   if (!provider) {

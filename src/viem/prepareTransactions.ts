@@ -195,13 +195,17 @@ export async function tryEstimateTransaction({
 
       if (isERC20Transfer) {
         const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
-        Logger.warn(TAG, `Using fallback gas estimate for ERC20 transfer with feeCurrency ${feeCurrencySymbol}`, {
-          fallbackGas: fallbackGas.toString(),
-          txValue: tx.value?.toString(),
-          feeCurrency: tx.feeCurrency,
-          from: tx.from,
-          to: tx.to,
-        })
+        Logger.warn(
+          TAG,
+          `Using fallback gas estimate for ERC20 transfer with feeCurrency ${feeCurrencySymbol}`,
+          {
+            fallbackGas: fallbackGas.toString(),
+            txValue: tx.value?.toString(),
+            feeCurrency: tx.feeCurrency,
+            from: tx.from,
+            to: tx.to,
+          }
+        )
         tx.gas = fallbackGas
         tx._estimatedGasUse = fallbackGas
         tx._baseFeePerGas = baseFeePerGas
@@ -419,6 +423,10 @@ export async function prepareTransactions({
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
     // Use estimated gas fee for balance validation (more realistic than max)
     const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
+    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
+      // Not enough balance to pay for gas, try next fee currency
+      continue
+    }
     const spendAmountDecimal = spendTokenAmount.shiftedBy(-(spendToken?.decimals ?? 0))
 
     // For same-token transactions, check if amount + gas exceeds balance
