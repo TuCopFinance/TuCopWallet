@@ -127,6 +127,9 @@ ios/.xcode.env.local
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 
+# Task tracking and plans
+tasks/
+
 # Claude related files and directories
 .claude/
 .claude-flow/
