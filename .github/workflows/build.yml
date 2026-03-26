@@ -1,0 +1,201 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'android/**'
+      - 'ios/**'
+      - 'src/**'
+      - 'yarn.lock'
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.17.0'
+  JAVA_VERSION: '17'
+  RUBY_VERSION: '3.0'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build-number: ${{ steps.version.outputs.build-number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUMBER=$(date +%s)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build-number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION ($BUILD_NUMBER)"
+
+  build-android:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          build-tools: 35.0.0
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          yarn postinstall
+
+      - name: Setup environment
+        run: |
+          cp .env.mainnet .env
+          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=${{ needs.prepare.outputs.build-number }}/" android/gradle.properties
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Exclude Detox from native modules
+        run: rm -rf node_modules/detox/android
+
+      - name: Build Android Bundle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleMainnetRelease \
+            --stacktrace \
+            --build-cache \
+            --parallel
+        env:
+          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+      - name: Upload Android Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle-${{ needs.prepare.outputs.version }}
+          path: android/app/build/outputs/bundle/mainnetRelease/
+          retention-days: 30
+
+  build-ios:
+    needs: prepare
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          yarn postinstall
+
+      - name: Setup environment
+        run: cp .env.mainnet .env
+
+      - name: Install CocoaPods
+        run: cd ios && pod install --repo-update
+
+      - name: Build iOS Archive
+        run: |
+          cd ios
+          xcodebuild -workspace MobileStack.xcworkspace \
+            -scheme MobileStack-mainnet \
+            -configuration Release \
+            -archivePath build/MobileStack.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-archive-${{ needs.prepare.outputs.version }}
+          path: ios/build/
+          retention-days: 30
+
+  create-release:
+    needs: [prepare, build-android, build-ios]
+    if: always() && (needs.build-android.result == 'success' || needs.build-ios.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}-${{ needs.prepare.outputs.build-number }}
+          name: v${{ needs.prepare.outputs.version }}
+          body: |
+            ## Tu Cop Wallet v${{ needs.prepare.outputs.version }}
+
+            **Build:** ${{ needs.prepare.outputs.build-number }}
+            **Commit:** ${{ github.sha }}
+
+            ### Build Status
+            - **Android:** ${{ needs.build-android.result == 'success' && 'OK' || 'Failed' }}
+            - **iOS:** ${{ needs.build-ios.result == 'success' && 'OK' || 'Failed' }}
+
+            ### Artifacts
+            ${{ needs.build-android.result == 'success' && '- Android Bundle (.aab)' || '' }}
+            ${{ needs.build-ios.result == 'success' && '- iOS Archive (.xcarchive)' || '' }}
+          draft: false
+          prerelease: false
+
+      - name: Notify server
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ -z "$RAILWAY_API_URL" ]; then
+            echo "RAILWAY_API_URL not set, skipping"
+            exit 0
+          fi
+          curl -s -X POST "$RAILWAY_API_URL/api/update-version" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RAILWAY_API_KEY" \
+            -d '{
+              "platform": "both",
+              "version": "${{ needs.prepare.outputs.version }}",
+              "buildNumber": "${{ needs.prepare.outputs.build-number }}",
+              "android": "${{ needs.build-android.result }}",
+              "ios": "${{ needs.build-ios.result }}",
+              "commit": "${{ github.sha }}"
+            }' || echo "Server notification failed"
+        env:
+          RAILWAY_API_URL: ${{ secrets.RAILWAY_API_URL }}
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
