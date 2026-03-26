@@ -18,7 +18,7 @@ import {
   base,
   baseSepolia,
   celo,
-  // celoAlfajores removed — using custom celoSepolia from src/viem/celoSepolia.ts
+  // Using custom celoSepolia chain definition from src/viem/celoSepolia.ts
   mainnet as ethereum,
   sepolia as ethereumSepolia,
   optimism,
