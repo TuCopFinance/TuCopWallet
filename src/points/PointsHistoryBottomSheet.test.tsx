@@ -11,6 +11,7 @@ import { RootState } from 'src/redux/reducers'
 import { RecursivePartial, createMockStore } from 'test/utils'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn().mockReturnValue({
     showSwap: ['celo-sepolia'],
   }),
@@ -127,7 +128,7 @@ describe(PointsHistoryBottomSheet, () => {
     ).toBeTruthy()
     expect(tree.getByText('points.history.cards.createWallet.subtitle')).toBeTruthy()
 
-    expect(tree.getByText('March')).toBeTruthy()
+    expect(tree.getByText('March 2024')).toBeTruthy()
     expect(tree.getByText('December 2023')).toBeTruthy()
     expect(tree.getByTestId('PointsHistoryBottomSheet/Loading')).toBeTruthy()
   })

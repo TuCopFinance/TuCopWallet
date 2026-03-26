@@ -16,6 +16,6 @@ describe('HeaderButtons', () => {
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(QrScreenEvents.qr_scanner_open)
     expect(navigate).toHaveBeenCalledTimes(1)
-    expect(navigate).toHaveBeenCalledWith(Screens.QRNavigator, { screen: Screens.QRScanner })
+    expect(navigate).toHaveBeenCalledWith(Screens.QRNavigator, { screen: Screens.QRCode })
   })
 })

@@ -240,12 +240,17 @@ jobs:
           prerelease: false
 
       - name: Slack notification
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        if: always()
+        continue-on-error: true
         run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️ SLACK_WEBHOOK_URL not set, skipping Slack notification"
+            exit 0
+          fi
           ANDROID_ICON="${{ needs.build-android.result == 'success' && '✅' || '❌' }}"
           IOS_ICON="${{ needs.build-ios.result == 'success' && '✅' || '❌' }}"
 
-          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+          curl -X POST "$SLACK_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d '{
               "text": "🚀 *Tu Cop Wallet Build Complete*",
@@ -272,3 +277,5 @@ jobs:
                 }
               ]
             }'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -334,7 +334,6 @@ export type StackParamList = {
     walletAddress: string
   }
   [Screens.MarranitosMyStakes]: undefined
-  [Screens.NoProvidersScreen]: undefined
   [Screens.SelectOfframpProvider]: undefined
   [Screens.BucksPayBankForm]: undefined
   [Screens.BucksPayConfirm]: {

@@ -2,15 +2,14 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import { FetchMock } from 'jest-fetch-mock/types'
 import * as React from 'react'
 import { Provider } from 'react-redux'
-import { CICOFlow } from 'src/fiatExchanges/utils'
 import TabHome from 'src/home/TabHome'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 import MockedNavigator from 'test/MockedNavigator'
 import { RecursivePartial, createMockStore } from 'test/utils'
-import { mockCkesAddress, mockCkesTokenId, mockCusdAddress, mockCusdTokenId } from 'test/values'
 
 jest.mock('src/web3/networkConfig', () => {
   const originalModule = jest.requireActual('src/web3/networkConfig')
@@ -24,33 +23,36 @@ jest.mock('src/web3/networkConfig', () => {
   }
 })
 
+const copmTokenId = networkConfig.copmTokenId
+const usdtTokenId = networkConfig.usdtTokenId
+
 const mockBalances = {
   tokens: {
     tokenBalances: {
-      [mockCusdTokenId]: {
-        address: mockCusdAddress,
-        tokenId: mockCusdTokenId,
+      [copmTokenId]: {
+        name: 'COPm',
         networkId: NetworkId['celo-sepolia'],
-        symbol: 'cUSD',
+        tokenId: copmTokenId,
+        address: copmTokenId.split(':')[1],
+        symbol: 'COPm',
         decimals: 18,
-        balance: '1',
-        isFeeCurrency: true,
-        priceUsd: '1',
+        balance: '100',
+        priceUsd: '0.00025',
         priceFetchedAt: Date.now(),
         isCashInEligible: true,
         isCashOutEligible: true,
       },
-      [mockCkesTokenId]: {
-        name: 'cKES',
+      [usdtTokenId]: {
+        name: 'USDT',
         networkId: NetworkId['celo-sepolia'],
-        tokenId: mockCkesTokenId,
-        address: mockCkesAddress,
-        symbol: 'cKES',
-        decimals: 18,
-        imageUrl: 'https://example.com/address-metadata/main/assets/tokens/cKES.png',
-        balance: '0',
+        tokenId: usdtTokenId,
+        address: usdtTokenId.split(':')[1],
+        symbol: 'USDT',
+        decimals: 6,
+        balance: '10',
         priceUsd: '1',
         priceFetchedAt: Date.now(),
+        isFeeCurrency: false,
         isCashInEligible: true,
         isCashOutEligible: true,
       },
@@ -82,6 +84,7 @@ describe('TabHome', () => {
   function renderScreen(storeOverrides: RecursivePartial<RootState> = {}, screenParams = {}) {
     const store = createMockStore({
       ...mockBalances,
+      buckspay: { flowStatus: 'idle' },
       ...storeOverrides,
     })
 
@@ -136,61 +139,24 @@ describe('TabHome', () => {
     )
   })
 
-  it('Tapping add cKES opens the bottom sheet if the user has cUSD', async () => {
+  it('Tapping add COPm navigates to the cash in screen', async () => {
     const { getByTestId } = renderScreen()
 
-    fireEvent.press(getByTestId('FlatCard/AddCKES'))
-    expect(getByTestId('AddCKESBottomSheet')).toBeVisible()
-  })
-  it('Tapping add from cUSD on the bottom sheet opens the swap screen', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/AddCKES'))
-    fireEvent.press(getByTestId('FlatCard/AddFromCUSD'))
-    expect(navigate).toHaveBeenCalledWith('SwapScreenWithBack', {
-      fromTokenId: mockCusdTokenId,
-      toTokenId: mockCkesTokenId,
-    })
-  })
-  it('Tapping purchase cKES on the bottom sheet opens the cash in flow', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/AddCKES'))
-    fireEvent.press(getByTestId('FlatCard/PurchaseCKES'))
-    expect(navigate).toHaveBeenCalledWith('FiatExchangeAmount', {
-      tokenId: mockCkesTokenId,
+    fireEvent.press(getByTestId('FlatCard/AddCOPm'))
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeCurrencyBottomSheet, {
       flow: 'CashIn',
-      tokenSymbol: 'cKES',
     })
   })
-  it('Tapping add cKES opens the cash in flow if the user does not have cUSD', async () => {
-    const { getByTestId } = renderScreen({
-      tokens: {
-        tokenBalances: {
-          ...mockBalances.tokens.tokenBalances,
-          [mockCusdTokenId]: {
-            ...mockBalances.tokens.tokenBalances[mockCusdTokenId],
-            balance: '0',
-          },
-        },
-      },
-    })
 
-    fireEvent.press(getByTestId('FlatCard/AddCKES'))
-    expect(navigate).toHaveBeenCalledWith('FiatExchangeAmount', {
-      tokenId: mockCkesTokenId,
-      flow: 'CashIn',
-      tokenSymbol: 'cKES',
-    })
-  })
   it('Tapping send money opens the send flow', async () => {
     const { getByTestId } = renderScreen()
 
     fireEvent.press(getByTestId('FlatCard/SendMoney'))
     expect(navigate).toHaveBeenCalledWith('SendSelectRecipient', {
-      defaultTokenIdOverride: mockCkesTokenId,
+      defaultTokenIdOverride: copmTokenId,
     })
   })
+
   it('Tapping receive money opens the QR code screen', async () => {
     const { getByTestId } = renderScreen()
 
@@ -199,23 +165,21 @@ describe('TabHome', () => {
       screen: 'QRCode',
     })
   })
-  it('Tapping hold USD opens the swap screen', async () => {
+
+  it('Tapping swap to USD opens the swap screen', async () => {
     const { getByTestId } = renderScreen()
 
-    fireEvent.press(getByTestId('FlatCard/HoldUSD'))
+    fireEvent.press(getByTestId('FlatCard/swapToUSD'))
     expect(navigate).toHaveBeenCalledWith('SwapScreenWithBack', {
-      fromTokenId: mockCkesTokenId,
-      toTokenId: mockCusdTokenId,
+      fromTokenId: copmTokenId,
+      toTokenId: usdtTokenId,
     })
   })
-  it('Tapping withdraw opens the withdraw screen', async () => {
+
+  it('Tapping spend money opens the offramp provider screen', async () => {
     const { getByTestId } = renderScreen()
 
-    fireEvent.press(getByTestId('FlatCard/Withdraw'))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
-      flow: CICOFlow.CashOut,
-      tokenId: mockCusdTokenId,
-      tokenSymbol: 'cUSD',
-    })
+    fireEvent.press(getByTestId('FlatCard/spendMoney'))
+    expect(navigate).toHaveBeenCalledWith(Screens.SelectOfframpProvider)
   })
 })

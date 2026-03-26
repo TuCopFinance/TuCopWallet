@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 237,
+          "version": 240,
         },
         "account": {
           "acceptedTerms": false,
@@ -200,6 +200,7 @@ describe('store state', () => {
           "pendingDeepLinks": [],
           "phoneNumberVerified": false,
           "pincodeUseExpandedBlocklist": false,
+          "publicConfig": undefined,
           "pushNotificationRequestedUnixTime": 1692878055000,
           "pushNotificationsEnabled": false,
           "requirePinOnAppOpen": false,
@@ -214,6 +215,15 @@ describe('store state', () => {
           "supportedBiometryType": null,
           "walletConnectV2Enabled": true,
         },
+        "buckspay": {
+          "bucksPayCode": "P5Y1",
+          "bucksPayStatus": "PENDING",
+          "certificateUrl": null,
+          "error": null,
+          "flowStatus": "tracking",
+          "lastBankDetails": null,
+          "transactionHash": "0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe",
+        },
         "dapps": {
           "activeDapp": null,
           "dappListApiUrl": null,
@@ -226,6 +236,12 @@ describe('store state', () => {
           "maxNumRecentDapps": 0,
           "mostPopularDappIds": [],
           "recentDappIds": [],
+        },
+        "divviProtocol": {
+          "isInitialized": false,
+          "isSDKInitialized": false,
+          "pendingRegistration": false,
+          "referrals": {},
         },
         "earn": {
           "depositStatus": "idle",
@@ -358,7 +374,6 @@ describe('store state', () => {
           "inviteRewardsVersion": "none",
           "isEncryptingComment": false,
           "isSending": false,
-          "lastUsedTokenId": undefined,
           "recentPayments": [],
           "recentRecipients": [],
         },

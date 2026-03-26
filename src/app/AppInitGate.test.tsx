@@ -1,7 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react-native'
 import * as React from 'react'
 import { Text } from 'react-native'
-import * as RNLocalize from 'react-native-localize'
+// RNLocalize import kept for jest.mock but not directly referenced
+import 'react-native-localize'
 import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { appMounted } from 'src/app/actions'
@@ -65,7 +66,8 @@ describe('AppInitGate', () => {
     })
 
     await waitFor(() => expect(getByText('App')).toBeTruthy())
-    expect(store.getActions()).toEqual([appMounted()])
+    // TuCOP always sets language to es-419 on init
+    expect(store.getActions()).toEqual([setLanguage('es-419'), appMounted()])
     expect(AppAnalytics.startSession).toHaveBeenCalledWith(
       'app_launched',
       expect.objectContaining({
@@ -79,14 +81,11 @@ describe('AppInitGate', () => {
   })
 
   it('should update the language if none was set', async () => {
-    jest
-      .spyOn(RNLocalize, 'findBestLanguageTag')
-      .mockReturnValue({ languageTag: 'de-DE', isRTL: true })
-
     const { getByText, store } = renderAppInitGate(null)
 
     await waitFor(() => expect(getByText('App')).toBeTruthy())
-    expect(store.getActions()).toEqual([setLanguage('de-DE'), appMounted()])
+    // TuCOP defaults to es-419 (Spanish) regardless of device locale
+    expect(store.getActions()).toEqual([setLanguage('es-419'), appMounted()])
     expect(navigateToError).not.toHaveBeenCalled()
   })
 
