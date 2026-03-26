@@ -116,7 +116,6 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew bundle${{ matrix.environment }}Release \
-            -x generateAutolinkingPackageList \
             --stacktrace \
             --build-cache
         env:
