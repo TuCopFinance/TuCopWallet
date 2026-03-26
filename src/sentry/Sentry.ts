@@ -19,6 +19,7 @@ function createSentryRoutingInstrumentation() {
     // Only create real instrumentation if Sentry is enabled
     if (!SENTRY_ENABLED) {
       _sentryRoutingInstrumentation = {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         registerNavigationContainer: () => {},
       } as unknown as ReturnType<typeof Sentry.reactNavigationIntegration>
     } else {
@@ -27,6 +28,7 @@ function createSentryRoutingInstrumentation() {
       } catch (error) {
         // Sentry not available - create a no-op instrumentation with required methods
         _sentryRoutingInstrumentation = {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           registerNavigationContainer: () => {},
         } as unknown as ReturnType<typeof Sentry.reactNavigationIntegration>
       }
