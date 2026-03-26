@@ -2005,4 +2005,19 @@ export const migrations = {
     const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
     return JSON.parse(migratedStr)
   },
+  241: (state: any) => ({
+    ...state,
+    gold: {
+      goldPriceUsd: null,
+      goldPrice24hChange: null,
+      goldPriceFetchedAt: null,
+      buyStatus: 'idle',
+      sellStatus: 'idle',
+      priceFetchStatus: 'idle',
+      buyTxHash: null,
+      sellTxHash: null,
+      priceAlerts: [],
+      error: null,
+    },
+  }),
 }
