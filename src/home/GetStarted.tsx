@@ -11,22 +11,22 @@ import { Screens } from 'src/navigator/Screens'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useCCOP } from 'src/tokens/hooks'
+import { useCOPm } from 'src/tokens/hooks'
 
 // hardcoding a fallback token symbol in case the token info is not loaded
-const DEFAULT_TOKEN_SYMBOL = 'cCOP'
+const DEFAULT_TOKEN_SYMBOL = 'COPm'
 
 export default function GetStarted() {
   const { t } = useTranslation()
-  const cCOPToken = useCCOP()
+  const COPmToken = useCOPm()
 
   const goToAddFunds = () => {
     AppAnalytics.track(FiatExchangeEvents.cico_add_get_started_selected)
-    cCOPToken &&
+    COPmToken &&
       navigate(Screens.FiatExchangeAmount, {
         flow: CICOFlow.CashIn,
-        tokenId: cCOPToken?.tokenId,
-        tokenSymbol: cCOPToken?.symbol,
+        tokenId: COPmToken?.tokenId,
+        tokenSymbol: COPmToken?.symbol,
       })
   }
 
@@ -39,7 +39,7 @@ export default function GetStarted() {
       <AddFunds />
       <Text style={styles.title}>
         {t('getStartedActivity.title', {
-          tokenSymbol: cCOPToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
+          tokenSymbol: COPmToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
         })}
       </Text>
       <View style={styles.ctaContainer}>
@@ -47,7 +47,7 @@ export default function GetStarted() {
           testID="GetStarted/cta"
           onPress={goToAddFunds}
           text={t('getStartedActivity.cta', {
-            tokenSymbol: cCOPToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
+            tokenSymbol: COPmToken?.symbol ?? DEFAULT_TOKEN_SYMBOL,
           })}
           type={BtnTypes.PRIMARY}
           size={BtnSizes.FULL}

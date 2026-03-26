@@ -1,6 +1,6 @@
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { Shadow } from 'react-native-shadow-2'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
@@ -16,11 +16,11 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTotalTokenBalance } from 'src/tokens/hooks'
-import { cCOPFirstTokensListSelector } from 'src/tokens/selectors'
+import { COPmFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
-import Earn from './../home/earn-v2.png'
+import EarnGrowIcon from 'src/icons/EarnGrowIcon'
 
 function TabWallet() {
   const dispatch = useDispatch()
@@ -38,7 +38,7 @@ function TabWallet() {
   const { t } = useTranslation()
 
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
-  const tokens = useSelector((state) => cCOPFirstTokensListSelector(state, supportedNetworkIds))
+  const tokens = useSelector((state) => COPmFirstTokensListSelector(state, supportedNetworkIds))
 
   Logger.info('TOKEN', tokens)
   Logger.info('supportedNetworkIds', supportedNetworkIds)
@@ -102,7 +102,7 @@ function TabWallet() {
               <View style={{ marginHorizontal: 20 }}>
                 <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
                   <View style={[styles.row, { paddingVertical: 8 }]}>
-                    <Image source={Earn} />
+                    <EarnGrowIcon size={36} />
                     <Text style={styles.ctaText}>
                       <Trans
                         i18n={i18n}

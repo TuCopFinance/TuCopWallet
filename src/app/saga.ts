@@ -52,13 +52,12 @@ import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { Actions as SendActions } from 'src/send/actions'
 import { handlePaymentDeeplink } from 'src/send/utils'
-import { initializeSentry } from 'src/sentry/Sentry'
-import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
-import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import { getFeatureGate, patchUpdateStatsigUser, setupOverridesFromLaunchArgs } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapSuccess } from 'src/swap/slice'
 import { NetworkId } from 'src/transactions/types'
+import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
+import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { isDeepLink, navigateToURI } from 'src/utils/linking'
@@ -107,7 +106,6 @@ export function* appInit() {
   const bestLanguage = findBestLanguageTag(Object.keys(locales))?.languageTag
 
   yield* all([
-    call(initializeSentry),
     call([AppAnalytics, 'init']),
     call(
       initI18n,
@@ -131,8 +129,6 @@ export function* appInit() {
   if (isE2EEnv) {
     setupOverridesFromLaunchArgs()
   }
-
-  SentryTransactionHub.finishTransaction(SentryTransaction.app_init_saga)
 }
 
 // Check the availability of Google Mobile Services and Huawei Mobile Services, an alternative to

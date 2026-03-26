@@ -106,7 +106,7 @@ import PointsHome from 'src/points/PointsHome'
 import PointsIntro from 'src/points/PointsIntro'
 import { RootState } from 'src/redux/reducers'
 import { store } from 'src/redux/store'
-import ReFiMedellinUBIScreen from 'src/refi/ReFiMedellinUBIScreen'
+import ReFiColombiaSubsidiesScreen from 'src/subsidies/ReFiColombiaSubsidiesScreen'
 import SendConfirmation, { sendConfirmationScreenNavOptions } from 'src/send/SendConfirmation'
 import SendEnterAmount from 'src/send/SendEnterAmount'
 import SendSelectRecipient from 'src/send/SendSelectRecipient'
@@ -127,6 +127,10 @@ import VerificationCodeInputScreen from 'src/verify/VerificationCodeInputScreen'
 import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
+import BucksPayBankForm from 'src/buckspay/BucksPayBankForm'
+import BucksPayConfirm from 'src/buckspay/BucksPayConfirm'
+import BucksPayStatus from 'src/buckspay/BucksPayStatus'
+import SelectOfframpProvider from 'src/fiatExchanges/SelectOfframpProvider'
 import WebViewScreen from 'src/webview/WebViewScreen'
 
 const TAG = 'Navigator'
@@ -542,8 +546,8 @@ const generalScreens = (Navigator: typeof Stack) => (
       options={SettingsMenu.navigationOptions as NativeStackNavigationOptions}
     />
     <Navigator.Screen
-      name={Screens.ReFiMedellinUBI}
-      component={ReFiMedellinUBIScreen}
+      name={Screens.ReFiColombiaSubsidies}
+      component={ReFiColombiaSubsidiesScreen}
       options={headerWithBackButton}
     />
     <Navigator.Screen name={Screens.Invite} component={Invite} options={noHeader} />
@@ -614,6 +618,27 @@ const pointsScreens = (Navigator: typeof Stack) => (
     <Navigator.Screen name={Screens.PointsIntro} component={PointsIntro} options={noHeader} />
   </>
 )
+const bucksPayScreens = (Navigator: typeof Stack) => (
+  <>
+    <Navigator.Screen
+      name={Screens.SelectOfframpProvider}
+      component={SelectOfframpProvider}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.BucksPayBankForm}
+      component={BucksPayBankForm}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.BucksPayConfirm}
+      component={BucksPayConfirm}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen name={Screens.BucksPayStatus} component={BucksPayStatus} options={noHeader} />
+  </>
+)
+
 const mapStateToProps = (state: RootState) => {
   return {
     language: currentLanguageSelector(state),
@@ -668,6 +693,7 @@ function MainStackScreen() {
       {nftScreens(Stack)}
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
+      {bucksPayScreens(Stack)}
       <Stack.Screen
         name={Screens.MarranitoStaking}
         component={MarranitoStaking}

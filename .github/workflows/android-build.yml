@@ -22,7 +22,7 @@ on:
         type: choice
         options:
           - mainnet
-          - alfajores
+          - sepoliaTestnet
       upload_to_store:
         description: 'Upload to Play Store'
         required: false
@@ -40,8 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "alfajores"]') }}
-    
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "sepoliaTestnet"]') }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,8 +93,8 @@ jobs:
         run: |
           if [ "${{ matrix.environment }}" = "mainnet" ]; then
             cp .env.mainnet .env
-          else
-            cp .env.alfajores .env
+          elif [ "${{ matrix.environment }}" = "sepoliaTestnet" ]; then
+            cp .env.testnet .env
           fi
 
       - name: Set build number
@@ -106,24 +106,28 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
-      - name: Clean and build Android Bundle
+      - name: Exclude Detox from native modules
+        run: |
+          # Remove Detox Android native module to prevent RN CLI config parse errors
+          # Detox is only needed for E2E test builds, not release builds
+          rm -rf node_modules/detox/android
+
+      - name: Build Android Bundle
         run: |
           cd android
           echo "🏗️ Building for environment: ${{ matrix.environment }}"
           echo "📱 Target SDK: 35 (Android 15)"
           echo "☕ Java version: $(java -version 2>&1 | head -n 1)"
           echo "🐘 Gradle version: $(./gradlew --version | grep Gradle)"
-          
-          # Clean previous builds
-          ./gradlew clean
-          
-          # Build the bundle
+
+          # Build the bundle (clean not needed on fresh CI checkout)
           ./gradlew bundle${{ matrix.environment }}Release \
-            -x generateAutolinkingPackageList \
             --stacktrace \
-            --info \
             --build-cache \
             --parallel
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
       - name: Verify build output
         run: |
@@ -149,7 +153,6 @@ jobs:
         run: |
           cd android
           ./gradlew assemble${{ matrix.environment }}Release \
-            -x generateAutolinkingPackageList \
             --stacktrace
 
       - name: Upload APK for testing
@@ -162,10 +165,13 @@ jobs:
 
       - name: Deploy to Play Store
         if: |
-          matrix.environment == 'mainnet' && 
-          (github.ref == 'refs/heads/main' || github.event.inputs.upload_to_store == 'true') &&
-          secrets.GOOGLE_PLAY_JSON_KEY != ''
+          matrix.environment == 'mainnet' &&
+          (github.ref == 'refs/heads/main' || github.event.inputs.upload_to_store == 'true')
         run: |
+          if [ -z "$GOOGLE_PLAY_JSON_KEY" ]; then
+            echo "⚠️ GOOGLE_PLAY_JSON_KEY not set, skipping deployment"
+            exit 0
+          fi
           echo "🚀 Deploying to Play Store Internal Track"
           bundle exec fastlane android upload \
             environment:${{ matrix.environment }} \
@@ -178,6 +184,8 @@ jobs:
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get version info
         id: version
         run: |
@@ -185,41 +193,45 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Notify server about new build
+        continue-on-error: true
         run: |
+          if [ -z "$RAILWAY_API_URL" ]; then
+            echo "⚠️ RAILWAY_API_URL not set, skipping server notification"
+            exit 0
+          fi
           ANDROID_SUCCESS="${{ needs.build-android.result == 'success' }}"
-          
-          curl -X POST "${{ secrets.RAILWAY_API_URL }}/api/update-version" \
+
+          curl -X POST "$RAILWAY_API_URL/api/update-version" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
+            -H "Authorization: Bearer $RAILWAY_API_KEY" \
             -d '{
               "platform": "android",
               "version": "${{ steps.version.outputs.version }}",
-              "buildNumber": "'$BUILD_NUMBER'",
               "success": '$ANDROID_SUCCESS',
-              "releaseNotes": "🚀 Android build v${{ steps.version.outputs.version }}\n\n📱 Compilado para Android 15 (API 35)\n🔧 Gradle 8.10.2 + AGP 8.7.2\n⚡ React Native 0.75.4\n\n✅ Estado: '${{ needs.build-android.result }}'",
+              "releaseNotes": "Android build v${{ steps.version.outputs.version }}",
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
               "commit": "${{ github.sha }}",
-              "branch": "${{ github.ref_name }}",
-              "artifacts": {
-                "mainnet": true,
-                "alfajores": true
-              }
+              "branch": "${{ github.ref_name }}"
             }' || echo "⚠️ Server notification failed but continuing..."
+        env:
+          RAILWAY_API_URL: ${{ secrets.RAILWAY_API_URL }}
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
 
       - name: Slack notification
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        if: always()
+        continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ needs.build-android.result }}
           channel: '#builds'
           text: |
             🚀 *Tu Cop Wallet Android Build*
-            
+
             *Version:* ${{ steps.version.outputs.version }}
             *Status:* ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }}
             *Environment:* Android 15 (API 35)
             *Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}[0:7]>
-            
+
             ${{ needs.build-android.result == 'success' && '📦 Bundles ready for deployment' || '🔍 Check logs for build errors' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

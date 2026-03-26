@@ -32,6 +32,7 @@ export function formatValueToDisplay(value: BigNumber) {
 
 export const getTokenSymbol = (t: any, symbol: string | undefined) => {
   const symbols: Record<string, string> = {
+    COPm: t('assets.pesos'),
     cCOP: t('assets.pesos'),
     'USD₮': t('assets.dollars'),
   }

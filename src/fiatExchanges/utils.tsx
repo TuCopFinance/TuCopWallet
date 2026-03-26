@@ -45,7 +45,7 @@ export enum CloudFunctionDigitalAsset {
   CREAL = 'CREAL',
   ETH = 'ETH',
   USDT = 'USDT',
-  CCOP = 'CCOP',
+  COPM = 'COPM',
 }
 interface ProviderRequestData {
   userLocation: UserLocationData
@@ -106,7 +106,7 @@ export interface LegacyMobileMoneyProvider {
     countries: string[]
     url: string
   }
-  ccop: {
+  copm: {
     cashIn: boolean
     cashOut: boolean
     countries: string[]
@@ -279,7 +279,7 @@ export const filterLegacyMobileMoneyProviders = (
   // if (
   //   !providers ||
   //   !userCountry ||
-  //   ![networkConfig.cusdTokenId, networkConfig.celoTokenId, networkConfig.ccopTokenId, networkConfig.usdtTokenId].includes(selectedTokenId)
+  //   ![networkConfig.cusdTokenId, networkConfig.celoTokenId, networkConfig.copmTokenId, networkConfig.usdtTokenId].includes(selectedTokenId)
   // ) {
   //   return []
   // }
@@ -319,9 +319,10 @@ export async function fetchExchanges(
       throw Error(`Fetch exchanges failed with status ${resp?.status}`)
     }
 
-    Logger.debug(TAG, 'got exchanges', resp.json())
+    const data = await resp.json()
+    Logger.debug(TAG, 'got exchanges', data)
 
-    return resp.json()
+    return data
   } catch (error) {
     Logger.error(TAG, 'Failure fetching available exchanges', error)
     throw error

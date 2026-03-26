@@ -42,9 +42,6 @@ initializeSentryEarly()
 
 const defaultErrorHandler = ErrorUtils.getGlobalHandler()
 const customErrorHandler = (e, isFatal) => {
-  if (SENTRY_ENABLED) {
-    Sentry.captureException(e)
-  }
   Logger.error('RootErrorHandler', `Unhandled error. isFatal: ${isFatal}`, e)
   defaultErrorHandler(e, isFatal)
 }

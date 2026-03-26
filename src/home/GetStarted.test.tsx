@@ -6,8 +6,42 @@ import { FiatExchangeEvents } from 'src/analytics/Events'
 import GetStarted from 'src/home/GetStarted'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { NetworkId } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 import { createMockStore } from 'test/utils'
-import { mockCkesTokenId, mockTokenBalances } from 'test/values'
+
+jest.mock('src/web3/networkConfig', () => {
+  const originalModule = jest.requireActual('src/web3/networkConfig')
+  return {
+    ...originalModule,
+    __esModule: true,
+    default: {
+      ...originalModule.default,
+      defaultNetworkId: 'celo-sepolia',
+    },
+  }
+})
+
+const copmTokenId = networkConfig.copmTokenId
+
+const mockStoreWithCOPm = createMockStore({
+  tokens: {
+    tokenBalances: {
+      [copmTokenId]: {
+        name: 'COPm',
+        networkId: NetworkId['celo-sepolia'],
+        tokenId: copmTokenId,
+        address: copmTokenId.split(':')[1],
+        symbol: 'COPm',
+        decimals: 18,
+        balance: '0',
+        priceUsd: '0.00025',
+        priceFetchedAt: Date.now(),
+        isCashInEligible: true,
+      },
+    },
+  },
+})
 
 describe('GetStarted', () => {
   beforeEach(() => {
@@ -15,21 +49,19 @@ describe('GetStarted', () => {
   })
 
   it('should display the correct text', () => {
-    const store = createMockStore({ tokens: { tokenBalances: mockTokenBalances } })
     const { getByText } = render(
-      <Provider store={store}>
+      <Provider store={mockStoreWithCOPm}>
         <GetStarted />
       </Provider>
     )
 
-    expect(getByText('getStartedActivity.title, {"tokenSymbol":"cKES"}')).toBeTruthy()
-    expect(getByText('getStartedActivity.cta, {"tokenSymbol":"cKES"}')).toBeTruthy()
+    expect(getByText('getStartedActivity.title, {"tokenSymbol":"COPm"}')).toBeTruthy()
+    expect(getByText('getStartedActivity.cta, {"tokenSymbol":"COPm"}')).toBeTruthy()
   })
 
   it('should trigger button tap analytics event', () => {
-    const store = createMockStore({ tokens: { tokenBalances: mockTokenBalances } })
     const { getByTestId } = render(
-      <Provider store={store}>
+      <Provider store={mockStoreWithCOPm}>
         <GetStarted />
       </Provider>
     )
@@ -40,8 +72,8 @@ describe('GetStarted', () => {
     )
     expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
       flow: 'CashIn',
-      tokenId: mockCkesTokenId,
-      tokenSymbol: 'cKES',
+      tokenId: copmTokenId,
+      tokenSymbol: 'COPm',
     })
   })
 })

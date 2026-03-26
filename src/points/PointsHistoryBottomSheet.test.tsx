@@ -11,8 +11,9 @@ import { RootState } from 'src/redux/reducers'
 import { RecursivePartial, createMockStore } from 'test/utils'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn().mockReturnValue({
-    showSwap: ['celo-alfajores'],
+    showSwap: ['celo-sepolia'],
   }),
 }))
 
@@ -23,7 +24,7 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 10,
       createdAt: '2024-03-05T20:26:25.000Z',
       metadata: {
-        tokenId: 'celo-alfajores:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        tokenId: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       },
     },
     {
@@ -40,7 +41,7 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
         liveLinkType: 'erc20',
-        tokenId: 'celo-alfajores:native',
+        tokenId: 'celo-sepolia:native',
       },
     },
     {
@@ -48,8 +49,8 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
-        to: 'celo-alfajores:native',
-        from: 'celo-alfajores:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        to: 'celo-sepolia:native',
+        from: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       },
     },
     {
@@ -57,8 +58,8 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
-        to: 'celo-alfajores:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
-        from: 'celo-alfajores:native',
+        to: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        from: 'celo-sepolia:native',
       },
     },
     {
@@ -113,7 +114,7 @@ describe(PointsHistoryBottomSheet, () => {
     await waitFor(() => expect(tree.getByTestId('PointsHistoryList').props.data.length).toBe(2))
 
     expect(
-      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo Alfajores"}')
+      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo Sepolia"}')
     ).toBeTruthy()
     expect(
       tree.getByText('points.history.cards.createLiveLink.subtitle.erc20, {"tokenSymbol":"CELO"}')
@@ -127,7 +128,7 @@ describe(PointsHistoryBottomSheet, () => {
     ).toBeTruthy()
     expect(tree.getByText('points.history.cards.createWallet.subtitle')).toBeTruthy()
 
-    expect(tree.getByText('March')).toBeTruthy()
+    expect(tree.getByText('March 2024')).toBeTruthy()
     expect(tree.getByText('December 2023')).toBeTruthy()
     expect(tree.getByTestId('PointsHistoryBottomSheet/Loading')).toBeTruthy()
   })

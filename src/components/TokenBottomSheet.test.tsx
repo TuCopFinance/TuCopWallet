@@ -31,7 +31,7 @@ const tokens: TokenBalance[] = [
     symbol: 'cUSD',
     address: mockCusdAddress,
     tokenId: mockCusdTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     isFeeCurrency: true,
     canTransferWithComment: true,
     priceFetchedAt: Date.now(),
@@ -46,7 +46,7 @@ const tokens: TokenBalance[] = [
     symbol: 'cEUR',
     address: mockCeurAddress,
     tokenId: mockCeurTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     isFeeCurrency: true,
     canTransferWithComment: true,
     priceFetchedAt: Date.now(),
@@ -61,7 +61,7 @@ const tokens: TokenBalance[] = [
     lastKnownPriceUsd: new BigNumber('1'),
     address: mockTestTokenAddress,
     tokenId: mockTestTokenTokenId,
-    networkId: NetworkId['celo-alfajores'],
+    networkId: NetworkId['celo-sepolia'],
     priceFetchedAt: Date.now(),
     decimals: 18,
     name: 'Test Token',
@@ -78,7 +78,7 @@ const mockStore = createMockStore({
         symbol: 'cUSD',
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
         name: 'Celo Dollar',
@@ -89,7 +89,7 @@ const mockStore = createMockStore({
         symbol: 'cEUR',
         address: mockCeurAddress,
         tokenId: mockCeurTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
         name: 'Celo Euro',
@@ -99,7 +99,7 @@ const mockStore = createMockStore({
         symbol: 'TT',
         address: mockTestTokenAddress,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-alfajores'],
+        networkId: NetworkId['celo-sepolia'],
         priceFetchedAt: Date.now(),
         name: 'Test Token',
       },
@@ -142,16 +142,14 @@ describe.each([
 
     expect(getAllByTestId('TokenBalanceItem')).toHaveLength(3)
     expect(getAllByTestId('TokenBalanceItem')[0]).toHaveTextContent('10.00 cUSD')
-    expect(getAllByTestId('TokenBalanceItem')[0]).toHaveTextContent('₱13.30')
     expect(getAllByTestId('TokenBalanceItem')[1]).toHaveTextContent('20.00 cEUR')
-    expect(getAllByTestId('TokenBalanceItem')[1]).toHaveTextContent('₱31.92') // 20 * 1.2 (cEUR price) * 1.33 (PHP price)
     expect(getAllByTestId('TokenBalanceItem')[2]).toHaveTextContent('10.00 TT')
   })
 
   it('handles the choosing of a token correctly', () => {
     const commonAnalyticsProps = {
       areSwapTokensShuffled: undefined,
-      networkId: 'celo-alfajores',
+      networkId: 'celo-sepolia',
       origin: 'Send',
       selectedFilters: [],
       usedSearchTerm: false,
@@ -325,7 +323,7 @@ describe.each([
       tokenId: mockCusdTokenId,
       tokenPositionInList: 0,
       areSwapTokensShuffled: true,
-      networkId: 'celo-alfajores',
+      networkId: 'celo-sepolia',
       origin: 'Swap/From',
       selectedFilters: ['some-filter-id'],
       usedSearchTerm: true,

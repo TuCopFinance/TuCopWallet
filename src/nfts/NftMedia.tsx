@@ -37,20 +37,21 @@ function Placeholder({
   borderRadius = 0,
 }: PlaceHolderProps) {
   return (
-    <SkeletonPlaceholder
-      borderRadius={borderRadius}
-      backgroundColor={colors.gray2}
-      highlightColor={colors.white}
-      testID={testID}
-    >
-      <View
-        style={{
-          height,
-          width: width ?? variables.width,
-          zIndex: -1,
-        }}
-      />
-    </SkeletonPlaceholder>
+    <View testID={testID}>
+      <SkeletonPlaceholder
+        borderRadius={borderRadius}
+        backgroundColor={colors.gray2}
+        highlightColor={colors.white}
+      >
+        <View
+          style={{
+            height,
+            width: width ?? variables.width,
+            zIndex: -1,
+          }}
+        />
+      </SkeletonPlaceholder>
+    </View>
   )
 }
 
