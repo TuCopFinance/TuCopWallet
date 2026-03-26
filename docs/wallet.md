@@ -99,7 +99,7 @@ brew install jq
 
 _This is only for Valora employees._
 
-You will need to be added the team keyring on GCP so you can decrypt secrets in the repo. (Ask for an invite to `celo-mobile-alfajores`.)
+You will need to be added the team keyring on GCP so you can decrypt secrets in the repo. (Ask for an invite to the GCP project — legacy name: `celo-mobile-alfajores`.)
 
 Once you have access, install Google Cloud by running `brew install google-cloud-sdk`.
 Follow instructions [here](https://cloud.google.com/sdk/gcloud/reference/auth/login)
@@ -332,7 +332,7 @@ The below steps should help you successfully run the mobile wallet on either a U
 
 ### Running on Mainnet
 
-By default, the mobile wallet app runs on celo's testnet `alfajores`. To run the app on `mainnet`, supply an env flag, eg. `yarn run dev:ios -e mainnet`. The command will then run the app with the env file `.env.mainnet`.
+By default, the mobile wallet app runs on the Celo Sepolia testnet. To run the app on `mainnet`, supply an env flag, eg. `yarn run dev:ios -e mainnet`. The command will then run the app with the env file `.env.mainnet`.
 
 ### Reinstalling the app without building
 
@@ -342,7 +342,7 @@ a fresh install, you can drag drop the generated app into the simulator after
 uninstalling the app. It is typically available in the following paths:
 
 - For iOS: `$HOME/Library/Developer/Xcode/DerivedData/MobileStack-<randomid>/Build/Products/Debug-iphonesimulator/TuCop.app`
-- For Android: `<path-to-wallet>/android/app/build/outputs/apk/alfajoresdev/debug/app-alfajoresdev-debug.apk`
+- For Android: `<path-to-wallet>/android/app/build/outputs/apk/sepoliaTestnetdev/debug/app-sepoliaTestnetdev-debug.apk`
 
 ## Debugging & App Profiling
 

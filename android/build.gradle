@@ -16,7 +16,7 @@ buildscript {
         kotlinCompilerExtensionVersion = "1.5.3"
 
         // Add specific versions for react-native-svg
-        reactNativeVersion = "0.72.7"  // Update this to match your react-native version
+        reactNativeVersion = "0.72.15"  // Must match installed react-native version
         androidXAnnotation = "1.6.0"
         androidXAppcompat = "1.6.1"
     }

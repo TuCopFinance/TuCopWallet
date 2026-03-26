@@ -312,8 +312,6 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-
     implementation 'com.clevertap.android:clevertap-android-sdk:5.2.2'
     //For CleverTap Android SDK v3.6.4 and above add the following -
     implementation 'com.android.installreferrer:installreferrer:2.2'

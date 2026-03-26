@@ -115,7 +115,7 @@ cUSD: 0x765de816845861e75a25fca122bb6898b8b1282a
 USDC: 0x2f25deb3848c207fc8e0c34035b3ba7fc157602b(Adapter)
 USDT: 0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72(Adapter)
 
-// Alfajores L2
+// Celo Sepolia L2
 USDC: 0x4822e58de6f5e485ef90df51c41ce01721331dc0(Adapter)
 ```
 
