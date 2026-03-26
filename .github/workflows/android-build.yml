@@ -122,7 +122,6 @@ jobs:
 
           # Build the bundle (clean not needed on fresh CI checkout)
           ./gradlew bundle${{ matrix.environment }}Release \
-            -x generateAutolinkingPackageList \
             --stacktrace \
             --build-cache \
             --parallel
