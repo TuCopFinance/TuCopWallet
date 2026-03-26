@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native'
 import * as Keychain from 'react-native-keychain'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { resetStateOnInvalidStoredAccount } from 'src/utils/accountChecker'
@@ -30,7 +31,8 @@ describe('resetStateOnInvalidStoredAccount', () => {
 
     expect(result === invalidState).toEqual(true)
     expect(clearStoredAccounts).toHaveBeenCalledTimes(0)
-    expect(Sentry.captureException).toHaveBeenCalledTimes(1)
+    // Sentry is disabled, so no exception is captured
+    expect(Sentry.captureException).toHaveBeenCalledTimes(0)
   })
 
   it('returns the same state when given an undefined state', async () => {

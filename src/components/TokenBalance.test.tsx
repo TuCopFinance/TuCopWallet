@@ -261,7 +261,7 @@ describe('AssetsTokenBalance', () => {
       </Provider>
     )
 
-    expect(getByTestId('EyeIcon')).toBeTruthy()
+    expect(getByTestId('HideBalanceButton')).toBeTruthy()
     expect(getByTestId('TotalTokenBalance')).toHaveTextContent('₱55.74')
     expect(queryByText('AssetsTokenBalance/Info')).toBeFalsy()
   })
@@ -276,8 +276,8 @@ describe('AssetsTokenBalance', () => {
     )
 
     expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('XX.XX')
-    expect(tree.getByTestId('HiddenEyeIcon')).toBeTruthy()
-    fireEvent.press(tree.getByTestId('HiddenEyeIcon'))
+    expect(tree.getByTestId('HideBalanceButton')).toBeTruthy()
+    fireEvent.press(tree.getByTestId('HideBalanceButton'))
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(HomeEvents.show_balances)
     expect(store.getActions()).toEqual([hideAlert(), toggleHideBalances()])
@@ -293,8 +293,8 @@ describe('AssetsTokenBalance', () => {
     )
 
     expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('$8.41')
-    expect(tree.getByTestId('EyeIcon')).toBeTruthy()
-    fireEvent.press(tree.getByTestId('EyeIcon'))
+    expect(tree.getByTestId('HideBalanceButton')).toBeTruthy()
+    fireEvent.press(tree.getByTestId('HideBalanceButton'))
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(HomeEvents.hide_balances)
     expect(store.getActions()).toEqual([hideAlert(), toggleHideBalances()])
@@ -345,7 +345,7 @@ describe('FiatExchangeTokenBalance', () => {
     expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual(expectedTotal)
   })
 
-  it('includes token icon with one token balance and zero positions', () => {
+  it('includes balance with one token balance and zero positions', () => {
     const store = createMockStore({
       ...defaultStore,
       ...noPositions,
@@ -358,7 +358,6 @@ describe('FiatExchangeTokenBalance', () => {
     )
 
     expect(tree.queryByTestId('ViewBalances')).toBeFalsy()
-    expect(tree.getByTestId('TokenIcon')).toBeTruthy()
     expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('$0.50')
   })
 
