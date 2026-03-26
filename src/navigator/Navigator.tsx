@@ -40,6 +40,7 @@ import GoldBuyConfirmation from 'src/gold/GoldBuyConfirmation'
 import GoldBuyEnterAmount from 'src/gold/GoldBuyEnterAmount'
 import GoldHome from 'src/gold/GoldHome'
 import GoldInfoScreen from 'src/gold/GoldInfoScreen'
+import GoldPriceAlerts from 'src/gold/GoldPriceAlerts'
 import GoldSellConfirmation from 'src/gold/GoldSellConfirmation'
 import GoldSellEnterAmount from 'src/gold/GoldSellEnterAmount'
 import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
@@ -676,6 +677,11 @@ const goldScreens = (Navigator: typeof Stack) => (
       name={Screens.GoldSellConfirmation}
       component={GoldSellConfirmation}
       options={GoldSellConfirmation.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldPriceAlerts}
+      component={GoldPriceAlerts}
+      options={GoldPriceAlerts.navigationOptions}
     />
   </>
 )
