@@ -26,11 +26,11 @@ Clean the Android application
 fastlane android build
 ```
 Build the Android application - requires environment param
-### android alfajores
+### android testnet
 ```
-fastlane android alfajores
+fastlane android testnet
 ```
-Ship Alfajores to Playstore Internal
+Ship Testnet (Celo Sepolia) to Playstore Internal
 ### android mainnet
 ```
 fastlane android mainnet
@@ -55,11 +55,11 @@ Build an Android bundle
 fastlane ios build
 ```
 Build the iOS application - requires environment param
-### ios alfajores
+### ios testnet
 ```
-fastlane ios alfajores
+fastlane ios testnet
 ```
-Ship Alfajores to TestFlight
+Ship Testnet (Celo Sepolia) to TestFlight
 ### ios mainnet
 ```
 fastlane ios mainnet
