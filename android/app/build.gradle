@@ -189,10 +189,12 @@ android {
 
     signingConfigs {
         release {
-          storeFile file('tucop.keystore')
-          storePassword System.getenv("KEYSTORE_PASSWORD")
-          keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
-          keyPassword System.getenv("KEYSTORE_PASSWORD")
+          if (file('tucop.keystore').exists()) {
+            storeFile file('tucop.keystore')
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS") ?: 'tucop'
+            keyPassword System.getenv("KEYSTORE_PASSWORD")
+          }
         }
 
         debug {

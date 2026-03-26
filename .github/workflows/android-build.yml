@@ -126,6 +126,9 @@ jobs:
             --stacktrace \
             --build-cache \
             --parallel
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
       - name: Verify build output
         run: |
