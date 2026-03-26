@@ -22,7 +22,7 @@ on:
         type: choice
         options:
           - mainnet
-          - testnet
+          - sepoliaTestnet
       upload_to_store:
         description: 'Upload to Play Store'
         required: false
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "testnet"]') }}
+        environment: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) || fromJson('["mainnet", "sepoliaTestnet"]') }}
 
     steps:
       - name: Checkout code
@@ -93,7 +93,7 @@ jobs:
         run: |
           if [ "${{ matrix.environment }}" = "mainnet" ]; then
             cp .env.mainnet .env
-          else
+          elif [ "${{ matrix.environment }}" = "sepoliaTestnet" ]; then
             cp .env.testnet .env
           fi
 
@@ -106,7 +106,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
-      - name: Clean and build Android Bundle
+      - name: Exclude Detox from native modules
+        run: |
+          # Remove Detox Android native module to prevent RN CLI config parse errors
+          # Detox is only needed for E2E test builds, not release builds
+          rm -rf node_modules/detox/android
+
+      - name: Build Android Bundle
         run: |
           cd android
           echo "🏗️ Building for environment: ${{ matrix.environment }}"
@@ -114,14 +120,10 @@ jobs:
           echo "☕ Java version: $(java -version 2>&1 | head -n 1)"
           echo "🐘 Gradle version: $(./gradlew --version | grep Gradle)"
 
-          # Clean previous builds
-          ./gradlew clean
-
-          # Build the bundle
+          # Build the bundle (clean not needed on fresh CI checkout)
           ./gradlew bundle${{ matrix.environment }}Release \
             -x generateAutolinkingPackageList \
             --stacktrace \
-            --info \
             --build-cache \
             --parallel
 
