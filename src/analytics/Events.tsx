@@ -695,3 +695,40 @@ export enum EarnEvents {
   earn_pool_info_tap_safety_details = 'earn_pool_info_tap_safety_details',
   earn_select_withdraw_type = 'earn_select_withdraw_type',
 }
+
+export enum GoldEvents {
+  // Entrypoint and navigation
+  gold_entrypoint_press = 'gold_entrypoint_press',
+  gold_info_view = 'gold_info_view',
+  gold_home_view = 'gold_home_view',
+
+  // Buy flow
+  gold_buy_start = 'gold_buy_start',
+  gold_buy_enter_amount = 'gold_buy_enter_amount',
+  gold_buy_quote_received = 'gold_buy_quote_received',
+  gold_buy_confirm = 'gold_buy_confirm',
+  gold_buy_submit_start = 'gold_buy_submit_start',
+  gold_buy_submit_success = 'gold_buy_submit_success',
+  gold_buy_submit_error = 'gold_buy_submit_error',
+  gold_buy_submit_cancel = 'gold_buy_submit_cancel',
+
+  // Sell flow
+  gold_sell_start = 'gold_sell_start',
+  gold_sell_enter_amount = 'gold_sell_enter_amount',
+  gold_sell_quote_received = 'gold_sell_quote_received',
+  gold_sell_confirm = 'gold_sell_confirm',
+  gold_sell_submit_start = 'gold_sell_submit_start',
+  gold_sell_submit_success = 'gold_sell_submit_success',
+  gold_sell_submit_error = 'gold_sell_submit_error',
+  gold_sell_submit_cancel = 'gold_sell_submit_cancel',
+
+  // Price alerts
+  gold_price_alert_create = 'gold_price_alert_create',
+  gold_price_alert_delete = 'gold_price_alert_delete',
+  gold_price_alert_toggle = 'gold_price_alert_toggle',
+  gold_price_alert_triggered = 'gold_price_alert_triggered',
+
+  // Price tracking
+  gold_price_fetch_success = 'gold_price_fetch_success',
+  gold_price_fetch_error = 'gold_price_fetch_error',
+}

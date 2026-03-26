@@ -346,6 +346,24 @@ export type StackParamList = {
     }
   }
   [Screens.BucksPayStatus]: undefined
+  // Digital Gold (XAUt0)
+  [Screens.GoldHome]: undefined
+  [Screens.GoldInfoScreen]: undefined
+  [Screens.GoldBuyEnterAmount]: { fromTokenId?: string } | undefined
+  [Screens.GoldBuyConfirmation]: {
+    fromTokenId: string
+    fromAmount: string
+    xautAmount: string
+    pricePerOz: string
+  }
+  [Screens.GoldSellEnterAmount]: undefined
+  [Screens.GoldSellConfirmation]: {
+    toTokenId: string
+    xautAmount: string
+    toAmount: string
+    pricePerOz: string
+  }
+  [Screens.GoldPriceAlerts]: undefined
 }
 
 export type QRTabParamList = {
