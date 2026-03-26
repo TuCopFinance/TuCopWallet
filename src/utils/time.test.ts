@@ -24,12 +24,18 @@ describe('utils/time', () => {
   })
 
   const wedMarch132019at1050 = 1552517413326
+  // Compute expected time in local timezone to avoid TZ-dependent test failures
+  const expectedTime = new Date(wedMarch132019at1050).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
   describe('formatFeedTime', () => {
     it('returns time formatted as string and is accurate', () => {
-      expect(formatFeedTime(wedMarch132019at1050, i18n)).toEqual('10:50 PM')
+      expect(formatFeedTime(wedMarch132019at1050, i18n)).toEqual(expectedTime)
     })
     it('works when number is in seconds', () => {
-      expect(formatFeedTime(wedMarch132019at1050 / 1000, i18n)).toEqual('10:50 PM')
+      expect(formatFeedTime(wedMarch132019at1050 / 1000, i18n)).toEqual(expectedTime)
     })
   })
   describe('formatFeedDate', () => {

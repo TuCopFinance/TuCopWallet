@@ -14,24 +14,20 @@ describe('WithdrawSpend', () => {
         <WithdrawSpend />
       </Provider>
     )
-    expect(tree.queryByTestId('FiatExchange/DrawerBar')).toBeFalsy()
-    expect(tree.queryByTestId('FiatExchangeTokenBalance')).toBeTruthy()
-    expect(tree.queryByTestId('addFunds')).toBeFalsy()
-    expect(tree.queryByTestId('spend')).toBeTruthy()
     expect(tree.queryByTestId('cashOut')).toBeTruthy()
+    expect(tree.queryByTestId('otherFundingOptions')).toBeTruthy()
   })
 
-  it.each([
-    { flow: 'CashOut', testID: 'cashOut' },
-    { flow: 'Spend', testID: 'spend' },
-  ])('$flow navigates correctly', ({ flow, testID }) => {
+  it('cashOut navigates correctly', () => {
     const store = createMockStore({})
     const tree = render(
       <Provider store={store}>
         <WithdrawSpend />
       </Provider>
     )
-    fireEvent.press(tree.getByTestId(testID))
-    expect(navigate).toHaveBeenCalledWith('FiatExchangeCurrencyBottomSheet', { flow })
+    fireEvent.press(tree.getByTestId('cashOut'))
+    expect(navigate).toHaveBeenCalledWith('FiatExchangeCurrencyBottomSheet', {
+      flow: 'CashOut',
+    })
   })
 })

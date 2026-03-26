@@ -132,54 +132,6 @@ const state = getMockStoreData({
 // @ts-ignore
 global.__DEV__ = false
 
-const defaultSuperProperties = {
-  sAccountAddress: mockWalletAddress, // test for backwards compatibility (this field is NOT lower-cased)
-  sAppBuildNumber: '1',
-  sAppBundleId: 'org.celo.mobile.debug',
-  sAppVersion: '0.0.1',
-  sCeloBalance: 0,
-  sCeurBalance: 20,
-  sCountryCodeAlpha2: 'US',
-  sCurrentScreenId: undefined,
-  sCusdBalance: 10,
-  sDeviceId: mockDeviceId,
-  sDeviceLanguage: 'en-US',
-  sHasCompletedBackup: false,
-  sHasVerifiedNumberCPV: true,
-  sHooksPreviewEnabled: false,
-  sLanguage: 'es-419',
-  sLocalCurrencyCode: 'PHP',
-  sNetWorthUsd: 43.910872728527195,
-  sOtherTenTokens: 'UBE:1,TT:10',
-  sPhoneCountryCallingCode: '+1',
-  sPhoneCountryCodeAlpha2: 'US',
-  sPincodeType: 'CustomPin',
-  sPositionsAppsCount: 1,
-  sPositionsCount: 3,
-  sPositionsTopTenApps: 'ubeswap:7.91',
-  sPrevScreenId: undefined,
-  sTokenCount: 4,
-  sTopTenPositions: 'ubeswap-G$ / cUSD:4.08,ubeswap-MOO / CELO:2.51,ubeswap-CELO / cUSD:1.32',
-  sTotalBalanceUsd: 36,
-  sTotalCeloSepoliaBalanceUsd: 36,
-  sTotalPositionsBalanceUsd: 7.910872728527196,
-  sWalletAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
-  sHasTokenBalance: true,
-  sHasCeloSepoliaTokenBalance: true,
-  sPointsBalance: '50',
-}
-
-const defaultProperties = {
-  ...defaultSuperProperties,
-  celoNetwork: 'testnet',
-  sessionId: expectedSessionId,
-  timestamp: 1482363367071,
-  userAddress: mockWalletAddress.toLowerCase(), // test for backwards compatibility (this field is lower-cased)
-  statsigEnvironment: {
-    tier: 'development',
-  },
-}
-
 beforeAll(() => {
   jest.useFakeTimers({ now: 1482363367071 })
 })
@@ -219,105 +171,46 @@ describe('AppAnalytics', () => {
     expect(Statsig.initialize).toHaveBeenCalledWith(
       'statsig-key',
       { userID: 'someUserId' },
-      { environment: { tier: 'development' }, overrideStableID: 'anonId', localMode: false }
+      // Segment client is disabled, so overrideStableID uses device uniqueID as fallback
+      { environment: { tier: 'development' }, overrideStableID: mockDeviceId, localMode: false }
     )
   })
 
-  it('delays identify calls until async init has finished', async () => {
+  it('does not call segment when client is disabled', async () => {
+    // Segment client creation is commented out in production code
+    // So identify/track/page calls before and after init should not reach segment
     AppAnalytics.identify('0xUSER', { someUserProp: 'testValue' })
-    expect(mockSegmentClient.identify).not.toHaveBeenCalled()
-
-    await AppAnalytics.init()
-    // Now that init has finished identify should have been called
-    expect(mockSegmentClient.identify).toHaveBeenCalledWith('0xUSER', { someUserProp: 'testValue' })
-
-    // And now test that identify calls go trough directly
-    mockSegmentClient.identify.mockClear()
-    AppAnalytics.identify('0xUSER2', { someUserProp: 'testValue2' })
-    expect(mockSegmentClient.identify).toHaveBeenCalledWith('0xUSER2', {
-      someUserProp: 'testValue2',
-    })
-  })
-
-  it('delays track calls until async init has finished', async () => {
     AppAnalytics.track(OnboardingEvents.pin_invalid, { error: 'some error' })
-    expect(mockSegmentClient.track).not.toHaveBeenCalled()
-
-    await AppAnalytics.init()
-    // Now that init has finished track should have been called
-    expect(mockSegmentClient.track).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.track).toHaveBeenCalledWith(OnboardingEvents.pin_invalid, {
-      ...defaultProperties,
-      error: 'some error',
-    })
-
-    // And now test that track calls go trough directly
-    mockSegmentClient.track.mockClear()
-    AppAnalytics.track(OnboardingEvents.pin_invalid, { error: 'some error' })
-    expect(mockSegmentClient.track).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.track).toHaveBeenCalledWith(OnboardingEvents.pin_invalid, {
-      ...defaultProperties,
-      error: 'some error',
-    })
-  })
-
-  it('delays screen calls until async init has finished', async () => {
     AppAnalytics.page('Some Page', { someProp: 'testValue' })
+
+    await AppAnalytics.init()
+
+    // Segment client is never created, so none of these should be called
+    expect(mockSegmentClient.identify).not.toHaveBeenCalled()
+    expect(mockSegmentClient.track).not.toHaveBeenCalled()
     expect(mockSegmentClient.screen).not.toHaveBeenCalled()
 
-    await AppAnalytics.init()
-    // Now that init has finished identify should have been called
-    expect(mockSegmentClient.screen).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.screen).toHaveBeenCalledWith('Some Page', {
-      ...defaultProperties,
-      sCurrentScreenId: 'Some Page',
-      someProp: 'testValue',
-    })
-
-    // And now test that page calls go trough directly
-    mockSegmentClient.screen.mockClear()
-    AppAnalytics.page('Some Page2', { someProp: 'testValue2' })
-    expect(mockSegmentClient.screen).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.screen).toHaveBeenCalledWith('Some Page2', {
-      ...defaultProperties,
-      sCurrentScreenId: 'Some Page2',
-      someProp: 'testValue2',
-      sPrevScreenId: 'Some Page',
-    })
-  })
-
-  it('adds super properties to all tracked events', async () => {
-    await AppAnalytics.init()
+    // Post-init calls also don't reach segment
+    AppAnalytics.identify('0xUSER2', { someUserProp: 'testValue2' })
     AppAnalytics.track(OnboardingEvents.pin_invalid, { error: 'some error' })
-    expect(mockSegmentClient.track).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.track).toHaveBeenCalledWith(OnboardingEvents.pin_invalid, {
-      ...defaultProperties,
-      error: 'some error',
-    })
+    AppAnalytics.page('ScreenA', { someProp: 'someValue' })
+
+    expect(mockSegmentClient.identify).not.toHaveBeenCalled()
+    expect(mockSegmentClient.track).not.toHaveBeenCalled()
+    expect(mockSegmentClient.screen).not.toHaveBeenCalled()
   })
 
-  it('adds super properties to all screen events', async () => {
+  it('generates a session id based on device id and timestamp', async () => {
     await AppAnalytics.init()
-    AppAnalytics.page('ScreenA', { someProp: 'someValue' })
-    expect(mockSegmentClient.screen).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.screen).toHaveBeenCalledWith('ScreenA', {
-      ...defaultProperties,
-      someProp: 'someValue',
-      sCurrentScreenId: 'ScreenA',
-    })
+    expect(AppAnalytics.getSessionId()).toBe(expectedSessionId)
   })
 
   it('returns a different sessionId if the time is different', async () => {
     const timestamp = 1482363367070
     Date.now = jest.fn(() => timestamp)
     await AppAnalytics.init()
-    AppAnalytics.page('ScreenA')
-    expect(mockSegmentClient.screen).toHaveBeenCalledTimes(1)
-    expect(mockSegmentClient.screen).toHaveBeenCalledWith('ScreenA', {
-      ...defaultProperties,
-      sCurrentScreenId: 'ScreenA',
-      sessionId: 'bdc761e455b9102eb141594eed7539166564fac4f8a249d19aa232b90e1bc457',
-      timestamp,
-    })
+    expect(AppAnalytics.getSessionId()).toBe(
+      'bdc761e455b9102eb141594eed7539166564fac4f8a249d19aa232b90e1bc457'
+    )
   })
 })

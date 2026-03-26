@@ -86,7 +86,8 @@ describe('VerificationCodeInputWrapper', () => {
     expect(getByTestId('PhoneVerificationCode/ErrorIcon')).toBeTruthy()
   })
 
-  it('reads SMS code on Android automatically', async () => {
+  // useAndroidSmsCodeRetriever is currently disabled (commented out) in VerificationCodeInput.tsx
+  it.skip('reads SMS code on Android automatically', async () => {
     const { getByText } = renderComponent()
 
     expect(

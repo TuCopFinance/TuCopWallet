@@ -19,7 +19,7 @@ jest.mock('src/onboarding/steps', () => ({
   onboardingPropsSelector: () => mockOnboardingPropsSelector(),
 }))
 
-const mockPin = '364141' // Last 6 hexidecimal values of the secp256k1 group order.
+const mockPin = '3641' // First 4 digits of the secp256k1 group order hex values.
 
 describe('Pincode', () => {
   const mockDispatch = jest.fn()
@@ -137,7 +137,7 @@ describe('Pincode', () => {
       },
     })
 
-    const oldPin = '856201'
+    const oldPin = '8562'
     setCachedPin(DEFAULT_CACHE_ACCOUNT, oldPin)
     const mockScreenProps = getMockStackScreenProps(Screens.PincodeSet, { changePin: true })
 
