@@ -2995,6 +2995,42 @@
   "ubiAlreadyClaimed": "Ya has reclamado tu subsidio esta semana",
   "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
   "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
+  "goldFlow": {
+    "entrypoint": {
+      "title": "Oro Digital (XAUt0)"
+    },
+    "info": {
+      "title": "Invierte en Oro Digital",
+      "description": "Posee oro real, almacenado de forma segura en bóvedas suizas, accesible directamente desde tu billetera.",
+      "details": {
+        "backed": {
+          "title": "100% Respaldado por Oro",
+          "subtitle": "Cada token XAUt0 representa una onza troy de oro físico almacenado en bóvedas seguras en Suiza."
+        },
+        "secure": {
+          "title": "Seguro y Verificado",
+          "subtitle": "Las reservas de oro son auditadas y verificadas regularmente por terceros independientes."
+        },
+        "custody": {
+          "title": "Custodia Profesional",
+          "subtitle": "Tu oro está almacenado de forma segura por Tether en bóvedas de alta seguridad en Suiza."
+        }
+      },
+      "action": {
+        "learn": "Más Información",
+        "getStarted": "Comenzar"
+      }
+    },
+    "home": {
+      "title": "Oro Digital",
+      "currentPrice": "Precio Actual del Oro",
+      "yourHoldings": "Tu Balance",
+      "last24h": "24h",
+      "priceAlerts": "Configurar Alertas de Precio",
+      "buy": "Comprar Oro",
+      "sell": "Vender Oro"
+    }
+  },
   "buckspay": {
     "selectProvider": "Retirar Fondos",
     "selectProviderSubtitle": "Elige un proveedor para convertir tus criptomonedas a moneda local.",
