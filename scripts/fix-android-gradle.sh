@@ -74,7 +74,7 @@ if [ -f "node_modules/react-native-contacts/android/build.gradle" ]; then
     rm -f node_modules/react-native-contacts/android/build.gradle.bak
 fi
 
-# Fix detox namespace
+# Fix detox namespace (subproject)
 if [ -f "node_modules/detox/android/detox/build.gradle" ]; then
     perl -i.bak -pe 's/def agpVersion.*?if \(agpVersion >= 7\) \{.*?namespace "com.wix.detox".*?\}/namespace "com.wix.detox"/s' node_modules/detox/android/detox/build.gradle
     rm -f node_modules/detox/android/detox/build.gradle.bak
