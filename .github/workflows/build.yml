@@ -131,6 +131,9 @@ jobs:
       - name: Setup environment
         run: cp .env.mainnet .env
 
+      - name: Exclude Detox from native modules
+        run: rm -rf node_modules/detox/android
+
       - name: Install CocoaPods
         run: cd ios && pod install --repo-update
 
