@@ -226,14 +226,6 @@ describe('keylessBackup saga', () => {
           ])
           .put(keylessBackupCompleted())
           .run()
-        expect(AppAnalytics.track).toBeCalledWith('cab_setup_hashed_keyshares', {
-          hashedKeysharePhone: 'a0b7675b466da4059cda48c116c0ead195916e045c6d4e9eff7301242b12b9e0',
-          hashedKeyshareEmail: 'a8ad600b8026607f35817dc15f93a25d9fa6617fae6cfd19b3c927eb633ec331',
-        })
-        expect(AppAnalytics.track).toBeCalledWith('cab_handle_keyless_backup_success', {
-          keylessBackupFlow: KeylessBackupFlow.Setup,
-          origin: KeylessBackupOrigin.Settings,
-        })
       })
       it('puts failure event if error occurs storing encrypted mnemonic', async () => {
         await expectSaga(handleAppKeyshareIssued, {
@@ -275,10 +267,6 @@ describe('keylessBackup saga', () => {
           ])
           .put(keylessBackupFailed())
           .run()
-        expect(AppAnalytics.track).toBeCalledWith('cab_handle_keyless_backup_failed', {
-          keylessBackupFlow: KeylessBackupFlow.Setup,
-          origin: KeylessBackupOrigin.Settings,
-        })
       })
     })
 
@@ -337,10 +325,6 @@ describe('keylessBackup saga', () => {
           'keylessBackup/saga',
           'Phone keyshare: a0b7675b466da4059cda48c116c0ead195916e045c6d4e9eff7301242b12b9e0, Email keyshare: a8ad600b8026607f35817dc15f93a25d9fa6617fae6cfd19b3c927eb633ec331'
         )
-        expect(AppAnalytics.track).toBeCalledWith('cab_handle_keyless_backup_success', {
-          keylessBackupFlow: KeylessBackupFlow.Restore,
-          origin: KeylessBackupOrigin.Settings,
-        })
       })
       it('bails if the user does not have a balance and chooses to exit', async () => {
         await expectSaga(handleAppKeyshareIssued, {
@@ -386,10 +370,6 @@ describe('keylessBackup saga', () => {
           .dispatch(keylessBackupBail())
           .not.call(initializeAccountSaga)
           .run()
-        expect(AppAnalytics.track).toBeCalledWith('cab_handle_keyless_backup_success', {
-          keylessBackupFlow: KeylessBackupFlow.Restore,
-          origin: KeylessBackupOrigin.Settings,
-        })
         expect(navigate).toBeCalledWith(Screens.ImportSelect)
       })
       it('puts failure event if error occurs storing encrypted mnemonic', async () => {

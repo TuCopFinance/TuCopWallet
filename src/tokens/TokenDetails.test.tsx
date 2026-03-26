@@ -20,6 +20,7 @@ import {
 } from 'test/values'
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn(() => {
     return {
       showCico: ['celo-sepolia', 'ethereum-sepolia'],
@@ -308,7 +309,9 @@ describe('TokenDetails', () => {
     expect(getByTestId('TokenDetails/Action/Swap')).toBeTruthy()
     expect(queryByTestId('TokenDetails/Action/Add')).toBeFalsy()
     expect(queryByTestId('TokenDetails/Action/Withdraw')).toBeFalsy()
-    expect(queryByTestId('TokenDetails/Action/More')).toBeFalsy()
+    // More is shown because cashOut tokens now include all tokens with balance > 0
+    // (isCashOutEligible check was removed), so showWithdraw is true for POOF
+    expect(getByTestId('TokenDetails/Action/More')).toBeTruthy()
   })
 
   it('renders send and swap action only if token has balance, is swappable and not a CICO token', () => {
@@ -333,7 +336,9 @@ describe('TokenDetails', () => {
     expect(getByTestId('TokenDetails/Action/Swap')).toBeTruthy()
     expect(queryByTestId('TokenDetails/Action/Add')).toBeFalsy()
     expect(queryByTestId('TokenDetails/Action/Withdraw')).toBeFalsy()
-    expect(queryByTestId('TokenDetails/Action/More')).toBeFalsy()
+    // More is shown because all tokens with balance > 0 are now cashOut/cashIn eligible,
+    // giving 4 visible actions (Send, Swap, Add, Withdraw) which exceeds MAX_ACTION_BUTTONS
+    expect(getByTestId('TokenDetails/Action/More')).toBeTruthy()
   })
 
   it('renders send, swap and more if token has balance, is swappable and a CICO token', () => {
@@ -497,6 +502,8 @@ describe('TokenDetails', () => {
     expect(getByTestId('TokenDetails/Action/Swap')).toBeTruthy()
     expect(queryByTestId('TokenDetails/Action/Add')).toBeFalsy()
     expect(queryByTestId('TokenDetails/Action/Withdraw')).toBeFalsy()
-    expect(queryByTestId('TokenDetails/Action/More')).toBeFalsy()
+    // More is shown because imported tokens with balance are now included in
+    // cashIn/cashOut selectors, giving 4 visible actions > MAX_ACTION_BUTTONS
+    expect(getByTestId('TokenDetails/Action/More')).toBeTruthy()
   })
 })

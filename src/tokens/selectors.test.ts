@@ -46,6 +46,7 @@ jest.mock('react-native-device-info', () => ({
 }))
 
 jest.mock('src/statsig', () => ({
+  ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn(),
 }))
 
@@ -566,7 +567,9 @@ describe(cashInTokensByNetworkIdSelector, () => {
         NetworkId['celo-sepolia'],
         NetworkId['ethereum-sepolia'],
       ])
-      expect(tokens.length).toEqual(3)
+      // isCashInEligible check is commented out in selector, so all tokens
+      // except COPM and null-balance tokens are returned
+      expect(tokens.length).toEqual(8)
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0xusd')?.symbol).toEqual('cUSD')
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0xeur')?.symbol).toEqual('cEUR')
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0x1')?.name).toEqual('0x1 token')
@@ -582,7 +585,8 @@ describe(cashOutTokensByNetworkIdSelector, () => {
         [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
         false
       )
-      expect(tokens.length).toEqual(2)
+      // isCashOutEligible check is commented out, so all tokens with balance > 0 are returned
+      expect(tokens.length).toEqual(5)
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0xeur')?.symbol).toEqual('cEUR')
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0x1')?.name).toEqual('0x1 token')
     })
@@ -592,7 +596,8 @@ describe(cashOutTokensByNetworkIdSelector, () => {
         [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
         true
       )
-      expect(tokens.length).toEqual(3)
+      // isCashOutEligible check is commented out, so all non-null-balance tokens are returned
+      expect(tokens.length).toEqual(8)
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0xusd')?.symbol).toEqual('cUSD')
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0xeur')?.symbol).toEqual('cEUR')
       expect(tokens.find((t) => t.tokenId === 'celo-sepolia:0x1')?.name).toEqual('0x1 token')

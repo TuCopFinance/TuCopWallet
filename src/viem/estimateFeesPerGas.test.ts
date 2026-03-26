@@ -33,7 +33,7 @@ describe(estimateFeesPerGas, () => {
     const fees = await estimateFeesPerGas(client as any)
 
     // Critical validations
-    expect(fees.baseFeePerGas).toBe(BigInt('500000000')) // Minimum gas price applied
+    expect(fees.baseFeePerGas).toBe(BigInt('100000000')) // 0.1 Gwei (matches CELO_MIN_GAS_PRICES.CELO)
     expect(fees.maxPriorityFeePerGas).toBeGreaterThan(BigInt(0))
     expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas)
     expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas + fees.maxPriorityFeePerGas)
@@ -61,7 +61,7 @@ describe(estimateFeesPerGas, () => {
     const fees = await estimateFeesPerGas(client as any, '0x456' as Address)
 
     // Critical validations
-    expect(fees.baseFeePerGas).toBe(BigInt('500000000')) // Minimum gas price applied
+    expect(fees.baseFeePerGas).toBe(BigInt('100000000')) // 0.1 Gwei (matches CELO_MIN_GAS_PRICES.CELO)
     expect(fees.maxPriorityFeePerGas).toBeGreaterThan(BigInt(0))
     expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas)
     expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas + fees.maxPriorityFeePerGas)
@@ -185,17 +185,16 @@ describe(estimateFeesPerGas, () => {
 
     const fees = await estimateFeesPerGas(client as any)
 
-    // In fallback mode with network errors, we should use minimum reasonable values
-    // - Priority fee should be 5% of base fee = 20 Gwei / 20 = 1 Gwei = 1000000000 wei
-    // - Fallback priority fee is 1.5 Gwei = 1500000000 wei (higher, so this is used)
-    // - After 1.2 multiplier: 1500000000 * 1.2 = 1800000000 wei
+    // In fallback mode with network errors, we use minimum reasonable values
+    // - Fallback priority fee is 1.5 Gwei = 1500000000 wei
+    // - After 1.05 priority fee multiplier: 1500000000 * 1.05 = 1575000000 wei
     const expectedPriorityFee = BigInt('1500000000') // 1.5 Gwei fallback
-    const expectedAdjustedPriorityFee = BigInt(Math.floor(Number(expectedPriorityFee) * 1.2))
+    const expectedAdjustedPriorityFee = BigInt(Math.floor(Number(expectedPriorityFee) * 1.05))
 
-    // Calculate expected maxFeePerGas
+    // Calculate expected maxFeePerGas using current multipliers
     const baseMaxFee = baseFeePerGas + expectedAdjustedPriorityFee
-    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 1.1))
-    const safetyBuffer = baseFeePerGas / BigInt(4)
+    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 1.02))
+    const safetyBuffer = baseFeePerGas / BigInt(10)
     const expectedMaxFee = multipliedMaxFee + safetyBuffer
 
     expect(fees.baseFeePerGas).toBe(baseFeePerGas)

@@ -9,7 +9,6 @@ import {
   cryptoSent,
   offrampError,
   offrampStart,
-  statusUpdated,
 } from 'src/buckspay/slice'
 import { checkUserRegistrationSaga, offrampSaga } from 'src/buckspay/saga'
 import { BankDetails } from 'src/buckspay/types'
@@ -93,23 +92,21 @@ describe('checkUserRegistrationSaga', () => {
     })
   })
 
-  it('navigates to WebView on API error', async () => {
+  it('navigates to BankForm on API error', async () => {
     await expectSaga(checkUserRegistrationSaga)
       .withState(createMockStore({}).getState())
       .provide(createProviders({ throwCheckError: true }))
       .put(checkUserComplete())
       .run()
 
-    expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
-      uri: 'https://app.buckspay.xyz/',
-    })
+    expect(navigate).toHaveBeenCalledWith(Screens.BucksPayBankForm)
   })
 
-  it('completes without navigating when no wallet address', async () => {
+  it('returns early without navigating when no wallet address', async () => {
     await expectSaga(checkUserRegistrationSaga)
       .withState(createMockStore({}).getState())
       .provide(createProviders({ walletAddress: null }))
-      .put(checkUserComplete())
+      .not.put(checkUserComplete())
       .run()
 
     expect(navigate).not.toHaveBeenCalled()

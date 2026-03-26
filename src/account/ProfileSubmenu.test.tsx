@@ -65,14 +65,17 @@ describe('ProfileSubmenu', () => {
     })
 
     await waitFor(() => expect(tree.getByText('revokePhoneNumber.revokeSuccess')).toBeTruthy())
-    expect(mockFetch).toHaveBeenNthCalledWith(1, `${networkConfig.revokePhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0x0000000000000000000000000000000000007e57:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+14155550000","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      `${networkConfig.revokePhoneNumberUrl}/${mockE164Number}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'tu-cop-intechchain-1234567890',
+        },
+      }
+    )
   })
 
   it('shows the error on revoke phone number error', async () => {

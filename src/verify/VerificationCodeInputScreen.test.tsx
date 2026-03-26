@@ -28,9 +28,10 @@ mockedKeychain.getGenericPassword.mockResolvedValue({
 const mockedSmsRetriever = jest.mocked(SmsRetriever)
 
 const e164Number = '+31619123456'
+const walletAddress = '0xabc'
 const store = createMockStore({
   web3: {
-    account: '0xabc',
+    account: walletAddress,
   },
   app: {
     inviterAddress: '0xabc',
@@ -43,13 +44,40 @@ const renderComponent = () =>
       <MockedNavigator
         component={VerificationCodeInputScreen}
         params={{
-          countryCode: '+31',
+          countryCallingCode: '+31',
           e164Number,
           verificationCompletionScreen: Screens.OnboardingSuccessScreen,
         }}
       />
     </Provider>
   )
+
+// The source code now calls checkPhoneInKeylessBackupSystem before verifyPhoneNumber,
+// which adds an extra fetch call to cabGetEncryptedMnemonicUrl/check-phone.
+// This helper mocks a response for that initial check (returning exists: false by default).
+const mockKeylessBackupCheckResponse = (exists = false) => {
+  mockFetch.mockResponseOnce(JSON.stringify({ exists }), { status: 200 })
+}
+
+// Expected headers and body for the verifyPhoneNumber request
+const expectedVerifyPhoneNumberRequest = {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'tu-cop-intechchain-1234567890',
+  },
+  body: JSON.stringify({ phone: e164Number, wallet: walletAddress }),
+}
+
+// Expected headers and body for the verifySmsCode request
+const expectedVerifySmsCodeRequest = (smsCode: string) => ({
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'tu-cop-intechchain-1234567890',
+  },
+  body: JSON.stringify({ phone: e164Number, otp: smsCode, wallet: walletAddress }),
+})
 
 describe('VerificationCodeInputScreen', () => {
   beforeEach(() => {
@@ -60,6 +88,9 @@ describe('VerificationCodeInputScreen', () => {
   })
 
   it('displays the correct components and requests for the verification code on mount', async () => {
+    // First call: checkPhoneInKeylessBackupSystem (returns exists: false)
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber
     mockFetch.mockResponseOnce(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })
@@ -73,31 +104,36 @@ describe('VerificationCodeInputScreen', () => {
     expect(getByTestId('PhoneVerificationCode')).toBeTruthy()
     expect(getByTestId('PhoneVerificationResendSmsBtn')).toBeDisabled()
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
-    expect(mockFetch).toHaveBeenCalledWith(`${networkConfig.verifyPhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","clientPlatform":"android","clientVersion":"0.0.1","clientBundleId":"org.celo.mobile.debug","inviterAddress":"0xabc"}',
-    })
+    // 2 calls: checkPhoneInKeylessBackupSystem + verifyPhoneNumber
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      networkConfig.verifyPhoneNumberUrl,
+      expectedVerifyPhoneNumberRequest
+    )
   })
 
   it('displays an error if verification code request fails', async () => {
+    // First call: checkPhoneInKeylessBackupSystem
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber fails
     mockFetch.mockResponseOnce(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
     renderComponent()
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
     expect(store.getActions()).toEqual(
       expect.arrayContaining([showError(ErrorMessages.PHONE_NUMBER_VERIFICATION_FAILURE)])
     )
   })
 
   it('verifies the sms code', async () => {
+    // First call: checkPhoneInKeylessBackupSystem
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber
     mockFetch.mockResponseOnce(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })
+    // Third call: verifySmsCode
     mockFetch.mockResponseOnce(JSON.stringify({ message: 'OK' }), {
       status: 200,
     })
@@ -108,15 +144,13 @@ describe('VerificationCodeInputScreen', () => {
       fireEvent.changeText(getByTestId('PhoneVerificationCode'), '123456')
     })
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${networkConfig.verifySmsCodeUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","verificationId":"someId","smsCode":"123456","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    // 3 calls: checkPhone + verifyPhoneNumber + verifySmsCode
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      networkConfig.verifySmsCodeUrl,
+      expectedVerifySmsCodeRequest('123456')
+    )
     expect(getByTestId('PhoneVerificationCode/CheckIcon')).toBeTruthy()
 
     await act(() => {
@@ -127,6 +161,10 @@ describe('VerificationCodeInputScreen', () => {
 
   it('waits for the verificationId to be captured before verifying sms', async () => {
     mockFetch.mockImplementation(async (url?: string | Request) => {
+      if (typeof url === 'string' && url.includes('/check-phone')) {
+        // checkPhoneInKeylessBackupSystem
+        return new Response(JSON.stringify({ exists: false }))
+      }
       if (url === networkConfig.verifyPhoneNumberUrl) {
         await sleep(1000) // some arbitrary network delay
         return new Response(JSON.stringify({ data: { verificationId: 'someId' } }))
@@ -147,22 +185,25 @@ describe('VerificationCodeInputScreen', () => {
       jest.runOnlyPendingTimers()
     })
 
-    expect(mockFetch).toHaveBeenCalledTimes(2)
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${networkConfig.verifySmsCodeUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","verificationId":"someId","smsCode":"123456","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    // 3 calls: checkPhone + verifyPhoneNumber + verifySmsCode
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      networkConfig.verifySmsCodeUrl,
+      expectedVerifySmsCodeRequest('123456')
+    )
     expect(getByTestId('PhoneVerificationCode/CheckIcon')).toBeTruthy()
   })
 
-  it('reads the SMS code on Android automatically', async () => {
+  // useAndroidSmsCodeRetriever is currently disabled (commented out) in VerificationCodeInput.tsx
+  it.skip('reads the SMS code on Android automatically', async () => {
+    // First call: checkPhoneInKeylessBackupSystem
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber
     mockFetch.mockResponseOnce(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })
+    // Third call: verifySmsCode
     mockFetch.mockResponseOnce(JSON.stringify({ message: 'OK' }), {
       status: 200,
     })
@@ -180,15 +221,12 @@ describe('VerificationCodeInputScreen', () => {
       smsListener({ message: 'Your verification code for App is: 123456 5yaJvJcZt2P' })
     })
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${networkConfig.verifySmsCodeUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","verificationId":"someId","smsCode":"123456","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      networkConfig.verifySmsCodeUrl,
+      expectedVerifySmsCodeRequest('123456')
+    )
     expect(getByText('123456')).toBeTruthy()
     expect(getByTestId('PhoneVerificationCode/CheckIcon')).toBeTruthy()
 
@@ -199,21 +237,21 @@ describe('VerificationCodeInputScreen', () => {
   })
 
   it('handles when phone number already verified', async () => {
+    // checkPhoneInKeylessBackupSystem returns false, then verifyPhoneNumber returns 400 with
+    // 'Phone number already verified' which triggers handleAlreadyVerified
     mockFetch.mockResponse(JSON.stringify({ message: 'Phone number already verified' }), {
       status: 400,
     })
 
     renderComponent()
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
-    expect(mockFetch).toHaveBeenCalledWith(`${networkConfig.verifyPhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","clientPlatform":"android","clientVersion":"0.0.1","clientBundleId":"org.celo.mobile.debug","inviterAddress":"0xabc"}',
-    })
+    // 2 calls: checkPhone + verifyPhoneNumber (which fails with "already verified")
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      networkConfig.verifyPhoneNumberUrl,
+      expectedVerifyPhoneNumberRequest
+    )
 
     await act(() => {
       jest.runOnlyPendingTimers()
@@ -222,9 +260,13 @@ describe('VerificationCodeInputScreen', () => {
   })
 
   it('shows error in verifying sms code', async () => {
+    // First call: checkPhoneInKeylessBackupSystem
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber
     mockFetch.mockResponseOnce(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })
+    // Third call onward: verifySmsCode fails
     mockFetch.mockRejectedValue(JSON.stringify({ message: 'Not OK' }))
 
     const { getByTestId } = renderComponent()
@@ -233,15 +275,13 @@ describe('VerificationCodeInputScreen', () => {
       fireEvent.changeText(getByTestId('PhoneVerificationCode'), '123456')
     })
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${networkConfig.verifySmsCodeUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+31619123456","verificationId":"someId","smsCode":"123456","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    // 3 calls: checkPhone + verifyPhoneNumber + verifySmsCode (rejected)
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      3,
+      networkConfig.verifySmsCodeUrl,
+      expectedVerifySmsCodeRequest('123456')
+    )
     expect(getByTestId('PhoneVerificationCode/ErrorIcon')).toBeTruthy()
     expect(store.getActions()).toEqual(
       expect.not.arrayContaining([showError(ErrorMessages.PHONE_NUMBER_VERIFICATION_FAILURE)])
@@ -254,6 +294,9 @@ describe('VerificationCodeInputScreen', () => {
   })
 
   it('makes a request to resend the sms code and resets the timer', async () => {
+    // mockResponse applies to ALL subsequent fetch calls:
+    // call 1: checkPhoneInKeylessBackupSystem, call 2: verifyPhoneNumber,
+    // call 3: checkPhoneInKeylessBackupSystem (resend), call 4: verifyPhoneNumber (resend)
     mockFetch.mockResponse(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })
@@ -266,22 +309,24 @@ describe('VerificationCodeInputScreen', () => {
       jest.advanceTimersByTime(1000) // 1 second, to update the timer
     })
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
-    fireEvent.press(getByTestId('PhoneVerificationResendSmsBtn'))
+    // 2 calls: checkPhone + verifyPhoneNumber
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    fireEvent.press(getByTestId('PhoneVerificationResendSmsBtn'))
+    // 4 calls: previous 2 + checkPhone (resend) + verifyPhoneNumber (resend)
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(4))
 
-    expect(mockFetch).toHaveBeenNthCalledWith(2, `${networkConfig.verifyPhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0xabc:someSignedMessage`,
-      },
-      body: `{"phoneNumber":"${e164Number}","clientPlatform":"android","clientVersion":"0.0.1","clientBundleId":"org.celo.mobile.debug","inviterAddress":"0xabc"}`,
-    })
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      4,
+      networkConfig.verifyPhoneNumberUrl,
+      expectedVerifyPhoneNumberRequest
+    )
     expect(getByTestId('PhoneVerificationResendSmsBtn')).toBeDisabled()
   })
 
   it('shows the help dialog', async () => {
+    // First call: checkPhoneInKeylessBackupSystem
+    mockKeylessBackupCheckResponse()
+    // Second call: verifyPhoneNumber
     mockFetch.mockResponseOnce(JSON.stringify({ data: { verificationId: 'someId' } }), {
       status: 200,
     })

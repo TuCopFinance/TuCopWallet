@@ -55,9 +55,9 @@ react {
 
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
-    testnetnightly: ".env.testnetnightly",
-    testnetdev: ".env.testnetdev",
-    testnet: ".env.testnet",
+    sepoliaTestnetnightly: ".env.testnetnightly",
+    sepoliaTestnetdev: ".env.testnetdev",
+    sepoliaTestnet: ".env.testnet",
     mainnetnightly: ".env.mainnetnightly",
     mainnetdev: ".env.mainnetdev",
     mainnet: ".env.mainnet",
@@ -162,6 +162,7 @@ android {
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            debugSymbolLevel 'FULL'
         }
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -234,13 +235,13 @@ android {
     }
     flavorDimensions "default"
     productFlavors {
-        testnet {
+        sepoliaTestnet {
             dimension "default"
         }
-        testnetdev {
+        sepoliaTestnetdev {
             dimension "default"
         }
-        testnetnightly {
+        sepoliaTestnetnightly {
             dimension "default"
         }
         mainnet {
@@ -277,8 +278,10 @@ android {
         // Prevents clashes with other libraries that use OpenSSL
         // See https://github.com/margelo/react-native-quick-crypto/blob/de94007239bbb6dd9655f8a9bb13c14254a082eb/docs/troubleshooting.md#android-build-errors
         pickFirst '**/libcrypto.so'
-        
-
+        // Enable 16 KB page size support for Google Play (compresses native libs)
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 
     buildFeatures {

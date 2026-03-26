@@ -143,7 +143,7 @@ function* createWalletConnectChannel() {
         icons: [appendPath('https://tucop.xyz', 'favicon.ico')],
         redirect: {
           native: `myapp://tucop/wc`,
-          universal: 'https://valoraapp.com/wc',
+          universal: 'https://tucop.xyz/wc',
         },
       },
     })

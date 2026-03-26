@@ -103,6 +103,7 @@ coverage/
 android/keystore.properties
 android/app/celo-release-key.keystore
 upload_certificate.pem
+changelogs.txt
 android/app/.settings
 android/.settings
 

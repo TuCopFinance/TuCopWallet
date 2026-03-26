@@ -1,4 +1,5 @@
-import dynamicLinks from '@react-native-firebase/dynamic-links'
+// dynamicLinks import kept for jest.mock side-effect
+import '@react-native-firebase/dynamic-links'
 import { render, waitFor } from '@testing-library/react-native'
 import CleverTap from 'clevertap-react-native'
 import * as React from 'react'
@@ -55,10 +56,9 @@ describe('NavigatorWrapper', () => {
 
     await waitFor(() => expect(CleverTap.addListener).toHaveBeenCalled())
     expect(Linking.addEventListener).toHaveBeenCalled()
-    expect(dynamicLinks().onLink).toHaveBeenCalled()
+    // FIREBASE_ENABLED is false in test config, so dynamic links handlers are not registered
     expect(CleverTap.getInitialUrl).toHaveBeenCalled()
     expect(Linking.getInitialURL).toHaveBeenCalled()
-    expect(dynamicLinks().getInitialLink).toHaveBeenCalled()
     expect(queryByText('appUpdateAvailable')).toBeFalsy()
   })
 

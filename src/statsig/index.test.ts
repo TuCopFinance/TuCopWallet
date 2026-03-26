@@ -88,16 +88,8 @@ describe('Statsig helpers', () => {
       expect(getMock).toHaveBeenCalledWith('param2', 'defaultValue2')
       expect(output).toEqual({ param1: 'statsigValue1', param2: 'statsigValue2' })
     })
-    it('returns values and logs error if sdk uninitialized', () => {
-      const getMock = jest.fn().mockImplementation((paramName: string, _defaultValue: string) => {
-        if (paramName === 'param1') {
-          return 'statsigValue1'
-        } else if (paramName === 'param2') {
-          return 'statsigValue2'
-        } else {
-          throw new Error('unexpected param name')
-        }
-      })
+    it('returns default values silently if sdk uninitialized', () => {
+      const getMock = jest.fn()
       ;(Statsig.getExperiment as jest.Mock).mockImplementation(() => ({
         get: getMock,
         getEvaluationDetails: () => ({ reason: EvaluationReason.Uninitialized }),
@@ -105,11 +97,10 @@ describe('Statsig helpers', () => {
       const defaultValues = { param1: 'defaultValue1', param2: 'defaultValue2' }
       const experimentName = 'mock_experiment_name' as StatsigExperiments
       const output = getExperimentParams({ experimentName, defaultValues })
-      expect(Logger.warn).toHaveBeenCalled()
+      expect(Logger.warn).not.toHaveBeenCalled()
       expect(Statsig.getExperiment).toHaveBeenCalledWith(experimentName)
-      expect(getMock).toHaveBeenCalledWith('param1', 'defaultValue1')
-      expect(getMock).toHaveBeenCalledWith('param2', 'defaultValue2')
-      expect(output).toEqual({ param1: 'statsigValue1', param2: 'statsigValue2' })
+      expect(getMock).not.toHaveBeenCalled()
+      expect(output).toEqual(defaultValues)
     })
   })
 
@@ -245,16 +236,8 @@ describe('Statsig helpers', () => {
       expect(getMock).toHaveBeenCalledWith('param2', 'defaultValue2')
       expect(output).toEqual({ param1: 'statsigValue1', param2: 'statsigValue2' })
     })
-    it('returns values and logs error if sdk uninitialized', () => {
-      const getMock = jest.fn().mockImplementation((paramName: string, _defaultValue: string) => {
-        if (paramName === 'param1') {
-          return 'statsigValue1'
-        } else if (paramName === 'param2') {
-          return 'statsigValue2'
-        } else {
-          throw new Error('unexpected param name')
-        }
-      })
+    it('returns default values silently if sdk uninitialized', () => {
+      const getMock = jest.fn()
       ;(Statsig.getConfig as jest.Mock).mockImplementation(() => ({
         get: getMock,
         getEvaluationDetails: () => ({ reason: EvaluationReason.Uninitialized }),
@@ -262,11 +245,10 @@ describe('Statsig helpers', () => {
       const defaultValues = { param1: 'defaultValue1', param2: 'defaultValue2' }
       const configName = 'mock_config' as StatsigDynamicConfigs
       const output = getDynamicConfigParams({ configName, defaultValues })
-      expect(Logger.warn).toHaveBeenCalled()
+      expect(Logger.warn).not.toHaveBeenCalled()
       expect(Statsig.getConfig).toHaveBeenCalledWith(configName)
-      expect(getMock).toHaveBeenCalledWith('param1', 'defaultValue1')
-      expect(getMock).toHaveBeenCalledWith('param2', 'defaultValue2')
-      expect(output).toEqual({ param1: 'statsigValue1', param2: 'statsigValue2' })
+      expect(getMock).not.toHaveBeenCalled()
+      expect(output).toEqual(defaultValues)
     })
   })
   describe('patchUpdateStatsigUser', () => {

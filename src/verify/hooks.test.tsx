@@ -2,7 +2,6 @@ import { act, fireEvent, render } from '@testing-library/react-native'
 import { FetchMock } from 'jest-fetch-mock/types'
 import React from 'react'
 import { Text } from 'react-native'
-import * as Keychain from 'react-native-keychain'
 import { Provider } from 'react-redux'
 import { phoneNumberRevoked } from 'src/app/actions'
 import Touchable from 'src/components/Touchable'
@@ -11,14 +10,6 @@ import networkConfig from 'src/web3/networkConfig'
 import { createMockStore } from 'test/utils'
 
 const mockFetch = fetch as FetchMock
-
-const mockedKeychain = jest.mocked(Keychain)
-mockedKeychain.getGenericPassword.mockResolvedValue({
-  username: 'some username',
-  password: 'someSignedMessage',
-  service: 'some service',
-  storage: 'some string',
-})
 
 function TestComponent() {
   const revokePhoneNumber = useRevokeCurrentPhoneNumber()
@@ -46,14 +37,17 @@ describe('useRevokeCurrentPhoneNumber', () => {
       fireEvent.press(getByText('Revoke'))
     })
 
-    expect(mockFetch).toHaveBeenNthCalledWith(1, `${networkConfig.revokePhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0x0000000000000000000000000000000000007e57:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+14155556666","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      `${networkConfig.revokePhoneNumberUrl}/+14155556666`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'tu-cop-intechchain-1234567890',
+        },
+      }
+    )
     expect(store.getActions()).toEqual([phoneNumberRevoked('+14155556666')])
   })
 
@@ -72,14 +66,17 @@ describe('useRevokeCurrentPhoneNumber', () => {
       fireEvent.press(getByText('Revoke'))
     })
 
-    expect(mockFetch).toHaveBeenNthCalledWith(1, `${networkConfig.revokePhoneNumberUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `${networkConfig.authHeaderIssuer} 0x0000000000000000000000000000000000007e57:someSignedMessage`,
-      },
-      body: '{"phoneNumber":"+14155556666","clientPlatform":"android","clientVersion":"0.0.1"}',
-    })
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      `${networkConfig.revokePhoneNumberUrl}/+14155556666`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'tu-cop-intechchain-1234567890',
+        },
+      }
+    )
     expect(store.getActions()).toEqual([])
   })
 })

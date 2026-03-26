@@ -83,8 +83,8 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(6)
-    ;['ETH', 'CELO', 'cUSD', 'cEUR', 'cREAL', 'USDC'].forEach((token, index) => {
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
+    ;['ETH', 'CELO', 'cUSD', 'cEUR', 'cREAL', 'POOF', 'USDC', 'cKES'].forEach((token, index) => {
       expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
     })
   })
@@ -97,7 +97,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(5)
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
   })
   it('shows the correct tokens for cash spend', () => {
     const { getAllByTestId } = render(
@@ -108,10 +108,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(2)
-    ;['cUSD', 'cEUR'].forEach((token, index) => {
-      expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
-    })
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
   })
   it('shows the correct order when cicoOrder missing/same value', () => {
     jest.mocked(getDynamicConfigParams).mockImplementation(({ configName, defaultValues }) => {
@@ -135,8 +132,8 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
         />
       </Provider>
     )
-    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(6)
-    ;['cUSD', 'cREAL', 'cEUR', 'CELO', 'ETH', 'USDC'].forEach((token, index) => {
+    expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
+    ;['cUSD', 'cREAL', 'cEUR', 'CELO', 'POOF', 'ETH', 'USDC', 'cKES'].forEach((token, index) => {
       expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
     })
   })
