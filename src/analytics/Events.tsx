@@ -700,7 +700,12 @@ export enum GoldEvents {
   // Entrypoint and navigation
   gold_entrypoint_press = 'gold_entrypoint_press',
   gold_info_view = 'gold_info_view',
+  gold_info_learn_press = 'gold_info_learn_press',
+  gold_info_get_started_press = 'gold_info_get_started_press',
   gold_home_view = 'gold_home_view',
+  gold_buy_press = 'gold_buy_press',
+  gold_sell_press = 'gold_sell_press',
+  gold_price_alerts_press = 'gold_price_alerts_press',
 
   // Buy flow
   gold_buy_start = 'gold_buy_start',
