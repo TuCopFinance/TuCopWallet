@@ -678,12 +678,12 @@ describe('feeCurrenciesSelector', () => {
   })
 
   it('avoids unnecessary recomputations for calculating fee currencies', () => {
-    const resultAlfajores = feeCurrenciesSelector(mockState, NetworkId['celo-sepolia'])
+    const resultCeloSepolia = feeCurrenciesSelector(mockState, NetworkId['celo-sepolia'])
     const resultSepolia = feeCurrenciesSelector(mockState, NetworkId['ethereum-sepolia'])
-    const resultAlfajores2 = feeCurrenciesSelector(mockState, NetworkId['celo-sepolia'])
+    const resultCeloSepolia2 = feeCurrenciesSelector(mockState, NetworkId['celo-sepolia'])
 
-    expect(resultAlfajores).toEqual(resultAlfajores2)
-    expect(resultAlfajores).not.toEqual(resultSepolia)
+    expect(resultCeloSepolia).toEqual(resultCeloSepolia2)
+    expect(resultCeloSepolia).not.toEqual(resultSepolia)
     expect(_feeCurrenciesByNetworkIdSelector.recomputations()).toEqual(1)
   })
 })
@@ -745,7 +745,7 @@ describe('feeCurrenciesWithPositiveBalancesSelector', () => {
   })
 
   it('avoids unnecessary recomputations for calculating fee currencies', () => {
-    const resultAlfajores = feeCurrenciesWithPositiveBalancesSelector(
+    const resultCeloSepolia = feeCurrenciesWithPositiveBalancesSelector(
       mockState,
       NetworkId['celo-sepolia']
     )
@@ -753,13 +753,13 @@ describe('feeCurrenciesWithPositiveBalancesSelector', () => {
       mockState,
       NetworkId['ethereum-sepolia']
     )
-    const resultAlfajores2 = feeCurrenciesWithPositiveBalancesSelector(
+    const resultCeloSepolia2 = feeCurrenciesWithPositiveBalancesSelector(
       mockState,
       NetworkId['celo-sepolia']
     )
 
-    expect(resultAlfajores).toBe(resultAlfajores2)
-    expect(resultAlfajores).not.toBe(resultSepolia)
+    expect(resultCeloSepolia).toBe(resultCeloSepolia2)
+    expect(resultCeloSepolia).not.toBe(resultSepolia)
     expect(feeCurrenciesWithPositiveBalancesSelector.recomputations()).toEqual(2)
   })
 })
