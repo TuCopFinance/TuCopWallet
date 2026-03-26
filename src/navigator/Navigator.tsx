@@ -36,6 +36,8 @@ import EarnConfirmationScreen from 'src/earn/EarnConfirmationScreen'
 import EarnEnterAmount from 'src/earn/EarnEnterAmount'
 import EarnHome from 'src/earn/EarnHome'
 import EarnInfoScreen from 'src/earn/EarnInfoScreen'
+import GoldBuyConfirmation from 'src/gold/GoldBuyConfirmation'
+import GoldBuyEnterAmount from 'src/gold/GoldBuyEnterAmount'
 import GoldHome from 'src/gold/GoldHome'
 import GoldInfoScreen from 'src/gold/GoldInfoScreen'
 import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
@@ -652,6 +654,16 @@ const goldScreens = (Navigator: typeof Stack) => (
       name={Screens.GoldHome}
       component={GoldHome}
       options={GoldHome.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldBuyEnterAmount}
+      component={GoldBuyEnterAmount}
+      options={GoldBuyEnterAmount.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldBuyConfirmation}
+      component={GoldBuyConfirmation}
+      options={GoldBuyConfirmation.navigationOptions}
     />
   </>
 )
