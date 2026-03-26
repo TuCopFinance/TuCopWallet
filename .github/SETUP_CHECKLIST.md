@@ -114,9 +114,9 @@
 
 ### Android
 
-- **Error de Gradle:** Verificar Java 17 y Gradle 8.10.2
-- **Keystore no encontrado:** Verificar rutas y secrets
-- **Autolinking falla:** Usar flag `-x generateAutolinkingPackageList`
+- **Error de Gradle:** Verificar Java 11 y Gradle 8.7
+- **Keystore no encontrado:** Verificar rutas y secrets (fallback a debug.keystore en CI)
+- **Autolinking:** NO usar `-x generateAutolinkingPackageList` (Gradle 8.7 falla si el task no existe)
 
 ### iOS
 
