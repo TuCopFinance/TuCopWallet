@@ -1,82 +1,82 @@
-# 🚀 Proceso Paso a Paso para Nueva Versión - TuCOP Wallet
+# 🚀 Step-by-Step Process for a New Release - TuCOP Wallet
 
-## 📋 Resumen del Proceso
+## 📋 Process Overview
 
-Este documento describe el proceso completo para generar una nueva versión de TuCOP Wallet usando nuestro sistema CI/CD automatizado.
+This document describes the complete process for generating a new version of TuCOP Wallet using our automated CI/CD system.
 
 ---
 
-## 🔧 Preparación Inicial
+## 🔧 Initial Preparation
 
-### 1. Verificar Estado del Proyecto
+### 1. Verify Project State
 
 ```bash
-# Cambiar a la rama principal
+# Switch to the main branch
 git checkout main
 
-# Actualizar con los últimos cambios
+# Pull the latest changes
 git pull origin main
 
-# Verificar que no hay cambios pendientes
+# Verify there are no pending changes
 git status
 ```
 
-### 2. Ejecutar Verificaciones
+### 2. Run Verifications
 
 ```bash
-# Ejecutar tests
+# Run tests
 yarn test
 
-# Verificar linting
+# Verify linting
 yarn lint
 
-# Verificar compilación TypeScript
+# Verify TypeScript compilation
 yarn build:ts
 
-# Verificar que todo esté funcionando
-yarn dev:android  # O yarn dev:ios para probar
+# Verify everything is working
+yarn dev:android  # Or yarn dev:ios to test
 ```
 
 ---
 
-## 🎯 Generación de Nueva Versión
+## 🎯 Generating a New Version
 
-### Opción A: Automático (Recomendado)
+### Option A: Automatic (Recommended)
 
-#### Para Bug Fixes (Patch)
+#### For Bug Fixes (Patch)
 
 ```bash
-# Incrementa 1.100.0 → 1.100.1
+# Increments 1.100.0 → 1.100.1
 yarn version --patch
 ```
 
-#### Para Nuevas Features (Minor)
+#### For New Features (Minor)
 
 ```bash
-# Incrementa 1.100.0 → 1.101.0
+# Increments 1.100.0 → 1.101.0
 yarn version --minor
 ```
 
-#### Para Breaking Changes (Major)
+#### For Breaking Changes (Major)
 
 ```bash
-# Incrementa 1.100.0 → 2.0.0
+# Increments 1.100.0 → 2.0.0
 yarn version --major
 ```
 
-### Opción B: Manual
+### Option B: Manual
 
-#### 1. Editar package.json
+#### 1. Edit package.json
 
 ```json
 {
   "name": "tucop-wallet",
-  "version": "1.117.0" // ← Cambiar aquí
+  "version": "1.117.0" // ← Change here
   // ...
 }
 ```
 
-#### 2. Commit y Tag
+#### 2. Commit and Tag
 
 ```bash
 git add package.json
@@ -86,79 +86,79 @@ git tag v1.117.0
 
 ---
 
-## 📤 Despliegue
+## 📤 Deployment
 
-### 1. Push a GitHub
+### 1. Push to GitHub
 
 ```bash
-# Push con tags (activa CI/CD automáticamente)
+# Push with tags (triggers CI/CD automatically)
 git push origin main --follow-tags
 ```
 
-### 2. Verificar Activación del CI/CD
+### 2. Verify CI/CD Activation
 
 ```bash
-# Ver workflows en ejecución
+# View running workflows
 gh run list
 
-# Ver detalles de un workflow específico
+# View details of a specific workflow
 gh run view [run-id]
 ```
 
 ---
 
-## ⚡ Proceso Automático (Lo que sucede tras el push)
+## ⚡ Automated Process (What happens after the push)
 
-### 1. Detección de Cambios
+### 1. Change Detection
 
-- ✅ GitHub Actions detecta cambio en `package.json`
-- ✅ Se activa el workflow `auto-build.yml`
-- ✅ Se valida que la versión cambió
+- ✅ GitHub Actions detects a change in `package.json`
+- ✅ The `auto-build.yml` workflow is triggered
+- ✅ The version change is validated
 
-### 2. Bump de Versión (si es necesario)
+### 2. Version Bump (if needed)
 
-- ✅ Se ejecuta `yarn pre-deploy` si no hubo cambio manual
-- ✅ Se actualiza build number automáticamente
-- ✅ Se hace commit automático de cambios
+- ✅ `yarn pre-deploy` is executed if there was no manual change
+- ✅ The build number is updated automatically
+- ✅ Changes are committed automatically
 
-### 3. Build Android
+### 3. Android Build
 
-- ✅ Se compila para **mainnet** y **testnet**
-- ✅ Se genera AAB (Android App Bundle)
-- ✅ Se sube a **Google Play Store (Internal Track)**
-- ✅ Se guarda artifact en GitHub
+- ✅ Compiled for **mainnet** and **testnet**
+- ✅ AAB (Android App Bundle) is generated
+- ✅ Uploaded to **Google Play Store (Internal Track)**
+- ✅ Artifact is saved on GitHub
 
-### 4. Build iOS
+### 4. iOS Build
 
-- ✅ Se compila para **mainnet** y **testnet**
-- ✅ Se genera IPA
-- ✅ Se sube a **TestFlight**
-- ✅ Se guarda artifact en GitHub
+- ✅ Compiled for **mainnet** and **testnet**
+- ✅ IPA is generated
+- ✅ Uploaded to **TestFlight**
+- ✅ Artifact is saved on GitHub
 
-### 5. Actualización del Backend
+### 5. Backend Update
 
-- ✅ Railway backend se actualiza automáticamente
-- ✅ Nueva versión disponible para verificación de actualizaciones
-- ✅ Se configura `minRequiredVersion` si es necesario
+- ✅ Railway backend is updated automatically
+- ✅ New version is available for update verification
+- ✅ `minRequiredVersion` is configured if needed
 
-### 6. Notificaciones
+### 6. Notifications
 
-- ✅ Se crea **GitHub Release** automáticamente
-- ✅ Se envía notificación a **Slack** (si está configurado)
-- ✅ Se actualiza documentación de release
+- ✅ A **GitHub Release** is created automatically
+- ✅ A **Slack** notification is sent (if configured)
+- ✅ Release documentation is updated
 
 ---
 
-## 🔍 Verificación del Proceso
+## 🔍 Process Verification
 
-### 1. Verificar Backend Actualizado
+### 1. Verify Backend Is Updated
 
 ```bash
-# Verificar versión en el backend
+# Verify version on the backend
 curl -H "X-Platform: android" -H "X-Bundle-ID: org.tucop" \
   https://tucopwallet-production.up.railway.app/api/app-version
 
-# Respuesta esperada:
+# Expected response:
 # {
 #   "latestVersion": "1.117.0",
 #   "minRequiredVersion": "1.95.0",
@@ -167,231 +167,231 @@ curl -H "X-Platform: android" -H "X-Bundle-ID: org.tucop" \
 # }
 ```
 
-### 2. Verificar GitHub Actions
+### 2. Verify GitHub Actions
 
 ```bash
-# Ver lista de workflows
+# View list of workflows
 gh run list
 
-# Ver logs de un workflow específico
+# View logs of a specific workflow
 gh run view [run-id] --log
 ```
 
-### 3. Verificar Releases
+### 3. Verify Releases
 
 ```bash
-# Ver releases creados
+# View created releases
 gh release list
 
-# Ver detalles de un release
+# View details of a release
 gh release view v1.117.0
 ```
 
-### 4. Verificar Deployments
+### 4. Verify Deployments
 
 #### Google Play Store
 
-1. Ir a [Google Play Console](https://play.google.com/console)
-2. Seleccionar TuCOP Wallet
-3. Ir a **Release → Testing → Internal testing**
-4. Verificar que la nueva versión esté disponible
+1. Go to [Google Play Console](https://play.google.com/console)
+2. Select TuCOP Wallet
+3. Go to **Release → Testing → Internal testing**
+4. Verify that the new version is available
 
 #### TestFlight
 
-1. Ir a [App Store Connect](https://appstoreconnect.apple.com)
-2. Seleccionar TuCOP Wallet
-3. Ir a **TestFlight**
-4. Verificar que la nueva build esté disponible
+1. Go to [App Store Connect](https://appstoreconnect.apple.com)
+2. Select TuCOP Wallet
+3. Go to **TestFlight**
+4. Verify that the new build is available
 
 ---
 
-## 🚨 Casos Especiales
+## 🚨 Special Cases
 
-### Hotfix Urgente
+### Urgent Hotfix
 
 ```bash
-# 1. Crear branch de hotfix
+# 1. Create a hotfix branch
 git checkout -b hotfix/1.117.1
 
-# 2. Hacer cambios críticos
-# ... editar archivos ...
+# 2. Make critical changes
+# ... edit files ...
 git add .
 git commit -m "fix: critical security issue"
 
-# 3. Push del hotfix
+# 3. Push the hotfix
 git push origin hotfix/1.117.1
 
-# 4. Merge a main
+# 4. Merge into main
 git checkout main
 git merge hotfix/1.117.1
 
-# 5. Versionar y desplegar
+# 5. Version and deploy
 yarn version --patch
 git push origin main --follow-tags
 
-# 6. Limpiar branch
+# 6. Clean up branch
 git branch -d hotfix/1.117.1
 git push origin --delete hotfix/1.117.1
 ```
 
-### Build Manual (Sin cambio de versión)
+### Manual Build (Without version change)
 
 ```bash
-# Disparar build manual con GitHub CLI
+# Trigger a manual build with GitHub CLI
 gh api repos/:owner/:repo/dispatches \
   --method POST \
   --field event_type='auto-build' \
   --field client_payload='{"version":"1.117.0","reason":"manual-build"}'
 ```
 
-### Rollback de Versión
+### Version Rollback
 
 ```bash
-# 1. Revertir commit de versión
+# 1. Revert the version commit
 git revert HEAD
 
-# 2. Actualizar backend manualmente
+# 2. Update the backend manually
 curl -X POST "https://tucopwallet-production.up.railway.app/api/update-version" \
   -H "Content-Type: application/json" \
   -d '{
     "platform": "both",
     "version": "1.100.0",
     "releaseNotes": "Rollback to previous version",
-    "apiKey": "[TU_API_KEY]"
+    "apiKey": "[YOUR_API_KEY]"
   }'
 
-# 3. Push del rollback
+# 3. Push the rollback
 git push origin main
 ```
 
 ---
 
-## 📊 Monitoreo y Logs
+## 📊 Monitoring and Logs
 
 ### Railway Backend
 
 ```bash
-# Ver logs del backend
+# View backend logs
 cd railway-backend
 railway logs
 
-# Verificar health del backend
+# Verify backend health
 curl https://tucopwallet-production.up.railway.app/health
 ```
 
 ### GitHub Actions
 
 ```bash
-# Ver workflows activos
+# View active workflows
 gh run list --limit 10
 
-# Ver logs en tiempo real
+# View logs in real time
 gh run watch [run-id]
 ```
 
-### Verificar Actualizaciones en la App
+### Verify Updates in the App
 
 ```bash
-# La app verifica automáticamente cada 24 horas
-# Para forzar verificación, reiniciar la app o usar:
-# NavigatorWrapper.tsx → useAppUpdateChecker con checkOnAppStart: true
+# The app checks for updates automatically every 24 hours
+# To force a check, restart the app or use:
+# NavigatorWrapper.tsx → useAppUpdateChecker with checkOnAppStart: true
 ```
 
 ---
 
-## ⏱️ Tiempos Estimados
+## ⏱️ Estimated Times
 
-| Proceso               | Tiempo Estimado   |
+| Process               | Estimated Time    |
 | --------------------- | ----------------- |
-| **Preparación**       | 5-10 minutos      |
-| **Versioning**        | 1-2 minutos       |
-| **Android Build**     | 15-20 minutos     |
-| **iOS Build**         | 20-25 minutos     |
-| **Play Store Upload** | 5-10 minutos      |
-| **TestFlight Upload** | 10-15 minutos     |
-| **Backend Update**    | 1-2 minutos       |
-| **Total**             | **45-60 minutos** |
+| **Preparation**       | 5-10 minutes      |
+| **Versioning**        | 1-2 minutes       |
+| **Android Build**     | 15-20 minutes     |
+| **iOS Build**         | 20-25 minutes     |
+| **Play Store Upload** | 5-10 minutes      |
+| **TestFlight Upload** | 10-15 minutes     |
+| **Backend Update**    | 1-2 minutes       |
+| **Total**             | **45-60 minutes** |
 
 ---
 
-## 🎯 Checklist de Nueva Versión
+## 🎯 New Version Checklist
 
-### Antes del Release
+### Before the Release
 
-- [ ] ✅ Tests pasando
-- [ ] ✅ Linting sin errores
-- [ ] ✅ Build TypeScript exitoso
-- [ ] ✅ Cambios documentados
-- [ ] ✅ Release notes preparadas
+- [ ] ✅ Tests passing
+- [ ] ✅ Linting with no errors
+- [ ] ✅ TypeScript build successful
+- [ ] ✅ Changes documented
+- [ ] ✅ Release notes prepared
 
-### Durante el Release
+### During the Release
 
-- [ ] ✅ Versión incrementada correctamente
-- [ ] ✅ Push con tags realizado
-- [ ] ✅ GitHub Actions activado
-- [ ] ✅ Builds iniciados
+- [ ] ✅ Version incremented correctly
+- [ ] ✅ Push with tags completed
+- [ ] ✅ GitHub Actions triggered
+- [ ] ✅ Builds started
 
-### Después del Release
+### After the Release
 
-- [ ] ✅ Backend actualizado
-- [ ] ✅ Play Store deployment exitoso
-- [ ] ✅ TestFlight deployment exitoso
-- [ ] ✅ GitHub Release creado
-- [ ] ✅ Notificaciones enviadas
-- [ ] ✅ Documentación actualizada
+- [ ] ✅ Backend updated
+- [ ] ✅ Play Store deployment successful
+- [ ] ✅ TestFlight deployment successful
+- [ ] ✅ GitHub Release created
+- [ ] ✅ Notifications sent
+- [ ] ✅ Documentation updated
 
 ---
 
 ## 🆘 Troubleshooting
 
-### Build Falla
+### Build Fails
 
-1. **Verificar secrets de GitHub**
+1. **Verify GitHub secrets**
 
    ```bash
    gh secret list
    ```
 
-2. **Revisar logs de GitHub Actions**
+2. **Review GitHub Actions logs**
 
    ```bash
    gh run view [run-id] --log
    ```
 
-3. **Verificar certificados**
+3. **Verify certificates**
    - Android: Google Play JSON key
    - iOS: Apple Connect certificates
 
-### Backend No Responde
+### Backend Not Responding
 
-1. **Verificar logs de Railway**
+1. **Check Railway logs**
 
    ```bash
    cd railway-backend && railway logs
    ```
 
-2. **Verificar variables de entorno**
+2. **Check environment variables**
 
    ```bash
    railway variables
    ```
 
-3. **Verificar conectividad**
+3. **Check connectivity**
    ```bash
    curl https://tucopwallet-production.up.railway.app/health
    ```
 
-### App No Detecta Actualizaciones
+### App Does Not Detect Updates
 
-1. **Verificar configuración en NavigatorWrapper**
+1. **Verify configuration in NavigatorWrapper**
 
    ```typescript
-   useBackend: true // Debe estar en true
+   useBackend: true // Must be set to true
    ```
 
-2. **Verificar URL del backend**
+2. **Verify backend URL**
 
    ```typescript
-   // En appUpdateChecker.ts
+   // In appUpdateChecker.ts
    'https://tucopwallet-production.up.railway.app/api/app-version'
    ```

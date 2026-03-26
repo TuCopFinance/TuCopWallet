@@ -2,45 +2,57 @@
 
 ## Getting Started
 
-| Document                           | Description                                              |
-| ---------------------------------- | -------------------------------------------------------- |
-| [README.md](../README.md)          | Main project overview, setup, and architecture (Spanish) |
-| [wallet-setup.md](wallet-setup.md) | Quick-start development setup guide                      |
-| [contributing.md](contributing.md) | Contribution guidelines, PR requirements, conventions    |
-| [security.md](security.md)         | Vulnerability reporting policy                           |
+| Document                                            | Description                                    |
+| --------------------------------------------------- | ---------------------------------------------- |
+| [README.md](../README.md)                           | Main project overview, setup, and architecture |
+| [wallet-setup.md](wallet-setup.md)                  | Quick-start development setup guide            |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)               | Contribution guidelines, PR requirements       |
+| [SECURITY.md](../SECURITY.md)                       | Vulnerability reporting policy                 |
+| [MANUAL_UPLOAD_GUIDE.md](../MANUAL_UPLOAD_GUIDE.md) | Manual App Store / Play Store upload guide     |
 
 ## Release & CI/CD
 
-| Document                                                    | Description                                             |
-| ----------------------------------------------------------- | ------------------------------------------------------- |
-| [releases.md](releases.md)                                  | Quick release reference (Android/iOS)                   |
-| [release-process.md](release-process.md)                    | Step-by-step version release process (Spanish)          |
-| [ci-cd.md](ci-cd.md)                                        | CI/CD pipeline architecture and configuration (Spanish) |
-| [.github/SETUP_CHECKLIST.md](../.github/SETUP_CHECKLIST.md) | CI/CD secrets and certificates checklist (Spanish)      |
+| Document                                            | Description                                   |
+| --------------------------------------------------- | --------------------------------------------- |
+| [releases.md](releases.md)                          | Quick release reference (Android/iOS)         |
+| [release-process.md](release-process.md)            | Step-by-step version release process          |
+| [ci-cd.md](ci-cd.md)                                | CI/CD pipeline architecture and configuration |
+| [SETUP_CHECKLIST.md](../.github/SETUP_CHECKLIST.md) | CI/CD secrets and certificates checklist      |
 
 ## Technical
 
-| Document                                             | Description                                           |
-| ---------------------------------------------------- | ----------------------------------------------------- |
-| [celo-gas-optimization.md](celo-gas-optimization.md) | Celo L2 gas fee optimization and EIP-1559 (Spanish)   |
-| [phone-verification.md](phone-verification.md)       | Integrated phone verification system design (Spanish) |
+| Document                                             | Description                                 |
+| ---------------------------------------------------- | ------------------------------------------- |
+| [celo-gas-optimization.md](celo-gas-optimization.md) | Celo L2 gas fee optimization and EIP-1559   |
+| [phone-verification.md](phone-verification.md)       | Integrated phone verification system design |
 
 ## Integrations
 
-| Document                                   | Description                                      |
-| ------------------------------------------ | ------------------------------------------------ |
-| [buckspay-api.md](buckspay-api.md)         | BucksPay offramp API documentation (OpenAPI 3.0) |
-| [connecting-dapps.md](connecting-dapps.md) | WalletConnect v2 integration guide for DApps     |
-| [deeplinks.md](deeplinks.md)               | Deep linking specification (`celo://wallet/pay`) |
+| Document                                                 | Description                                  |
+| -------------------------------------------------------- | -------------------------------------------- |
+| [buckspay-api.md](buckspay-api.md)                       | BucksPay offramp API reference (OpenAPI 3.0) |
+| [buckspay-implementation.md](buckspay-implementation.md) | BucksPay offramp architecture and flow       |
+| [divvi-integration.md](divvi-integration.md)             | Divvi Protocol on-chain referral integration |
+| [connecting-dapps.md](connecting-dapps.md)               | WalletConnect v2 integration guide for DApps |
+| [deeplinks.md](deeplinks.md)                             | Deep linking specification and URL schemes   |
+
+## Backend Services
+
+| Document                                                                         | Description                                |
+| -------------------------------------------------------------------------------- | ------------------------------------------ |
+| [../railway-backend/README.md](../railway-backend/README.md)                     | Version API source (Express + Prisma + PG) |
+| [../services/README.md](../services/README.md)                                   | Backend services overview and index        |
+| [../services/buckspay-webhook/README.md](../services/buckspay-webhook/README.md) | BucksPay proxy service                     |
+| [../services/api-wallet-tlf/README.md](../services/api-wallet-tlf/README.md)     | Phone verification OTP service             |
+| [../services/twilio-service/README.md](../services/twilio-service/README.md)     | Keyless backup SMS service                 |
 
 ## Development
 
-| Document                                                     | Description                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| [syncing-forks.md](syncing-forks.md)                         | How to sync with upstream (Valora/MobileStack) |
-| [../e2e/README.md](../e2e/README.md)                         | E2E testing setup with Detox                   |
-| [../fastlane/README.md](../fastlane/README.md)               | Fastlane build lanes (auto-generated)          |
-| [../railway-backend/README.md](../railway-backend/README.md) | Railway backend API (version management)       |
+| Document                                       | Description                                    |
+| ---------------------------------------------- | ---------------------------------------------- |
+| [syncing-forks.md](syncing-forks.md)           | How to sync with upstream (Valora/MobileStack) |
+| [../e2e/README.md](../e2e/README.md)           | E2E testing setup with Detox                   |
+| [../fastlane/README.md](../fastlane/README.md) | Fastlane build lanes (auto-generated)          |
 
 ## Module Documentation
 
@@ -48,12 +60,6 @@
 | ---------------------------------------------------------------- | ------------------------------------------ |
 | [../src/analytics/README.md](../src/analytics/README.md)         | Analytics module design and event tracking |
 | [../src/divviProtocol/README.md](../src/divviProtocol/README.md) | Divvi Protocol v2 referral integration     |
-
-## AI Guidance
-
-| Document                     | Description                                             |
-| ---------------------------- | ------------------------------------------------------- |
-| [../CLAUDE.md](../CLAUDE.md) | Claude Code project guidance and architecture reference |
 
 ## GitHub Templates
 
@@ -66,9 +72,11 @@
 
 ## Archive
 
-Legacy documentation from the Valora/Mobile Stack fork, kept for reference:
+Legacy documentation from the [Mobile Stack](https://github.com/mobilestack-xyz/mobilestack-mento) fork (archived Jan 2026), kept for reference:
 
-| Document                                                           | Description                        |
-| ------------------------------------------------------------------ | ---------------------------------- |
-| [archive/runbook.md](archive/runbook.md)                           | Generic Mobile Stack setup runbook |
-| [archive/divvi-v1-integration.md](archive/divvi-v1-integration.md) | Divvi Protocol v1 (replaced by v2) |
+| Document                                                           | Description                            |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| [archive/runbook.md](archive/runbook.md)                           | Generic Mobile Stack setup runbook     |
+| [archive/wallet.md](archive/wallet.md)                             | Original Valora wallet documentation   |
+| [archive/watching-assets.mdx](archive/watching-assets.mdx)         | Legacy token registration via deeplink |
+| [archive/divvi-v1-integration.md](archive/divvi-v1-integration.md) | Divvi Protocol v1 (replaced by v2)     |

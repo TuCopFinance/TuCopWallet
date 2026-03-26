@@ -1,140 +1,140 @@
-# 🚀 Sistema CI/CD Automático - Tu Cop Wallet
+# 🚀 Automated CI/CD System - Tu Cop Wallet
 
-## ¿Qué hace este sistema?
+## What does this system do?
 
-Este sistema automatiza completamente el proceso de compilación, versionado y distribución de tu app React Native:
+This system fully automates the build, versioning, and distribution process for your React Native app:
 
-### ✅ **Funcionalidades Principales**
+### ✅ **Key Features**
 
-1. **Detección Automática de Cambios**
+1. **Automatic Change Detection**
 
-   - Detecta cuando cambias la versión en `package.json`
-   - Escucha pushes a la rama `main`
-   - Responde a la creación de releases en GitHub
+   - Detects when you change the version in `package.json`
+   - Listens for pushes to the `main` branch
+   - Responds to the creation of releases on GitHub
 
-2. **Versionado Automático**
+2. **Automatic Versioning**
 
-   - Incrementa automáticamente la versión si no se especifica
-   - Actualiza archivos de build de Android e iOS
-   - Mantiene sincronizados todos los archivos de versión
+   - Automatically increments the version if none is specified
+   - Updates Android and iOS build files
+   - Keeps all version files in sync
 
-3. **Compilación Automática**
+3. **Automatic Build**
 
-   - Compila para Android (Play Store Bundle)
-   - Compila para iOS (TestFlight Archive)
-   - Soporta múltiples environments (mainnet, testnet)
+   - Builds for Android (Play Store Bundle)
+   - Builds for iOS (TestFlight Archive)
+   - Supports multiple environments (mainnet, testnet)
 
-4. **Distribución Automática**
+4. **Automatic Distribution**
 
-   - Sube automáticamente a Play Store (Internal Track)
-   - Sube automáticamente a TestFlight
-   - Crea releases en GitHub con artefactos
+   - Automatically uploads to Play Store (Internal Track)
+   - Automatically uploads to TestFlight
+   - Creates GitHub releases with artifacts
 
-5. **Backend de Versiones**
+5. **Version Backend**
 
-   - API en Railway para gestionar versiones
-   - Endpoint para que la app verifique actualizaciones
-   - Webhook para sincronizar con GitHub
+   - Railway API to manage versions
+   - Endpoint for the app to check for updates
+   - Webhook to sync with GitHub
 
-6. **Notificaciones**
-   - Notificaciones en Slack del estado de builds
-   - Logs detallados en GitHub Actions
-   - Monitoreo en tiempo real
+6. **Notifications**
+   - Slack notifications for build status
+   - Detailed logs in GitHub Actions
+   - Real-time monitoring
 
-## 🏗️ **Arquitectura del Sistema**
+## 🏗️ **System Architecture**
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Desarrollador │    │     GitHub      │    │     Railway     │
+│    Developer    │    │     GitHub      │    │     Railway     │
 │                 │    │                 │    │                 │
-│ 1. Push a main  │───▶│ 2. GitHub       │───▶│ 3. Webhook      │
-│                 │    │    Actions      │    │    recibido     │
+│ 1. Push to main │───▶│ 2. GitHub       │───▶│ 3. Webhook      │
+│                 │    │    Actions      │    │    received     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
+                               │                        │
+                               ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Play Store    │◀───│ 4. Build &      │    │ 5. Actualizar   │
-│   TestFlight    │    │    Deploy       │    │    versiones    │
+│   Play Store    │◀───│ 4. Build &      │    │ 5. Update       │
+│   TestFlight    │    │    Deploy       │    │    versions     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
+                               │                        │
+                               ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│     Slack       │◀───│ 6. Crear        │    │ 7. App verifica │
-│ Notificación    │    │    Release      │    │    actualizaciones│
+│     Slack       │◀───│ 6. Create       │    │ 7. App checks   │
+│  Notification   │    │    Release      │    │    for updates  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 **Configuración Rápida**
+## 🚀 **Quick Setup**
 
-### Paso 1: Ejecutar Script de Configuración
+### Step 1: Run the Setup Script
 
 ```bash
 ./scripts/setup-ci-cd.sh
 ```
 
-Este script automáticamente:
+This script automatically:
 
-- ✅ Configura Railway con el backend
-- ✅ Configura GitHub Secrets
-- ✅ Configura webhooks
-- ✅ Actualiza la configuración de la app
-- ✅ Genera documentación
+- ✅ Configures Railway with the backend
+- ✅ Configures GitHub Secrets
+- ✅ Configures webhooks
+- ✅ Updates the app configuration
+- ✅ Generates documentation
 
-### Paso 2: Configurar Certificados
+### Step 2: Configure Certificates
 
-Necesitas configurar estos secrets en GitHub:
+You need to configure these secrets in GitHub:
 
 ```bash
-# Para Android
-GOOGLE_PLAY_JSON_KEY="{...}"  # JSON key de Google Play Console
+# For Android
+GOOGLE_PLAY_JSON_KEY="{...}"  # JSON key from Google Play Console
 
-# Para iOS
+# For iOS
 APPLE_CONNECT_KEY_ID="ABC123"
 APPLE_CONNECT_ISSUER_ID="def456-..."
 APPLE_CONNECT_CERTIFICATE_PATH="/path/to/cert.p8"
 
-# Para descifrar secretos del proyecto
-SECRETS_PASSWORD="tu-password"
+# To decrypt project secrets
+SECRETS_PASSWORD="your-password"
 ```
 
-### Paso 3: Probar el Sistema
+### Step 3: Test the System
 
 ```bash
-# Cambiar versión y hacer push
+# Change version and push
 yarn version --patch
 git add .
 git commit -m "chore: bump version"
 git push origin main
 
-# O disparar build manual
+# Or trigger a manual build
 gh api repos/:owner/:repo/dispatches \
   --method POST \
   --field event_type='auto-build' \
   --field client_payload='{"version":"1.101.0"}'
 ```
 
-## 📱 **Cómo Funciona la Verificación de Actualizaciones**
+## 📱 **How Update Checking Works**
 
-### En la App
+### In the App
 
 ```typescript
-// La app verifica automáticamente cada 24 horas
+// The app automatically checks every 24 hours
 const { updateInfo, isChecking } = useAppUpdateChecker({
-  useBackend: true, // Usa Railway backend
+  useBackend: true, // Uses Railway backend
   checkOnAppStart: true,
   checkOnAppResume: true,
 })
 
-// Si hay actualización, muestra diálogo automáticamente
+// If there is an update, a dialog is shown automatically
 if (updateInfo?.hasUpdate) {
-  // Diálogo nativo con opciones "Actualizar" / "Más tarde"
+  // Native dialog with "Update" / "Later" options
 }
 ```
 
-### En el Backend (Railway)
+### In the Backend (Railway)
 
 ```javascript
-// Endpoint que consulta la app
+// Endpoint queried by the app
 GET /api/app-version
 Headers: X-Platform: ios|android
 
@@ -142,53 +142,53 @@ Response:
 {
   "latestVersion": "1.101.0",
   "minRequiredVersion": "1.95.0",
-  "releaseNotes": "Nuevas funcionalidades...",
+  "releaseNotes": "New features...",
   "isForced": false,
   "downloadUrl": "https://apps.apple.com/..."
 }
 ```
 
-## 🔄 **Flujo de Trabajo Típico**
+## 🔄 **Typical Workflow**
 
-### Desarrollo Normal
+### Normal Development
 
-1. Desarrollas features normalmente
-2. Haces push a `main`
-3. **Si no cambió la versión**: No pasa nada
-4. **Si cambió la versión**: Se dispara build automático
+1. You develop features as usual
+2. You push to `main`
+3. **If the version did not change**: Nothing happens
+4. **If the version changed**: An automatic build is triggered
 
-### Release Nueva Versión
+### Releasing a New Version
 
-1. Cambias versión: `yarn version --minor`
-2. Haces push: `git push origin main`
-3. **GitHub Actions automáticamente**:
-   - ✅ Detecta cambio de versión
-   - ✅ Actualiza archivos de build
-   - ✅ Compila Android e iOS
-   - ✅ Sube a Play Store y TestFlight
-   - ✅ Actualiza backend de Railway
-   - ✅ Crea release en GitHub
-   - ✅ Notifica en Slack
+1. Change the version: `yarn version --minor`
+2. Push: `git push origin main`
+3. **GitHub Actions automatically**:
+   - ✅ Detects the version change
+   - ✅ Updates build files
+   - ✅ Builds for Android and iOS
+   - ✅ Uploads to Play Store and TestFlight
+   - ✅ Updates the Railway backend
+   - ✅ Creates a GitHub release
+   - ✅ Notifies via Slack
 
-### Build Manual
+### Manual Build
 
 ```bash
-# Disparar build sin cambiar código
+# Trigger a build without changing code
 gh api repos/:owner/:repo/dispatches \
   --method POST \
   --field event_type='auto-build' \
   --field client_payload='{"version":"1.101.0"}'
 ```
 
-## 🛠️ **Comandos Útiles**
+## 🛠️ **Useful Commands**
 
-### Verificar Estado del Backend
+### Check Backend Status
 
 ```bash
 curl https://tu-railway-url.railway.app/health
 ```
 
-### Actualizar Versión Manualmente
+### Update Version Manually
 
 ```bash
 curl -X POST "https://tu-railway-url.railway.app/api/update-version" \
@@ -196,98 +196,98 @@ curl -X POST "https://tu-railway-url.railway.app/api/update-version" \
   -d '{
     "platform": "both",
     "version": "1.101.0",
-    "releaseNotes": "Nueva versión manual",
-    "apiKey": "tu-api-key"
+    "releaseNotes": "Manual new version",
+    "apiKey": "your-api-key"
   }'
 ```
 
-### Ver Logs de Railway
+### View Railway Logs
 
 ```bash
 railway logs
 ```
 
-### Ver Estado de GitHub Actions
+### View GitHub Actions Status
 
 ```bash
 gh run list
 gh run view [run-id]
 ```
 
-## 📊 **Monitoreo y Debugging**
+## 📊 **Monitoring and Debugging**
 
-### Logs Importantes
+### Important Logs
 
-1. **GitHub Actions**: Ve a la pestaña "Actions" en GitHub
-2. **Railway**: `railway logs` o dashboard web
-3. **App**: Logs en Flipper/Metro
+1. **GitHub Actions**: Go to the "Actions" tab on GitHub
+2. **Railway**: `railway logs` or web dashboard
+3. **App**: Logs in Flipper/Metro
 4. **Stores**: App Store Connect / Google Play Console
 
-### Problemas Comunes
+### Common Issues
 
-#### ❌ Build falla en GitHub Actions
+#### ❌ Build fails in GitHub Actions
 
 ```bash
-# Verificar secrets
+# Check secrets
 gh secret list
 
-# Ver logs detallados
+# View detailed logs
 gh run view [run-id] --log
 ```
 
-#### ❌ Backend no responde
+#### ❌ Backend not responding
 
 ```bash
-# Verificar estado
+# Check status
 curl https://tu-railway-url.railway.app/health
 
-# Ver logs
+# View logs
 railway logs --tail
 ```
 
-#### ❌ App no detecta actualizaciones
+#### ❌ App does not detect updates
 
 ```bash
-# Verificar endpoint
+# Check endpoint
 curl -H "X-Platform: ios" https://tu-railway-url.railway.app/api/app-version
 
-# Verificar configuración en NavigatorWrapper
+# Check configuration in NavigatorWrapper
 grep "useBackend" src/navigator/NavigatorWrapper.tsx
 ```
 
-## 🔐 **Seguridad**
+## 🔐 **Security**
 
-### Variables de Entorno Protegidas
+### Protected Environment Variables
 
-- ✅ API keys en GitHub Secrets
-- ✅ Certificados encriptados
-- ✅ Tokens con permisos mínimos
-- ✅ Webhook con validación
+- ✅ API keys in GitHub Secrets
+- ✅ Encrypted certificates
+- ✅ Tokens with minimal permissions
+- ✅ Webhook with validation
 
-### Mejores Prácticas
+### Best Practices
 
-- 🔒 Nunca commitear secrets
-- 🔒 Rotar API keys regularmente
-- 🔒 Usar permisos mínimos necesarios
-- 🔒 Monitorear accesos sospechosos
+- 🔒 Never commit secrets
+- 🔒 Rotate API keys regularly
+- 🔒 Use the minimum required permissions
+- 🔒 Monitor suspicious access
 
-## 🎯 **Próximos Pasos**
+## 🎯 **Next Steps**
 
-1. **Configurar notificaciones de Slack**
-2. **Añadir tests automáticos antes del build**
-3. **Configurar staging environment**
-4. **Añadir métricas de performance**
-5. **Configurar rollback automático**
+1. **Configure Slack notifications**
+2. **Add automated tests before the build**
+3. **Configure a staging environment**
+4. **Add performance metrics**
+5. **Configure automatic rollback**
 
-## 🆘 **Soporte**
+## 🆘 **Support**
 
-Si tienes problemas:
+If you run into issues:
 
-1. **Revisa los logs** en GitHub Actions y Railway
-2. **Verifica la configuración** con el script de setup
-3. **Consulta la documentación** en `CI-CD-SETUP.md`
-4. **Abre un issue** en GitHub con logs detallados
+1. **Check the logs** in GitHub Actions and Railway
+2. **Verify the configuration** with the setup script
+3. **Consult the documentation** in `CI-CD-SETUP.md`
+4. **Open an issue** on GitHub with detailed logs
 
 ---
 
-**¡Tu sistema de CI/CD está listo para automatizar todo el proceso de release! 🚀**
+**Your CI/CD system is ready to automate the entire release process! 🚀**

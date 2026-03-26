@@ -1,89 +1,89 @@
 # Divvi Protocol Integration v2
 
-Esta carpeta contiene la integración con el protocolo Divvi para el seguimiento de referidos en transacciones blockchain.
+This folder contains the integration with the Divvi protocol for referral tracking in blockchain transactions.
 
-## Migración a v2 Completada ✅
+## Migration to v2 Completed ✅
 
-La integración ha sido actualizada exitosamente de v1 a v2 del SDK de Divvi. Los cambios principales incluyen:
+The integration has been successfully updated from v1 to v2 of the Divvi SDK. The main changes include:
 
-### Cambios Realizados
+### Changes Made
 
-1. **Función Principal**: `getDataSuffix` → `getReferralTag`
-2. **Parámetro Requerido**: Se agregó el parámetro `user` (dirección del usuario)
-3. **Simplificación**: Ya no se requiere el parámetro `providers` en v2
+1. **Main Function**: `getDataSuffix` → `getReferralTag`
+2. **Required Parameter**: Added the `user` parameter (user address)
+3. **Simplification**: The `providers` parameter is no longer required in v2
 
-### Archivos Actualizados
+### Updated Files
 
-- ✅ `divviService.ts` - Servicio principal actualizado a v2
-- ✅ `register.ts` - Lógica de registro actualizada
-- ✅ `registerReferral.ts` - Funciones de utilidad actualizadas
-- ✅ `selectors.ts` - Selectores actualizados
-- ✅ `slice.ts` - Redux slice actualizado con campo `user`
-- ✅ `saga.ts` - Saga actualizada para manejar v2
+- ✅ `divviService.ts` - Main service updated to v2
+- ✅ `register.ts` - Registration logic updated
+- ✅ `registerReferral.ts` - Utility functions updated
+- ✅ `selectors.ts` - Selectors updated
+- ✅ `slice.ts` - Redux slice updated with `user` field
+- ✅ `saga.ts` - Saga updated to handle v2
 
-### Nuevas Características v2
+### New v2 Features
 
-#### 1. Parámetro `user` Requerido
+#### 1. Required `user` Parameter
 
 ```typescript
-// v1 (ANTERIOR)
+// v1 (PREVIOUS)
 getDataSuffix({
   consumer: consumerAddress,
   providers: providerAddresses,
 })
 
-// v2 (ACTUAL)
+// v2 (CURRENT)
 getReferralTag({
-  user: userAddress, // ✅ Nuevo parámetro requerido
-  consumer: consumerAddress, // ✅ Se mantiene
-  // providers ya no es necesario
+  user: userAddress, // ✅ New required parameter
+  consumer: consumerAddress, // ✅ Kept
+  // providers is no longer needed
 })
 ```
 
-#### 2. Verificación Criptográfica
+#### 2. Cryptographic Verification
 
-- Divvi ahora verifica criptográficamente que el `user` especificado es quien realmente consintió la transacción
-- Previene referidos falsos y asegura atribución precisa
-- Soporta tanto EOA como smart contract wallets (EIP-1271)
+- Divvi now cryptographically verifies that the specified `user` is the one who actually consented to the transaction
+- Prevents false referrals and ensures accurate attribution
+- Supports both EOA and smart contract wallets (EIP-1271)
 
-#### 3. Soporte para Mensajes Firmados
+#### 3. Signed Message Support
 
-- Permite referidos off-chain sin transacciones on-chain
-- Perfecto para flujos de cash-in, airdrops, etc.
-- Soporta múltiples formatos de mensaje
+- Enables off-chain referrals without on-chain transactions
+- Perfect for cash-in flows, airdrops, etc.
+- Supports multiple message formats
 
-## Estructura de Archivos
+## File Structure
 
 ```
 src/divviProtocol/
-├── README.md              # Esta documentación
-├── api.ts                 # Re-exportaciones para compatibilidad
-├── divviService.ts        # Servicio principal (v2)
-├── register.ts            # Lógica de registro (v2)
-├── registerReferral.ts    # Utilidades de referidos (v2)
+├── README.md              # This documentation
+├── api.ts                 # Re-exports for compatibility
+├── divviService.ts        # Main service (v2)
+├── register.ts            # Registration logic (v2)
+├── registerReferral.ts    # Referral utilities (v2)
 ├── saga.ts                # Redux saga (v2)
-├── selectors.ts           # Selectores de estado (v2)
+├── selectors.ts           # State selectors (v2)
 └── slice.ts               # Redux slice (v2)
 ```
 
-## Uso
+## Usage
 
-### Obtener Sufijo de Datos para Transacciones
+### Get Data Suffix for Transactions
 
 ```typescript
 import { fetchDivviCalldata } from 'src/divviProtocol/divviService'
 
-// En un componente o saga
+// In a component or saga
 const state = store.getState()
 const dataSuffix = await fetchDivviCalldata(state)
 
 if (dataSuffix) {
-  // Usar el sufijo en la transacción
+  // Use the suffix in the transaction
   const txData = originalCalldata + dataSuffix
 }
 ```
 
-### Verificar Estado de Referidos
+### Check Referral Status
 
 ```typescript
 import { hasReferralSucceeded } from 'src/divviProtocol/selectors'
@@ -92,42 +92,42 @@ const state = store.getState()
 const hasSucceeded = hasReferralSucceeded(state, consumerAddress, providersArray)
 ```
 
-## Configuración
+## Configuration
 
-La configuración se obtiene automáticamente desde `app.config.ts`:
+The configuration is automatically obtained from `app.config.ts`:
 
 ```typescript
 divviProtocol: {
   divviId: "consumer-address",
   consumer: "consumer-address",
-  providers: ["provider1", "provider2"], // Opcional en v2
+  providers: ["provider1", "provider2"], // Optional in v2
   campaignIds: ["campaign1", "campaign2"]
 }
 ```
 
-## Flujo de Trabajo
+## Workflow
 
-1. **Inicialización**: Se inicializa automáticamente al montar la app
-2. **Transacción**: Se agrega el sufijo de datos a las transacciones
-3. **Confirmación**: Se detectan transacciones confirmadas
-4. **Reporte**: Se reportan automáticamente a la API de Divvi
-5. **Seguimiento**: Se actualiza el estado en Redux
+1. **Initialization**: Automatically initialized when the app mounts
+2. **Transaction**: The data suffix is appended to transactions
+3. **Confirmation**: Confirmed transactions are detected
+4. **Reporting**: Automatically reported to the Divvi API
+5. **Tracking**: State is updated in Redux
 
-## Logs y Debugging
+## Logs and Debugging
 
-Los logs están disponibles con el tag `divviProtocol/*`:
+Logs are available with the `divviProtocol/*` tag:
 
 ```
-divviProtocol/divviService - Servicio principal
-divviProtocol/register - Lógica de registro
-divviProtocol/saga - Saga de Redux
+divviProtocol/divviService - Main service
+divviProtocol/register - Registration logic
+divviProtocol/saga - Redux saga
 ```
 
-## Consideraciones de Privacidad
+## Privacy Considerations
 
-⚠️ **IMPORTANTE**: Para mensajes firmados off-chain, el texto se registra en la blockchain de Optimism y es públicamente visible. Nunca incluir información privada o sensible.
+⚠️ **IMPORTANT**: For off-chain signed messages, the text is recorded on the Optimism blockchain and is publicly visible. Never include private or sensitive information.
 
-## Compatibilidad
+## Compatibility
 
 - ✅ EOA (Externally Owned Accounts)
 - ✅ Smart Contract Wallets

@@ -1,116 +1,116 @@
-# 🔧 Optimización de Gas Fees para Celo L2
+# 🔧 Gas Fee Optimization for Celo L2
 
-## 📋 Resumen del Problema
+## 📋 Problem Summary
 
-El proyecto TuCOP Wallet tenía problemas con gas fees excesivamente altos en la red de Celo. Con la migración de Celo a L2 (26 de marzo de 2025), el sistema de gas fees cambió completamente:
+The TuCOP Wallet project had issues with excessively high gas fees on the Celo network. With Celo's migration to L2 (March 26, 2025), the gas fee system changed completely:
 
-1. **Multiplicadores excesivos**: Se aplicaban multiplicadores de 2x o más en las estimaciones
-2. **Sistema obsoleto**: El contrato Gas Price Minimum de L1 ya no existe en L2
-3. **Falta de adaptación a L2**: No se aprovechaban las ventajas de costos más bajos de L2
-4. **Estimaciones genéricas**: Se usaba la estimación estándar sin optimizaciones para Celo L2
+1. **Excessive multipliers**: Multipliers of 2x or more were applied to estimates
+2. **Obsolete system**: The Gas Price Minimum contract from L1 no longer exists on L2
+3. **Lack of L2 adaptation**: The lower cost advantages of L2 were not being leveraged
+4. **Generic estimates**: Standard estimation was used without Celo L2 optimizations
 
-## 🛠️ Solución Implementada para Celo L2
+## 🛠️ Implemented Solution for Celo L2
 
-### 1. **Archivo de Configuración Actualizado para L2** (`src/viem/celoGasConfig.ts`)
+### 1. **Updated Configuration File for L2** (`src/viem/celoGasConfig.ts`)
 
 ```typescript
-// Multiplicadores optimizados para Celo L2
+// Optimized multipliers for Celo L2
 export const CELO_GAS_MULTIPLIERS = {
-  gasLimit: 1.15, // 15% buffer (optimizado para L2)
+  gasLimit: 1.15, // 15% buffer (optimized for L2)
   priorityFee: 1.1, // 10% buffer
-  maxFee: 1.05, // 5% buffer mínimo
+  maxFee: 1.05, // 5% minimum buffer
 }
 
-// Precios mínimos más bajos para L2
+// Lower minimum prices for L2
 export const CELO_MIN_GAS_PRICES = {
-  CELO: BigInt('100000000'), // 0.1 Gwei (vs 1 Gwei en L1)
+  CELO: BigInt('100000000'), // 0.1 Gwei (vs 1 Gwei on L1)
 }
 ```
 
-**Características actualizadas:**
+**Updated features:**
 
-- ✅ **Eliminado**: Contrato Gas Price Minimum (no existe en L2)
-- ✅ **Actualizado**: Multiplicadores optimizados para L2 (15% vs 20% anterior)
-- ✅ **Mejorado**: Precios mínimos más bajos (0.1 Gwei vs 1 Gwei)
-- ✅ **Agregado**: Soporte para USDC/USDT adapters en L2
-- ✅ **Nuevo**: Función de selección automática de fee currency
+- ✅ **Removed**: Gas Price Minimum contract (does not exist on L2)
+- ✅ **Updated**: Optimized multipliers for L2 (15% vs previous 20%)
+- ✅ **Improved**: Lower minimum prices (0.1 Gwei vs 1 Gwei)
+- ✅ **Added**: Support for USDC/USDT adapters on L2
+- ✅ **New**: Automatic fee currency selection function
 
-### 2. **Estimación EIP-1559 para Celo L2** (`src/viem/estimateFeesPerGas.ts`)
+### 2. **EIP-1559 Estimation for Celo L2** (`src/viem/estimateFeesPerGas.ts`)
 
-**Cambios principales:**
+**Main changes:**
 
-- ✅ **Migrado a EIP-1559**: Usa el sistema estándar de Ethereum L2
-- ✅ **Eliminado Gas Price Minimum**: Ya no consulta el contrato obsoleto
-- ✅ **Soporte fee currencies**: Mantiene compatibilidad con cUSD, USDC, etc.
-- ✅ **Fallback robusto**: Si falla la estimación específica, usa método estándar
-- ✅ **Multiplicadores conservadores**: Reduce gas fees hasta 85%
+- ✅ **Migrated to EIP-1559**: Uses the standard Ethereum L2 system
+- ✅ **Removed Gas Price Minimum**: No longer queries the obsolete contract
+- ✅ **Fee currency support**: Maintains compatibility with cUSD, USDC, etc.
+- ✅ **Robust fallback**: If the specific estimation fails, uses the standard method
+- ✅ **Conservative multipliers**: Reduces gas fees by up to 85%
 
-**Flujo de estimación actualizado:**
+**Updated estimation flow:**
 
 ```typescript
-1. Detectar si es red Celo L2 → Usar estimación EIP-1559 optimizada
-2. Obtener base fee del bloque actual (estándar L2)
-3. Consultar gas price con fee currency si se especifica
-4. Calcular priority fee usando métodos RPC estándar
-5. Aplicar multiplicadores conservadores (5-15% vs 100-200% anterior)
-6. Fallback a estimación estándar si falla
+1. Detect if it is a Celo L2 network → Use optimized EIP-1559 estimation
+2. Get base fee from the current block (standard L2)
+3. Query gas price with fee currency if specified
+4. Calculate priority fee using standard RPC methods
+5. Apply conservative multipliers (5-15% vs previous 100-200%)
+6. Fall back to standard estimation if it fails
 ```
 
-### 3. **Optimizador Actualizado para L2** (`src/viem/celoGasOptimizer.ts`)
+### 3. **Updated Optimizer for L2** (`src/viem/celoGasOptimizer.ts`)
 
-**Mejoras para L2:**
+**L2 improvements:**
 
-- ✅ **Límites actualizados**: 30M gas limit (vs 10M anterior)
-- ✅ **Fees más bajos**: Máximo 10 Gwei (vs 100 Gwei anterior)
-- ✅ **Priorización inteligente**: CELO > cUSD > USDC > otros
-- ✅ **Validación mejorada**: Adaptada a las características de L2
+- ✅ **Updated limits**: 30M gas limit (vs previous 10M)
+- ✅ **Lower fees**: Maximum 10 Gwei (vs previous 100 Gwei)
+- ✅ **Smart prioritization**: CELO > cUSD > USDC > others
+- ✅ **Improved validation**: Adapted to L2 characteristics
 
-## 📊 Resultados Esperados en Celo L2
+## 📊 Expected Results on Celo L2
 
-### **Reducción Significativa de Gas Fees**
+### **Significant Gas Fee Reduction**
 
-- **Antes (L1)**: Multiplicadores de 100-200% + Gas Price Minimum
-- **Después (L2)**: Multiplicadores de 5-15% + EIP-1559 optimizado
-- **Ahorro estimado**: 80-95% en costos de transacción
+- **Before (L1)**: 100-200% multipliers + Gas Price Minimum
+- **After (L2)**: 5-15% multipliers + optimized EIP-1559
+- **Estimated savings**: 80-95% in transaction costs
 
-### **Ventajas de L2**
+### **L2 Advantages**
 
-- ✅ **Transacciones más rápidas**: 1 segundo vs 5 segundos
-- ✅ **Costos más predecibles**: EIP-1559 estándar
-- ✅ **Mayor throughput**: 30M gas por bloque
-- ✅ **Mejor compatibilidad**: Totalmente compatible con Ethereum
+- ✅ **Faster transactions**: 1 second vs 5 seconds
+- ✅ **More predictable costs**: Standard EIP-1559
+- ✅ **Higher throughput**: 30M gas per block
+- ✅ **Better compatibility**: Fully compatible with Ethereum
 
-### **Mejor Experiencia de Usuario**
+### **Better User Experience**
 
-- ✅ **Transacciones ultra baratas**: Costos de centavos
-- ✅ **Confirmación rápida**: 1 segundo de block time
-- ✅ **Selección automática**: Mejor fee currency automáticamente
-- ✅ **Fallback robusto**: Siempre funciona incluso si falla algo
+- ✅ **Ultra-cheap transactions**: Costs in the range of cents
+- ✅ **Fast confirmation**: 1-second block time
+- ✅ **Automatic selection**: Best fee currency selected automatically
+- ✅ **Robust fallback**: Always works even if something fails
 
-## 🔧 Configuración Técnica Actualizada
+## 🔧 Updated Technical Configuration
 
-### **Sistema L2 (Actual)**
+### **L2 System (Current)**
 
 ```typescript
-// Ya no se usan contratos Gas Price Minimum
-// Sistema basado en EIP-1559 estándar
+// Gas Price Minimum contracts are no longer used
+// System based on standard EIP-1559
 
-// Multiplicadores optimizados para L2
+// Optimized multipliers for L2
 Gas Limit: 1.15x (15% buffer)
 Priority Fee: 1.1x (10% buffer)
 Max Fee: 1.05x (5% buffer)
 
-// Límites de seguridad para L2
+// Safety limits for L2
 Max Gas Limit: 30,000,000 (30M)
 Max Fee Per Gas: 10 Gwei
 Min Gas Price: 0.1 Gwei
 ```
 
-### **Fee Currencies en L2**
+### **Fee Currencies on L2**
 
 ```typescript
 // Mainnet L2
-CELO: Nativo
+CELO: Native
 cUSD: 0x765de816845861e75a25fca122bb6898b8b1282a
 USDC: 0x2f25deb3848c207fc8e0c34035b3ba7fc157602b(Adapter)
 USDT: 0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72(Adapter)
@@ -119,67 +119,67 @@ USDT: 0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72(Adapter)
 USDC: 0x4822e58de6f5e485ef90df51c41ce01721331dc0(Adapter)
 ```
 
-## 🚀 Implementación Actualizada
+## 🚀 Updated Implementation
 
-### **Archivos Modificados**
+### **Modified Files**
 
-1. `src/viem/estimateFeesPerGas.ts` - Migrado a EIP-1559 para L2
-2. `src/viem/celoGasConfig.ts` - Eliminado Gas Price Minimum, actualizado para L2
-3. `src/viem/celoGasOptimizer.ts` - Optimizado para L2 con nuevos límites
+1. `src/viem/estimateFeesPerGas.ts` - Migrated to EIP-1559 for L2
+2. `src/viem/celoGasConfig.ts` - Removed Gas Price Minimum, updated for L2
+3. `src/viem/celoGasOptimizer.ts` - Optimized for L2 with new limits
 
-### **Uso en el Código**
+### **Usage in Code**
 
 ```typescript
-// Estimación automática optimizada para L2
+// Automatic estimation optimized for L2
 const { maxFeePerGas, maxPriorityFeePerGas, baseFeePerGas } = await estimateFeesPerGas(
   client,
   feeCurrencyAddress
 )
 
-// Optimización avanzada con selección automática
+// Advanced optimization with automatic selection
 const { bestOption, validOptions } = await getBestGasOptions(client, transaction, feeCurrencies)
 ```
 
-## 🔍 Monitoreo y Validación
+## 🔍 Monitoring and Validation
 
-### **Métricas a Monitorear en L2**
+### **Metrics to Monitor on L2**
 
-- ✅ **Reducción dramática** en gas fees (80-95%)
-- ✅ **Tiempo de confirmación**: ~1 segundo
-- ✅ **Tasa de éxito**: Debe mantenerse alta
-- ✅ **Uso de fee currencies**: Distribución entre CELO, cUSD, USDC
+- ✅ **Dramatic reduction** in gas fees (80-95%)
+- ✅ **Confirmation time**: ~1 second
+- ✅ **Success rate**: Should remain high
+- ✅ **Fee currency usage**: Distribution among CELO, cUSD, USDC
 
-### **Validaciones Implementadas**
+### **Implemented Validations**
 
-- ✅ **Balance suficiente** para gas
-- ✅ **Gas limit razonable** (< 30M para L2)
-- ✅ **Gas price razonable** (< 10 Gwei para L2)
-- ✅ **Fallback robusto** en caso de errores
+- ✅ **Sufficient balance** for gas
+- ✅ **Reasonable gas limit** (< 30M for L2)
+- ✅ **Reasonable gas price** (< 10 Gwei for L2)
+- ✅ **Robust fallback** in case of errors
 
-## 📚 Referencias Actualizadas
+## 📚 Updated References
 
 - [Celo L2 Documentation](https://docs.celo.org/cel2)
 - [Celo L2 Migration Guide](https://docs.celo.org/cel2/notices/celo-l2-migration)
 - [Celo Fee Abstraction on L2](https://docs.celo.org/build/fee-abstraction)
 - [EIP-1559 on Celo L2](https://docs.celo.org/cel2/whats-changed/celo-l1-l2)
 
-## ⚠️ Cambios Importantes
+## ⚠️ Important Changes
 
-### **Lo que YA NO funciona (L1 obsoleto):**
+### **What NO LONGER works (obsolete L1):**
 
-- ❌ Contrato Gas Price Minimum
-- ❌ Métodos específicos de L1
-- ❌ Multiplicadores altos (2x+)
+- ❌ Gas Price Minimum contract
+- ❌ L1-specific methods
+- ❌ High multipliers (2x+)
 
-### **Lo que SÍ funciona (L2 actual):**
+### **What DOES work (current L2):**
 
-- ✅ EIP-1559 estándar
+- ✅ Standard EIP-1559
 - ✅ Fee currencies (cUSD, USDC, etc.)
-- ✅ Multiplicadores conservadores
-- ✅ Costos ultra bajos
+- ✅ Conservative multipliers
+- ✅ Ultra-low costs
 
 ---
 
-**Actualizado para**: Celo L2 (post-migración marzo 2025)
-**Fecha**: Enero 2025
-**Versión**: 2.0.0 (L2)
+**Updated for**: Celo L2 (post-migration March 2025)
+**Date**: January 2025
+**Version**: 2.0.0 (L2)

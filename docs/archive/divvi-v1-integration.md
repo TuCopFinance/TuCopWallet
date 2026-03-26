@@ -1,20 +1,20 @@
-# Integración con Divvi Protocol
+# Divvi Protocol Integration
 
-Este documento describe la integración del protocolo Divvi en TuCop Wallet.
+This document describes the integration of the Divvi protocol in TuCop Wallet.
 
-## ¿Qué es Divvi?
+## What is Divvi?
 
-Divvi es un protocolo de referidos y atribución on-chain que permite a las aplicaciones rastrear la actividad de usuarios referidos y recibir recompensas por ello.
+Divvi is an on-chain referral and attribution protocol that allows applications to track the activity of referred users and receive rewards for it.
 
-## Integración
+## Integration
 
-### Dependencias
+### Dependencies
 
-- `@divvi/referral-sdk`: SDK oficial de Divvi para la integración
+- `@divvi/referral-sdk`: Official Divvi SDK for integration
 
-### Configuración
+### Configuration
 
-La configuración de Divvi se ha implementado como parte del estado de la aplicación en `publicConfig`. Los valores están definidos en `src/app/publicConfig.ts`:
+The Divvi configuration has been implemented as part of the application state in `publicConfig`. The values are defined in `src/app/publicConfig.ts`:
 
 ```javascript
 // src/app/publicConfig.ts
@@ -32,30 +32,30 @@ export const publicAppConfig: PublicAppConfig = {
 }
 ```
 
-Esta configuración se inicializa en `src/app/saga.ts` cuando se inicia la aplicación y está disponible a través del selector `getDivviConfig` en `src/divviProtocol/selectors.ts`.
+This configuration is initialized in `src/app/saga.ts` when the application starts and is available through the `getDivviConfig` selector in `src/divviProtocol/selectors.ts`.
 
-### Componentes principales
+### Main Components
 
-1. **divviService.ts**: Obtiene el sufijo de datos Divvi utilizando la configuración del usuario y el SDK oficial.
+1. **divviService.ts**: Retrieves the Divvi data suffix using the user configuration and the official SDK.
 
-2. **registerReferral.ts**: Re-exporta las funciones del SDK oficial y proporciona una función auxiliar para añadir el sufijo a las transacciones existentes.
+2. **registerReferral.ts**: Re-exports functions from the official SDK and provides a helper function to append the suffix to existing transactions.
 
-3. **saga.ts**: Gestiona el ciclo de vida de la integración:
+3. **saga.ts**: Manages the integration lifecycle:
 
-   - Inicializa Divvi al iniciar la aplicación
-   - Escucha las transacciones confirmadas para reportarlas a Divvi
+   - Initializes Divvi on application startup
+   - Listens for confirmed transactions to report them to Divvi
 
-4. **prepareTransactions.ts**: Modifica las transacciones salientes para incluir el sufijo de datos de Divvi.
+4. **prepareTransactions.ts**: Modifies outgoing transactions to include the Divvi data suffix.
 
-### Flujo de integración
+### Integration Flow
 
-1. **Agregar sufijo de datos**: Cuando se prepara una transacción, se agrega el sufijo de datos Divvi al campo `data` (calldata) de la transacción.
+1. **Append data suffix**: When a transaction is prepared, the Divvi data suffix is appended to the transaction's `data` (calldata) field.
 
-2. **Reportar transacción**: Cuando una transacción se confirma, se reporta a Divvi usando el SDK oficial para atribuir correctamente la actividad.
+2. **Report transaction**: When a transaction is confirmed, it is reported to Divvi using the official SDK to correctly attribute the activity.
 
-## Código de ejemplo
+## Code Examples
 
-### Obtener sufijo de datos
+### Retrieve Data Suffix
 
 ```typescript
 import { getDataSuffix } from '@divvi/referral-sdk'
@@ -70,35 +70,35 @@ const dataSuffix = getDataSuffix({
 })
 ```
 
-### Reportar transacción
+### Report Transaction
 
 ```typescript
 import { submitReferral } from '@divvi/referral-sdk'
 
 await submitReferral({
   txHash: '0x123...',
-  chainId: 42220, // chainId de Celo Mainnet
+  chainId: 42220, // Celo Mainnet chainId
 })
 ```
 
-## Referencias
+## References
 
-- [Documentación oficial de Divvi](https://divvi.xyz/docs)
-- [SDK de Divvi en NPM](https://www.npmjs.com/package/@divvi/referral-sdk)
+- [Official Divvi Documentation](https://divvi.xyz/docs)
+- [Divvi SDK on NPM](https://www.npmjs.com/package/@divvi/referral-sdk)
 
-## Prueba de la integración
+## Testing the Integration
 
-Para verificar que la integración con Divvi funciona correctamente, sigue estos pasos:
+To verify that the Divvi integration is working correctly, follow these steps:
 
-### 1. Verificación de configuración
+### 1. Configuration Verification
 
-Puedes verificar que la configuración de Divvi está correctamente cargada usando las herramientas de desarrollo de Redux:
+You can verify that the Divvi configuration is correctly loaded using the Redux developer tools:
 
 ```javascript
-// En la consola de Redux DevTools
+// In the Redux DevTools console
 state.app.publicConfig.divviProtocol
 
-// Debe mostrar algo como:
+// Should display something like:
 {
   divviId: 'tucop-wallet',
   campaignIds: [],
@@ -107,23 +107,23 @@ state.app.publicConfig.divviProtocol
 }
 ```
 
-### 2. Verificación de sufijo de datos
+### 2. Data Suffix Verification
 
-Realiza una transacción (envío de tokens, swap, etc.) y verifica en los logs que se esté agregando el sufijo de datos de Divvi a la transacción:
-
-```text
-[DEBUG] divviProtocol/divviService - Generando sufijo de datos de Divvi
-[DEBUG] viem/prepareTransactions - Se agregó sufijo de datos de Divvi a la transacción
-```
-
-### 3. Verificación de reporte de transacción
-
-Una vez que la transacción se confirme, verifica en los logs que se esté reportando correctamente a Divvi:
+Perform a transaction (token transfer, swap, etc.) and check the logs to verify that the Divvi data suffix is being appended to the transaction:
 
 ```text
-[INFO] divviProtocol/saga - Transacción 0x123... reportada exitosamente a Divvi
+[DEBUG] divviProtocol/divviService - Generating Divvi data suffix
+[DEBUG] viem/prepareTransactions - Divvi data suffix appended to transaction
 ```
 
-### 4. Verificación en el portal de Divvi
+### 3. Transaction Report Verification
 
-Para confirmar que la integración funciona end-to-end, verifica en el [portal de Divvi](https://app.divvi.xyz/) que las transacciones de tus usuarios estén siendo registradas y atribuidas correctamente.
+Once the transaction is confirmed, check the logs to verify that it is being correctly reported to Divvi:
+
+```text
+[INFO] divviProtocol/saga - Transaction 0x123... successfully reported to Divvi
+```
+
+### 4. Divvi Portal Verification
+
+To confirm that the integration works end-to-end, check in the [Divvi portal](https://app.divvi.xyz/) that your users' transactions are being registered and attributed correctly.
