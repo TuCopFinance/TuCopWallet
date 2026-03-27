@@ -562,13 +562,12 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     gap: Spacing.Thick24,
     marginTop: Spacing.Large32,
-    marg: 'auto',
+    alignSelf: 'center',
   },
   actionButton: {
     flexDirection: 'column',
-    backgroundColor: Colors.primary10,
+    backgroundColor: '#EEEFFF',
     padding: 16,
-    background: '#EEEFFF',
     marginBottom: Spacing.Smallest8,
     borderRadius: 12,
   },

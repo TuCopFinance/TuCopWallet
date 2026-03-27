@@ -2120,6 +2120,15 @@
             ],
             "type": "string"
         },
+        "GoldOperationStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "loading",
+                "success"
+            ],
+            "type": "string"
+        },
         "HistoricalPricesUsd": {
             "additionalProperties": false,
             "properties": {
@@ -3547,6 +3556,41 @@
             ],
             "type": "object"
         },
+        "PriceAlert": {
+            "additionalProperties": false,
+            "properties": {
+                "createdAt": {
+                    "type": "number"
+                },
+                "direction": {
+                    "enum": [
+                        "above",
+                        "below"
+                    ],
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "targetPrice": {
+                    "type": "number"
+                },
+                "triggeredAt": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "createdAt",
+                "direction",
+                "enabled",
+                "id",
+                "targetPrice"
+            ],
+            "type": "object"
+        },
         "PriceHistoryStatus": {
             "enum": [
                 "error",
@@ -3916,7 +3960,14 @@
                 "FiatExchangeAmount",
                 "FiatExchangeCurrency",
                 "FiatExchangeCurrencyBottomSheet",
+                "GoldBuyConfirmation",
+                "GoldBuyEnterAmount",
                 "GoldEducation",
+                "GoldHome",
+                "GoldInfoScreen",
+                "GoldPriceAlerts",
+                "GoldSellConfirmation",
+                "GoldSellEnterAmount",
                 "ImportSelect",
                 "ImportWallet",
                 "Invite",
@@ -6007,6 +6058,75 @@
             ],
             "type": "object"
         },
+        "State_27": {
+            "additionalProperties": false,
+            "properties": {
+                "buyStatus": {
+                    "$ref": "#/definitions/GoldOperationStatus"
+                },
+                "buyTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "error": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "goldPrice24hChange": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "goldPriceFetchedAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "goldPriceUsd": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "priceAlerts": {
+                    "items": {
+                        "$ref": "#/definitions/PriceAlert"
+                    },
+                    "type": "array"
+                },
+                "priceFetchStatus": {
+                    "$ref": "#/definitions/GoldOperationStatus"
+                },
+                "sellStatus": {
+                    "$ref": "#/definitions/GoldOperationStatus"
+                },
+                "sellTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "buyStatus",
+                "buyTxHash",
+                "error",
+                "goldPrice24hChange",
+                "goldPriceFetchedAt",
+                "goldPriceUsd",
+                "priceAlerts",
+                "priceFetchStatus",
+                "sellStatus",
+                "sellTxHash"
+            ],
+            "type": "object"
+        },
         "State_3": {
             "anyOf": [
                 {
@@ -6307,7 +6427,14 @@
                         "FiatExchangeAmount",
                         "FiatExchangeCurrency",
                         "FiatExchangeCurrencyBottomSheet",
+                        "GoldBuyConfirmation",
+                        "GoldBuyEnterAmount",
                         "GoldEducation",
+                        "GoldHome",
+                        "GoldInfoScreen",
+                        "GoldPriceAlerts",
+                        "GoldSellConfirmation",
+                        "GoldSellEnterAmount",
                         "ImportSelect",
                         "ImportWallet",
                         "Invite",
@@ -7888,6 +8015,9 @@
         "fiatExchanges": {
             "$ref": "#/definitions/State_13"
         },
+        "gold": {
+            "$ref": "#/definitions/State_27"
+        },
         "home": {
             "$ref": "#/definitions/State_5"
         },
@@ -7980,6 +8110,7 @@
         "earn",
         "fiatConnect",
         "fiatExchanges",
+        "gold",
         "home",
         "i18n",
         "identity",
