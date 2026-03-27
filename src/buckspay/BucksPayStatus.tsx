@@ -59,19 +59,19 @@ function BucksPayStatus() {
 
   function onPressViewReceipt() {
     if (certificateUrl) {
-      Linking.openURL(certificateUrl)
+      void Linking.openURL(certificateUrl)
     }
   }
 
   function onPressTransactionHash() {
     if (transactionHash) {
       const explorerUrl = blockExplorerUrls[NetworkId['celo-mainnet']].baseTxUrl
-      Linking.openURL(`${explorerUrl}${transactionHash}`)
+      void Linking.openURL(`${explorerUrl}${transactionHash}`)
     }
   }
 
   function onPressContactSupport() {
-    Linking.openURL('https://chat.whatsapp.com/HB8QATWElAPIgcqeiA4TAK')
+    void Linking.openURL('https://chat.whatsapp.com/HB8QATWElAPIgcqeiA4TAK')
   }
 
   return (
@@ -138,7 +138,7 @@ function BucksPayStatus() {
           </>
         )}
 
-        {transactionHash && (
+        {!!transactionHash && (
           <View style={styles.txHashContainer}>
             <Text style={styles.txHashLabel}>{t('buckspay.transactionHash')}</Text>
             <Text
@@ -162,7 +162,7 @@ function BucksPayStatus() {
           style={styles.supportButton}
           testID="buckspay-contact-support"
         />
-        {isCompleted && certificateUrl && (
+        {isCompleted && !!certificateUrl && (
           <Button
             onPress={onPressViewReceipt}
             text={t('buckspay.viewReceipt')}

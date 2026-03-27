@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests -- See TODO comment in describe block for why async tests are skipped */
 import { fireEvent, render, waitFor, within } from '@testing-library/react-native'
 import { FetchMock } from 'jest-fetch-mock/types'
 import React from 'react'
@@ -200,7 +201,6 @@ describe('TransactionFeed', () => {
   // TODO: Fix async tests - the global jest.useFakeTimers() in jest_setup.ts interacts with
   // queryHelper's polling interval (setInterval) and auto-pagination useEffect, causing an
   // infinite fetch loop when waitFor advances fake timers. This results in OOM/SIGTERM in CI.
-
   it.skip('only renders approval txs from supported networks', async () => {
     mockFetch.mockResponse(JSON.stringify(MOCK_EMPTY_RESPONSE_NO_NEXT_PAGE))
 

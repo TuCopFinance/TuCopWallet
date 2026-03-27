@@ -87,6 +87,7 @@ describe('SettingsMenu', () => {
   })
 
   // Dev mode menu is currently commented out in the source
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip('renders the dev mode menu', () => {
     const mockAddress = '0x0000000000000000000000000000000000007e57'
     const store = createMockStore({
