@@ -183,7 +183,7 @@ export default function GoldSellConfirmation({ route }: Props) {
         />
 
         {/* Error Notice */}
-        {error && (
+        {!!error && (
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('goldFlow.sell.errorTitle')}

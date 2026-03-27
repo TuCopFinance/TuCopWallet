@@ -225,7 +225,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
         />
 
         {/* Error Notice */}
-        {error && (
+        {!!error && (
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('goldFlow.buy.errorTitle')}
