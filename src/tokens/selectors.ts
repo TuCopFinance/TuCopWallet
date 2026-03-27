@@ -497,15 +497,31 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
       }
     })
 
-    // sort the fee currencies by native currency first, then by USD balance, and balance otherwise
+    // Priority order for TuCop fee currencies: CELO > COPm > USDm > USDC > USDT
+    // Current names (Mento rebranding): COPm, USDm
+    // Fallback old names (Valora API): cCOP, cUSD
+    const FEE_CURRENCY_PRIORITY: Record<string, number> = {
+      CELO: 0,
+      COPm: 1, // Colombian Peso (current)
+      cCOP: 1, // Fallback old name
+      USDm: 2, // US Dollar (current)
+      cUSD: 2, // Fallback old name
+      USDC: 3,
+      USDT: 4,
+    }
+
+    // Sort fee currencies by priority, then by USD balance
     Object.entries(feeCurrenciesByNetworkId).forEach(([networkId, tokens]) => {
       feeCurrenciesByNetworkId[networkId as NetworkId] = tokens.sort((a, b) => {
-        if (a.isNative && !b.isNative) {
-          return -1
+        // First sort by priority (lower number = higher priority)
+        const aPriority = FEE_CURRENCY_PRIORITY[a.symbol] ?? 99
+        const bPriority = FEE_CURRENCY_PRIORITY[b.symbol] ?? 99
+
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority
         }
-        if (b.isNative && !a.isNative) {
-          return 1
-        }
+
+        // Same priority: sort by USD balance (higher first)
         if (a.priceUsd && b.priceUsd) {
           const aBalanceUsd = a.balance.multipliedBy(a.priceUsd)
           const bBalanceUsd = b.balance.multipliedBy(b.priceUsd)
