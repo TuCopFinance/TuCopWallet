@@ -36,6 +36,13 @@ import EarnConfirmationScreen from 'src/earn/EarnConfirmationScreen'
 import EarnEnterAmount from 'src/earn/EarnEnterAmount'
 import EarnHome from 'src/earn/EarnHome'
 import EarnInfoScreen from 'src/earn/EarnInfoScreen'
+import GoldBuyConfirmation from 'src/gold/GoldBuyConfirmation'
+import GoldBuyEnterAmount from 'src/gold/GoldBuyEnterAmount'
+import GoldHome from 'src/gold/GoldHome'
+import GoldInfoScreen from 'src/gold/GoldInfoScreen'
+import GoldPriceAlerts from 'src/gold/GoldPriceAlerts'
+import GoldSellConfirmation from 'src/gold/GoldSellConfirmation'
+import GoldSellEnterAmount from 'src/gold/GoldSellEnterAmount'
 import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
 import EarnPoolInfoScreen from 'src/earn/poolInfoScreen/EarnPoolInfoScreen'
 import BidaliScreen from 'src/fiatExchanges/BidaliScreen'
@@ -639,6 +646,46 @@ const bucksPayScreens = (Navigator: typeof Stack) => (
   </>
 )
 
+const goldScreens = (Navigator: typeof Stack) => (
+  <>
+    <Navigator.Screen
+      name={Screens.GoldInfoScreen}
+      component={GoldInfoScreen}
+      options={GoldInfoScreen.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldHome}
+      component={GoldHome}
+      options={GoldHome.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldBuyEnterAmount}
+      component={GoldBuyEnterAmount}
+      options={GoldBuyEnterAmount.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldBuyConfirmation}
+      component={GoldBuyConfirmation}
+      options={GoldBuyConfirmation.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldSellEnterAmount}
+      component={GoldSellEnterAmount}
+      options={GoldSellEnterAmount.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldSellConfirmation}
+      component={GoldSellConfirmation}
+      options={GoldSellConfirmation.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.GoldPriceAlerts}
+      component={GoldPriceAlerts}
+      options={GoldPriceAlerts.navigationOptions}
+    />
+  </>
+)
+
 const mapStateToProps = (state: RootState) => {
   return {
     language: currentLanguageSelector(state),
@@ -694,6 +741,7 @@ function MainStackScreen() {
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
       {bucksPayScreens(Stack)}
+      {goldScreens(Stack)}
       <Stack.Screen
         name={Screens.MarranitoStaking}
         component={MarranitoStaking}
