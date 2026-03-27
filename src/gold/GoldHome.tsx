@@ -171,6 +171,7 @@ export default function GoldHome(_props: Props) {
 
         {/* Price Alerts Link - Coming Soon */}
         <Button
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           onPress={() => {}}
           text={`${t('goldFlow.home.priceAlerts')} (Coming Soon)`}
           type={BtnTypes.TERTIARY}
