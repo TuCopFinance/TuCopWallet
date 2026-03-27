@@ -114,10 +114,11 @@ export default function GoldHome(_props: Props) {
     navigate(Screens.GoldSellEnterAmount)
   }
 
-  const onPressPriceAlerts = () => {
-    AppAnalytics.track(GoldEvents.gold_price_alerts_press)
-    navigate(Screens.GoldPriceAlerts)
-  }
+  // TODO: Enable when price alerts feature is ready
+  // const onPressPriceAlerts = () => {
+  //   AppAnalytics.track(GoldEvents.gold_price_alerts_press)
+  //   navigate(Screens.GoldPriceAlerts)
+  // }
 
   const insetsStyle = {
     paddingBottom: Math.max(insets.bottom, Spacing.Regular16),
@@ -168,34 +169,39 @@ export default function GoldHome(_props: Props) {
           <Text style={styles.holdingsBalance}>{balanceDisplay} XAUt0</Text>
         </View>
 
-        {/* Price Alerts Link */}
+        {/* Price Alerts Link - Coming Soon */}
         <Button
-          onPress={onPressPriceAlerts}
-          text={t('goldFlow.home.priceAlerts')}
+          onPress={() => {}}
+          text={`${t('goldFlow.home.priceAlerts')} (Coming Soon)`}
           type={BtnTypes.TERTIARY}
           size={BtnSizes.MEDIUM}
           style={styles.alertsButton}
+          disabled={true}
           testID="GoldHome/PriceAlertsButton"
         />
       </ScrollView>
 
       {/* Action Buttons */}
       <View style={[styles.buttonContainer, insetsStyle]}>
-        <Button
-          onPress={onPressSell}
-          text={t('goldFlow.home.sell')}
-          type={BtnTypes.SECONDARY}
-          size={BtnSizes.FULL}
-          disabled={xaut0Balance.isZero()}
-          testID="GoldHome/SellButton"
-        />
-        <Button
-          onPress={onPressBuy}
-          text={t('goldFlow.home.buy')}
-          type={BtnTypes.PRIMARY}
-          size={BtnSizes.FULL}
-          testID="GoldHome/BuyButton"
-        />
+        <View style={styles.buttonWrapper}>
+          <Button
+            onPress={onPressSell}
+            text={t('goldFlow.home.sell')}
+            type={BtnTypes.SECONDARY}
+            size={BtnSizes.FULL}
+            disabled={xaut0Balance.isZero()}
+            testID="GoldHome/SellButton"
+          />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <Button
+            onPress={onPressBuy}
+            text={t('goldFlow.home.buy')}
+            type={BtnTypes.PRIMARY}
+            size={BtnSizes.FULL}
+            testID="GoldHome/BuyButton"
+          />
+        </View>
       </View>
     </View>
   )
@@ -277,5 +283,8 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.Regular16,
     borderTopWidth: 1,
     borderTopColor: Colors.gray2,
+  },
+  buttonWrapper: {
+    flex: 1,
   },
 })
