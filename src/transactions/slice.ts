@@ -214,7 +214,12 @@ const slice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
       const persistedState: State = getRehydratePayload(action, 'transactions')
-      const filtered = (persistedState.standbyTransactions || []).filter((tx) => tx.transactionHash)
+      // Filter standby transactions:
+      // 1. Must have a transactionHash (already submitted to blockchain)
+      // 2. Must still be pending (not completed or failed - those are handled by blockchain-api)
+      const filtered = (persistedState.standbyTransactions || []).filter(
+        (tx) => tx.transactionHash && tx.status === TransactionStatus.Pending
+      )
       return {
         ...state,
         ...persistedState,

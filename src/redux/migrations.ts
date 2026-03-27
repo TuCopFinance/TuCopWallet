@@ -1992,11 +1992,11 @@ export const migrations = {
     ...state,
     buckspay: {
       ...state.buckspay,
-      // One-time: resume pending BucksPay transaction
-      flowStatus: 'tracking',
-      transactionHash: '0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe',
-      bucksPayCode: 'P5Y1',
-      bucksPayStatus: 'PENDING',
+      // Reset BucksPay state (test transaction cleanup)
+      flowStatus: 'idle',
+      transactionHash: null,
+      bucksPayCode: null,
+      bucksPayStatus: null,
     },
   }),
   240: (state: any) => {
@@ -2005,4 +2005,42 @@ export const migrations = {
     const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
     return JSON.parse(migratedStr)
   },
+  241: (state: any) => ({
+    ...state,
+    gold: {
+      goldPriceUsd: null,
+      goldPrice24hChange: null,
+      goldPriceFetchedAt: null,
+      buyStatus: 'idle',
+      sellStatus: 'idle',
+      priceFetchStatus: 'idle',
+      buyTxHash: null,
+      sellTxHash: null,
+      priceAlerts: [],
+      error: null,
+    },
+  }),
+  242: (state: any) => ({
+    ...state,
+    buckspay: {
+      ...state.buckspay,
+      // Cleanup: reset test BucksPay transaction from migration 239
+      flowStatus: 'idle',
+      transactionHash: null,
+      bucksPayCode: null,
+      bucksPayStatus: null,
+    },
+  }),
+  243: (state: any) => state,
+  244: (state: any) => ({
+    ...state,
+    buckspay: {
+      ...state.buckspay,
+      // Cleanup: reset any pending BucksPay transaction
+      flowStatus: 'idle',
+      transactionHash: null,
+      bucksPayCode: null,
+      bucksPayStatus: null,
+    },
+  }),
 }
