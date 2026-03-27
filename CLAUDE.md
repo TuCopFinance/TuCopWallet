@@ -45,7 +45,7 @@ yarn type-check           # TypeScript type checking
 ## Project Architecture
 
 ### Core Technology Stack
-- **React Native 0.72.15** with TypeScript
+- **React Native 0.77.3** with TypeScript (branch: feature/react-native-upgrade-0.77)
 - **Redux Toolkit** with Redux Saga for state management
 - **React Navigation 7.x** for navigation
 - **Viem** for blockchain interactions (Celo network)
@@ -156,10 +156,13 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 
 ### Android Build Configuration
 
-- **AGP**: 8.5.1 | **Gradle**: 8.7 | **Kotlin**: 1.9.22
+- **AGP**: 8.5.1 | **Gradle**: 8.10.2 | **Kotlin**: 2.0.21
 - **NDK**: 26.1.10909125 | **Build Tools**: 35.0.0
 - **Min SDK**: 24 | **Target/Compile SDK**: 35
 - **Hermes**: enabled | **ProGuard/R8**: enabled in release
+- **New Architecture**: disabled (`newArchEnabled=false`)
+- **MainActivity/MainApplication**: Kotlin (required for RN 0.77.x with Old Arch)
+- **SoLoader**: Uses `OpenSourceMergedSoMapping` (fixes libreact_featureflagsjni.so crash)
 - **16 KB page size**: Supported via AGP 8.5.1 + `useLegacyPackaging = true`
 - **Release build**: `cd android && ./gradlew bundleMainnetRelease`
 - **AAB output**: `android/app/build/outputs/bundle/mainnetRelease/app-mainnet-release.aab`
@@ -167,7 +170,8 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 
 ### Recent Important Changes
 
-- **Version 1.117.0**: Current app version (build code: 1021081753)
+- **Version 1.118.0**: Current app version (build code: 1021081754)
+- **React Native 0.77.3 Upgrade**: With Kotlin MainActivity/MainApplication + OpenSourceMergedSoMapping fix
 - **AGP 8.5.1 Upgrade**: For Google Play 16 KB page size compliance
 - **BucksPay Offramp**: Native COPm → COP bank transfer integration via BucksPay API
 - **COPm Token**: Renamed from cCOP to COPm across the app
