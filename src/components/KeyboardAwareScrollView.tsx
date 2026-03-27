@@ -10,7 +10,8 @@ import {
   UIManager,
 } from 'react-native'
 
-type ComponentOrHandle = null | number | React.Component<any, any> | React.ComponentClass<any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentOrHandle = any
 
 interface Props extends ScrollViewProps {
   hasNavBar?: boolean
