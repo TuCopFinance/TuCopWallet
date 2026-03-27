@@ -286,7 +286,9 @@ android {
         // Prevents clashes with other libraries that use OpenSSL
         // See https://github.com/margelo/react-native-quick-crypto/blob/de94007239bbb6dd9655f8a9bb13c14254a082eb/docs/troubleshooting.md#android-build-errors
         pickFirst '**/libcrypto.so'
-        // Enable 16 KB page size support for Google Play (compresses native libs)
+        // 16 KB page size support: Use compressed libs (useLegacyPackaging=true)
+        // This works with AGP 8.5+ but increases installed app size
+        // Full native support requires React Native 0.76+ with NDK r28
         jniLibs {
             useLegacyPackaging = true
         }
