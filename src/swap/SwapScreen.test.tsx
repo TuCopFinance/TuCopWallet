@@ -1528,7 +1528,7 @@ describe('SwapScreen', () => {
 
     expect(
       getByText(
-        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cEUR, cUSD"}'
+        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"}'
       )
     ).toBeTruthy()
   })
