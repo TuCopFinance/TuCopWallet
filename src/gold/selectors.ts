@@ -1,4 +1,13 @@
 import { RootState } from 'src/redux/reducers'
+import { tokensByIdSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
+
+// XAUt0 token selector
+export const xaut0TokenSelector = (state: RootState) => {
+  const tokensById = tokensByIdSelector(state, [NetworkId['celo-mainnet']])
+  return tokensById[networkConfig.xaut0TokenId] ?? null
+}
 
 // Price selectors
 export const goldPriceUsdSelector = (state: RootState) => state.gold.goldPriceUsd
