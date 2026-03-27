@@ -103,10 +103,11 @@ const mockStoreBalancesToTokenBalances = (storeBalances: StoredTokenBalance[]): 
   )
 }
 const mockFeeCurrencies = mockStoreBalancesToTokenBalances([
-  // matches mockStore
+  // matches mockStore - order follows feeCurrenciesSelector priority:
+  // CELO (0) > cUSD (2) > cEUR (99) > cREAL (99)
   mockStoreTokenBalances[mockCeloTokenId],
-  mockStoreTokenBalances[mockCeurTokenId],
   mockStoreTokenBalances[mockCusdTokenId],
+  mockStoreTokenBalances[mockCeurTokenId],
   mockStoreTokenBalances[mockCrealTokenId],
 ])
 const onClearPreparedTransactionsSpy = jest.fn()
