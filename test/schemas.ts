@@ -3631,6 +3631,50 @@ export const v240Schema = {
   },
 }
 
+export const v241Schema = {
+  ...v240Schema,
+  _persist: {
+    ...v240Schema._persist,
+    version: 241,
+  },
+}
+
+export const v242Schema = {
+  ...v241Schema,
+  _persist: {
+    ...v241Schema._persist,
+    version: 242,
+  },
+}
+
+export const v243Schema = {
+  ...v242Schema,
+  _persist: {
+    ...v242Schema._persist,
+    version: 243,
+  },
+}
+
+export const v244Schema = {
+  ...v243Schema,
+  _persist: {
+    ...v243Schema._persist,
+    version: 244,
+  },
+  gold: {
+    goldPriceUsd: null,
+    goldPrice24hChange: null,
+    goldPriceFetchedAt: null,
+    buyStatus: 'idle',
+    sellStatus: 'idle',
+    priceFetchStatus: 'idle',
+    buyTxHash: null,
+    sellTxHash: null,
+    priceAlerts: [],
+    error: null,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v240Schema as Partial<RootState>
+  return v244Schema as Partial<RootState>
 }
