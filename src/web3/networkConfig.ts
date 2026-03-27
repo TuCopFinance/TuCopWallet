@@ -164,6 +164,12 @@ const COPM_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x8a567e2ae79ca692bd
 const USDT_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0xd077a400968890eacc75cdc901f0356c943e4fdb`
 export const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e`
 
+// XAUt0 (Tether Gold) - 6 decimals, 1 token = 1 troy ounce of gold
+// Note: XAUt0 may not exist on Celo Sepolia testnet - use mainnet address as placeholder
+export const XAUT0_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff`
+export const XAUT0_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff`
+export const XAUT0_ADDRESS_MAINNET = '0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff' as Address
+
 const CLOUD_FUNCTIONS_STAGING = 'https://api.alfajores.valora.xyz'
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
 

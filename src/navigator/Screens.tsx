@@ -116,6 +116,14 @@ export enum Screens {
   BucksPayBankForm = 'BucksPayBankForm',
   BucksPayConfirm = 'BucksPayConfirm',
   BucksPayStatus = 'BucksPayStatus',
+  // Digital Gold (XAUt0)
+  GoldHome = 'GoldHome',
+  GoldInfoScreen = 'GoldInfoScreen',
+  GoldBuyEnterAmount = 'GoldBuyEnterAmount',
+  GoldBuyConfirmation = 'GoldBuyConfirmation',
+  GoldSellEnterAmount = 'GoldSellEnterAmount',
+  GoldSellConfirmation = 'GoldSellConfirmation',
+  GoldPriceAlerts = 'GoldPriceAlerts',
 }
 
 export const MarranitoStaking = 'MarranitoStaking'
