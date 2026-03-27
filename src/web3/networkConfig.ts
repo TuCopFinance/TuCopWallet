@@ -93,6 +93,7 @@ interface NetworkConfig {
   alchemyRpcUrl: Record<Exclude<Network, Network.Celo>, string>
   usdtTokenId: string
   copmTokenId: string
+  xaut0TokenId: string
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
@@ -438,6 +439,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_STAGING,
     copmTokenId: COPM_TOKEN_ID_STAGING,
     usdtTokenId: USDT_TOKEN_ID_STAGING,
+    xaut0TokenId: XAUT0_TOKEN_ID_STAGING,
     spendTokenIds: [USDT_TOKEN_ID_STAGING, COPM_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_STAGING,
     getPointsConfigUrl: GET_POINTS_CONFIG_STAGING,
@@ -544,6 +546,7 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     celoTokenId: CELO_TOKEN_ID_MAINNET,
     copmTokenId: COPM_TOKEN_ID_MAINNET,
     usdtTokenId: USDT_TOKEN_ID_MAINNET,
+    xaut0TokenId: XAUT0_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
     getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
