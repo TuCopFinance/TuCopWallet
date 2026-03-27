@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,9 +10,10 @@ import InLineNotification, { NotificationVariant } from 'src/components/InLineNo
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
-import { goldBuyStatusSelector, goldErrorSelector } from 'src/gold/selectors'
+import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { buyGoldStart, resetGoldFlow } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
+import { useGoldQuote } from 'src/gold/useGoldQuote'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
 import {
@@ -29,6 +30,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
+import Logger from 'src/utils/Logger'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
 
@@ -41,23 +43,76 @@ export default function GoldBuyConfirmation({ route }: Props) {
     fromAmount,
     xautAmount,
     pricePerOz,
-    estimatedGasFee,
-    gasFeeTokenId,
-    preparedTransactions,
+    estimatedGasFee: initialGasFee,
+    gasFeeTokenId: initialGasFeeTokenId,
+    preparedTransactions: initialPreparedTransactions,
     toTokenId,
   } = route.params
 
   const buyStatus = useSelector(goldBuyStatusSelector)
   const goldError = useSelector(goldErrorSelector)
+  const xaut0Token = useSelector(xaut0TokenSelector)
 
   const fromToken = useTokenInfo(fromTokenId)
-  const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
   const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
+  // State for quote that may be fetched on this screen
+  const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(initialGasFee)
+  const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(initialGasFeeTokenId)
+  const [preparedTransactions, setPreparedTransactions] = useState<any>(initialPreparedTransactions)
+  const [quoteError, setQuoteError] = useState<string | null>(null)
+
+  const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
+
+  // Use the gold quote hook to fetch quote if not provided
+  const { getQuote, loading: isGettingQuote } = useGoldQuote()
+
+  // Fetch quote if preparedTransactions not provided
+  useEffect(() => {
+    const fetchQuoteIfNeeded = async () => {
+      if (initialPreparedTransactions || !fromToken || !xaut0Token) {
+        return
+      }
+
+      Logger.debug(
+        'GoldBuyConfirmation',
+        'Fetching quote because preparedTransactions not provided'
+      )
+
+      try {
+        const quoteResult = await getQuote({
+          fromToken,
+          toToken: xaut0Token,
+          amount: new BigNumber(fromAmount),
+          direction: 'buy',
+        })
+
+        if (quoteResult) {
+          Logger.debug('GoldBuyConfirmation', 'Got quote result', {
+            gasFee: quoteResult.quote.estimatedGasFee,
+          })
+          setEstimatedGasFee(quoteResult.quote.estimatedGasFee)
+          if (quoteResult.preparedTransactions.type === 'possible') {
+            setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
+          }
+          setPreparedTransactions(quoteResult.quote.preparedTransactions)
+          setQuoteError(null)
+        } else {
+          setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
+        }
+      } catch (error: any) {
+        Logger.error('GoldBuyConfirmation', 'Failed to fetch quote', error)
+        setQuoteError(error.message || t('goldFlow.buy.quoteErrorDescription'))
+      }
+    }
+
+    fetchQuoteIfNeeded()
+  }, [initialPreparedTransactions, fromToken, xaut0Token, fromAmount, getQuote, t])
+
   const isSubmitting = buyStatus === 'loading'
-  const error = goldError
+  const error = goldError || quoteError
 
   // Navigate home on success
   useEffect(() => {
@@ -207,11 +262,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
-            <Text style={styles.detailValue}>
-              {parsedGasFee && gasFeeDisplaySymbol
-                ? `${parsedGasFee.toFormat(6)} ${gasFeeDisplaySymbol}`
-                : t('goldFlow.buy.estimatingFee')}
-            </Text>
+            {isGettingQuote ? (
+              <ActivityIndicator size="small" color={Colors.primary} />
+            ) : (
+              <Text style={styles.detailValue}>
+                {parsedGasFee && gasFeeDisplaySymbol
+                  ? `${parsedGasFee.toFormat(6)} ${gasFeeDisplaySymbol}`
+                  : t('goldFlow.buy.estimatingFee')}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -242,8 +301,8 @@ export default function GoldBuyConfirmation({ route }: Props) {
             text={t('goldFlow.buy.confirm')}
             size={BtnSizes.FULL}
             type={BtnTypes.PRIMARY}
-            disabled={isSubmitting || !preparedTransactions || !toTokenId}
-            showLoading={isSubmitting}
+            disabled={isSubmitting || isGettingQuote || !preparedTransactions || !toTokenId}
+            showLoading={isSubmitting || isGettingQuote}
             testID="GoldBuyConfirmation/ConfirmButton"
           />
         </View>
