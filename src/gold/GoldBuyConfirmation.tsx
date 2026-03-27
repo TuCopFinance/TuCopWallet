@@ -14,8 +14,12 @@ import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import GoldIcon from 'src/icons/GoldIcon'
-import { LocalCurrencySymbol } from 'src/localCurrency/consts'
-import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
+import {
+  getLocalCurrencyCode,
+  getLocalCurrencySymbol,
+  usdToLocalCurrencyRateSelector,
+} from 'src/localCurrency/selectors'
 import { headerWithBackButton } from 'src/navigator/Headers'
 import { navigate, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -31,18 +35,31 @@ type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
 export default function GoldBuyConfirmation({ route }: Props) {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
-  const { fromTokenId, fromAmount, xautAmount, pricePerOz } = route.params
+  const { fromTokenId, fromAmount, xautAmount, pricePerOz, estimatedGasFee, gasFeeTokenId } =
+    route.params
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fromToken = useTokenInfo(fromTokenId)
+  const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
+  const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+
+  // COP doesn't use decimals
+  const isLocalCurrencyCop = localCurrencyCode === LocalCurrencyCode.COP
+  const localPriceDecimals = isLocalCurrencyCop ? 0 : 2
 
   const parsedFromAmount = useMemo(() => new BigNumber(fromAmount), [fromAmount])
   const parsedXautAmount = useMemo(() => new BigNumber(xautAmount), [xautAmount])
   const parsedPricePerOz = useMemo(() => new BigNumber(pricePerOz), [pricePerOz])
+
+  // Tokens always show 2 decimals for readability
+  const tokenDisplayDecimals = 2
+
+  // Display symbol override: cCOP -> COPm (Mento rebranding)
+  const displaySymbol = fromToken?.symbol === 'cCOP' ? 'COPm' : fromToken?.symbol
 
   // Calculate local currency values
   const localPricePerOz = useMemo(() => {
@@ -59,6 +76,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
     if (!usdToLocalRate) return null
     return totalValueUsd.multipliedBy(usdToLocalRate)
   }, [totalValueUsd, usdToLocalRate])
+
+  // Parse gas fee if available
+  const parsedGasFee = useMemo(() => {
+    if (!estimatedGasFee || !gasFeeToken) return null
+    return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
+  }, [estimatedGasFee, gasFeeToken])
+
+  // Format gas fee display
+  const gasFeeDisplaySymbol = gasFeeToken?.symbol === 'cCOP' ? 'COPm' : gasFeeToken?.symbol
 
   const onPressConfirm = async () => {
     if (!fromToken) return
@@ -124,7 +150,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
             <TokenIcon token={fromToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedFromAmount.toFormat(fromToken.decimals)} {fromToken.symbol}
+                {parsedFromAmount.toFormat(tokenDisplayDecimals)} {displaySymbol}
               </Text>
               <TokenDisplay
                 tokenId={fromTokenId}
@@ -151,7 +177,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
               {totalValueLocal && (
                 <Text style={styles.tokenLocalValue}>
                   ≈ {localCurrencySymbol}
-                  {totalValueLocal.toFormat(2)}
+                  {totalValueLocal.toFormat(localPriceDecimals)}
                 </Text>
               )}
             </View>
@@ -164,12 +190,18 @@ export default function GoldBuyConfirmation({ route }: Props) {
             <Text style={styles.detailLabel}>{t('goldFlow.buy.goldPrice')}</Text>
             <Text style={styles.detailValue}>
               {localCurrencySymbol}
-              {localPricePerOz?.toFormat(2) ?? parsedPricePerOz.toFormat(2)} / oz
+              {localPricePerOz?.toFormat(localPriceDecimals) ??
+                parsedPricePerOz.toFormat(localPriceDecimals)}{' '}
+              / oz
             </Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
-            <Text style={styles.detailValue}>{t('goldFlow.buy.estimatingFee')}</Text>
+            <Text style={styles.detailValue}>
+              {parsedGasFee && gasFeeDisplaySymbol
+                ? `${parsedGasFee.toFormat(6)} ${gasFeeDisplaySymbol}`
+                : t('goldFlow.buy.estimatingFee')}
+            </Text>
           </View>
         </View>
 

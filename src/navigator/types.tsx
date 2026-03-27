@@ -355,6 +355,8 @@ export type StackParamList = {
     fromAmount: string
     xautAmount: string
     pricePerOz: string
+    estimatedGasFee?: string
+    gasFeeTokenId?: string
   }
   [Screens.GoldSellEnterAmount]: undefined
   [Screens.GoldSellConfirmation]: {
