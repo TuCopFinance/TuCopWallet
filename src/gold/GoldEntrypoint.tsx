@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { Platform, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
+import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
@@ -71,47 +72,56 @@ export default function GoldEntrypoint() {
   }, [goldPrice24hChange])
 
   return (
-    <Touchable
-      style={styles.container}
-      borderRadius={Spacing.Small12}
-      onPress={onPress}
-      testID="GoldEntrypoint"
-    >
-      <View style={styles.row}>
-        <GoldIcon size={36} />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{t('goldFlow.entrypoint.title')}</Text>
-          <View style={styles.priceRow}>
-            <Text style={styles.price}>
+    <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
+      <Touchable
+        style={styles.container}
+        borderRadius={Spacing.Small12}
+        onPress={onPress}
+        testID="GoldEntrypoint"
+      >
+        <View style={[styles.row, { paddingVertical: 8 }]}>
+          <GoldIcon size={36} />
+          <View style={styles.textColumn}>
+            <Text style={styles.title}>{t('goldFlow.entrypoint.title')}</Text>
+            <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>
               {!hideWalletBalances && localCurrencySymbol}
               {priceDisplay}
               <Text style={styles.unit}> / oz</Text>
+              {changeDisplay && (
+                <Text style={[styles.change, { color: changeDisplay.color }]}>
+                  {'   '}
+                  {changeDisplay.text}
+                </Text>
+              )}
             </Text>
-            {changeDisplay && (
-              <Text style={[styles.change, { color: changeDisplay.color }]}>
-                {changeDisplay.text}
-              </Text>
-            )}
           </View>
         </View>
-      </View>
-    </Touchable>
+      </Touchable>
+    </Shadow>
   )
 }
 
 const styles = StyleSheet.create({
+  shadow: {
+    width: '100%',
+    borderRadius: 15,
+  },
   container: {
     backgroundColor: 'white',
-    padding: 16,
+    padding: Platform.select({ ios: 16, android: 13 }),
     width: '100%',
     borderRadius: Spacing.Small12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  textContainer: {
+  textColumn: {
+    alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
   },
   title: {
@@ -120,13 +130,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.16,
     fontWeight: '600',
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.Smallest8,
-    marginTop: 2,
-  },
-  price: {
+  subtitle: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
   },

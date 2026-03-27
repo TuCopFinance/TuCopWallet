@@ -11,6 +11,7 @@ import { publicClient } from 'src/viem'
 import {
   PreparedTransactionsResult,
   TransactionRequest,
+  getEstimatedGasFee,
   prepareTransactions,
 } from 'src/viem/prepareTransactions'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
@@ -164,16 +165,27 @@ export function useGoldQuote() {
           origin,
         })
 
+        // Calculate estimated gas fee from transactions
+        let estimatedGasFeeValue = '0'
+        if (
+          preparedTransactions.type === 'possible' &&
+          preparedTransactions.transactions.length > 0
+        ) {
+          try {
+            const gasFee = getEstimatedGasFee(preparedTransactions.transactions)
+            estimatedGasFeeValue = gasFee.toFixed(0)
+          } catch (e) {
+            Logger.warn(TAG, 'Could not calculate gas fee', e)
+          }
+        }
+
         const quote: GoldSwapQuote = {
           fromTokenId: fromToken.tokenId,
           toTokenId: toToken.tokenId,
           fromAmount: amount.shiftedBy(fromToken.decimals).toFixed(0),
           toAmount: estimatedToAmount.shiftedBy(toToken.decimals || XAUT0_DECIMALS).toFixed(0),
           pricePerOz: goldPriceUsd.toString(),
-          estimatedGasFee:
-            preparedTransactions.type === 'possible'
-              ? preparedTransactions.feeCurrency.balance?.toString() || '0'
-              : '0',
+          estimatedGasFee: estimatedGasFeeValue,
           estimatedGasFeeUsd: '0', // Would be calculated from gas fee token price
           allowanceTarget: SQUID_ROUTER_ADDRESS,
           preparedTransactions: getSerializablePreparedTransactions(
@@ -231,4 +243,79 @@ export function calculateFromGoldAmount(
 
   const goldValueUsd = goldAmount.multipliedBy(goldPriceUsd)
   return goldValueUsd.dividedBy(outputPriceUsd)
+}
+
+/**
+ * Estimate gas for a gold swap transaction
+ * Simplified version that doesn't need XAUt0 token info
+ */
+export async function estimateGoldSwapGas(
+  fromToken: TokenBalance,
+  amount: BigNumber,
+  walletAddress: string,
+  feeCurrencies: TokenBalance[]
+): Promise<{ estimatedGasFee: string; gasFeeTokenId: string } | null> {
+  try {
+    const baseTransactions: TransactionRequest[] = []
+    const fromAmountInWei = amount.shiftedBy(fromToken.decimals)
+
+    // Check if approval is needed for ERC-20 tokens
+    if (fromToken.address && fromToken.address !== zeroAddress) {
+      const network = networkIdToNetwork[fromToken.networkId]
+      const approvedAllowance = await publicClient[network].readContract({
+        address: fromToken.address as Address,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [walletAddress as Address, SQUID_ROUTER_ADDRESS as Address],
+      })
+
+      if (approvedAllowance < BigInt(fromAmountInWei.toFixed(0))) {
+        const approveData = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [SQUID_ROUTER_ADDRESS as Address, BigInt(fromAmountInWei.toFixed(0))],
+        })
+
+        baseTransactions.push({
+          from: walletAddress as Address,
+          to: fromToken.address as Address,
+          data: approveData,
+        })
+      }
+    }
+
+    // Placeholder swap transaction with estimated gas
+    const swapTx: TransactionRequest = {
+      from: walletAddress as Address,
+      to: SQUID_ROUTER_ADDRESS as Address,
+      value: BigInt(0),
+      data: '0x' as `0x${string}`,
+      gas: BigInt(300000),
+    }
+    baseTransactions.push(swapTx)
+
+    // Prepare transactions with fee estimation
+    const preparedTransactions = await prepareTransactions({
+      feeCurrencies,
+      spendToken: fromToken,
+      spendTokenAmount: amount,
+      decreasedAmountGasFeeMultiplier: 1.2,
+      baseTransactions,
+      throwOnSpendTokenAmountExceedsBalance: false,
+      origin: 'gold-buy' as TransactionOrigin,
+    })
+
+    if (preparedTransactions.type === 'possible' && preparedTransactions.transactions.length > 0) {
+      const gasFee = getEstimatedGasFee(preparedTransactions.transactions)
+      return {
+        estimatedGasFee: gasFee.toFixed(0),
+        gasFeeTokenId: preparedTransactions.feeCurrency.tokenId,
+      }
+    }
+
+    return null
+  } catch (error: any) {
+    Logger.warn(TAG, 'Failed to estimate gold swap gas', error)
+    return null
+  }
 }

@@ -18,7 +18,7 @@ import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { goldPriceUsdSelector } from 'src/gold/selectors'
 import { XAUT0_DECIMALS } from 'src/gold/types'
-import { calculateGoldAmount, useGoldQuote } from 'src/gold/useGoldQuote'
+import { calculateGoldAmount, estimateGoldSwapGas } from 'src/gold/useGoldQuote'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -33,11 +33,10 @@ import EnterAmountOptions from 'src/send/EnterAmountOptions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { swappableFromTokensByNetworkIdSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
-import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
-import { XAUT0_TOKEN_ID_MAINNET, XAUT0_TOKEN_ID_STAGING } from 'src/web3/networkConfig'
+import { walletAddressSelector } from 'src/web3/selectors'
 import { parseInputAmount } from 'src/utils/parsing'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyEnterAmount>
@@ -52,16 +51,12 @@ export default function GoldBuyEnterAmount({ route }: Props) {
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
-  const tokensById = useSelector((state) =>
-    tokensByIdSelector(state, getSupportedNetworkIdsForTokenBalances())
+  const walletAddress = useSelector(walletAddressSelector)
+  const feeCurrencies = useSelector((state) =>
+    feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
   )
 
-  // Get XAUt0 token for quote
-  const xaut0Token =
-    tokensById[XAUT0_TOKEN_ID_MAINNET] || tokensById[XAUT0_TOKEN_ID_STAGING] || null
-
-  // Use gold quote hook for gas estimation
-  const { getQuote, loading: quoteLoading } = useGoldQuote()
+  const [isEstimatingGas, setIsEstimatingGas] = useState(false)
 
   // Get swappable tokens on Celo mainnet
   const swappableTokens = useSelector((state) =>
@@ -165,33 +160,34 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     parsedTokenAmount && selectedToken && parsedTokenAmount.gt(selectedToken.balance)
 
   const onPressContinue = async () => {
-    if (!isAmountValid || !selectedToken || !goldAmount) return
+    if (!isAmountValid || !selectedToken || !goldAmount || !walletAddress) return
+
+    setIsEstimatingGas(true)
 
     AppAnalytics.track(GoldEvents.gold_buy_quote_received, {
       fromAmount: parsedTokenAmount.toString(),
       toAmount: goldAmount.toString(),
     })
 
-    // Try to get quote with gas estimation
+    // Estimate gas fee for the swap transaction
     let estimatedGasFee: string | undefined
     let gasFeeTokenId: string | undefined
 
-    if (xaut0Token) {
-      try {
-        const result = await getQuote({
-          fromToken: selectedToken,
-          toToken: xaut0Token,
-          amount: parsedTokenAmount,
-          direction: 'buy',
-        })
-        if (result?.preparedTransactions.type === 'possible') {
-          const feeCurrency = result.preparedTransactions.feeCurrency
-          estimatedGasFee = result.quote.estimatedGasFee
-          gasFeeTokenId = feeCurrency.tokenId
-        }
-      } catch (err) {
-        // Continue without gas estimate if quote fails
+    try {
+      const gasEstimate = await estimateGoldSwapGas(
+        selectedToken,
+        parsedTokenAmount,
+        walletAddress,
+        feeCurrencies
+      )
+      if (gasEstimate) {
+        estimatedGasFee = gasEstimate.estimatedGasFee
+        gasFeeTokenId = gasEstimate.gasFeeTokenId
       }
+    } catch (err) {
+      // Continue without gas estimate if estimation fails
+    } finally {
+      setIsEstimatingGas(false)
     }
 
     navigate(Screens.GoldBuyConfirmation, {
@@ -321,8 +317,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           text={t('goldFlow.buy.continue')}
           size={BtnSizes.FULL}
           type={BtnTypes.PRIMARY}
-          disabled={!isAmountValid || quoteLoading}
-          showLoading={quoteLoading}
+          disabled={!isAmountValid || isEstimatingGas}
+          showLoading={isEstimatingGas}
           style={styles.continueButton}
           testID="GoldBuyEnterAmount/Continue"
         />

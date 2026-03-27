@@ -3003,14 +3003,24 @@
     "info": {
       "title": "Oro Digital",
       "description": "Invierte en tokens respaldados por oro (XAUt0) directamente desde tu billetera. Cada token representa 1 onza troy de oro físico almacenado en bóvedas seguras.",
-      "feature1Title": "Respaldo Real de Oro",
-      "feature1Description": "Cada token XAUt0 está respaldado 1:1 por oro físico almacenado en bóvedas seguras",
-      "feature2Title": "Trading Fácil",
-      "feature2Description": "Compra y vende oro al instante usando tus criptomonedas",
-      "feature3Title": "Alertas de Precio",
-      "feature3Description": "Configura alertas para ser notificado cuando el oro alcance tu precio objetivo",
-      "learnMore": "Más Información",
-      "getStarted": "Comenzar"
+      "details": {
+        "backed": {
+          "title": "Respaldo Real de Oro",
+          "subtitle": "Cada token XAUt0 está respaldado 1:1 por oro físico almacenado en bóvedas seguras"
+        },
+        "secure": {
+          "title": "Trading Fácil",
+          "subtitle": "Compra y vende oro al instante usando tus criptomonedas"
+        },
+        "custody": {
+          "title": "Alertas de Precio",
+          "subtitle": "Configura alertas para ser notificado cuando el oro alcance tu precio objetivo"
+        }
+      },
+      "action": {
+        "learn": "Más Información",
+        "getStarted": "Comenzar"
+      }
     },
     "home": {
       "title": "Oro Digital",

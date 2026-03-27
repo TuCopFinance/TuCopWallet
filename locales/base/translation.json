@@ -3033,14 +3033,24 @@
     "info": {
       "title": "Digital Gold",
       "description": "Invest in gold-backed tokens (XAUt0) directly from your wallet. Each token represents 1 troy ounce of physical gold stored in secure vaults.",
-      "feature1Title": "Real Gold Backing",
-      "feature1Description": "Every XAUt0 token is backed 1:1 by physical gold stored in secure vaults",
-      "feature2Title": "Easy Trading",
-      "feature2Description": "Buy and sell gold instantly using your crypto holdings",
-      "feature3Title": "Price Alerts",
-      "feature3Description": "Set alerts to be notified when gold reaches your target price",
-      "learnMore": "Learn More",
-      "getStarted": "Get Started"
+      "details": {
+        "backed": {
+          "title": "Real Gold Backing",
+          "subtitle": "Every XAUt0 token is backed 1:1 by physical gold stored in secure vaults"
+        },
+        "secure": {
+          "title": "Easy Trading",
+          "subtitle": "Buy and sell gold instantly using your crypto holdings"
+        },
+        "custody": {
+          "title": "Price Alerts",
+          "subtitle": "Set alerts to be notified when gold reaches your target price"
+        }
+      },
+      "action": {
+        "learn": "Learn More",
+        "getStarted": "Get Started"
+      }
     },
     "home": {
       "title": "Digital Gold",
