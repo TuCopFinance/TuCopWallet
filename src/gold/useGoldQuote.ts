@@ -278,9 +278,10 @@ export function useGoldQuote() {
         return null
       }
 
+      // Note: goldPriceUsd is used for display but not required for the swap
+      // The swap quote API provides its own pricing
       if (!goldPriceUsd) {
-        Logger.error(TAG, 'Gold price not available')
-        return null
+        Logger.warn(TAG, 'Gold price not available, using swap API pricing')
       }
 
       if (amount.lte(0)) {
@@ -335,7 +336,7 @@ export function useGoldQuote() {
           toTokenId: toToken.tokenId,
           fromAmount: swapTransaction.sellAmount,
           toAmount: swapTransaction.buyAmount,
-          pricePerOz: goldPriceUsd.toString(),
+          pricePerOz: goldPriceUsd?.toString() ?? '0',
           estimatedGasFee: estimatedGasFeeValue,
           estimatedGasFeeUsd: '0',
           allowanceTarget: swapTransaction.allowanceTarget,
