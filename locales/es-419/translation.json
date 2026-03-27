@@ -3036,6 +3036,7 @@
       "selectToken": "Seleccionar Token",
       "available": "Disponible",
       "noTokensAvailable": "No hay tokens disponibles. Agrega fondos a tu billetera para comprar oro.",
+      "noUsdtAvailable": "Necesitas USDT para comprar oro. Agrega USDT a tu billetera para continuar.",
       "continue": "Continuar",
       "quoteErrorTitle": "Ruta de intercambio no disponible",
       "quoteErrorDescription": "Este token no se puede intercambiar directamente por oro. Intenta usar USDT.",

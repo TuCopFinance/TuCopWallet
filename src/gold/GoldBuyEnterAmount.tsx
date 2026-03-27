@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, StyleSheet, Text, TextInput as RNTextInput, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
@@ -16,9 +16,15 @@ import TokenBottomSheet, { TokenPickerOrigin } from 'src/components/TokenBottomS
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
-import { goldPriceUsdSelector, xaut0TokenSelector } from 'src/gold/selectors'
+import {
+  goldPriceFetchStatusSelector,
+  goldPriceUsdSelector,
+  xaut0TokenSelector,
+} from 'src/gold/selectors'
+import { fetchGoldPrice } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { calculateGoldAmount, useGoldQuote } from 'src/gold/useGoldQuote'
+import { useDispatch } from 'react-redux'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -36,21 +42,37 @@ import { Spacing } from 'src/styles/styles'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyEnterAmount>
 
 const TOKEN_SELECTOR_BORDER_RADIUS = 100
 
+// Fallback gold price in USD when API is unavailable (updated periodically)
+const FALLBACK_GOLD_PRICE_USD = 3050
+
 export default function GoldBuyEnterAmount({ route }: Props) {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
 
-  const goldPriceUsd = useSelector(goldPriceUsdSelector)
+  const goldPriceUsdFromStore = useSelector(goldPriceUsdSelector)
+  const goldPriceFetchStatus = useSelector(goldPriceFetchStatusSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const xaut0Token = useSelector(xaut0TokenSelector)
+
+  // Use store price or fallback
+  const goldPriceUsd = goldPriceUsdFromStore ?? FALLBACK_GOLD_PRICE_USD
+
+  // Fetch gold price on mount if not already available
+  useEffect(() => {
+    if (!goldPriceUsdFromStore && goldPriceFetchStatus !== 'loading') {
+      dispatch(fetchGoldPrice())
+    }
+  }, [dispatch, goldPriceUsdFromStore, goldPriceFetchStatus])
 
   const { getQuote, loading: isGettingQuote, error: quoteError } = useGoldQuote()
 
@@ -59,9 +81,17 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     swappableFromTokensByNetworkIdSelector(state, [NetworkId['celo-mainnet']])
   )
 
-  // Filter to tokens with balance
+  // Filter to USDT only (supported by Squid Router for XAUt0 swaps)
+  // TODO: Add more tokens as liquidity pairs are confirmed
   const availableTokens = useMemo(
-    () => swappableTokens.filter((token) => token.balance.gt(0)),
+    () =>
+      swappableTokens.filter(
+        (token) =>
+          token.balance.gt(0) &&
+          (token.symbol === 'USDT' ||
+            token.symbol === 'USDt' ||
+            token.symbol.toLowerCase() === 'usdt')
+      ),
     [swappableTokens]
   )
 
@@ -91,7 +121,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       return null
     }
     const tokenPriceUsd = selectedToken.priceUsd.toNumber()
-    return calculateGoldAmount(parsedTokenAmount, tokenPriceUsd, goldPriceUsd ?? null)
+    return calculateGoldAmount(parsedTokenAmount, tokenPriceUsd, goldPriceUsd)
   }, [parsedTokenAmount, selectedToken?.priceUsd, goldPriceUsd])
 
   // Calculate local currency value
@@ -156,14 +186,28 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     parsedTokenAmount && selectedToken && parsedTokenAmount.gt(selectedToken.balance)
 
   const onPressContinue = async () => {
-    if (!isAmountValid || !selectedToken || !goldAmount || !xaut0Token) return
+    Logger.debug('GoldBuyEnterAmount', 'onPressContinue called', {
+      isAmountValid,
+      selectedToken: selectedToken?.tokenId,
+      goldAmount: goldAmount?.toString(),
+      xaut0Token: xaut0Token.tokenId,
+    })
+
+    if (!isAmountValid || !selectedToken || !goldAmount) {
+      Logger.warn('GoldBuyEnterAmount', 'Invalid state for continue', {
+        isAmountValid,
+        hasSelectedToken: !!selectedToken,
+        hasGoldAmount: !!goldAmount,
+      })
+      return
+    }
 
     AppAnalytics.track(GoldEvents.gold_buy_quote_received, {
       fromAmount: parsedTokenAmount.toString(),
       toAmount: goldAmount.toString(),
     })
 
-    // Get quote with prepared transactions
+    // Get swap quote from Squid Router
     const quoteResult = await getQuote({
       fromToken: selectedToken,
       toToken: xaut0Token,
@@ -171,32 +215,31 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       direction: 'buy',
     })
 
-    if (!quoteResult) {
-      // Quote failed, but we can still navigate without prepared transactions
-      // The confirmation screen will handle the error
+    if (quoteResult) {
       navigate(Screens.GoldBuyConfirmation, {
         fromTokenId: selectedToken.tokenId,
         fromAmount: parsedTokenAmount.toString(),
         xautAmount: goldAmount.toString(),
-        pricePerOz: goldPriceUsd?.toString() ?? '0',
+        pricePerOz: goldPriceUsd.toString(),
+        estimatedGasFee: quoteResult.quote.estimatedGasFee,
+        gasFeeTokenId:
+          quoteResult.preparedTransactions.type === 'possible'
+            ? quoteResult.preparedTransactions.feeCurrency.tokenId
+            : undefined,
+        preparedTransactions: quoteResult.quote.preparedTransactions,
         toTokenId: xaut0Token.tokenId,
       })
-      return
+    } else {
+      // Navigate without quote - confirmation screen will retry
+      Logger.warn('GoldBuyEnterAmount', 'No quote result, navigating to confirmation')
+      navigate(Screens.GoldBuyConfirmation, {
+        fromTokenId: selectedToken.tokenId,
+        fromAmount: parsedTokenAmount.toString(),
+        xautAmount: goldAmount.toString(),
+        pricePerOz: goldPriceUsd.toString(),
+        toTokenId: xaut0Token.tokenId,
+      })
     }
-
-    navigate(Screens.GoldBuyConfirmation, {
-      fromTokenId: selectedToken.tokenId,
-      fromAmount: parsedTokenAmount.toString(),
-      xautAmount: goldAmount.toString(),
-      pricePerOz: goldPriceUsd?.toString() ?? '0',
-      estimatedGasFee: quoteResult.quote.estimatedGasFee,
-      gasFeeTokenId:
-        quoteResult.preparedTransactions.type === 'possible'
-          ? quoteResult.preparedTransactions.feeCurrency.tokenId
-          : undefined,
-      preparedTransactions: quoteResult.quote.preparedTransactions,
-      toTokenId: xaut0Token.tokenId,
-    })
   }
 
   const insetsStyle = {
@@ -208,7 +251,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       <SafeAreaView style={styles.container} edges={['top']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>{t('goldFlow.buy.noTokensAvailable')}</Text>
+          <GoldIcon size={48} />
+          <Text style={styles.emptyStateText}>{t('goldFlow.buy.noUsdtAvailable')}</Text>
         </View>
       </SafeAreaView>
     )
