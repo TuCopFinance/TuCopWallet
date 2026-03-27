@@ -56,3 +56,14 @@ jest.mock('@react-native-clipboard/clipboard', () => ({
 
 // this mock defaults to granting all permissions
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'))
+
+// Mock BackHandler for RN 0.77+ which removed removeEventListener
+// react-native-modal still uses the old API, so we need to polyfill it
+const mockBackHandler = jest.requireActual('react-native').BackHandler
+jest.mock('react-native/Libraries/Utilities/BackHandler', () => ({
+  ...mockBackHandler,
+  addEventListener: jest.fn((event, callback) => ({
+    remove: jest.fn(),
+  })),
+  removeEventListener: jest.fn(),
+}))
