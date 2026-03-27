@@ -1,8 +1,9 @@
 import BigNumber from 'bignumber.js'
 import { useAsyncCallback } from 'react-async-hook'
 import { goldPriceUsdSelector } from 'src/gold/selectors'
-import { GoldSwapQuote, XAUT0_DECIMALS } from 'src/gold/types'
+import { GoldSwapQuote } from 'src/gold/types'
 import { useSelector } from 'src/redux/hooks'
+import { FetchQuoteResponse, SwapTransaction } from 'src/swap/types'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -15,15 +16,22 @@ import {
   prepareTransactions,
 } from 'src/viem/prepareTransactions'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
-import { networkIdToNetwork } from 'src/web3/networkConfig'
+import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { Address, encodeFunctionData, erc20Abi, zeroAddress } from 'viem'
+import { Address, Hex, encodeFunctionData, erc20Abi, zeroAddress } from 'viem'
 import { TransactionOrigin } from 'src/analytics/types'
 
 const TAG = 'gold/useGoldQuote'
 
-// Squid Router on Celo
-const SQUID_ROUTER_ADDRESS = '0xce16F69375520ab01377ce7B88f5BA8C48F8D666'
+// Default slippage for gold swaps (1%)
+const DEFAULT_SLIPPAGE_PERCENTAGE = '1'
+
+// Squid Router V2 API configuration
+const SQUID_API_URL = 'https://v2.api.squidrouter.com/v2/route'
+const SQUID_INTEGRATOR_ID = 'tucop-wallet-api' // TODO: Register for production integrator ID
+
+// Celo chain ID for Squid API
+const CELO_CHAIN_ID = '42220'
 
 export interface GoldQuoteParams {
   fromToken: TokenBalance
@@ -38,82 +46,221 @@ export interface GoldQuoteResult {
 }
 
 /**
- * Create swap transactions for gold buy/sell
- * Uses Squid Router for cross-chain/same-chain swaps
+ * Fetch swap quote from Squid Router V2 API directly
+ * Used as fallback or for comparing quotes
  */
-async function createGoldSwapTransactions(
+async function fetchSquidQuote(
   fromToken: TokenBalance,
   toToken: TokenBalance,
   amount: BigNumber,
-  walletAddress: string,
-  goldPriceUsd: number
-): Promise<{ baseTransactions: TransactionRequest[]; estimatedToAmount: BigNumber }> {
+  walletAddress: string
+): Promise<SwapTransaction> {
+  const amountInWei = amount.shiftedBy(fromToken.decimals)
+
+  const requestBody = {
+    fromAddress: walletAddress,
+    fromChain: CELO_CHAIN_ID,
+    toChain: CELO_CHAIN_ID,
+    fromToken: fromToken.address || '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native token
+    toToken: toToken.address || '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    fromAmount: amountInWei.toFixed(0, BigNumber.ROUND_DOWN),
+    toAddress: walletAddress,
+    slippage: parseFloat(DEFAULT_SLIPPAGE_PERCENTAGE),
+    slippageConfig: {
+      autoMode: 1, // Conservative mode
+    },
+    enableBoost: true,
+  }
+
+  Logger.debug(TAG, `Fetching Squid quote: ${JSON.stringify(requestBody)}`)
+
+  const response = await fetch(SQUID_API_URL, {
+    method: 'POST',
+    headers: {
+      'x-integrator-id': SQUID_INTEGRATOR_ID,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    Logger.error(TAG, `Squid API error: ${response.status} - ${errorText}`)
+    throw new Error(`Squid API error: ${errorText}`)
+  }
+
+  const squidResponse = await response.json()
+
+  if (!squidResponse.route || !squidResponse.route.transactionRequest) {
+    throw new Error('No route available from Squid')
+  }
+
+  const { transactionRequest, estimate } = squidResponse.route
+
+  Logger.debug(TAG, `Got Squid quote: ${estimate.fromAmount} -> ${estimate.toAmount}`)
+
+  // Convert Squid response to SwapTransaction format
+  return {
+    swapType: 'same-chain',
+    chainId: parseInt(CELO_CHAIN_ID),
+    buyAmount: estimate.toAmount,
+    sellAmount: estimate.fromAmount,
+    buyTokenAddress: toToken.address || '',
+    sellTokenAddress: fromToken.address || '',
+    price: new BigNumber(estimate.toAmount).dividedBy(estimate.fromAmount).toString(),
+    guaranteedPrice: new BigNumber(estimate.toAmountMin).dividedBy(estimate.fromAmount).toString(),
+    appFeePercentageIncludedInPrice: undefined,
+    estimatedPriceImpact: estimate.aggregatePriceImpact || null,
+    gas: transactionRequest.gasLimit || '500000',
+    estimatedGasUse: transactionRequest.gasLimit || null,
+    to: transactionRequest.target,
+    value: transactionRequest.value || '0',
+    data: transactionRequest.data,
+    from: walletAddress,
+    allowanceTarget: transactionRequest.target,
+  }
+}
+
+/**
+ * Fetch swap quote from the backend API (same as regular swaps)
+ * The backend handles routing through Uniswap V4, Squid, or other providers
+ */
+async function fetchBackendQuote(
+  fromToken: TokenBalance,
+  toToken: TokenBalance,
+  amount: BigNumber,
+  walletAddress: string
+): Promise<SwapTransaction> {
+  const amountInWei = amount.shiftedBy(fromToken.decimals)
+
+  const params = {
+    ...(fromToken.address && { sellToken: fromToken.address }),
+    sellIsNative: (fromToken.isNative ?? false).toString(),
+    sellNetworkId: fromToken.networkId,
+    ...(toToken.address && { buyToken: toToken.address }),
+    buyIsNative: (toToken.isNative ?? false).toString(),
+    buyNetworkId: toToken.networkId,
+    sellAmount: amountInWei.toFixed(0, BigNumber.ROUND_DOWN),
+    userAddress: walletAddress,
+    slippagePercentage: DEFAULT_SLIPPAGE_PERCENTAGE,
+  }
+
+  const queryParams = new URLSearchParams({ ...params }).toString()
+  const requestUrl = `${networkConfig.getSwapQuoteUrl}?${queryParams}`
+
+  Logger.debug(TAG, `Fetching backend swap quote: ${requestUrl}`)
+
+  const response = await fetch(requestUrl)
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    Logger.error(TAG, `Backend swap quote API error: ${response.status} - ${errorText}`)
+    throw new Error(`Failed to get swap quote: ${errorText}`)
+  }
+
+  const quote: FetchQuoteResponse = await response.json()
+
+  if (!quote.unvalidatedSwapTransaction) {
+    throw new Error('No swap quote available from backend')
+  }
+
+  Logger.debug(
+    TAG,
+    `Got backend quote from ${quote.details.swapProvider}: ${quote.unvalidatedSwapTransaction.sellAmount} -> ${quote.unvalidatedSwapTransaction.buyAmount}`
+  )
+
+  return quote.unvalidatedSwapTransaction
+}
+
+/**
+ * Fetch the best swap quote from available sources
+ * Tries backend API first, falls back to Squid API, or compares both
+ */
+async function fetchSwapQuote(
+  fromToken: TokenBalance,
+  toToken: TokenBalance,
+  amount: BigNumber,
+  walletAddress: string
+): Promise<SwapTransaction> {
+  // Try backend API first (it may have better routing through multiple sources)
+  try {
+    const backendQuote = await fetchBackendQuote(fromToken, toToken, amount, walletAddress)
+    return backendQuote
+  } catch (backendError: any) {
+    Logger.warn(TAG, `Backend quote failed, trying Squid: ${backendError.message}`)
+  }
+
+  // Fallback to Squid API directly
+  try {
+    const squidQuote = await fetchSquidQuote(fromToken, toToken, amount, walletAddress)
+    return squidQuote
+  } catch (squidError: any) {
+    Logger.error(TAG, `Squid quote also failed: ${squidError.message}`)
+    throw new Error(`No swap route available. Backend: ${squidError.message}`)
+  }
+}
+
+/**
+ * Create swap transactions from API response
+ * Adds approval transaction if needed
+ */
+async function createSwapTransactionsFromQuote(
+  fromToken: TokenBalance,
+  swapTransaction: SwapTransaction,
+  walletAddress: string
+): Promise<{ baseTransactions: TransactionRequest[]; amountToApprove: bigint }> {
   const baseTransactions: TransactionRequest[] = []
 
-  // Calculate estimated output amount based on gold price
-  // This is simplified - in production would come from the swap API
-  const fromAmountInWei = amount.shiftedBy(fromToken.decimals)
-  const fromValueUsd = fromToken.priceUsd
-    ? amount.multipliedBy(fromToken.priceUsd)
-    : new BigNumber(0)
+  const { allowanceTarget, from, to, value, data, gas, estimatedGasUse, sellAmount } =
+    swapTransaction
 
-  // Estimate XAUt0 amount (1 XAUt0 = 1 troy oz gold)
-  const estimatedToAmount = fromValueUsd.dividedBy(goldPriceUsd)
-  // Note: toAmountInWei will be used when Squid Router API integration is complete
-  const _toAmountInWei = estimatedToAmount.shiftedBy(toToken.decimals || XAUT0_DECIMALS)
-  void _toAmountInWei // Suppress unused variable warning
+  const amountToApprove = BigInt(sellAmount)
 
   // Check if approval is needed for ERC-20 tokens
-  if (fromToken.address && fromToken.address !== zeroAddress) {
+  if (allowanceTarget !== zeroAddress && fromToken.address) {
     const network = networkIdToNetwork[fromToken.networkId]
     const approvedAllowance = await publicClient[network].readContract({
       address: fromToken.address as Address,
       abi: erc20Abi,
       functionName: 'allowance',
-      args: [walletAddress as Address, SQUID_ROUTER_ADDRESS as Address],
+      args: [walletAddress as Address, allowanceTarget as Address],
     })
 
-    if (approvedAllowance < BigInt(fromAmountInWei.toFixed(0))) {
+    if (approvedAllowance < amountToApprove) {
       const approveData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'approve',
-        args: [SQUID_ROUTER_ADDRESS as Address, BigInt(fromAmountInWei.toFixed(0))],
+        args: [allowanceTarget as Address, amountToApprove],
       })
 
       baseTransactions.push({
-        from: walletAddress as Address,
+        from: from as Address,
         to: fromToken.address as Address,
         data: approveData,
       })
     }
   }
 
-  // TODO: In production, this would call the Squid Router API to get actual swap transaction
-  // For now, we create a placeholder swap transaction structure
-  // The actual implementation would:
-  // 1. Call Squid API: POST https://api.squidrouter.com/v1/route
-  // 2. Get the transaction data from the response
-  // 3. Create the swap transaction
-
-  // Placeholder swap transaction (would be replaced with actual Squid Router call)
-  const swapTx: TransactionRequest = {
-    from: walletAddress as Address,
-    to: SQUID_ROUTER_ADDRESS as Address,
-    value: BigInt(0),
-    data: '0x' as `0x${string}`, // Would be actual swap calldata from Squid
-    gas: BigInt(300000), // Estimated gas
+  // Add the swap transaction from API
+  const swapTx: TransactionRequest & { gas: bigint } = {
+    from: from as Address,
+    to: to as Address,
+    value: BigInt(value ?? 0),
+    data: data as Hex,
+    gas: BigInt(gas),
+    _estimatedGasUse: estimatedGasUse != null ? BigInt(estimatedGasUse) : undefined,
   }
   baseTransactions.push(swapTx)
 
   return {
     baseTransactions,
-    estimatedToAmount,
+    amountToApprove,
   }
 }
 
 /**
  * Hook to get gold buy/sell quotes
- * Uses the existing swap infrastructure with Squid Router
+ * Uses the existing swap infrastructure (backend routes to Uniswap V4/Squid/etc)
  */
 export function useGoldQuote() {
   const walletAddress = useSelector(walletAddressSelector)
@@ -143,12 +290,14 @@ export function useGoldQuote() {
       try {
         Logger.debug(TAG, `Getting ${direction} quote for ${amount.toString()} ${fromToken.symbol}`)
 
-        const { baseTransactions, estimatedToAmount } = await createGoldSwapTransactions(
+        // Fetch quote from backend API (handles Uniswap V4 routing)
+        const swapTransaction = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
+
+        // Create transactions from the quote
+        const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
           fromToken,
-          toToken,
-          amount,
-          walletAddress,
-          goldPriceUsd
+          swapTransaction,
+          walletAddress
         )
 
         // Determine transaction origin based on direction
@@ -158,7 +307,9 @@ export function useGoldQuote() {
         const preparedTransactions = await prepareTransactions({
           feeCurrencies,
           spendToken: fromToken,
-          spendTokenAmount: amount,
+          spendTokenAmount: new BigNumber(amountToApprove.toString()).shiftedBy(
+            -fromToken.decimals
+          ),
           decreasedAmountGasFeeMultiplier: 1.2,
           baseTransactions,
           throwOnSpendTokenAmountExceedsBalance: false,
@@ -182,12 +333,12 @@ export function useGoldQuote() {
         const quote: GoldSwapQuote = {
           fromTokenId: fromToken.tokenId,
           toTokenId: toToken.tokenId,
-          fromAmount: amount.shiftedBy(fromToken.decimals).toFixed(0),
-          toAmount: estimatedToAmount.shiftedBy(toToken.decimals || XAUT0_DECIMALS).toFixed(0),
+          fromAmount: swapTransaction.sellAmount,
+          toAmount: swapTransaction.buyAmount,
           pricePerOz: goldPriceUsd.toString(),
           estimatedGasFee: estimatedGasFeeValue,
-          estimatedGasFeeUsd: '0', // Would be calculated from gas fee token price
-          allowanceTarget: SQUID_ROUTER_ADDRESS,
+          estimatedGasFeeUsd: '0',
+          allowanceTarget: swapTransaction.allowanceTarget,
           preparedTransactions: getSerializablePreparedTransactions(
             preparedTransactions.type === 'possible' ? preparedTransactions.transactions : []
           ),
@@ -246,59 +397,31 @@ export function calculateFromGoldAmount(
 }
 
 /**
- * Estimate gas for a gold swap transaction
- * Simplified version that doesn't need XAUt0 token info
+ * Estimate gas for a gold swap transaction using the swap API
  */
 export async function estimateGoldSwapGas(
   fromToken: TokenBalance,
+  toToken: TokenBalance,
   amount: BigNumber,
   walletAddress: string,
   feeCurrencies: TokenBalance[]
 ): Promise<{ estimatedGasFee: string; gasFeeTokenId: string } | null> {
   try {
-    const baseTransactions: TransactionRequest[] = []
-    const fromAmountInWei = amount.shiftedBy(fromToken.decimals)
+    // Fetch quote from backend API to get accurate gas estimation
+    const swapTransaction = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
 
-    // Check if approval is needed for ERC-20 tokens
-    if (fromToken.address && fromToken.address !== zeroAddress) {
-      const network = networkIdToNetwork[fromToken.networkId]
-      const approvedAllowance = await publicClient[network].readContract({
-        address: fromToken.address as Address,
-        abi: erc20Abi,
-        functionName: 'allowance',
-        args: [walletAddress as Address, SQUID_ROUTER_ADDRESS as Address],
-      })
-
-      if (approvedAllowance < BigInt(fromAmountInWei.toFixed(0))) {
-        const approveData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: 'approve',
-          args: [SQUID_ROUTER_ADDRESS as Address, BigInt(fromAmountInWei.toFixed(0))],
-        })
-
-        baseTransactions.push({
-          from: walletAddress as Address,
-          to: fromToken.address as Address,
-          data: approveData,
-        })
-      }
-    }
-
-    // Placeholder swap transaction with estimated gas
-    const swapTx: TransactionRequest = {
-      from: walletAddress as Address,
-      to: SQUID_ROUTER_ADDRESS as Address,
-      value: BigInt(0),
-      data: '0x' as `0x${string}`,
-      gas: BigInt(300000),
-    }
-    baseTransactions.push(swapTx)
+    // Create transactions from the quote
+    const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
+      fromToken,
+      swapTransaction,
+      walletAddress
+    )
 
     // Prepare transactions with fee estimation
     const preparedTransactions = await prepareTransactions({
       feeCurrencies,
       spendToken: fromToken,
-      spendTokenAmount: amount,
+      spendTokenAmount: new BigNumber(amountToApprove.toString()).shiftedBy(-fromToken.decimals),
       decreasedAmountGasFeeMultiplier: 1.2,
       baseTransactions,
       throwOnSpendTokenAmountExceedsBalance: false,

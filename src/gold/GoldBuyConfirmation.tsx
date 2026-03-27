@@ -1,17 +1,17 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import AppAnalytics from 'src/analytics/AppAnalytics'
-import { GoldEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
+import { goldBuyStatusSelector, goldErrorSelector } from 'src/gold/selectors'
+import { buyGoldStart, resetGoldFlow } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -24,7 +24,7 @@ import { headerWithBackButton } from 'src/navigator/Headers'
 import { navigate, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { useSelector } from 'src/redux/hooks'
+import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -34,18 +34,39 @@ type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
 
 export default function GoldBuyConfirmation({ route }: Props) {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
-  const { fromTokenId, fromAmount, xautAmount, pricePerOz, estimatedGasFee, gasFeeTokenId } =
-    route.params
+  const {
+    fromTokenId,
+    fromAmount,
+    xautAmount,
+    pricePerOz,
+    estimatedGasFee,
+    gasFeeTokenId,
+    preparedTransactions,
+    toTokenId,
+  } = route.params
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const buyStatus = useSelector(goldBuyStatusSelector)
+  const goldError = useSelector(goldErrorSelector)
 
   const fromToken = useTokenInfo(fromTokenId)
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
   const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+
+  const isSubmitting = buyStatus === 'loading'
+  const error = goldError
+
+  // Navigate home on success
+  useEffect(() => {
+    if (buyStatus === 'success') {
+      dispatch(resetGoldFlow())
+      navigateHome()
+      navigate(Screens.GoldHome)
+    }
+  }, [buyStatus, dispatch])
 
   // COP doesn't use decimals
   const isLocalCurrencyCop = localCurrencyCode === LocalCurrencyCode.COP
@@ -86,38 +107,27 @@ export default function GoldBuyConfirmation({ route }: Props) {
   // Format gas fee display
   const gasFeeDisplaySymbol = gasFeeToken?.symbol === 'cCOP' ? 'COPm' : gasFeeToken?.symbol
 
-  const onPressConfirm = async () => {
-    if (!fromToken) return
+  const onPressConfirm = () => {
+    if (!fromToken || !preparedTransactions || !toTokenId) return
 
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      AppAnalytics.track(GoldEvents.gold_buy_submit_start, {
-        amount: xautAmount,
+    // Dispatch the buy action - saga will handle the transaction
+    dispatch(
+      buyGoldStart({
+        fromTokenId,
+        fromAmount,
+        quote: {
+          fromTokenId,
+          toTokenId,
+          fromAmount: parsedFromAmount.shiftedBy(fromToken.decimals).toFixed(0),
+          toAmount: parsedXautAmount.shiftedBy(XAUT0_DECIMALS).toFixed(0),
+          pricePerOz,
+          estimatedGasFee: estimatedGasFee ?? '0',
+          estimatedGasFeeUsd: '0',
+          allowanceTarget: '',
+          preparedTransactions,
+        },
       })
-
-      // TODO: Execute the actual swap transaction via Squid Router
-      // For now, simulate a delay and show success
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      AppAnalytics.track(GoldEvents.gold_buy_submit_success, {
-        amount: xautAmount,
-        txHash: '', // TODO: Add actual txHash when swap is implemented
-      })
-
-      // Navigate back to gold home with success message
-      navigateHome()
-      navigate(Screens.GoldHome)
-    } catch (err: any) {
-      AppAnalytics.track(GoldEvents.gold_buy_submit_error, {
-        amount: xautAmount,
-        error: err.message || 'Unknown error',
-      })
-      setError(err.message || t('goldFlow.buy.error'))
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const insetsStyle = {
@@ -232,7 +242,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
             text={t('goldFlow.buy.confirm')}
             size={BtnSizes.FULL}
             type={BtnTypes.PRIMARY}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !preparedTransactions || !toTokenId}
             showLoading={isSubmitting}
             testID="GoldBuyConfirmation/ConfirmButton"
           />
