@@ -196,6 +196,7 @@ describe('VerificationCodeInputScreen', () => {
   })
 
   // useAndroidSmsCodeRetriever is currently disabled (commented out) in VerificationCodeInput.tsx
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip('reads the SMS code on Android automatically', async () => {
     // First call: checkPhoneInKeylessBackupSystem
     mockKeylessBackupCheckResponse()
