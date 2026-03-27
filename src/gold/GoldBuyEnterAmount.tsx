@@ -304,13 +304,6 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           />
         )}
 
-        {/* Percentage Options */}
-        <EnterAmountOptions
-          onPressAmount={onSelectPercentageAmount}
-          selectedAmount={selectedPercentage}
-          testID="GoldBuyEnterAmount/AmountOptions"
-        />
-
         {/* Continue Button */}
         <Button
           onPress={onPressContinue}
@@ -332,6 +325,13 @@ export default function GoldBuyEnterAmount({ route }: Props) {
         tokens={availableTokens}
         title={t('goldFlow.buy.selectToken')}
         titleStyle={styles.title}
+      />
+
+      {/* Percentage Options - appears above keyboard */}
+      <EnterAmountOptions
+        onPressAmount={onSelectPercentageAmount}
+        selectedAmount={selectedPercentage}
+        testID="GoldBuyEnterAmount/AmountOptions"
       />
     </SafeAreaView>
   )
