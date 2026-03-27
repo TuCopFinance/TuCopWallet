@@ -49,6 +49,9 @@ react {
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
+
+    /* Autolinking */
+    autolinkLibrariesWithApp()
 }
 
 
@@ -355,16 +358,6 @@ dependencies {
     // which requires minCompileSdk 33
     implementation 'androidx.browser:browser:1.4.0'
 
-    debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
-    debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
-        exclude group:'com.squareup.okhttp3', module:'okhttp'
-    }
-    debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
-    
-    // Add Fresco dependencies explicitly for Flipper - updated for RN 0.75.4 compatibility
-    debugImplementation 'com.facebook.fresco:fresco:3.2.0'
-    debugImplementation 'com.facebook.fresco:imagepipeline:3.2.0'
-
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
@@ -380,8 +373,6 @@ if (enableFirebase.toBoolean()){
 } else {
   println 'Info: Firebase is disabled in .env variable'
 }
-
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 // This is to fix a duplicate class error
 // Duplicate class org.bouncycastle.LICENSE found in modules jetified-bcprov-jdk15to18-1.69 (org.bouncycastle:bcprov-jdk15to18:1.69) and jetified-bcprov-jdk18on-1.71 (org.bouncycastle:bcprov-jdk18on:1.71)
