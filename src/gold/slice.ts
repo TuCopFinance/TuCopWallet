@@ -1,7 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
 import { getRehydratePayload } from 'src/redux/persist-helper'
-import { GoldOperationStatus, GoldPriceData, PriceAlert } from 'src/gold/types'
+import {
+  GoldBuyInfo,
+  GoldOperationStatus,
+  GoldPriceData,
+  GoldSellInfo,
+  PriceAlert,
+} from 'src/gold/types'
 
 export interface State {
   // Price data
@@ -58,7 +64,7 @@ export const slice = createSlice({
     },
 
     // Buy actions
-    buyGoldStart: (state) => {
+    buyGoldStart: (state, _action: PayloadAction<GoldBuyInfo>) => {
       state.buyStatus = 'loading'
       state.buyTxHash = null
       state.error = null
@@ -73,7 +79,7 @@ export const slice = createSlice({
     },
 
     // Sell actions
-    sellGoldStart: (state) => {
+    sellGoldStart: (state, _action: PayloadAction<GoldSellInfo>) => {
       state.sellStatus = 'loading'
       state.sellTxHash = null
       state.error = null
