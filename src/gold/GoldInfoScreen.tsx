@@ -56,7 +56,9 @@ export default function GoldInfoScreen() {
 
   const onPressLearnMore = () => {
     AppAnalytics.track(GoldEvents.gold_info_learn_press)
-    // TODO: Navigate to web view with gold info
+    navigate(Screens.WebViewScreen, {
+      uri: 'https://gold.tether.to/',
+    })
   }
 
   const onPressGetStarted = () => {
@@ -128,6 +130,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: Spacing.Regular16,
   },
   flex: {
     flex: 1,
