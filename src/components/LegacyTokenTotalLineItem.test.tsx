@@ -21,7 +21,7 @@ describe('LegacyTokenTotalLineItem', () => {
     amount = defaultAmount,
     tokenAddress = defaultTokenAddress,
     localAmount,
-    localCurrencyCode = LocalCurrencyCode.BRL,
+    localCurrencyCode = LocalCurrencyCode.COP,
     usdToLocalRate = '1.5',
     feeToAddInUsd = undefined,
     hideSign = undefined,
@@ -38,8 +38,8 @@ describe('LegacyTokenTotalLineItem', () => {
       <Provider
         store={createMockStore({
           localCurrency: {
-            preferredCurrencyCode: LocalCurrencyCode.BRL,
-            fetchedCurrencyCode: LocalCurrencyCode.BRL,
+            preferredCurrencyCode: LocalCurrencyCode.COP,
+            fetchedCurrencyCode: LocalCurrencyCode.COP,
             usdToLocalRate,
           },
           tokens: {

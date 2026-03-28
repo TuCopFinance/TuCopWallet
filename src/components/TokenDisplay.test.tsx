@@ -15,8 +15,8 @@ describe('TokenDisplay', () => {
     return createMockStore({
       localCurrency: {
         usdToLocalRate: '0.10',
-        preferredCurrencyCode: LocalCurrencyCode.BRL,
-        fetchedCurrencyCode: LocalCurrencyCode.BRL,
+        preferredCurrencyCode: LocalCurrencyCode.COP,
+        fetchedCurrencyCode: LocalCurrencyCode.COP,
       },
       tokens: {
         tokenBalances: {
@@ -146,7 +146,7 @@ describe('TokenDisplay', () => {
             amount={10}
             tokenId={'ethereum-sepolia:native'}
             localAmount={{
-              currencyCode: LocalCurrencyCode.PHP,
+              currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
               value: '5',
             }}
@@ -216,7 +216,7 @@ describe('TokenDisplay', () => {
             amount={10}
             tokenId={'celo-sepolia:does-not-exist'}
             localAmount={{
-              currencyCode: LocalCurrencyCode.PHP,
+              currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
               value: '5',
             }}

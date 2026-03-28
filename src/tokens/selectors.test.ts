@@ -166,9 +166,9 @@ const state: any = {
     positions: [],
   },
   localCurrency: {
-    preferredCurrencyCode: LocalCurrencyCode.EUR,
-    fetchedCurrencyCode: LocalCurrencyCode.EUR,
-    usdToLocalRate: '0.86',
+    preferredCurrencyCode: LocalCurrencyCode.COP,
+    fetchedCurrencyCode: LocalCurrencyCode.COP,
+    usdToLocalRate: '4000', // Approximate COP/USD rate
   },
 }
 
