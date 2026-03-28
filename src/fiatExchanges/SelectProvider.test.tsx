@@ -69,7 +69,7 @@ jest.mock('src/statsig', () => ({
 
 jest.mock('src/localCurrency/selectors', () => ({
   ...(jest.requireActual('src/localCurrency/selectors') as any),
-  getDefaultLocalCurrencyCode: jest.fn().mockReturnValue('MXN'),
+  getDefaultLocalCurrencyCode: jest.fn().mockReturnValue('COP'),
 }))
 
 const mockLegacyProviders: LegacyMobileMoneyProvider[] = [
