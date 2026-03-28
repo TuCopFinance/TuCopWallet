@@ -6,6 +6,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { setHasSeenGoldInfo } from 'src/gold/slice'
+import { useDispatch } from 'src/redux/hooks'
 import Checkmark from 'src/icons/Checkmark'
 import CircledIcon from 'src/icons/CircledIcon'
 import GoldIcon from 'src/icons/GoldIcon'
@@ -48,6 +50,7 @@ function DetailsItem({
 
 export default function GoldInfoScreen() {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const headerHeight = useHeaderHeight()
   const { bottom } = useSafeAreaInsets()
   const insetsStyle = {
@@ -63,6 +66,7 @@ export default function GoldInfoScreen() {
 
   const onPressGetStarted = () => {
     AppAnalytics.track(GoldEvents.gold_info_get_started_press)
+    dispatch(setHasSeenGoldInfo())
     navigate(Screens.GoldHome)
   }
 

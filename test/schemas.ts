@@ -3667,6 +3667,7 @@ export const v244Schema = {
     sellTxHash: null,
     priceAlerts: [],
     error: null,
+    hasSeenGoldInfo: false,
   },
 }
 
