@@ -19,11 +19,11 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import { goldPriceUsdSelector } from 'src/gold/selectors'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { calculateFromGoldAmount } from 'src/gold/useGoldQuote'
+import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { headerWithBackButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -33,12 +33,11 @@ import EnterAmountOptions from 'src/send/EnterAmountOptions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { swappableFromTokensByNetworkIdSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
-import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
 import { parseInputAmount } from 'src/utils/parsing'
-import { XAUT0_TOKEN_ID_MAINNET, XAUT0_TOKEN_ID_STAGING } from 'src/web3/networkConfig'
+import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldSellEnterAmount>
 
@@ -53,13 +52,8 @@ export default function GoldSellEnterAmount(_props: Props) {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
-  // Get XAUt0 token balance
-  const tokensById = useSelector((state) =>
-    tokensByIdSelector(state, getSupportedNetworkIdsForTokenBalances())
-  )
-  const xaut0Token =
-    tokensById[XAUT0_TOKEN_ID_MAINNET] || tokensById[XAUT0_TOKEN_ID_STAGING] || null
-  const xaut0Balance = xaut0Token?.balance ? new BigNumber(xaut0Token.balance) : new BigNumber(0)
+  // Get XAUt0 token balance directly from blockchain (more reliable)
+  const { balance: xaut0Balance, loading: balanceLoading } = useXaut0Balance()
 
   // Get swappable tokens for output (what user receives)
   const swappableTokens = useSelector((state) =>
@@ -68,17 +62,17 @@ export default function GoldSellEnterAmount(_props: Props) {
 
   // Filter out XAUt0 from output options
   const availableOutputTokens = useMemo(
-    () =>
-      swappableTokens.filter(
-        (token) =>
-          token.tokenId !== XAUT0_TOKEN_ID_MAINNET && token.tokenId !== XAUT0_TOKEN_ID_STAGING
-      ),
+    () => swappableTokens.filter((token) => token.tokenId !== networkConfig.xaut0TokenId),
     [swappableTokens]
   )
 
-  const [selectedOutputToken, setSelectedOutputToken] = useState<TokenBalance | null>(
-    availableOutputTokens[0] ?? null
-  )
+  // Prefer USDT as default output token, fall back to first available
+  const [selectedOutputToken, setSelectedOutputToken] = useState<TokenBalance | null>(() => {
+    const usdtToken = availableOutputTokens.find(
+      (token) => token.tokenId === networkConfig.usdtTokenId
+    )
+    return usdtToken ?? availableOutputTokens[0] ?? null
+  })
 
   const tokenBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const goldAmountInputRef = useRef<RNTextInput>(null)
@@ -150,6 +144,8 @@ export default function GoldSellEnterAmount(_props: Props) {
     })
   }
 
+  // No minimum validation for SELL - if user has balance, they should be able to sell it
+  // The swap API may reject very small amounts, but that error is handled gracefully
   const isAmountValid =
     parsedGoldAmount && parsedGoldAmount.gt(0) && parsedGoldAmount.lte(xaut0Balance)
 
@@ -175,7 +171,8 @@ export default function GoldSellEnterAmount(_props: Props) {
     paddingBottom: Math.max(insets.bottom, Spacing.Regular16),
   }
 
-  if (xaut0Balance.isZero()) {
+  // Only show empty state after balance has loaded and is actually zero
+  if (!balanceLoading && xaut0Balance.isZero()) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
@@ -318,9 +315,10 @@ export default function GoldSellEnterAmount(_props: Props) {
   )
 }
 
-GoldSellEnterAmount.navigationOptions = () => ({
-  ...headerWithBackButton,
-})
+// Using inline CustomHeader with BackButton, so no navigationOptions needed
+GoldSellEnterAmount.navigationOptions = {
+  headerShown: false,
+}
 
 const styles = StyleSheet.create({
   container: {

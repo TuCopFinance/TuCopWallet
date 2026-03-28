@@ -1,5 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
+import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { fetchGoldPriceWithFallback } from 'src/gold/api'
@@ -24,8 +25,12 @@ import {
   XAUT0_NAME,
   XAUT0_SYMBOL,
 } from 'src/gold/types'
+import i18n from 'src/i18n'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
+import { vibrateSuccess } from 'src/styles/hapticFeedback'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { importToken } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
@@ -220,6 +225,11 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
 
     yield* put(buyGoldSuccess({ txHash: swapTxHash }))
 
+    // Show success message and navigate to GoldHome
+    vibrateSuccess()
+    yield* put(showMessage(i18n.t('goldFlow.buy.successMessage')))
+    navigate(Screens.GoldHome)
+
     // Import XAUt0 token so it shows in wallet
     yield* put(
       importToken({
@@ -378,6 +388,11 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     }
 
     yield* put(sellGoldSuccess({ txHash: swapTxHash }))
+
+    // Show success message and navigate to GoldHome
+    vibrateSuccess()
+    yield* put(showMessage(i18n.t('goldFlow.sell.successMessage')))
+    navigate(Screens.GoldHome)
 
     AppAnalytics.track(GoldEvents.gold_sell_submit_success, {
       amount: xautAmount,

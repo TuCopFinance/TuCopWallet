@@ -3041,6 +3041,8 @@
       "continue": "Continuar",
       "quoteErrorTitle": "Ruta de intercambio no disponible",
       "quoteErrorDescription": "Este token no se puede intercambiar directamente por oro. Intenta usar USDT.",
+      "minimumAmountTitle": "Monto mínimo requerido",
+      "minimumAmountDescription": "El monto mínimo para comprar oro es {{minAmount}}.",
       "confirmTitle": "Confirmar Compra",
       "youPay": "Pagas",
       "youReceive": "Recibes",
