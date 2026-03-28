@@ -45,8 +45,8 @@ describe('FeeDrawer', () => {
       <Provider
         store={createMockStore({
           localCurrency: {
-            preferredCurrencyCode: LocalCurrencyCode.BRL,
-            fetchedCurrencyCode: LocalCurrencyCode.BRL,
+            preferredCurrencyCode: LocalCurrencyCode.COP,
+            fetchedCurrencyCode: LocalCurrencyCode.COP,
             usdToLocalRate: '0.10',
           },
           tokens: {

@@ -1566,19 +1566,16 @@ export const migrations = {
     home: { ...state.home, nftCelebration: null },
   }),
   190: (state: any) => {
-    const currencyMapping: Record<string, LocalCurrencyCode> = {
-      MYS: LocalCurrencyCode.MYR,
-      SGP: LocalCurrencyCode.SGD,
-      THI: LocalCurrencyCode.THB,
-      TWN: LocalCurrencyCode.TWD,
-      VNM: LocalCurrencyCode.VND,
-    }
-    const preferredCurrencyCode =
-      currencyMapping[state.localCurrency.preferredCurrencyCode] ??
+    // TuCop only supports COP and USD - map any other currency to COP as default
+    const validCurrencies = ['COP', 'USD']
+    const preferredCurrencyCode = validCurrencies.includes(
       state.localCurrency.preferredCurrencyCode
-    const fetchedCurrencyCode =
-      currencyMapping[state.localCurrency.fetchedCurrencyCode] ??
-      state.localCurrency.fetchedCurrencyCode
+    )
+      ? state.localCurrency.preferredCurrencyCode
+      : LocalCurrencyCode.COP
+    const fetchedCurrencyCode = validCurrencies.includes(state.localCurrency.fetchedCurrencyCode)
+      ? state.localCurrency.fetchedCurrencyCode
+      : LocalCurrencyCode.COP
 
     return {
       ...state,
