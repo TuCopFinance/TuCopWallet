@@ -26,7 +26,7 @@ import {
   XAUT0_SYMBOL,
 } from 'src/gold/types'
 import i18n from 'src/i18n'
-import { navigate } from 'src/navigator/NavigationService'
+import { popToScreen } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
@@ -225,10 +225,10 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
 
     yield* put(buyGoldSuccess({ txHash: swapTxHash }))
 
-    // Show success message and navigate to GoldHome
+    // Show success message and navigate to GoldHome (clear navigation stack)
     vibrateSuccess()
     yield* put(showMessage(i18n.t('goldFlow.buy.successMessage')))
-    navigate(Screens.GoldHome)
+    popToScreen(Screens.GoldHome)
 
     // Import XAUt0 token so it shows in wallet
     yield* put(
@@ -389,10 +389,10 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
 
     yield* put(sellGoldSuccess({ txHash: swapTxHash }))
 
-    // Show success message and navigate to GoldHome
+    // Show success message and navigate to GoldHome (clear navigation stack)
     vibrateSuccess()
     yield* put(showMessage(i18n.t('goldFlow.sell.successMessage')))
-    navigate(Screens.GoldHome)
+    popToScreen(Screens.GoldHome)
 
     AppAnalytics.track(GoldEvents.gold_sell_submit_success, {
       amount: xautAmount,
