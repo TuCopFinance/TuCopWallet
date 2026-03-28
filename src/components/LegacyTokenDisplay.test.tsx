@@ -191,7 +191,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('₱5.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$5.00')
     })
 
     it('shows explicit plus sign', () => {
@@ -247,7 +247,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('₱5.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$5.00')
     })
 
     it('hides the sign', () => {

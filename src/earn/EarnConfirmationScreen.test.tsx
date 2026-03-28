@@ -128,7 +128,7 @@ describe('EarnConfirmationScreen', () => {
       '11.83 USDC'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
-      '₱15.73'
+      'COP$15.73'
     )
 
     expect(getByTestId('EarnConfirmation/GasLoading')).toBeTruthy()
@@ -139,7 +139,7 @@ describe('EarnConfirmationScreen', () => {
       '0.01 ARB'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbArbTokenId}/FiatAmount`)).toHaveTextContent(
-      '₱0.016'
+      'COP$0.016'
     )
 
     await waitFor(() => {
@@ -147,7 +147,7 @@ describe('EarnConfirmationScreen', () => {
     })
 
     expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('₱119.70')
+    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareWithdrawAndClaimTransactions).toHaveBeenCalledWith({
@@ -184,7 +184,7 @@ describe('EarnConfirmationScreen', () => {
       '5.91 USDC'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
-      '₱7.86'
+      'COP$7.86'
     )
 
     expect(queryByText('earnFlow.collect.reward')).toBeFalsy()
@@ -193,7 +193,7 @@ describe('EarnConfirmationScreen', () => {
       expect(queryByTestId('EarnConfirmation/GasLoading')).toBeFalsy()
     })
     expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('₱119.70')
+    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareWithdrawTransactions).toHaveBeenCalledWith({
@@ -231,7 +231,7 @@ describe('EarnConfirmationScreen', () => {
       '0.01 ARB'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbArbTokenId}/FiatAmount`)).toHaveTextContent(
-      '₱0.016'
+      'COP$0.016'
     )
 
     await waitFor(() => {
@@ -239,7 +239,7 @@ describe('EarnConfirmationScreen', () => {
     })
 
     expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('₱119.70')
+    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareClaimTransactions).toHaveBeenCalledWith({
@@ -285,7 +285,7 @@ describe('EarnConfirmationScreen', () => {
       '11.83 USDC'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
-      '₱15.73'
+      'COP$15.73'
     )
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeDisabled()
 

@@ -271,7 +271,7 @@ exports[`SendConfirmation renders correctly 1`] = `
               }
               testID="SendAmountFiat"
             >
-              ₱
+              COP$
               1.33
             </Text>
           </View>
@@ -417,7 +417,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           testID="LineItemRow/SendConfirmation/localFee"
         >
           <Text>
-            ₱
+            COP$
             0.067
           </Text>
         </Text>
@@ -548,7 +548,7 @@ exports[`SendConfirmation renders correctly 1`] = `
             >
               tokenExchangeRateApprox, {"symbol":"cUSD"}
               <Text>
-                ₱
+                COP$
                 1.33
               </Text>
             </Text>
@@ -576,7 +576,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           <Text
             testID="TotalLineItem/Subtotal"
           >
-            ₱
+            COP$
             1.40
           </Text>
         </Text>
