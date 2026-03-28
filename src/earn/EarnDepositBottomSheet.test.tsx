@@ -123,10 +123,10 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByText('earnFlow.depositBottomSheet.apy, {"apy":"1.92"}')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.amount')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(₱133.00)')
+    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(COP$133.00)')
 
     expect(getByText('earnFlow.depositBottomSheet.fee')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('₱0.012(0.000006 ETH)')
+    expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('COP$0.012(0.000006 ETH)')
 
     expect(getByText('earnFlow.depositBottomSheet.provider')).toBeTruthy()
     expect(getByText('Aave')).toBeTruthy()
@@ -164,13 +164,13 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByText('earnFlow.depositBottomSheet.apy, {"apy":"1.92"}')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.amount')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(₱133.00)')
+    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(COP$133.00)')
 
     expect(getByTestId('EarnDeposit/Swap/From')).toHaveTextContent('0.041 ETH')
     expect(getByTestId('EarnDeposit/Swap/To')).toHaveTextContent('100.00 USDC')
 
     expect(getByText('earnFlow.depositBottomSheet.fee')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('₱0.012(0.000006 ETH)')
+    expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('COP$0.012(0.000006 ETH)')
 
     expect(getByText('earnFlow.depositBottomSheet.provider')).toBeTruthy()
     expect(getByText('Aave')).toBeTruthy()

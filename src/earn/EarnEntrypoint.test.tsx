@@ -81,7 +81,7 @@ describe('EarnEntrypoint', () => {
 
     expect(getByText('earnFlow.entrypoint.title')).toBeTruthy()
     expect(getByText('earnFlow.entrypoint.totalDepositAndEarnings')).toBeTruthy()
-    expect(getByTestId('EarnEntrypoint/TotalSupplied')).toContainElement(getByText('₱15.96'))
+    expect(getByTestId('EarnEntrypoint/TotalSupplied')).toContainElement(getByText('COP$15.96'))
   })
 
   it('navigates to correct tab on touchable press when has pools supplied', () => {
