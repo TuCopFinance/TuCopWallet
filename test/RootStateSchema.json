@@ -6028,6 +6028,9 @@
                         "number"
                     ]
                 },
+                "hasSeenGoldInfo": {
+                    "type": "boolean"
+                },
                 "priceAlerts": {
                     "items": {
                         "$ref": "#/definitions/PriceAlert"
@@ -6054,6 +6057,7 @@
                 "goldPrice24hChange",
                 "goldPriceFetchedAt",
                 "goldPriceUsd",
+                "hasSeenGoldInfo",
                 "priceAlerts",
                 "priceFetchStatus",
                 "sellStatus",
