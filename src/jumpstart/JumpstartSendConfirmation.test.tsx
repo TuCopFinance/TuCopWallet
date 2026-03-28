@@ -53,7 +53,7 @@ describe('JumpstartSendConfirmation', () => {
 
     expect(getByText('jumpstartSendConfirmationScreen.title')).toBeTruthy()
     expect(getByText('12.35 cUSD')).toBeTruthy() // correct rounding
-    expect(getByText('₱16.42')).toBeTruthy() // local amount parsedAmount (12.345) *exchangeRate (1.33)
+    expect(getByText('COP$16.42')).toBeTruthy() // local amount parsedAmount (12.345) *exchangeRate (1.33)
     expect(getByText('jumpstartSendConfirmationScreen.info')).toBeTruthy()
     expect(getByText('jumpstartSendConfirmationScreen.confirmButton')).toBeEnabled()
   })
@@ -82,7 +82,7 @@ describe('JumpstartSendConfirmation', () => {
 
     expect(AppAnalytics.track).toHaveBeenCalledWith(JumpstartEvents.jumpstart_send_confirm, {
       amountInUsd: '12.36',
-      localCurrency: 'PHP',
+      localCurrency: 'COP',
       localCurrencyExchangeRate: '1.33',
       networkId: mockCusdTokenBalance.networkId,
       tokenAmount: '12.345',

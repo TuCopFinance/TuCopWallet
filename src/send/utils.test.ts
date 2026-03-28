@@ -346,7 +346,7 @@ describe('send/utils', () => {
       const data = {
         address: '0xf7f551752A78Ce650385B58364225e5ec18D96cB',
         displayName: 'Super 8',
-        currencyCode: 'PHP' as LocalCurrencyCode,
+        currencyCode: 'COP' as LocalCurrencyCode,
         amount: '500',
       }
 
