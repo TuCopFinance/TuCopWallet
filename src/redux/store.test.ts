@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 240,
+          "version": 244,
         },
         "account": {
           "acceptedTerms": false,
@@ -216,13 +216,13 @@ describe('store state', () => {
           "walletConnectV2Enabled": true,
         },
         "buckspay": {
-          "bucksPayCode": "P5Y1",
-          "bucksPayStatus": "PENDING",
+          "bucksPayCode": null,
+          "bucksPayStatus": null,
           "certificateUrl": null,
           "error": null,
-          "flowStatus": "tracking",
+          "flowStatus": "idle",
           "lastBankDetails": null,
-          "transactionHash": "0x4d197c3df59e7cb7833218cbd376bb07a15fd32dc632369ea047cf115e5715fe",
+          "transactionHash": null,
         },
         "dapps": {
           "activeDapp": null,
@@ -268,6 +268,18 @@ describe('store state', () => {
         "fiatExchanges": {
           "providerLogos": {},
           "txHashToProvider": {},
+        },
+        "gold": {
+          "buyStatus": "idle",
+          "buyTxHash": null,
+          "error": null,
+          "goldPrice24hChange": null,
+          "goldPriceFetchedAt": null,
+          "goldPriceUsd": null,
+          "priceAlerts": [],
+          "priceFetchStatus": "idle",
+          "sellStatus": "idle",
+          "sellTxHash": null,
         },
         "home": {
           "cleverTapInboxMessages": [],

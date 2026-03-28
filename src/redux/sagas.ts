@@ -16,8 +16,10 @@ import {
 } from 'src/app/saga'
 import { dappsSaga } from 'src/dapps/saga'
 import { fetchDappsListCompleted } from 'src/dapps/slice'
-import { divviProtocolSaga } from 'src/divviProtocol/saga'
+// DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
+// import { divviProtocolSaga } from 'src/divviProtocol/saga'
 import { earnSaga } from 'src/earn/saga'
+import { goldSaga } from 'src/gold/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
 import { firebaseSaga } from 'src/firebase/saga'
@@ -129,7 +131,8 @@ export function* rootSaga() {
     yield* spawn(firebaseSaga)
     yield* spawn(tokensSaga)
     yield* spawn(positionsSaga)
-    yield* spawn(divviProtocolSaga)
+    // DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
+    // yield* spawn(divviProtocolSaga)
     yield* spawn(localCurrencySaga)
     yield* spawn(transactionSaga)
     yield* spawn(homeSaga)
@@ -151,6 +154,7 @@ export function* rootSaga() {
     yield* spawn(pointsSaga)
     yield* spawn(earnSaga)
     yield* spawn(bucksPaySaga)
+    yield* spawn(goldSaga)
   } catch (error) {
     Logger.error('@rootSaga', 'Error while initializing sagas', error)
     // Propagate so it's handled by Sentry

@@ -2995,6 +2995,101 @@
   "ubiAlreadyClaimed": "Ya has reclamado tu subsidio esta semana",
   "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
   "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
+  "goldFlow": {
+    "gold": "Oro",
+    "entrypoint": {
+      "title": "Oro Digital",
+      "subtitle": "Compra y vende oro tokenizado"
+    },
+    "info": {
+      "title": "Oro Digital",
+      "description": "Invierte en tokens respaldados por oro (XAUt0) directamente desde tu billetera. Cada token representa 1 onza troy de oro físico almacenado en bóvedas seguras.",
+      "details": {
+        "backed": {
+          "title": "Respaldo Real de Oro",
+          "subtitle": "Cada token XAUt0 está respaldado 1:1 por oro físico almacenado en bóvedas seguras"
+        },
+        "secure": {
+          "title": "Trading Fácil",
+          "subtitle": "Compra y vende oro al instante usando tus criptomonedas"
+        },
+        "custody": {
+          "title": "Alertas de Precio",
+          "subtitle": "Configura alertas para ser notificado cuando el oro alcance tu precio objetivo"
+        }
+      },
+      "action": {
+        "learn": "Más Información",
+        "getStarted": "Comenzar"
+      }
+    },
+    "home": {
+      "title": "Oro Digital",
+      "currentPrice": "Precio Actual del Oro",
+      "yourHoldings": "Tu Balance",
+      "last24h": "24h",
+      "buy": "Comprar Oro",
+      "sell": "Vender Oro",
+      "priceAlerts": "Alertas de Precio"
+    },
+    "buy": {
+      "title": "Comprar Oro",
+      "selectToken": "Seleccionar Token",
+      "available": "Disponible",
+      "noTokensAvailable": "No hay tokens disponibles. Agrega fondos a tu billetera para comprar oro.",
+      "noUsdtAvailable": "Necesitas USDT para comprar oro. Agrega USDT a tu billetera para continuar.",
+      "continue": "Continuar",
+      "quoteErrorTitle": "Ruta de intercambio no disponible",
+      "quoteErrorDescription": "Este token no se puede intercambiar directamente por oro. Intenta usar USDT.",
+      "minimumAmountTitle": "Monto mínimo requerido",
+      "minimumAmountDescription": "El monto mínimo para comprar oro es {{minAmount}}.",
+      "confirmTitle": "Confirmar Compra",
+      "youPay": "Pagas",
+      "youReceive": "Recibes",
+      "goldPrice": "Precio del Oro",
+      "networkFee": "Tarifa de Red",
+      "estimatingFee": "Estimando...",
+      "confirm": "Confirmar Compra",
+      "infoTitle": "Sobre XAUt0",
+      "infoDescription": "Los tokens XAUt0 representan oro físico. Los precios pueden fluctuar según las condiciones del mercado.",
+      "errorTitle": "Transacción Fallida",
+      "error": "No se pudo completar la compra. Por favor intenta de nuevo.",
+      "successMessage": "¡Compra de oro exitosa!"
+    },
+    "sell": {
+      "title": "Vender Oro",
+      "selectToken": "Seleccionar Token a Recibir",
+      "available": "Disponible",
+      "noGoldBalance": "No tienes oro para vender. ¡Compra algo de oro primero!",
+      "buyGold": "Comprar Oro",
+      "continue": "Continuar",
+      "confirmTitle": "Confirmar Venta",
+      "youSell": "Vendes",
+      "youReceive": "Recibes",
+      "goldPrice": "Precio del Oro",
+      "networkFee": "Tarifa de Red",
+      "estimatingFee": "Estimando...",
+      "confirm": "Confirmar Venta",
+      "infoTitle": "Vendiendo Oro",
+      "infoDescription": "Tu oro se intercambiará por el token seleccionado al precio actual del mercado.",
+      "errorTitle": "Transacción Fallida",
+      "error": "No se pudo completar la venta. Por favor intenta de nuevo.",
+      "successMessage": "¡Venta de oro exitosa!"
+    },
+    "priceAlerts": {
+      "title": "Alertas de Precio",
+      "currentPrice": "Precio Actual del Oro",
+      "createAlert": "Crear Nueva Alerta",
+      "above": "Por Encima",
+      "below": "Por Debajo",
+      "createButton": "Crear Alerta",
+      "yourAlerts": "Tus Alertas",
+      "noAlerts": "No hay alertas de precio aún. ¡Crea una arriba!",
+      "priceAbove": "Notificar cuando el precio esté por encima de",
+      "priceBelow": "Notificar cuando el precio esté por debajo de",
+      "delete": "Eliminar"
+    }
+  },
   "buckspay": {
     "selectProvider": "Retirar Fondos",
     "selectProviderSubtitle": "Elige un proveedor para convertir tus criptomonedas a moneda local.",

@@ -8,15 +8,15 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 35
         targetSdkVersion = 35
-        kotlinVersion = "1.9.22"
-        ndkVersion = "26.1.10909125"
+        kotlinVersion = "2.0.21"
+        ndkVersion = "27.1.12297006"
 
         // Add these version configurations for react-native-svg
         androidXVersion = "1.9.0"
         kotlinCompilerExtensionVersion = "1.5.3"
 
         // Add specific versions for react-native-svg
-        reactNativeVersion = "0.72.15"  // Must match installed react-native version
+        reactNativeVersion = "0.77.0"  // Must match installed react-native version
         androidXAnnotation = "1.6.0"
         androidXAppcompat = "1.6.1"
     }

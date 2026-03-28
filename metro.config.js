@@ -29,7 +29,7 @@ const config = {
   },
   resolver: {
     assetExts: [...defaultAssetExts, 'txt'].filter((ext) => ext !== 'svg'),
-    blacklistRE: exclusionList(
+    blockList: exclusionList(
       isE2E ? blist : blist.concat([RegExp(`${escapedRoot}\/e2e\/mocks/.*`)])
     ),
     extraNodeModules: {

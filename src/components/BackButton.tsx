@@ -5,23 +5,22 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { TopBarIconButton, TopBarIconButtonProps } from 'src/navigator/TopBarButton'
 import { Spacing } from 'src/styles/styles'
 
-type Props = Omit<TopBarIconButtonProps, 'icon'> & BackChevronProps
+type Props = Omit<TopBarIconButtonProps, 'icon' | 'onPress'> &
+  BackChevronProps & {
+    onPress?: () => void
+  }
 
-function BackButton(props: Props) {
+function BackButton({ onPress = navigateBack, ...props }: Props) {
   return (
     <View style={[styles.container, props.style]}>
       <TopBarIconButton
         {...props}
+        onPress={onPress}
         style={styles.button}
         icon={<BackChevron color={props.color} height={props.height} />}
       />
     </View>
   )
-}
-
-BackButton.defaultProps = {
-  onPress: navigateBack,
-  ...BackChevron.defaultProps,
 }
 
 const styles = StyleSheet.create({

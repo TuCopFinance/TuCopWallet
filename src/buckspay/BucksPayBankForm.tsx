@@ -115,7 +115,7 @@ function BucksPayBankForm({ navigation }: Props) {
             keyboardType="decimal-pad"
             testID="buckspay-amount-input"
           />
-          {amountError && <Text style={styles.errorText}>{amountError}</Text>}
+          {!!amountError && <Text style={styles.errorText}>{amountError}</Text>}
         </View>
 
         <View style={[styles.fieldContainer, { zIndex: 2 }]}>

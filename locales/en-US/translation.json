@@ -2846,6 +2846,42 @@
   },
   "celoDollarAmount": "<0></0> Celo Dollar",
   "celoDollarAmount_plural": "<0></0> Celo Dollars",
+  "goldFlow": {
+    "entrypoint": {
+      "title": "Digital Gold (XAUt0)"
+    },
+    "info": {
+      "title": "Invest in Digital Gold",
+      "description": "Own real gold, stored securely in Swiss vaults, accessible directly from your wallet.",
+      "details": {
+        "backed": {
+          "title": "100% Gold Backed",
+          "subtitle": "Each XAUt0 token represents one troy ounce of physical gold held in secure Swiss vaults."
+        },
+        "secure": {
+          "title": "Secure & Verified",
+          "subtitle": "Gold reserves are regularly audited and verified by independent third parties."
+        },
+        "custody": {
+          "title": "Professional Custody",
+          "subtitle": "Your gold is safely stored by Tether in high-security vaults across Switzerland."
+        }
+      },
+      "action": {
+        "learn": "Learn More",
+        "getStarted": "Get Started"
+      }
+    },
+    "home": {
+      "title": "Digital Gold",
+      "currentPrice": "Current Gold Price",
+      "yourHoldings": "Your Holdings",
+      "last24h": "24h",
+      "priceAlerts": "Set Price Alerts",
+      "buy": "Buy Gold",
+      "sell": "Sell Gold"
+    }
+  },
   "buckspay": {
     "selectProvider": "Withdraw Funds",
     "selectProviderSubtitle": "Choose a provider to convert your crypto to local currency.",

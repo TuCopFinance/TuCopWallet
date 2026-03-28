@@ -27,8 +27,8 @@ describe('LegacyTokenDisplay', () => {
     return createMockStore({
       localCurrency: {
         usdToLocalRate: '0.10',
-        preferredCurrencyCode: LocalCurrencyCode.BRL,
-        fetchedCurrencyCode: LocalCurrencyCode.BRL,
+        preferredCurrencyCode: LocalCurrencyCode.COP,
+        fetchedCurrencyCode: LocalCurrencyCode.COP,
       },
       tokens: {
         tokenBalances: {
@@ -183,7 +183,7 @@ describe('LegacyTokenDisplay', () => {
             amount={10}
             tokenAddress={mockCusdAddress}
             localAmount={{
-              currencyCode: LocalCurrencyCode.PHP,
+              currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
               value: '5',
             }}
@@ -239,7 +239,7 @@ describe('LegacyTokenDisplay', () => {
             amount={10}
             tokenAddress={'0xdoesntexist'}
             localAmount={{
-              currencyCode: LocalCurrencyCode.PHP,
+              currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
               value: '5',
             }}

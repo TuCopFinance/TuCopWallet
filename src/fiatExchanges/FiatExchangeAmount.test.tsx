@@ -115,20 +115,20 @@ const storeWithUSD = createMockStore({
   tokens: mockTokens,
 })
 
-const storeWithEUR = createMockStore({
+const storeWithCOP = createMockStore({
   localCurrency: {
-    fetchedCurrencyCode: LocalCurrencyCode.EUR,
-    preferredCurrencyCode: LocalCurrencyCode.EUR,
-    usdToLocalRate: usdToEurRate,
+    fetchedCurrencyCode: LocalCurrencyCode.COP,
+    preferredCurrencyCode: LocalCurrencyCode.COP,
+    usdToLocalRate: usdToEurRate, // reusing rate for test purposes
   },
   tokens: mockTokens,
 })
 
-const storeWithPHP = createMockStore({
+const storeWithCOP2 = createMockStore({
   localCurrency: {
-    fetchedCurrencyCode: LocalCurrencyCode.PHP,
-    preferredCurrencyCode: LocalCurrencyCode.PHP,
-    usdToLocalRate: usdToPhpRate,
+    fetchedCurrencyCode: LocalCurrencyCode.COP,
+    preferredCurrencyCode: LocalCurrencyCode.COP,
+    usdToLocalRate: usdToPhpRate, // reusing rate for test purposes
   },
   tokens: mockTokens,
 })
@@ -137,7 +137,7 @@ describe('FiatExchangeAmount cashIn', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     storeWithUSD.clearActions()
-    storeWithPHP.clearActions()
+    storeWithCOP2.clearActions()
   })
 
   it.each([
@@ -169,7 +169,7 @@ describe('FiatExchangeAmount cashIn', () => {
     {
       currency: 'cEUR',
       tokenId: mockCeurTokenId,
-      store: storeWithPHP,
+      store: storeWithCOP2,
     },
     {
       currency: 'ETH',
@@ -209,14 +209,14 @@ describe('FiatExchangeAmount cashIn', () => {
     expect(tree).toMatchSnapshot()
   })
 
-  it('renders correctly with EUR as app currency', () => {
+  it('renders correctly with COP as app currency', () => {
     const mockScreenProps = getMockStackScreenProps(Screens.FiatExchangeAmount, {
       tokenId: mockCusdTokenId,
       flow: CICOFlow.CashIn,
       tokenSymbol: 'cUSD',
     })
     const tree = render(
-      <Provider store={storeWithEUR}>
+      <Provider store={storeWithCOP}>
         <FiatExchangeAmount {...mockScreenProps} />
       </Provider>
     )
@@ -246,7 +246,7 @@ describe('FiatExchangeAmount cashOut', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     storeWithUSD.clearActions()
-    storeWithPHP.clearActions()
+    storeWithCOP2.clearActions()
     jest.mocked(getFeatureGate).mockReturnValue(false)
   })
 

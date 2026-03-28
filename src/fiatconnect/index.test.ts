@@ -139,7 +139,7 @@ describe('FiatConnect helpers', () => {
     it('returns an empty array if fiatType is not supported', async () => {
       const quotes = await getFiatConnectQuotes({
         ...getQuotesInput,
-        localCurrency: LocalCurrencyCode.CAD,
+        localCurrency: 'CAD' as any, // Unsupported currency
       })
       expect(quotes).toHaveLength(0)
     })

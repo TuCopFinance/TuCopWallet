@@ -3024,5 +3024,104 @@
     "status_STARTED": "Started",
     "status_PAYED": "Payment Sent",
     "status_FINISHED": "Completed"
+  },
+  "goldFlow": {
+    "gold": "Gold",
+    "entrypoint": {
+      "title": "Digital Gold",
+      "subtitle": "Buy and sell tokenized gold"
+    },
+    "info": {
+      "title": "Digital Gold",
+      "description": "Invest in gold-backed tokens (XAUt0) directly from your wallet. Each token represents 1 troy ounce of physical gold stored in secure vaults.",
+      "details": {
+        "backed": {
+          "title": "Real Gold Backing",
+          "subtitle": "Every XAUt0 token is backed 1:1 by physical gold stored in secure vaults"
+        },
+        "secure": {
+          "title": "Easy Trading",
+          "subtitle": "Buy and sell gold instantly using your crypto holdings"
+        },
+        "custody": {
+          "title": "Price Alerts",
+          "subtitle": "Set alerts to be notified when gold reaches your target price"
+        }
+      },
+      "action": {
+        "learn": "Learn More",
+        "getStarted": "Get Started"
+      }
+    },
+    "home": {
+      "title": "Digital Gold",
+      "currentPrice": "Current Gold Price",
+      "yourHoldings": "Your Holdings",
+      "last24h": "last 24h",
+      "buy": "Buy Gold",
+      "sell": "Sell Gold",
+      "priceAlerts": "Price Alerts"
+    },
+    "buy": {
+      "title": "Buy Gold",
+      "selectToken": "Select Token",
+      "available": "Available",
+      "noTokensAvailable": "No tokens available. Add funds to your wallet to buy gold.",
+      "noUsdtAvailable": "You need USDT to buy gold. Add USDT to your wallet to continue.",
+      "continue": "Continue",
+      "quoteErrorTitle": "No swap route available",
+      "quoteErrorDescription": "This token cannot be swapped directly for gold. Try using USDT instead.",
+      "minimumAmountTitle": "Minimum amount required",
+      "minimumAmountDescription": "The minimum amount to buy gold is {{minAmount}}.",
+      "confirmTitle": "Confirm Purchase",
+      "youPay": "You Pay",
+      "youReceive": "You Receive",
+      "goldPrice": "Gold Price",
+      "networkFee": "Network Fee",
+      "estimatingFee": "Estimating...",
+      "confirm": "Confirm Purchase",
+      "infoTitle": "About XAUt0",
+      "infoDescription": "XAUt0 tokens represent physical gold. Prices may fluctuate based on market conditions.",
+      "errorTitle": "Transaction Failed",
+      "error": "Failed to complete purchase. Please try again.",
+      "successMessage": "Gold purchase successful!"
+    },
+    "sell": {
+      "title": "Sell Gold",
+      "selectToken": "Select Token to Receive",
+      "available": "Available",
+      "noGoldBalance": "You don't have any gold to sell. Buy some gold first!",
+      "buyGold": "Buy Gold",
+      "continue": "Continue",
+      "minimumAmountTitle": "Minimum amount required",
+      "minimumAmountDescription": "The minimum amount to sell gold is {{minAmount}}.",
+      "quoteErrorTitle": "No swap route available",
+      "quoteErrorDescription": "This amount cannot be swapped. Try a larger amount.",
+      "confirmTitle": "Confirm Sale",
+      "youSell": "You Sell",
+      "youReceive": "You Receive",
+      "goldPrice": "Gold Price",
+      "networkFee": "Network Fee",
+      "estimatingFee": "Estimating...",
+      "confirm": "Confirm Sale",
+      "infoTitle": "Selling Gold",
+      "infoDescription": "Your gold will be swapped for the selected token at the current market rate.",
+      "errorTitle": "Transaction Failed",
+      "error": "Failed to complete sale. Please try again.",
+      "successMessage": "Gold sale successful!"
+    },
+    "priceAlerts": {
+      "title": "Price Alerts",
+      "currentPrice": "Current Gold Price",
+      "createAlert": "Create New Alert",
+      "above": "Above",
+      "below": "Below",
+      "createButton": "Create Alert",
+      "yourAlerts": "Your Alerts",
+      "noAlerts": "No price alerts yet. Create one above!",
+      "priceAbove": "Notify when price is above",
+      "priceBelow": "Notify when price is below",
+      "delete": "Delete"
+    }
   }
 }

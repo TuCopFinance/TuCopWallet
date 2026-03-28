@@ -43,3 +43,5 @@ export type TransactionOrigin =
   | 'jumpstart-claim'
   | 'wallet-connect'
   | 'shortcut'
+  | 'gold-buy'
+  | 'gold-sell'

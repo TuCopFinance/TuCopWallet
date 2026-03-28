@@ -403,13 +403,14 @@ describe('ReviewScreen', () => {
       })
       const expireMs = 100
       const mockProps = getProps(CICOFlow.CashOut, false, CryptoType.cUSD, false, expireMs)
-      const { getByTestId, findByTestId } = render(
+      const { getByTestId, queryByTestId } = render(
         <Provider store={store}>
           <FiatConnectReviewScreen {...mockProps} />
         </Provider>
       )
 
-      expect((await findByTestId('expiredQuoteDialog')).props.visible).toEqual(false)
+      // Dialog should not be visible initially (react-native-modal doesn't render hidden modals)
+      expect(queryByTestId('expiredQuoteDialog')).toBeNull()
       await act(() => {
         jest.advanceTimersByTime(expireMs + 1)
       })
@@ -417,7 +418,8 @@ describe('ReviewScreen', () => {
       fireEvent.press(getByTestId('submitButton'))
 
       expect(store.getActions()).toEqual([])
-      await waitFor(() => expect(getByTestId('expiredQuoteDialog').props.visible).toEqual(true))
+      // After expiration and submit, dialog should appear
+      await waitFor(() => expect(getByTestId('expiredQuoteDialog')).toBeTruthy())
     })
     it('dispatches fiat transfer action and navigates on clicking button', async () => {
       mockPrepareERC20TransferTransaction.mockResolvedValue({
