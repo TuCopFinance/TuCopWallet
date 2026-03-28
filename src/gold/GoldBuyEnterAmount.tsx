@@ -44,6 +44,7 @@ import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
+import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyEnterAmount>
 
@@ -76,24 +77,63 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   const { getQuote, loading: isGettingQuote, error: quoteError } = useGoldQuote()
 
+  // Get user-friendly display name for tokens (same pattern as TokenBalanceItem)
+  // Uses tokenId first, then symbol as fallback for different USDT variants
+  const getTokenName = (token: TokenBalance) => {
+    // Check by tokenId first (most reliable)
+    if (token.tokenId === networkConfig.copmTokenId) {
+      return t('assets.pesos')
+    }
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    if (token.tokenId === networkConfig.xaut0TokenId) {
+      return t('goldFlow.gold')
+    }
+    // Fallback: check by symbol for different token variants
+    const symbol = token.symbol?.toLowerCase() || ''
+    if (symbol === 'ccop' || symbol === 'copm') {
+      return t('assets.pesos')
+    }
+    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+      return t('assets.dollars')
+    }
+    if (symbol === 'xaut0' || symbol === 'xaut') {
+      return t('goldFlow.gold')
+    }
+    return token.name
+  }
+
   // Get swappable tokens on Celo mainnet
   const swappableTokens = useSelector((state) =>
     swappableFromTokensByNetworkIdSelector(state, [NetworkId['celo-mainnet']])
   )
 
   // Filter to USDT only (supported by Squid Router for XAUt0 swaps)
-  // TODO: Add more tokens as liquidity pairs are confirmed
-  const availableTokens = useMemo(
-    () =>
-      swappableTokens.filter(
-        (token) =>
-          token.balance.gt(0) &&
-          (token.symbol === 'USDT' ||
-            token.symbol === 'USDt' ||
-            token.symbol.toLowerCase() === 'usdt')
-      ),
-    [swappableTokens]
-  )
+  // Note: USDT on Celo uses symbol "USD₮" (with special ₮ character)
+  const availableTokens = useMemo(() => {
+    const filtered = swappableTokens.filter(
+      (token) =>
+        token.balance.gt(0) &&
+        (token.symbol === 'USDT' ||
+          token.symbol === 'USDt' ||
+          token.symbol === 'USD₮' ||
+          token.symbol.toLowerCase() === 'usdt' ||
+          token.symbol.toLowerCase().includes('usdt'))
+    )
+    Logger.debug(
+      'GoldBuyEnterAmount',
+      `Filtered tokens: ${filtered.length} USDT from ${swappableTokens.length} swappable`,
+      {
+        swappableSymbols: swappableTokens
+          .filter((t) => t.balance.gt(0))
+          .map((t) => t.symbol)
+          .join(', '),
+        filteredSymbols: filtered.map((t) => t.symbol).join(', '),
+      }
+    )
+    return filtered
+  }, [swappableTokens])
 
   // Default to first available token or from route params
   const defaultToken = route.params?.fromTokenId
@@ -301,7 +341,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
                 >
                   <>
                     <TokenIcon token={selectedToken} size={IconSize.SMALL} />
-                    <Text style={styles.tokenName}>{selectedToken.symbol}</Text>
+                    <Text style={styles.tokenName}>{getTokenName(selectedToken)}</Text>
                     {availableTokens.length > 1 && <DownArrowIcon color={Colors.gray5} />}
                   </>
                 </Touchable>
@@ -312,7 +352,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
             <View style={styles.outputRow}>
               <GoldIcon size={20} />
               <Text style={styles.goldAmountText}>
-                {goldAmount ? goldAmount.toFormat(XAUT0_DECIMALS) : '0'} XAUt0
+                {goldAmount ? goldAmount.toFormat(XAUT0_DECIMALS) : '0'} {t('goldFlow.gold')}
               </Text>
               {localValue && (
                 <Text style={styles.localValueText}>
@@ -327,7 +367,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           {selectedToken && (
             <Text style={styles.balanceText}>
               {t('goldFlow.buy.available')}: {selectedToken.balance.toFormat(4)}{' '}
-              {selectedToken.symbol}
+              {getTokenName(selectedToken)}
             </Text>
           )}
         </View>
