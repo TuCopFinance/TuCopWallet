@@ -88,6 +88,11 @@ export interface GoldQuoteResult {
   preparedTransactions: PreparedTransactionsResult
 }
 
+interface BackendQuoteResult {
+  transaction: SwapTransaction
+  swapProvider: string
+}
+
 /**
  * Fetch swap quote from the backend API (same as regular swaps)
  * The backend handles routing through Uniswap V4, Squid, or other providers
@@ -97,7 +102,7 @@ async function fetchBackendQuote(
   toToken: TokenBalance,
   amount: BigNumber,
   walletAddress: string
-): Promise<SwapTransaction> {
+): Promise<BackendQuoteResult> {
   // Get addresses from tokens (try address property first, then extract from tokenId)
   const sellTokenAddress = getTokenAddress(fromToken)
   const buyTokenAddress = getTokenAddress(toToken)
@@ -163,7 +168,10 @@ async function fetchBackendQuote(
     `Got backend quote from ${quote.details.swapProvider}: ${quote.unvalidatedSwapTransaction.sellAmount} -> ${quote.unvalidatedSwapTransaction.buyAmount}`
   )
 
-  return quote.unvalidatedSwapTransaction
+  return {
+    transaction: quote.unvalidatedSwapTransaction,
+    swapProvider: quote.details.swapProvider,
+  }
 }
 
 /**
@@ -175,7 +183,7 @@ async function fetchSwapQuote(
   toToken: TokenBalance,
   amount: BigNumber,
   walletAddress: string
-): Promise<SwapTransaction> {
+): Promise<BackendQuoteResult> {
   // Use backend API only - it handles routing through multiple sources internally
   // Direct Squid calls disabled to avoid rate limiting issues
   try {
@@ -289,7 +297,12 @@ export function useGoldQuote() {
         )
 
         // Fetch quote from backend API (handles Uniswap V4 routing)
-        const swapTransaction = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
+        const { transaction: swapTransaction, swapProvider } = await fetchSwapQuote(
+          fromToken,
+          toToken,
+          amount,
+          walletAddress
+        )
 
         // Create transactions from the quote
         const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
@@ -340,6 +353,7 @@ export function useGoldQuote() {
           preparedTransactions: getSerializablePreparedTransactions(
             preparedTransactions.type === 'possible' ? preparedTransactions.transactions : []
           ),
+          swapProvider,
         }
 
         return {
@@ -406,7 +420,12 @@ export async function estimateGoldSwapGas(
 ): Promise<{ estimatedGasFee: string; gasFeeTokenId: string } | null> {
   try {
     // Fetch quote from backend API to get accurate gas estimation
-    const swapTransaction = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
+    const { transaction: swapTransaction } = await fetchSwapQuote(
+      fromToken,
+      toToken,
+      amount,
+      walletAddress
+    )
 
     // Create transactions from the quote
     const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(

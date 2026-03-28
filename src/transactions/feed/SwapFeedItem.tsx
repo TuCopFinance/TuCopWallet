@@ -35,19 +35,42 @@ function SwapFeedItem({ transaction }: Props) {
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
 
-  const getTokenName = (token: any) => {
+  // Get friendly token name - also accepts tokenId for when token info isn't available
+  const getTokenName = (token: any, tokenId?: string) => {
+    // First check by tokenId (works even when token info not loaded)
+    const idToCheck = tokenId || token?.tokenId
+    if (idToCheck) {
+      if (idToCheck === networkConfig.copmTokenId) {
+        return t('assets.pesos')
+      }
+      if (idToCheck === networkConfig.usdtTokenId) {
+        return t('assets.dollars')
+      }
+      if (idToCheck === networkConfig.xaut0TokenId) {
+        return t('assets.gold')
+      }
+    }
+
     if (!token) {
+      // Fallback: try to detect XAUt0 by address in tokenId
+      if (idToCheck?.toLowerCase().includes('0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff')) {
+        return t('assets.gold')
+      }
       return '...'
     }
-    if (token.tokenId === networkConfig.copmTokenId) {
+
+    // Check by symbol as fallback
+    const symbol = token.symbol?.toLowerCase() || ''
+    if (symbol === 'copm' || symbol === 'ccop') {
       return t('assets.pesos')
     }
-    if (token.tokenId === networkConfig.usdtTokenId) {
+    if (symbol === 'usdt' || symbol === 'usd₮' || symbol === 'usdt0') {
       return t('assets.dollars')
     }
-    if (token.tokenId === networkConfig.xaut0TokenId) {
+    if (symbol === 'xaut0' || symbol === 'xaut') {
       return t('assets.gold')
     }
+
     return token.name ?? token.symbol ?? '...'
   }
 
@@ -68,8 +91,8 @@ function SwapFeedItem({ transaction }: Props) {
             {isCrossChainSwap
               ? t('transactionFeed.crossChainSwapTransactionLabel')
               : t('feedItemSwapPath', {
-                  token1: getTokenName(outgoingTokenInfo),
-                  token2: getTokenName(incomingTokenInfo),
+                  token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                  token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
                 })}
           </Text>
         </View>
