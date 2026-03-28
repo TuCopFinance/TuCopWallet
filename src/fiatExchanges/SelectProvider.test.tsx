@@ -251,7 +251,7 @@ describe(SelectProviderScreen, () => {
           ...mockAnalyticsData,
           transferCryptoAmount: undefined,
           fiatType: LocalCurrencyCode.USD,
-          defaultFiatType: LocalCurrencyCode.MXN,
+          defaultFiatType: LocalCurrencyCode.COP,
           flow: CICOFlow.CashIn,
           cryptoAmount: undefined,
           fiatAmount: AMOUNT_TO_CASH_IN,
