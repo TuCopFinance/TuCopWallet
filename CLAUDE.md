@@ -45,7 +45,7 @@ yarn type-check           # TypeScript type checking
 ## Project Architecture
 
 ### Core Technology Stack
-- **React Native 0.72.15** with TypeScript
+- **React Native 0.77.3** with TypeScript (branch: feature/react-native-upgrade-0.77)
 - **Redux Toolkit** with Redux Saga for state management
 - **React Navigation 7.x** for navigation
 - **Viem** for blockchain interactions (Celo network)
@@ -94,7 +94,93 @@ src/
 - **Celo network** only (mainnet + Celo Sepolia testnet; Alfajores is deprecated)
 - **Viem** for web3 interactions
 - **WalletConnect** for DApp connectivity
-- Key token: COPm (Colombian Peso stablecoin on Celo, renamed from cCOP)
+- Token configuration: `src/web3/networkConfig.ts`
+
+### Token Ecosystem
+
+#### Mento Stablecoins (Rebranding: cXXX → XXXm)
+Mento Protocol rebranded all stablecoins from `cXXX` to `XXXm` format for multichain adoption.
+
+| Token | Old Symbol | New Symbol | Celo Mainnet Address | Decimals |
+|-------|------------|------------|---------------------|----------|
+| Colombian Peso | cCOP | **COPm** | `0x8a567e2ae79ca692bd748ab832081c45de4041ea` | 18 |
+| US Dollar | cUSD | USDm | `0x765de816845861e75a25fca122bb6898b8b1282a` | 18 |
+| Euro | cEUR | EURm | `0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73` | 18 |
+| Brazilian Real | cREAL | BRLm | `0xe8537a3d056da446677b9e9d6c5db704eaab4787` | 18 |
+| Kenyan Shilling | cKES | KESm | `0x456a3d042c0dbd3db53d5489e98dfb038553b0d0` | 18 |
+| Philippine Peso | PUSO | PHPm | `0x105d4a9306d2e55a71d2eb95b81553ae1dc20d7b` | 18 |
+| West African CFA | eXOF | XOFm | `0x73f93dcc49cb8a239e2032663e9475dd5ef29a08` | 18 |
+| Nigerian Naira | cNGN | NGNm | `0xe2702bd97ee33c88c8f6f92da3b733608aa76f71` | 18 |
+| Japanese Yen | cJPY | JPYm | `0xc45ecf20f3cd864b32d9794d6f76814ae8892e20` | 18 |
+| Swiss Franc | cCHF | CHFm | `0xb55a79f398e759e43c95b979163f30ec87ee131d` | 18 |
+| South African Rand | cZAR | ZARm | `0x4c35853a3b4e647fd266f4de678dcc8fec410bf6` | 18 |
+| British Pound | cGBP | GBPm | `0xccf663b1ff11028f0b19058d0f7b674004a40746` | 18 |
+| Australian Dollar | cAUD | AUDm | `0x7175504c455076f15c04a2f90a8e352281f492f9` | 18 |
+| Canadian Dollar | cCAD | CADm | `0xff4ab19391af240c311c54200a492233052b6325` | 18 |
+| Ghanaian Cedi | cGHS | GHSm | `0xfaea5f3404bba20d3cc2f8c4b0a888f55a3c7313` | 18 |
+
+**Resources:**
+- [Mento Protocol](https://www.mento.org/)
+- [Mento Stablecoins](https://www.mento.org/stablecoins)
+- [Mento Forum](https://forum.mento.org/)
+- [Rebranding Proposal](https://forum.celo.org/t/mento-stablecoin-rebranding-and-strategic-evolution/12639)
+
+#### Non-Mento Stablecoins (USDT, USDC)
+These are native stablecoins issued by Tether and Circle directly on Celo (NOT bridged).
+
+| Token | Symbol | Celo Mainnet Address | Decimals | Notes |
+|-------|--------|---------------------|----------|-------|
+| Tether USD | **USDT** | `0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e` | 6 | Primary for swaps |
+| USD Coin | **USDC** | `0xceba9300f2b948710d2653dd7b07f33a8b32118c` | 6 | Circle native (Feb 2024) |
+
+**Future Plan:** Dólares = USDT + USDm + USDC (por ahora solo USDT activo)
+
+#### Digital Gold
+| Token | Symbol | Celo Mainnet Address | Decimals | Notes |
+|-------|--------|---------------------|----------|-------|
+| Tether Gold | XAUt0 | `0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff` | 6 | 1 token = 1 troy oz |
+
+#### Native Token
+| Token | Symbol | Celo Mainnet Address | Decimals |
+|-------|--------|---------------------|----------|
+| Celo | CELO | `0x471ece3750da237f93b8e339c536989b8978a438` | 18 |
+
+#### TuCop Primary Tokens
+Los tokens principales usados en TuCop:
+
+1. **COPm** - Peso Colombiano (Mento) - Token principal para usuarios colombianos
+2. **USDT** - Dólares para swaps y transferencias internacionales
+3. **CELO** - Token nativo de la red
+
+**Nota:** La app soporta pago de gas en stablecoins (no solo CELO).
+
+#### UI Display Rules (IMPORTANTE)
+**A nivel de usuario SIEMPRE mostrar nombres amigables, NO símbolos técnicos:**
+
+| Interno (código) | UI (usuario) | Notas |
+|------------------|--------------|-------|
+| COPm | **Pesos** | Nunca mostrar "COPm" al usuario |
+| USDT, USDC, USDm | **Dólares** | Agrupar como "Dólares" |
+| CELO | CELO | Mantener nombre técnico |
+| XAUt0 | **Oro** | Mostrar como "Oro Digital" |
+
+**Regla:** El usuario promedio no necesita saber que usa COPm o USDT. Solo ve "Pesos" y "Dólares".
+
+#### Token IDs Format
+```typescript
+// Mainnet format: "celo-mainnet:0x{address}"
+const COPM_TOKEN_ID = "celo-mainnet:0x8a567e2ae79ca692bd748ab832081c45de4041ea"
+const USDT_TOKEN_ID = "celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e"
+
+// Testnet (Celo Sepolia) format: "celo-sepolia:0x{address}"
+const COPM_TOKEN_ID_TESTNET = "celo-sepolia:0x5f8d55c3627d2dc0a2b4afa798f877242f382f67"
+```
+
+#### Important Token Rules
+- **NEVER** use old `cXXX` symbol names in new code - always use `XXXm`
+- **ALWAYS** use lowercase addresses in token IDs
+- **DECIMALS**: Mento tokens = 18, USDT/USDC = 6, XAUt0 = 6
+- Token configuration is in `src/web3/networkConfig.ts`
 
 ### Component Patterns
 - Use `useAppSelector` and `useAppDispatch` for Redux
@@ -156,10 +242,13 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 
 ### Android Build Configuration
 
-- **AGP**: 8.5.1 | **Gradle**: 8.7 | **Kotlin**: 1.9.22
+- **AGP**: 8.5.1 | **Gradle**: 8.10.2 | **Kotlin**: 2.0.21
 - **NDK**: 26.1.10909125 | **Build Tools**: 35.0.0
 - **Min SDK**: 24 | **Target/Compile SDK**: 35
 - **Hermes**: enabled | **ProGuard/R8**: enabled in release
+- **New Architecture**: disabled (`newArchEnabled=false`)
+- **MainActivity/MainApplication**: Kotlin (required for RN 0.77.x with Old Arch)
+- **SoLoader**: Uses `OpenSourceMergedSoMapping` (fixes libreact_featureflagsjni.so crash)
 - **16 KB page size**: Supported via AGP 8.5.1 + `useLegacyPackaging = true`
 - **Release build**: `cd android && ./gradlew bundleMainnetRelease`
 - **AAB output**: `android/app/build/outputs/bundle/mainnetRelease/app-mainnet-release.aab`
@@ -167,7 +256,8 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 
 ### Recent Important Changes
 
-- **Version 1.117.0**: Current app version (build code: 1021081753)
+- **Version 1.118.0**: Current app version (build code: 1021081754)
+- **React Native 0.77.3 Upgrade**: With Kotlin MainActivity/MainApplication + OpenSourceMergedSoMapping fix
 - **AGP 8.5.1 Upgrade**: For Google Play 16 KB page size compliance
 - **BucksPay Offramp**: Native COPm → COP bank transfer integration via BucksPay API
 - **COPm Token**: Renamed from cCOP to COPm across the app

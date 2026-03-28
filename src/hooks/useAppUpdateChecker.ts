@@ -10,6 +10,8 @@ const LAST_UPDATE_CHECK_KEY = 'lastUpdateCheckTimestamp'
 const UPDATE_DISMISSED_KEY = 'updateDismissedVersion'
 
 export interface UseAppUpdateCheckerOptions {
+  /** Habilitar el verificador de actualizaciones (deshabilitado en __DEV__ por defecto) */
+  enabled?: boolean
   /** Versión mínima requerida para forzar actualización */
   minRequiredVersion?: string
   /** Usar backend propio en lugar de APIs de tiendas */
@@ -43,6 +45,7 @@ export function useAppUpdateChecker(
   options: UseAppUpdateCheckerOptions = {}
 ): UseAppUpdateCheckerReturn {
   const {
+    enabled = !__DEV__, // Deshabilitado en desarrollo por defecto
     minRequiredVersion,
     useBackend = false,
     showDialogAutomatically = true,
@@ -174,6 +177,10 @@ export function useAppUpdateChecker(
 
   // Verificar actualizaciones al montar el componente
   useEffect(() => {
+    if (!enabled) {
+      Logger.info(TAG, '🚀 Update checker disabled (development mode)')
+      return
+    }
     if (checkOnAppStart) {
       Logger.info(TAG, '🚀 App started, checking if should verify updates...')
       void shouldCheckForUpdate().then((should) => {
@@ -188,11 +195,11 @@ export function useAppUpdateChecker(
     } else {
       Logger.info(TAG, '🚀 App started but checkOnAppStart is disabled')
     }
-  }, [checkOnAppStart, shouldCheckForUpdate, checkForUpdate])
+  }, [enabled, checkOnAppStart, shouldCheckForUpdate, checkForUpdate])
 
   // Escuchar cambios de estado de la app
   useEffect(() => {
-    if (!checkOnAppResume) return
+    if (!enabled || !checkOnAppResume) return
 
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active') {
@@ -208,7 +215,7 @@ export function useAppUpdateChecker(
     return () => {
       subscription?.remove()
     }
-  }, [checkOnAppResume, shouldCheckForUpdate, checkForUpdate])
+  }, [enabled, checkOnAppResume, shouldCheckForUpdate, checkForUpdate])
 
   return {
     updateInfo,
