@@ -2120,6 +2120,13 @@
             ],
             "type": "string"
         },
+        "GoldIconVariant": {
+            "enum": [
+                "bar",
+                "vault"
+            ],
+            "type": "string"
+        },
         "GoldOperationStatus": {
             "enum": [
                 "error",
@@ -6031,6 +6038,9 @@
                 "hasSeenGoldInfo": {
                     "type": "boolean"
                 },
+                "preferredIconVariant": {
+                    "$ref": "#/definitions/GoldIconVariant"
+                },
                 "priceAlerts": {
                     "items": {
                         "$ref": "#/definitions/PriceAlert"
@@ -6058,6 +6068,7 @@
                 "goldPriceFetchedAt",
                 "goldPriceUsd",
                 "hasSeenGoldInfo",
+                "preferredIconVariant",
                 "priceAlerts",
                 "priceFetchStatus",
                 "sellStatus",
