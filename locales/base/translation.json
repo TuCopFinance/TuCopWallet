@@ -2084,7 +2084,8 @@
     "importTokens": "Import Tokens",
     "balanceInLocalAmount": "Balance in local amount",
     "pesos": "Colombian Pesos",
-    "dollars": "Dollars"
+    "dollars": "Dollars",
+    "gold": "Gold"
   },
   "notificationCenterSpotlight": {
     "message": "Introducing a new way to claim rewards, view alerts, and see updates in one place",
