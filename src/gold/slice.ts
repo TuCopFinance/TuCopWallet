@@ -3,6 +3,7 @@ import { REHYDRATE, RehydrateAction } from 'redux-persist'
 import { getRehydratePayload } from 'src/redux/persist-helper'
 import {
   GoldBuyInfo,
+  GoldIconVariant,
   GoldOperationStatus,
   GoldPriceData,
   GoldSellInfo,
@@ -32,6 +33,9 @@ export interface State {
 
   // User has seen intro screen
   hasSeenGoldInfo: boolean
+
+  // User preferred icon style
+  preferredIconVariant: GoldIconVariant
 }
 
 const initialState: State = {
@@ -46,6 +50,7 @@ const initialState: State = {
   priceAlerts: [],
   error: null,
   hasSeenGoldInfo: false,
+  preferredIconVariant: 'bar',
 }
 
 export const slice = createSlice({
@@ -139,6 +144,14 @@ export const slice = createSlice({
     setHasSeenGoldInfo: (state) => {
       state.hasSeenGoldInfo = true
     },
+
+    // Toggle icon variant
+    toggleGoldIconVariant: (state) => {
+      state.preferredIconVariant = state.preferredIconVariant === 'bar' ? 'vault' : 'bar'
+    },
+    setGoldIconVariant: (state, action: PayloadAction<GoldIconVariant>) => {
+      state.preferredIconVariant = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
@@ -157,6 +170,7 @@ export const slice = createSlice({
         goldPriceFetchedAt: persisted.goldPriceFetchedAt ?? null,
         priceAlerts: persisted.priceAlerts ?? [],
         hasSeenGoldInfo: persisted.hasSeenGoldInfo ?? false,
+        preferredIconVariant: persisted.preferredIconVariant ?? 'bar',
         // Clear transient state
         buyTxHash: null,
         sellTxHash: null,
@@ -182,6 +196,8 @@ export const {
   markAlertTriggered,
   resetGoldFlow,
   setHasSeenGoldInfo,
+  toggleGoldIconVariant,
+  setGoldIconVariant,
 } = slice.actions
 
 export default slice.reducer

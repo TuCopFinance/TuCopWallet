@@ -81,3 +81,6 @@ export const goldErrorSelector = (state: RootState) => state.gold.error
 
 // Has seen gold info screen selector
 export const hasSeenGoldInfoSelector = (state: RootState) => state.gold.hasSeenGoldInfo
+
+// Preferred icon variant selector
+export const goldIconVariantSelector = (state: RootState) => state.gold.preferredIconVariant
