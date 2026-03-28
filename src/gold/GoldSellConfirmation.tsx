@@ -1,44 +1,118 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import AppAnalytics from 'src/analytics/AppAnalytics'
-import { GoldEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
+import { goldSellStatusSelector, xaut0TokenSelector } from 'src/gold/selectors'
+import { sellGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
+import { useGoldQuote } from 'src/gold/useGoldQuote'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { headerWithBackButton } from 'src/navigator/Headers'
-import { navigate, navigateHome } from 'src/navigator/NavigationService'
-import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { useSelector } from 'src/redux/hooks'
+import { Screens } from 'src/navigator/Screens'
+import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
+import Logger from 'src/utils/Logger'
+import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldSellConfirmation>
 
 export default function GoldSellConfirmation({ route }: Props) {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { toTokenId, xautAmount, toAmount, pricePerOz } = route.params
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const toToken = useTokenInfo(toTokenId)
+  const xaut0Token = useSelector(xaut0TokenSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const sellStatus = useSelector(goldSellStatusSelector)
+
+  // State for quote
+  const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(undefined)
+  const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(undefined)
+  const [preparedTransactions, setPreparedTransactions] = useState<any>(null)
+  const [quoteError, setQuoteError] = useState<string | null>(null)
+
+  const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
+
+  // Use the gold quote hook to fetch quote
+  const { getQuote, loading: isGettingQuote } = useGoldQuote()
+
+  // Track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  // Fetch quote on mount
+  useEffect(() => {
+    const fetchQuote = async () => {
+      if (!toToken || !xaut0Token) {
+        return
+      }
+
+      Logger.debug('GoldSellConfirmation', 'Fetching sell quote')
+
+      try {
+        const quoteResult = await getQuote({
+          fromToken: xaut0Token,
+          toToken,
+          amount: new BigNumber(xautAmount),
+          direction: 'sell',
+        })
+
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+          return
+        }
+
+        if (quoteResult) {
+          Logger.debug('GoldSellConfirmation', 'Got quote result', {
+            gasFee: quoteResult.quote.estimatedGasFee,
+          })
+          setEstimatedGasFee(quoteResult.quote.estimatedGasFee)
+          if (quoteResult.preparedTransactions.type === 'possible') {
+            setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
+          }
+          setPreparedTransactions(quoteResult.quote.preparedTransactions)
+          setQuoteError(null)
+        } else {
+          setQuoteError(t('goldFlow.sell.quoteErrorDescription'))
+        }
+      } catch (err: any) {
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+          return
+        }
+        Logger.error('GoldSellConfirmation', 'Failed to get quote', err)
+        setQuoteError(err.message || t('goldFlow.sell.quoteErrorDescription'))
+      }
+    }
+
+    fetchQuote()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toToken, xaut0Token, xautAmount])
+
+  // Note: Success navigation and message are handled by the saga
 
   const parsedXautAmount = useMemo(() => new BigNumber(xautAmount), [xautAmount])
   const parsedToAmount = useMemo(() => new BigNumber(toAmount), [toAmount])
@@ -60,38 +134,37 @@ export default function GoldSellConfirmation({ route }: Props) {
     return totalValueUsd.multipliedBy(usdToLocalRate)
   }, [totalValueUsd, usdToLocalRate])
 
-  const onPressConfirm = async () => {
-    if (!toToken) return
+  // Parse gas fee if available
+  const parsedGasFee = useMemo(() => {
+    if (!estimatedGasFee || !gasFeeToken) return null
+    return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
+  }, [estimatedGasFee, gasFeeToken])
 
-    setIsSubmitting(true)
+  const isSubmitting = sellStatus === 'loading'
+
+  const onPressConfirm = () => {
+    if (!toToken || !preparedTransactions) return
+
     setError(null)
 
-    try {
-      AppAnalytics.track(GoldEvents.gold_sell_submit_start, {
-        amount: xautAmount,
+    // Dispatch the sell action - saga will handle the transaction
+    dispatch(
+      sellGoldStart({
+        toTokenId,
+        xautAmount,
+        quote: {
+          fromTokenId: networkConfig.xaut0TokenId,
+          toTokenId,
+          fromAmount: parsedXautAmount.shiftedBy(XAUT0_DECIMALS).toFixed(0),
+          toAmount: parsedToAmount.shiftedBy(toToken.decimals).toFixed(0),
+          pricePerOz,
+          estimatedGasFee: estimatedGasFee ?? '0',
+          estimatedGasFeeUsd: '0',
+          allowanceTarget: '',
+          preparedTransactions,
+        },
       })
-
-      // TODO: Execute the actual swap transaction via Squid Router
-      // For now, simulate a delay and show success
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      AppAnalytics.track(GoldEvents.gold_sell_submit_success, {
-        amount: xautAmount,
-        txHash: '', // TODO: Add actual txHash when swap is implemented
-      })
-
-      // Navigate back to gold home with success message
-      navigateHome()
-      navigate(Screens.GoldHome)
-    } catch (err: any) {
-      AppAnalytics.track(GoldEvents.gold_sell_submit_error, {
-        amount: xautAmount,
-        error: err.message || 'Unknown error',
-      })
-      setError(err.message || t('goldFlow.sell.error'))
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   const insetsStyle = {
@@ -169,9 +242,26 @@ export default function GoldSellConfirmation({ route }: Props) {
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('goldFlow.sell.networkFee')}</Text>
-            <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
+            <Text style={styles.detailValue}>
+              {isGettingQuote
+                ? t('goldFlow.sell.estimatingFee')
+                : parsedGasFee && gasFeeToken
+                  ? `${parsedGasFee.toFormat(6)} ${gasFeeToken.symbol}`
+                  : t('goldFlow.sell.estimatingFee')}
+            </Text>
           </View>
         </View>
+
+        {/* Quote Error */}
+        {!!quoteError && (
+          <InLineNotification
+            variant={NotificationVariant.Warning}
+            title={t('goldFlow.sell.quoteErrorTitle')}
+            description={quoteError}
+            style={styles.errorNotice}
+            testID="GoldSellConfirmation/QuoteError"
+          />
+        )}
 
         {/* Info Notice */}
         <InLineNotification
@@ -200,8 +290,8 @@ export default function GoldSellConfirmation({ route }: Props) {
             text={t('goldFlow.sell.confirm')}
             size={BtnSizes.FULL}
             type={BtnTypes.PRIMARY}
-            disabled={isSubmitting}
-            showLoading={isSubmitting}
+            disabled={isSubmitting || isGettingQuote || !preparedTransactions}
+            showLoading={isSubmitting || isGettingQuote}
             testID="GoldSellConfirmation/ConfirmButton"
           />
         </View>
@@ -210,9 +300,10 @@ export default function GoldSellConfirmation({ route }: Props) {
   )
 }
 
-GoldSellConfirmation.navigationOptions = () => ({
-  ...headerWithBackButton,
-})
+// Using inline CustomHeader with BackButton, so no navigationOptions needed
+GoldSellConfirmation.navigationOptions = {
+  headerShown: false,
+}
 
 const styles = StyleSheet.create({
   container: {
