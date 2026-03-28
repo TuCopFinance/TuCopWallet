@@ -7,7 +7,11 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import Touchable from 'src/components/Touchable'
-import { goldPriceUsdSelector, goldPrice24hChangeSelector } from 'src/gold/selectors'
+import {
+  goldPriceUsdSelector,
+  goldPrice24hChangeSelector,
+  hasSeenGoldInfoSelector,
+} from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import GoldIcon from 'src/icons/GoldIcon'
@@ -35,6 +39,7 @@ export default function GoldEntrypoint() {
 
   // Get XAUt0 balance to determine if user has gold
   const { balance: xaut0Balance } = useXaut0Balance()
+  const hasSeenGoldInfo = useSelector(hasSeenGoldInfoSelector)
 
   useEffect(() => {
     // Fetch gold price on mount
@@ -50,8 +55,8 @@ export default function GoldEntrypoint() {
 
   const onPress = () => {
     AppAnalytics.track(GoldEvents.gold_entrypoint_press)
-    // Skip intro screen if user already has gold balance
-    if (xaut0Balance.isGreaterThan(0)) {
+    // Skip intro screen if user already has gold balance or has seen the info screen before
+    if (xaut0Balance.isGreaterThan(0) || hasSeenGoldInfo) {
       navigate(Screens.GoldHome)
     } else {
       navigate(Screens.GoldInfoScreen)
