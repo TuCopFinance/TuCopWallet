@@ -20,6 +20,7 @@ import {
   EarnEvents,
   FeeEvents,
   FiatExchangeEvents,
+  GoldEvents,
   HomeEvents,
   IdentityEvents,
   InviteEvents,
@@ -1666,6 +1667,39 @@ interface EarnEventsProperties {
   [EarnEvents.earn_select_withdraw_type]: EarnCommonProperties & { type: EarnActiveMode }
 }
 
+interface GoldEventsProperties {
+  [GoldEvents.gold_entrypoint_press]: undefined
+  [GoldEvents.gold_info_view]: undefined
+  [GoldEvents.gold_info_learn_press]: undefined
+  [GoldEvents.gold_info_get_started_press]: undefined
+  [GoldEvents.gold_home_view]: undefined
+  [GoldEvents.gold_buy_press]: undefined
+  [GoldEvents.gold_sell_press]: undefined
+  [GoldEvents.gold_price_alerts_press]: undefined
+  [GoldEvents.gold_buy_start]: undefined
+  [GoldEvents.gold_buy_enter_amount]: { amount: string }
+  [GoldEvents.gold_buy_quote_received]: { fromAmount: string; toAmount: string }
+  [GoldEvents.gold_buy_confirm]: { amount: string }
+  [GoldEvents.gold_buy_submit_start]: { amount: string }
+  [GoldEvents.gold_buy_submit_success]: { amount: string; txHash: string }
+  [GoldEvents.gold_buy_submit_error]: { amount: string; error: string }
+  [GoldEvents.gold_buy_submit_cancel]: undefined
+  [GoldEvents.gold_sell_start]: undefined
+  [GoldEvents.gold_sell_enter_amount]: { amount: string }
+  [GoldEvents.gold_sell_quote_received]: { fromAmount: string; toAmount: string }
+  [GoldEvents.gold_sell_confirm]: { amount: string }
+  [GoldEvents.gold_sell_submit_start]: { amount: string }
+  [GoldEvents.gold_sell_submit_success]: { amount: string; txHash: string }
+  [GoldEvents.gold_sell_submit_error]: { amount: string; error: string }
+  [GoldEvents.gold_sell_submit_cancel]: undefined
+  [GoldEvents.gold_price_alert_create]: { targetPrice: number; direction: 'above' | 'below' }
+  [GoldEvents.gold_price_alert_delete]: { alertId: string }
+  [GoldEvents.gold_price_alert_toggle]: { alertId: string; enabled: boolean }
+  [GoldEvents.gold_price_alert_triggered]: { alertId: string; targetPrice: number }
+  [GoldEvents.gold_price_fetch_success]: { price: number }
+  [GoldEvents.gold_price_fetch_error]: { error: string }
+}
+
 export type AnalyticsPropertiesList = AppEventsProperties &
   HomeEventsProperties &
   SettingsEventsProperties &
@@ -1700,6 +1734,7 @@ export type AnalyticsPropertiesList = AppEventsProperties &
   TransactionDetailsProperties &
   PointsEventsProperties &
   EarnEventsProperties &
+  GoldEventsProperties &
   TabHomeEventsProperties
 
 export type AnalyticsEventType = keyof AnalyticsPropertiesList

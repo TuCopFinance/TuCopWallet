@@ -1,8 +1,11 @@
 import { reducer as account } from 'src/account/reducer'
 import { reducer as alert } from 'src/alert/reducer'
 import bucksPayReducer from 'src/buckspay/slice'
+import goldReducer from 'src/gold/slice'
 import { appReducer as app } from 'src/app/reducers'
 import dappsReducer from 'src/dapps/slice'
+// DIVVI PROTOCOL - Reducer mantenido para compatibilidad con Redux Persist
+// La funcionalidad está DESHABILITADA pero el reducer debe existir para datos existentes
 import divviProtocolReducer from 'src/divviProtocol/slice'
 import earnReducer from 'src/earn/slice'
 import { reducer as fiatExchanges } from 'src/fiatExchanges/reducer'
@@ -56,4 +59,5 @@ export const reducersList = {
   earn: earnReducer,
   divviProtocol: divviProtocolReducer,
   buckspay: bucksPayReducer,
+  gold: goldReducer,
 } as const

@@ -7,7 +7,7 @@ export interface Props {
   color?: Colors
 }
 
-function HiddenEyeIcon({ color, size }: Props) {
+function HiddenEyeIcon({ color = Colors.black, size = 24 }: Props) {
   return (
     <Svg width={size} height={size} viewBox="0 0 27 25" fill="none">
       <Path
@@ -16,11 +16,6 @@ function HiddenEyeIcon({ color, size }: Props) {
       />
     </Svg>
   )
-}
-
-HiddenEyeIcon.defaultProps = {
-  size: 24,
-  color: Colors.black,
 }
 
 export default HiddenEyeIcon

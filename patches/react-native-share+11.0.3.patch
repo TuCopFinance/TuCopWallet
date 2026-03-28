@@ -1,0 +1,32 @@
+diff --git a/node_modules/react-native-share/lib/commonjs/components/ShareSheet.js b/node_modules/react-native-share/lib/commonjs/components/ShareSheet.js
+index 1234567..abcdefg 100644
+--- a/node_modules/react-native-share/lib/commonjs/components/ShareSheet.js
++++ b/node_modules/react-native-share/lib/commonjs/components/ShareSheet.js
+@@ -26,9 +26,9 @@ const ShareSheet = ({
+     return false;
+   }, [visible, onCancel]);
+   React.useEffect(() => {
+-    _reactNative.BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
++    const subscription = _reactNative.BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
+     return () => {
+-      _reactNative.BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
++      subscription.remove();
+     };
+   }, [backButtonHandler]);
+   return /*#__PURE__*/React.createElement(_Overlay.default, {
+diff --git a/node_modules/react-native-share/lib/module/components/ShareSheet.js b/node_modules/react-native-share/lib/module/components/ShareSheet.js
+index 1234567..abcdefg 100644
+--- a/node_modules/react-native-share/lib/module/components/ShareSheet.js
++++ b/node_modules/react-native-share/lib/module/components/ShareSheet.js
+@@ -17,9 +17,9 @@ const ShareSheet = ({
+     return false;
+   }, [visible, onCancel]);
+   React.useEffect(() => {
+-    BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
++    const subscription = BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
+     return () => {
+-      BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
++      subscription.remove();
+     };
+   }, [backButtonHandler]);
+   return /*#__PURE__*/React.createElement(Overlay, {

@@ -3,8 +3,9 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
-import { getDivviData } from 'src/divviProtocol/register'
-import { appendDivviCalldata } from 'src/divviProtocol/registerReferral'
+// DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
+// import { getDivviData } from 'src/divviProtocol/register'
+// import { appendDivviCalldata } from 'src/divviProtocol/registerReferral'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -325,6 +326,9 @@ export async function prepareTransactions({
   isGasSubsidized?: boolean
   origin: TransactionOrigin
 }): Promise<PreparedTransactionsResult> {
+  // DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
+  // Para re-habilitar, descomentar el bloque de código siguiente y los imports
+  /*
   // Intentamos obtener el sufijo de datos de Divvi para transacciones
   try {
     // Verificamos si las transacciones tienen data (calldata)
@@ -379,6 +383,7 @@ export async function prepareTransactions({
     // Si hay error al obtener o agregar el sufijo de Divvi, continuamos con las transacciones originales
     Logger.error(TAG, 'Error al obtener o agregar sufijo de datos de Divvi', error)
   }
+  */
 
   if (!spendToken && spendTokenAmount.isGreaterThan(0)) {
     throw new Error(
