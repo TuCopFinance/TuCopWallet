@@ -7,6 +7,8 @@ export const XAUT0_NAME = 'Tether Gold'
 
 export type GoldOperationStatus = 'idle' | 'loading' | 'success' | 'error'
 
+export type GoldIconVariant = 'bar' | 'vault'
+
 export interface PriceAlert {
   id: string
   targetPrice: number // USD per troy ounce
@@ -32,6 +34,7 @@ export interface GoldSwapQuote {
   estimatedGasFeeUsd: string
   allowanceTarget: string
   preparedTransactions: SerializableTransactionRequest[]
+  swapProvider?: string // Provider used for the swap (e.g., 'squid', 'uniswap')
 }
 
 export interface GoldBuyInfo {

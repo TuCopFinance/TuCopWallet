@@ -14,7 +14,7 @@ import { goldSellStatusSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { sellGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { StackParamList } from 'src/navigator/types'
@@ -24,6 +24,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
+import { TokenBalance } from 'src/tokens/slice'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -43,11 +44,31 @@ export default function GoldSellConfirmation({ route }: Props) {
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const sellStatus = useSelector(goldSellStatusSelector)
 
+  // Get user-friendly display name for tokens
+  const getTokenName = (token: TokenBalance | null) => {
+    if (!token) return ''
+    if (token.tokenId === networkConfig.copmTokenId) {
+      return t('assets.pesos')
+    }
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    const symbol = token.symbol?.toLowerCase() || ''
+    if (symbol === 'ccop' || symbol === 'copm') {
+      return t('assets.pesos')
+    }
+    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
+
   // State for quote
   const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(undefined)
   const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(undefined)
   const [preparedTransactions, setPreparedTransactions] = useState<any>(null)
   const [quoteError, setQuoteError] = useState<string | null>(null)
+  const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -88,12 +109,14 @@ export default function GoldSellConfirmation({ route }: Props) {
         if (quoteResult) {
           Logger.debug('GoldSellConfirmation', 'Got quote result', {
             gasFee: quoteResult.quote.estimatedGasFee,
+            swapProvider: quoteResult.quote.swapProvider,
           })
           setEstimatedGasFee(quoteResult.quote.estimatedGasFee)
           if (quoteResult.preparedTransactions.type === 'possible') {
             setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
+          setSwapProvider(quoteResult.quote.swapProvider)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.sell.quoteErrorDescription'))
@@ -139,6 +162,17 @@ export default function GoldSellConfirmation({ route }: Props) {
     if (!estimatedGasFee || !gasFeeToken) return null
     return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
   }, [estimatedGasFee, gasFeeToken])
+
+  // Format swap provider name for display
+  const getProviderDisplayName = (provider: string | undefined) => {
+    if (!provider) return null
+    const providerLower = provider.toLowerCase()
+    if (providerLower.includes('squid')) return 'Squid Router'
+    if (providerLower.includes('uniswap')) return 'Uniswap'
+    if (providerLower.includes('0x')) return '0x Protocol'
+    // Capitalize first letter
+    return provider.charAt(0).toUpperCase() + provider.slice(1)
+  }
 
   const isSubmitting = sellStatus === 'loading'
 
@@ -194,10 +228,10 @@ export default function GoldSellConfirmation({ route }: Props) {
         <View style={styles.summaryCard}>
           <Text style={styles.cardLabel}>{t('goldFlow.sell.youSell')}</Text>
           <View style={styles.tokenRow}>
-            <GoldIcon size={40} />
+            <GoldIconSelector size={40} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedXautAmount.toFormat(XAUT0_DECIMALS)} XAUt0
+                {parsedXautAmount.toFormat(XAUT0_DECIMALS)} {t('goldFlow.gold')}
               </Text>
               {totalValueLocal && (
                 <Text style={styles.tokenLocalValue}>
@@ -219,7 +253,7 @@ export default function GoldSellConfirmation({ route }: Props) {
             <TokenIcon token={toToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedToAmount.toFormat(toToken.decimals)} {toToken.symbol}
+                {parsedToAmount.toFormat(toToken.decimals)} {getTokenName(toToken)}
               </Text>
               <TokenDisplay
                 tokenId={toTokenId}
@@ -246,10 +280,16 @@ export default function GoldSellConfirmation({ route }: Props) {
               {isGettingQuote
                 ? t('goldFlow.sell.estimatingFee')
                 : parsedGasFee && gasFeeToken
-                  ? `${parsedGasFee.toFormat(6)} ${gasFeeToken.symbol}`
+                  ? `${parsedGasFee.toFormat(6)} ${getTokenName(gasFeeToken)}`
                   : t('goldFlow.sell.estimatingFee')}
             </Text>
           </View>
+          {swapProvider && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('goldFlow.sell.swapProvider')}</Text>
+              <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
+            </View>
+          )}
         </View>
 
         {/* Quote Error */}
