@@ -397,7 +397,7 @@ describe('TransactionDetailsScreen', () => {
 
     // Includes the fee
     expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.10 cUSD')
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('₱0.13')
+    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$0.13')
   })
 
   it.each([TokenTransactionTypeV2.Sent, TokenTransactionTypeV2.Received] as const)(
@@ -854,7 +854,7 @@ describe('TransactionDetailsScreen', () => {
       getByText('transactionFeed.infiniteApprovalDescription, {"tokenSymbol":"USDC"}')
     ).toBeTruthy()
     expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.001 ETH')
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('₱2.81')
+    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$2.81')
   })
 
   it(`renders retry action for failed ${TokenTransactionTypeV2.Sent} transacton`, () => {
@@ -909,13 +909,13 @@ describe('TransactionDetailsScreen', () => {
     const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
     expect(networkFee).toHaveTextContent('transactionFeed.networkFee')
     expect(networkFee).toHaveTextContent('0.0033 CELO')
-    expect(networkFee).toHaveTextContent('₱0.059')
+    expect(networkFee).toHaveTextContent('COP$0.059')
     expect(appFee).toHaveTextContent('transactionFeed.appFee')
     expect(appFee).toHaveTextContent('0.0006 cUSD')
-    expect(appFee).toHaveTextContent('₱0.0008')
+    expect(appFee).toHaveTextContent('COP$0.0008')
     expect(crossChainFee).toHaveTextContent('transactionFeed.crossChainFee')
     expect(crossChainFee).toHaveTextContent('0.38 CELO')
-    expect(crossChainFee).toHaveTextContent('₱6.74')
+    expect(crossChainFee).toHaveTextContent('COP$6.74')
 
     fireEvent.press(getByText('viewOnAxelarScan'))
     expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
@@ -939,11 +939,11 @@ describe('TransactionDetailsScreen', () => {
 
     const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
     expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} 0.0033 CELO`)
-    expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} ₱0.059`)
+    expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} COP$0.059`)
     expect(appFee).toHaveTextContent('0.0006 cUSD') // app fee is always known
-    expect(appFee).toHaveTextContent('₱0.0008')
+    expect(appFee).toHaveTextContent('COP$0.0008')
     expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} 0.38 CELO`)
-    expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} ₱6.74`)
+    expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} COP$6.74`)
   })
 
   it(`renders a fallback swap to amount for a pending ${TokenTransactionTypeV2.CrossChainSwapTransaction} transacton`, () => {

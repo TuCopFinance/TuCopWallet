@@ -111,7 +111,7 @@ describe('EarnPoolInfoScreen', () => {
       )
     ).toBeTruthy()
     expect(within(getByTestId('TvlCard')).getByText('earnFlow.poolInfoScreen.tvl')).toBeTruthy()
-    expect(within(getByTestId('TvlCard')).getByText('₱1,808,800.00')).toBeTruthy()
+    expect(within(getByTestId('TvlCard')).getByText('COP$1,808,800.00')).toBeTruthy()
     expect(
       within(getByTestId('AgeCard')).getByText('duration, {"context":"month","count":5}')
     ).toBeTruthy()
@@ -150,23 +150,23 @@ describe('EarnPoolInfoScreen', () => {
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        ' earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"180.88"}'
+        ' earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"180.88"}'
       )
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"146.30","cryptoAmount":"110.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"146.30","cryptoAmount":"110.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
     expect(getAllByTestId('EarningItemLineItem')).toHaveLength(2)
     expect(
       within(getAllByTestId('EarningItemLineItem')[0]).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
     expect(
       within(getAllByTestId('EarningItemLineItem')[1]).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"1.33","cryptoAmount":"1.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"1.33","cryptoAmount":"1.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
   })
@@ -190,12 +190,12 @@ describe('EarnPoolInfoScreen', () => {
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        ' earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"159.60"}'
+        ' earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"159.60"}'
       )
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"146.30","cryptoAmount":"110.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"146.30","cryptoAmount":"110.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
   })
@@ -227,18 +227,18 @@ describe('EarnPoolInfoScreen', () => {
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"179.55"}'
+        'earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"179.55"}'
       )
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"144.97","cryptoAmount":"109.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"144.97","cryptoAmount":"109.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
     expect(getAllByTestId('EarningItemLineItem')).toHaveLength(2)
     expect(
       within(getAllByTestId('EarningItemLineItem')[0]).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
   })
@@ -274,23 +274,23 @@ describe('EarnPoolInfoScreen', () => {
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"179.55"}'
+        'earnFlow.poolInfoScreen.titleLocalAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"179.55"}'
       )
     ).toBeTruthy()
     expect(
       within(getByTestId('DepositAndEarningsCard')).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"144.31","cryptoAmount":"108.50","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"144.31","cryptoAmount":"108.50","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
     expect(getAllByTestId('EarningItemLineItem')).toHaveLength(2)
     expect(
       within(getAllByTestId('EarningItemLineItem')[0]).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"19.95","cryptoAmount":"15.00","cryptoSymbol":"USDC"}'
       )
     ).toBeTruthy()
     expect(
       within(getAllByTestId('EarningItemLineItem')[1]).getByText(
-        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"₱","localCurrencyAmount":"2.00","cryptoAmount":"0.001","cryptoSymbol":"ETH"}'
+        'earnFlow.poolInfoScreen.lineItemAmountDisplay, {"localCurrencySymbol":"COP$","localCurrencyAmount":"2.00","cryptoAmount":"0.001","cryptoSymbol":"ETH"}'
       )
     ).toBeTruthy()
   })

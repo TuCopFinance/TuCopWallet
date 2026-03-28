@@ -38,7 +38,7 @@ describe('EstimatedNetworkFee', () => {
     ).toBeTruthy()
 
     expect(getByTestId('EstimatedNetworkFee/Amount')).toHaveTextContent('0.0001 CELO') // gas * _baseFeePerGas
-    expect(getByTestId('EstimatedNetworkFee/AmountLocal')).toHaveTextContent('₱0.00067')
+    expect(getByTestId('EstimatedNetworkFee/AmountLocal')).toHaveTextContent('COP$0.00067')
 
     expect(queryByTestId('EstimatedNetworkFee/Loading')).toBeFalsy()
   })

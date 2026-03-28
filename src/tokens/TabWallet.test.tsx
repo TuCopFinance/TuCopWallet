@@ -64,7 +64,7 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('₱23.69')
+    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('COP$23.69')
     expect(getByTestId('cKESBalance')).toHaveTextContent('1,000.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('10.00 cUSD')
   })
@@ -74,7 +74,7 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('₱0.00')
+    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('COP$0.00')
     expect(getByTestId('cKESBalance')).toHaveTextContent('0.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('0.00 cUSD')
   })

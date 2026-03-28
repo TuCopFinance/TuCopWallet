@@ -32,9 +32,9 @@ describe(getLocalCurrencyCode, () => {
     it('returns the preferred currency', () => {
       const state: any = {
         account: { e164PhoneNumber: '+231881551952' },
-        localCurrency: { preferredCurrencyCode: 'PHP' },
+        localCurrency: { preferredCurrencyCode: 'COP' },
       }
-      expect(getLocalCurrencyCode(state)).toEqual('PHP')
+      expect(getLocalCurrencyCode(state)).toEqual('COP')
     })
 
     it('returns USD when USD is the preferred currency', () => {

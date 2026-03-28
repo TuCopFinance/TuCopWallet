@@ -152,7 +152,7 @@ describe('JumpstartEnterAmount', () => {
     expect(getByText('review')).toBeDisabled()
     expect(
       getByText(
-        'jumpstartEnterAmountScreen.maxAmountWarning.title, {"amountInLocalCurrency":"66.5","formatParams":{"amountInLocalCurrency":{"currency":"PHP","locale":"es-419"}}}'
+        'jumpstartEnterAmountScreen.maxAmountWarning.title, {"amountInLocalCurrency":"66.5","formatParams":{"amountInLocalCurrency":{"currency":"COP","locale":"es-419"}}}'
       )
     ).toBeTruthy()
     expect(getByText('jumpstartEnterAmountScreen.maxAmountWarning.description')).toBeTruthy()
@@ -191,7 +191,7 @@ describe('JumpstartEnterAmount', () => {
       JumpstartEvents.jumpstart_send_amount_continue,
       {
         amountInUsd: '0.29',
-        localCurrency: 'PHP',
+        localCurrency: 'COP',
         localCurrencyExchangeRate: '1.33',
         networkId: 'celo-sepolia',
         tokenAmount: '0.25',

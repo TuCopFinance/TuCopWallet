@@ -119,7 +119,9 @@ describe('ClaimRewardFeedItem', () => {
     expect(
       within(getByTestId('ClaimRewardFeedItem/amount-crypto')).getByText('+1.50 ARB')
     ).toBeTruthy()
-    expect(within(getByTestId('ClaimRewardFeedItem/amount-local')).getByText('₱1.97')).toBeTruthy()
+    expect(
+      within(getByTestId('ClaimRewardFeedItem/amount-local')).getByText('COP$1.97')
+    ).toBeTruthy()
   })
 
   it('should display when app name is not available', () => {

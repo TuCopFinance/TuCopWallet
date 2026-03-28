@@ -329,9 +329,9 @@ describe('store state', () => {
         },
         "localCurrency": {
           "error": false,
-          "fetchedCurrencyCode": "PHP",
+          "fetchedCurrencyCode": "COP",
           "isLoading": false,
-          "preferredCurrencyCode": "PHP",
+          "preferredCurrencyCode": "COP",
           "usdToLocalRate": "1.33",
         },
         "networkInfo": {

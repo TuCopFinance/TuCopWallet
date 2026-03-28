@@ -239,12 +239,12 @@ describe('EnterAmount', () => {
 
       changeAmount('10000.5')
       expect(amount.props.value).toBe(replaceSeparators('10,000.5'))
-      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} ₱1,330.07`))
+      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} COP$1,330.07`))
 
       // switch to fiat
       switchTokens()
       changeAmount('1000.5')
-      expect(amount.props.value).toBe(replaceSeparators(`₱1,000.5`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$1,000.5`))
       expect(exchangedAmount).toHaveTextContent(
         replaceSeparators(`${APPROX_SYMBOL} 7,522.556391 POOF`)
       )
@@ -276,7 +276,7 @@ describe('EnterAmount', () => {
       // switch to fiat
       switchTokens()
       changeAmount('100000000')
-      expect(amount.props.value).toBe(replaceSeparators(`₱100,000,000`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$100,000,000`))
     })
 
     it('only allows numeric input with 2 decimals for local amount', () => {
@@ -285,15 +285,15 @@ describe('EnterAmount', () => {
       // switch to fiat
       switchTokens()
       changeAmount('10.25')
-      expect(amount.props.value).toBe(replaceSeparators(`₱10.25`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$10.25`))
       changeAmount('10.258')
-      expect(amount.props.value).toBe(replaceSeparators(`₱10.25`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$10.25`))
       changeAmount('10.5.1')
-      expect(amount.props.value).toBe(replaceSeparators(`₱10.25`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$10.25`))
       changeAmount('abc')
-      expect(amount.props.value).toBe(replaceSeparators(`₱10.25`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$10.25`))
       changeAmount('15,')
-      expect(amount.props.value).toBe(replaceSeparators(`₱15`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$15`))
     })
 
     it('starting with decimal separator prefixes 0 for local amount', () => {
@@ -302,7 +302,7 @@ describe('EnterAmount', () => {
       // switch to fiat
       switchTokens()
       changeAmount('.25')
-      expect(amount.props.value).toBe(replaceSeparators(`₱0.25`))
+      expect(amount.props.value).toBe(replaceSeparators(`COP$0.25`))
     })
 
     it('entering invalid local amount with a valid token amount does not update anything', () => {
@@ -310,12 +310,12 @@ describe('EnterAmount', () => {
 
       changeAmount('10.5')
       expect(amount.props.value).toBe(replaceSeparators('10.5'))
-      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} ₱1.40`))
+      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} COP$1.40`))
 
       // switch to fiat
       switchTokens()
       changeAmount('abc')
-      expect(amount.props.value).toBe(replaceSeparators('₱1.40'))
+      expect(amount.props.value).toBe(replaceSeparators('COP$1.40'))
       expect(exchangedAmount).toHaveTextContent(
         replaceSeparators(`${APPROX_SYMBOL} 10.526316 POOF`)
       )
@@ -327,13 +327,13 @@ describe('EnterAmount', () => {
       // switch to fiat
       switchTokens()
       changeAmount('133')
-      expect(amount.props.value).toBe(replaceSeparators('₱133'))
+      expect(amount.props.value).toBe(replaceSeparators('COP$133'))
       expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} 1,000 POOF`))
 
       // switch to token
       switchTokens()
       expect(amount.props.value).toBe(replaceSeparators('1,000'))
-      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} ₱133.00`))
+      expect(exchangedAmount).toHaveTextContent(replaceSeparators(`${APPROX_SYMBOL} COP$133.00`))
     })
 
     it('selecting max token amount applies correct decimal separator', async () => {
@@ -356,14 +356,14 @@ describe('EnterAmount', () => {
         replaceSeparators('100,000.42')
       )
       expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-        replaceSeparators('₱66,500.28')
+        replaceSeparators('COP$66,500.28')
       )
     })
   })
 
   it.each([
     { testPrefix: 'clearing one amount', text: '', expectedTokenValue: '', expectedLocalValue: '' },
-    { testPrefix: 'entering 0', text: '0', expectedTokenValue: '0', expectedLocalValue: '₱0' },
+    { testPrefix: 'entering 0', text: '0', expectedTokenValue: '0', expectedLocalValue: 'COP$0' },
   ])('$testPrefix clears the other amount', ({ text, expectedTokenValue, expectedLocalValue }) => {
     const store = createMockStore(mockStore)
 
@@ -376,19 +376,19 @@ describe('EnterAmount', () => {
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '2')
     expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('2')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱0.27`
+      `${APPROX_SYMBOL} COP$0.27`
     )
 
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), text)
     expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe(expectedTokenValue)
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱0.00`
+      `${APPROX_SYMBOL} COP$0.00`
     )
 
     // switch to fiat
     fireEvent.press(getByTestId('SendEnterAmount/SwitchTokens'))
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '1.33')
-    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('₱1.33')
+    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('COP$1.33')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
       `${APPROX_SYMBOL} 10 POOF`
     )
@@ -445,7 +445,7 @@ describe('EnterAmount', () => {
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '1')
     expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('1')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱0.13`
+      `${APPROX_SYMBOL} COP$0.13`
     )
 
     fireEvent.press(getByTestId('SendEnterAmount/TokenSelect'))
@@ -456,7 +456,7 @@ describe('EnterAmount', () => {
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('ETH')
     expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('1')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱1,995.00`
+      `${APPROX_SYMBOL} COP$1,995.00`
     )
   })
 
@@ -473,7 +473,7 @@ describe('EnterAmount', () => {
 
     fireEvent.press(getByTestId('SendEnterAmount/SwitchTokens'))
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '1')
-    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('₱1')
+    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('COP$1')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
       `${APPROX_SYMBOL} 7.518797 POOF`
     )
@@ -484,7 +484,7 @@ describe('EnterAmount', () => {
     fireEvent.press(getByText('Ether'))
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '1')
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('ETH')
-    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('₱1')
+    expect(getByTestId('SendEnterAmount/TokenAmountInput').props.value).toBe('COP$1')
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
       `${APPROX_SYMBOL} 0.000501 ETH`
     )
@@ -523,7 +523,7 @@ describe('EnterAmount', () => {
     fireEvent.press(getByText('Ether'))
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toBeTruthy()
     expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱0.00`
+      `${APPROX_SYMBOL} COP$0.00`
     )
 
     // changing back to token with no price should disable local amount input
@@ -582,25 +582,25 @@ describe('EnterAmount', () => {
       amountLabel: 'percentage, {"percentage":25}',
       percentage: 25,
       expectedTokenAmount: '1.25',
-      expectedLocalAmount: '₱0.17',
+      expectedLocalAmount: 'COP$0.17',
     },
     {
       amountLabel: 'percentage, {"percentage":50}',
       percentage: 50,
       expectedTokenAmount: '2.5',
-      expectedLocalAmount: '₱0.33',
+      expectedLocalAmount: 'COP$0.33',
     },
     {
       amountLabel: 'percentage, {"percentage":75}',
       percentage: 75,
       expectedTokenAmount: '3.75',
-      expectedLocalAmount: '₱0.50',
+      expectedLocalAmount: 'COP$0.50',
     },
     {
       amountLabel: 'maxSymbol',
       percentage: 100,
       expectedTokenAmount: '5',
-      expectedLocalAmount: '₱0.67',
+      expectedLocalAmount: 'COP$0.67',
     },
   ])(
     'pressing the $amountLabel chip prefills the expected amount',
@@ -785,7 +785,7 @@ describe('EnterAmount', () => {
     expect(getByTestId('SendEnterAmount/ReviewButton')).toBeEnabled()
     expect(queryByTestId('SendEnterAmount/FeePlaceholder')).toBeFalsy()
     expect(getByTestId('SendEnterAmount/FeeInCrypto')).toHaveTextContent(
-      `${APPROX_SYMBOL} 0.006 CELO(₱0.004)`
+      `${APPROX_SYMBOL} 0.006 CELO(COP$0.004)`
     )
     fireEvent.press(getByTestId('SendEnterAmount/ReviewButton'))
     expect(onPressProceedSpy).toHaveBeenCalledTimes(1)
@@ -822,7 +822,7 @@ describe('EnterAmount', () => {
     expect(getByTestId('SendEnterAmount/ReviewButton')).toBeEnabled()
     expect(queryByTestId('SendEnterAmount/FeePlaceholder')).toBeFalsy()
     expect(getByTestId('SendEnterAmount/FeeInCrypto')).toHaveTextContent(
-      `${APPROX_SYMBOL} 0.006 CELO(₱0.004)`
+      `${APPROX_SYMBOL} 0.006 CELO(COP$0.004)`
     )
     fireEvent.press(getByTestId('SendEnterAmount/ReviewButton'))
     expect(onPressProceedSpy).toHaveBeenCalledTimes(1)
