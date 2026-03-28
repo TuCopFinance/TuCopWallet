@@ -214,14 +214,14 @@ const FETCH_USER_LOCATION_DATA_PROD = `${CLOUD_FUNCTIONS_MAINNET}/fetchUserLocat
 const SET_REGISTRATION_PROPERTIES_STAGING = `${CLOUD_FUNCTIONS_STAGING}/setRegistrationProperties`
 const SET_REGISTRATION_PROPERTIES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/setRegistrationProperties`
 
-const VERIFY_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
-const VERIFY_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/request-otp`
+const VERIFY_PHONE_NUMBER_STAGING = `https://api-wallet-tucop-production.up.railway.app/api/wallets/request-otp`
+const VERIFY_PHONE_NUMBER_MAINNET = `https://api-wallet-tucop-production.up.railway.app/api/wallets/request-otp`
 
-const VERIFY_SMS_CODE_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
-const VERIFY_SMS_CODE_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/verify-otp`
+const VERIFY_SMS_CODE_STAGING = `https://api-wallet-tucop-production.up.railway.app/api/wallets/verify-otp`
+const VERIFY_SMS_CODE_MAINNET = `https://api-wallet-tucop-production.up.railway.app/api/wallets/verify-otp`
 
-const RESOLVE_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
-const RESOLVE_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
+const RESOLVE_PHONE_NUMBER_STAGING = `https://api-wallet-tucop-production.up.railway.app/api/wallets/by-phone`
+const RESOLVE_PHONE_NUMBER_MAINNET = `https://api-wallet-tucop-production.up.railway.app/api/wallets/by-phone`
 
 const LOOKUP_PHONE_NUMBER_STAGING = `${CLOUD_FUNCTIONS_STAGING}/lookupPhoneNumber`
 const LOOKUP_PHONE_NUMBER_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupPhoneNumber`
@@ -229,8 +229,8 @@ const LOOKUP_PHONE_NUMBER_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupPhoneNumbe
 const LOOKUP_ADDRESS_STAGING = `${CLOUD_FUNCTIONS_STAGING}/lookupAddress`
 const LOOKUP_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/lookupAddress`
 
-const REVOKE_PHONE_NUMBER_STAGING = `https://api-wallet-tlf-production.up.railway.app/api/wallets/by-phone`
-const REVOKE_PHONE_NUMBER_MAINNET = `https://api-wallet-tlf-production.up.railway.app/api/wallets/unlink`
+const REVOKE_PHONE_NUMBER_STAGING = `https://api-wallet-tucop-production.up.railway.app/api/wallets/by-phone`
+const REVOKE_PHONE_NUMBER_MAINNET = `https://api-wallet-tucop-production.up.railway.app/api/wallets/unlink`
 
 const MIGRATE_PHONE_VERIFICATION_STAGING = `${CLOUD_FUNCTIONS_STAGING}/migrateASv1Verification`
 const MIGRATE_PHONE_VERIFICATION_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/migrateASv1Verification`
