@@ -3107,7 +3107,8 @@
       "infoTitle": "Selling Gold",
       "infoDescription": "Your gold will be swapped for the selected token at the current market rate.",
       "errorTitle": "Transaction Failed",
-      "error": "Failed to complete sale. Please try again."
+      "error": "Failed to complete sale. Please try again.",
+      "successMessage": "Gold sale successful!"
     },
     "priceAlerts": {
       "title": "Price Alerts",

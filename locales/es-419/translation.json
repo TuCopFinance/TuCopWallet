@@ -3073,7 +3073,8 @@
       "infoTitle": "Vendiendo Oro",
       "infoDescription": "Tu oro se intercambiará por el token seleccionado al precio actual del mercado.",
       "errorTitle": "Transacción Fallida",
-      "error": "No se pudo completar la venta. Por favor intenta de nuevo."
+      "error": "No se pudo completar la venta. Por favor intenta de nuevo.",
+      "successMessage": "¡Venta de oro exitosa!"
     },
     "priceAlerts": {
       "title": "Alertas de Precio",
