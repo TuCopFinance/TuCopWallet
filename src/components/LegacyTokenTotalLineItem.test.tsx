@@ -80,9 +80,9 @@ describe('LegacyTokenTotalLineItem', () => {
   describe('When rendering normally', () => {
     it('shows the right amounts', () => {
       const { getByTestId } = renderComponent({})
-      expect(getElementText(getByTestId('TotalLineItem/Total'))).toEqual('R$15.00')
+      expect(getElementText(getByTestId('TotalLineItem/Total'))).toEqual('COP$15.00')
       expect(getElementText(getByTestId('TotalLineItem/ExchangeRate'))).toEqual(
-        'tokenExchanteRate, {"symbol":"cUSD"}R$1.50'
+        'tokenExchanteRate, {"symbol":"cUSD"}COP$1.50'
       )
       expect(getElementText(getByTestId('TotalLineItem/Subtotal'))).toEqual('10.00 cUSD')
     })
