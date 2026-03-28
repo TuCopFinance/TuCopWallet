@@ -112,7 +112,7 @@ describe.each([
     expectedTitle: 'earnFlow.transactionFeed.earnWithdrawTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnWithdrawSubtitle, {"providerName":"Aave"}',
     expectedTotal: '+1.00 USDC',
-    expectedTotalLocal: '₱1.33',
+    expectedTotalLocal: 'COP$1.33',
   },
   {
     type: TokenTransactionTypeV2.EarnDeposit,
@@ -120,7 +120,7 @@ describe.each([
     expectedTitle: 'earnFlow.transactionFeed.earnDepositTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnDepositSubtitle, {"providerName":"Aave"}',
     expectedTotal: '-10.00 USDC',
-    expectedTotalLocal: '₱13.30',
+    expectedTotalLocal: 'COP$13.30',
   },
   {
     type: TokenTransactionTypeV2.EarnSwapDeposit,
@@ -128,7 +128,7 @@ describe.each([
     expectedTitle: 'earnFlow.transactionFeed.earnDepositTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnDepositSubtitle, {"providerName":"Aave"}',
     expectedTotal: '-10.00 USDC',
-    expectedTotalLocal: '₱13.30',
+    expectedTotalLocal: 'COP$13.30',
   },
   {
     type: TokenTransactionTypeV2.EarnClaimReward,
@@ -136,7 +136,7 @@ describe.each([
     expectedTitle: 'earnFlow.transactionFeed.earnClaimTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnClaimSubtitle, {"providerName":"Aave"}',
     expectedTotal: '+1.50 ARB',
-    expectedTotalLocal: '₱1.97',
+    expectedTotalLocal: 'COP$1.97',
   },
 ])(
   `$type`,
