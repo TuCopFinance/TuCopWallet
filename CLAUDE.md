@@ -297,3 +297,26 @@ Each scheme loads a corresponding `.env.*` file that configures network endpoint
 3. Install to simulator: `xcrun simctl install <SIMULATOR_ID> <PATH_TO_APP>`
 4. Launch app: `xcrun simctl launch <SIMULATOR_ID> org.tucop`
 5. Check logs if crashes occur: iOS Simulator → Device → Console
+
+### Railway Backend Services
+
+The app uses Railway-hosted backend services:
+
+| Service              | URL                                                  | Purpose                                  |
+| -------------------- | ---------------------------------------------------- | ---------------------------------------- |
+| **api-wallet-tucop** | `api-wallet-tucop-production.up.railway.app`         | Phone verification (OTP, wallet linking) |
+| **twilio-service**   | `twilio-service.up.railway.app`                      | Keyless backup, SMS OTP, SIWE login      |
+| **buckspay-webhook** | `buckspay-webhook-production-ad81.up.railway.app`    | BucksPay offramp proxy                   |
+
+**Databases:**
+
+- **TuCopWalletDB** (metro.proxy.rlwy.net:18857): Keyless backup, OTP codes, SIWE sessions
+- **Postgres** (viaduct.proxy.rlwy.net:51758): Phone-wallet mappings, KYC, transactions
+
+**App Update Checking:**
+
+- App queries App Store / Play Store directly (not backend)
+- iOS: `https://itunes.apple.com/lookup?id={APP_STORE_ID}`
+- Configured in `src/utils/appUpdateChecker.ts`
+
+**Infrastructure Documentation:** See `tasks/plans/railway-infrastructure.md`

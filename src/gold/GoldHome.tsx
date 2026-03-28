@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -10,13 +10,15 @@ import { GoldEvents } from 'src/analytics/Events'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import {
+  goldIconVariantSelector,
   goldPriceUsdSelector,
   goldPrice24hChangeSelector,
   goldPriceFetchStatusSelector,
 } from 'src/gold/selectors'
-import { fetchGoldPrice } from 'src/gold/slice'
+import { fetchGoldPrice, toggleGoldIconVariant } from 'src/gold/slice'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldBarIcon from 'src/icons/GoldBarIcon'
+import GoldVaultIcon from 'src/icons/GoldVaultIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { headerWithBackButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
@@ -39,6 +41,7 @@ export default function GoldHome(_props: Props) {
   const goldPrice24hChange = useSelector(goldPrice24hChangeSelector)
   const priceFetchStatus = useSelector(goldPriceFetchStatusSelector)
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
+  const iconVariant = useSelector(goldIconVariantSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
@@ -111,6 +114,10 @@ export default function GoldHome(_props: Props) {
     navigate(Screens.GoldSellEnterAmount)
   }
 
+  const onPressIcon = () => {
+    dispatch(toggleGoldIconVariant())
+  }
+
   // TODO: Enable when price alerts feature is ready
   // const onPressPriceAlerts = () => {
   //   AppAnalytics.track(GoldEvents.gold_price_alerts_press)
@@ -133,9 +140,11 @@ export default function GoldHome(_props: Props) {
           />
         }
       >
-        {/* Gold Icon and Title */}
+        {/* Gold Icon and Title - tap to change icon style */}
         <View style={styles.headerSection}>
-          <GoldIcon size={64} />
+          <Pressable onPress={onPressIcon} testID="GoldHome/IconToggle">
+            {iconVariant === 'vault' ? <GoldVaultIcon size={64} /> : <GoldBarIcon size={64} />}
+          </Pressable>
           <Text style={styles.title}>{t('goldFlow.home.title')}</Text>
         </View>
 
@@ -163,7 +172,9 @@ export default function GoldHome(_props: Props) {
             {!hideWalletBalances && localCurrencySymbol}
             {holdingsDisplay}
           </Text>
-          <Text style={styles.holdingsBalance}>{balanceDisplay} XAUt0</Text>
+          <Text style={styles.holdingsBalance}>
+            {balanceDisplay} {t('goldFlow.gold')}
+          </Text>
         </View>
 
         {/* Price Alerts Link - Coming Soon */}

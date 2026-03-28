@@ -14,7 +14,7 @@ import {
 } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -94,7 +94,7 @@ export default function GoldEntrypoint() {
         testID="GoldEntrypoint"
       >
         <View style={[styles.row, { paddingVertical: 8 }]}>
-          <GoldIcon size={36} />
+          <GoldIconSelector size={36} />
           <View style={styles.textColumn}>
             <Text style={styles.title}>{t('goldFlow.entrypoint.title')}</Text>
             <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>

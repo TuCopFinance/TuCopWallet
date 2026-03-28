@@ -100,7 +100,7 @@ describe('JumpstartTransactionDetailsScreen', () => {
       tokenAddress: mockCusdAddress,
       tokenId: mockCusdTokenId,
       localAmount: {
-        currencyCode: 'EUR',
+        currencyCode: 'COP',
         exchangeRate: '0.4',
         value: '4',
       },
