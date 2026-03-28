@@ -29,13 +29,27 @@ const XAUT0_FALLBACK_TOKEN: TokenBalance = {
     'https://raw.githubusercontent.com/valora-inc/address-metadata/main/assets/tokens/XAUt.png',
 }
 
-// XAUt0 token selector - always returns a valid token (fallback if not in wallet)
+// XAUt0 token selector - always returns a valid token with address (fallback if not in wallet)
 export const xaut0TokenSelector = (state: RootState): TokenBalance => {
   const tokensById = tokensByIdSelector(state, [NetworkId['celo-mainnet']])
   const token = tokensById[networkConfig.xaut0TokenId]
 
-  // Return existing token if found, otherwise return fallback
-  return token ?? XAUT0_FALLBACK_TOKEN
+  // Return existing token if found AND has address, otherwise return fallback
+  // This ensures the address is always present for swap quotes
+  if (token && token.address) {
+    return token
+  }
+
+  // If token exists but missing address, merge with fallback address
+  if (token) {
+    return {
+      ...XAUT0_FALLBACK_TOKEN,
+      ...token,
+      address: XAUT0_ADDRESS, // Ensure address is always present
+    }
+  }
+
+  return XAUT0_FALLBACK_TOKEN
 }
 
 // Price selectors

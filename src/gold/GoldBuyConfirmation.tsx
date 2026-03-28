@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,7 +11,7 @@ import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
-import { buyGoldStart, resetGoldFlow } from 'src/gold/slice'
+import { buyGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
 import GoldIcon from 'src/icons/GoldIcon'
@@ -21,10 +21,8 @@ import {
   getLocalCurrencySymbol,
   usdToLocalCurrencyRateSelector,
 } from 'src/localCurrency/selectors'
-import { headerWithBackButton } from 'src/navigator/Headers'
-import { navigate } from 'src/navigator/NavigationService'
-import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
+import { Screens } from 'src/navigator/Screens'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -99,6 +97,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
   // Use the gold quote hook to fetch quote if not provided
   const { getQuote, loading: isGettingQuote } = useGoldQuote()
 
+  // Track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   // Fetch quote if preparedTransactions not provided
   useEffect(() => {
     const fetchQuoteIfNeeded = async () => {
@@ -119,6 +126,11 @@ export default function GoldBuyConfirmation({ route }: Props) {
           direction: 'buy',
         })
 
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+          return
+        }
+
         if (quoteResult) {
           Logger.debug('GoldBuyConfirmation', 'Got quote result', {
             gasFee: quoteResult.quote.estimatedGasFee,
@@ -133,25 +145,23 @@ export default function GoldBuyConfirmation({ route }: Props) {
           setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
         }
       } catch (error: any) {
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+          return
+        }
         Logger.error('GoldBuyConfirmation', 'Failed to fetch quote', error)
         setQuoteError(error.message || t('goldFlow.buy.quoteErrorDescription'))
       }
     }
 
     fetchQuoteIfNeeded()
-  }, [initialPreparedTransactions, fromToken, xaut0Token, fromAmount, getQuote, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPreparedTransactions, fromToken, xaut0Token, fromAmount])
 
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
 
-  // Navigate to GoldHome on success with success message
-  useEffect(() => {
-    if (buyStatus === 'success') {
-      dispatch(resetGoldFlow())
-      Logger.showMessage(t('goldFlow.buy.successMessage'))
-      navigate(Screens.GoldHome)
-    }
-  }, [buyStatus, dispatch, t])
+  // Note: Success navigation and message are handled by the saga
 
   // COP doesn't use decimals
   const isLocalCurrencyCop = localCurrencyCode === LocalCurrencyCode.COP
@@ -356,9 +366,10 @@ export default function GoldBuyConfirmation({ route }: Props) {
   )
 }
 
-GoldBuyConfirmation.navigationOptions = () => ({
-  ...headerWithBackButton,
-})
+// Using inline CustomHeader with BackButton, so no navigationOptions needed
+GoldBuyConfirmation.navigationOptions = {
+  headerShown: false,
+}
 
 const styles = StyleSheet.create({
   container: {

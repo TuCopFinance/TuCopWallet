@@ -26,12 +26,25 @@ const TAG = 'gold/useGoldQuote'
 // Default slippage for gold swaps (1%)
 const DEFAULT_SLIPPAGE_PERCENTAGE = '1'
 
-// Squid Router V2 API configuration
-const SQUID_API_URL = 'https://v2.api.squidrouter.com/v2/route'
-const SQUID_INTEGRATOR_ID = 'tucop-wallet-api' // TODO: Register for production integrator ID
+/**
+ * Extract token address from token object or tokenId
+ * tokenId format: "celo-mainnet:0x..." or "celo-mainnet:native"
+ */
+function getTokenAddress(token: TokenBalance): string | null {
+  // If token has address property, use it
+  if (token.address) {
+    return token.address
+  }
 
-// Celo chain ID for Squid API
-const CELO_CHAIN_ID = '42220'
+  // Try to extract from tokenId (format: "network:address")
+  const parts = token.tokenId.split(':')
+  if (parts.length === 2 && parts[1].startsWith('0x')) {
+    return parts[1]
+  }
+
+  // Native token or invalid format
+  return null
+}
 
 // Timeout for API requests (15 seconds)
 const API_TIMEOUT_MS = 15000
@@ -76,82 +89,6 @@ export interface GoldQuoteResult {
 }
 
 /**
- * Fetch swap quote from Squid Router V2 API directly
- * Used as fallback or for comparing quotes
- */
-async function fetchSquidQuote(
-  fromToken: TokenBalance,
-  toToken: TokenBalance,
-  amount: BigNumber,
-  walletAddress: string
-): Promise<SwapTransaction> {
-  const amountInWei = amount.shiftedBy(fromToken.decimals)
-
-  const requestBody = {
-    fromAddress: walletAddress,
-    fromChain: CELO_CHAIN_ID,
-    toChain: CELO_CHAIN_ID,
-    fromToken: fromToken.address || '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native token
-    toToken: toToken.address || '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    fromAmount: amountInWei.toFixed(0, BigNumber.ROUND_DOWN),
-    toAddress: walletAddress,
-    slippage: parseFloat(DEFAULT_SLIPPAGE_PERCENTAGE),
-    slippageConfig: {
-      autoMode: 1, // Conservative mode
-    },
-    enableBoost: true,
-  }
-
-  Logger.debug(TAG, `Fetching Squid quote: ${JSON.stringify(requestBody)}`)
-
-  const response = await fetchWithTimeout(SQUID_API_URL, {
-    method: 'POST',
-    headers: {
-      'x-integrator-id': SQUID_INTEGRATOR_ID,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    Logger.error(TAG, `Squid API error: ${response.status} - ${errorText}`)
-    throw new Error(`Squid API error: ${errorText}`)
-  }
-
-  const squidResponse = await response.json()
-
-  if (!squidResponse.route || !squidResponse.route.transactionRequest) {
-    throw new Error('No route available from Squid')
-  }
-
-  const { transactionRequest, estimate } = squidResponse.route
-
-  Logger.debug(TAG, `Got Squid quote: ${estimate.fromAmount} -> ${estimate.toAmount}`)
-
-  // Convert Squid response to SwapTransaction format
-  return {
-    swapType: 'same-chain',
-    chainId: parseInt(CELO_CHAIN_ID),
-    buyAmount: estimate.toAmount,
-    sellAmount: estimate.fromAmount,
-    buyTokenAddress: toToken.address || '',
-    sellTokenAddress: fromToken.address || '',
-    price: new BigNumber(estimate.toAmount).dividedBy(estimate.fromAmount).toString(),
-    guaranteedPrice: new BigNumber(estimate.toAmountMin).dividedBy(estimate.fromAmount).toString(),
-    appFeePercentageIncludedInPrice: undefined,
-    estimatedPriceImpact: estimate.aggregatePriceImpact || null,
-    gas: transactionRequest.gasLimit || '500000',
-    estimatedGasUse: transactionRequest.gasLimit || null,
-    to: transactionRequest.target,
-    value: transactionRequest.value || '0',
-    data: transactionRequest.data,
-    from: walletAddress,
-    allowanceTarget: transactionRequest.target,
-  }
-}
-
-/**
  * Fetch swap quote from the backend API (same as regular swaps)
  * The backend handles routing through Uniswap V4, Squid, or other providers
  */
@@ -161,13 +98,27 @@ async function fetchBackendQuote(
   amount: BigNumber,
   walletAddress: string
 ): Promise<SwapTransaction> {
+  // Get addresses from tokens (try address property first, then extract from tokenId)
+  const sellTokenAddress = getTokenAddress(fromToken)
+  const buyTokenAddress = getTokenAddress(toToken)
+
+  // Validate tokens have addresses
+  if (!sellTokenAddress) {
+    throw new Error(
+      `fromToken (${fromToken.symbol}) is missing address. tokenId: ${fromToken.tokenId}`
+    )
+  }
+  if (!buyTokenAddress) {
+    throw new Error(`toToken (${toToken.symbol}) is missing address. tokenId: ${toToken.tokenId}`)
+  }
+
   const amountInWei = amount.shiftedBy(fromToken.decimals)
 
   const params = {
-    ...(fromToken.address && { sellToken: fromToken.address }),
+    sellToken: sellTokenAddress,
     sellIsNative: (fromToken.isNative ?? false).toString(),
     sellNetworkId: fromToken.networkId,
-    ...(toToken.address && { buyToken: toToken.address }),
+    buyToken: buyTokenAddress,
     buyIsNative: (toToken.isNative ?? false).toString(),
     buyNetworkId: toToken.networkId,
     sellAmount: amountInWei.toFixed(0, BigNumber.ROUND_DOWN),
@@ -178,7 +129,8 @@ async function fetchBackendQuote(
   const queryParams = new URLSearchParams({ ...params }).toString()
   const requestUrl = `${networkConfig.getSwapQuoteUrl}?${queryParams}`
 
-  Logger.debug(TAG, `Fetching backend swap quote: ${requestUrl}`)
+  // eslint-disable-next-line no-console
+  console.log('🟡 GOLD QUOTE URL:', requestUrl)
 
   const response = await fetchWithTimeout(requestUrl, { method: 'GET' })
 
@@ -188,10 +140,22 @@ async function fetchBackendQuote(
     throw new Error(`Failed to get swap quote: ${errorText}`)
   }
 
-  const quote: FetchQuoteResponse = await response.json()
+  const responseText = await response.text()
+  // eslint-disable-next-line no-console
+  console.log('🟡 GOLD QUOTE RESPONSE:', responseText.substring(0, 500))
+
+  let quote: FetchQuoteResponse
+  try {
+    quote = JSON.parse(responseText)
+  } catch (e) {
+    throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}`)
+  }
 
   if (!quote.unvalidatedSwapTransaction) {
-    throw new Error('No swap quote available from backend')
+    const errors = (quote as any).errors || []
+    // eslint-disable-next-line no-console
+    console.error('🔴 GOLD QUOTE ERRORS:', JSON.stringify(errors))
+    throw new Error(`No quote: ${errors[0]?.message || 'Unknown'}`)
   }
 
   Logger.debug(
@@ -204,7 +168,7 @@ async function fetchBackendQuote(
 
 /**
  * Fetch the best swap quote from available sources
- * Tries backend API first, falls back to Squid API, or compares both
+ * Uses backend API only (backend handles routing through Squid/Uniswap internally)
  */
 async function fetchSwapQuote(
   fromToken: TokenBalance,
@@ -212,21 +176,14 @@ async function fetchSwapQuote(
   amount: BigNumber,
   walletAddress: string
 ): Promise<SwapTransaction> {
-  // Try backend API first (it may have better routing through multiple sources)
+  // Use backend API only - it handles routing through multiple sources internally
+  // Direct Squid calls disabled to avoid rate limiting issues
   try {
     const backendQuote = await fetchBackendQuote(fromToken, toToken, amount, walletAddress)
     return backendQuote
   } catch (backendError: any) {
-    Logger.warn(TAG, `Backend quote failed, trying Squid: ${backendError.message}`)
-  }
-
-  // Fallback to Squid API directly
-  try {
-    const squidQuote = await fetchSquidQuote(fromToken, toToken, amount, walletAddress)
-    return squidQuote
-  } catch (squidError: any) {
-    Logger.error(TAG, `Squid quote also failed: ${squidError.message}`)
-    throw new Error(`No swap route available. Backend: ${squidError.message}`)
+    Logger.error(TAG, `Backend quote failed: ${backendError.message}`)
+    throw new Error(`No swap route available: ${backendError.message}`)
   }
 }
 
@@ -319,7 +276,17 @@ export function useGoldQuote() {
       }
 
       try {
-        Logger.debug(TAG, `Getting ${direction} quote for ${amount.toString()} ${fromToken.symbol}`)
+        Logger.debug(
+          TAG,
+          `Getting ${direction} quote for ${amount.toString()} ${fromToken.symbol}`,
+          {
+            fromTokenId: fromToken.tokenId,
+            fromAddress: fromToken.address,
+            toTokenId: toToken.tokenId,
+            toAddress: toToken.address,
+            walletAddress,
+          }
+        )
 
         // Fetch quote from backend API (handles Uniswap V4 routing)
         const swapTransaction = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
