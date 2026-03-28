@@ -1,5 +1,37 @@
 # TuCOP Wallet - Documentation Index
 
+## Architecture
+
+| Document                                                                     | Description                                  |
+| ---------------------------------------------------------------------------- | -------------------------------------------- |
+| [architecture/OVERVIEW.md](architecture/OVERVIEW.md)                         | High-level architecture diagram and overview |
+| [architecture/modules/redux.md](architecture/modules/redux.md)               | Redux state management (26 slices)           |
+| [architecture/modules/navigation.md](architecture/modules/navigation.md)     | React Navigation 7.x architecture            |
+| [architecture/modules/blockchain.md](architecture/modules/blockchain.md)     | Viem + Celo blockchain integration           |
+| [architecture/modules/features.md](architecture/modules/features.md)         | Feature modules (send, swap, earn, gold)     |
+| [architecture/modules/integrations.md](architecture/modules/integrations.md) | External integrations (BucksPay, APIs)       |
+
+## Architecture Decision Records (ADRs)
+
+| Document                                                                 | Description                             |
+| ------------------------------------------------------------------------ | --------------------------------------- |
+| [adr/template.md](adr/template.md)                                       | ADR template (MADR format)              |
+| [adr/0001-use-viem-over-ethers.md](adr/0001-use-viem-over-ethers.md)     | Viem vs Ethers.js decision              |
+| [adr/0002-redux-saga-over-thunk.md](adr/0002-redux-saga-over-thunk.md)   | Redux Saga for side effects             |
+| [adr/0003-celo-sepolia-testnet.md](adr/0003-celo-sepolia-testnet.md)     | Celo Sepolia migration (from Alfajores) |
+| [adr/0004-react-native-077.md](adr/0004-react-native-077.md)             | React Native 0.77.3 upgrade             |
+| [adr/0005-buckspay-offramp.md](adr/0005-buckspay-offramp.md)             | BucksPay Colombia offramp               |
+| [adr/0006-mento-token-rebranding.md](adr/0006-mento-token-rebranding.md) | Mento cXXX → XXXm migration             |
+| [adr/0007-digital-gold-xaut0.md](adr/0007-digital-gold-xaut0.md)         | Digital Gold (XAUt0) feature            |
+
+## Flow Diagrams
+
+| Document                                                                             | Description          |
+| ------------------------------------------------------------------------------------ | -------------------- |
+| [architecture/diagrams/flow-send.md](architecture/diagrams/flow-send.md)             | Send/transfer flow   |
+| [architecture/diagrams/flow-swap.md](architecture/diagrams/flow-swap.md)             | Token swap flow      |
+| [architecture/diagrams/flow-onboarding.md](architecture/diagrams/flow-onboarding.md) | User onboarding flow |
+
 ## Getting Started
 
 | Document                                            | Description                                    |

@@ -43,7 +43,7 @@ function BucksPayConfirm({ route }: Props) {
 
   useEffect(() => {
     if (walletAddress && copmToken) {
-      refreshPreparedTransactions({
+      void refreshPreparedTransactions({
         amount: new BigNumber(amount),
         token: copmToken,
         recipientAddress: BUCKSPAY_RECEIVER_ADDRESS,
@@ -141,7 +141,7 @@ function BucksPayConfirm({ route }: Props) {
           </View>
         )}
 
-        {errorMessage && (
+        {!!errorMessage && (
           <InLineNotification
             variant={NotificationVariant.Error}
             description={errorMessage}

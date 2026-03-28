@@ -45,6 +45,7 @@ import variables from 'src/styles/variables'
 import { useCOPm, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 import EarnGrowIcon from 'src/icons/EarnGrowIcon'
+import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
@@ -290,6 +291,8 @@ function TabHome(_props: Props) {
                 </Text>
               </View>
             </FlatCard>
+
+            <GoldEntrypoint />
 
             <FlatCard
               testID="FlatCard/ReFiColombiaSubsidies"
@@ -559,13 +562,12 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     gap: Spacing.Thick24,
     marginTop: Spacing.Large32,
-    marg: 'auto',
+    alignSelf: 'center',
   },
   actionButton: {
     flexDirection: 'column',
-    backgroundColor: Colors.primary10,
+    backgroundColor: '#EEEFFF',
     padding: 16,
-    background: '#EEEFFF',
     marginBottom: Spacing.Smallest8,
     borderRadius: 12,
   },

@@ -40,8 +40,8 @@ describe('TokenTotalLineItem', () => {
       <Provider
         store={createMockStore({
           localCurrency: {
-            preferredCurrencyCode: LocalCurrencyCode.BRL,
-            fetchedCurrencyCode: LocalCurrencyCode.BRL,
+            preferredCurrencyCode: LocalCurrencyCode.COP,
+            fetchedCurrencyCode: LocalCurrencyCode.COP,
             usdToLocalRate,
           },
           tokens: {

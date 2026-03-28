@@ -80,4 +80,10 @@ if [ -f "node_modules/detox/android/detox/build.gradle" ]; then
     rm -f node_modules/detox/android/detox/build.gradle.bak
 fi
 
+# Fix detox AndroidManifest.xml for RN 0.77+ autolinking (requires package attribute)
+if [ -f "node_modules/detox/android/detox/src/main/AndroidManifest.xml" ]; then
+    echo '<?xml version="1.0" encoding="utf-8"?>' > node_modules/detox/android/detox/src/main/AndroidManifest.xml
+    echo '<manifest package="com.wix.detox" />' >> node_modules/detox/android/detox/src/main/AndroidManifest.xml
+fi
+
 echo "✅ Android Gradle fixes applied successfully!"
