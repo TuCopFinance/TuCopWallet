@@ -15,7 +15,7 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import { goldPriceUsdSelector, priceAlertsSelector } from 'src/gold/selectors'
 import { addPriceAlert, removePriceAlert, updatePriceAlert } from 'src/gold/slice'
 import { PriceAlert } from 'src/gold/types'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { headerWithBackButton } from 'src/navigator/Headers'
@@ -158,7 +158,7 @@ export default function GoldPriceAlerts(_props: Props) {
         {/* Current Price Display */}
         {currentLocalPrice && (
           <View style={styles.currentPriceCard}>
-            <GoldIcon size={32} />
+            <GoldIconSelector size={32} />
             <View style={styles.priceInfo}>
               <Text style={styles.currentPriceLabel}>{t('goldFlow.priceAlerts.currentPrice')}</Text>
               <Text style={styles.currentPriceValue}>

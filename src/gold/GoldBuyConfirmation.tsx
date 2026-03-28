@@ -14,7 +14,7 @@ import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'sr
 import { buyGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
 import {
   getLocalCurrencyCode,
@@ -47,6 +47,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
     gasFeeTokenId: initialGasFeeTokenId,
     preparedTransactions: initialPreparedTransactions,
     toTokenId,
+    swapProvider: initialSwapProvider,
   } = route.params
 
   const buyStatus = useSelector(goldBuyStatusSelector)
@@ -91,6 +92,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(initialGasFeeTokenId)
   const [preparedTransactions, setPreparedTransactions] = useState<any>(initialPreparedTransactions)
   const [quoteError, setQuoteError] = useState<string | null>(null)
+  const [swapProvider, setSwapProvider] = useState<string | undefined>(initialSwapProvider)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -134,12 +136,14 @@ export default function GoldBuyConfirmation({ route }: Props) {
         if (quoteResult) {
           Logger.debug('GoldBuyConfirmation', 'Got quote result', {
             gasFee: quoteResult.quote.estimatedGasFee,
+            swapProvider: quoteResult.quote.swapProvider,
           })
           setEstimatedGasFee(quoteResult.quote.estimatedGasFee)
           if (quoteResult.preparedTransactions.type === 'possible') {
             setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
+          setSwapProvider(quoteResult.quote.swapProvider)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
@@ -217,6 +221,17 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return gasFeeToken.name
   }
 
+  // Format swap provider name for display
+  const getProviderDisplayName = (provider: string | undefined) => {
+    if (!provider) return null
+    const providerLower = provider.toLowerCase()
+    if (providerLower.includes('squid')) return 'Squid Router'
+    if (providerLower.includes('uniswap')) return 'Uniswap'
+    if (providerLower.includes('0x')) return '0x Protocol'
+    // Capitalize first letter
+    return provider.charAt(0).toUpperCase() + provider.slice(1)
+  }
+
   const onPressConfirm = () => {
     if (!fromToken || !preparedTransactions || !toTokenId) return
 
@@ -289,7 +304,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
         <View style={styles.summaryCard}>
           <Text style={styles.cardLabel}>{t('goldFlow.buy.youReceive')}</Text>
           <View style={styles.tokenRow}>
-            <GoldIcon size={40} />
+            <GoldIconSelector size={40} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
                 {parsedXautAmount.toFormat(XAUT0_DECIMALS)} {t('goldFlow.gold')}
@@ -327,6 +342,12 @@ export default function GoldBuyConfirmation({ route }: Props) {
               </Text>
             )}
           </View>
+          {swapProvider && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('goldFlow.buy.swapProvider')}</Text>
+              <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
+            </View>
+          )}
         </View>
 
         {/* Info Notice */}

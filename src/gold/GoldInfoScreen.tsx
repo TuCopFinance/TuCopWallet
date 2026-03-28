@@ -10,7 +10,7 @@ import { setHasSeenGoldInfo } from 'src/gold/slice'
 import { useDispatch } from 'src/redux/hooks'
 import Checkmark from 'src/icons/Checkmark'
 import CircledIcon from 'src/icons/CircledIcon'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import Lock from 'src/icons/Lock'
 import { headerWithCloseButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
@@ -74,7 +74,7 @@ export default function GoldInfoScreen() {
     <SafeAreaView style={[styles.safeAreaContainer, { paddingTop: headerHeight }]} edges={[]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.iconContainer}>
-          <GoldIcon size={80} />
+          <GoldIconSelector size={80} />
         </View>
         <Text style={styles.title} testID="GoldInfoScreen/Title">
           {t('goldFlow.info.title')}
@@ -83,7 +83,7 @@ export default function GoldInfoScreen() {
 
         <View style={styles.detailsContainer}>
           <DetailsItem
-            icon={<GoldIcon size={ICON_SIZE} />}
+            icon={<GoldIconSelector size={ICON_SIZE} />}
             title={t('goldFlow.info.details.backed.title')}
             subtitle={t('goldFlow.info.details.backed.subtitle')}
           />
