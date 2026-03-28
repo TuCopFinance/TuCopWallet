@@ -121,7 +121,7 @@ describe('SwapTransactionDetails', () => {
         </Provider>
       )
 
-      expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ ₱0.92')
+      expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.92')
     })
 
     it('should render the total fees with fiat and token values when priceUsd is missing', () => {
@@ -141,7 +141,9 @@ describe('SwapTransactionDetails', () => {
         </Provider>
       )
 
-      expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ ₱0.013 + 0.07 CELO')
+      expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent(
+        '≈ COP$0.013 + 0.07 CELO'
+      )
     })
 
     it('should render the total fees in only token values when all priceUsd is missing', () => {
@@ -181,8 +183,8 @@ describe('SwapTransactionDetails', () => {
 
     it.each`
       feeName            | expectedTotalFee
-      ${'appFee'}        | ${`≈ ₱0.88`}
-      ${'crossChainFee'} | ${`≈ ₱0.06`}
+      ${'appFee'}        | ${`≈ COP$0.88`}
+      ${'crossChainFee'} | ${`≈ COP$0.06`}
     `(
       'should render the total fees when the $feeName is undefined',
       ({ feeName, expectedTotalFee }) => {

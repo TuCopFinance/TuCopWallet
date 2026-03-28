@@ -87,7 +87,7 @@ describe('handleDeepLink', () => {
     const data = {
       address: '0xf7f551752A78Ce650385B58364225e5ec18D96cB',
       displayName: 'Super 8',
-      currencyCode: 'PHP',
+      currencyCode: 'COP',
       amount: '500',
       comment: '92a53156-c0f2-11ea-b3de-0242ac13000',
     }

@@ -238,7 +238,7 @@ describe('KeylessBackupProgress', () => {
         </Provider>
       )
       expect(getByTestId('GreenLoadingSpinnerToCheck')).toBeTruthy()
-      expect(getByText(`₱`, { exact: false })).toBeTruthy()
+      expect(getByText(`COP$`, { exact: false })).toBeTruthy()
       expect(getByText(`55.74`, { exact: false })).toBeTruthy()
 
       fireEvent.press(getByTestId('KeylessBackupProgress/Continue'))

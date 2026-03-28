@@ -263,7 +263,7 @@ const selectSingleSwapToken = (
   if (swapFieldType === Field.TO && !token!.priceUsd) {
     expect(
       within(swapScreen).getByText(
-        `swapScreen.noUsdPriceWarning.description, {"localCurrency":"PHP","tokenSymbol":"${tokenSymbol}"}`
+        `swapScreen.noUsdPriceWarning.description, {"localCurrency":"COP","tokenSymbol":"${tokenSymbol}"}`
       )
     ).toBeTruthy()
   }
@@ -447,7 +447,7 @@ describe('SwapScreen', () => {
 
     expect(
       getByText(
-        'swapScreen.noUsdPriceWarning.description, {"localCurrency":"PHP","tokenSymbol":"POOF"}'
+        'swapScreen.noUsdPriceWarning.description, {"localCurrency":"COP","tokenSymbol":"POOF"}'
       )
     ).toBeTruthy()
 
@@ -455,7 +455,7 @@ describe('SwapScreen', () => {
 
     expect(
       queryByText(
-        'swapScreen.noUsdPriceWarning.description, {"localCurrency":"PHP","tokenSymbol":"POOF"}'
+        'swapScreen.noUsdPriceWarning.description, {"localCurrency":"COP","tokenSymbol":"POOF"}'
       )
     ).toBeFalsy()
     expect(tokenBottomSheet).toBeVisible()
@@ -505,13 +505,13 @@ describe('SwapScreen', () => {
     )
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe('1.234')
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱21.43`
+      `${APPROX_SYMBOL} COP$21.43`
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
       '1.5234566652'
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱2.03`
+      `${APPROX_SYMBOL} COP$2.03`
     )
     expect(getByText('swapScreen.confirmSwap')).not.toBeDisabled()
   })
@@ -833,7 +833,7 @@ describe('SwapScreen', () => {
       '1 CELO ≈ 1.23456 POOF'
     )
 
-    expect(getByText('swapScreen.noUsdPriceWarning.title, {"localCurrency":"PHP"}')).toBeTruthy()
+    expect(getByText('swapScreen.noUsdPriceWarning.title, {"localCurrency":"COP"}')).toBeTruthy()
     expect(queryByText('swapScreen.priceImpactWarning.title')).toBeFalsy()
     expect(queryByText('swapScreen.missingSwapImpactWarning.title')).toBeFalsy()
   })
@@ -874,13 +874,13 @@ describe('SwapScreen', () => {
     )
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe('1,234')
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱21,43`
+      `${APPROX_SYMBOL} COP$21,43`
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
       '1,5234566652'
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
-      `${APPROX_SYMBOL} ₱2,03`
+      `${APPROX_SYMBOL} COP$2,03`
     )
     expect(getByTestId('SwapTransactionDetails/Slippage')).toHaveTextContent('0,3%')
     expect(getByText('swapScreen.confirmSwap')).not.toBeDisabled()
@@ -1335,7 +1335,7 @@ describe('SwapScreen', () => {
     const transactionDetails = getByTestId('SwapTransactionDetails')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.fee')
     // matches mocked value (0.015 CELO) provided to estimateFeesPerGas, estimateGas, and gas in defaultQuoteResponse
-    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ ₱0.25')
+    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.25')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.slippagePercentage')
     expect(getByTestId('SwapTransactionDetails/Slippage')).toHaveTextContent('0.3%')
   })

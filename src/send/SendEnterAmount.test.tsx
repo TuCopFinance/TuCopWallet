@@ -157,7 +157,7 @@ describe('SendEnterAmount', () => {
     expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_amount_continue, {
       amountInUsd: '106.01',
       isScan: false,
-      localCurrency: 'PHP',
+      localCurrency: 'COP',
       localCurrencyAmount: '140.99',
       localCurrencyExchangeRate: '1.33',
       networkId: 'celo-sepolia',

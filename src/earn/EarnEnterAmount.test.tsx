@@ -253,10 +253,10 @@ describe('EarnEnterAmount', () => {
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('8.00 USDC')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('₱10.64')
+      expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$10.64')
 
       expect(getByTestId('EarnEnterAmount/Fees')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('₱0.012')
+      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('COP$0.012')
 
       fireEvent.press(getByText('earnFlow.enterAmount.continue'))
 
@@ -388,10 +388,10 @@ describe('EarnEnterAmount', () => {
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('1.00 USDC')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('₱1.33')
+      expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$1.33')
 
       expect(getByTestId('EarnEnterAmount/Fees')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('₱0.012')
+      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('COP$0.012')
 
       fireEvent.press(getByText('earnFlow.enterAmount.continue'))
 
@@ -498,10 +498,10 @@ describe('EarnEnterAmount', () => {
 
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toHaveTextContent('₱14.63')
+      expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toHaveTextContent('COP$14.63')
 
       expect(getByTestId('EarnEnterAmount/Fees')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('₱0.012')
+      expect(getByTestId('EarnEnterAmount/Fees')).toHaveTextContent('COP$0.012')
 
       fireEvent.press(getByText('earnFlow.enterAmount.continue'))
 
@@ -584,7 +584,7 @@ describe('EarnEnterAmount', () => {
       )
 
       expect(getByTestId('LabelWithInfo/ClaimingReward-0')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Reward-0')).toHaveTextContent('₱0.016')
+      expect(getByTestId('EarnEnterAmount/Reward-0')).toHaveTextContent('COP$0.016')
       expect(getByTestId('EarnEnterAmount/Reward-0-crypto')).toHaveTextContent('0.01 ARB')
     })
 
@@ -704,7 +704,7 @@ describe('EarnEnterAmount', () => {
         replaceSeparators('100000.42')
       )
       expect(getByTestId('EarnEnterAmount/LocalAmountInput').props.value).toBe(
-        replaceSeparators('₱133,000.56')
+        replaceSeparators('COP$133,000.56')
       )
     })
   })

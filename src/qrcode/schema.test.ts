@@ -10,13 +10,13 @@ const validUserData = {
 }
 const validLocalPaymentData = {
   ...validAddressData,
-  currencyCode: 'PHP',
+  currencyCode: 'COP',
   amount: '521.46',
 }
 const validBeamAndGoPaymentData = {
   address: '0xf7f551752A78Ce650385B58364225e5ec18D96cB',
   displayName: 'Super 8',
-  currencyCode: 'PHP',
+  currencyCode: 'COP',
   amount: '500',
 }
 
@@ -48,7 +48,7 @@ describe('qrcode/schema', () => {
       expect(uriDataFromJson(validLocalPaymentData)).toStrictEqual({
         address: '0x0000000000000000000000000000000000000000',
         amount: '521.46',
-        currencyCode: 'PHP',
+        currencyCode: 'COP',
         displayName: undefined,
         e164PhoneNumber: undefined,
         token: undefined,
@@ -59,7 +59,7 @@ describe('qrcode/schema', () => {
       expect(uriDataFromJson(validBeamAndGoPaymentData)).toStrictEqual({
         address: '0xf7f551752A78Ce650385B58364225e5ec18D96cB',
         amount: '500',
-        currencyCode: 'PHP',
+        currencyCode: 'COP',
         displayName: 'Super 8',
         e164PhoneNumber: undefined,
         token: undefined,
