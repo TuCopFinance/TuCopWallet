@@ -21,7 +21,7 @@ import { XAUT0_DECIMALS } from 'src/gold/types'
 import { calculateFromGoldAmount } from 'src/gold/useGoldQuote'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
@@ -47,6 +47,25 @@ export default function GoldSellEnterAmount(_props: Props) {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
+
+  // Get user-friendly display name for tokens
+  const getTokenName = (token: TokenBalance | null) => {
+    if (!token) return ''
+    if (token.tokenId === networkConfig.copmTokenId) {
+      return t('assets.pesos')
+    }
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    const symbol = token.symbol?.toLowerCase() || ''
+    if (symbol === 'ccop' || symbol === 'copm') {
+      return t('assets.pesos')
+    }
+    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+      return t('assets.dollars')
+    }
+    return token.name
+  }
 
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
@@ -177,7 +196,7 @@ export default function GoldSellEnterAmount(_props: Props) {
       <SafeAreaView style={styles.container} edges={['top']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
-          <GoldIcon size={64} />
+          <GoldIconSelector size={64} />
           <Text style={styles.emptyStateText}>{t('goldFlow.sell.noGoldBalance')}</Text>
           <Button
             onPress={() => navigate(Screens.GoldBuyEnterAmount)}
@@ -205,7 +224,7 @@ export default function GoldSellEnterAmount(_props: Props) {
           {/* Price Display */}
           {localGoldPrice && (
             <View style={styles.priceRow}>
-              <GoldIcon size={24} />
+              <GoldIconSelector size={24} />
               <Text style={styles.priceText}>
                 {localCurrencySymbol}
                 {localGoldPrice.toFormat(2)} / oz
@@ -226,8 +245,8 @@ export default function GoldSellEnterAmount(_props: Props) {
                 testID="GoldSellEnterAmount/GoldAmountInput"
               />
               <View style={styles.goldBadge}>
-                <GoldIcon size={20} />
-                <Text style={styles.tokenName}>XAUt0</Text>
+                <GoldIconSelector size={20} />
+                <Text style={styles.tokenName}>{t('goldFlow.gold')}</Text>
               </View>
             </View>
 
@@ -244,7 +263,7 @@ export default function GoldSellEnterAmount(_props: Props) {
                   >
                     <>
                       <TokenIcon token={selectedOutputToken} size={IconSize.SMALL} />
-                      <Text style={styles.tokenName}>{selectedOutputToken.symbol}</Text>
+                      <Text style={styles.tokenName}>{getTokenName(selectedOutputToken)}</Text>
                       {availableOutputTokens.length > 1 && <DownArrowIcon color={Colors.gray5} />}
                     </>
                   </Touchable>
@@ -264,7 +283,8 @@ export default function GoldSellEnterAmount(_props: Props) {
 
           {/* Balance Display */}
           <Text style={styles.balanceText}>
-            {t('goldFlow.sell.available')}: {xaut0Balance.toFormat(XAUT0_DECIMALS)} XAUt0
+            {t('goldFlow.sell.available')}: {xaut0Balance.toFormat(XAUT0_DECIMALS)}{' '}
+            {t('goldFlow.gold')}
           </Text>
         </View>
 
@@ -273,10 +293,10 @@ export default function GoldSellEnterAmount(_props: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.insufficientBalanceWarning.title', {
-              tokenSymbol: 'XAUt0',
+              tokenSymbol: t('goldFlow.gold'),
             })}
             description={t('sendEnterAmountScreen.insufficientBalanceWarning.description', {
-              tokenSymbol: 'XAUt0',
+              tokenSymbol: t('goldFlow.gold'),
             })}
             style={styles.warning}
             testID="GoldSellEnterAmount/InsufficientBalance"
