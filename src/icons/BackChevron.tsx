@@ -4,11 +4,11 @@ import Svg, { Path } from 'react-native-svg'
 import Colors from 'src/styles/colors'
 
 export interface Props {
-  height: number
-  color: ColorValue
+  height?: number
+  color?: ColorValue
 }
 
-function BackChevron({ color, height }: Props) {
+function BackChevron({ color = Colors.black, height = 16 }: Props) {
   return (
     <Svg width="15" height={height} viewBox="0 0 15 29" fill="none">
       <Path
@@ -17,11 +17,6 @@ function BackChevron({ color, height }: Props) {
       />
     </Svg>
   )
-}
-
-BackChevron.defaultProps = {
-  height: 16,
-  color: Colors.black,
 }
 
 export default BackChevron

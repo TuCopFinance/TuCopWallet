@@ -7,7 +7,7 @@ export interface Props {
   color?: Colors
 }
 
-function EyeIcon({ color, size }: Props) {
+function EyeIcon({ color = Colors.black, size = 24 }: Props) {
   return (
     <Svg width={size} height={size} viewBox="0 0 26 22" fill="none">
       <Path
@@ -16,11 +16,6 @@ function EyeIcon({ color, size }: Props) {
       />
     </Svg>
   )
-}
-
-EyeIcon.defaultProps = {
-  size: 24,
-  color: Colors.black,
 }
 
 export default EyeIcon
