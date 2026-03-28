@@ -78,7 +78,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$1.00')
     })
 
     it('shows local amount when showLocalAmount is true and token is not cUSD', () => {
@@ -92,7 +92,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$5.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$5.00')
     })
 
     it('shows more decimals up to the', () => {
@@ -169,7 +169,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('+R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('+COP$1.00')
     })
 
     it('shows negative values', () => {
@@ -183,7 +183,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('-R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('-COP$1.00')
     })
 
     it('shows a dash by default when the token doesnt exist', () => {
@@ -202,11 +202,11 @@ describe('TokenDisplay', () => {
             amount={10}
             tokenId={'celo-sepolia:does-not-exist'}
             testID="test"
-            errorFallback="$ --"
+            errorFallback="US$ --"
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('$ --')
+      expect(getElementText(getByTestId('test'))).toEqual('US$ --')
     })
 
     it('doesnt show error when the token doesnt exist if theres a localAmount', () => {
@@ -239,7 +239,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$1.00')
     })
 
     it('shows approx sign if set', () => {

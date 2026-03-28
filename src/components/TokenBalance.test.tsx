@@ -121,33 +121,33 @@ describe('AssetsTokenBalance', () => {
         ...noTokens,
         ...noPositions,
       },
-      expectedTotal: '$0.00',
+      expectedTotal: 'US$0.00',
     },
     {
       testName: 'zero token balance and some positions',
       storeOverrides: {
         ...noTokens,
       },
-      expectedTotal: '$7.91',
+      expectedTotal: 'US$7.91',
     },
     {
       testName: 'one token balance and some positions',
       storeOverrides: {},
-      expectedTotal: '$8.41',
+      expectedTotal: 'US$8.41',
     },
     {
       testName: 'one token balance and zero positions',
       storeOverrides: {
         ...noPositions,
       },
-      expectedTotal: '$0.50',
+      expectedTotal: 'US$0.50',
     },
     {
       testName: 'multiple token balances (some with no price) and positions',
       storeOverrides: {
         ...multipleTokens,
       },
-      expectedTotal: '$1,666.03',
+      expectedTotal: 'US$1,666.03',
     },
     {
       testName: 'stale token balance and positions',
@@ -292,7 +292,7 @@ describe('AssetsTokenBalance', () => {
       </Provider>
     )
 
-    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('$8.41')
+    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('US$8.41')
     expect(tree.getByTestId('HideBalanceButton')).toBeTruthy()
     fireEvent.press(tree.getByTestId('HideBalanceButton'))
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
@@ -315,19 +315,19 @@ describe('FiatExchangeTokenBalance', () => {
         ...noTokens,
         ...noPositions,
       },
-      expectedTotal: '$0.00',
+      expectedTotal: 'US$0.00',
     },
     {
       testName: 'zero token balance and some positions',
       storeOverrides: {
         ...noTokens,
       },
-      expectedTotal: '$7.91',
+      expectedTotal: 'US$7.91',
     },
     {
       testName: 'one token balance and some positions',
       storeOverrides: {},
-      expectedTotal: '$8.41',
+      expectedTotal: 'US$8.41',
     },
   ])('renders correctly with $testName', ({ storeOverrides, expectedTotal }) => {
     const store = createMockStore({
@@ -358,7 +358,7 @@ describe('FiatExchangeTokenBalance', () => {
     )
 
     expect(tree.queryByTestId('ViewBalances')).toBeFalsy()
-    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('$0.50')
+    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('US$0.50')
   })
 
   it('renders correctly with multiple token balances and positions and navigates to wallet tab if tab navigator gate is true', () => {
@@ -374,7 +374,7 @@ describe('FiatExchangeTokenBalance', () => {
     )
 
     expect(tree.getByTestId('ViewBalances')).toBeTruthy()
-    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('$1,666.03')
+    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('US$1,666.03')
     fireEvent.press(tree.getByTestId('ViewBalances'))
     expect(navigateClearingStack).toHaveBeenCalledWith(Screens.TabNavigator, {
       initialScreen: Screens.TabWallet,

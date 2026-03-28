@@ -274,7 +274,7 @@ describe('selector', () => {
           {
             amount: {
               localAmount: {
-                currencyCode: 'EUR',
+                currencyCode: 'COP',
                 exchangeRate: '0.48180325869',
                 value: '0.00158460996455442135',
               },
@@ -287,7 +287,7 @@ describe('selector', () => {
           {
             amount: {
               localAmount: {
-                currencyCode: 'EUR',
+                currencyCode: 'COP',
                 exchangeRate: '0.91760127999',
                 value: '0.000550560767994',
               },
@@ -300,7 +300,7 @@ describe('selector', () => {
           {
             amount: {
               localAmount: {
-                currencyCode: 'EUR',
+                currencyCode: 'COP',
                 exchangeRate: '0.48180325869',
                 value: '0.17992880266886214666758336412',
               },

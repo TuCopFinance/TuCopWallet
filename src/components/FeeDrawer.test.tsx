@@ -137,13 +137,13 @@ describe('FeeDrawer', () => {
         exchangeFee: new BigNumber(0.001),
       })
       expect(getElementText(getByTestId('feeDrawer/SendConfirmation/totalFee'))).toEqual(
-        'R$0.00035'
+        'COP$0.00035'
       )
       expect(getElementText(getByTestId('feeDrawer/SendConfirmation/securityFee'))).toEqual(
-        'R$0.00025'
+        'COP$0.00025'
       )
       expect(getElementText(getByTestId('feeDrawer/SendConfirmation/exchangeFee'))).toEqual(
-        'R$0.00005'
+        'COP$0.00005'
       )
     })
   })
