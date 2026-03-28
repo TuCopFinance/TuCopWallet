@@ -42,9 +42,11 @@ function SwapFeedItem({ transaction }: Props) {
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-
     if (token.tokenId === networkConfig.usdtTokenId) {
       return t('assets.dollars')
+    }
+    if (token.tokenId === networkConfig.xaut0TokenId) {
+      return t('assets.gold')
     }
     return token.name ?? token.symbol ?? '...'
   }
