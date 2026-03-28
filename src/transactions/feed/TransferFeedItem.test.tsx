@@ -156,7 +156,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
       expectedSubtitleSections: ['feedItemFailedTransaction'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -203,7 +203,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -216,7 +216,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemReceivedTitle', formatShortenedAddress(MOCK_ADDRESS)],
       expectedSubtitleSections: ['feedItemReceivedInfo', 'noComment'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -236,7 +236,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', mockName],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -251,7 +251,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', MOCK_E164_NUMBER],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -270,7 +270,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', mockName],
       expectedSubtitleSections: ['feedItemSentInfo'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -286,7 +286,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', 'a title'],
       expectedSubtitleSections: ['feedItemSentInfo', 'a subtitle'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -308,7 +308,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', 'Simplex'],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -332,7 +332,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemCeloRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemRewardReceivedInfo'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -350,7 +350,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemRewardReceivedInfo'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -368,7 +368,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemInviteRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemInviteRewardReceivedInfo'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -391,7 +391,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemReceivedTitle', 'Simplex'],
       expectedSubtitleSections: ['tokenDeposit', 'cUSD'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -413,7 +413,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+₱15.00',
+      expectedAmount: '+COP$40,000.00',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -457,7 +457,7 @@ describe('TransferFeedItem', () => {
         tokenId: mockCeloTokenId,
         value: 10,
         localAmount: {
-          currencyCode: 'EUR',
+          currencyCode: LocalCurrencyCode.USD,
           exchangeRate: '0.4',
           value: '4',
         },
@@ -468,7 +468,7 @@ describe('TransferFeedItem', () => {
       queryByTestId,
       expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
       expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
-      expectedAmount: '+€4.00',
+      expectedAmount: '+US$4.00',
       expectedTokenAmount: '10.00 CELO',
     })
   })
@@ -486,7 +486,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemDepositTitle'],
       expectedSubtitleSections: ['feedItemReceivedInfo'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -535,7 +535,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemFcTransferWithdraw'],
       expectedSubtitleSections: ['feedItemFcTransferBankAccount'],
-      expectedAmount: `-$${transferOutFcQuote.quote.quote.fiatAmount}.00`,
+      expectedAmount: `-US$${transferOutFcQuote.quote.quote.fiatAmount}.00`,
       expectedTokenAmount: `${transferTotalCost}.00 cUSD`,
     })
   })
@@ -558,7 +558,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemJumpstartTitle'],
       expectedSubtitleSections: ['feedItemJumpstartSentSubtitle'],
-      expectedAmount: '-₱13.30',
+      expectedAmount: '-COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })
@@ -572,7 +572,7 @@ describe('TransferFeedItem', () => {
       getByTestId,
       expectedTitleSections: ['feedItemJumpstartTitle'],
       expectedSubtitleSections: ['feedItemJumpstartReceivedSubtitle'],
-      expectedAmount: '+₱13.30',
+      expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
   })

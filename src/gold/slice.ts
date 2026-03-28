@@ -29,6 +29,9 @@ export interface State {
 
   // Error handling
   error: string | null
+
+  // User has seen intro screen
+  hasSeenGoldInfo: boolean
 }
 
 const initialState: State = {
@@ -42,6 +45,7 @@ const initialState: State = {
   sellTxHash: null,
   priceAlerts: [],
   error: null,
+  hasSeenGoldInfo: false,
 }
 
 export const slice = createSlice({
@@ -130,6 +134,11 @@ export const slice = createSlice({
       state.sellTxHash = null
       state.error = null
     },
+
+    // Mark intro screen as seen
+    setHasSeenGoldInfo: (state) => {
+      state.hasSeenGoldInfo = true
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
@@ -142,11 +151,12 @@ export const slice = createSlice({
         buyStatus: 'idle' as const,
         sellStatus: 'idle' as const,
         priceFetchStatus: 'idle' as const,
-        // Keep price data and alerts
+        // Keep price data, alerts, and hasSeenGoldInfo
         goldPriceUsd: persisted.goldPriceUsd ?? null,
         goldPrice24hChange: persisted.goldPrice24hChange ?? null,
         goldPriceFetchedAt: persisted.goldPriceFetchedAt ?? null,
         priceAlerts: persisted.priceAlerts ?? [],
+        hasSeenGoldInfo: persisted.hasSeenGoldInfo ?? false,
         // Clear transient state
         buyTxHash: null,
         sellTxHash: null,
@@ -171,6 +181,7 @@ export const {
   updatePriceAlert,
   markAlertTriggered,
   resetGoldFlow,
+  setHasSeenGoldInfo,
 } = slice.actions
 
 export default slice.reducer
