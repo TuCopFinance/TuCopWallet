@@ -1,0 +1,27 @@
+diff --git a/node_modules/react-native-modal/dist/modal.js b/node_modules/react-native-modal/dist/modal.js
+index 1234567..abcdefg 100644
+--- a/node_modules/react-native-modal/dist/modal.js
++++ b/node_modules/react-native-modal/dist/modal.js
+@@ -63,6 +63,7 @@ export class ReactNativeModal extends React.Component {
+         this.inSwipeClosingState = false;
+         this.currentSwipingDirection = null;
+         this.panResponder = null;
++        this.backHandlerSubscription = null;
+         this.didUpdateDimensionsEmitter = null;
+         this.interactionHandle = null;
+         this.getDeviceHeight = () => this.props.deviceHeight || this.state.deviceHeight;
+@@ -453,10 +454,12 @@ export class ReactNativeModal extends React.Component {
+         if (this.state.isVisible) {
+             this.open();
+         }
+-        BackHandler.addEventListener('hardwareBackPress', this.onBackButtonPress);
++        this.backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', this.onBackButtonPress);
+     }
+     componentWillUnmount() {
+-        BackHandler.removeEventListener('hardwareBackPress', this.onBackButtonPress);
++        if (this.backHandlerSubscription) {
++            this.backHandlerSubscription.remove();
++        }
+         if (this.didUpdateDimensionsEmitter) {
+             this.didUpdateDimensionsEmitter.remove();
+         }

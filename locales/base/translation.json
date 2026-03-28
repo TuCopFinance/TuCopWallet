@@ -3026,6 +3026,7 @@
     "status_FINISHED": "Completed"
   },
   "goldFlow": {
+    "gold": "Gold",
     "entrypoint": {
       "title": "Digital Gold",
       "subtitle": "Buy and sell tokenized gold"
@@ -3066,6 +3067,7 @@
       "selectToken": "Select Token",
       "available": "Available",
       "noTokensAvailable": "No tokens available. Add funds to your wallet to buy gold.",
+      "noUsdtAvailable": "You need USDT to buy gold. Add USDT to your wallet to continue.",
       "continue": "Continue",
       "quoteErrorTitle": "No swap route available",
       "quoteErrorDescription": "This token cannot be swapped directly for gold. Try using USDT instead.",
@@ -3079,7 +3081,8 @@
       "infoTitle": "About XAUt0",
       "infoDescription": "XAUt0 tokens represent physical gold. Prices may fluctuate based on market conditions.",
       "errorTitle": "Transaction Failed",
-      "error": "Failed to complete purchase. Please try again."
+      "error": "Failed to complete purchase. Please try again.",
+      "successMessage": "Gold purchase successful!"
     },
     "sell": {
       "title": "Sell Gold",
