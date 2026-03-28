@@ -8,7 +8,7 @@ export interface Props {
   strokeWidth?: number
 }
 
-function Times({ color, height, strokeWidth }: Props) {
+function Times({ color = colors.black, height = 16, strokeWidth = 2 }: Props) {
   return (
     <Svg width={height} height={height} viewBox="0 0 27 28" fill="none">
       <Path
@@ -17,12 +17,6 @@ function Times({ color, height, strokeWidth }: Props) {
       />
     </Svg>
   )
-}
-
-Times.defaultProps = {
-  height: 16,
-  color: colors.black,
-  strokeWidth: 2,
 }
 
 export default React.memo(Times)
