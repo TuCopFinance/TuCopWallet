@@ -22,7 +22,7 @@ import {
   usdToLocalCurrencyRateSelector,
 } from 'src/localCurrency/selectors'
 import { headerWithBackButton } from 'src/navigator/Headers'
-import { navigate, navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
@@ -30,7 +30,9 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
+import { TokenBalance } from 'src/tokens/slice'
 import Logger from 'src/utils/Logger'
+import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
 
@@ -54,6 +56,34 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const xaut0Token = useSelector(xaut0TokenSelector)
 
   const fromToken = useTokenInfo(fromTokenId)
+
+  // Get user-friendly display name for tokens (same pattern as TokenBalanceItem)
+  // Uses tokenId first, then symbol as fallback for different USDT variants
+  const getTokenName = (token: TokenBalance | null) => {
+    if (!token) return ''
+    // Check by tokenId first (most reliable)
+    if (token.tokenId === networkConfig.copmTokenId) {
+      return t('assets.pesos')
+    }
+    if (token.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    if (token.tokenId === networkConfig.xaut0TokenId) {
+      return t('goldFlow.gold')
+    }
+    // Fallback: check by symbol for different token variants
+    const symbol = token.symbol?.toLowerCase() || ''
+    if (symbol === 'ccop' || symbol === 'copm') {
+      return t('assets.pesos')
+    }
+    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+      return t('assets.dollars')
+    }
+    if (symbol === 'xaut0' || symbol === 'xaut') {
+      return t('goldFlow.gold')
+    }
+    return token.name
+  }
   const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
@@ -114,14 +144,14 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
 
-  // Navigate home on success
+  // Navigate to GoldHome on success with success message
   useEffect(() => {
     if (buyStatus === 'success') {
       dispatch(resetGoldFlow())
-      navigateHome()
+      Logger.showMessage(t('goldFlow.buy.successMessage'))
       navigate(Screens.GoldHome)
     }
-  }, [buyStatus, dispatch])
+  }, [buyStatus, dispatch, t])
 
   // COP doesn't use decimals
   const isLocalCurrencyCop = localCurrencyCode === LocalCurrencyCode.COP
@@ -133,9 +163,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   // Tokens always show 2 decimals for readability
   const tokenDisplayDecimals = 2
-
-  // Display symbol override: cCOP -> COPm (Mento rebranding)
-  const displaySymbol = fromToken?.symbol === 'cCOP' ? 'COPm' : fromToken?.symbol
 
   // Calculate local currency values
   const localPricePerOz = useMemo(() => {
@@ -159,8 +186,26 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
   }, [estimatedGasFee, gasFeeToken])
 
-  // Format gas fee display
-  const gasFeeDisplaySymbol = gasFeeToken?.symbol === 'cCOP' ? 'COPm' : gasFeeToken?.symbol
+  // Format gas fee display name (same pattern as getTokenName)
+  const getGasFeeTokenName = () => {
+    if (!gasFeeToken) return ''
+    // Check by tokenId first
+    if (gasFeeToken.tokenId === networkConfig.copmTokenId) {
+      return t('assets.pesos')
+    }
+    if (gasFeeToken.tokenId === networkConfig.usdtTokenId) {
+      return t('assets.dollars')
+    }
+    // Fallback: check by symbol
+    const symbol = gasFeeToken.symbol?.toLowerCase() || ''
+    if (symbol === 'ccop' || symbol === 'copm') {
+      return t('assets.pesos')
+    }
+    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+      return t('assets.dollars')
+    }
+    return gasFeeToken.name
+  }
 
   const onPressConfirm = () => {
     if (!fromToken || !preparedTransactions || !toTokenId) return
@@ -215,7 +260,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
             <TokenIcon token={fromToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedFromAmount.toFormat(tokenDisplayDecimals)} {displaySymbol}
+                {parsedFromAmount.toFormat(tokenDisplayDecimals)} {getTokenName(fromToken)}
               </Text>
               <TokenDisplay
                 tokenId={fromTokenId}
@@ -237,7 +282,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
             <GoldIcon size={40} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedXautAmount.toFormat(XAUT0_DECIMALS)} XAUt0
+                {parsedXautAmount.toFormat(XAUT0_DECIMALS)} {t('goldFlow.gold')}
               </Text>
               {totalValueLocal && (
                 <Text style={styles.tokenLocalValue}>
@@ -266,8 +311,8 @@ export default function GoldBuyConfirmation({ route }: Props) {
               <ActivityIndicator size="small" color={Colors.primary} />
             ) : (
               <Text style={styles.detailValue}>
-                {parsedGasFee && gasFeeDisplaySymbol
-                  ? `${parsedGasFee.toFormat(6)} ${gasFeeDisplaySymbol}`
+                {parsedGasFee && gasFeeToken
+                  ? `${parsedGasFee.toFormat(6)} ${getGasFeeTokenName()}`
                   : t('goldFlow.buy.estimatingFee')}
               </Text>
             )}

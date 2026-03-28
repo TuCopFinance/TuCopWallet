@@ -3026,6 +3026,7 @@
     "status_FINISHED": "Completed"
   },
   "goldFlow": {
+    "gold": "Gold",
     "entrypoint": {
       "title": "Digital Gold",
       "subtitle": "Buy and sell tokenized gold"
@@ -3080,7 +3081,8 @@
       "infoTitle": "About XAUt0",
       "infoDescription": "XAUt0 tokens represent physical gold. Prices may fluctuate based on market conditions.",
       "errorTitle": "Transaction Failed",
-      "error": "Failed to complete purchase. Please try again."
+      "error": "Failed to complete purchase. Please try again.",
+      "successMessage": "Gold purchase successful!"
     },
     "sell": {
       "title": "Sell Gold",

@@ -15,6 +15,7 @@ import {
   goldPriceFetchStatusSelector,
 } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
+import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import GoldIcon from 'src/icons/GoldIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { headerWithBackButton } from 'src/navigator/Headers'
@@ -25,9 +26,6 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { tokensByIdSelector } from 'src/tokens/selectors'
-import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
-import { XAUT0_TOKEN_ID_MAINNET, XAUT0_TOKEN_ID_STAGING } from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldHome>
 
@@ -44,14 +42,12 @@ export default function GoldHome(_props: Props) {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
-  const tokensById = useSelector((state) =>
-    tokensByIdSelector(state, getSupportedNetworkIdsForTokenBalances())
-  )
-
-  // Get XAUt0 token balance
-  const xaut0Token =
-    tokensById[XAUT0_TOKEN_ID_MAINNET] || tokensById[XAUT0_TOKEN_ID_STAGING] || null
-  const xaut0Balance = xaut0Token?.balance ? new BigNumber(xaut0Token.balance) : new BigNumber(0)
+  // Get XAUt0 balance directly from blockchain
+  const {
+    balance: xaut0Balance,
+    refetch: refetchBalance,
+    loading: balanceLoading,
+  } = useXaut0Balance()
 
   const [refreshing, setRefreshing] = React.useState(false)
 
@@ -59,11 +55,12 @@ export default function GoldHome(_props: Props) {
     dispatch(fetchGoldPrice())
   }, [dispatch])
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true)
     dispatch(fetchGoldPrice())
-    setTimeout(() => setRefreshing(false), 1000)
-  }, [dispatch])
+    await refetchBalance()
+    setRefreshing(false)
+  }, [dispatch, refetchBalance])
 
   // Convert USD price to local currency
   const localPrice = React.useMemo(() => {
@@ -90,8 +87,8 @@ export default function GoldHome(_props: Props) {
   }, [hideWalletBalances, holdingsValueLocal, decimalSeparator])
 
   const balanceDisplay = React.useMemo(() => {
-    if (hideWalletBalances) return `X${decimalSeparator}XXXX`
-    return xaut0Balance.toFormat(4)
+    if (hideWalletBalances) return `X${decimalSeparator}XXXXXX`
+    return xaut0Balance.toFormat(6)
   }, [hideWalletBalances, xaut0Balance, decimalSeparator])
 
   const changeDisplay = React.useMemo(() => {
@@ -130,7 +127,7 @@ export default function GoldHome(_props: Props) {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing || priceFetchStatus === 'loading'}
+            refreshing={refreshing || priceFetchStatus === 'loading' || balanceLoading}
             onRefresh={onRefresh}
             tintColor={Colors.primary}
           />
