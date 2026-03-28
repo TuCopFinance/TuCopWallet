@@ -67,10 +67,10 @@ export const NavigatorWrapper = () => {
   useLogger(navigationRef)
   useDeepLinks()
 
-  // Sistema de verificación de actualizaciones mejorado
+  // Sistema de verificación de actualizaciones - consulta directamente App Store / Play Store
   const { updateInfo } = useAppUpdateChecker({
     minRequiredVersion,
-    useBackend: true,
+    useBackend: false, // Consultar tiendas directamente (más confiable)
     showDialogAutomatically: true,
     checkOnAppStart: true,
     checkOnAppResume: true,
@@ -81,7 +81,7 @@ export const NavigatorWrapper = () => {
   React.useEffect(() => {
     Logger.info('NavigatorWrapper', '🔧 Update checker config:', {
       minRequiredVersion,
-      useBackend: true,
+      useBackend: false,
       showDialogAutomatically: true,
       checkOnAppStart: true,
       checkOnAppResume: true,
