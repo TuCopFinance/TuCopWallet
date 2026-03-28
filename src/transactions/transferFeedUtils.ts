@@ -196,10 +196,12 @@ function useFiatConnectTransferDisplayInfo({ amount, transactionHash }: TokenTra
   }
 
   const fiatAmount = new BigNumber(fcTransferDetails.quote.fiatAmount)
+  const currencyCode =
+    FIATCONNECT_CURRENCY_TO_WALLET_CURRENCY[fcTransferDetails.quote.fiatType] ?? 'COP'
   const localAmount: LocalAmount = {
     //Negative sign because currently only withdraws are supported
     value: fiatAmount.multipliedBy(-1),
-    currencyCode: FIATCONNECT_CURRENCY_TO_WALLET_CURRENCY[fcTransferDetails.quote.fiatType],
+    currencyCode,
     exchangeRate: fiatAmount.div(amount.value).toFixed(2),
   }
 

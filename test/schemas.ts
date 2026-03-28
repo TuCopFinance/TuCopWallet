@@ -3019,13 +3019,8 @@ export const v189Schema = {
   home: { ...v188Schema.home, nftCelebration: null },
 }
 
-const currencyMapping: Record<string, LocalCurrencyCode> = {
-  MYS: LocalCurrencyCode.MYR,
-  SGP: LocalCurrencyCode.SGD,
-  THI: LocalCurrencyCode.THB,
-  TWN: LocalCurrencyCode.TWD,
-  VNM: LocalCurrencyCode.VND,
-}
+// TuCop only supports COP and USD
+const validCurrencies = ['COP', 'USD']
 export const v190Schema = {
   ...v189Schema,
   _persist: {
@@ -3034,12 +3029,12 @@ export const v190Schema = {
   },
   localCurrency: {
     ...v189Schema.localCurrency,
-    preferredCurrencyCode:
-      currencyMapping[v189Schema.localCurrency.preferredCurrencyCode] ??
-      v189Schema.localCurrency.preferredCurrencyCode,
-    fetchedCurrencyCode:
-      currencyMapping[v189Schema.localCurrency.fetchedCurrencyCode] ??
-      v189Schema.localCurrency.fetchedCurrencyCode,
+    preferredCurrencyCode: validCurrencies.includes(v189Schema.localCurrency.preferredCurrencyCode)
+      ? v189Schema.localCurrency.preferredCurrencyCode
+      : LocalCurrencyCode.COP,
+    fetchedCurrencyCode: validCurrencies.includes(v189Schema.localCurrency.fetchedCurrencyCode)
+      ? v189Schema.localCurrency.fetchedCurrencyCode
+      : LocalCurrencyCode.COP,
   },
 }
 
