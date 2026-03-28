@@ -78,7 +78,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
       amountCurrency: 'cUSD',
-      localCurrencyCode: 'PHP',
+      localCurrencyCode: 'COP',
       localCurrencyExchangeRate: '2',
     })
   })
@@ -94,7 +94,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
       amountCurrency: 'cGLD',
-      localCurrencyCode: 'PHP',
+      localCurrencyCode: 'COP',
       localCurrencyExchangeRate: '10',
     })
   })
@@ -109,7 +109,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
       amountCurrency: 'cSomething',
-      localCurrencyCode: 'PHP',
+      localCurrencyCode: 'COP',
       localCurrencyExchangeRate: null,
     })
   })
@@ -124,7 +124,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
       amountCurrency: 'T1',
-      localCurrencyCode: 'PHP',
+      localCurrencyCode: 'COP',
       localCurrencyExchangeRate: '10',
     })
   })
@@ -139,7 +139,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
       amountCurrency: 'SOMETHING',
-      localCurrencyCode: 'PHP',
+      localCurrencyCode: 'COP',
       localCurrencyExchangeRate: null,
     })
   })

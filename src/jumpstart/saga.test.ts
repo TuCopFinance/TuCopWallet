@@ -393,7 +393,7 @@ describe('sendJumpstartTransactions', () => {
   }
   const expectedTrackedProperties = {
     amountInUsd: '1.00',
-    localCurrency: 'PHP',
+    localCurrency: 'COP',
     localCurrencyExchangeRate: '1.33',
     networkId: 'celo-sepolia',
     tokenAmount: '1000000000000000000',

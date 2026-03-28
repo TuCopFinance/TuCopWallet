@@ -211,7 +211,7 @@ describe('ActionRequest with WalletConnect V2', () => {
       ).toBeTruthy()
       const fee = within(getByTestId('EstimatedNetworkFee'))
       expect(fee.getByText('0.0007 CELO')).toBeTruthy() // gas * (_baseFeePerGas + maxPriorityFeePerGas)
-      expect(fee.getByText('₱0.0047')).toBeTruthy()
+      expect(fee.getByText('COP$0.0047')).toBeTruthy()
 
       fireEvent.press(getByText('walletConnectRequest.sendTransactionAction'))
       expect(store.getActions()).toEqual([

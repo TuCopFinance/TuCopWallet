@@ -247,7 +247,7 @@ describe('AssetsTokenBalance', () => {
       </Provider>
     )
 
-    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('₱55.74')
+    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('COP$55.74')
     expect(queryByText('totalAssetsInfo')).toBeFalsy()
 
     fireEvent.press(getByTestId('AssetsTokenBalance/Info'))
@@ -262,7 +262,7 @@ describe('AssetsTokenBalance', () => {
     )
 
     expect(getByTestId('HideBalanceButton')).toBeTruthy()
-    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('₱55.74')
+    expect(getByTestId('TotalTokenBalance')).toHaveTextContent('COP$55.74')
     expect(queryByText('AssetsTokenBalance/Info')).toBeFalsy()
   })
 
@@ -392,6 +392,6 @@ describe('FiatExchangeTokenBalance', () => {
 
     expect(tree.queryByTestId('ViewBalances')).toBeTruthy()
     // Even we have positions, the balance is stale so we show '-'
-    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('₱-')
+    expect(getElementText(tree.getByTestId('TotalTokenBalance'))).toEqual('COP$-')
   })
 })
