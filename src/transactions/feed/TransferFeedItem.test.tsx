@@ -403,9 +403,9 @@ describe('TransferFeedItem', () => {
         tokenId: mockCusdTokenId,
         value: 10,
         localAmount: {
-          currencyCode: LocalCurrencyCode.PHP,
-          exchangeRate: '1.5',
-          value: '15',
+          currencyCode: LocalCurrencyCode.COP,
+          exchangeRate: '4000',
+          value: '40000',
         },
       },
     })
