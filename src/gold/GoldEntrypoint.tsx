@@ -94,7 +94,9 @@ export default function GoldEntrypoint() {
         testID="GoldEntrypoint"
       >
         <View style={[styles.row, { paddingVertical: 8 }]}>
-          <GoldIconSelector size={36} />
+          <View style={styles.iconContainer}>
+            <GoldIconSelector size={36} />
+          </View>
           <View style={styles.textColumn}>
             <Text style={styles.title}>{t('goldFlow.entrypoint.title')}</Text>
             <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>
@@ -132,6 +134,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  iconContainer: {
+    width: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textColumn: {
     alignItems: 'center',
