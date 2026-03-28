@@ -85,7 +85,7 @@ describe('PositionItem', () => {
 
     expect(getByText('MOO / CELO')).toBeTruthy()
     expect(getByText('Pool')).toBeTruthy()
-    expect(getByText('₱3.34')).toBeTruthy()
+    expect(getByText('COP$3.34')).toBeTruthy()
     expect(getByText('11.90')).toBeTruthy()
   })
 
@@ -98,7 +98,7 @@ describe('PositionItem', () => {
 
     expect(getByText('MOO / CELO')).toBeTruthy()
     expect(getByText('Pool')).toBeTruthy()
-    expect(queryByText('₱3.34')).toBeFalsy()
+    expect(queryByText('COP$3.34')).toBeFalsy()
     expect(queryByText('11.90')).toBeFalsy()
   })
 
@@ -112,7 +112,7 @@ describe('PositionItem', () => {
 
     expect(getByText('MOO / CELO')).toBeTruthy()
     expect(getByText('Pool')).toBeTruthy()
-    expect(getByText('-₱3.34')).toBeTruthy()
+    expect(getByText('-COP$3.34')).toBeTruthy()
     expect(getByText('-11.90')).toBeTruthy()
   })
 

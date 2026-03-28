@@ -52,7 +52,7 @@ describe('TokenDetails', () => {
 
     expect(getByTestId('TokenDetails/TitleImage')).toBeTruthy()
     expect(getByTestId('TokenDetails/Title')).toHaveTextContent('Poof Governance Token')
-    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('₱0.13')
+    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('COP$0.13')
     expect(getByText('tokenDetails.yourBalance')).toBeTruthy()
     expect(getByTestId('TokenBalanceItem')).toBeTruthy()
     expect(queryByTestId('TokenDetails/LearnMore')).toBeFalsy()
@@ -102,7 +102,7 @@ describe('TokenDetails', () => {
 
     expect(queryByTestId('TokenDetails/PriceDelta')).toBeFalsy()
     expect(getByText('tokenDetails.priceUnavailable')).toBeTruthy()
-    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('₱ --')
+    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('COP$ --')
   })
 
   it('renders no price info if historical price info is not available', () => {
