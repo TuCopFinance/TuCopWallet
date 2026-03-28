@@ -264,7 +264,9 @@ function TabHome(_props: Props) {
           <View style={[styles.containerShadow, styles.noBottomShadow]}>
             <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
               <View style={[styles.row, { paddingVertical: 8 }]}>
-                <Swap />
+                <View style={styles.iconContainer}>
+                  <Swap />
+                </View>
                 <Text style={[styles.ctaText]}>{t('tabHome.swapToUSD')}</Text>
               </View>
             </FlatCard>
@@ -281,7 +283,9 @@ function TabHome(_props: Props) {
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
               <View style={[styles.row, { paddingVertical: 8 }]}>
-                <EarnGrowIcon size={36} />
+                <View style={styles.iconContainer}>
+                  <EarnGrowIcon size={36} />
+                </View>
                 <Text style={styles.ctaText}>
                   <Trans
                     i18n={i18n}
@@ -299,7 +303,9 @@ function TabHome(_props: Props) {
               onPress={onPressReFiColombiaSubsidies}
             >
               <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
-                <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+                <View style={styles.iconContainer}>
+                  <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+                </View>
                 <View style={styles.textColumn}>
                   <Text style={styles.ctaText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
                   <Text style={styles.ctaSubText}>
@@ -577,6 +583,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: -0.12,
     fontFamily: Inter.Regular,
+  },
+  iconContainer: {
+    width: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   refiLogo: {
     width: 48,

@@ -26,7 +26,7 @@ import { XAUT0_DECIMALS } from 'src/gold/types'
 import { calculateGoldAmount, useGoldQuote } from 'src/gold/useGoldQuote'
 import { useDispatch } from 'react-redux'
 import DownArrowIcon from 'src/icons/DownArrowIcon'
-import GoldIcon from 'src/icons/GoldIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
@@ -232,14 +232,44 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     })
   }
 
-  // Check if amount is below minimum (based on token price)
+  // Check if selected token is COPm
+  const isCopmToken = useMemo(() => {
+    if (!selectedToken) return false
+    const symbol = selectedToken.symbol?.toLowerCase() || ''
+    return (
+      selectedToken.tokenId === networkConfig.copmTokenId ||
+      selectedToken.symbol === 'COPm' ||
+      selectedToken.symbol === 'cCOP' ||
+      symbol === 'copm' ||
+      symbol === 'ccop'
+    )
+  }, [selectedToken])
+
+  // Get minimum amount based on token type
+  const minimumAmount = useMemo(() => {
+    if (isCopmToken) {
+      return { value: MIN_COPM_AMOUNT, display: `${MIN_COPM_AMOUNT} Pesos` }
+    }
+    // For USD-based tokens, use MIN_AMOUNT_USD
+    return { value: MIN_AMOUNT_USD, display: '$0.01' }
+  }, [isCopmToken])
+
+  // Check if amount is below minimum (based on token type)
   const amountBelowMinimum = useMemo(() => {
-    if (!parsedTokenAmount || parsedTokenAmount.lte(0) || !selectedToken?.priceUsd) {
+    if (!parsedTokenAmount || parsedTokenAmount.lte(0) || !selectedToken) {
       return false
     }
+
+    if (isCopmToken) {
+      // For COPm, check raw amount (50 COPm minimum)
+      return parsedTokenAmount.lt(MIN_COPM_AMOUNT)
+    }
+
+    // For other tokens, check USD value
+    if (!selectedToken.priceUsd) return false
     const valueInUsd = parsedTokenAmount.multipliedBy(selectedToken.priceUsd)
     return valueInUsd.lt(MIN_AMOUNT_USD)
-  }, [parsedTokenAmount, selectedToken?.priceUsd])
+  }, [parsedTokenAmount, selectedToken, isCopmToken])
 
   const isAmountValid =
     parsedTokenAmount &&
@@ -294,6 +324,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
             : undefined,
         preparedTransactions: quoteResult.quote.preparedTransactions,
         toTokenId: xaut0Token.tokenId,
+        swapProvider: quoteResult.quote.swapProvider,
       })
     } else {
       // Navigate without quote - confirmation screen will retry
@@ -317,8 +348,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       <SafeAreaView style={styles.container} edges={['top']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
-          <GoldIcon size={48} />
-          <Text style={styles.emptyStateText}>{t('goldFlow.buy.noUsdtAvailable')}</Text>
+          <GoldIconSelector size={48} />
+          <Text style={styles.emptyStateText}>{t('goldFlow.buy.noTokensForGold')}</Text>
         </View>
       </SafeAreaView>
     )
@@ -337,7 +368,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           {/* Price Display */}
           {localGoldPrice && (
             <View style={styles.priceRow}>
-              <GoldIcon size={24} />
+              <GoldIconSelector size={24} />
               <Text style={styles.priceText}>
                 {localCurrencySymbol}
                 {localGoldPrice.toFormat(2)} / oz
@@ -376,7 +407,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
             {/* Gold Amount Output */}
             <View style={styles.outputRow}>
-              <GoldIcon size={20} />
+              <GoldIconSelector size={20} />
               <Text style={styles.goldAmountText}>
                 {goldAmount ? goldAmount.toFormat(XAUT0_DECIMALS) : '0'} {t('goldFlow.gold')}
               </Text>
@@ -403,10 +434,10 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.insufficientBalanceWarning.title', {
-              tokenSymbol: selectedToken?.symbol,
+              tokenSymbol: selectedToken ? getTokenName(selectedToken) : '',
             })}
             description={t('sendEnterAmountScreen.insufficientBalanceWarning.description', {
-              tokenSymbol: selectedToken?.symbol,
+              tokenSymbol: selectedToken ? getTokenName(selectedToken) : '',
             })}
             style={styles.warning}
             testID="GoldBuyEnterAmount/InsufficientBalance"
@@ -419,7 +450,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
             variant={NotificationVariant.Warning}
             title={t('goldFlow.buy.minimumAmountTitle')}
             description={t('goldFlow.buy.minimumAmountDescription', {
-              minAmount: '$0.01',
+              minAmount: minimumAmount.display,
             })}
             style={styles.warning}
             testID="GoldBuyEnterAmount/MinimumAmount"
