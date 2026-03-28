@@ -5,6 +5,11 @@ import { PublicAppConfig } from 'src/app/selectors'
  * Incluye la configuración para protocolos externos como Divvi
  */
 export const publicAppConfig: PublicAppConfig = {
+  // DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO
+  // Para re-habilitar, descomentar la configuración completa
+  // Razón: Integración pausada pendiente de revisión
+  // Fecha: 2026-03-28
+  /*
   divviProtocol: {
     divviId: 'tucop-wallet',
     campaignIds: [],
@@ -15,4 +20,5 @@ export const publicAppConfig: PublicAppConfig = {
       '0x7beb0e14f8d2e6f6678cc30d867787b384b19e20',
     ],
   },
+  */
 }
