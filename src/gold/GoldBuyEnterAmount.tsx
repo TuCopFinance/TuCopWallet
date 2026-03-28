@@ -56,6 +56,9 @@ const FALLBACK_GOLD_PRICE_USD = 3050
 // Set slightly below 0.01 to account for price fluctuations
 const MIN_AMOUNT_USD = 0.009
 
+// Minimum amount for COPm swaps (50 COPm as per Squid Router requirements)
+const MIN_COPM_AMOUNT = 50
+
 export default function GoldBuyEnterAmount({ route }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
@@ -112,21 +115,31 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     swappableFromTokensByNetworkIdSelector(state, [NetworkId['celo-mainnet']])
   )
 
-  // Filter to USDT only (supported by Squid Router for XAUt0 swaps)
+  // Filter to USDT and COPm (supported by Squid Router for XAUt0 swaps)
   // Note: USDT on Celo uses symbol "USD₮" (with special ₮ character)
   const availableTokens = useMemo(() => {
-    const filtered = swappableTokens.filter(
-      (token) =>
-        token.balance.gt(0) &&
-        (token.symbol === 'USDT' ||
-          token.symbol === 'USDt' ||
-          token.symbol === 'USD₮' ||
-          token.symbol.toLowerCase() === 'usdt' ||
-          token.symbol.toLowerCase().includes('usdt'))
-    )
+    const filtered = swappableTokens.filter((token) => {
+      if (token.balance.lte(0)) return false
+
+      const symbol = token.symbol?.toLowerCase() || ''
+      const isUsdt =
+        token.symbol === 'USDT' ||
+        token.symbol === 'USDt' ||
+        token.symbol === 'USD₮' ||
+        symbol === 'usdt' ||
+        symbol.includes('usdt')
+      const isCopm =
+        token.tokenId === networkConfig.copmTokenId ||
+        token.symbol === 'COPm' ||
+        token.symbol === 'cCOP' ||
+        symbol === 'copm' ||
+        symbol === 'ccop'
+
+      return isUsdt || isCopm
+    })
     Logger.debug(
       'GoldBuyEnterAmount',
-      `Filtered tokens: ${filtered.length} USDT from ${swappableTokens.length} swappable`,
+      `Filtered tokens: ${filtered.length} (USDT/COPm) from ${swappableTokens.length} swappable`,
       {
         swappableSymbols: swappableTokens
           .filter((t) => t.balance.gt(0))
