@@ -33,6 +33,36 @@ const SQUID_INTEGRATOR_ID = 'tucop-wallet-api' // TODO: Register for production 
 // Celo chain ID for Squid API
 const CELO_CHAIN_ID = '42220'
 
+// Timeout for API requests (15 seconds)
+const API_TIMEOUT_MS = 15000
+
+/**
+ * Fetch with timeout wrapper
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = API_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error: any) {
+    clearTimeout(timeoutId)
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs}ms`)
+    }
+    throw error
+  }
+}
+
 export interface GoldQuoteParams {
   fromToken: TokenBalance
   toToken: TokenBalance
@@ -74,7 +104,7 @@ async function fetchSquidQuote(
 
   Logger.debug(TAG, `Fetching Squid quote: ${JSON.stringify(requestBody)}`)
 
-  const response = await fetch(SQUID_API_URL, {
+  const response = await fetchWithTimeout(SQUID_API_URL, {
     method: 'POST',
     headers: {
       'x-integrator-id': SQUID_INTEGRATOR_ID,
@@ -150,7 +180,7 @@ async function fetchBackendQuote(
 
   Logger.debug(TAG, `Fetching backend swap quote: ${requestUrl}`)
 
-  const response = await fetch(requestUrl)
+  const response = await fetchWithTimeout(requestUrl, { method: 'GET' })
 
   if (!response.ok) {
     const errorText = await response.text()
