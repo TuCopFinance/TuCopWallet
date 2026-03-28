@@ -101,14 +101,14 @@ describe('TokenEnterAmount', () => {
     const USD = LocalCurrencySymbol['USD']
     expect(getDisplayLocalAmount(null, USD)).toBe('')
     expect(getDisplayLocalAmount(new BigNumber(0), USD)).toBe('')
-    expect(getDisplayLocalAmount(new BigNumber('0.0000001'), USD)).toBe('<$0.000001')
-    expect(getDisplayLocalAmount(new BigNumber('0.0001'), USD)).toBe('$0.0001')
-    expect(getDisplayLocalAmount(new BigNumber('0.00789'), USD)).toBe('$0.008')
-    expect(getDisplayLocalAmount(new BigNumber('12.001'), USD)).toBe('$12.00')
-    expect(getDisplayLocalAmount(new BigNumber('12.01'), USD)).toBe('$12.01')
-    expect(getDisplayLocalAmount(new BigNumber('123.5678'), USD)).toBe('$123.57')
-    expect(getDisplayLocalAmount(new BigNumber('1234.5678'), USD)).toBe('$1,234.57')
-    expect(getDisplayLocalAmount(new BigNumber('1234567.5678'), USD)).toBe('$1,234,567.57')
+    expect(getDisplayLocalAmount(new BigNumber('0.0000001'), USD)).toBe('<US$0.000001')
+    expect(getDisplayLocalAmount(new BigNumber('0.0001'), USD)).toBe('US$0.0001')
+    expect(getDisplayLocalAmount(new BigNumber('0.00789'), USD)).toBe('US$0.008')
+    expect(getDisplayLocalAmount(new BigNumber('12.001'), USD)).toBe('US$12.00')
+    expect(getDisplayLocalAmount(new BigNumber('12.01'), USD)).toBe('US$12.01')
+    expect(getDisplayLocalAmount(new BigNumber('123.5678'), USD)).toBe('US$123.57')
+    expect(getDisplayLocalAmount(new BigNumber('1234.5678'), USD)).toBe('US$1,234.57')
+    expect(getDisplayLocalAmount(new BigNumber('1234567.5678'), USD)).toBe('US$1,234,567.57')
   })
 
   it('properly formats amounts with decimal separator "," and group separator "."', () => {
@@ -150,14 +150,14 @@ describe('TokenEnterAmount', () => {
     const USD = LocalCurrencySymbol['USD']
     expect(getDisplayLocalAmount(null, USD)).toBe('')
     expect(getDisplayLocalAmount(new BigNumber(0), USD)).toBe('')
-    expect(getDisplayLocalAmount(new BigNumber('0.0000001'), USD)).toBe('<$0,000001')
-    expect(getDisplayLocalAmount(new BigNumber('0.0001'), USD)).toBe('$0,0001')
-    expect(getDisplayLocalAmount(new BigNumber('0.00789'), USD)).toBe('$0,008')
-    expect(getDisplayLocalAmount(new BigNumber('12.001'), USD)).toBe('$12,00')
-    expect(getDisplayLocalAmount(new BigNumber('12.01'), USD)).toBe('$12,01')
-    expect(getDisplayLocalAmount(new BigNumber('123.5678'), USD)).toBe('$123,57')
-    expect(getDisplayLocalAmount(new BigNumber('1234.5678'), USD)).toBe('$1.234,57')
-    expect(getDisplayLocalAmount(new BigNumber('1234567.5678'), USD)).toBe('$1.234.567,57')
+    expect(getDisplayLocalAmount(new BigNumber('0.0000001'), USD)).toBe('<US$0,000001')
+    expect(getDisplayLocalAmount(new BigNumber('0.0001'), USD)).toBe('US$0,0001')
+    expect(getDisplayLocalAmount(new BigNumber('0.00789'), USD)).toBe('US$0,008')
+    expect(getDisplayLocalAmount(new BigNumber('12.001'), USD)).toBe('US$12,00')
+    expect(getDisplayLocalAmount(new BigNumber('12.01'), USD)).toBe('US$12,01')
+    expect(getDisplayLocalAmount(new BigNumber('123.5678'), USD)).toBe('US$123,57')
+    expect(getDisplayLocalAmount(new BigNumber('1234.5678'), USD)).toBe('US$1.234,57')
+    expect(getDisplayLocalAmount(new BigNumber('1234567.5678'), USD)).toBe('US$1.234.567,57')
   })
 
   describe('useEnterAmount', () => {
@@ -195,7 +195,7 @@ describe('TokenEnterAmount', () => {
         },
         local: {
           bignum: new BigNumber('1235.912678'),
-          displayAmount: '$1,235.91',
+          displayAmount: 'US$1,235.91',
         },
       })
     })
@@ -220,7 +220,7 @@ describe('TokenEnterAmount', () => {
       expect(result.current.processedAmounts).toStrictEqual({
         local: {
           bignum: new BigNumber('1234.67'),
-          displayAmount: '$1,234.67',
+          displayAmount: 'US$1,234.67',
         },
         token: {
           bignum: new BigNumber('1233.436563'),
@@ -269,7 +269,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -291,7 +291,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -310,12 +310,12 @@ describe('TokenEnterAmount', () => {
             amountType="local"
             inputValue="0.1"
             tokenAmount="1 CELO"
-            localAmount="$0.1"
+            localAmount="US$0.1"
           />
         </Provider>
       )
 
-      expect(input.props.value).toBe('$0.1')
+      expect(input.props.value).toBe('US$0.1')
       expect(converted.props.children).toBe(`${APPROX_SYMBOL} 1 CELO`)
     })
 
@@ -327,7 +327,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="20"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -346,7 +346,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -365,7 +365,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -401,7 +401,7 @@ describe('TokenEnterAmount', () => {
             editable={false}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -420,7 +420,7 @@ describe('TokenEnterAmount', () => {
             token={{ ...defaultProps.token, priceUsd: null }}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>
@@ -436,7 +436,7 @@ describe('TokenEnterAmount', () => {
             {...defaultProps}
             inputValue="1234.5678"
             tokenAmount="1,234.5678"
-            localAmount="$123.57"
+            localAmount="US$123.57"
             amountType="token"
           />
         </Provider>

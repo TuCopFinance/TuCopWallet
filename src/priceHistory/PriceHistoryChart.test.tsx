@@ -85,7 +85,7 @@ describe('createChartData', () => {
 
   beforeEach(() => {
     mockDollarsToLocal.mockReset().mockImplementation((amount) => new BigNumber(amount))
-    mockDisplayLocalCurrency.mockReset().mockImplementation((amount) => `$${amount.toString()}`)
+    mockDisplayLocalCurrency.mockReset().mockImplementation((amount) => `US$${amount.toString()}`)
   })
 
   it('should handle empty price history', () => {
@@ -112,15 +112,15 @@ describe('createChartData', () => {
     expect(result).toStrictEqual([
       {
         amount: 0.97,
-        displayValue: '$0.97',
+        displayValue: 'US$0.97',
         priceFetchedAt: 1700378258000,
       },
-      { amount: 1.2, displayValue: '$1.2', priceFetchedAt: 1701659858000 },
-      { amount: 1.4, displayValue: '$1.4', priceFetchedAt: 1702941458000 },
-      { amount: 11, displayValue: '$11', priceFetchedAt: 1704223058000 },
+      { amount: 1.2, displayValue: 'US$1.2', priceFetchedAt: 1701659858000 },
+      { amount: 1.4, displayValue: 'US$1.4', priceFetchedAt: 1702941458000 },
+      { amount: 11, displayValue: 'US$11', priceFetchedAt: 1704223058000 },
       {
         amount: 0.01,
-        displayValue: '$0.01',
+        displayValue: 'US$0.01',
         priceFetchedAt: 1705504658000,
       },
     ])
@@ -141,7 +141,7 @@ describe('createChartData', () => {
     expect(result.length).toEqual(4)
     expect(result.at(-1)).toStrictEqual({
       amount: 1.5,
-      displayValue: '$1.5',
+      displayValue: 'US$1.5',
       priceFetchedAt: lastPrice.priceFetchedAt,
     })
   })
@@ -170,14 +170,14 @@ describe('createChartData', () => {
     expect(result.length).toEqual(1)
     expect(result[0]).toEqual({
       amount: 0.97,
-      displayValue: '$0.97',
+      displayValue: 'US$0.97',
       priceFetchedAt: 1700378258000,
     })
   })
 
   it('should handle different currency', () => {
     mockDollarsToLocal.mockImplementation((amount) => new BigNumber(amount * 2))
-    mockDisplayLocalCurrency.mockImplementation((amount) => `€${amount.toString()}`)
+    mockDisplayLocalCurrency.mockImplementation((amount) => `COP$${amount.toString()}`)
 
     const result = createChartData(
       mockPrices,
@@ -190,11 +190,11 @@ describe('createChartData', () => {
     expect(result).toStrictEqual([
       {
         amount: 1.94,
-        displayValue: '€1.94',
+        displayValue: 'COP$1.94',
         priceFetchedAt: 1700378258000,
       },
-      { amount: 2.4, displayValue: '€2.4', priceFetchedAt: 1701659858000 },
-      { amount: 2.8, displayValue: '€2.8', priceFetchedAt: 1702941458000 },
+      { amount: 2.4, displayValue: 'COP$2.4', priceFetchedAt: 1701659858000 },
+      { amount: 2.8, displayValue: 'COP$2.8', priceFetchedAt: 1702941458000 },
     ])
   })
 })

@@ -108,7 +108,7 @@ describe('TransactionDetailsScreen', () => {
       tokenAddress: mockCusdAddress,
       tokenId: mockCusdTokenId,
       localAmount: {
-        currencyCode: 'EUR',
+        currencyCode: 'COP',
         exchangeRate: '0.4',
         value: '4',
       },
@@ -307,7 +307,7 @@ describe('TransactionDetailsScreen', () => {
               tokenId: mockCeloTokenId,
               localAmount: {
                 value: '0.04',
-                currencyCode: 'EUR',
+                currencyCode: 'COP',
                 exchangeRate: '0.4',
               },
             },
@@ -318,7 +318,7 @@ describe('TransactionDetailsScreen', () => {
           tokenAddress: mockCusdAddress,
           tokenId: mockCusdTokenId,
           localAmount: {
-            currencyCode: 'EUR',
+            currencyCode: 'COP',
             exchangeRate: '1.08',
             value: '9.259',
           },
@@ -333,12 +333,12 @@ describe('TransactionDetailsScreen', () => {
     expect(getElementText(numberComponent)).toEqual(mockDisplayNumber2)
 
     expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.01 CELO')
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('€0.04') // the localAmount in the fee data is used
+    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$0.04') // the localAmount in the fee data is used
 
     expect(getByText('amountSent')).toBeTruthy()
     expect(getByTestId('TransferSent/AmountSentValue')).toHaveTextContent('10.00 cUSD')
-    expect(getByTestId('TransferSent/TransferTokenExchangeRate')).toHaveTextContent('€1.08') // the localAmount in the amount data is used
-    expect(getByTestId('TransferSent/AmountSentValueFiat')).toHaveTextContent('€9.26')
+    expect(getByTestId('TransferSent/TransferTokenExchangeRate')).toHaveTextContent('COP$1.08') // the localAmount in the amount data is used
+    expect(getByTestId('TransferSent/AmountSentValueFiat')).toHaveTextContent('COP$9.26')
   })
 
   it('renders correctly for receives', async () => {
@@ -356,7 +356,7 @@ describe('TransactionDetailsScreen', () => {
     expect(getElementText(numberComponent)).toEqual(mockDisplayNumber2)
 
     const totalComponent = getByTestId('TotalLineItem/Total')
-    expect(getElementText(totalComponent)).toEqual('€4.00')
+    expect(getElementText(totalComponent)).toEqual('COP$4.00')
   })
 
   it('renders correctly for rewards received', async () => {
@@ -377,7 +377,7 @@ describe('TransactionDetailsScreen', () => {
     expect(queryByTestId('RewardReceived/number')).toBeNull()
 
     const totalComponent = getByTestId('TotalLineItem/Total')
-    expect(getElementText(totalComponent)).toEqual('€4.00')
+    expect(getElementText(totalComponent)).toEqual('COP$4.00')
   })
 
   it('renders correctly for cUSD to cEUR swap', async () => {

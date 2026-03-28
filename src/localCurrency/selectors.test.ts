@@ -19,12 +19,13 @@ describe(getLocalCurrencyCode, () => {
       expect(getLocalCurrencyCode(state)).toEqual('USD')
     })
 
-    it('returns CAD for CA phone numbers', () => {
+    it('returns COP for CA phone numbers (CAD not supported)', () => {
       const state: any = {
         account: { e164PhoneNumber: '+18192216929' },
         localCurrency: { preferredCurrencyCode: undefined },
       }
-      expect(getLocalCurrencyCode(state)).toEqual('CAD')
+      // CAD is not a supported currency, so fallback to COP
+      expect(getLocalCurrencyCode(state)).toEqual('COP')
     })
   })
 

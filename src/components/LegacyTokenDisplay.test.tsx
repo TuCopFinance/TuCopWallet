@@ -115,7 +115,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$1.00')
     })
 
     it('shows local amount when showLocalAmount is true and token is not cUSD', () => {
@@ -129,7 +129,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$5.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$5.00')
     })
 
     it('shows more decimals up to the', () => {
@@ -206,7 +206,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('+R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('+COP$1.00')
     })
 
     it('shows negative values', () => {
@@ -220,7 +220,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('-R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('-COP$1.00')
     })
 
     it('shows a dash when the token doesnt exist', () => {
@@ -262,7 +262,7 @@ describe('LegacyTokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('R$1.00')
+      expect(getElementText(getByTestId('test'))).toEqual('COP$1.00')
     })
   })
 })
