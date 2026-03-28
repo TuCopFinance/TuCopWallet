@@ -359,6 +359,7 @@ export type StackParamList = {
     gasFeeTokenId?: string
     preparedTransactions?: SerializableTransactionRequest[]
     toTokenId?: string
+    swapProvider?: string
   }
   [Screens.GoldSellEnterAmount]: undefined
   [Screens.GoldSellConfirmation]: {
@@ -370,6 +371,7 @@ export type StackParamList = {
     gasFeeTokenId?: string
     preparedTransactions?: SerializableTransactionRequest[]
     fromTokenId?: string
+    swapProvider?: string
   }
   [Screens.GoldPriceAlerts]: undefined
 }
