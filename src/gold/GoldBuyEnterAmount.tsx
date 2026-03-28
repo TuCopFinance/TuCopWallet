@@ -29,7 +29,6 @@ import DownArrowIcon from 'src/icons/DownArrowIcon'
 import GoldIcon from 'src/icons/GoldIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { headerWithBackButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -52,6 +51,10 @@ const TOKEN_SELECTOR_BORDER_RADIUS = 100
 
 // Fallback gold price in USD when API is unavailable (updated periodically)
 const FALLBACK_GOLD_PRICE_USD = 3050
+
+// Minimum amount in USD to avoid "no liquidity" errors from swap providers
+// Set slightly below 0.01 to account for price fluctuations
+const MIN_AMOUNT_USD = 0.009
 
 export default function GoldBuyEnterAmount({ route }: Props) {
   const { t } = useTranslation()
@@ -216,11 +219,21 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     })
   }
 
+  // Check if amount is below minimum (based on token price)
+  const amountBelowMinimum = useMemo(() => {
+    if (!parsedTokenAmount || parsedTokenAmount.lte(0) || !selectedToken?.priceUsd) {
+      return false
+    }
+    const valueInUsd = parsedTokenAmount.multipliedBy(selectedToken.priceUsd)
+    return valueInUsd.lt(MIN_AMOUNT_USD)
+  }, [parsedTokenAmount, selectedToken?.priceUsd])
+
   const isAmountValid =
     parsedTokenAmount &&
     parsedTokenAmount.gt(0) &&
     selectedToken &&
-    parsedTokenAmount.lte(selectedToken.balance)
+    parsedTokenAmount.lte(selectedToken.balance) &&
+    !amountBelowMinimum
 
   const insufficientBalance =
     parsedTokenAmount && selectedToken && parsedTokenAmount.gt(selectedToken.balance)
@@ -387,6 +400,19 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           />
         )}
 
+        {/* Minimum amount warning */}
+        {amountBelowMinimum && !insufficientBalance && (
+          <InLineNotification
+            variant={NotificationVariant.Warning}
+            title={t('goldFlow.buy.minimumAmountTitle')}
+            description={t('goldFlow.buy.minimumAmountDescription', {
+              minAmount: '$0.01',
+            })}
+            style={styles.warning}
+            testID="GoldBuyEnterAmount/MinimumAmount"
+          />
+        )}
+
         {/* Quote Error */}
         {quoteError && (
           <InLineNotification
@@ -427,20 +453,14 @@ export default function GoldBuyEnterAmount({ route }: Props) {
         title={t('goldFlow.buy.selectToken')}
         titleStyle={styles.title}
       />
-
-      {/* Percentage Options - appears above keyboard */}
-      <EnterAmountOptions
-        onPressAmount={onSelectPercentageAmount}
-        selectedAmount={selectedPercentage}
-        testID="GoldBuyEnterAmount/AmountOptions"
-      />
     </SafeAreaView>
   )
 }
 
-GoldBuyEnterAmount.navigationOptions = () => ({
-  ...headerWithBackButton,
-})
+// Using inline CustomHeader with BackButton, so no navigationOptions needed
+GoldBuyEnterAmount.navigationOptions = {
+  headerShown: false,
+}
 
 const styles = StyleSheet.create({
   container: {
