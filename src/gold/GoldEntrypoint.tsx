@@ -9,6 +9,7 @@ import { hideWalletBalancesSelector } from 'src/app/selectors'
 import Touchable from 'src/components/Touchable'
 import { goldPriceUsdSelector, goldPrice24hChangeSelector } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
+import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import GoldIcon from 'src/icons/GoldIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
@@ -32,6 +33,9 @@ export default function GoldEntrypoint() {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
+  // Get XAUt0 balance to determine if user has gold
+  const { balance: xaut0Balance } = useXaut0Balance()
+
   useEffect(() => {
     // Fetch gold price on mount
     dispatch(fetchGoldPrice())
@@ -46,7 +50,12 @@ export default function GoldEntrypoint() {
 
   const onPress = () => {
     AppAnalytics.track(GoldEvents.gold_entrypoint_press)
-    navigate(Screens.GoldInfoScreen)
+    // Skip intro screen if user already has gold balance
+    if (xaut0Balance.isGreaterThan(0)) {
+      navigate(Screens.GoldHome)
+    } else {
+      navigate(Screens.GoldInfoScreen)
+    }
   }
 
   // Convert USD price to local currency

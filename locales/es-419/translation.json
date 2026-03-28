@@ -2996,6 +2996,7 @@
   "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
   "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
   "goldFlow": {
+    "gold": "Oro",
     "entrypoint": {
       "title": "Oro Digital",
       "subtitle": "Compra y vende oro tokenizado"
@@ -3050,7 +3051,8 @@
       "infoTitle": "Sobre XAUt0",
       "infoDescription": "Los tokens XAUt0 representan oro físico. Los precios pueden fluctuar según las condiciones del mercado.",
       "errorTitle": "Transacción Fallida",
-      "error": "No se pudo completar la compra. Por favor intenta de nuevo."
+      "error": "No se pudo completar la compra. Por favor intenta de nuevo.",
+      "successMessage": "¡Compra de oro exitosa!"
     },
     "sell": {
       "title": "Vender Oro",

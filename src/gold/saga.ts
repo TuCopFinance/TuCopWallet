@@ -16,13 +16,22 @@ import {
   sellGoldSuccess,
   setGoldPrice,
 } from 'src/gold/slice'
-import { GoldBuyInfo, GoldSellInfo, PriceAlert, XAUT0_DECIMALS } from 'src/gold/types'
+import {
+  GoldBuyInfo,
+  GoldSellInfo,
+  PriceAlert,
+  XAUT0_DECIMALS,
+  XAUT0_NAME,
+  XAUT0_SYMBOL,
+} from 'src/gold/types'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { tokensByIdSelector } from 'src/tokens/selectors'
+import { importToken } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
-import { TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
+import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
@@ -210,6 +219,22 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     }
 
     yield* put(buyGoldSuccess({ txHash: swapTxHash }))
+
+    // Import XAUt0 token so it shows in wallet
+    yield* put(
+      importToken({
+        tokenId: networkConfig.xaut0TokenId,
+        address: '0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff',
+        networkId: NetworkId['celo-mainnet'],
+        decimals: XAUT0_DECIMALS,
+        symbol: XAUT0_SYMBOL,
+        name: XAUT0_NAME,
+        balance: null, // Will be fetched
+        priceFetchedAt: Date.now(),
+        imageUrl:
+          'https://raw.githubusercontent.com/valora-inc/address-metadata/main/assets/tokens/XAUt.png',
+      })
+    )
 
     AppAnalytics.track(GoldEvents.gold_buy_submit_success, {
       amount: fromAmount,
