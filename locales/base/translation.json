@@ -1723,7 +1723,7 @@
     "exchange": {
       "informational": "To prevent loss of funds, use this address on exchanges or assets compatible with the following networks: <0>{{networks}}</0>",
       "copyAddress": "Copy Address",
-      "informationText": "Only use exchanges or assets <0>compatible with networks supported by {{appName}}</0> to prevent loss of funds",
+      "informationText": "Select the <0>Celo network</0> in your exchange when sending. For dollars use <1>USDT (0x4806...3d5e)</1>",
       "bottomSheetTitle": "What exchanges can I use to deposit funds?",
       "bottomSheetInfo": "Double check that you are sending assets that are compatible with the the networks supported by {{appName}}."
     }
