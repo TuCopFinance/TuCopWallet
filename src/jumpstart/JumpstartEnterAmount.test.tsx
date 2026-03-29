@@ -55,8 +55,8 @@ const tokenBalances = {
 }
 const feeCurrencies = [
   tokenBalances[mockCeloTokenId],
-  tokenBalances[mockCeurTokenId],
   tokenBalances[mockCusdTokenId],
+  tokenBalances[mockCeurTokenId],
 ]
 const store = createMockStore({
   tokens: {
