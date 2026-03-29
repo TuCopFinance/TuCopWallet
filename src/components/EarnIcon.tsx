@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import EarnGrowIcon from 'src/icons/EarnGrowIcon'
+import EarnGrowIcon from 'src/icons/features/EarnGrowIcon'
 
 interface Props {
   viewStyle?: StyleProp<ViewStyle>

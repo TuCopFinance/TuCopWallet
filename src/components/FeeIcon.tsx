@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet } from 'react-native'
 import Dialog from 'src/components/Dialog'
 import Touchable from 'src/components/Touchable'
-import InfoIcon from 'src/icons/InfoIcon'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import { iconHitslop } from 'src/styles/variables'
 
 interface Props {

@@ -2932,6 +2932,7 @@
     "swapToUSD": "Swap your COPm for USDT",
     "withdraw": "Withdraw From Your Wallet",
     "earn": "Earn with your COPm or USDT",
+    "earnSimple": "Grow your money",
     "reFiColombiaSubsidies": {
       "button": "Claim your Subsidy",
       "subtitle": "from ReFi Colombia"
@@ -3030,6 +3031,7 @@
     "gold": "Gold",
     "entrypoint": {
       "title": "Digital Gold",
+      "investTitle": "Invest in Gold",
       "subtitle": "Buy and sell tokenized gold"
     },
     "info": {

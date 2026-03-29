@@ -7,11 +7,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
 import Touchable from 'src/components/Touchable'
-import {
-  goldPriceUsdSelector,
-  goldPrice24hChangeSelector,
-  hasSeenGoldInfoSelector,
-} from 'src/gold/selectors'
+import { goldPriceUsdSelector, hasSeenGoldInfoSelector } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import GoldIconSelector from 'src/gold/GoldIconSelector'
@@ -32,7 +28,6 @@ export default function GoldEntrypoint() {
   const { decimalSeparator } = getNumberFormatSettings()
 
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
-  const goldPrice24hChange = useSelector(goldPrice24hChangeSelector)
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
@@ -75,16 +70,6 @@ export default function GoldEntrypoint() {
     return localPrice.toFormat(2)
   }, [hideWalletBalances, localPrice, decimalSeparator])
 
-  const changeDisplay = React.useMemo(() => {
-    if (!goldPrice24hChange) return null
-    const isPositive = goldPrice24hChange >= 0
-    const sign = isPositive ? '+' : ''
-    return {
-      text: `${sign}${goldPrice24hChange.toFixed(2)}%`,
-      color: isPositive ? Colors.accent : Colors.error,
-    }
-  }, [goldPrice24hChange])
-
   return (
     <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
       <Touchable
@@ -93,23 +78,19 @@ export default function GoldEntrypoint() {
         onPress={onPress}
         testID="GoldEntrypoint"
       >
-        <View style={[styles.row, { paddingVertical: 8 }]}>
-          <View style={styles.iconContainer}>
-            <GoldIconSelector size={36} />
-          </View>
-          <View style={styles.textColumn}>
-            <Text style={styles.title}>{t('goldFlow.entrypoint.title')}</Text>
-            <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>
-              {!hideWalletBalances && localCurrencySymbol}
-              {priceDisplay}
-              <Text style={styles.unit}> / oz</Text>
-              {changeDisplay && (
-                <Text style={[styles.change, { color: changeDisplay.color }]}>
-                  {'   '}
-                  {changeDisplay.text}
-                </Text>
-              )}
-            </Text>
+        <View style={[styles.cardContentRow, { paddingVertical: 8 }]}>
+          <View style={styles.cardInnerContent}>
+            <View style={styles.cardIconContainer}>
+              <GoldIconSelector size={25} />
+            </View>
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.title}>{t('goldFlow.entrypoint.investTitle')}</Text>
+              <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>
+                {!hideWalletBalances && localCurrencySymbol}
+                {priceDisplay}
+                <Text style={styles.unit}> / oz</Text>
+              </Text>
+            </View>
           </View>
         </View>
       </Touchable>
@@ -130,37 +111,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  row: {
+  cardContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    width: '100%',
+    paddingLeft: 40,
+    paddingRight: 40,
   },
-  iconContainer: {
-    width: 56,
+  cardInnerContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textColumn: {
-    alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
+    gap: 0,
+  },
+  cardIconContainer: {
+    width: 57,
+    height: 57,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    backgroundColor: '#EEEFFF',
+    borderRadius: 12,
+  },
+  cardTextContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   title: {
-    ...typeScale.bodySmall,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.gray6,
     letterSpacing: -0.16,
-    fontWeight: '600',
   },
   subtitle: {
-    ...typeScale.bodySmall,
+    ...typeScale.bodyXSmall,
     color: Colors.gray4,
   },
   unit: {
     ...typeScale.bodyXSmall,
     color: Colors.gray4,
-  },
-  change: {
-    ...typeScale.bodyXSmall,
-    fontWeight: '600',
   },
 })

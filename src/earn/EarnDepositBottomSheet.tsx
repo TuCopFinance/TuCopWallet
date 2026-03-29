@@ -17,7 +17,7 @@ import {
   getTotalYieldRate,
   isGasSubsidizedForNetwork,
 } from 'src/earn/utils'
-import ArrowRightThick from 'src/icons/ArrowRightThick'
+import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
 import { EarnPosition } from 'src/positions/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { NETWORK_NAMES } from 'src/shared/conts'

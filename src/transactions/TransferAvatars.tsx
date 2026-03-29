@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import ContactCircle from 'src/components/ContactCircle'
 import ContactCircleSelf from 'src/components/ContactCircleSelf'
-import CircleArrowIcon from 'src/icons/CircleArrowIcon'
+import CircleArrowIcon from 'src/icons/navigation/CircleArrowIcon'
 import { Recipient } from 'src/recipients/recipient'
 
 interface Props {

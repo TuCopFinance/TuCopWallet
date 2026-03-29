@@ -2,7 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native'
 import React from 'react'
 import { PointsEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import SwapArrows from 'src/icons/SwapArrows'
+import SwapArrows from 'src/icons/actions/SwapArrows'
 import ActivityCard, { Props } from './ActivityCard'
 
 jest.mock('src/analytics/AppAnalytics')

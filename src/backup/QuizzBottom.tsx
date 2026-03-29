@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { Mode } from 'src/backup/BackupQuiz'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import LoadingSpinner from 'src/icons/LoadingSpinner'
+import LoadingSpinner from 'src/icons/loading/LoadingSpinner'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 
