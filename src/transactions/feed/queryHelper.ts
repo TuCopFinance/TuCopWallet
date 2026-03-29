@@ -16,6 +16,7 @@ import { vibrateSuccess } from 'src/styles/hapticFeedback'
 import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
+import { fetchAllBlockscoutTransfers } from 'src/transactions/blockscoutApi'
 import {
   completedTxHashesByNetworkIdSelector,
   pendingStandbyTxHashesByNetworkIdSelector,
@@ -163,6 +164,37 @@ export function useFetchTransactions(): QueryHookResult {
   })
 
   const [fetchingMoreTransactions, setFetchingMoreTransactions] = useState(false)
+  const [blockscoutFetched, setBlockscoutFetched] = useState(false)
+
+  // Fetch transactions from Blockscout API (for XAUt0 and other tokens not in Valora)
+  const fetchBlockscoutTransactions = useCallback(async () => {
+    if (!address || blockscoutFetched) return
+
+    try {
+      Logger.info(TAG, 'Fetching transactions from Blockscout...')
+      const result = await fetchAllBlockscoutTransfers({
+        address,
+        cursor: null, // Start from the beginning
+      })
+
+      if (result.transactions.length > 0) {
+        Logger.info(TAG, `Blockscout returned ${result.transactions.length} transactions`)
+        setFetchedResult((prev) => ({
+          ...prev,
+          transactions: deduplicateTransactions(prev.transactions, result.transactions),
+        }))
+
+        // Update Redux with Blockscout transactions
+        const networkId = config.defaultNetworkId
+        dispatch(updateTransactions({ networkId, transactions: result.transactions }))
+      }
+
+      setBlockscoutFetched(true)
+    } catch (error) {
+      Logger.error(TAG, 'Error fetching from Blockscout', error)
+      setBlockscoutFetched(true) // Don't retry on error to avoid infinite loops
+    }
+  }, [address, blockscoutFetched, dispatch])
 
   useEffect(() => {
     // kick off a request for new transactions, and then poll for new
@@ -175,6 +207,13 @@ export function useFetchTransactions(): QueryHookResult {
 
     return () => clearInterval(id)
   }, [])
+
+  // Fetch Blockscout transactions when address becomes available
+  useEffect(() => {
+    if (address && !blockscoutFetched) {
+      void fetchBlockscoutTransactions()
+    }
+  }, [address, blockscoutFetched, fetchBlockscoutTransactions])
 
   const handleError = (error: Error) => {
     Logger.error(TAG, 'Error while fetching transactions', error)
