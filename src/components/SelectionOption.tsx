@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Touchable from 'src/components/Touchable'
-import RadioButton from 'src/icons/RadioButton'
+import RadioButton from 'src/icons/ui/RadioButton'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 

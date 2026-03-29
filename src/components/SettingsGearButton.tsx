@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import GearIcon from 'src/icons/GearIcon'
+import GearIcon from 'src/icons/settings/GearIcon'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { TopBarIconButtonV2 } from 'src/navigator/TopBarIconButtonV2'
