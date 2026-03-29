@@ -107,6 +107,8 @@ interface NetworkConfig {
   getWalletTransactionsUrl: string
   getWalletBalancesUrl: string
   getExchangeRateUrl: string
+  blockscoutApiUrl: string
+  blockscoutApiKey: string
 }
 
 const ALCHEMY_ETHEREUM_RPC_URL_STAGING = 'https://eth-sepolia.g.alchemy.com/v2/'
@@ -344,6 +346,12 @@ const SET_REGISTRATION_PROPERTIES_AUTH_STAGING = {
 
 const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 
+// Blockscout Pro API for transaction history
+const BLOCKSCOUT_API_URL_MAINNET = 'https://api.blockscout.com/42220/api/v2'
+const BLOCKSCOUT_API_URL_STAGING = 'https://api.blockscout.com/44787/api/v2'
+const BLOCKSCOUT_API_KEY =
+  'proapi_bKq9uPjU8efoqgyU2cWqB5Bgq9eqHJjUJFU5d32TGL833jaLdJ53AyKNEGct6WcSw_cK2q52'
+
 const networkConfigs: { [testnet: string]: NetworkConfig } = {
   [Testnets.testnet]: {
     networkId: '11142220',
@@ -452,6 +460,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     getWalletTransactionsUrl: GET_WALLET_TRANSACTIONS_STAGING,
     getWalletBalancesUrl: GET_WALLET_BALANCES_STAGING,
     getExchangeRateUrl: GET_EXCHANGE_RATE_STAGING,
+    blockscoutApiUrl: BLOCKSCOUT_API_URL_STAGING,
+    blockscoutApiKey: BLOCKSCOUT_API_KEY,
   },
   [Testnets.mainnet]: {
     networkId: '42220',
@@ -559,6 +569,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     getWalletTransactionsUrl: GET_WALLET_TRANSACTIONS_MAINNET,
     getWalletBalancesUrl: GET_WALLET_BALANCES_MAINNET,
     getExchangeRateUrl: GET_EXCHANGE_RATE_MAINNET,
+    blockscoutApiUrl: BLOCKSCOUT_API_URL_MAINNET,
+    blockscoutApiKey: BLOCKSCOUT_API_KEY,
   },
 }
 
