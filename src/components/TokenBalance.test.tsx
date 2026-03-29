@@ -154,7 +154,7 @@ describe('AssetsTokenBalance', () => {
       storeOverrides: {
         ...staleTokens,
       },
-      expectedTotal: '$-',
+      expectedTotal: 'US$-',
     },
   ])('renders correctly with $testName', ({ storeOverrides, expectedTotal }) => {
     const store = createMockStore({
