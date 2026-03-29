@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Keyboard, StyleSheet, Text, View } from 'react-native'
 import ContactCircle from 'src/components/ContactCircle'
 import Touchable from 'src/components/Touchable'
-import PhoneIcon from 'src/icons/Phone'
+import PhoneIcon from 'src/icons/auth/Phone'
 import WalletIcon from 'src/icons/navigator/Wallet'
 import {
   addressToVerificationStatusSelector,
