@@ -789,6 +789,7 @@ export function SwapScreen({ route }: Props) {
             inputError={fromSwapAmountError}
             buttonPlaceholder={t('swapScreen.selectTokenLabel')}
             borderRadius={Spacing.Regular16}
+            showBalance={true}
           />
           <View style={styles.switchTokensContainer}>
             <Touchable
@@ -814,6 +815,7 @@ export function SwapScreen({ route }: Props) {
             buttonPlaceholder={t('swapScreen.selectTokenLabel')}
             editable={false}
             borderRadius={Spacing.Regular16}
+            showBalance={true}
           />
 
           {showCrossChainSwapNotification && (
