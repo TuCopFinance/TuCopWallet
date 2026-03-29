@@ -299,7 +299,7 @@ describe('TokenEnterAmount', () => {
       const input = getByTestId('TokenEnterAmount/TokenAmountInput')
       const converted = getByTestId('TokenEnterAmount/ExchangeAmount')
       expect(input.props.value).toBe('1,234.5678')
-      expect(converted.props.children).toBe(`${APPROX_SYMBOL} $123.57`)
+      expect(converted.props.children).toBe(`${APPROX_SYMBOL} US$123.57`)
       fireEvent.press(getByTestId('TokenEnterAmount/SwitchTokens'))
 
       // simulate call of toggleAmountType
@@ -442,7 +442,7 @@ describe('TokenEnterAmount', () => {
         </Provider>
       )
       const exchangeAmount = getByTestId('TokenEnterAmount/ExchangeAmount')
-      expect(exchangeAmount.props.children).toBe(`${APPROX_SYMBOL} $123.57`)
+      expect(exchangeAmount.props.children).toBe(`${APPROX_SYMBOL} US$123.57`)
     })
   })
 })
