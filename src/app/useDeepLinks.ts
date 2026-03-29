@@ -66,7 +66,8 @@ export const useDeepLinks = () => {
     CleverTap.getInitialUrl(async (err: any, url: string) => {
       if (err) {
         if (/CleverTap initialUrl is (nil|null)/gi.test(err)) {
-          Logger.warn('App/componentDidMount', 'CleverTap InitialUrl is nil|null', err)
+          // This is normal - no deep link on app launch, use debug instead of warn
+          Logger.debug('App/componentDidMount', 'CleverTap InitialUrl is nil (no deep link)')
         } else {
           Logger.error('App/componentDidMount', 'App CleverTap Deeplink on Load', err)
         }
