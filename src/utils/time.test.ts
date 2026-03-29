@@ -24,12 +24,8 @@ describe('utils/time', () => {
   })
 
   const wedMarch132019at1050 = 1552517413326
-  // Compute expected time in local timezone to avoid TZ-dependent test failures
-  const expectedTime = new Date(wedMarch132019at1050).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+  // formatFeedTime now returns 'dd/MM HH:mm' format
+  const expectedTime = '13/03 22:50'
   describe('formatFeedTime', () => {
     it('returns time formatted as string and is accurate', () => {
       expect(formatFeedTime(wedMarch132019at1050, i18n)).toEqual(expectedTime)
