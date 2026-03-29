@@ -1,4 +1,8 @@
 import BigNumber from 'bignumber.js'
+import { format } from 'date-fns/format'
+import { isToday } from 'date-fns/isToday'
+import { isYesterday } from 'date-fns/isYesterday'
+import locales from 'locales'
 import { PrefixedTxReceiptProperties, TxReceiptProperties } from 'src/analytics/Properties'
 import i18n from 'src/i18n'
 import { TokenBalances } from 'src/tokens/slice'
@@ -12,12 +16,32 @@ import {
   getMaxGasFee,
 } from 'src/viem/prepareTransactions'
 
+// Helper to get day name for recent transactions
+function getDayTitle(timestamp: number): string {
+  // Handle timestamps that might be in seconds vs milliseconds
+  const timestampMs = timestamp < 1e12 ? timestamp * 1000 : timestamp
+  const date = new Date(timestampMs)
+  const locale = locales[i18n?.language]?.dateFns ?? locales['en-US']?.dateFns
+
+  if (isToday(date)) {
+    return i18n.t('feedSectionHeaderToday')
+  }
+  if (isYesterday(date)) {
+    return i18n.t('feedSectionHeaderYesterday')
+  }
+
+  // Return day name (e.g., "Lunes", "Martes")
+  return format(date, 'EEEE', { locale })
+}
+
 // Groupings:
-// Recent -> Last 7 days (pending transactions always at the top, followed by recent confirmed transactions).
-// [Current month] - "July" -> Captures transactions from the current month that aren’t captured in Recent.
-// [Previous months] - "June" -> Captures transactions by month.
-// [Months over a year ago] — "July 2019" -> Same as above, but with year appended.
-// Sections are hidden if they have no items.
+// Today -> Transactions from today
+// Yesterday -> Transactions from yesterday
+// [Day name] -> Last 7 days (e.g., "Lunes", "Martes")
+// [Current month] - "July" -> Captures transactions from the current month that aren't in last 7 days
+// [Previous months] - "June" -> Captures transactions by month
+// [Months over a year ago] — "July 2019" -> Same as above, but with year appended
+// Sections are hidden if they have no items
 export function groupFeedItemsInSections<T extends { timestamp: number }>(
   pendingTransactions: T[],
   confirmedTransactions: T[]
@@ -29,21 +53,25 @@ export function groupFeedItemsInSections<T extends { timestamp: number }>(
     }
   } = {}
 
-  // add standby transactions to top of recent section
-  const recentSectionTitle = i18n.t('feedSectionHeaderRecent')
+  // add pending transactions to "Pending" section
   if (pendingTransactions.length > 0) {
-    sectionsMap[recentSectionTitle] = {
-      daysSinceTransaction: 0,
+    const pendingSectionTitle = i18n.t('feedSectionHeaderPending')
+    sectionsMap[pendingSectionTitle] = {
+      daysSinceTransaction: -1, // Put pending at the very top
       data: pendingTransactions,
     }
   }
 
   confirmedTransactions.forEach((transaction) => {
     const daysSinceTransaction = timeDeltaInDays(Date.now(), transaction.timestamp)
+
+    // For last 7 days: show daily groupings (Hoy, Ayer, Lunes, etc.)
+    // For older: show monthly groupings
     const sectionTitle =
       daysSinceTransaction <= 7
-        ? i18n.t('feedSectionHeaderRecent')
+        ? getDayTitle(transaction.timestamp)
         : formatFeedSectionTitle(transaction.timestamp, i18n)
+
     sectionsMap[sectionTitle] = {
       daysSinceTransaction: sectionsMap[sectionTitle]?.daysSinceTransaction ?? daysSinceTransaction,
       data: [...(sectionsMap[sectionTitle]?.data ?? []), transaction],

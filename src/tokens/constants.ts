@@ -5,4 +5,5 @@ export const ALLOWED_TOKEN_IDS = new Set([
   // networkConfig.cusdTokenId,
   networkConfig.copmTokenId,
   networkConfig.usdtTokenId,
+  networkConfig.xaut0TokenId,
 ])
