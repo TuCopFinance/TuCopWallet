@@ -21,7 +21,7 @@ import FilterChipsCarousel, {
 import KeyboardSpacer from 'src/components/KeyboardSpacer'
 import SearchInput from 'src/components/SearchInput'
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
-import InfoIcon from 'src/icons/InfoIcon'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'

@@ -37,7 +37,7 @@ import {
 } from 'src/fiatconnect/selectors'
 import { fetchFiatConnectQuotes } from 'src/fiatconnect/slice'
 import { readOnceFromFirebase } from 'src/firebase/firebase'
-import InfoIcon from 'src/icons/InfoIcon'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import {
   getDefaultLocalCurrencyCode,
   getLocalCurrencyCode,

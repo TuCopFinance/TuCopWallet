@@ -9,9 +9,9 @@ import DevSkipButton from 'src/components/DevSkipButton'
 import TextButton from 'src/components/TextButton'
 import Touchable from 'src/components/Touchable'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
-import EarnCoins from 'src/icons/EarnCoins'
-import PlusIcon from 'src/icons/PlusIcon'
-import ProfilePlus from 'src/icons/ProfilePlus'
+import EarnCoins from 'src/icons/features/EarnCoins'
+import PlusIcon from 'src/icons/actions/PlusIcon'
+import ProfilePlus from 'src/icons/user/ProfilePlus'
 import { nuxNavigationOptionsNoBackButton } from 'src/navigator/Headers'
 import {
   navigate,
