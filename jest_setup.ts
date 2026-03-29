@@ -5,6 +5,7 @@ import { configure } from '@testing-library/react-native'
 
 // Configure @testing-library/react-native host component names for RN 0.77
 // This fixes the "Element type is invalid" error during detectHostComponentNames
+// hostComponentNames is valid but not in types for v12.x
 configure({
   hostComponentNames: {
     text: 'Text',
@@ -13,7 +14,7 @@ configure({
     scrollView: 'RCTScrollView',
     modal: 'Modal',
   },
-})
+} as any)
 
 beforeAll(() => {
   jest.useFakeTimers()
