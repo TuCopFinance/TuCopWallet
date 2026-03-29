@@ -38,6 +38,8 @@ import {
 import { fetchFiatConnectQuotes } from 'src/fiatconnect/slice'
 import { readOnceFromFirebase } from 'src/firebase/firebase'
 import InfoIcon from 'src/icons/status/InfoIcon'
+import Wallet from 'src/icons/navigator/Wallet'
+import BucksPayIcon from 'src/icons/features/BucksPayIcon'
 import {
   getDefaultLocalCurrencyCode,
   getLocalCurrencyCode,
@@ -62,7 +64,7 @@ import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
 import networkConfig, { COPM_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
-import { uuidV4 } from 'web3-utils'
+// import { uuidV4 } from 'web3-utils' // Transak disabled
 import {
   CICOFlow,
   // FiatExchangeFlow,
@@ -76,7 +78,7 @@ import {
   getProviderSelectionAnalyticsData,
 } from './utils'
 
-const TransakIcono = require('./transak.png')
+// const TransakIcono = require('./transak.png') // Transak disabled
 
 const TAG = 'SelectProviderScreen'
 
@@ -122,7 +124,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 
   const [isUSDT, setIsUSDT] = useState(false)
   const [isCOPm, setCOPm] = useState(false)
-  const [transakLoading, setTransakLoading] = useState(false)
+  // const [transakLoading, setTransakLoading] = useState(false) // Transak disabled
 
   useEffect(() => {
     if (FETCH_FIATCONNECT_QUOTES) {
@@ -282,10 +284,10 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     navigate(Screens.WebViewScreen, { uri: links.web })
   }
 
+  /* Transak integration disabled
   const handleIntechchainProviderPress = async () => {
     try {
       setTransakLoading(true)
-
       const body = {
         externalOrderId: uuidV4(),
         externalUserId: account,
@@ -297,21 +299,13 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
         walletAddress: account,
         paymentMethod: 'card',
       }
-
-      // creamos la peticion a la api de intechchain
       const response = await fetch('https://exchange.intechchain.com/api/fiat/createOrder', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-
       const data = await response.json()
-
-      navigate(Screens.WebViewScreen, {
-        uri: data.results.redirectUrl,
-      })
+      navigate(Screens.WebViewScreen, { uri: data.results.redirectUrl })
     } catch (error) {
       Logger.error(TAG, 'Error fetching Transak quote', error)
       dispatch(showError(ErrorMessages.PROVIDER_FETCH_FAILED))
@@ -319,6 +313,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       setTransakLoading(false)
     }
   }
+  */
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, Spacing.Thick24) }}>
@@ -358,6 +353,35 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
           </Touchable>
         )}
 
+        {/* BucksPay for CashIn - Coming soon */}
+        {isUSDT && flow === CICOFlow.CashIn && (
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 10,
+              paddingVertical: 10,
+              borderRadius: 10,
+              backgroundColor: colors.gray1,
+              opacity: 0.6,
+            }}
+          >
+            <View style={styles.imageContainer}>
+              <BucksPayIcon size={32} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.newLabelText}>Buckspay</Text>
+              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4 }}>
+                Disponible pronto
+              </Text>
+            </View>
+            <InfoIcon size={16} color={colors.gray4} />
+          </View>
+        )}
+
+        {/* Transak disabled - only crypto wallet option available
         {isUSDT && (
           <Touchable onPress={handleIntechchainProviderPress} style={{ width: '100%' }}>
             <View
@@ -388,6 +412,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
             </View>
           </Touchable>
         )}
+        */}
       </ListItem>
 
       {paymentMethodSections.map((paymentMethod) => (
@@ -446,7 +471,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 }
 
 function AmountSpentInfo({ flow, tokenId, amount }: Props['route']['params']) {
-  const localCurrency = useSelector(getLocalCurrencyCode)
   return (
     <View style={styles.amountSpentInfo} testID="AmountSpentInfo">
       <Text style={styles.amountSpentInfoText}>
@@ -458,11 +482,7 @@ function AmountSpentInfo({ flow, tokenId, amount }: Props['route']['params']) {
           }
         >
           {flow === CICOFlow.CashIn ? (
-            <FiatAmount
-              amount={amount.fiat}
-              currency={localCurrency}
-              testID="AmountSpentInfo/Fiat"
-            />
+            <FiatAmount amount={amount.fiat} currency={'USD'} testID="AmountSpentInfo/Fiat" />
           ) : (
             <CryptoAmount
               amount={amount.crypto}
@@ -578,6 +598,38 @@ function ExchangesSection({
     rightText = t('selectProviderScreen.viewExchanges')
   }
 
+  // For CashIn (DepositFrom), use card style like BucksPay
+  if (exchangesText === SelectProviderExchangesText.DepositFrom) {
+    return (
+      <View testID="Exchanges" style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+        <Touchable onPress={goToExchangesScreen}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 10,
+              paddingVertical: 10,
+              borderRadius: 10,
+              backgroundColor: colors.gray1,
+            }}
+          >
+            <View style={styles.imageContainer}>
+              <Wallet size={32} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.newLabelText}>{header}</Text>
+              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4 }}>{text}</Text>
+            </View>
+            <InfoIcon size={16} color={colors.gray5} />
+          </View>
+        </Touchable>
+      </View>
+    )
+  }
+
+  // For CashOut, keep original style
   return (
     <View testID="Exchanges" style={styles.container}>
       <Touchable onPress={goToExchangesScreen}>
@@ -735,6 +787,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 40,
     width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginRight: 8,
   },
   providerImage: {
     flex: 10,
