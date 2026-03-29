@@ -22,7 +22,7 @@ import MarranitosContract, { Stake } from 'src/earn/marranitos/MarranitosContrac
 import PoolList from 'src/earn/PoolList'
 import { EarnTabType } from 'src/earn/types'
 import { refreshAllBalances } from 'src/home/actions'
-import AttentionIcon from 'src/icons/Attention'
+import AttentionIcon from 'src/icons/status/Attention'
 import { Screens } from 'src/navigator/Screens'
 import useScrollAwareHeader from 'src/navigator/ScrollAwareHeader'
 import { StackParamList } from 'src/navigator/types'

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import Touchable from 'src/components/Touchable'
-import DownArrowIcon from 'src/icons/DownArrowIcon'
+import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'

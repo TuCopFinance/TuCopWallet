@@ -18,7 +18,7 @@ export default class LoadingSpinner extends React.PureComponent<Props> {
         ref={(animation) => {
           this.animation = animation
         }}
-        source={require('./loadingSpinnerGreen.json')}
+        source={require('src/icons/lottie-json/loadingSpinnerGreen.json')}
         autoPlay={true}
         loop={true}
         style={{ width: this.props.width }}

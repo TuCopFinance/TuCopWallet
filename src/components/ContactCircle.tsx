@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Image, StyleSheet, Text, View, ViewStyle } from 'react-native'
-import User from 'src/icons/User'
+import User from 'src/icons/user/User'
 import { Recipient } from 'src/recipients/recipient'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'

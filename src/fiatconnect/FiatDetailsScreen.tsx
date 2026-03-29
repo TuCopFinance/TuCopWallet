@@ -26,8 +26,8 @@ import {
   sendingFiatAccountStatusSelector,
 } from 'src/fiatconnect/selectors'
 import { SendingFiatAccountStatus, submitFiatAccount } from 'src/fiatconnect/slice'
-import Checkmark from 'src/icons/Checkmark'
-import InfoIcon from 'src/icons/InfoIcon'
+import Checkmark from 'src/icons/status/Checkmark'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import { styles as headerStyles } from 'src/navigator/Headers'
 import { navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'

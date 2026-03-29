@@ -4,7 +4,7 @@ import * as React from 'react'
 import { StyleSheet, TextInputProps, View, ViewStyle } from 'react-native'
 import TouchableDefault from 'src/components/Touchable'
 import { PasteAwareWrappedElementProps, withPasteAware } from 'src/components/WithPasteAware'
-import Paste from 'src/icons/Paste'
+import Paste from 'src/icons/actions/Paste'
 import Colors from 'src/styles/colors'
 import { iconHitslop } from 'src/styles/variables'
 
