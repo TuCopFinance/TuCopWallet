@@ -706,7 +706,7 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
   walletConnectChainIdToNetwork[walletConnectChainId] = networkIdToNetwork[networkId]
 }
 
-Logger.info('Connecting to testnet: ', DEFAULT_TESTNET)
+Logger.info('Connecting to network: ', DEFAULT_TESTNET)
 
 // BucksPay offramp constants
 export const BUCKSPAY_RECEIVER_ADDRESS = '0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0' as Address

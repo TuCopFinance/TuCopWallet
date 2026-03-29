@@ -1798,6 +1798,7 @@
   "dappNotListed": "Esta dapp no se encuentra entre las seleccionadas por {{appName}}. Las dapps son aplicaciones de terceros. Utilízalas bajo tu propia responsabilidad.",
   "swapScreen": {
     "title": "Cambiar",
+    "balance": "Saldo",
     "review": "Revisar",
     "confirmSwap": "Confirmar intercambio",
     "confirmSwap_UK": "Quiero cambiar",
@@ -1811,8 +1812,8 @@
     "swapToTokenSelection": "CAMBIAR A",
     "tokenUsdValueUnknown": "-",
     "unsupportedSwapTokens": "Los tokens seleccionados no son compatibles con nuestros proveedores de swap.",
-    "selectTokenLabel": "Selecciona un token",
-    "tokenBottomSheetTitle": "Seleccionar token",
+    "selectTokenLabel": "Pesos o Dólares",
+    "tokenBottomSheetTitle": "¿Qué quieres cambiar?",
     "onNetwork": "en {{networkName}}",
     "crossChainNotification": "Intercambiar tokens entre diferentes redes",
     "crossChainFeeWarning": {
