@@ -3668,7 +3668,7 @@ export const v244Schema = {
     priceAlerts: [],
     error: null,
     hasSeenGoldInfo: false,
-    preferredIconVariant: 'gold',
+    preferredIconVariant: 'bar',
   },
 }
 
