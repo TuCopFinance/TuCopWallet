@@ -2,6 +2,7 @@
 import 'src/missingGlobals'
 import 'src/forceCommunityAsyncStorage'
 import 'src/setupE2eEnv' // This is only for E2E tests and has no effects when not running E2E tests
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated'
 import { AppRegistry } from 'react-native'
 import Logger from 'src/utils/Logger'
 // This needs to happen early so any errors (including in the store) get caught
@@ -18,6 +19,12 @@ const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 Logger.overrideConsoleLogs()
 Logger.cleanupOldLogs()
+
+// Configure Reanimated logger to suppress strict mode warnings
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Disable strict mode warnings about reading .value during render
+})
 
 // Filter out Sentry warnings in development mode
 if (__DEV__ && !SENTRY_ENABLED) {
