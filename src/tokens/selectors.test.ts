@@ -817,7 +817,8 @@ describe('lastKnownTokenBalancesSelector', () => {
     const lastKnownTokenBalances = lastKnownTokenBalancesSelector(mockState, [
       NetworkId['celo-sepolia'],
     ])
-    expect(lastKnownTokenBalances).toEqual(new BigNumber(193.5))
+    // Value in COP (multiplied by usdToLocalRate of 4000)
+    expect(lastKnownTokenBalances).toEqual(new BigNumber(900000))
   })
 
   it('returns the correct last known total balance when multiple networks given', () => {
@@ -825,7 +826,8 @@ describe('lastKnownTokenBalancesSelector', () => {
       NetworkId['celo-sepolia'],
       NetworkId['ethereum-sepolia'],
     ])
-    expect(lastKnownTokenBalances).toEqual(new BigNumber(623.5))
+    // Value in COP (multiplied by usdToLocalRate of 4000)
+    expect(lastKnownTokenBalances).toEqual(new BigNumber(2900000))
   })
 })
 
