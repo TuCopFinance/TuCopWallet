@@ -97,7 +97,7 @@ export default function EstimatedNetworkFee({ isLoading, networkId, transactions
           />
         </View>
         {!!isLoading && (
-          <View style={StyleSheet.absoluteFill}>
+          <View style={StyleSheet.absoluteFill} testID="EstimatedNetworkFee/Loading">
             <SkeletonPlaceholder
               borderRadius={100} // ensure rounded corners with font scaling
               backgroundColor={Colors.gray2}
