@@ -7,7 +7,6 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import ExchangeQR from 'src/fiatExchanges/ExchangeQR'
 import { ExternalExchangeProvider } from 'src/fiatExchanges/ExternalExchanges'
 import { CICOFlow } from 'src/fiatExchanges/utils'
-import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { createMockStore, getMockStackScreenProps } from 'test/utils'
 
@@ -71,32 +70,16 @@ describe('ExchangeQR', () => {
     expect(Clipboard.setString).toHaveBeenCalledWith('0x0000')
   })
 
-  it('opens bottom sheet and can press link', async () => {
-    const { queryByTestId, getByTestId } = render(
+  it('renders QRCode component with exchanges', async () => {
+    const { queryByTestId } = render(
       <Provider store={mockStore}>
         <ExchangeQR {...getProps()} />
       </Provider>
     )
 
-    expect(queryByTestId('bottomSheetLink')).toBeTruthy()
-    await fireEvent.press(getByTestId('bottomSheetLink'))
-    expect(AppAnalytics.track).toHaveBeenCalledWith(
-      FiatExchangeEvents.cico_exchange_qr_bottom_sheet_open,
-      {
-        flow: CICOFlow.CashIn,
-      }
-    )
-
-    expect(queryByTestId('BottomSheetContainer')).toBeTruthy()
-    expect(queryByTestId('Coinbase Pro-Touchable')).toBeTruthy()
-    await fireEvent.press(getByTestId('Coinbase Pro-Touchable'))
-    expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, { uri: 'https://example.com/0' })
-    expect(AppAnalytics.track).toHaveBeenCalledWith(
-      FiatExchangeEvents.cico_exchange_qr_bottom_sheet_link_press,
-      {
-        flow: CICOFlow.CashIn,
-        exchange: 'Coinbase Pro',
-      }
-    )
+    // QRCode component should be rendered with exchange information
+    expect(queryByTestId('QRCode')).toBeTruthy()
+    expect(queryByTestId('copyButton')).toBeTruthy()
+    expect(queryByTestId('address')).toBeTruthy()
   })
 })

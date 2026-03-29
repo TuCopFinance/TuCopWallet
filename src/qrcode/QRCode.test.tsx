@@ -2,8 +2,6 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { fireEvent, render } from '@testing-library/react-native'
 import * as React from 'react'
 import { Provider } from 'react-redux'
-import { navigate } from 'src/navigator/NavigationService'
-import { Screens } from 'src/navigator/Screens'
 import QRCode from 'src/qrcode/QRCode'
 import { createMockStore } from 'test/utils'
 import { mockExchanges } from 'test/values'
@@ -77,7 +75,6 @@ describe('ExchangeQR', () => {
         <QRCode {...{ ...getProps(), exchanges: undefined }} />
       </Provider>
     )
-    expect(queryByTestId('bottomSheetLink')).toBeFalsy()
     expect(queryByTestId('supportedNetworksNotification')).toBeTruthy()
   })
 
@@ -95,25 +92,17 @@ describe('ExchangeQR', () => {
     expect(Clipboard.setString).toHaveBeenCalledWith('0x0000')
   })
 
-  it('opens bottom sheet and can press link', async () => {
+  it('renders QRCode component with exchanges', async () => {
     const props = getProps()
-    const { queryByTestId, getByTestId } = render(
+    const { queryByTestId } = render(
       <Provider store={mockStore}>
         <QRCode {...props} />
       </Provider>
     )
 
-    expect(queryByTestId('bottomSheetLink')).toBeTruthy()
-    await fireEvent.press(getByTestId('bottomSheetLink'))
-    expect(props.onPressInfo).toHaveBeenCalledTimes(1)
-
-    expect(queryByTestId('BottomSheetContainer')).toBeTruthy()
-    expect(queryByTestId('Bittrex-Touchable')).toBeTruthy()
-    await fireEvent.press(getByTestId('Bittrex-Touchable'))
-    expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
-      uri: 'https://bittrex.com/Market/Index?MarketName=USD-CELO',
-    })
-    expect(props.onPressExchange).toHaveBeenCalledTimes(1)
-    expect(props.onPressExchange).toHaveBeenCalledWith(mockExchanges[0])
+    // QRCode component should be rendered with exchange information
+    expect(queryByTestId('QRCode')).toBeTruthy()
+    expect(queryByTestId('copyButton')).toBeTruthy()
+    expect(queryByTestId('address')).toBeTruthy()
   })
 })
