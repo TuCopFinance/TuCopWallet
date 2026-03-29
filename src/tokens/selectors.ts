@@ -7,7 +7,8 @@ import {
   TIME_UNTIL_TOKEN_INFO_BECOMES_STALE,
   TOKEN_MIN_AMOUNT,
 } from 'src/config'
-import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { LocalCurrencyCode } from 'src/localCurrency/consts'
+import { getLocalCurrencyCode, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { Token } from 'src/positions/types'
 import { RootState } from 'src/redux/reducers'
 import { getDynamicConfigParams, getFeatureGate } from 'src/statsig'
@@ -310,9 +311,17 @@ export const totalTokenBalanceSelector = createSelector(
     (state: RootState, networkIds: NetworkId[]) => tokensWithUsdValueSelector(state, networkIds),
     usdToLocalCurrencyRateSelector,
     tokenFetchErrorSelector,
+    getLocalCurrencyCode,
     (_state: RootState, networkIds: NetworkId[]) => networkIds,
   ],
-  (tokensList, tokensWithUsdValue, usdToLocalRate, tokenFetchError, networkIds) => {
+  (
+    tokensList,
+    tokensWithUsdValue,
+    usdToLocalRate,
+    tokenFetchError,
+    localCurrencyCode,
+    networkIds
+  ) => {
     if (tokenFetchError) {
       return null
     }
@@ -325,9 +334,15 @@ export const totalTokenBalanceSelector = createSelector(
     for (const token of tokensWithUsdValue.filter((token) =>
       networkIds.includes(token.networkId)
     )) {
-      const tokenAmount = new BigNumber(token.balance)
-        .multipliedBy(token.priceUsd)
-        .multipliedBy(usdToLocalRate)
+      // COPm with COP local currency should be 1:1 (avoid USD conversion rounding)
+      const isCopmWithCopCurrency =
+        (token.tokenId === networkConfig.copmTokenId || token.symbol === 'COPm') &&
+        localCurrencyCode === LocalCurrencyCode.COP
+
+      const tokenAmount = isCopmWithCopCurrency
+        ? new BigNumber(token.balance)
+        : new BigNumber(token.balance).multipliedBy(token.priceUsd).multipliedBy(usdToLocalRate)
+
       totalBalance = totalBalance.plus(tokenAmount)
     }
 
