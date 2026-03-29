@@ -71,14 +71,12 @@ function TransferFeedItem({ transfer }: Props) {
           <Text style={styles.title} testID={'TransferFeedItem/title'} numberOfLines={1}>
             {title}
           </Text>
-          <View style={styles.subtitleRow}>
-            <Text style={styles.subtitle} testID={'TransferFeedItem/subtitle'} numberOfLines={1}>
-              {subtitle}
-            </Text>
-            <Text style={styles.timestamp} testID={'TransferFeedItem/timestamp'}>
-              {formattedTime}
-            </Text>
-          </View>
+          <Text style={styles.subtitle} testID={'TransferFeedItem/subtitle'} numberOfLines={1}>
+            {subtitle}
+          </Text>
+          <Text style={styles.timestamp} testID={'TransferFeedItem/timestamp'}>
+            {formattedTime}
+          </Text>
         </View>
         {
           <View style={styles.amountContainer}>
@@ -131,15 +129,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: variables.contentPadding,
   },
-  subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.Tiny4,
-  },
   timestamp: {
-    ...typeScale.bodySmall,
-    color: colors.gray3,
-    fontSize: 11,
+    ...typeScale.bodyXXSmall,
+    color: colors.gray4,
+    marginTop: 2,
   },
   amountContainer: {
     maxWidth: '50%',

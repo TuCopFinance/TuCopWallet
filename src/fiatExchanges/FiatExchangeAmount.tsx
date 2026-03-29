@@ -1,4 +1,3 @@
-import { RouteProp } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import React, { useState } from 'react'
@@ -22,11 +21,10 @@ import {
   cachedFiatAccountUsesSelector,
 } from 'src/fiatconnect/selectors'
 import { attemptReturnUserFlow } from 'src/fiatconnect/slice'
-import i18n from 'src/i18n'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { useLocalCurrencyCode } from 'src/localCurrency/hooks'
 import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { HeaderTitleWithTokenBalance, emptyHeader } from 'src/navigator/Headers'
+import { emptyHeader } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -77,7 +75,8 @@ function FiatExchangeAmount({ route }: Props) {
   const inputLocalCurrencyAmount = inputIsCrypto ? inputConvertedToLocalCurrency : parsedInputAmount
 
   const maxWithdrawAmount = new BigNumber(tokenInfo?.balance ?? 0)
-  const inputSymbol = inputIsCrypto ? '' : localCurrencySymbol
+  // For CashIn (adding dollars), use US$ symbol instead of local currency
+  const inputSymbol = inputIsCrypto ? '' : flow === CICOFlow.CashIn ? 'US$' : localCurrencySymbol
 
   const usdtToken = useTokenInfo(networkConfig.usdtTokenId)!
   const localCurrencyMaxAmount =
@@ -95,7 +94,9 @@ function FiatExchangeAmount({ route }: Props) {
   }
 
   function onChangeExchangeAmount(amount: string) {
-    setInputAmount(amount.replace(localCurrencySymbol, ''))
+    // Remove any currency symbol (US$ or local currency) - split and rejoin to handle $ special char
+    const cleaned = amount.split(inputSymbol).join('').split(localCurrencySymbol).join('')
+    setInputAmount(cleaned)
   }
 
   function goToProvidersScreen() {
@@ -220,50 +221,11 @@ function FiatExchangeAmount({ route }: Props) {
   )
 }
 
-FiatExchangeAmount.navOptions = ({
-  route,
-}: {
-  route: RouteProp<StackParamList, Screens.FiatExchangeAmount>
-}) => {
-  const { flow, tokenId, tokenSymbol } = route.params
-  const inputIsCrypto = isUserInputCrypto(flow)
+FiatExchangeAmount.navOptions = () => {
   return {
     ...emptyHeader,
     headerLeft: () => <BackButton eventName={FiatExchangeEvents.cico_amount_back} />,
-    headerTitle: () => (
-      <FiatExchangeAmountHeader
-        title={i18n.t(
-          route.params.flow === CICOFlow.CashIn
-            ? `fiatExchangeFlow.cashIn.exchangeAmountTitle`
-            : `fiatExchangeFlow.cashOut.exchangeAmountTitle`,
-          {
-            currency: tokenSymbol,
-          }
-        )}
-        tokenId={tokenId}
-        showLocalAmount={!inputIsCrypto}
-      />
-    ),
   }
-}
-
-function FiatExchangeAmountHeader({
-  title,
-  tokenId,
-  showLocalAmount,
-}: {
-  title: string | React.ReactNode
-  tokenId: string
-  showLocalAmount: boolean
-}) {
-  const tokenInfo = useTokenInfo(tokenId)
-  return (
-    <HeaderTitleWithTokenBalance
-      tokenInfo={tokenInfo}
-      title={title}
-      showLocalAmount={showLocalAmount}
-    />
-  )
 }
 
 export default FiatExchangeAmount

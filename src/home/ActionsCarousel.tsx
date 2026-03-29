@@ -6,7 +6,7 @@ import { HomeEvents } from 'src/analytics/Events'
 import Card from 'src/components/Card'
 import Touchable from 'src/components/Touchable'
 import { ENABLED_QUICK_ACTIONS } from 'src/config'
-import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
+import { CICOFlow } from 'src/fiatExchanges/utils'
 import { HomeActionName } from 'src/home/types'
 import QuickActionsAdd from 'src/icons/quick-actions/Add'
 import QuickActionsReceive from 'src/icons/quick-actions/Receive'
@@ -20,6 +20,7 @@ import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { useUSDT } from 'src/tokens/hooks'
 
 type Actions = Record<
   HomeActionName,
@@ -30,6 +31,7 @@ function ActionsCarousel() {
   const { t } = useTranslation()
 
   const shouldShowSwapAction = useSelector(isAppSwapsEnabledSelector)
+  const USDTToken = useUSDT()
 
   const actions: Actions = {
     [HomeActionName.Send]: {
@@ -52,7 +54,14 @@ function ActionsCarousel() {
       title: t('homeActions.add'),
       icon: <QuickActionsAdd color={Colors.black} />,
       onPress: () => {
-        navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
+        // Go directly to USDT (Dólares) - no token selection needed for recharge
+        if (USDTToken) {
+          navigate(Screens.FiatExchangeAmount, {
+            tokenId: USDTToken.tokenId,
+            flow: CICOFlow.CashIn,
+            tokenSymbol: USDTToken.symbol,
+          })
+        }
       },
     },
     [HomeActionName.Swap]: {

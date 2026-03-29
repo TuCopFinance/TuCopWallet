@@ -34,6 +34,7 @@ interface Props {
   buttonPlaceholder: string
   editable?: boolean
   borderRadius?: number
+  showBalance?: boolean
 }
 
 const SwapAmountInput = ({
@@ -48,6 +49,7 @@ const SwapAmountInput = ({
   style,
   buttonPlaceholder,
   editable = true,
+  showBalance = false,
   borderRadius,
 }: Props) => {
   const { t } = useTranslation()
@@ -85,9 +87,11 @@ const SwapAmountInput = ({
               <TokenIcon token={token} size={IconSize.MEDIUM} />
               <View style={styles.tokenInfoText}>
                 <Text style={styles.tokenName}>{getTokenSymbol(t, token.symbol)}</Text>
-                {/* <Text style={styles.tokenNetwork}>
-                  {t('swapScreen.onNetwork', { networkName: NETWORK_NAMES[token.networkId] })}
-                </Text> */}
+                {showBalance && token.balance && (
+                  <Text style={styles.tokenBalance}>
+                    {t('swapScreen.balance')}: {token.balance.toFormat(2)} {token.symbol}
+                  </Text>
+                )}
               </View>
             </View>
           ) : (
@@ -205,11 +209,11 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldXSmall,
     paddingHorizontal: 4,
   },
-  // tokenNetwork: {
-  //   ...typeScale.bodyXSmall,
-  //   color: Colors.gray4,
-  //   paddingHorizontal: 4,
-  // },
+  tokenBalance: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    paddingHorizontal: 4,
+  },
   tokenInfoText: {
     paddingLeft: Spacing.Smallest8,
   },

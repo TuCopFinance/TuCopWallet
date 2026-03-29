@@ -89,19 +89,17 @@ function SwapFeedItem({ transaction }: Props) {
           <Text style={styles.title} testID={'SwapFeedItem/title'} numberOfLines={1}>
             {t('swapScreen.title')}
           </Text>
-          <View style={styles.subtitleRow}>
-            <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
-              {isCrossChainSwap
-                ? t('transactionFeed.crossChainSwapTransactionLabel')
-                : t('feedItemSwapPath', {
-                    token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                    token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                  })}
-            </Text>
-            <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
-              {formattedTime}
-            </Text>
-          </View>
+          <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
+            {isCrossChainSwap
+              ? t('transactionFeed.crossChainSwapTransactionLabel')
+              : t('feedItemSwapPath', {
+                  token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                  token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                })}
+          </Text>
+          <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
+            {formattedTime}
+          </Text>
         </View>
         <View style={styles.tokenAmountContainer}>
           {
@@ -148,15 +146,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: variables.contentPadding,
   },
-  subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.Tiny4,
-  },
   timestamp: {
-    ...typeScale.bodySmall,
-    color: colors.gray3,
-    fontSize: 11,
+    ...typeScale.bodyXXSmall,
+    color: colors.gray4,
+    marginTop: 2,
   },
   title: {
     ...typeScale.labelMedium,
