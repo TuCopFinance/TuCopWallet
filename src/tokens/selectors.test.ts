@@ -476,13 +476,15 @@ describe('tokensWithUsdValueSelector', () => {
 describe(totalTokenBalanceSelector, () => {
   describe('when fetching the total token balance', () => {
     it('returns the right amount', () => {
+      // 500000 COP = (50 * 0.5 + 10 * 10) USD * 4000 COP/USD rate
       expect(totalTokenBalanceSelector(state, [NetworkId['celo-sepolia']])).toEqual(
-        new BigNumber(107.5)
+        new BigNumber(500000)
       )
     })
     it('returns the right amount when positions are present', () => {
+      // 500000 COP = (50 * 0.5 + 10 * 10) USD * 4000 COP/USD rate
       expect(totalTokenBalanceSelector(stateWithPositions, [NetworkId['celo-sepolia']])).toEqual(
-        new BigNumber(107.5)
+        new BigNumber(500000)
       )
     })
 
