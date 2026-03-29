@@ -1,6 +1,19 @@
 import '@testing-library/jest-native/extend-expect'
+import { configure } from '@testing-library/react-native'
 // react-native-svg is mocked via moduleNameMapper in jest.config.js
 // BigInt serialization polyfill is loaded early via setupFiles (jest_bigint_setup.js)
+
+// Configure @testing-library/react-native host component names for RN 0.77
+// This fixes the "Element type is invalid" error during detectHostComponentNames
+configure({
+  hostComponentNames: {
+    text: 'Text',
+    textInput: 'TextInput',
+    switch: 'RCTSwitch',
+    scrollView: 'RCTScrollView',
+    modal: 'Modal',
+  },
+})
 
 beforeAll(() => {
   jest.useFakeTimers()
