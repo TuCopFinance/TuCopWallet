@@ -1372,6 +1372,9 @@
   "transactionHeaderNftReceived": "NFT recibido",
   "transactionHeaderNftSent": "NFT enviado",
   "feedSectionHeaderRecent": "Recientes",
+  "feedSectionHeaderToday": "Hoy",
+  "feedSectionHeaderYesterday": "Ayer",
+  "feedSectionHeaderPending": "Pendientes",
   "cashInBottomSheet": {
     "title": "¡Agrega fondos para empezar a usar {{appName}}!",
     "subtitle": "Actualmente tu cuenta está vacía",
@@ -1578,7 +1581,7 @@
       "dismiss": "Ignorar"
     },
     "cashIn": {
-      "amountSpentInfo": "Pagarás <0></0> con tasas incluidas"
+      "amountSpentInfo": "Recibirás <0></0>"
     },
     "cashOut": {
       "amountSpentInfo": "Retirarás <0></0> con tasas incluidas"
@@ -1725,7 +1728,7 @@
     "exchange": {
       "informational": "Para evitar la pérdida de fondos, utiliza esta dirección en exchanges o activos compatibles con las siguientes redes: <0>{{networks}}</0>",
       "copyAddress": "Copiar dirección",
-      "informationText": "Utiliza solo exchanges o activos <0>compatibles con las redes soportadas por {{appName}}</0> para evitar la pérdida de fondos",
+      "informationText": "Selecciona la <0>red Celo</0> en tu exchange al enviar. Para dólares usa <1>USDT (0x4806...3d5e)</1>",
       "bottomSheetTitle": "¿Qué exchanges puedo utilizar para depositar fondos?",
       "bottomSheetInfo": "Comprueba que envías activos compatibles con las redes que admite {{appName}}."
     }
@@ -1795,6 +1798,7 @@
   "dappNotListed": "Esta dapp no se encuentra entre las seleccionadas por {{appName}}. Las dapps son aplicaciones de terceros. Utilízalas bajo tu propia responsabilidad.",
   "swapScreen": {
     "title": "Cambiar",
+    "balance": "Saldo",
     "review": "Revisar",
     "confirmSwap": "Confirmar intercambio",
     "confirmSwap_UK": "Quiero cambiar",
@@ -1808,8 +1812,8 @@
     "swapToTokenSelection": "CAMBIAR A",
     "tokenUsdValueUnknown": "-",
     "unsupportedSwapTokens": "Los tokens seleccionados no son compatibles con nuestros proveedores de swap.",
-    "selectTokenLabel": "Selecciona un token",
-    "tokenBottomSheetTitle": "Seleccionar token",
+    "selectTokenLabel": "Pesos o Dólares",
+    "tokenBottomSheetTitle": "¿Qué quieres cambiar?",
     "onNetwork": "en {{networkName}}",
     "crossChainNotification": "Intercambiar tokens entre diferentes redes",
     "crossChainFeeWarning": {

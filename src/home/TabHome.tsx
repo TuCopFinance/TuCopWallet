@@ -20,7 +20,7 @@ import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
-import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
+import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
 import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
@@ -116,8 +116,15 @@ function TabHome(_props: Props) {
   const USDTToken = useUSDT()
 
   const onPressRecharge = React.useCallback(() => {
-    navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
-  }, [])
+    // Go directly to USDT (Dólares) - no token selection needed for recharge
+    if (USDTToken) {
+      navigate(Screens.FiatExchangeAmount, {
+        tokenId: USDTToken.tokenId,
+        flow: CICOFlow.CashIn,
+        tokenSymbol: USDTToken.symbol,
+      })
+    }
+  }, [USDTToken])
 
   function onPressSendMoney() {
     AppAnalytics.track(TabHomeEvents.send_money)
@@ -501,17 +508,17 @@ const styles = StyleSheet.create({
   //   alignItems: 'center',
   //   gap: Spacing.Smallest8,
   // },
-  ctaText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray6,
-    letterSpacing: -0.16,
-  },
-  ctaSubText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray6,
-    letterSpacing: -0.16,
-    fontFamily: Inter.Regular,
-  },
+  // ctaText: {
+  //   ...typeScale.bodySmall,
+  //   color: Colors.gray6,
+  //   letterSpacing: -0.16,
+  // },
+  // ctaSubText: {
+  //   ...typeScale.bodySmall,
+  //   color: Colors.gray6,
+  //   letterSpacing: -0.16,
+  //   fontFamily: Inter.Regular,
+  // },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -581,24 +588,24 @@ const styles = StyleSheet.create({
     letterSpacing: -0.12,
     fontFamily: Inter.Regular,
   },
-  iconContainer: {
-    width: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // iconContainer: {
+  //   width: 56,
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  // },
   refiLogo: {
     width: 40,
     height: 40,
     borderRadius: 20,
   },
-  ubiRow: {
-    alignItems: 'center',
-    display: 'flex',
-  },
-  textColumn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // ubiRow: {
+  //   alignItems: 'center',
+  //   display: 'flex',
+  // },
+  // textColumn: {
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  // },
   // Estilos uniformes para tarjetas grandes
   cardRow: {
     flexDirection: 'row',

@@ -5,4 +5,5 @@ export const ALLOWED_TOKEN_IDS = new Set([
   // networkConfig.cusdTokenId,
   networkConfig.copmTokenId,
   networkConfig.usdtTokenId,
+  // XAUt0 is handled separately in the gold module, not in main token list
 ])
