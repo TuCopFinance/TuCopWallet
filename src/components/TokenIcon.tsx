@@ -4,8 +4,9 @@ import FastImage from 'react-native-fast-image'
 import { Token } from 'src/positions/types'
 import colors from 'src/styles/colors'
 import { BaseToken } from 'src/tokens/slice'
-import COPm from './copm-logo.png'
-import USD from './v2.png'
+import DollarsIcon from 'src/icons/tokens/DollarsIcon'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
+import PesosIcon from 'src/icons/tokens/PesosIcon'
 
 export enum IconSize {
   XXSMALL = 'xxsmall',
@@ -55,6 +56,9 @@ const IconSizeToStyle = {
   },
 }
 
+// Tokens que usan iconos SVG personalizados
+const SVG_ICON_SYMBOLS = ['COPm', 'cCOP', 'XAUt0', 'USDT', 'USD₮']
+
 interface Props {
   token: BaseToken | Token
   viewStyle?: StyleProp<ViewStyle>
@@ -73,24 +77,48 @@ export default function TokenIcon({
   const { tokenImageSize, networkImageSize, networkImagePosition, tokenTextSize } =
     IconSizeToStyle[size]
 
-  const getTokenImagen = (token: BaseToken | Token) => {
-    const symbols: Record<string, any> = {
-      COPm: COPm,
-      cCOP: COPm,
-      'USD₮': USD,
+  // Renderiza icono SVG para tokens específicos
+  const renderSvgIcon = () => {
+    const symbol = token.symbol
+    if (symbol === 'COPm' || symbol === 'cCOP') {
+      return (
+        <PesosIcon size={tokenImageSize} testID={testID ? `${testID}/PesosIcon` : 'PesosIcon'} />
+      )
     }
+    if (symbol === 'XAUt0') {
+      return (
+        <GoldIconSelector
+          size={tokenImageSize}
+          testID={testID ? `${testID}/GoldIcon` : 'GoldIcon'}
+        />
+      )
+    }
+    if (symbol === 'USDT' || symbol === 'USD₮') {
+      return (
+        <DollarsIcon
+          size={tokenImageSize}
+          testID={testID ? `${testID}/DollarsIcon` : 'DollarsIcon'}
+        />
+      )
+    }
+    return null
+  }
 
-    if (token.symbol && token.symbol in symbols) {
-      return symbols[token.symbol]
-    }
+  // Verifica si debe usar icono SVG
+  const useSvgIcon = token.symbol && SVG_ICON_SYMBOLS.includes(token.symbol)
+
+  // Obtiene imagen para tokens con FastImage
+  const getTokenImage = () => {
     return { uri: token.imageUrl }
   }
 
   return (
     <View testID={testID} style={[styles.defaultViewStyle, viewStyle]}>
-      {token.imageUrl ? (
+      {useSvgIcon ? (
+        renderSvgIcon()
+      ) : token.imageUrl ? (
         <FastImage
-          source={getTokenImagen(token)}
+          source={getTokenImage()}
           style={[
             styles.tokenImage,
             {

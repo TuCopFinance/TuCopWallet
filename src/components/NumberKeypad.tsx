@@ -2,7 +2,7 @@ import * as React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import Touchable from 'src/components/Touchable'
-import Backspace from 'src/icons/Backspace'
+import Backspace from 'src/icons/auth/Backspace'
 import Colors from 'src/styles/colors'
 import { Inter } from 'src/styles/fonts'
 

@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import React from 'react'
 import { StyleSheet, Text, TextStyle, View } from 'react-native'
-import DataDown from 'src/icons/DataDown'
-import DataUp from 'src/icons/DataUp'
+import DataDown from 'src/icons/data/DataDown'
+import DataUp from 'src/icons/data/DataUp'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 
