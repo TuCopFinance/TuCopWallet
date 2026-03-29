@@ -12,7 +12,7 @@ import { SettlementEstimation, SettlementTime } from 'src/fiatExchanges/quotes/c
 import { getSettlementTimeString } from 'src/fiatExchanges/quotes/utils'
 import { ProviderSelectionAnalyticsData } from 'src/fiatExchanges/types'
 import { CICOFlow, PaymentMethod } from 'src/fiatExchanges/utils'
-import InfoIcon from 'src/icons/InfoIcon'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import { getLocalCurrencyCode, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { getFeatureGate } from 'src/statsig'
