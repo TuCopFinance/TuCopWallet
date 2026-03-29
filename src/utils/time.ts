@@ -8,7 +8,8 @@ import locales from 'locales'
 import i18n from 'src/i18n'
 
 export const formatFeedTime = (timestamp: number, i18next: i18nType) => {
-  return quickFormat(timestamp, i18next, 'h:mm a')
+  // Format: "29/03 09:24" - date and time for transaction feed
+  return quickFormat(timestamp, i18next, 'dd/MM HH:mm')
 }
 
 export const formatFeedDate = (timestamp: number, i18next: i18nType) => {

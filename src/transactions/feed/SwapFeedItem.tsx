@@ -15,6 +15,7 @@ import variables from 'src/styles/variables'
 import { useTokenInfo } from 'src/tokens/hooks'
 import TransactionFeedItemImage from 'src/transactions/feed/TransactionFeedItemImage'
 import { TokenExchange, TokenTransactionTypeV2 } from 'src/transactions/types'
+import { formatFeedTime } from 'src/utils/time'
 import networkConfig from 'src/web3/networkConfig'
 
 interface Props {
@@ -22,9 +23,10 @@ interface Props {
 }
 
 function SwapFeedItem({ transaction }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const incomingTokenInfo = useTokenInfo(transaction.inAmount.tokenId)
   const outgoingTokenInfo = useTokenInfo(transaction.outAmount.tokenId)
+  const formattedTime = formatFeedTime(transaction.timestamp, i18n)
 
   const handleOpenTransactionDetails = () => {
     navigate(Screens.TransactionDetailsScreen, { transaction: transaction })
@@ -95,6 +97,9 @@ function SwapFeedItem({ transaction }: Props) {
                   token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
                 })}
           </Text>
+          <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
+            {formattedTime}
+          </Text>
         </View>
         <View style={styles.tokenAmountContainer}>
           {
@@ -140,6 +145,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: variables.contentPadding,
+  },
+  timestamp: {
+    ...typeScale.bodyXXSmall,
+    color: colors.gray4,
+    marginTop: 2,
   },
   title: {
     ...typeScale.labelMedium,
