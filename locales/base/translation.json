@@ -1367,6 +1367,9 @@
   "transactionHeaderNftReceived": "NFT Received",
   "transactionHeaderNftSent": "NFT Sent",
   "feedSectionHeaderRecent": "Recent",
+  "feedSectionHeaderToday": "Today",
+  "feedSectionHeaderYesterday": "Yesterday",
+  "feedSectionHeaderPending": "Pending",
   "cashInBottomSheet": {
     "title": "Add funds to start using {{appName}}!",
     "subtitle": "Your account is currently empty",
