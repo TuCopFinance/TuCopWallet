@@ -95,7 +95,7 @@ describe('DappShortcutTransactionRequest', () => {
     )
     expect(
       getByText(
-        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cEUR, cUSD"}'
+        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"}'
       )
     ).toBeTruthy()
     expect(queryByText('allow')).toBeFalsy()
