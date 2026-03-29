@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -22,14 +22,14 @@ import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow, FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
-import i18n from 'src/i18n'
 import Add from 'src/icons/quick-actions/Add'
 import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
-import SwapArrows from 'src/icons/SwapArrows'
-import ArrowVertical from 'src/icons/tab-home/ArrowVertical'
+import SwapArrows from 'src/icons/actions/SwapArrows'
+import Receive from 'src/icons/tab-home/Receive'
 import Recharge from 'src/icons/tab-home/Recharge'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
+import PesosDollarsIcon from 'src/icons/tokens/PesosDollarsIcon'
 import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
@@ -44,7 +44,6 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useCOPm, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
-import EarnGrowIcon from 'src/icons/EarnGrowIcon'
 import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
@@ -225,7 +224,7 @@ function TabHome(_props: Props) {
                   onPress={onPressRecieveMoney}
                 >
                   <View style={styles.actionButton}>
-                    <ArrowVertical />
+                    <Receive />
                   </View>
                   <Text style={[styles.textPrimary, styles.actionButtonText]}>
                     {t('tabHome.receiveMoney')}
@@ -263,11 +262,13 @@ function TabHome(_props: Props) {
         >
           <View style={[styles.containerShadow, styles.noBottomShadow]}>
             <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
-              <View style={[styles.row, { paddingVertical: 8 }]}>
-                <View style={styles.iconContainer}>
+              <View style={styles.cardRow}>
+                <View style={styles.cardIconBox}>
                   <Swap />
                 </View>
-                <Text style={[styles.ctaText]}>{t('tabHome.swapToUSD')}</Text>
+                <View style={styles.cardTextBox}>
+                  <Text style={styles.cardText}>{t('tabHome.swapToUSD')}</Text>
+                </View>
               </View>
             </FlatCard>
 
@@ -282,17 +283,13 @@ function TabHome(_props: Props) {
             </FlatCard> */}
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={[styles.row, { paddingVertical: 8 }]}>
-                <View style={styles.iconContainer}>
-                  <EarnGrowIcon size={36} />
+              <View style={styles.cardRow}>
+                <View style={styles.cardIconBox}>
+                  <PesosDollarsIcon size={40} />
                 </View>
-                <Text style={styles.ctaText}>
-                  <Trans
-                    i18n={i18n}
-                    i18nKey="tabHome.earn"
-                    components={[<Text key={0} style={{ fontWeight: '700' }} />]}
-                  />
-                </Text>
+                <View style={styles.cardTextBox}>
+                  <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                </View>
               </View>
             </FlatCard>
 
@@ -302,13 +299,13 @@ function TabHome(_props: Props) {
               testID="FlatCard/ReFiColombiaSubsidies"
               onPress={onPressReFiColombiaSubsidies}
             >
-              <View style={[styles.row, styles.ubiRow, { paddingVertical: 8 }]}>
-                <View style={styles.iconContainer}>
+              <View style={styles.cardRow}>
+                <View style={styles.cardIconBox}>
                   <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
                 </View>
-                <View style={styles.textColumn}>
-                  <Text style={styles.ctaText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
-                  <Text style={styles.ctaSubText}>
+                <View style={styles.cardTextBox}>
+                  <Text style={styles.cardText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
+                  <Text style={styles.cardSubText}>
                     {t('tabHome.reFiColombiaSubsidies.subtitle')}
                   </Text>
                 </View>
@@ -590,9 +587,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   refiLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   ubiRow: {
     alignItems: 'center',
@@ -601,6 +598,38 @@ const styles = StyleSheet.create({
   textColumn: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Estilos uniformes para tarjetas grandes
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingLeft: 40,
+    paddingRight: 40,
+  },
+  cardIconBox: {
+    width: 57,
+    height: 57,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    backgroundColor: '#EEEFFF',
+    borderRadius: 12,
+  },
+  cardTextBox: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  cardText: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.gray6,
+    textAlign: 'right',
+  },
+  cardSubText: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+    marginTop: 2,
   },
 })
 

@@ -20,7 +20,7 @@ import { COPmFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
-import EarnGrowIcon from 'src/icons/EarnGrowIcon'
+import PesosDollarsIcon from 'src/icons/tokens/PesosDollarsIcon'
 
 function TabWallet() {
   const dispatch = useDispatch()
@@ -102,7 +102,7 @@ function TabWallet() {
               <View style={{ marginHorizontal: 20 }}>
                 <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
                   <View style={[styles.row, { paddingVertical: 8 }]}>
-                    <EarnGrowIcon size={36} />
+                    <PesosDollarsIcon size={40} />
                     <Text style={styles.ctaText}>
                       <Trans
                         i18n={i18n}

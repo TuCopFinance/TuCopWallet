@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import TextInput, { TextInputProps } from 'src/components/TextInput'
-import Search from 'src/icons/Search'
+import Search from 'src/icons/actions/Search'
 import colors from 'src/styles/colors'
 
 const HEIGHT = 36

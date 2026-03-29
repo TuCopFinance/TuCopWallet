@@ -3,7 +3,7 @@ import { Animated, FlexStyle, StyleSheet, Text, TouchableWithoutFeedback, View }
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AlertTypes } from 'src/alert/actions'
 import SmallButton from 'src/components/SmallButton'
-import Error from 'src/icons/Error'
+import Error from 'src/icons/status/Error'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { vibrateError, vibrateInformative } from 'src/styles/hapticFeedback'
