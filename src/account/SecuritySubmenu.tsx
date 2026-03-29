@@ -31,7 +31,7 @@ import {
 import Toast from 'src/components/Toast'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
-import LoadingSpinner from 'src/icons/LoadingSpinner'
+import LoadingSpinner from 'src/icons/loading/LoadingSpinner'
 import {
   deleteKeylessBackupStatusSelector,
   showDeleteKeylessBackupErrorSelector,

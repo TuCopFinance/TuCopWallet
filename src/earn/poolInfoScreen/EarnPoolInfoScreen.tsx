@@ -32,7 +32,7 @@ import {
 import { SafetyCard } from 'src/earn/poolInfoScreen/SafetyCard'
 import TokenIcons from 'src/earn/poolInfoScreen/TokenIcons'
 import WithdrawBottomSheet from 'src/earn/poolInfoScreen/WithdrawBottomSheet'
-import OpenLinkIcon from 'src/icons/OpenLinkIcon'
+import OpenLinkIcon from 'src/icons/actions/OpenLinkIcon'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import useScrollAwareHeader from 'src/navigator/ScrollAwareHeader'
