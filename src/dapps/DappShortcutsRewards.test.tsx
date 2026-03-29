@@ -167,7 +167,7 @@ describe('DappShortcutsRewards', () => {
     )
     expect(
       within(rewardCard).getByTestId('DappShortcutsRewards/RewardAmountFiat')
-    ).toHaveTextContent('COP$0.88') // USD value $0.66, mocked exchange rate 1.33
+    ).toHaveTextContent('COP$0.88') // USD value US$0.66, mocked exchange rate 1.33
     expect(within(rewardCard).getByTestId('DappShortcutsRewards/ClaimButton')).toBeTruthy()
   })
 
