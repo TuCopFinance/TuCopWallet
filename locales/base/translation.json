@@ -1793,6 +1793,7 @@
   "dappNotListed": "This dapp is not listed in {{appName}}. Dapps are third party applications. Use at your own risk.",
   "swapScreen": {
     "title": "Swap",
+    "balance": "Balance",
     "review": "Review",
     "confirmSwap": "Confirm Swap",
     "confirmSwap_UK": "I Want To Swap",
@@ -1806,8 +1807,8 @@
     "swapToTokenSelection": "SWAP TO",
     "tokenUsdValueUnknown": "-",
     "unsupportedSwapTokens": "The selected tokens aren't supported by our swap providers.",
-    "selectTokenLabel": "Select token",
-    "tokenBottomSheetTitle": "Select Token",
+    "selectTokenLabel": "Pesos or Dollars",
+    "tokenBottomSheetTitle": "What do you want to swap?",
     "onNetwork": "on {{networkName}}",
     "crossChainNotification": "Swapping tokens between different networks",
     "crossChainFeeWarning": {

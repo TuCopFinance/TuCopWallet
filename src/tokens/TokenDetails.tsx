@@ -95,7 +95,7 @@ export default function TokenDetailsScreen({ route }: Props) {
           </Text>
         </View>
         <TokenDisplay
-          amount={1}
+          amount={token.balance ?? 0}
           tokenId={tokenId}
           style={styles.assetValue}
           testID="TokenDetails/AssetValue"
