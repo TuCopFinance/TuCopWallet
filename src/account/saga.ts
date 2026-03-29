@@ -134,7 +134,7 @@ function* handlePreviouslyVerifiedPhoneNumber() {
         }
       }
     } else {
-      throw new Error(yield* call([response, 'text']))
+      throw new Error(`Lookup failed: ${response.status} - ${JSON.stringify(result)}`)
     }
   } catch (error) {
     Logger.warn(

@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { StyleProp, Text, TextStyle } from 'react-native'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
-import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import {
+  getLocalCurrencyCode,
+  getLocalCurrencySymbol,
+  usdToLocalCurrencyRateSelector,
+} from 'src/localCurrency/selectors'
 import { useSelector } from 'src/redux/hooks'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { LocalAmount } from 'src/transactions/types'
@@ -103,12 +107,18 @@ function TokenDisplay({
   const tokenInfo = useTokenInfo(tokenId)
   const localCurrencyExchangeRate = useSelector(usdToLocalCurrencyRateSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
+  const localCurrencyCode = useSelector(getLocalCurrencyCode)
 
   // Check if this is a gold token (XAUt0) by tokenId or address
   const isGoldToken =
     tokenId === networkConfig.xaut0TokenId ||
     tokenId?.toLowerCase().includes('0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff') ||
     tokenInfo?.symbol === 'XAUt0'
+
+  // COPm with COP currency should be 1:1 (avoid USD conversion rounding)
+  const isCopmWithCopCurrency =
+    (tokenId === networkConfig.copmTokenId || tokenInfo?.symbol === 'COPm') &&
+    localCurrencyCode === LocalCurrencyCode.COP
 
   // For gold tokens, we can show the amount even without full token info
   const hasSymbolOrIsKnownToken =
@@ -118,13 +128,16 @@ function TokenDisplay({
     tokenId === networkConfig.usdtTokenId
 
   const showError = showLocalAmount
-    ? !localAmount && (!tokenInfo?.priceUsd || !localCurrencyExchangeRate)
+    ? !localAmount && !isCopmWithCopCurrency && (!tokenInfo?.priceUsd || !localCurrencyExchangeRate)
     : !hasSymbolOrIsKnownToken
 
   const amountInUsd = tokenInfo?.priceUsd?.multipliedBy(amount)
-  const amountInLocalCurrency = localAmount
-    ? new BigNumber(localAmount.value)
-    : new BigNumber(localCurrencyExchangeRate ?? 0).multipliedBy(amountInUsd ?? 0)
+  // For COPm with COP local currency, use token amount directly (1:1)
+  const amountInLocalCurrency = isCopmWithCopCurrency
+    ? new BigNumber(amount)
+    : localAmount
+      ? new BigNumber(localAmount.value)
+      : new BigNumber(localCurrencyExchangeRate ?? 0).multipliedBy(amountInUsd ?? 0)
   const fiatSymbol = localAmount
     ? LocalCurrencySymbol[localAmount.currencyCode as LocalCurrencyCode]
     : localCurrencySymbol

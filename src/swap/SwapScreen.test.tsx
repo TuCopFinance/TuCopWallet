@@ -665,7 +665,7 @@ describe('SwapScreen', () => {
   })
 
   it('should show and hide the price impact warning', async () => {
-    // mock priceUsd data: CELO price ~$13, cUSD price = $1
+    // mock priceUsd data: CELO price ~$13, cUSD price = US$1
     const lowPriceImpactPrice = '13.12345' // within 4% price impact
     const highPriceImpactPrice = '12.44445' // more than 4% price impact
 

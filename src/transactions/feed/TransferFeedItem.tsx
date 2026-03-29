@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { HomeEvents } from 'src/analytics/Events'
@@ -20,15 +21,18 @@ import { useTokenInfo } from 'src/tokens/hooks'
 import TransactionFeedItemImage from 'src/transactions/feed/TransactionFeedItemImage'
 import { useTransferFeedDetails } from 'src/transactions/transferFeedUtils'
 import { TokenTransfer } from 'src/transactions/types'
+import { formatFeedTime } from 'src/utils/time'
 import { isPresent } from 'src/utils/typescript'
 interface Props {
   transfer: TokenTransfer
 }
 
 function TransferFeedItem({ transfer }: Props) {
+  const { i18n } = useTranslation()
   const dispatch = useDispatch()
-  const { amount } = transfer
+  const { amount, timestamp } = transfer
   const isJumpstart = isJumpstartTransaction(transfer)
+  const formattedTime = formatFeedTime(timestamp, i18n)
 
   const openTransferDetails = () => {
     if (isJumpstart) {
@@ -69,6 +73,9 @@ function TransferFeedItem({ transfer }: Props) {
           </Text>
           <Text style={styles.subtitle} testID={'TransferFeedItem/subtitle'} numberOfLines={1}>
             {subtitle}
+          </Text>
+          <Text style={styles.timestamp} testID={'TransferFeedItem/timestamp'}>
+            {formattedTime}
           </Text>
         </View>
         {
@@ -121,6 +128,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: variables.contentPadding,
+  },
+  timestamp: {
+    ...typeScale.bodyXXSmall,
+    color: colors.gray4,
+    marginTop: 2,
   },
   amountContainer: {
     maxWidth: '50%',
