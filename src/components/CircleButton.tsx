@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import Times from 'src/icons/Times'
+import Times from 'src/icons/navigation/Times'
 import colors from 'src/styles/colors'
 import { iconHitslop } from 'src/styles/variables'
 

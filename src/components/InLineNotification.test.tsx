@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native'
 import * as React from 'react'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
-import AttentionIcon from 'src/icons/Attention'
+import AttentionIcon from 'src/icons/status/Attention'
 
 describe(InLineNotification, () => {
   it('does not render CTA when onPress function is not provided', async () => {

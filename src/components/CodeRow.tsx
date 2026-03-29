@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import TextInput from 'src/components/TextInput'
 import withTextInputPasteAware from 'src/components/WithTextInputPasteAware'
 import { withTranslation } from 'src/i18n'
-import Checkmark from 'src/icons/Checkmark'
+import Checkmark from 'src/icons/status/Checkmark'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 

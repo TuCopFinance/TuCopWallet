@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import BackChevron, { Props as BackChevronProps } from 'src/icons/BackChevron'
+import BackChevron, { Props as BackChevronProps } from 'src/icons/navigation/BackChevron'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { TopBarIconButton, TopBarIconButtonProps } from 'src/navigator/TopBarButton'
 import { Spacing } from 'src/styles/styles'

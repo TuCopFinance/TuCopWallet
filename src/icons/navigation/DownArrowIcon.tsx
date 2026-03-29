@@ -2,7 +2,7 @@ import * as React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 import colors from 'src/styles/colors'
-import { getSizing } from '../styles/accessibility'
+import { getSizing } from 'src/styles/accessibility'
 
 interface Props {
   color?: string

@@ -1,7 +1,7 @@
 import React from 'react'
 import { goldIconVariantSelector } from 'src/gold/selectors'
-import GoldBarIcon from 'src/icons/GoldBarIcon'
-import GoldVaultIcon from 'src/icons/GoldVaultIcon'
+import GoldBarIcon from 'src/icons/tokens/GoldBarIcon'
+import GoldVaultIcon from 'src/icons/tokens/GoldVaultIcon'
 import { useSelector } from 'src/redux/hooks'
 
 interface Props {

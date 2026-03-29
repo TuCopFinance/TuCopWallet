@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import Touchable from 'src/components/Touchable'
-import Times from 'src/icons/Times'
+import Times from 'src/icons/navigation/Times'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Spacing } from 'src/styles/styles'
 

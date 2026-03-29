@@ -5,7 +5,7 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import Touchable from 'src/components/Touchable'
 import QuickActionsAdd from 'src/icons/quick-actions/Add'
 import QuickActionsSend from 'src/icons/quick-actions/Send'
-import SwapArrows from 'src/icons/SwapArrows'
+import SwapArrows from 'src/icons/actions/SwapArrows'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
