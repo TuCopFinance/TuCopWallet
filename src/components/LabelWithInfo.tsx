@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleProp, StyleSheet, Text, TextStyle, ViewStyle } from 'react-native'
 import Touchable from 'src/components/Touchable'
 
-import InfoIcon from 'src/icons/InfoIcon'
+import InfoIcon from 'src/icons/status/InfoIcon'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'

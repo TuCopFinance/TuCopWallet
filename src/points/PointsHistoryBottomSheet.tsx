@@ -10,7 +10,7 @@ import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { NotificationVariant } from 'src/components/InLineNotification'
 import SectionHead from 'src/components/SectionHead'
 import Toast from 'src/components/Toast'
-import { default as Attention, default as AttentionIcon } from 'src/icons/Attention'
+import { default as Attention, default as AttentionIcon } from 'src/icons/status/Attention'
 import LogoHeart from 'src/images/LogoHeart'
 import { HistoryCardMetadata, useGetHistoryDefinition } from 'src/points/cardDefinitions'
 import {

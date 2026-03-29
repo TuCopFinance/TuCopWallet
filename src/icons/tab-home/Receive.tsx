@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg'
-const ArrowVertical = ({ size = 25 }) => (
+const Receive = ({ size = 25 }) => (
   <Svg width={size} height={size} viewBox="0 0 26 26" fill="none">
     <G clip-path="url(#clip0_2117_148)">
       <Path
@@ -20,4 +20,4 @@ const ArrowVertical = ({ size = 25 }) => (
     </Defs>
   </Svg>
 )
-export default ArrowVertical
+export default Receive

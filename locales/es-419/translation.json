@@ -2941,6 +2941,7 @@
     "holdUSD": "Mantener dólares estadounidenses",
     "swapToUSD": "Intercambia tus divisas",
     "earn": "Haz crecer <0>tu dinero</0>",
+    "earnSimple": "Haz crecer tu dinero",
     "withdraw": "Retirar de tu billetera",
     "reFiColombiaSubsidies": {
       "button": "Reclama tu Subsidio",
@@ -3000,6 +3001,7 @@
     "gold": "Oro",
     "entrypoint": {
       "title": "Oro Digital",
+      "investTitle": "Invierte en Oro",
       "subtitle": "Compra y vende oro tokenizado"
     },
     "info": {
