@@ -296,7 +296,8 @@
   },
   "resolutions": {
     "redux": "^5.0.1",
-    "set-value": "^4.1.0"
+    "set-value": "^4.1.0",
+    "axios": "^1.8.2"
   },
   "detox": {
     "testRunner": {
