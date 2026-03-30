@@ -62,9 +62,12 @@ describe('groupFeedItemsInSections', () => {
       mockFeedItem(daysAgo(400)),
     ]
     const sections = groupFeedItemsInSections(standbyTransactions, feedItems)
-    expect(sections.length).toEqual(6)
+    // 8 sections: Pending, Saturday (day 3), Thursday (day 5), September, August, July, December 2018, August 2018
+    expect(sections.length).toEqual(8)
 
-    expect(sections[0].title).toEqual('feedSectionHeaderRecent')
+    // Pending transactions come first
+    expect(sections[0].title).toEqual('feedSectionHeaderPending')
+    expect(sections[0].data.length).toEqual(2)
     expect(sections[0].data).toEqual([
       expect.objectContaining({
         status: TransactionStatus.Pending,
@@ -72,27 +75,34 @@ describe('groupFeedItemsInSections', () => {
       expect.objectContaining({
         status: TransactionStatus.Pending,
       }),
-      expect.objectContaining({
-        status: TransactionStatus.Complete,
-      }),
-      expect.objectContaining({
-        status: TransactionStatus.Complete,
-      }),
     ])
 
-    expect(sections[1].title).toEqual('September')
+    // Day 3 (Saturday - Sept 14, 2019)
+    expect(sections[1].title).toEqual('Saturday')
     expect(sections[1].data.length).toEqual(1)
 
-    expect(sections[2].title).toEqual('August')
-    expect(sections[2].data.length).toEqual(3)
+    // Day 5 (Thursday - Sept 12, 2019)
+    expect(sections[2].title).toEqual('Thursday')
+    expect(sections[2].data.length).toEqual(1)
 
-    expect(sections[3].title).toEqual('July')
+    // Day 15 (September - beyond 7 days, same month)
+    expect(sections[3].title).toEqual('September')
     expect(sections[3].data.length).toEqual(1)
 
-    expect(sections[4].title).toEqual('December 2018')
-    expect(sections[4].data.length).toEqual(1)
+    // Days 20, 30, 30 (August)
+    expect(sections[4].title).toEqual('August')
+    expect(sections[4].data.length).toEqual(3)
 
-    expect(sections[5].title).toEqual('August 2018')
+    // Day 50 (July)
+    expect(sections[5].title).toEqual('July')
     expect(sections[5].data.length).toEqual(1)
+
+    // Day 275 (December 2018)
+    expect(sections[6].title).toEqual('December 2018')
+    expect(sections[6].data.length).toEqual(1)
+
+    // Day 400 (August 2018)
+    expect(sections[7].title).toEqual('August 2018')
+    expect(sections[7].data.length).toEqual(1)
   })
 })
