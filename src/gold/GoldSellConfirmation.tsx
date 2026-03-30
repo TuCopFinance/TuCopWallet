@@ -131,7 +131,7 @@ export default function GoldSellConfirmation({ route }: Props) {
       }
     }
 
-    fetchQuote()
+    void fetchQuote()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toToken, xaut0Token, xautAmount])
 
@@ -284,7 +284,7 @@ export default function GoldSellConfirmation({ route }: Props) {
                   : t('goldFlow.sell.estimatingFee')}
             </Text>
           </View>
-          {swapProvider && (
+          {!!swapProvider && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{t('goldFlow.sell.swapProvider')}</Text>
               <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
