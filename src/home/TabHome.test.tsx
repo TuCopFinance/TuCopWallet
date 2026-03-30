@@ -65,6 +65,14 @@ jest.mock('src/fiatExchanges/utils', () => ({
   fetchProviders: jest.fn(),
 }))
 
+jest.mock('src/tokens/hooks', () => ({
+  ...jest.requireActual('src/tokens/hooks'),
+  useUSDT: () => ({
+    tokenId: 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb',
+    symbol: 'USDT',
+  }),
+}))
+
 describe('TabHome', () => {
   const mockFetch = fetch as FetchMock
 
@@ -143,8 +151,10 @@ describe('TabHome', () => {
     const { getByTestId } = renderScreen()
 
     fireEvent.press(getByTestId('FlatCard/AddCOPm'))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeCurrencyBottomSheet, {
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
+      tokenId: 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb',
       flow: 'CashIn',
+      tokenSymbol: 'USDT',
     })
   })
 
