@@ -2934,12 +2934,14 @@
     "spendMoney": "Spend Money",
     "holdUSD": "Hold US Dollars",
     "swapToUSD": "Swap your COPm for USDT",
+    "swapSubtitle": "Pesos/Dollars",
     "withdraw": "Withdraw From Your Wallet",
     "earn": "Earn with your COPm or USDT",
     "earnSimple": "Grow your money",
+    "earnSubtitle": "Invest in Pesos and Dollars",
     "reFiColombiaSubsidies": {
       "button": "Claim your Subsidy",
-      "subtitle": "from ReFi Colombia"
+      "subtitle": "ReFi Colombia Program"
     },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "From My USDT Balance",
@@ -2958,7 +2960,7 @@
   "ubiClaimError": "Error processing UBI subsidy claim. Please try again",
   "insufficientFundsForGas": "Insufficient funds to pay for gas fees",
   "reFiColombiaSubsidies": {
-    "title": "Claim your ReFi Colombia Subsidy",
+    "title": "Claim your Subsidy",
     "subtitle": "Subsidies Program",
     "checking": {
       "title": "Checking your eligibility...",
@@ -2972,7 +2974,9 @@
     "notEligible": {
       "title": "You are not eligible to receive the ReFi Colombia subsidy",
       "description": "Your wallet address is not registered as a beneficiary of the ReFi Colombia program.",
-      "contact": "If you believe this is an error, contact the ReFi Colombia team."
+      "applyButton": "Apply for the Subsidy",
+      "applyDisclaimer": "Application is subject to approval at ReFi Colombia's discretion",
+      "contact": "If you believe this is an error, contact the ReFi Colombia team"
     },
     "eligible": {
       "congratulations": "Congratulations!",
@@ -3035,8 +3039,8 @@
     "gold": "Gold",
     "entrypoint": {
       "title": "Digital Gold",
-      "investTitle": "Invest in Gold",
-      "subtitle": "Buy and sell tokenized gold"
+      "investTitle": "Invest in Digital Gold",
+      "subtitle": "XAUt0 by Tether"
     },
     "info": {
       "title": "Digital Gold",
