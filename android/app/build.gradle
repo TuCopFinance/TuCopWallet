@@ -385,5 +385,13 @@ configurations.all {
       if (dependency.requested.group == 'org.bouncycastle') {
         dependency.useTarget 'org.bouncycastle:bcprov-jdk15to18:1.69'
       }
+      // Force CameraX 1.4.0 for 16KB page size support
+      if (dependency.requested.group == 'androidx.camera') {
+        dependency.useVersion '1.4.0'
+      }
+      // Force Persona SDK components to 16KB-compliant versions
+      if (dependency.requested.group == 'com.withpersona.sdk2') {
+        dependency.useVersion '2.19.0'
+      }
   }
 }
