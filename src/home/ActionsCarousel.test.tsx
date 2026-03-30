@@ -5,12 +5,22 @@ import { MockStoreEnhanced } from 'redux-mock-store'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { HomeEvents } from 'src/analytics/Events'
 import * as config from 'src/config'
-import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
+import { CICOFlow } from 'src/fiatExchanges/utils'
 import ActionsCarousel from 'src/home/ActionsCarousel'
 import { HomeActionName } from 'src/home/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { createMockStore } from 'test/utils'
+
+const mockUSDTToken = {
+  tokenId: 'celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e',
+  symbol: 'USDT',
+}
+
+jest.mock('src/tokens/hooks', () => ({
+  ...jest.requireActual('src/tokens/hooks'),
+  useUSDT: () => mockUSDTToken,
+}))
 
 const mockConfig = jest.mocked(config)
 const originalEnabledQuickActions = config.ENABLED_QUICK_ACTIONS
@@ -98,8 +108,10 @@ describe('ActionsCarousel', () => {
     ).toBeTruthy()
 
     fireEvent.press(getByTestId(`HomeActionTouchable-${HomeActionName.Add}`))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeCurrencyBottomSheet, {
-      flow: FiatExchangeFlow.CashIn,
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
+      tokenId: mockUSDTToken.tokenId,
+      flow: CICOFlow.CashIn,
+      tokenSymbol: mockUSDTToken.symbol,
     })
 
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
