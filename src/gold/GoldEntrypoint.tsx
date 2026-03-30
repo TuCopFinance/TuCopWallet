@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, StyleSheet, Text, View } from 'react-native'
-import { getNumberFormatSettings } from 'react-native-localize'
 import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
-import { hideWalletBalancesSelector } from 'src/app/selectors'
 import Touchable from 'src/components/Touchable'
 import { goldPriceUsdSelector, hasSeenGoldInfoSelector } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
@@ -25,10 +23,8 @@ const PRICE_REFRESH_INTERVAL = 60000 // 60 seconds
 export default function GoldEntrypoint() {
   const { t } = useTranslation()
   const dispatch = useDispatch()
-  const { decimalSeparator } = getNumberFormatSettings()
 
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
-  const hideWalletBalances = useSelector(hideWalletBalancesSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
 
@@ -64,11 +60,11 @@ export default function GoldEntrypoint() {
     return new BigNumber(goldPriceUsd).multipliedBy(usdToLocalRate)
   }, [goldPriceUsd, usdToLocalRate])
 
+  // Gold price is public market data, should NOT be hidden when user hides balances
   const priceDisplay = React.useMemo(() => {
-    if (hideWalletBalances) return `XX${decimalSeparator}XX`
     if (!localPrice) return '--'
     return localPrice.toFormat(2)
-  }, [hideWalletBalances, localPrice, decimalSeparator])
+  }, [localPrice])
 
   return (
     <Shadow style={styles.shadow} offset={[0, 4]} startColor="rgba(190, 201, 255, 0.28)">
@@ -85,8 +81,9 @@ export default function GoldEntrypoint() {
             </View>
             <View style={styles.cardTextContainer}>
               <Text style={styles.title}>{t('goldFlow.entrypoint.investTitle')}</Text>
+              <Text style={styles.brandText}>{t('goldFlow.entrypoint.subtitle')}</Text>
               <Text style={styles.subtitle} numberOfLines={1} adjustsFontSizeToFit>
-                {!hideWalletBalances && localCurrencySymbol}
+                {localCurrencySymbol}
                 {priceDisplay}
                 <Text style={styles.unit}> / oz</Text>
               </Text>
@@ -141,6 +138,11 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldSmall,
     color: Colors.gray6,
     letterSpacing: -0.16,
+  },
+  brandText: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray5,
+    marginBottom: 2,
   },
   subtitle: {
     ...typeScale.bodyXSmall,
