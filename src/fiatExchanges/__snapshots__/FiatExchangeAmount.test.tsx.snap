@@ -56,7 +56,7 @@ exports[`FiatExchangeAmount cashIn renders correctly with COP as app currency 1`
           keyboardType="decimal-pad"
           multiline={false}
           onChangeText={[Function]}
-          placeholder="COP$0"
+          placeholder="US$0"
           placeholderTextColor="#757575"
           style={
             [
