@@ -29,7 +29,7 @@ import Receive from 'src/icons/tab-home/Receive'
 import Recharge from 'src/icons/tab-home/Recharge'
 import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
-import PesosDollarsIcon from 'src/icons/tokens/PesosDollarsIcon'
+import Grow from 'src/icons/tab-home/Grow'
 import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
@@ -275,6 +275,7 @@ function TabHome(_props: Props) {
                 </View>
                 <View style={styles.cardTextBox}>
                   <Text style={styles.cardText}>{t('tabHome.swapToUSD')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
@@ -292,10 +293,11 @@ function TabHome(_props: Props) {
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
               <View style={styles.cardRow}>
                 <View style={styles.cardIconBox}>
-                  <PesosDollarsIcon size={40} />
+                  <Grow size={25} />
                 </View>
                 <View style={styles.cardTextBox}>
                   <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
