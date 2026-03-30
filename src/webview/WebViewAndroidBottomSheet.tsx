@@ -50,9 +50,9 @@ export function WebViewAndroidBottomSheet({
         >
           <Text style={styles.bottomSheetText}>{t('webView.openExternal')}</Text>
         </Pressable>
-        <Pressable 
+        <Pressable
           style={styles.pressable}
-          onPress={onClose} 
+          onPress={onClose}
           android_ripple={{ color: Colors.gray2, borderless: false }}
         >
           <Text style={styles.bottomSheetText}>{t('dismiss')}</Text>

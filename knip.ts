@@ -22,13 +22,20 @@ const config: KnipConfig = {
     'jest-snapshot',
     'lint-staged', // pre-commit hook
     'lokijs', // walletconnect e2e tests requires
-    'react-devtools', // application profiling
     'react-native-version',
     'react-native-kill-packager',
     'remote-redux-devtools', // for easy debugging with Flipper
     'typescript-json-schema', // helps manage redux state migrations
     '@segment/sovran-react-native', // required for react-native-segment
+    '@segment/analytics-react-native-plugin-adjust', // segment plugin
+    '@segment/analytics-react-native-plugin-clevertap', // segment plugin
+    '@segment/analytics-react-native-plugin-destination-filters', // segment plugin
+    '@segment/analytics-react-native-plugin-firebase', // segment plugin
     'react-native-adjust', // required for @segment/analytics-react-native-plugin-adjust
+    'react-native-vector-icons', // used via react-native-dropdown-picker
+    '@react-native-community/cli', // react-native cli tooling
+    '@sentry/types', // type definitions for sentry
+    'react-native-svg-mock', // test mocking
     '@types/jest',
     'husky',
   ],

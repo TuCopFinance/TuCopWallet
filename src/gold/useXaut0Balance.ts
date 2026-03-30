@@ -52,7 +52,7 @@ export function useXaut0Balance() {
       }
     }
 
-    fetchBalance()
+    void fetchBalance()
   }, [walletAddress])
 
   const refetch = async () => {
