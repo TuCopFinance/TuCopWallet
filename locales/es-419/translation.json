@@ -2944,12 +2944,14 @@
     "spendMoney": "Gasta",
     "holdUSD": "Mantener dólares estadounidenses",
     "swapToUSD": "Intercambia tus divisas",
+    "swapSubtitle": "Pesos/Dólares",
     "earn": "Haz crecer <0>tu dinero</0>",
     "earnSimple": "Haz crecer tu dinero",
+    "earnSubtitle": "Invierte en Pesos y Dólares",
     "withdraw": "Retirar de tu billetera",
     "reFiColombiaSubsidies": {
       "button": "Reclama tu Subsidio",
-      "subtitle": "Patrocinado por ReFi Colombia"
+      "subtitle": "Programa de ReFi Colombia"
     },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
@@ -2959,7 +2961,7 @@
     }
   },
   "reFiColombiaSubsidies": {
-    "title": "Reclama tu Subsidio de ReFi Colombia",
+    "title": "Reclama tu Subsidio",
     "subtitle": "Programa de Subsidios ReFi Colombia",
     "checking": {
       "title": "Verificando tu elegibilidad...",
@@ -2973,7 +2975,9 @@
     "notEligible": {
       "title": "No eres elegible para recibir el subsidio de ReFi Colombia",
       "description": "Tu dirección de wallet no está registrada como beneficiaria del programa de ReFi Colombia.",
-      "contact": "Si crees que esto es un error, contacta al equipo de ReFi Colombia."
+      "applyButton": "Postularte para el Subsidio",
+      "applyDisclaimer": "La postulación está sujeta a aprobación a discreción de ReFi Colombia",
+      "contact": "Si crees que esto es un error, contacta al equipo de ReFi Colombia"
     },
     "eligible": {
       "congratulations": "¡Felicidades!",
@@ -3005,8 +3009,8 @@
     "gold": "Oro",
     "entrypoint": {
       "title": "Oro Digital",
-      "investTitle": "Invierte en Oro",
-      "subtitle": "Compra y vende oro tokenizado"
+      "investTitle": "Invierte en Oro Digital",
+      "subtitle": "XAUt0 by Tether"
     },
     "info": {
       "title": "Oro Digital",

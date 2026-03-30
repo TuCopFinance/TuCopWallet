@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
@@ -173,7 +173,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
           <Celebration size={48} color={Colors.error} />
           <Text style={styles.errorTitle}>{t('reFiColombiaSubsidies.error.title')}</Text>
           <Text style={styles.errorText}>{t('reFiColombiaSubsidies.error.description')}</Text>
-          {!!debugInfo && (
+          {!!debugInfo && __DEV__ && (
             <View style={styles.debugContainer}>
               <Text style={styles.debugTitle}>Debug Info:</Text>
               <Text style={styles.debugText}>{debugInfo}</Text>
@@ -191,6 +191,14 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     }
 
     if (!ubiStatus.isBeneficiary) {
+      const handleApplyForSubsidy = () => {
+        void Linking.openURL('https://tinyurl.com/SubsidiosReFiCol')
+      }
+
+      const handleContactReFi = () => {
+        void Linking.openURL('https://linktr.ee/reficolombia')
+      }
+
       return (
         <View style={styles.notEligibleContainer}>
           <View style={styles.notEligibleCard}>
@@ -201,8 +209,20 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             <Text style={styles.notEligibleDescription}>
               {t('reFiColombiaSubsidies.notEligible.description')}
             </Text>
-            <Text style={styles.contactInfo}>{t('reFiColombiaSubsidies.notEligible.contact')}</Text>
-            {!!debugInfo && (
+            <Button
+              onPress={handleApplyForSubsidy}
+              text={t('reFiColombiaSubsidies.notEligible.applyButton')}
+              type={BtnTypes.PRIMARY}
+              size={BtnSizes.FULL}
+              style={styles.applyButton}
+            />
+            <Text style={styles.applyDisclaimer}>
+              {t('reFiColombiaSubsidies.notEligible.applyDisclaimer')}
+            </Text>
+            <Text style={styles.contactInfo} onPress={handleContactReFi}>
+              {t('reFiColombiaSubsidies.notEligible.contact')}
+            </Text>
+            {!!debugInfo && __DEV__ && (
               <View style={styles.debugContainer}>
                 <Text style={styles.debugTitle}>Debug Info:</Text>
                 <Text style={styles.debugText}>{debugInfo}</Text>
@@ -509,9 +529,20 @@ const styles = StyleSheet.create({
   },
   contactInfo: {
     ...typeScale.bodySmall,
-    color: Colors.gray3,
+    color: Colors.primary,
     textAlign: 'center',
     fontStyle: 'italic',
+    textDecorationLine: 'underline',
+  },
+  applyButton: {
+    marginTop: Spacing.Regular16,
+    marginBottom: Spacing.Smallest8,
+  },
+  applyDisclaimer: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray3,
+    textAlign: 'center',
+    marginBottom: Spacing.Regular16,
   },
   alreadyClaimedContainer: {
     alignItems: 'center',
