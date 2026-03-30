@@ -52,7 +52,7 @@ describe('TokenDetails', () => {
 
     expect(getByTestId('TokenDetails/TitleImage')).toBeTruthy()
     expect(getByTestId('TokenDetails/Title')).toHaveTextContent('Poof Governance Token')
-    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('COP$0.13')
+    expect(getByTestId('TokenDetails/AssetValue')).toHaveTextContent('COP$0.67')
     expect(getByText('tokenDetails.yourBalance')).toBeTruthy()
     expect(getByTestId('TokenBalanceItem')).toBeTruthy()
     expect(queryByTestId('TokenDetails/LearnMore')).toBeFalsy()
