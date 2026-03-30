@@ -275,6 +275,7 @@ function TabHome(_props: Props) {
                 </View>
                 <View style={styles.cardTextBox}>
                   <Text style={styles.cardText}>{t('tabHome.swapToUSD')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
@@ -296,6 +297,7 @@ function TabHome(_props: Props) {
                 </View>
                 <View style={styles.cardTextBox}>
                   <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
