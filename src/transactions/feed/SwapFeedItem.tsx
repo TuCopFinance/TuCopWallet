@@ -86,26 +86,12 @@ function SwapFeedItem({ transaction }: Props) {
           hideNetworkIcon={isCrossChainSwap}
         />
         <View style={styles.contentContainer}>
-          <Text style={styles.title} testID={'SwapFeedItem/title'} numberOfLines={1}>
-            {t('swapScreen.title')}
-          </Text>
-          <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
-            {isCrossChainSwap
-              ? t('transactionFeed.crossChainSwapTransactionLabel')
-              : t('feedItemSwapPath', {
-                  token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                  token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                })}
-          </Text>
-          <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
-            {formattedTime}
-          </Text>
-        </View>
-        <View style={styles.tokenAmountContainer}>
-          {
-            // for cross chain swaps specifically, the inAmount value is empty
-            // until the transaction is completed on the destination network
-            !new BigNumber(transaction.inAmount.value).isNaN() && (
+          {/* Row 1: Title + Incoming Amount */}
+          <View style={styles.row}>
+            <Text style={styles.title} testID={'SwapFeedItem/title'} numberOfLines={1}>
+              {t('feedItemSwapTitle')}
+            </Text>
+            {!new BigNumber(transaction.inAmount.value).isNaN() && (
               <TokenDisplay
                 amount={transaction.inAmount.value}
                 tokenId={transaction.inAmount.tokenId}
@@ -116,18 +102,32 @@ function SwapFeedItem({ transaction }: Props) {
                 style={styles.amount}
                 testID={'SwapFeedItem/incomingAmount'}
               />
-            )
-          }
-
-          <TokenDisplay
-            amount={-transaction.outAmount.value}
-            tokenId={transaction.outAmount.tokenId}
-            showLocalAmount={false}
-            showSymbol={true}
-            hideSign={false}
-            style={styles.tokenAmount}
-            testID={'SwapFeedItem/outgoingAmount'}
-          />
+            )}
+          </View>
+          {/* Row 2: Subtitle + Outgoing Amount */}
+          <View style={styles.row}>
+            <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
+              {isCrossChainSwap
+                ? t('transactionFeed.crossChainSwapTransactionLabel')
+                : t('feedItemSwapPath', {
+                    token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                    token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                  })}
+            </Text>
+            <TokenDisplay
+              amount={-transaction.outAmount.value}
+              tokenId={transaction.outAmount.tokenId}
+              showLocalAmount={false}
+              showSymbol={true}
+              hideSign={false}
+              style={styles.tokenAmount}
+              testID={'SwapFeedItem/outgoingAmount'}
+            />
+          </View>
+          {/* Row 3: Timestamp */}
+          <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
+            {formattedTime}
+          </Text>
         </View>
       </View>
     </Touchable>
@@ -137,7 +137,7 @@ function SwapFeedItem({ transaction }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flex: 1,
     paddingVertical: Spacing.Small12,
     paddingHorizontal: variables.contentPadding,
@@ -146,31 +146,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: variables.contentPadding,
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   timestamp: {
     ...typeScale.bodyXXSmall,
-    color: colors.gray4,
+    color: colors.gray3,
     marginTop: 2,
   },
   title: {
     ...typeScale.labelMedium,
+    flex: 1,
   },
   subtitle: {
     ...typeScale.bodySmall,
-    color: colors.gray4,
-  },
-  tokenAmountContainer: {
-    maxWidth: '50%',
+    color: colors.gray3,
+    flex: 1,
   },
   amount: {
     ...typeScale.labelMedium,
     color: colors.accent,
-    flexWrap: 'wrap',
     textAlign: 'right',
   },
   tokenAmount: {
     ...typeScale.bodySmall,
-    color: colors.gray4,
-    flexWrap: 'wrap',
+    color: colors.gray3,
     textAlign: 'right',
   },
 })
