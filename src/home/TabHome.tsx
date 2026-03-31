@@ -33,16 +33,17 @@ import Grow from 'src/icons/tab-home/Grow'
 import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { importContacts } from 'src/identity/actions'
 import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
+import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
-import { Inter, typeScale } from 'src/styles/fonts'
+import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCOPm, useTotalTokenBalance, useUSDT } from 'src/tokens/hooks'
+import { useCOPm, useTotalBalanceWithInvestments, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
@@ -180,10 +181,13 @@ function TabHome(_props: Props) {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const { decimalSeparator } = getNumberFormatSettings()
 
-  const totalTokenBalanceLocal = useTotalTokenBalance()
-  const balanceDisplay = hideWalletBalances
-    ? `XX${decimalSeparator}XX`
-    : totalTokenBalanceLocal?.toFormat(2)
+  // Get gold balance from blockchain
+  const { balance: goldBalance } = useXaut0Balance()
+
+  // Get total balance including investments (centralized calculation)
+  const { totalBalance } = useTotalBalanceWithInvestments(goldBalance)
+
+  const balanceDisplay = hideWalletBalances ? `XX${decimalSeparator}XX` : totalBalance.toFormat(2)
 
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
@@ -584,11 +588,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   actionButtonText: {
+    ...typeScale.bodyXSmall,
     textAlign: 'center',
-    fontSize: 12,
     lineHeight: 20,
     letterSpacing: -0.12,
-    fontFamily: Inter.Regular,
   },
   // iconContainer: {
   //   width: 56,
@@ -630,13 +633,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   cardText: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.gray6,
+    ...typeScale.labelMedium,
+    color: Colors.black,
     textAlign: 'right',
   },
   cardSubText: {
-    ...typeScale.bodyXSmall,
-    color: Colors.gray4,
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
     textAlign: 'right',
     marginTop: 2,
   },

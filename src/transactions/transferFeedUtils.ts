@@ -71,15 +71,10 @@ export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boo
   const rewardsSenders = useSelector(rewardsSendersSelector)
   const inviteRewardSenders = useSelector(inviteRewardsSendersSelector)
   const txHashToFeedInfo = useSelector(txHashToFeedInfoSelector)
-  const tokenInfo = useTokenInfoByAddress(transfer.amount.tokenAddress)
   const coinbasePaySenders = useSelector(coinbasePaySendersSelector)
   const fcTransferDisplayInfo = useFiatConnectTransferDisplayInfo(transfer)
 
-  const {
-    type,
-    address,
-    metadata: { subtitle: subtitleContent },
-  } = transfer
+  const { type, address } = transfer
 
   const recipient = useTransactionRecipient(transfer)
 
@@ -96,11 +91,8 @@ export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boo
         title = t('feedItemJumpstartTitle')
         subtitle = t('feedItemJumpstartSentSubtitle')
       } else {
-        title = t('feedItemSentTitle', { displayName })
-        subtitle = t('feedItemSentInfo', {
-          context: !subtitleContent ? 'noComment' : null,
-          subtitleContent,
-        })
+        title = t('feedItemSentTitle')
+        subtitle = t('feedItemSentInfo', { displayName })
       }
       break
     }
@@ -126,23 +118,17 @@ export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boo
         subtitle = t('feedItemInviteRewardReceivedInfo')
         Object.assign(recipient, { thumbnailPath: CELO_LOGO_URL })
       } else if (providerInfo) {
-        title = t('feedItemReceivedTitle', { displayName })
-        subtitle = t('tokenDeposit', { token: tokenInfo?.symbol ?? '' })
+        title = t('feedItemReceivedTitle')
+        subtitle = t('feedItemReceivedInfo', { displayName })
       } else if (isCoinbasePaySender) {
         title = t('feedItemDepositTitle')
-        subtitle = t('feedItemReceivedInfo', {
-          context: !subtitleContent ? 'noComment' : null,
-          subtitleContent,
-        })
+        subtitle = t('feedItemReceivedInfo', { displayName })
       } else if (isJumpstart) {
         title = t('feedItemJumpstartTitle')
         subtitle = t('feedItemJumpstartReceivedSubtitle')
       } else {
-        title = t('feedItemReceivedTitle', { displayName })
-        subtitle = t('feedItemReceivedInfo', {
-          context: !subtitleContent ? 'noComment' : null,
-          subtitleContent,
-        })
+        title = t('feedItemReceivedTitle')
+        subtitle = t('feedItemReceivedInfo', { displayName })
       }
       break
     }

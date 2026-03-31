@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { Shadow } from 'react-native-shadow-2'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
+import SectionHead from 'src/components/SectionHead'
 import { HideBalanceButton } from 'src/components/TokenBalance'
+import Touchable from 'src/components/Touchable'
+import GoldIconSelector from 'src/gold/GoldIconSelector'
+import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import { refreshAllBalances } from 'src/home/actions'
 import { FlatCard } from 'src/home/TabHome'
 import i18n from 'src/i18n'
@@ -15,12 +19,13 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useTotalTokenBalance } from 'src/tokens/hooks'
+import { useTotalBalanceWithInvestments } from 'src/tokens/hooks'
 import { COPmFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
 import Grow from 'src/icons/tab-home/Grow'
+import networkConfig from 'src/web3/networkConfig'
 
 function TabWallet() {
   const dispatch = useDispatch()
@@ -38,14 +43,23 @@ function TabWallet() {
   const { t } = useTranslation()
 
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
-  const tokens = useSelector((state) => COPmFirstTokensListSelector(state, supportedNetworkIds))
+  const allTokens = useSelector((state) => COPmFirstTokensListSelector(state, supportedNetworkIds))
 
-  Logger.info('TOKEN', tokens)
+  // Filter out XAUt0 from regular tokens (it will be shown in investments section)
+  const regularTokens = useMemo(() => {
+    return allTokens.filter((token) => token.tokenId !== networkConfig.xaut0TokenId)
+  }, [allTokens])
+
+  // Get gold balance directly from blockchain
+  const { balance: goldBalance } = useXaut0Balance()
+
+  // Get total balance including investments (centralized calculation)
+  const { totalBalance, goldLocalValue } = useTotalBalanceWithInvestments(goldBalance)
+
+  Logger.info('TOKEN', allTokens)
   Logger.info('supportedNetworkIds', supportedNetworkIds)
-  const totalTokenBalanceLocal = useTotalTokenBalance()
-  const balanceDisplay = hideWalletBalances
-    ? `XX${decimalSeparator}XX`
-    : totalTokenBalanceLocal?.toFormat(2)
+
+  const balanceDisplay = hideWalletBalances ? `XX${decimalSeparator}XX` : totalBalance.toFormat(2)
 
   function onPressEarn() {
     navigate(Screens.EarnHome)
@@ -81,22 +95,46 @@ function TabWallet() {
               startColor="rgba(190, 201, 255, 0.28)"
             >
               <View>
-                {tokens.map((token, index) => (
+                {/* Money Section - Pesos & Dollars */}
+                <SectionHead text={t('assets.yourMoney')} style={styles.sectionHeaderFirst} />
+                {regularTokens.map((token, index) => (
                   <TokenBalanceItem
                     token={token}
                     key={index}
                     onPress={() => {
                       navigate(Screens.TokenDetails, { tokenId: token.tokenId })
-                      // AppAnalytics.track(AssetsEvents.tap_asset, {
-                      //   ...getTokenAnalyticsProps(token),
-                      //   title: token.symbol,
-                      //   description: token.name,
-                      //   assetType: 'token',
-                      // })
                     }}
                     hideBalances={hideWalletBalances}
                   />
                 ))}
+
+                {/* Investments Section - Gold */}
+                <SectionHead text={t('assets.yourInvestments')} style={styles.sectionHeader} />
+                <Touchable onPress={() => navigate(Screens.GoldHome)} testID="GoldBalanceItem">
+                  <View style={styles.goldItem}>
+                    <GoldIconSelector size={32} />
+                    <View style={styles.goldTextContainer}>
+                      <View>
+                        <Text style={styles.goldLabel}>{t('assets.gold')}</Text>
+                      </View>
+                      <View style={styles.goldBalanceContainer}>
+                        {!hideWalletBalances ? (
+                          <>
+                            <Text style={styles.goldBalance}>{goldBalance.toFormat(6)} Oro</Text>
+                            {goldLocalValue && (
+                              <Text style={styles.goldLocalValue}>
+                                {localCurrencySymbol}
+                                {goldLocalValue.toFormat(2)}
+                              </Text>
+                            )}
+                          </>
+                        ) : (
+                          <Text style={styles.goldBalance}>••••••</Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                </Touchable>
               </View>
 
               <View style={{ marginHorizontal: 20 }}>
@@ -161,9 +199,49 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   ctaText: {
-    ...typeScale.bodySmall,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.gray6,
-    letterSpacing: -0.16,
+  },
+  sectionHeaderFirst: {
+    marginTop: 0,
+    paddingVertical: 0,
+    paddingHorizontal: Spacing.Thick24,
+    marginBottom: Spacing.Smallest8,
+  },
+  sectionHeader: {
+    marginTop: Spacing.Regular16,
+    marginBottom: Spacing.Smallest8,
+    paddingVertical: 0,
+    paddingHorizontal: Spacing.Thick24,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+    paddingTop: Spacing.Regular16,
+  },
+  goldItem: {
+    marginHorizontal: Spacing.Thick24,
+    marginVertical: Spacing.Regular16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.Small12,
+  },
+  goldTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  goldLabel: {
+    ...typeScale.labelMedium,
+  },
+  goldBalanceContainer: {
+    alignItems: 'flex-end',
+  },
+  goldBalance: {
+    ...typeScale.labelMedium,
+  },
+  goldLocalValue: {
+    ...typeScale.bodyXXSmall,
+    color: Colors.gray3,
   },
 })
 

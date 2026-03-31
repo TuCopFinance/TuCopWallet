@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.Smallest8,
   },
   arrowText: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.gray3,
   },
   detailsCard: {

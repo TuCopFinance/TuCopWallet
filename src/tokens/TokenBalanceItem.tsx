@@ -47,58 +47,52 @@ export const TokenBalanceItem = ({
     <View style={[styles.container, containerStyle]} testID="TokenBalanceItem">
       <TokenIcon token={token} />
       <View style={styles.textContainer}>
-        <View style={styles.line}>
-          <View style={styles.row}>
-            <Text
-              numberOfLines={1}
-              style={styles.label}
-              testID={`${testIdPrefix}${token.symbol}Symbol`}
-            >
-              {getTokenName(token)}
-            </Text>
-            {showPriceUsdUnavailableWarning && !token.priceUsd && <Warning size={16} />}
-          </View>
-          {!hideBalances && (
-            <TokenDisplay
-              style={styles.amount}
-              amount={token.balance}
-              tokenId={token.tokenId}
-              showSymbol={true}
-              hideSign={true}
-              showLocalAmount={false}
-              testID={`${token.symbol}Balance`}
-            />
+        <View style={styles.row}>
+          <Text
+            numberOfLines={1}
+            style={styles.label}
+            testID={`${testIdPrefix}${token.symbol}Symbol`}
+          >
+            {getTokenName(token)}
+          </Text>
+          {showPriceUsdUnavailableWarning && !token.priceUsd && <Warning size={16} />}
+        </View>
+        <View style={styles.balanceContainer}>
+          {!hideBalances ? (
+            <>
+              <TokenDisplay
+                style={styles.amount}
+                amount={token.balance}
+                tokenId={token.tokenId}
+                showSymbol={true}
+                hideSign={true}
+                showLocalAmount={false}
+                testID={`${token.symbol}Balance`}
+              />
+              <TokenDisplay
+                style={styles.subAmount}
+                amount={token.balance}
+                tokenId={token.tokenId}
+                showSymbol={false}
+                hideSign={true}
+                showLocalAmount={true}
+                errorFallback={balanceUsdErrorFallback}
+              />
+            </>
+          ) : (
+            <Text style={styles.amount}>••••••</Text>
           )}
         </View>
-        {/* <View style={styles.line}>
-          {token.networkId in NETWORK_NAMES ? (
-            <Text numberOfLines={1} style={styles.subLabel} testID="NetworkLabel">
-              {t('assets.balanceInLocalAmount')}
-            </Text>
-          ) : (
-            <View />
-          )}
-          {!hideBalances && (
-            <TokenDisplay
-              style={styles.subAmount}
-              amount={token.balance}
-              tokenId={token.tokenId}
-              showSymbol={false}
-              hideSign={true}
-              errorFallback={balanceUsdErrorFallback}
-            />
-          )}
-        </View> */}
-        {!!token.bridge && (
-          <Text
-            testID="BridgeLabel"
-            numberOfLines={1}
-            style={[styles.subLabel, { color: colors.infoDark }]}
-          >
-            {t('assets.bridge', { bridge: token.bridge })}
-          </Text>
-        )}
       </View>
+      {!!token.bridge && (
+        <Text
+          testID="BridgeLabel"
+          numberOfLines={1}
+          style={[styles.subLabel, { color: colors.infoDark }]}
+        >
+          {t('assets.bridge', { bridge: token.bridge })}
+        </Text>
+      )}
     </View>
   )
 
@@ -120,19 +114,15 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: Spacing.Small12,
   },
-  line: {
+  textContainer: {
+    flex: 1,
     flexDirection: 'row',
-    alignSelf: 'flex-end',
     justifyContent: 'space-between',
-    width: '100%',
-    gap: Spacing.Smallest8,
+    alignItems: 'center',
   },
-  amount: {
-    ...typeScale.labelMedium,
-  },
-  subAmount: {
-    ...typeScale.bodySmall,
-    color: colors.gray3,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   label: {
     ...typeScale.labelMedium,
@@ -140,19 +130,20 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     marginRight: Spacing.Smallest8,
   },
+  balanceContainer: {
+    alignItems: 'flex-end',
+  },
+  amount: {
+    ...typeScale.labelMedium,
+  },
+  subAmount: {
+    ...typeScale.bodyXXSmall,
+    color: colors.gray3,
+  },
   subLabel: {
     ...typeScale.bodySmall,
     overflow: 'hidden',
     flexShrink: 1,
     color: colors.gray3,
-  },
-  textContainer: {
-    flex: 1,
-    gap: 2,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
   },
 })
