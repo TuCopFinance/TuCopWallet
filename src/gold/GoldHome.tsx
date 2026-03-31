@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   priceValue: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.black,
   },
   priceUnit: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Regular16,
   },
   holdingsValue: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.black,
   },
   holdingsBalance: {
