@@ -68,18 +68,11 @@ function TransferFeedItem({ transfer }: Props) {
           networkId={transfer.networkId}
         />
         <View style={styles.contentContainer}>
-          <Text style={styles.title} testID={'TransferFeedItem/title'} numberOfLines={1}>
-            {title}
-          </Text>
-          <Text style={styles.subtitle} testID={'TransferFeedItem/subtitle'} numberOfLines={1}>
-            {subtitle}
-          </Text>
-          <Text style={styles.timestamp} testID={'TransferFeedItem/timestamp'}>
-            {formattedTime}
-          </Text>
-        </View>
-        {
-          <View style={styles.amountContainer}>
+          {/* Row 1: Title + Amount */}
+          <View style={styles.row}>
+            <Text style={styles.title} testID={'TransferFeedItem/title'} numberOfLines={1}>
+              {title}
+            </Text>
             <TokenDisplay
               amount={amount.value}
               tokenId={amount.tokenId}
@@ -89,6 +82,12 @@ function TransferFeedItem({ transfer }: Props) {
               style={[styles.amount, colorStyle]}
               testID={'TransferFeedItem/amount'}
             />
+          </View>
+          {/* Row 2: Subtitle + Token Amount */}
+          <View style={styles.row}>
+            <Text style={styles.subtitle} testID={'TransferFeedItem/subtitle'} numberOfLines={1}>
+              {subtitle}
+            </Text>
             <TokenDisplay
               amount={amount.value}
               tokenId={amount.tokenId}
@@ -99,7 +98,11 @@ function TransferFeedItem({ transfer }: Props) {
               testID={'TransferFeedItem/tokenAmount'}
             />
           </View>
-        }
+          {/* Row 3: Timestamp */}
+          <Text style={styles.timestamp} testID={'TransferFeedItem/timestamp'}>
+            {formattedTime}
+          </Text>
+        </View>
       </View>
     </Touchable>
   )
@@ -120,7 +123,7 @@ function isJumpstartTransaction(tx: TokenTransfer) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flex: 1,
     paddingVertical: Spacing.Small12,
     paddingHorizontal: variables.contentPadding,
@@ -129,31 +132,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: variables.contentPadding,
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   timestamp: {
     ...typeScale.bodyXXSmall,
-    color: colors.gray4,
+    color: colors.gray3,
     marginTop: 2,
-  },
-  amountContainer: {
-    maxWidth: '50%',
   },
   title: {
     ...typeScale.labelMedium,
+    flex: 1,
   },
   subtitle: {
     ...typeScale.bodySmall,
-    color: colors.gray4,
+    color: colors.gray3,
+    flex: 1,
   },
   amount: {
     ...typeScale.labelMedium,
     color: colors.black,
-    flexWrap: 'wrap',
     textAlign: 'right',
   },
   tokenAmount: {
     ...typeScale.bodySmall,
-    color: colors.gray4,
-    flexWrap: 'wrap',
+    color: colors.gray3,
     textAlign: 'right',
   },
 })
