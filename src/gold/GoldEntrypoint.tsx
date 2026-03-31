@@ -135,21 +135,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   title: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.gray6,
-    letterSpacing: -0.16,
+    ...typeScale.labelMedium,
+    color: Colors.black,
   },
   brandText: {
-    ...typeScale.bodyXSmall,
-    color: Colors.gray5,
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
     marginBottom: 2,
   },
   subtitle: {
-    ...typeScale.bodyXSmall,
-    color: Colors.gray4,
+    ...typeScale.bodyXXSmall,
+    color: Colors.gray3,
   },
   unit: {
-    ...typeScale.bodyXSmall,
-    color: Colors.gray4,
+    ...typeScale.bodyXXSmall,
+    color: Colors.gray3,
   },
 })

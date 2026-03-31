@@ -97,7 +97,7 @@ function BucksPayConfirm({ route }: Props) {
         <View style={styles.card}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>{t('buckspay.amountLabel')}</Text>
-            <Text style={styles.rowValue}>{amount} COPm</Text>
+            <Text style={styles.rowValue}>{amount} Pesos</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
