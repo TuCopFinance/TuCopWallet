@@ -123,9 +123,7 @@ describe('TransactionFeedV2', () => {
     expect(tree.getAllByTestId('TransferFeedItem').length).toBe(1)
     expect(
       within(tree.getByTestId('TransferFeedItem')).getByTestId('TransferFeedItem/title')
-    ).toHaveTextContent(
-      'feedItemReceivedTitle, {"displayName":"feedItemAddress, {\\"address\\":\\"0xd683...ea33\\"}"}'
-    )
+    ).toHaveTextContent('feedItemReceivedTitle')
   })
 
   it('renders correctly with completed standby transactions', async () => {
@@ -191,7 +189,11 @@ describe('TransactionFeedV2', () => {
     const tree = renderScreen()
 
     await waitFor(() =>
-      expect(tree.getByText('feedItemReceivedInfo, {"context":"noComment"}')).toBeTruthy()
+      expect(
+        tree.getByText(
+          'feedItemReceivedInfo, {"displayName":"feedItemAddress, {\\"address\\":\\"0xd683...ea33\\"}"}'
+        )
+      ).toBeTruthy()
     )
   })
 
