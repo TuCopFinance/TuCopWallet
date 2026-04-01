@@ -21,9 +21,9 @@ exports[`renders text 1`] = `
     style={
       {
         "color": "#666666",
-        "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 13,
-        "lineHeight": 16,
+        "fontFamily": "RedHatDisplaySemiBold",
+        "fontSize": 14,
+        "lineHeight": 20,
       }
     }
   >
