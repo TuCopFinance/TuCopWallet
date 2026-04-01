@@ -275,7 +275,7 @@ describe('TokenEnterAmount', () => {
         </Provider>
       )
 
-      expect(getByTestId('TokenEnterAmount/TokenName')).toHaveTextContent('CELO on Celo Sepolia')
+      expect(getByTestId('TokenEnterAmount/TokenName')).toHaveTextContent('CELO')
       expect(getByTestId('TokenEnterAmount/SwitchTokens')).toBeTruthy()
       expect(getByTestId('TokenEnterAmount/TokenSelect')).toBeTruthy()
       expect(getByTestId('TokenEnterAmount/TokenBalance')).toHaveTextContent(
