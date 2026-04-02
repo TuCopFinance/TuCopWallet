@@ -186,7 +186,7 @@ describe('EnterAmount', () => {
 
     expect(getByTestId('SendEnterAmount/TokenAmountInput')).toBeTruthy()
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('ETH')
-    expect(getByText('ETH on Ethereum Sepolia')).toBeTruthy()
+    expect(getByText('ETH')).toBeTruthy()
     expect(getByTestId('SendEnterAmount/ReviewButton')).toBeDisabled()
   })
 
@@ -408,12 +408,12 @@ describe('EnterAmount', () => {
     )
 
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('POOF')
-    expect(getByText('POOF on Celo Sepolia')).toBeTruthy()
+    expect(getByText('POOF')).toBeTruthy()
     fireEvent.press(getByTestId('SendEnterAmount/TokenSelect'))
     await waitFor(() => expect(getByText('Ether')).toBeTruthy())
     fireEvent.press(getByText('Ether'))
     expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('ETH')
-    expect(getByText('ETH on Ethereum Sepolia')).toBeTruthy()
+    expect(getByText('ETH')).toBeTruthy()
     expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
     expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.token_dropdown_opened, {
       currentNetworkId: NetworkId['celo-sepolia'],
@@ -847,7 +847,7 @@ describe('EnterAmount', () => {
       </Provider>
     )
     expect(queryByTestId('SendEnterAmount/Fee')).toBeFalsy()
-    expect(getByText('CELO on Celo Sepolia')).toBeTruthy()
+    expect(getByText('CELO')).toBeTruthy()
 
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '8')
     fireEvent.changeText(getByTestId('SendEnterAmount/TokenAmountInput'), '9')
