@@ -99,6 +99,7 @@ export enum Screens {
   TokenDetailsMoreActions = 'TokenDetailsMoreActions',
   TokenImport = 'TokenImport',
   TransactionDetailsScreen = 'TransactionDetailsScreen',
+  TransactionSuccessScreen = 'TransactionSuccessScreen',
   UpgradeScreen = 'UpgradeScreen',
   ValidateRecipientAccount = 'ValidateRecipientAccount',
   ValidateRecipientIntro = 'ValidateRecipientIntro',
