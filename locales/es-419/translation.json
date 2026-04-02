@@ -2686,7 +2686,6 @@
       "yieldRate": "Tasa de rendimiento (est.)",
       "apy": "{{apy}}%",
       "yieldRateV2": "Tasa de interés m.v."
-
     },
     "collect": {
       "title": "¡Felicidades! Revisa y recoge tus ganancias",
@@ -2898,7 +2897,7 @@
       "balance": "Balance"
     },
     "myStakes": {
-     "stakeTitle": "Stake #{{index}}",
+      "stakeTitle": "Stake #{{index}}",
       "amount": "Cantidad",
       "startDate": "Fecha de Inicio",
       "endDate": "Fecha de Finalización",
@@ -3159,5 +3158,26 @@
     "minimize": "Cerrar",
     "pendingTransaction": "Tienes un retiro pendiente",
     "poweredBy": "Con la tecnología de"
+  },
+  "transactionSuccess": {
+    "swap": {
+      "title": "¡Intercambio exitoso!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "goldBuy": {
+      "title": "¡Compra de oro exitosa!",
+      "subtitle": "Tu oro digital ya está en tu billetera"
+    },
+    "goldSell": {
+      "title": "¡Venta de oro exitosa!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "default": {
+      "title": "¡Transacción exitosa!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "from": "De",
+    "to": "A",
+    "viewOnExplorer": "Ver en el explorador"
   }
 }

@@ -2938,5 +2938,26 @@
     "minimize": "Close",
     "pendingTransaction": "You have a pending withdrawal",
     "poweredBy": "Powered by"
+  },
+  "transactionSuccess": {
+    "swap": {
+      "title": "Swap successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "goldBuy": {
+      "title": "Gold purchase successful!",
+      "subtitle": "Your digital gold is now in your wallet"
+    },
+    "goldSell": {
+      "title": "Gold sale successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "default": {
+      "title": "Transaction successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "from": "From",
+    "to": "To",
+    "viewOnExplorer": "View on explorer"
   }
 }
