@@ -144,3 +144,6 @@ __claude__/
 .claude-session/
 .claude-cache/
 .claude-config/
+
+# Build archives
+builds/

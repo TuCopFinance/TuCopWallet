@@ -254,9 +254,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.Thick24,
   },
   heading: {
-    ...typeScale.labelSemiBoldLarge,
-    fontSize: 24,
-    lineHeight: 32,
+    ...typeScale.titleMedium,
     marginBottom: Spacing.Tiny4,
   },
   subHeading: {
