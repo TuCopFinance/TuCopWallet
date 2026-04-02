@@ -54,7 +54,7 @@ describe('SwapFeedItem', () => {
       </Provider>
     )
 
-    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('swapScreen.title')
+    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('feedItemSwapTitle')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
       'feedItemSwapPath, {"token1":"Celo Dollars","token2":"Celo Euros"}'
     )
@@ -81,7 +81,7 @@ describe('SwapFeedItem', () => {
       </Provider>
     )
 
-    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('swapScreen.title')
+    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('feedItemSwapTitle')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
       'transactionFeed.crossChainSwapTransactionLabel'
     )
@@ -111,7 +111,7 @@ describe('SwapFeedItem', () => {
       </Provider>
     )
 
-    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('swapScreen.title')
+    expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('feedItemSwapTitle')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
       'transactionFeed.crossChainSwapTransactionLabel'
     )
