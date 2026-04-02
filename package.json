@@ -305,7 +305,8 @@
     "@xmldom/xmldom": "^0.8.12",
     "picomatch": "^2.3.2",
     "h3": "^1.15.5",
-    "underscore": "^1.13.8"
+    "underscore": "^1.13.8",
+    "lodash": "^4.18.0"
   },
   "detox": {
     "testRunner": {
