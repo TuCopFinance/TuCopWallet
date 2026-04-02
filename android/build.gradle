@@ -9,7 +9,8 @@ buildscript {
         compileSdkVersion = 35
         targetSdkVersion = 35
         kotlinVersion = "2.0.21"
-        ndkVersion = "27.1.12297006"
+        // NDK r28 required for 16KB page size support (Google Play requirement 2025)
+        ndkVersion = "28.0.13004108"
 
         // Add these version configurations for react-native-svg
         androidXVersion = "1.9.0"

@@ -218,3 +218,33 @@ export function isHistoricalPriceUpdated(token: TokenBalance) {
 export function isFeeCurrency(token: TokenBalance | undefined): token is TokenBalance {
   return token?.isNative || !!token?.isFeeCurrency || !!token?.feeCurrencyAdapterAddress
 }
+
+/**
+ * Returns user-friendly display name for tokens.
+ * UI Rules:
+ * - COPm, cCOP → "Pesos"
+ * - USDT, USDC, USDm, USD₮ → "Dólares"
+ * - XAUt0 → "Oro"
+ * - Others → symbol as-is
+ */
+export function getTokenDisplayName(symbol: string): string {
+  const normalizedSymbol = symbol.toUpperCase()
+
+  // Colombian Peso
+  if (normalizedSymbol === 'COPM' || normalizedSymbol === 'CCOP') {
+    return 'Pesos'
+  }
+
+  // US Dollar stablecoins
+  if (['USDT', 'USDC', 'USDM', 'USD₮'].includes(normalizedSymbol) || symbol === 'USD₮') {
+    return 'Dólares'
+  }
+
+  // Digital Gold
+  if (normalizedSymbol === 'XAUT0') {
+    return 'Oro'
+  }
+
+  // Keep original for others (CELO, etc.)
+  return symbol
+}
