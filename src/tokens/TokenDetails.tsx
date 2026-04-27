@@ -67,6 +67,13 @@ export default function TokenDetailsScreen({ route }: Props) {
   const actions = useActions(token)
   const tokenDetailsMoreActionsBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
+  const cashOutTokens = useCashOutTokens()
+  const showWithdraw = !!cashOutTokens.find((tokenInfo) => tokenInfo.tokenId === token.tokenId)
+
+  // Calculate which actions should go in the bottom sheet (only the overflow actions)
+  const shouldShowMore =
+    actions.length > MAX_ACTION_BUTTONS || (actions.length === MAX_ACTION_BUTTONS && showWithdraw)
+  const moreActions = shouldShowMore ? actions.slice(MAX_ACTION_BUTTONS - 1) : []
 
   const getTokenName = (token: any) => {
     if (token.tokenId === networkConfig.copmTokenId) {
@@ -130,7 +137,7 @@ export default function TokenDetailsScreen({ route }: Props) {
       <TokenDetailsMoreActions
         forwardedRef={tokenDetailsMoreActionsBottomSheetRef}
         token={token}
-        actions={actions}
+        actions={moreActions}
       />
     </SafeAreaView>
   )
@@ -205,7 +212,18 @@ export const useActions = (token: TokenBalance) => {
       details: t('tokenDetails.actionDescriptions.swap'),
       iconComponent: SwapArrows,
       onPress: () => {
-        navigate(Screens.SwapScreenWithBack, { fromTokenId: token.tokenId })
+        const params: { fromTokenId: string; toTokenId?: string } = {
+          fromTokenId: token.tokenId,
+        }
+
+        // Preload toTokenId based on current token
+        if (token.tokenId === networkConfig.copmTokenId) {
+          params.toTokenId = networkConfig.usdtTokenId
+        } else if (token.tokenId === networkConfig.usdtTokenId) {
+          params.toTokenId = networkConfig.copmTokenId
+        }
+
+        navigate(Screens.SwapScreenWithBack, params)
       },
       visible:
         isSwapEnabled &&
@@ -231,7 +249,7 @@ export const useActions = (token: TokenBalance) => {
       details: t('tokenDetails.actionDescriptions.withdraw'),
       iconComponent: QuickActionsWithdraw,
       onPress: () => {
-        navigate(Screens.WithdrawSpend)
+        navigate(Screens.SelectOfframpProvider)
       },
       visible: showWithdraw,
     },
