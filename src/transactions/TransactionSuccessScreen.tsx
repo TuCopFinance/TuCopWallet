@@ -2,20 +2,18 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import Button from 'src/components/Button'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import Celebration from 'src/icons/misc/Celebration'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
-import { navigate, navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useTokenInfo } from 'src/tokens/hooks'
 import { blockExplorerUrls } from 'src/web3/networkConfig'
 
 type RouteProps = NativeStackScreenProps<StackParamList, Screens.TransactionSuccessScreen>
@@ -23,11 +21,18 @@ type Props = RouteProps
 
 function TransactionSuccessScreen({ route }: Props) {
   const { t } = useTranslation()
-  const { fromTokenId, toTokenId, fromAmount, toAmount, transactionHash, networkId, type } =
-    route.params
-
-  const fromToken = useTokenInfo(fromTokenId)
-  const toToken = useTokenInfo(toTokenId)
+  const {
+    fromTokenId,
+    toTokenId,
+    fromAmount,
+    toAmount,
+    transactionHash,
+    networkId,
+    type,
+    recipientAddress,
+    recipientName,
+    poolName,
+  } = route.params
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -39,7 +44,7 @@ function TransactionSuccessScreen({ route }: Props) {
   }
 
   const handleContinue = () => {
-    navigateHome()
+    navigate(Screens.TabActivity)
   }
 
   const getTitle = () => {
@@ -50,6 +55,14 @@ function TransactionSuccessScreen({ route }: Props) {
         return t('transactionSuccess.goldBuy.title')
       case 'goldSell':
         return t('transactionSuccess.goldSell.title')
+      case 'send':
+        return t('transactionSuccess.send.title')
+      case 'earnDeposit':
+        return t('transactionSuccess.earnDeposit.title')
+      case 'earnWithdraw':
+        return t('transactionSuccess.earnWithdraw.title')
+      case 'earnClaim':
+        return t('transactionSuccess.earnClaim.title')
       default:
         return t('transactionSuccess.default.title')
     }
@@ -63,13 +76,26 @@ function TransactionSuccessScreen({ route }: Props) {
         return t('transactionSuccess.goldBuy.subtitle')
       case 'goldSell':
         return t('transactionSuccess.goldSell.subtitle')
+      case 'send':
+        return t('transactionSuccess.send.subtitle')
+      case 'earnDeposit':
+        return t('transactionSuccess.earnDeposit.subtitle')
+      case 'earnWithdraw':
+        return t('transactionSuccess.earnWithdraw.subtitle')
+      case 'earnClaim':
+        return t('transactionSuccess.earnClaim.subtitle')
       default:
         return t('transactionSuccess.default.subtitle')
     }
   }
 
+  const showFromToDetails = () => {
+    // Send only shows the sent amount, not from/to
+    return type !== 'send'
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <Celebration size={64} color={colors.primary} />
@@ -79,33 +105,66 @@ function TransactionSuccessScreen({ route }: Props) {
         <Text style={styles.subtitle}>{getSubtitle()}</Text>
 
         <View style={styles.detailsContainer}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
-            {fromToken && (
-              <TokenDisplay
-                amount={fromAmount}
-                tokenId={fromTokenId}
-                showLocalAmount={true}
-                hideSign={true}
-                style={styles.tokenDisplay}
-                testID="TransactionSuccess/FromAmount"
-              />
-            )}
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
-            {toToken && (
-              <TokenDisplay
-                amount={toAmount}
-                tokenId={toTokenId}
-                showLocalAmount={true}
-                hideSign={true}
-                style={styles.tokenDisplay}
-                testID="TransactionSuccess/ToAmount"
-              />
-            )}
-          </View>
+          {type === 'send' ? (
+            <>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('transactionSuccess.amount')}</Text>
+                <TokenDisplay
+                  amount={fromAmount}
+                  tokenId={fromTokenId}
+                  showLocalAmount={false}
+                  hideSign={true}
+                  style={styles.tokenDisplay}
+                  testID="TransactionSuccess/Amount"
+                />
+              </View>
+              {(!!recipientName || !!recipientAddress) && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>{t('transactionSuccess.recipient')}</Text>
+                  <Text style={styles.recipientText} testID="TransactionSuccess/Recipient">
+                    {recipientName || recipientAddress}
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              {!!poolName && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>{t('transactionSuccess.pool')}</Text>
+                  <Text style={styles.poolText} testID="TransactionSuccess/Pool">
+                    {poolName}
+                  </Text>
+                </View>
+              )}
+              {showFromToDetails() && (
+                <>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
+                    <TokenDisplay
+                      amount={fromAmount}
+                      tokenId={fromTokenId}
+                      showLocalAmount={false}
+                      hideSign={true}
+                      style={styles.tokenDisplay}
+                      testID="TransactionSuccess/FromAmount"
+                    />
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
+                    <TokenDisplay
+                      amount={toAmount}
+                      tokenId={toTokenId}
+                      showLocalAmount={false}
+                      hideSign={true}
+                      style={styles.tokenDisplay}
+                      testID="TransactionSuccess/ToAmount"
+                    />
+                  </View>
+                </>
+              )}
+            </>
+          )}
 
           {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
             <Touchable
@@ -132,7 +191,7 @@ function TransactionSuccessScreen({ route }: Props) {
           testID="TransactionSuccess/Continue"
         />
       </View>
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -142,13 +201,21 @@ TransactionSuccessScreen.navigationOptions = () => ({
 
 const styles = StyleSheet.create({
   container: {
+    overflow: 'hidden',
+    display: 'flex',
     flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.Large32,
     backgroundColor: colors.white,
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.Thick24,
-    paddingTop: Spacing.Thick24 * 2,
+    padding: Spacing.Regular16,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   iconContainer: {
@@ -161,10 +228,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Thick24,
   },
   title: {
-    ...typeScale.titleMedium,
+    ...typeScale.labelLarge,
     color: colors.black,
     textAlign: 'center',
-    marginBottom: Spacing.Smallest8,
+    paddingTop: Spacing.Smallest8,
+    paddingBottom: Spacing.Regular16,
   },
   subtitle: {
     ...typeScale.bodyMedium,
@@ -191,6 +259,15 @@ const styles = StyleSheet.create({
     ...typeScale.labelMedium,
     color: colors.black,
   },
+  recipientText: {
+    ...typeScale.labelMedium,
+    color: colors.black,
+  },
+  poolText: {
+    ...typeScale.labelMedium,
+    color: colors.black,
+    fontWeight: '600',
+  },
   explorerLink: {
     marginTop: Spacing.Smallest8,
     paddingVertical: Spacing.Smallest8,
@@ -206,11 +283,14 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   buttonContainer: {
-    paddingHorizontal: Spacing.Thick24,
-    paddingVertical: Spacing.Regular16,
+    flexDirection: 'row',
   },
   button: {
+    minWidth: 200,
     width: '100%',
+    alignSelf: 'stretch',
+    flex: 1,
+    flexDirection: 'column',
   },
 })
 
