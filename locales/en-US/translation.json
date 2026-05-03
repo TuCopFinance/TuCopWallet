@@ -2952,12 +2952,31 @@
       "title": "Gold sale successful!",
       "subtitle": "Your transaction completed successfully"
     },
+    "send": {
+      "title": "Send successful!",
+      "subtitle": "Your money was sent successfully"
+    },
+    "earnDeposit": {
+      "title": "Deposit successful!",
+      "subtitle": "Your funds were deposited into the pool"
+    },
+    "earnWithdraw": {
+      "title": "Withdrawal successful!",
+      "subtitle": "Your funds were withdrawn from the pool"
+    },
+    "earnClaim": {
+      "title": "Rewards claimed!",
+      "subtitle": "Your rewards were deposited into your wallet"
+    },
     "default": {
       "title": "Transaction successful!",
       "subtitle": "Your transaction completed successfully"
     },
     "from": "From",
     "to": "To",
+    "amount": "Amount",
+    "recipient": "Recipient",
+    "pool": "Pool",
     "viewOnExplorer": "View on explorer"
   }
 }

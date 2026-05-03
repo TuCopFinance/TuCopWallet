@@ -1,0 +1,324 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    TuCopWallet - Diagrama de Flujos Principal                       ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                              APP ROOT - TabNavigator                                │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+                                        │
+           ┌────────────────────────────┼────────────────────────────┐
+           │            │               │              │             │
+           ▼            ▼               ▼              ▼             ▼
+    ┌──────────┐  ┌──────────┐   ┌──────────┐  ┌──────────┐  ┌──────────┐
+    │ TabHome  │  │TabWallet │   │TabActivity│  │TabDiscover│  │ TabEarn │
+    │   🏠    │  │   💰     │   │   📊     │  │   🔍     │  │   🌟   │
+    └──────────┘  └──────────┘   └──────────┘  └──────────┘  └──────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    🔄 FLUJO NUEVO: TransactionSuccessScreen                          ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────┐        ┌──────────────┐        ┌─────────────────────┐
+│ SwapScreen  │───────▶│ Confirma PIN │───────▶│ Procesa Transacción │
+└─────────────┘        └──────────────┘        └─────────────────────┘
+                                                          │
+                                                          │ ✅ Éxito
+                                                          ▼
+                               ┌────────────────────────────────────────┐
+                               │   TransactionSuccessScreen ✨ (NUEVO)  │
+                               │  ┌──────────────────────────────────┐  │
+                               │  │    🎉 Celebration Icon           │  │
+                               │  │                                  │  │
+                               │  │  ¡Intercambio exitoso!           │  │
+                               │  │  Tu transacción se completó      │  │
+                               │  │                                  │  │
+                               │  │  ┌────────────────────────────┐ │  │
+                               │  │  │ De: 1000 COPm (Pesos)      │ │  │
+                               │  │  │ A:  100 USDm (Dólares)     │ │  │
+                               │  │  └────────────────────────────┘ │  │
+                               │  │                                  │  │
+                               │  │  🔗 Ver en el explorador         │  │
+                               │  │                                  │  │
+                               │  │  ┌──────────────────────────┐   │  │
+                               │  │  │ [    Continuar    ]      │   │  │
+                               │  │  └──────────────────────────┘   │  │
+                               │  └──────────────────────────────────┘  │
+                               └────────────────────────────────────────┘
+                                          │                │
+                                   Ver Explorer      Continuar
+                                          │                │
+                                          ▼                ▼
+                               ┌─────────────────┐  ┌──────────┐
+                               │ WebViewScreen   │  │ TabHome  │
+                               │  (Celoscan)     │  │          │
+                               └─────────────────┘  └──────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         💰 FLUJO DE GOLD (Oro Digital)                               ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+                              ┌──────────────┐
+                              │  GoldHome    │
+                              │     🏆       │
+                              └──────────────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    │                                 │
+                    ▼                                 ▼
+         ┌────────────────────┐          ┌────────────────────┐
+         │ GoldBuyEnterAmount │          │ GoldSellEnterAmount │
+         │  Comprar Oro       │          │   Vender Oro        │
+         └────────────────────┘          └────────────────────┘
+                    │                                 │
+                    ▼                                 ▼
+         ┌────────────────────┐          ┌────────────────────┐
+         │ GoldBuyConfirmation│          │ GoldSellConfirmation│
+         └────────────────────┘          └────────────────────┘
+                    │                                 │
+                    │ Transacción exitosa             │
+                    └────────────┬────────────────────┘
+                                 ▼
+                  ┌────────────────────────────────┐
+                  │ TransactionSuccessScreen ✨    │
+                  │ ¡Compra/Venta exitosa!         │
+                  │ • Muestra: Token → Oro         │
+                  │ • Link al explorer             │
+                  │ • [Continuar] → GoldHome       │
+                  └────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         📤 FLUJO DE SEND (Enviar)                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────┐       ┌────────────────┐       ┌─────────────────┐
+│ SendSelectRecipie│──────▶│ SendEnterAmount│──────▶│ SendConfirmation│
+│   nt             │       │                │       │      ✅         │
+└──────────────────┘       └────────────────┘       └─────────────────┘
+        │
+        │ Validar SecureSend
+        ▼
+┌──────────────────────┐   ┌──────────────────────┐
+│ ValidateRecipient    │──▶│ ValidateRecipient    │
+│ Intro                │   │ Account              │
+└──────────────────────┘   └──────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                      💳 FLUJO DE FIAT EXCHANGE                                       ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────┐     ┌────────────────┐     ┌─────────────────┐
+│ FiatExchangeAmoun│────▶│ SelectProvider │────▶│ CashInSuccess ✅│
+│ t (Cash In/Out)  │     │                │     └─────────────────┘
+└──────────────────┘     └────────────────┘
+                                │
+                    ┌───────────┼───────────┐
+                    │                       │
+                    ▼                       ▼
+        ┌───────────────────┐   ┌──────────────────┐
+        │ FiatConnect       │   │ BucksPay         │
+        │ • Link Account    │   │ • Bank Form      │
+        │ • KYC             │   │ • Confirm        │
+        │ • Review          │   │ • Status ✅      │
+        │ • Transfer Status │   └──────────────────┘
+        └───────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    🔐 FLUJO DE ONBOARDING (Primera Vez)                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────┐     ┌────────────────┐     ┌──────────────────┐
+│   Welcome   │────▶│ ProtectWallet  │────▶│ ImportSelect     │
+└─────────────┘     └────────────────┘     └──────────────────┘
+                                                     │
+                                     ┌───────────────┼───────────────┐
+                                     │                               │
+                                     ▼                               ▼
+                        ┌──────────────────┐         ┌─────────────────────┐
+                        │ ImportWallet     │         │ OnboardingRecovery  │
+                        │ (Seed Phrase)    │         │ Phrase (Nueva)      │
+                        └──────────────────┘         └─────────────────────┘
+                                     │                               │
+                                     └───────────────┬───────────────┘
+                                                     ▼
+                                         ┌──────────────────┐
+                                         │   PincodeSet     │
+                                         └──────────────────┘
+                                                     │
+                                                     ▼
+                                         ┌──────────────────┐
+                                         │ EnableBiometry   │
+                                         └──────────────────┘
+                                                     │
+                                                     ▼
+                                     ┌────────────────────────────┐
+                                     │ VerificationStartScreen    │
+                                     │ (Phone Verification)       │
+                                     └────────────────────────────┘
+                                                     │
+                                                     ▼
+                                     ┌────────────────────────────┐
+                                     │ VerificationCodeInputScreen│
+                                     └────────────────────────────┘
+                                                     │
+                                                     ▼
+                                     ┌────────────────────────────┐
+                                     │ OnboardingSuccessScreen ✅ │
+                                     └────────────────────────────┘
+                                                     │
+                                                     ▼
+                                         ┌──────────────────┐
+                                         │   TabHome 🏠    │
+                                         └──────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    🌟 FLUJO DE EARN (Yield/Staking)                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────┐      ┌──────────────────┐      ┌────────────────┐
+│  EarnHome    │─────▶│ EarnPoolInfoScree│─────▶│ EarnEnterAmount│
+│   TabEarn    │      │ n (Detalles)     │      │                │
+└──────────────┘      └──────────────────┘      └────────────────┘
+      │                                                   │
+      │                                                   ▼
+      │                                          ┌────────────────────┐
+      │                                          │ EarnConfirmation   │
+      │                                          │ Screen ✅          │
+      │                                          └────────────────────┘
+      │
+      ▼
+┌─────────────────────┐      ┌──────────────────┐
+│ MarranitoStaking    │─────▶│ MarranitosMyStakes│
+│ (Special Pool)      │      │                   │
+└─────────────────────┘      └──────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    ⚙️ FLUJO DE SETTINGS                                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────┐
+│  Profile     │
+│ (Settings)   │
+└──────────────┘
+       │
+       ├──▶ ProfileSubmenu
+       │     └──▶ LinkPhoneNumber → Verification
+       │
+       ├──▶ PreferencesSubmenu
+       │     ├──▶ Language
+       │     ├──▶ SelectLocalCurrency
+       │     └──▶ Data Saver, Haptic Feedback
+       │
+       ├──▶ SecuritySubmenu
+       │     ├──▶ PincodeEnter (Change PIN)
+       │     ├──▶ BackupIntroduction
+       │     │     └──▶ AccountKeyEducation
+       │     │           └──▶ BackupPhrase
+       │     │                 └──▶ BackupQuiz
+       │     │                       └──▶ BackupComplete ✅
+       │     │
+       │     ├──▶ WalletSecurityPrimer
+       │     │     └──▶ KeylessBackupIntro
+       │     │           ├──▶ KeylessBackupPhoneInput
+       │     │           │     └──▶ KeylessBackupPhoneCodeInput
+       │     │           │           └──▶ KeylessBackupProgress ✅
+       │     │           │
+       │     │           └──▶ SignInWithEmail
+       │     │                 └──▶ KeylessBackupProgress ✅
+       │     │
+       │     └──▶ WalletConnectSessions
+       │
+       └──▶ LegalSubmenu
+             ├──▶ RegulatoryTerms
+             ├──▶ Licenses
+             └──▶ Support
+                   └──▶ SupportContact
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    📊 LEYENDA DE SÍMBOLOS                                            ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+✨ = Pantalla NUEVA (TransactionSuccessScreen)
+✅ = Pantalla de Éxito/Completado
+🏠 = Tab Home
+💰 = Tab Wallet
+📊 = Tab Activity
+🔍 = Tab Discover
+🌟 = Tab Earn
+🏆 = Gold/Oro
+💳 = Fiat/Cash
+🔐 = Security/Backup
+📤 = Send/Transfer
+🔄 = Swap/Exchange
+
+──▶ = Navegación hacia adelante
+│   = Conexión vertical
+└───= Conexión en L
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║               🎯 CARACTERÍSTICAS DE TransactionSuccessScreen                         ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────────────┐
+│ PANTALLA: TransactionSuccessScreen                                                │
+│ UBICACIÓN: src/transactions/TransactionSuccessScreen.tsx                          │
+│                                                                                    │
+│ USADA POR:                                                                         │
+│   ✅ Swap (mismo chain y cross-chain)                                             │
+│   ✅ Compra de Oro Digital (COPm/USDT → XAUt0)                                    │
+│   ✅ Venta de Oro Digital (XAUt0 → COPm/USDT)                                     │
+│                                                                                    │
+│ COMPONENTES:                                                                       │
+│   • Ícono: Celebration (64px) con fondo verde claro                               │
+│   • Título: Personalizado según tipo (swap/goldBuy/goldSell)                      │
+│   • Subtítulo: Mensaje de confirmación                                            │
+│   • Detalles:                                                                      │
+│     - De: TokenDisplay con monto y símbolo                                         │
+│     - A: TokenDisplay con monto y símbolo                                          │
+│   • Link: "Ver en el explorador" → WebViewScreen (Celoscan)                       │
+│   • Botón: "Continuar" → navigateHome()                                            │
+│                                                                                    │
+│ PARÁMETROS:                                                                        │
+│   - fromTokenId: string                                                            │
+│   - toTokenId: string                                                              │
+│   - fromAmount: string                                                             │
+│   - toAmount: string                                                               │
+│   - transactionHash: string                                                        │
+│   - networkId: NetworkId                                                           │
+│   - type: 'swap' | 'goldBuy' | 'goldSell'                                         │
+│                                                                                    │
+│ NAVEGACIÓN:                                                                        │
+│   - noHeaderGestureDisabled (no se puede volver atrás con gesto)                  │
+│   - navigateHome() al tocar "Continuar"                                            │
+│                                                                                    │
+│ EFECTOS:                                                                           │
+│   - vibrateSuccess() al mostrar la pantalla                                        │
+│                                                                                    │
+│ TRADUCCIONES:                                                                      │
+│   - transactionSuccess.swap.title                                                  │
+│   - transactionSuccess.swap.subtitle                                               │
+│   - transactionSuccess.goldBuy.title                                               │
+│   - transactionSuccess.goldBuy.subtitle                                            │
+│   - transactionSuccess.goldSell.title                                              │
+│   - transactionSuccess.goldSell.subtitle                                           │
+│   - transactionSuccess.from                                                        │
+│   - transactionSuccess.to                                                          │
+│   - transactionSuccess.viewOnExplorer                                              │
+└────────────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                              📈 ESTADÍSTICAS                                         ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────────────┐
+│ Total de Screens:              ~120+                                               │
+│ Screens principales:            ~80                                                │
+│ Screens modales:                ~25                                                │
+│ Screens de éxito:                 8                                                │
+│ Tabs principales:                 5                                                │
+│ Flujos de onboarding:             2 (nuevo, importar)                              │
+│ Flujos de backup:                 2 (manual, keyless)                              │
+│ Flujos de transacciones:         5+ (send, swap, gold, earn, fiat)                │
+│                                                                                    │
+│ Última actualización: 2026-04-02                                                   │
+│ Versión: 1.118.0 (build: 1021081759)                                              │
+└────────────────────────────────────────────────────────────────────────────────────┘

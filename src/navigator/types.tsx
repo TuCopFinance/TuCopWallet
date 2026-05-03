@@ -305,7 +305,10 @@ export type StackParamList = {
     toAmount: string
     transactionHash: string
     networkId: NetworkId
-    type: 'swap' | 'goldBuy' | 'goldSell'
+    type: 'swap' | 'goldBuy' | 'goldSell' | 'send' | 'earnDeposit' | 'earnWithdraw' | 'earnClaim'
+    recipientAddress?: string
+    recipientName?: string
+    poolName?: string
   }
   [Screens.UpgradeScreen]: undefined
   [Screens.ValidateRecipientIntro]: ValidateRecipientParams

@@ -3172,12 +3172,31 @@
       "title": "¡Venta de oro exitosa!",
       "subtitle": "Tu transacción se completó correctamente"
     },
+    "send": {
+      "title": "¡Envío exitoso!",
+      "subtitle": "Tu dinero fue enviado correctamente"
+    },
+    "earnDeposit": {
+      "title": "¡Depósito exitoso!",
+      "subtitle": "Tus fondos fueron depositados en el pool"
+    },
+    "earnWithdraw": {
+      "title": "¡Retiro exitoso!",
+      "subtitle": "Tus fondos fueron retirados del pool"
+    },
+    "earnClaim": {
+      "title": "¡Recompensas reclamadas!",
+      "subtitle": "Tus recompensas fueron depositadas en tu billetera"
+    },
     "default": {
       "title": "¡Transacción exitosa!",
       "subtitle": "Tu transacción se completó correctamente"
     },
     "from": "De",
     "to": "A",
+    "amount": "Monto",
+    "recipient": "Destinatario",
+    "pool": "Pool",
     "viewOnExplorer": "Ver en el explorador"
   }
 }
