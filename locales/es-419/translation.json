@@ -3157,7 +3157,9 @@
     "contactSupport": "Soporte BucksPay",
     "minimize": "Cerrar",
     "pendingTransaction": "Tienes un retiro pendiente",
-    "poweredBy": "Con la tecnología de"
+    "poweredBy": "Con la tecnología de",
+    "temporarilyDisabled": "Temporalmente No Disponible",
+    "comingSoonMessage": "Este servicio estará disponible nuevamente pronto. Disculpa las molestias."
   },
   "transactionSuccess": {
     "swap": {

@@ -4,7 +4,7 @@ import _ from 'lodash'
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { Trans, useTranslation } from 'react-i18next'
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -320,40 +320,38 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       <AmountSpentInfo {...route.params} />
 
       <ListItem>
+        {/* BucksPay for COPm - Temporarily Disabled */}
         {isCOPm && (
-          <Touchable
-            onPress={() => {
-              navigate(Screens.WebViewScreen, {
-                uri: 'https://app.buckspay.xyz/',
-              })
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 10,
+              paddingVertical: 10,
+              borderRadius: 10,
+              backgroundColor: colors.gray1,
+              opacity: 0.7,
             }}
-            style={{ width: '100%' }}
+            testID="buckspay-disabled-copm"
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 10,
-                paddingVertical: 10,
-                borderRadius: 10,
-                backgroundColor: colors.lightPrimary,
-              }}
-            >
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: 'https://app.buckspay.xyz/favicon.ico' }}
-                  style={styles.providerImage}
-                />
-              </View>
-              <Text style={styles.newLabelText}>Buckspay</Text>
-              <InfoIcon size={16} color={colors.gray5} />
+            <View style={styles.imageContainer}>
+              <BucksPayIcon size={32} />
             </View>
-          </Touchable>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.newLabelText, { color: colors.gray4 }]}>Buckspay</Text>
+              <Text style={{ ...typeScale.labelSemiBoldXSmall, color: colors.warningDark }}>
+                {t('buckspay.temporarilyDisabled')}
+              </Text>
+              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4, marginTop: 2 }}>
+                {t('buckspay.comingSoonMessage')}
+              </Text>
+            </View>
+          </View>
         )}
 
-        {/* BucksPay for CashIn - Coming soon */}
+        {/* BucksPay for USDT CashIn - Temporarily Disabled */}
         {isUSDT && flow === CICOFlow.CashIn && (
           <View
             style={{
@@ -365,19 +363,22 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
               paddingVertical: 10,
               borderRadius: 10,
               backgroundColor: colors.gray1,
-              opacity: 0.6,
+              opacity: 0.7,
             }}
+            testID="buckspay-disabled-usdt"
           >
             <View style={styles.imageContainer}>
               <BucksPayIcon size={32} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.newLabelText}>Buckspay</Text>
-              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4 }}>
-                Disponible pronto
+              <Text style={[styles.newLabelText, { color: colors.gray4 }]}>Buckspay</Text>
+              <Text style={{ ...typeScale.labelSemiBoldXSmall, color: colors.warningDark }}>
+                {t('buckspay.temporarilyDisabled')}
+              </Text>
+              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4, marginTop: 2 }}>
+                {t('buckspay.comingSoonMessage')}
               </Text>
             </View>
-            <InfoIcon size={16} color={colors.gray4} />
           </View>
         )}
 
@@ -791,9 +792,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginRight: 8,
-  },
-  providerImage: {
-    flex: 10,
   },
   // contactSupport: {
   //   ...typeScale.labelLarge,

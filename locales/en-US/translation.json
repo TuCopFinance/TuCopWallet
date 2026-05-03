@@ -2937,7 +2937,9 @@
     "contactSupport": "Contact BucksPay Support",
     "minimize": "Close",
     "pendingTransaction": "You have a pending withdrawal",
-    "poweredBy": "Powered by"
+    "poweredBy": "Powered by",
+    "temporarilyDisabled": "Temporarily Unavailable",
+    "comingSoonMessage": "This service will be available again soon. We apologize for the inconvenience."
   },
   "transactionSuccess": {
     "swap": {
