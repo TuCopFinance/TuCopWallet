@@ -64,7 +64,6 @@
 | -------------------------------------------------------- | -------------------------------------------- |
 | [buckspay-api.md](buckspay-api.md)                       | BucksPay offramp API reference (OpenAPI 3.0) |
 | [buckspay-implementation.md](buckspay-implementation.md) | BucksPay offramp architecture and flow       |
-| [divvi-integration.md](divvi-integration.md)             | Divvi Protocol on-chain referral integration |
 | [connecting-dapps.md](connecting-dapps.md)               | WalletConnect v2 integration guide for DApps |
 | [deeplinks.md](deeplinks.md)                             | Deep linking specification and URL schemes   |
 
@@ -88,10 +87,9 @@
 
 ## Module Documentation
 
-| Document                                                         | Description                                |
-| ---------------------------------------------------------------- | ------------------------------------------ |
-| [../src/analytics/README.md](../src/analytics/README.md)         | Analytics module design and event tracking |
-| [../src/divviProtocol/README.md](../src/divviProtocol/README.md) | Divvi Protocol v2 referral integration     |
+| Document                                                 | Description                                |
+| -------------------------------------------------------- | ------------------------------------------ |
+| [../src/analytics/README.md](../src/analytics/README.md) | Analytics module design and event tracking |
 
 ## GitHub Templates
 
@@ -106,9 +104,8 @@
 
 Legacy documentation from the [Mobile Stack](https://github.com/mobilestack-xyz/mobilestack-mento) fork (archived Jan 2026), kept for reference:
 
-| Document                                                           | Description                            |
-| ------------------------------------------------------------------ | -------------------------------------- |
-| [archive/runbook.md](archive/runbook.md)                           | Generic Mobile Stack setup runbook     |
-| [archive/wallet.md](archive/wallet.md)                             | Original Valora wallet documentation   |
-| [archive/watching-assets.mdx](archive/watching-assets.mdx)         | Legacy token registration via deeplink |
-| [archive/divvi-v1-integration.md](archive/divvi-v1-integration.md) | Divvi Protocol v1 (replaced by v2)     |
+| Document                                                   | Description                            |
+| ---------------------------------------------------------- | -------------------------------------- |
+| [archive/runbook.md](archive/runbook.md)                   | Generic Mobile Stack setup runbook     |
+| [archive/wallet.md](archive/wallet.md)                     | Original Valora wallet documentation   |
+| [archive/watching-assets.mdx](archive/watching-assets.mdx) | Legacy token registration via deeplink |
