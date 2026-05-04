@@ -237,12 +237,6 @@ describe('store state', () => {
           "mostPopularDappIds": [],
           "recentDappIds": [],
         },
-        "divviProtocol": {
-          "isInitialized": false,
-          "isSDKInitialized": false,
-          "pendingRegistration": false,
-          "referrals": {},
-        },
         "earn": {
           "depositStatus": "idle",
           "poolInfo": undefined,

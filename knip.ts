@@ -38,7 +38,6 @@ const config: KnipConfig = {
     'react-native-svg-mock', // test mocking
     '@types/jest',
     'husky',
-    '@divvi/referral-sdk', // paused divviProtocol feature
   ],
   ignore: [
     'src/redux/reducersForSchemaGeneration.ts', // used for root state schema generation
@@ -47,7 +46,6 @@ const config: KnipConfig = {
     'src/firebase/remoteConfigValuesDefaults.e2e.ts', // e2e test setup
     'src/setupE2eEnv.e2e.ts', // e2e test setup
     'src/statsig/__mocks__/index.ts', // unit test mocks
-    'src/divviProtocol/**/*', // paused feature - kept for future reactivation
     'src/refi/**/*', // paused feature - ReFi Medellin UBI
     'src/abis/ICCOPStaking.ts', // ABI for paused marranitos feature
     'src/abis/IReFiMedellinUBI.ts', // ABI for paused ReFi feature

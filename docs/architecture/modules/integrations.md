@@ -59,36 +59,6 @@ export async function createTransfer(params: TransferParams) {
 
 ---
 
-## Divvi Protocol (Referrals)
-
-### Purpose
-
-On-chain referral tracking and rewards.
-
-### Documentation
-
-See `docs/divvi-integration.md` for implementation details.
-
-### How It Works
-
-1. User A shares referral link
-2. User B installs app via link
-3. App registers referral on-chain
-4. User A earns rewards from User B's activity
-
-### Smart Contract
-
-```solidity
-// Simplified interface
-interface IDivviRegistry {
-  function registerReferral(address referrer, address referee) external;
-  function getReferrer(address user) external view returns (address);
-  function claimRewards(address user) external;
-}
-```
-
----
-
 ## Squid Router (Cross-chain Swaps)
 
 ### Purpose

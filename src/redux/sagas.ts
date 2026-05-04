@@ -16,8 +16,6 @@ import {
 } from 'src/app/saga'
 import { dappsSaga } from 'src/dapps/saga'
 import { fetchDappsListCompleted } from 'src/dapps/slice'
-// DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
-// import { divviProtocolSaga } from 'src/divviProtocol/saga'
 import { earnSaga } from 'src/earn/saga'
 import { goldSaga } from 'src/gold/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
@@ -131,8 +129,6 @@ export function* rootSaga() {
     yield* spawn(firebaseSaga)
     yield* spawn(tokensSaga)
     yield* spawn(positionsSaga)
-    // DIVVI PROTOCOL - TEMPORALMENTE DESHABILITADO (2026-03-28)
-    // yield* spawn(divviProtocolSaga)
     yield* spawn(localCurrencySaga)
     yield* spawn(transactionSaga)
     yield* spawn(homeSaga)
