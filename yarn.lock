@@ -5874,10 +5874,10 @@
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
 
-"@xmldom/xmldom@^0.8.12", "@xmldom/xmldom@^0.8.8":
-  version "0.8.12"
-  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.8.12.tgz#cf488a5435fa06c7374ad1449c69cea0f823624b"
-  integrity sha512-9k/gHF6n/pAi/9tqr3m3aqkuiNosYTurLLUtc7xQ9sxB/wm7WPygCv8GYa6mS0fLJEHhqMC1ATYhz++U/lRHqg==
+"@xmldom/xmldom@^0.8.13", "@xmldom/xmldom@^0.8.8":
+  version "0.8.13"
+  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.8.13.tgz#00d1dd940b218dff2e49309d410d8bb212159225"
+  integrity sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==
 
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
@@ -7635,10 +7635,10 @@ define-property@^2.0.2:
     is-descriptor "^1.0.2"
     isobject "^3.0.1"
 
-defu@^6.1.4:
-  version "6.1.4"
-  resolved "https://registry.npmjs.org/defu/-/defu-6.1.4.tgz"
-  integrity sha512-mEQCMmwJu317oSz8CwdIOdwf3xMif1ttiM8LTufzc3g6kR+9Pe236twL8j3IYT1F7GfRgGcW6MWxzZjLIkuHIg==
+defu@^6.1.4, defu@^6.1.7:
+  version "6.1.7"
+  resolved "https://registry.yarnpkg.com/defu/-/defu-6.1.7.tgz#72543567c8e9f97ff13ce402b6dbe09ac5ae4d23"
+  integrity sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ==
 
 delaunator@^4.0.0:
   version "4.0.1"
