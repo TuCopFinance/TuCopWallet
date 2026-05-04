@@ -103,7 +103,6 @@ src/
 ├── gold/                   # Digital gold (XAUt0)
 ├── subsidies/              # ReFi Colombia UBI
 ├── fiatExchanges/          # On/off ramps
-├── divviProtocol/          # Referral tracking
 ├── points/                 # Rewards system
 ├── jumpstart/              # Referral rewards
 │

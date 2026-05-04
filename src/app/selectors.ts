@@ -1,14 +1,7 @@
 import { RootState } from 'src/redux/reducers'
 
-// La interfaz para la configuración de Divvi
-export interface PublicAppConfig {
-  divviProtocol?: {
-    divviId: string
-    campaignIds: string[]
-    consumer?: string
-    providers?: string[]
-  }
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface PublicAppConfig {}
 
 export const getRequirePinOnAppOpen = (state: RootState) => {
   return state.app.requirePinOnAppOpen
