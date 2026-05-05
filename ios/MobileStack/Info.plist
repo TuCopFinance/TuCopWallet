@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.118.1</string>
+	<string>1.118.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -52,7 +52,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>251</string>
+	<string>252</string>
 	<key>CleverTapAccountID</key>
 	<string>$(CLEVERTAP_ACCOUNT_ID)</string>
 	<key>CleverTapToken</key>
