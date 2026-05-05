@@ -84,12 +84,6 @@ const persistConfig = {
 | `imports`       | `src/import/reducer.ts`      | Wallet import |
 | `keylessBackup` | `src/keylessBackup/slice.ts` | Cloud backup  |
 
-### Protocol Slices
-
-| Slice           | Location                     | Purpose           |
-| --------------- | ---------------------------- | ----------------- |
-| `divviProtocol` | `src/divviProtocol/slice.ts` | Referral tracking |
-
 ---
 
 ## Migrations

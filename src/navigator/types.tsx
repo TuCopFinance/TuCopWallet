@@ -298,6 +298,18 @@ export type StackParamList = {
   [Screens.TransactionDetailsScreen]: {
     transaction: TokenTransaction
   }
+  [Screens.TransactionSuccessScreen]: {
+    fromTokenId: string
+    toTokenId: string
+    fromAmount: string
+    toAmount: string
+    transactionHash: string
+    networkId: NetworkId
+    type: 'swap' | 'goldBuy' | 'goldSell' | 'send' | 'earnDeposit' | 'earnWithdraw' | 'earnClaim'
+    recipientAddress?: string
+    recipientName?: string
+    poolName?: string
+  }
   [Screens.UpgradeScreen]: undefined
   [Screens.ValidateRecipientIntro]: ValidateRecipientParams
   [Screens.ValidateRecipientAccount]: ValidateRecipientParams

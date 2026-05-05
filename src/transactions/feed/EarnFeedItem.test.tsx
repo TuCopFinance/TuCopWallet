@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from '@testing-library/react-native'
+import { fireEvent, render } from '@testing-library/react-native'
 import React from 'react'
 import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -146,20 +146,18 @@ describe.each([
     })
 
     it('Should render correctly', () => {
-      const { getByText, getByTestId } = render(
+      const { getByTestId } = render(
         <Provider store={store}>
           <EarnFeedItem transaction={transaction} />
         </Provider>
       )
 
-      expect(getByText(expectedTitle)).toBeTruthy()
-      expect(getByText(expectedSubTitle)).toBeTruthy()
-      expect(
-        within(getByTestId(`EarnFeedItem/${type}-amount-crypto`)).getByText(expectedTotal)
-      ).toBeTruthy()
-      expect(
-        within(getByTestId(`EarnFeedItem/${type}-amount-local`)).getByText(expectedTotalLocal)
-      ).toBeTruthy()
+      expect(getByTestId('EarnFeedItem/title')).toHaveTextContent(expectedTitle)
+      expect(getByTestId('EarnFeedItem/subtitle')).toHaveTextContent(expectedSubTitle)
+      expect(getByTestId('EarnFeedItem/tokenAmount')).toHaveTextContent(
+        expectedTotal.replace(/[+-]/, '')
+      )
+      expect(getByTestId('EarnFeedItem/amount')).toHaveTextContent(expectedTotalLocal)
     })
 
     it('Should navigate correctly on tap', () => {

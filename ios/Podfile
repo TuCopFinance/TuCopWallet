@@ -107,6 +107,13 @@ post_install do |installer|
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_CLOCK_GETTIME=1'
       end
+
+      # Fix fmt library consteval issue with Xcode 26.4 beta
+      # https://github.com/fmtlib/fmt/issues/4116
+      if target.name == 'fmt'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FMT_CONSTEVAL=constexpr'
+      end
     end
 
     # Strip bitcode from frameworks that contain it
@@ -143,15 +150,12 @@ post_install do |installer|
     .push(installer.pods_project)
 
   # This block is needed for preserving the EXCLUDED_ARCHS setting on M1 machines
+  # NOTE: Removed arm64 exclusion for iOS 26+ simulators which require arm64
+  # Modern simulators on Apple Silicon require arm64, don't exclude it
   projects.each do |project|
     project.build_configurations.each do |config|
-      # Needed for now as Xcode 12 now tries to build/link both arm64 and x86_64 slices for the simulator
-      # but some of our prebuilt deps don't support this
-      # See:
-      # - https://stackoverflow.com/a/63955114/158525
-      # - https://github.com/facebook/react-native/issues/29984
-      # - https://apontious.com/2020/08/23/arm-wrestling-your-ios-simulator-builds/
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64 "
+      # Clear any arm64 exclusion - modern Apple Silicon simulators need arm64
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = ""
     end
     project.save()
   end

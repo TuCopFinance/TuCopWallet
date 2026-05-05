@@ -1,92 +1,40 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { checkUserStart } from 'src/buckspay/slice'
-import Touchable from 'src/components/Touchable'
-import { useDispatch } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 const BucksPayLogo = require('./buckspay-logo.png')
 
-const BUCKSPAY_SERVICE_START_HOUR = 8 // 8 AM Colombia time
-const BUCKSPAY_SERVICE_END_HOUR = 20 // 8 PM Colombia time
-
-const COLOMBIA_UTC_OFFSET = -5 // Colombia is always UTC-5 (no daylight saving)
-
-function getColombiaDate(): Date {
-  const now = new Date()
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000
-  return new Date(utcMs + COLOMBIA_UTC_OFFSET * 3600000)
-}
-
-function getColombiaTimeFormatted(): string {
-  const colombia = getColombiaDate()
-  const h = colombia.getHours().toString().padStart(2, '0')
-  const m = colombia.getMinutes().toString().padStart(2, '0')
-  return `${h}:${m}`
-}
-
-function isBucksPayServiceAvailable(): boolean {
-  const hour = getColombiaDate().getHours()
-  return hour >= BUCKSPAY_SERVICE_START_HOUR && hour < BUCKSPAY_SERVICE_END_HOUR
-}
-
-interface OfframpProvider {
-  id: string
-  name: string
-  descriptionKey: string
-  logo: any
-  onPress: () => void
-}
-
 function SelectOfframpProvider() {
   const { t } = useTranslation()
-  const dispatch = useDispatch()
-
-  const providers: OfframpProvider[] = [
-    {
-      id: 'buckspay',
-      name: 'BucksPay',
-      descriptionKey: 'buckspay.providerDescription',
-      logo: BucksPayLogo,
-      onPress: () => {
-        if (!isBucksPayServiceAvailable()) {
-          Alert.alert(
-            t('buckspay.outsideHoursTitle'),
-            t('buckspay.outsideHoursMessage', { currentTime: getColombiaTimeFormatted() })
-          )
-          return
-        }
-        dispatch(checkUserStart())
-      },
-    },
-  ]
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.content}>
         <Text style={styles.title}>{t('buckspay.selectProvider')}</Text>
         <Text style={styles.subtitle}>{t('buckspay.selectProviderSubtitle')}</Text>
-        {providers.map((provider) => (
-          <Touchable
-            key={provider.id}
-            style={styles.providerCard}
-            onPress={provider.onPress}
-            testID={`offramp-provider-${provider.id}`}
-          >
-            <View style={styles.providerRow}>
-              <Image source={provider.logo} style={styles.providerLogo} resizeMode="contain" />
-              <View style={styles.providerInfo}>
-                <Text style={styles.providerName}>{provider.name}</Text>
-                <Text style={styles.providerDescription}>{t(provider.descriptionKey)}</Text>
-              </View>
-              <Text style={styles.chevron}>{'>'}</Text>
+
+        {/* BucksPay - Temporarily Disabled */}
+        <View
+          style={[styles.providerCard, styles.providerCardDisabled]}
+          testID="offramp-provider-buckspay-disabled"
+        >
+          <View style={styles.providerRow}>
+            <Image
+              source={BucksPayLogo}
+              style={[styles.providerLogo, styles.providerLogoDisabled]}
+              resizeMode="contain"
+            />
+            <View style={styles.providerInfo}>
+              <Text style={[styles.providerName, styles.providerNameDisabled]}>BucksPay</Text>
+              <Text style={styles.disabledLabel}>{t('buckspay.temporarilyDisabled')}</Text>
+              <Text style={styles.comingSoonText}>{t('buckspay.comingSoonMessage')}</Text>
             </View>
-          </Touchable>
-        ))}
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -118,6 +66,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.gray2,
     backgroundColor: Colors.white,
   },
+  providerCardDisabled: {
+    backgroundColor: Colors.gray1,
+    borderColor: Colors.gray2,
+    opacity: 0.8,
+  },
   providerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -127,6 +80,9 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
   },
+  providerLogoDisabled: {
+    opacity: 0.5,
+  },
   providerInfo: {
     flex: 1,
     marginLeft: Spacing.Small12,
@@ -135,14 +91,18 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
   },
-  providerDescription: {
-    ...typeScale.bodySmall,
+  providerNameDisabled: {
     color: Colors.gray4,
   },
-  chevron: {
-    ...typeScale.titleSmall,
-    color: Colors.gray3,
-    marginLeft: Spacing.Smallest8,
+  disabledLabel: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.warningDark,
+    marginTop: 2,
+  },
+  comingSoonText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    marginTop: 4,
   },
 })
 

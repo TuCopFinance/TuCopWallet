@@ -15,9 +15,10 @@ import {
 } from 'src/earn/slice'
 import { DepositInfo, WithdrawInfo } from 'src/earn/types'
 import { isGasSubsidizedForNetwork } from 'src/earn/utils'
-import { navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
-import { vibrateError } from 'src/styles/hapticFeedback'
+import { vibrateError, vibrateSuccess } from 'src/styles/hapticFeedback'
 import { getTokenInfo } from 'src/tokens/saga'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalances } from 'src/tokens/slice'
@@ -239,7 +240,6 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
       txHashes
     )
 
-    navigateHome()
     submitted = true
 
     // wait for the tx receipts, so that we can track them
@@ -276,6 +276,19 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
         transactionHash: txHashes[txHashes.length - 1],
       })
     )
+
+    // Show success vibration and navigate to success screen
+    vibrateSuccess()
+    navigate(Screens.TransactionSuccessScreen, {
+      fromTokenId,
+      toTokenId: depositTokenId,
+      fromAmount: fromTokenAmount,
+      toAmount: amount,
+      transactionHash: txHashes[txHashes.length - 1],
+      networkId,
+      type: 'earnDeposit' as const,
+      poolName: pool.appName,
+    })
   } catch (err) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(`${TAG}/depositSubmitSaga`, 'Transaction cancelled by user')
@@ -397,7 +410,6 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
       `Successfully sent ${mode} transaction(s) to the network`,
       txHashes
     )
-    navigateHome()
     submitted = true
 
     // Wait for transaction receipts
@@ -426,6 +438,28 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
 
     yield* put(withdrawSuccess())
     AppAnalytics.track(EarnEvents.earn_withdraw_submit_success, commonAnalyticsProps)
+
+    // Show success vibration and navigate to success screen
+    vibrateSuccess()
+    const successType =
+      mode === 'claim-rewards' ? ('earnClaim' as const) : ('earnWithdraw' as const)
+
+    // For claim-rewards, show the rewards token. For withdraw/exit, show the withdraw token
+    const toTokenId =
+      mode === 'claim-rewards'
+        ? rewardsTokens?.[0]?.tokenId || pool.dataProps.withdrawTokenId
+        : pool.dataProps.withdrawTokenId
+
+    navigate(Screens.TransactionSuccessScreen, {
+      fromTokenId: tokenId,
+      toTokenId,
+      fromAmount: amount || '0',
+      toAmount: amount || '0',
+      transactionHash: txHashes[txHashes.length - 1],
+      networkId,
+      type: successType,
+      poolName: pool.appName,
+    })
   } catch (err) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(`${TAG}/withdrawSubmitSaga/${mode}`, 'Transaction(s) cancelled by user')

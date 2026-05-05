@@ -9,6 +9,9 @@ buildscript {
         compileSdkVersion = 35
         targetSdkVersion = 35
         kotlinVersion = "2.0.21"
+        // NDK r27.1 - downgraded from r28 due to __cxa_init_primary_exception C++ ABI crash
+        // in react-native-quick-crypto. NDK 28 compiles with libc++ ABI not available
+        // in older Android runtimes. TODO: Upgrade back when quick-crypto is fixed.
         ndkVersion = "27.1.12297006"
 
         // Add these version configurations for react-native-svg
