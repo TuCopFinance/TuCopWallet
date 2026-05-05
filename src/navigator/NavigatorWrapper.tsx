@@ -110,25 +110,15 @@ export const NavigatorWrapper = () => {
     }
   }, [])
 
-  // Verificación de actualización forzada
-  // SIEMPRE forzar actualización cuando hay una versión nueva en la tienda
+  // Force upgrade only when device version is below Statsig minRequiredVersion.
+  // The local Statsig check is a fallback for when the store-version fetch fails.
   const shouldForceUpgrade = useMemo(() => {
-    // Si hay una actualización disponible en la tienda, forzar actualización
-    if (updateInfo?.hasUpdate) {
-      Logger.info('NavigatorWrapper', '🚨 Force upgrade: new version available in store')
-      return true
-    }
-
-    // Priorizar resultado del nuevo sistema (minRequiredVersion)
     if (updateInfo?.isForced) {
       return true
     }
-
-    // Fallback al sistema existente con Statsig
     if (minRequiredVersion && DeviceInfo.getVersion()) {
       return isVersionBelowMinimum(DeviceInfo.getVersion(), minRequiredVersion)
     }
-
     return false
   }, [updateInfo, minRequiredVersion])
 
