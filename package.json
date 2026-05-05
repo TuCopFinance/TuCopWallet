@@ -296,7 +296,7 @@
   "resolutions": {
     "redux": "^5.0.1",
     "set-value": "^4.1.0",
-    "axios": "^1.8.2",
+    "axios": "^1.15.2",
     "minimatch": "^3.1.3",
     "image-size": "^1.2.1",
     "elliptic": "^6.6.1",
