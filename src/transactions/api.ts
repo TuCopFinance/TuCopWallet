@@ -4,7 +4,7 @@ import { getMultichainFeatures } from 'src/statsig'
 import { FEED_V2_INCLUDE_TYPES, type PageInfo, type TokenTransaction } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
 
-export type TransactionFeedV2Response = {
+type TransactionFeedV2Response = {
   transactions: TokenTransaction[]
   pageInfo: PageInfo
 }
