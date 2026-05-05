@@ -4,7 +4,7 @@ import { Shadow } from 'react-native-shadow-2'
 import Touchable from 'src/components/Touchable'
 import Backspace from 'src/icons/auth/Backspace'
 import Colors from 'src/styles/colors'
-import { Inter } from 'src/styles/fonts'
+import { typeScale } from 'src/styles/fonts'
 
 interface Props {
   onDigitPress: (digit: number) => void
@@ -107,17 +107,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   digit: {
+    ...typeScale.titleLarge,
     borderRadius: 80,
     width: 56,
     height: 56,
     backgroundColor: Colors.white,
-    fontSize: 32,
     lineHeight: 56,
     justifyContent: 'center',
     textAlign: 'center',
     alignItems: 'center',
     textAlignVertical: 'center',
-    fontFamily: Inter.Bold,
     color: Colors.primary,
     borderColor: Colors.white,
   },

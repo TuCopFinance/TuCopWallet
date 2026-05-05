@@ -21,13 +21,16 @@ import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { useSelector } from 'src/redux/hooks'
 import { type AmountEnteredIn } from 'src/send/types'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { type TokenBalance } from 'src/tokens/slice'
-import { convertLocalToTokenAmount, convertTokenToLocalAmount } from 'src/tokens/utils'
+import {
+  convertLocalToTokenAmount,
+  convertTokenToLocalAmount,
+  getTokenDisplayName,
+} from 'src/tokens/utils'
 import { parseInputAmount } from 'src/utils/parsing'
 
 export const APPROX_SYMBOL = '≈'
@@ -358,7 +361,7 @@ export default function TokenEnterAmount({
 
                 <View style={styles.tokenNameAndAvailable}>
                   <Text style={styles.tokenName} testID={`${testID}/TokenName`}>
-                    {token.symbol} on {NETWORK_NAMES[token.networkId]}
+                    {getTokenDisplayName(token.symbol)}
                   </Text>
                   <Text style={styles.tokenBalance} testID={`${testID}/TokenBalance`}>
                     <Trans i18nKey="tokenEnterAmount.availableBalance">

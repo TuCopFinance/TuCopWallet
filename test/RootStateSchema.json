@@ -1382,30 +1382,6 @@
             ],
             "type": "object"
         },
-        "DivviProtocolState": {
-            "additionalProperties": false,
-            "properties": {
-                "isInitialized": {
-                    "type": "boolean"
-                },
-                "isSDKInitialized": {
-                    "type": "boolean"
-                },
-                "pendingRegistration": {
-                    "type": "boolean"
-                },
-                "referrals": {
-                    "$ref": "#/definitions/Record<string,Referral>"
-                }
-            },
-            "required": [
-                "isInitialized",
-                "isSDKInitialized",
-                "pendingRegistration",
-                "referrals"
-            ],
-            "type": "object"
-        },
         "E164NumberToAddressType": {
             "additionalProperties": {
                 "anyOf": [
@@ -3723,36 +3699,6 @@
         },
         "PublicAppConfig": {
             "additionalProperties": false,
-            "properties": {
-                "divviProtocol": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "campaignIds": {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        },
-                        "consumer": {
-                            "type": "string"
-                        },
-                        "divviId": {
-                            "type": "string"
-                        },
-                        "providers": {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        }
-                    },
-                    "required": [
-                        "campaignIds",
-                        "divviId"
-                    ],
-                    "type": "object"
-                }
-            },
             "type": "object"
         },
         "Recipient": {
@@ -3835,10 +3781,6 @@
                 "PhoneNumber"
             ],
             "type": "string"
-        },
-        "Record<string,Referral>": {
-            "additionalProperties": false,
-            "type": "object"
         },
         "Record<string,[string,...string[]]>": {
             "additionalProperties": false,
@@ -4045,6 +3987,7 @@
                 "TokenDetailsMoreActions",
                 "TokenImport",
                 "TransactionDetailsScreen",
+                "TransactionSuccessScreen",
                 "UpgradeScreen",
                 "ValidateRecipientAccount",
                 "ValidateRecipientIntro",
@@ -6451,6 +6394,7 @@
                         "TokenDetails",
                         "TokenImport",
                         "TransactionDetailsScreen",
+                        "TransactionSuccessScreen",
                         "UpgradeScreen",
                         "ValidateRecipientAccount",
                         "ValidateRecipientIntro",
@@ -7952,9 +7896,6 @@
         "dapps": {
             "$ref": "#/definitions/State_16"
         },
-        "divviProtocol": {
-            "$ref": "#/definitions/DivviProtocolState"
-        },
         "earn": {
             "$ref": "#/definitions/State_25"
         },
@@ -8055,7 +7996,6 @@
         "app",
         "buckspay",
         "dapps",
-        "divviProtocol",
         "earn",
         "fiatConnect",
         "fiatExchanges",

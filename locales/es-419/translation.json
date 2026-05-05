@@ -1328,17 +1328,17 @@
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
   "feedItemInviteReceivedTitle": "Celo",
   "feedItemInviteReceivedInfo": "$t(inviteReceived)",
-  "feedItemSentTitle": "{{displayName}}",
-  "feedItemSentInfo": "{{comment}}",
-  "feedItemSentInfo_noComment": "Pago enviado",
+  "feedItemSentTitle": "Enviado",
+  "feedItemSentInfo": "A {{displayName}}",
+  "feedItemSentInfo_noComment": "A {{displayName}}",
   "feedItemCeloRewardReceivedTitle": "CELO ganados",
   "feedItemRewardReceivedTitle": "Supercharge",
   "feedItemRewardReceivedInfo": "Recompensas semanales",
   "feedItemInviteRewardReceivedTitle": "{{appName}}",
   "feedItemInviteRewardReceivedInfo": "Recompensa recibida",
-  "feedItemReceivedTitle": "{{displayName}}",
-  "feedItemReceivedInfo": "{{comment}}",
-  "feedItemReceivedInfo_noComment": "Pago recibido",
+  "feedItemReceivedTitle": "Recibido",
+  "feedItemReceivedInfo": "De {{displayName}}",
+  "feedItemReceivedInfo_noComment": "De {{displayName}}",
   "feedItemEscrowSentTitle": "{{nameOrNumber}}",
   "feedItemEscrowSentTitle_noReceiverDetails": "Desconocido",
   "feedItemEscrowSentInfo": "{{comment}}",
@@ -1353,6 +1353,7 @@
   "feedItemGoldPurchased": "Comprados",
   "feedItemGoldWithdrawal": "Transferidos a {{displayName}}",
   "feedItemGoldReceived": "Recibidos de {{displayName}}",
+  "feedItemSwapTitle": "Intercambio",
   "feedItemSwapPath": "{{token1}} > {{token2}}",
   "feedItemJumpstartTitle": "Enlace activo",
   "feedItemJumpstartSentSubtitle": "Invitación",
@@ -2094,7 +2095,9 @@
     "balanceInLocalAmount": "Saldo en moneda local",
     "pesos": "Pesos",
     "dollars": "Dolares",
-    "gold": "Oro"
+    "gold": "Oro",
+    "yourMoney": "Tu dinero",
+    "yourInvestments": "Tus inversiones"
   },
   "notificationCenterSpotlight": {
     "message": "Presentamos una nueva forma de reclamar recompensas, ver alertas y consultar actualizaciones en un solo lugar",
@@ -2683,7 +2686,6 @@
       "yieldRate": "Tasa de rendimiento (est.)",
       "apy": "{{apy}}%",
       "yieldRateV2": "Tasa de interés m.v."
-
     },
     "collect": {
       "title": "¡Felicidades! Revisa y recoge tus ganancias",
@@ -2895,7 +2897,7 @@
       "balance": "Balance"
     },
     "myStakes": {
-     "stakeTitle": "Stake #{{index}}",
+      "stakeTitle": "Stake #{{index}}",
       "amount": "Cantidad",
       "startDate": "Fecha de Inicio",
       "endDate": "Fecha de Finalización",
@@ -3109,7 +3111,7 @@
     "providerDescription": "Convierte COPm a Pesos Colombianos",
     "bankFormTitle": "Datos Bancarios",
     "bankFormSubtitle": "Ingresa el monto y los datos de tu cuenta bancaria para recibir tus fondos.",
-    "amountLabel": "Monto (COPm)",
+    "amountLabel": "Monto (Pesos)",
     "amountPlaceholder": "Ingresa el monto",
     "bankNameLabel": "Banco",
     "bankNamePlaceholder": "ej. Bancolombia",
@@ -3155,6 +3157,48 @@
     "contactSupport": "Soporte BucksPay",
     "minimize": "Cerrar",
     "pendingTransaction": "Tienes un retiro pendiente",
-    "poweredBy": "Con la tecnología de"
+    "poweredBy": "Con la tecnología de",
+    "temporarilyDisabled": "Temporalmente No Disponible",
+    "comingSoonMessage": "Este servicio estará disponible nuevamente pronto. Disculpa las molestias."
+  },
+  "transactionSuccess": {
+    "swap": {
+      "title": "¡Intercambio exitoso!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "goldBuy": {
+      "title": "¡Compra de oro exitosa!",
+      "subtitle": "Tu oro digital ya está en tu billetera"
+    },
+    "goldSell": {
+      "title": "¡Venta de oro exitosa!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "send": {
+      "title": "¡Envío exitoso!",
+      "subtitle": "Tu dinero fue enviado correctamente"
+    },
+    "earnDeposit": {
+      "title": "¡Depósito exitoso!",
+      "subtitle": "Tus fondos fueron depositados en el pool"
+    },
+    "earnWithdraw": {
+      "title": "¡Retiro exitoso!",
+      "subtitle": "Tus fondos fueron retirados del pool"
+    },
+    "earnClaim": {
+      "title": "¡Recompensas reclamadas!",
+      "subtitle": "Tus recompensas fueron depositadas en tu billetera"
+    },
+    "default": {
+      "title": "¡Transacción exitosa!",
+      "subtitle": "Tu transacción se completó correctamente"
+    },
+    "from": "De",
+    "to": "A",
+    "amount": "Monto",
+    "recipient": "Destinatario",
+    "pool": "Pool",
+    "viewOnExplorer": "Ver en el explorador"
   }
 }

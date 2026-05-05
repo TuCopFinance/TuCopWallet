@@ -32,10 +32,10 @@ class MainApplication : MultiDexApplication(), ShareApplication, ReactApplicatio
     }
 
     override fun onCreate() {
-        // CleverTap setup
-        ActivityLifecycleCallback.register(this)
-
         super.onCreate()
+
+        // CleverTap setup - must be after super.onCreate() for Firebase to be initialized
+        ActivityLifecycleCallback.register(this)
 
         SoLoader.init(this, OpenSourceMergedSoMapping)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

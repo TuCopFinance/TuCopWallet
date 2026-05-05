@@ -28,9 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    ...typeScale.bodySmall,
-    fontSize: 13,
-    lineHeight: 16,
+    ...typeScale.labelSemiBoldSmall,
     color: colors.gray4,
   },
 })

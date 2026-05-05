@@ -56,6 +56,33 @@ export function useTotalTokenBalance() {
   return useSelector((state) => totalTokenBalanceSelector(state, supportedNetworkIds))
 }
 
+/**
+ * Returns total wallet balance including investments (gold/XAUt0)
+ * This is the single source of truth for total balance displayed in the app
+ */
+export function useTotalBalanceWithInvestments(goldBalance: BigNumber) {
+  const totalTokenBalance = useTotalTokenBalance()
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+
+  // Get gold price from Redux state
+  const goldPriceUsd = useSelector(
+    (state: { gold: { goldPriceUsd: number | null } }) => state.gold.goldPriceUsd
+  )
+
+  // Calculate gold value in local currency
+  const goldLocalValue =
+    goldPriceUsd && usdToLocalRate && !goldBalance.isZero()
+      ? new BigNumber(goldPriceUsd).multipliedBy(usdToLocalRate).multipliedBy(goldBalance)
+      : new BigNumber(0)
+
+  // Total = tokens + investments
+  const tokenBalance = totalTokenBalance ?? new BigNumber(0)
+  return {
+    totalBalance: tokenBalance.plus(goldLocalValue),
+    goldLocalValue,
+  }
+}
+
 export function useTokensWithTokenBalance() {
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
   return useSelector((state) => tokensWithTokenBalanceSelector(state, supportedNetworkIds))

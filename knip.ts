@@ -45,6 +45,12 @@ const config: KnipConfig = {
     'src/account/__mocks__/Persona.tsx', // unit test mocks
     'src/firebase/remoteConfigValuesDefaults.e2e.ts', // e2e test setup
     'src/setupE2eEnv.e2e.ts', // e2e test setup
+    'src/statsig/__mocks__/index.ts', // unit test mocks
+    'src/refi/**/*', // paused feature - ReFi Medellin UBI
+    'src/abis/ICCOPStaking.ts', // ABI for paused marranitos feature
+    'src/abis/IReFiMedellinUBI.ts', // ABI for paused ReFi feature
+    'src/transactions/apiTestHelpers.ts', // test helpers
+    'src/earn/marranitos/**/*', // paused feature - Marranitos staking
   ],
 }
 

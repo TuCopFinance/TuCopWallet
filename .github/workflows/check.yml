@@ -1,11 +1,14 @@
 name: Check
 
 on:
-  # ..any pull request, workflow dispatch and merge queue (covers main)
+  # Run on PRs to main and Development
   pull_request:
+    branches:
+      - main
+      - Development
   workflow_dispatch:
   merge_group:
-  # Cron job to run checks @ 8:30 pm daily on the latest commit on the default branch - main
+  # Cron job to run checks @ 8:30 pm daily
   schedule:
     - cron: '30 20 * * *'
 

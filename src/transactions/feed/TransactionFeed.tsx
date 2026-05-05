@@ -6,6 +6,7 @@ import GetStarted from 'src/home/GetStarted'
 import { useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { Spacing } from 'src/styles/styles'
+import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import NoActivity from 'src/transactions/NoActivity'
 import EarnFeedItem from 'src/transactions/feed/EarnFeedItem'
 import NftFeedItem from 'src/transactions/feed/NftFeedItem'
@@ -23,6 +24,51 @@ import {
 } from 'src/transactions/selectors'
 import { TokenTransaction, TokenTransactionTypeV2, TransactionStatus } from 'src/transactions/types'
 import { groupFeedItemsInSections } from 'src/transactions/utils'
+
+/**
+ * Filters transactions to only show those involving allowed tokens (COPm, USDT, XAUt0).
+ * This prevents transactions from unwanted tokens (like CELO, cUSD, etc.) from appearing in the feed.
+ */
+function isTransactionAllowed(tx: TokenTransaction): boolean {
+  switch (tx.type) {
+    case TokenTransactionTypeV2.Sent:
+    case TokenTransactionTypeV2.Received:
+      return ALLOWED_TOKEN_IDS.has(tx.amount.tokenId)
+    case TokenTransactionTypeV2.SwapTransaction:
+    case TokenTransactionTypeV2.Exchange:
+    case TokenTransactionTypeV2.CrossChainSwapTransaction:
+      // For swaps, both tokens must be in our allowed list
+      return (
+        ALLOWED_TOKEN_IDS.has(tx.inAmount.tokenId) && ALLOWED_TOKEN_IDS.has(tx.outAmount.tokenId)
+      )
+    case TokenTransactionTypeV2.Approval:
+      // We don't show approval transactions in the feed
+      return false
+    case TokenTransactionTypeV2.EarnDeposit:
+    case TokenTransactionTypeV2.EarnWithdraw:
+      return ALLOWED_TOKEN_IDS.has(tx.inAmount.tokenId)
+    case TokenTransactionTypeV2.EarnSwapDeposit:
+      // For swap deposits, check both swap tokens and deposit tokens
+      return (
+        ALLOWED_TOKEN_IDS.has(tx.swap.inAmount.tokenId) &&
+        ALLOWED_TOKEN_IDS.has(tx.swap.outAmount.tokenId) &&
+        ALLOWED_TOKEN_IDS.has(tx.deposit.inAmount.tokenId)
+      )
+    case TokenTransactionTypeV2.EarnClaimReward:
+      return ALLOWED_TOKEN_IDS.has(tx.amount.tokenId)
+    case TokenTransactionTypeV2.NftSent:
+    case TokenTransactionTypeV2.NftReceived:
+      // NFTs are always filtered out
+      return false
+    case TokenTransactionTypeV2.Deposit:
+    case TokenTransactionTypeV2.Withdraw:
+    case TokenTransactionTypeV2.ClaimReward:
+      // These types are not handled in V1, return false to filter them out
+      return false
+    default:
+      return false
+  }
+}
 
 function TransactionFeed() {
   const { loading, error, transactions, fetchingMoreTransactions, fetchMoreTransactions } =
@@ -67,7 +113,7 @@ function TransactionFeed() {
     })
 
     return allConfirmedTransactions.filter((tx) => {
-      return allowedNetworks.includes(tx.networkId)
+      return allowedNetworks.includes(tx.networkId) && isTransactionAllowed(tx)
     })
   }, [
     transactions,
@@ -78,7 +124,7 @@ function TransactionFeed() {
 
   const pendingTransactions = useMemo(() => {
     return allPendingStandbyTransactions.filter((tx) => {
-      return allowedNetworks.includes(tx.networkId)
+      return allowedNetworks.includes(tx.networkId) && isTransactionAllowed(tx)
     })
   }, [allPendingStandbyTransactions, allowedNetworks])
 

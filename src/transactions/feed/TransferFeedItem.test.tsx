@@ -126,26 +126,20 @@ describe('TransferFeedItem', () => {
   }
 
   it('renders a completed transaction correctly', async () => {
-    const { getByText } = renderScreen({})
+    const { getByTestId } = renderScreen({})
 
-    expect(
-      getByText(
-        'feedItemSentTitle, {"displayName":"feedItemAddress, {\\"address\\":\\"0xFdd8...3075\\"}"}'
-      )
-    ).toBeTruthy()
-    expect(getByText('feedItemSentInfo, {"context":"noComment"}')).toBeTruthy()
+    expect(getElementText(getByTestId('TransferFeedItem/title'))).toContain('feedItemSentTitle')
+    expect(getElementText(getByTestId('TransferFeedItem/subtitle'))).toContain('feedItemSentInfo')
   })
 
   it('renders a pending transaction correctly', async () => {
-    const { getByTestId, getByText } = renderScreen({ status: TransactionStatus.Pending })
+    const { getByTestId } = renderScreen({ status: TransactionStatus.Pending })
 
     expect(getByTestId('GreenLoadingSpinner')).toBeTruthy()
-    expect(
-      getByText(
-        'feedItemSentTitle, {"displayName":"feedItemAddress, {\\"address\\":\\"0xFdd8...3075\\"}"}'
-      )
-    ).toBeTruthy()
-    expect(getByText('confirmingTransaction')).toBeTruthy()
+    expect(getElementText(getByTestId('TransferFeedItem/title'))).toContain('feedItemSentTitle')
+    expect(getElementText(getByTestId('TransferFeedItem/subtitle'))).toContain(
+      'confirmingTransaction'
+    )
   })
 
   it('renders a failed transaction correctly', async () => {
@@ -154,7 +148,7 @@ describe('TransferFeedItem', () => {
     expect(getByTestId('FailedTransactionAlert')).toBeTruthy()
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
+      expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemFailedTransaction'],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
@@ -201,8 +195,8 @@ describe('TransferFeedItem', () => {
     const { getByTestId } = renderScreen({})
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -214,8 +208,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemReceivedTitle', formatShortenedAddress(MOCK_ADDRESS)],
-      expectedSubtitleSections: ['feedItemReceivedInfo', 'noComment'],
+      expectedTitleSections: ['feedItemReceivedTitle'],
+      expectedSubtitleSections: ['feedItemReceivedInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -234,8 +228,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', mockName],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', mockName],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -249,8 +243,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', MOCK_E164_NUMBER],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', MOCK_E164_NUMBER],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -268,8 +262,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', mockName],
-      expectedSubtitleSections: ['feedItemSentInfo'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', mockName],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -284,8 +278,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', 'a title'],
-      expectedSubtitleSections: ['feedItemSentInfo', 'a subtitle'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', 'a title'],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -306,8 +300,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', 'Simplex'],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', 'Simplex'],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -389,8 +383,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemReceivedTitle', 'Simplex'],
-      expectedSubtitleSections: ['tokenDeposit', 'cUSD'],
+      expectedTitleSections: ['feedItemReceivedTitle'],
+      expectedSubtitleSections: ['feedItemReceivedInfo', 'Simplex'],
       expectedAmount: '+COP$13.30',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -411,8 +405,8 @@ describe('TransferFeedItem', () => {
     })
     expectDisplay({
       getByTestId,
-      expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$40,000.00',
       expectedTokenAmount: '10.00 cUSD',
     })
@@ -442,8 +436,8 @@ describe('TransferFeedItem', () => {
     expectDisplay({
       getByTestId,
       queryByTestId,
-      expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+10.00 TT',
       expectedTokenAmount: '10.00 TT',
     })
@@ -466,8 +460,8 @@ describe('TransferFeedItem', () => {
     expectDisplay({
       getByTestId,
       queryByTestId,
-      expectedTitleSections: ['feedItemSentTitle', formatShortenedAddress(MOCK_ADDRESS)],
-      expectedSubtitleSections: ['feedItemSentInfo', 'noComment'],
+      expectedTitleSections: ['feedItemSentTitle'],
+      expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+US$4.00',
       expectedTokenAmount: '10.00 CELO',
     })

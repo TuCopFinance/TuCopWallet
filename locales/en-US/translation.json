@@ -1328,17 +1328,17 @@
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
   "feedItemInviteReceivedTitle": "Celo",
   "feedItemInviteReceivedInfo": "$t(inviteReceived)",
-  "feedItemSentTitle": "{{displayName}}",
-  "feedItemSentInfo": "{{comment}}",
-  "feedItemSentInfo_noComment": "Payment Sent",
+  "feedItemSentTitle": "Sent",
+  "feedItemSentInfo": "To {{displayName}}",
+  "feedItemSentInfo_noComment": "To {{displayName}}",
   "feedItemCeloRewardReceivedTitle": "Earned CELO",
   "feedItemRewardReceivedTitle": "Supercharge",
   "feedItemRewardReceivedInfo": "Weekly Rewards",
   "feedItemInviteRewardReceivedTitle": "{{appName}}",
   "feedItemInviteRewardReceivedInfo": "Reward Received",
-  "feedItemReceivedTitle": "{{displayName}}",
-  "feedItemReceivedInfo": "{{comment}}",
-  "feedItemReceivedInfo_noComment": "Payment Received",
+  "feedItemReceivedTitle": "Received",
+  "feedItemReceivedInfo": "From {{displayName}}",
+  "feedItemReceivedInfo_noComment": "From {{displayName}}",
   "feedItemEscrowSentTitle": "{{nameOrNumber}}",
   "feedItemEscrowSentTitle_noReceiverDetails": "Unknown",
   "feedItemEscrowSentInfo": "{{comment}}",
@@ -1353,6 +1353,7 @@
   "feedItemGoldPurchased": "Purchased",
   "feedItemGoldWithdrawal": "Withdrawal to {{displayName}}",
   "feedItemGoldReceived": "Received from {{displayName}}",
+  "feedItemSwapTitle": "Swapped",
   "feedItemSwapPath": "{{token1}} to {{token2}}",
   "feedItemJumpstartTitle": "Live Link",
   "feedItemJumpstartSentSubtitle": "Invitation",
@@ -2086,7 +2087,12 @@
       "dappPositions": "Dapp Positions"
     },
     "importToken": "Import",
-    "importTokens": "Import Tokens"
+    "importTokens": "Import Tokens",
+    "pesos": "Pesos",
+    "dollars": "Dollars",
+    "gold": "Gold",
+    "yourMoney": "Your money",
+    "yourInvestments": "Your investments"
   },
   "notificationCenterSpotlight": {
     "message": "Introducing a new way to claim rewards, view alerts, and see updates in one place",
@@ -2888,7 +2894,7 @@
     "providerDescription": "Convert COPm to Colombian Pesos",
     "bankFormTitle": "Bank Details",
     "bankFormSubtitle": "Enter the amount and your bank account details to receive your funds.",
-    "amountLabel": "Amount (COPm)",
+    "amountLabel": "Amount (Pesos)",
     "amountPlaceholder": "Enter amount",
     "bankNameLabel": "Bank",
     "bankNamePlaceholder": "e.g. Bancolombia",
@@ -2931,6 +2937,48 @@
     "contactSupport": "Contact BucksPay Support",
     "minimize": "Close",
     "pendingTransaction": "You have a pending withdrawal",
-    "poweredBy": "Powered by"
+    "poweredBy": "Powered by",
+    "temporarilyDisabled": "Temporarily Unavailable",
+    "comingSoonMessage": "This service will be available again soon. We apologize for the inconvenience."
+  },
+  "transactionSuccess": {
+    "swap": {
+      "title": "Swap successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "goldBuy": {
+      "title": "Gold purchase successful!",
+      "subtitle": "Your digital gold is now in your wallet"
+    },
+    "goldSell": {
+      "title": "Gold sale successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "send": {
+      "title": "Send successful!",
+      "subtitle": "Your money was sent successfully"
+    },
+    "earnDeposit": {
+      "title": "Deposit successful!",
+      "subtitle": "Your funds were deposited into the pool"
+    },
+    "earnWithdraw": {
+      "title": "Withdrawal successful!",
+      "subtitle": "Your funds were withdrawn from the pool"
+    },
+    "earnClaim": {
+      "title": "Rewards claimed!",
+      "subtitle": "Your rewards were deposited into your wallet"
+    },
+    "default": {
+      "title": "Transaction successful!",
+      "subtitle": "Your transaction completed successfully"
+    },
+    "from": "From",
+    "to": "To",
+    "amount": "Amount",
+    "recipient": "Recipient",
+    "pool": "Pool",
+    "viewOnExplorer": "View on explorer"
   }
 }

@@ -16,7 +16,8 @@ import {
   withdrawSuccess,
 } from 'src/earn/slice'
 import { isGasSubsidizedForNetwork } from 'src/earn/utils'
-import { navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { EarnPosition } from 'src/positions/types'
 import { Network, NetworkId, TokenTransactionTypeV2 } from 'src/transactions/types'
@@ -288,7 +289,10 @@ describe('depositSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).toHaveBeenCalledWith({
       abi: erc20Abi,
       data: serializableApproveTx.data,
@@ -332,7 +336,10 @@ describe('depositSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).toHaveBeenCalledTimes(1)
     expect(mockStandbyHandler).toHaveBeenCalledWith(expectedDepositStandbyTx)
@@ -383,7 +390,10 @@ describe('depositSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).toHaveBeenCalledWith({
       abi: erc20Abi,
       data: serializableApproveTx.data,
@@ -437,7 +447,10 @@ describe('depositSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).toHaveBeenCalledTimes(1)
     expect(mockStandbyHandler).toHaveBeenCalledWith(expectedSwapDepositStandbyTx)
@@ -491,7 +504,10 @@ describe('depositSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x3' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).toHaveBeenCalledTimes(3)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, null)
@@ -531,7 +547,10 @@ describe('depositSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnDeposit' })
+    )
     expect(decodeFunctionData).toHaveBeenCalledWith({
       abi: erc20Abi,
       data: serializableApproveTx.data,
@@ -563,7 +582,7 @@ describe('depositSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .not.call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'])
       .run()
-    expect(navigateHome).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).not.toHaveBeenCalled()
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -597,7 +616,7 @@ describe('depositSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .not.call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'])
       .run()
-    expect(navigateHome).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).not.toHaveBeenCalled()
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -638,7 +657,7 @@ describe('depositSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(decodeFunctionData).toHaveBeenCalledWith({
       abi: erc20Abi,
       data: serializableApproveTx.data,
@@ -792,7 +811,10 @@ describe('withdrawSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
 
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnWithdraw' })
+    )
     expect(mockStandbyHandler).toHaveBeenCalledTimes(2)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, expectedWithdrawStandbyTx)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(2, expectedClaimRewardTx)
@@ -827,7 +849,10 @@ describe('withdrawSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
       .run()
 
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnWithdraw' })
+    )
     expect(mockStandbyHandler).toHaveBeenCalledTimes(2)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, {
       ...expectedWithdrawStandbyTx,
@@ -865,7 +890,10 @@ describe('withdrawSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .run()
 
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnWithdraw' })
+    )
     expect(mockStandbyHandler).toHaveBeenCalledTimes(1)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, expectedWithdrawStandbyTx)
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -904,7 +932,10 @@ describe('withdrawSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .run()
 
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnWithdraw' })
+    )
     expect(mockStandbyHandler).toHaveBeenCalledTimes(1)
     expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, {
       ...expectedWithdrawStandbyTx,
@@ -942,7 +973,7 @@ describe('withdrawSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .not.call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'])
       .run()
-    expect(navigateHome).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(mockStandbyHandler).not.toHaveBeenCalled()
     expect(AppAnalytics.track).toHaveBeenCalledWith(
       EarnEvents.earn_withdraw_submit_start,
@@ -973,7 +1004,7 @@ describe('withdrawSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .not.call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'])
       .run()
-    expect(navigateHome).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(decodeFunctionData).not.toHaveBeenCalled()
     expect(mockStandbyHandler).not.toHaveBeenCalled()
     expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -1014,7 +1045,7 @@ describe('withdrawSubmitSaga', () => {
         .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
         .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x2' })
         .run()
-      expect(navigateHome).toHaveBeenCalled()
+      expect(navigate).not.toHaveBeenCalled()
       expect(mockStandbyHandler).toHaveBeenCalledTimes(2)
       expect(mockStandbyHandler).toHaveBeenNthCalledWith(1, expectedWithdrawStandbyTx)
       expect(mockStandbyHandler).toHaveBeenNthCalledWith(2, expectedClaimRewardTx)
@@ -1046,7 +1077,10 @@ describe('withdrawSubmitSaga', () => {
       .call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'], { hash: '0x1' })
       .run()
 
-    expect(navigateHome).toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'earnClaim' })
+    )
     expect(mockStandbyHandler).toHaveBeenCalledTimes(1)
     expect(mockStandbyHandler).toHaveBeenCalledWith({
       ...expectedClaimRewardTx,
@@ -1084,7 +1118,7 @@ describe('withdrawSubmitSaga', () => {
       .call.like({ fn: sendPreparedTransactions })
       .not.call([publicClient[Network.Arbitrum], 'waitForTransactionReceipt'])
       .run()
-    expect(navigateHome).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     expect(mockStandbyHandler).not.toHaveBeenCalled()
     expect(AppAnalytics.track).toHaveBeenCalledWith(
       EarnEvents.earn_withdraw_submit_start,

@@ -2,7 +2,8 @@ import { showErrorOrFallback } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { CeloExchangeEvents, SendEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
-import { navigateBack, navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { handleQRCodeDefault, handleQRCodeSecureSend, shareSVGImage } from 'src/qrcode/utils'
 import {
   Actions,
@@ -11,6 +12,7 @@ import {
   sendPaymentFailure,
   sendPaymentSuccess,
 } from 'src/send/actions'
+import { vibrateSuccess } from 'src/styles/hapticFeedback'
 import { getTokenInfo } from 'src/tokens/saga'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
 import { TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
@@ -120,13 +122,21 @@ export function* sendPaymentSaga({
       })
     }
 
-    if (fromModal) {
-      navigateBack()
-    } else {
-      navigateHome()
-    }
-
     yield* put(sendPaymentSuccess({ amount, tokenId }))
+
+    // Show success vibration and navigate to success screen
+    vibrateSuccess()
+    navigate(Screens.TransactionSuccessScreen, {
+      fromTokenId: tokenId,
+      toTokenId: tokenId, // same token for send
+      fromAmount: amount.abs().toString(),
+      toAmount: amount.abs().toString(),
+      transactionHash: hash,
+      networkId: tokenInfo.networkId,
+      type: 'send' as const,
+      recipientAddress,
+      recipientName: recipient.name || undefined,
+    })
   } catch (err) {
     // for pin cancelled, this will show the pin input canceled message, for any
     // other error, will fallback to payment failed
