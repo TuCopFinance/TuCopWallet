@@ -125,7 +125,6 @@ TuCopWallet/
 │   │── storage/                    #   Keychain storage abstraction
 │   │── import/                     #   Wallet import from seed phrase
 │   │
-│   │── divviProtocol/              #   Divvi referral tracking (v2)
 │   │── points/                     #   Points/rewards system (21 files)
 │   │── jumpstart/                  #   Jumpstart referral rewards (22 files)
 │   │── invite/                     #   Invite/referral modals
@@ -196,7 +195,6 @@ TuCopWallet/
 │   ├── ci-cd.md                    #   CI/CD pipeline architecture
 │   ├── celo-gas-optimization.md    #   Celo L2 gas fee optimization
 │   ├── phone-verification.md       #   Integrated phone verification design
-│   ├── divvi-integration.md        #   Divvi Protocol integration guide
 │   ├── buckspay-implementation.md  #   BucksPay offramp implementation
 │   ├── buckspay-api.md             #   BucksPay API reference (OpenAPI 3.0)
 │   ├── connecting-dapps.md         #   WalletConnect v2 DApp guide
@@ -206,8 +204,7 @@ TuCopWallet/
 │   └── archive/                    #   Legacy Mobile Stack documentation
 │       ├── runbook.md              #     Original framework setup runbook
 │       ├── wallet.md               #     Original Valora wallet docs
-│       ├── watching-assets.mdx     #     Legacy token registration
-│       └── divvi-v1-integration.md #     Divvi v1 (superseded by v2)
+│       └── watching-assets.mdx     #     Legacy token registration
 │
 ├── e2e/                            # End-to-end tests (Detox)
 │   ├── src/                        #   16 spec files + usecases/ + utils/
@@ -361,13 +358,13 @@ See [docs/release-process.md](docs/release-process.md) and [docs/ci-cd.md](docs/
 
 Full documentation index: [docs/README.md](docs/README.md)
 
-| Category         | Documents                                                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Setup**        | [wallet-setup.md](docs/wallet-setup.md), [SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                   |
-| **Release**      | [release-process.md](docs/release-process.md), [ci-cd.md](docs/ci-cd.md), [releases.md](docs/releases.md)                                   |
-| **Technical**    | [celo-gas-optimization.md](docs/celo-gas-optimization.md), [phone-verification.md](docs/phone-verification.md)                              |
-| **Integrations** | [buckspay-api.md](docs/buckspay-api.md), [divvi-integration.md](docs/divvi-integration.md), [connecting-dapps.md](docs/connecting-dapps.md) |
-| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                            |
+| Category         | Documents                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Setup**        | [wallet-setup.md](docs/wallet-setup.md), [SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                      |
+| **Release**      | [release-process.md](docs/release-process.md), [ci-cd.md](docs/ci-cd.md), [releases.md](docs/releases.md)      |
+| **Technical**    | [celo-gas-optimization.md](docs/celo-gas-optimization.md), [phone-verification.md](docs/phone-verification.md) |
+| **Integrations** | [buckspay-api.md](docs/buckspay-api.md), [connecting-dapps.md](docs/connecting-dapps.md)                       |
+| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)               |
 
 ## URLs & Links
 

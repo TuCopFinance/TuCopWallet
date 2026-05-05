@@ -8,7 +8,7 @@ PODS:
     - Adjust/Adjust (= 5.0.1)
   - Adjust/Adjust (5.0.1):
     - AdjustSignature (~> 3.18)
-  - AdjustSignature (3.62.0)
+  - AdjustSignature (3.67.0)
   - Auth0 (2.7.2):
     - JWTDecode (~> 3.1)
     - SimpleKeychain (~> 1.1)
@@ -2645,7 +2645,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   A0Auth0: 3e5033500f199020186a42c49020ecd508a72b27
   Adjust: f27daaa40d0df5550b89dd428cd8545d812e1f6d
-  AdjustSignature: 682d788005a6e21557913a9dc0381ae8d943ca0a
+  AdjustSignature: 9498705a4ac67b719e31828be4d74fbb8656950c
   Auth0: 28cb24cb19ebd51f0b07751f16d83b59f4019532
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
@@ -2800,6 +2800,6 @@ SPEC CHECKSUMS:
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   Yoga: 2b02f3f767761bb4ffd25b1bb56fd264be57bd6b
 
-PODFILE CHECKSUM: e4f093601f145ff8a15005391202942eec1e1038
+PODFILE CHECKSUM: df8aee781e8cc3f23e3f789e023a229cc327217e
 
 COCOAPODS: 1.16.2

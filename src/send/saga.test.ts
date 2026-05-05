@@ -7,7 +7,8 @@ import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { CeloExchangeEvents, SendEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
-import { navigateBack, navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import {
   Actions,
   SendPaymentAction,
@@ -117,56 +118,54 @@ describe(sendPaymentSaga, () => {
 
   it.each([
     {
-      testSuffix: 'navigates home when not initiated from modal',
+      testSuffix: 'navigates to success screen when not initiated from modal',
       fromModal: false,
-      navigateFn: navigateHome,
     },
     {
-      testSuffix: 'navigates back when initiated from modal',
+      testSuffix: 'navigates to success screen when initiated from modal',
       fromModal: true,
-      navigateFn: navigateBack,
     },
-  ])(
-    'sends a payment successfully with viem and $testSuffix',
-    async ({ fromModal, navigateFn }) => {
-      await expectSaga(sendPaymentSaga, { ...sendAction, fromModal })
-        .withState(createMockStore({}).getState())
-        .provide(createDefaultProviders())
-        .call(getViemWallet, networkConfig.viemChain.celo, false)
-        .put(
-          addStandbyTransaction({
-            context: { id: 'mock' },
-            type: TokenTransactionTypeV2.Sent,
-            networkId: NetworkId['celo-sepolia'],
-            amount: {
-              value: BigNumber(10).negated().toString(),
-              tokenAddress: mockCusdAddress,
-              tokenId: mockCusdTokenId,
-            },
-            address: mockQRCodeRecipient.address,
-            metadata: {},
-            feeCurrencyId: mockCeloTokenId,
-            transactionHash: mockTxHash,
-          })
-        )
-        .put(sendPaymentSuccess({ amount, tokenId: mockCusdTokenId }))
-        .run()
+  ])('sends a payment successfully with viem and $testSuffix', async ({ fromModal }) => {
+    await expectSaga(sendPaymentSaga, { ...sendAction, fromModal })
+      .withState(createMockStore({}).getState())
+      .provide(createDefaultProviders())
+      .call(getViemWallet, networkConfig.viemChain.celo, false)
+      .put(
+        addStandbyTransaction({
+          context: { id: 'mock' },
+          type: TokenTransactionTypeV2.Sent,
+          networkId: NetworkId['celo-sepolia'],
+          amount: {
+            value: BigNumber(10).negated().toString(),
+            tokenAddress: mockCusdAddress,
+            tokenId: mockCusdTokenId,
+          },
+          address: mockQRCodeRecipient.address,
+          metadata: {},
+          feeCurrencyId: mockCeloTokenId,
+          transactionHash: mockTxHash,
+        })
+      )
+      .put(sendPaymentSuccess({ amount, tokenId: mockCusdTokenId }))
+      .run()
 
-      expect(navigateFn).toHaveBeenCalledTimes(1)
-      expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
-      expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_tx_start)
-      expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_tx_complete, {
-        txId: mockContext.id,
-        recipientAddress: mockQRCodeRecipient.address,
-        amount: '10',
-        usdAmount: '10',
-        tokenAddress: mockCusdAddress,
-        tokenId: mockCusdTokenId,
-        networkId: 'celo-sepolia',
-        isTokenManuallyImported: false,
-      })
-    }
-  )
+    expect(navigate).toHaveBeenCalledWith(
+      Screens.TransactionSuccessScreen,
+      expect.objectContaining({ type: 'send' })
+    )
+    expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
+    expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_tx_start)
+    expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_tx_complete, {
+      txId: mockContext.id,
+      recipientAddress: mockQRCodeRecipient.address,
+      amount: '10',
+      usdAmount: '10',
+      tokenAddress: mockCusdAddress,
+      tokenId: mockCusdTokenId,
+      networkId: 'celo-sepolia',
+      isTokenManuallyImported: false,
+    })
+  })
 
   it('sends a payment successfully for celo and logs a withdrawal event', async () => {
     await expectSaga(sendPaymentSaga, { ...sendAction, tokenId: mockCeloTokenId })

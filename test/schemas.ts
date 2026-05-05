@@ -3610,12 +3610,6 @@ export const v239Schema = {
     bucksPayCode: 'P5Y1',
     bucksPayStatus: 'PENDING',
   },
-  divviProtocol: {
-    isInitialized: false,
-    isSDKInitialized: false,
-    pendingRegistration: false,
-    referrals: {},
-  },
 }
 
 export const v240Schema = {

@@ -1,12 +1,16 @@
 name: Test
 
 on:
-  # Run on pushes to main..
+  # Run on pushes to main and Development
   push:
     branches:
       - main
-  # ..any pull request and merge queue
+      - Development
+  # Run on PRs to main and Development
   pull_request:
+    branches:
+      - main
+      - Development
   merge_group:
 
 # Cancel any in progress run of the workflow for a given PR
