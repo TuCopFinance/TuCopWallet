@@ -3699,7 +3699,6 @@
         },
         "PublicAppConfig": {
             "additionalProperties": false,
-            "properties": {},
             "type": "object"
         },
         "Recipient": {
@@ -3988,6 +3987,7 @@
                 "TokenDetailsMoreActions",
                 "TokenImport",
                 "TransactionDetailsScreen",
+                "TransactionSuccessScreen",
                 "UpgradeScreen",
                 "ValidateRecipientAccount",
                 "ValidateRecipientIntro",
@@ -6394,6 +6394,7 @@
                         "TokenDetails",
                         "TokenImport",
                         "TransactionDetailsScreen",
+                        "TransactionSuccessScreen",
                         "UpgradeScreen",
                         "ValidateRecipientAccount",
                         "ValidateRecipientIntro",
