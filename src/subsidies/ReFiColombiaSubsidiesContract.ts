@@ -12,6 +12,7 @@ import networkConfig from 'src/web3/networkConfig'
 import { Address, encodeFunctionData, parseEventLogs } from 'viem'
 
 import ReFiColombiaSubsidies from 'src/abis/IReFiColombiaSubsidies'
+import { getLastClaimTimestamp } from 'src/subsidies/subsidyEventHistory'
 
 const TAG = 'subsidies/ReFiColombiaSubsidiesContract'
 
@@ -118,63 +119,12 @@ export class ReFiColombiaSubsidiesContract {
       const canClaim = await this.canClaimThisWeek(walletAddress)
       Logger.debug(TAG, `Can claim this week: ${canClaim}`)
 
-      // Intentar obtener información de claims previos
-      let lastClaimTimestamp: number | undefined
-      let nextClaimAvailable: number | undefined
+      const lastClaimTimestamp = await getLastClaimTimestamp(walletAddress)
+      const nextClaimAvailable =
+        lastClaimTimestamp !== undefined ? lastClaimTimestamp + 7 * 24 * 60 * 60 : undefined
 
-      try {
-        // Buscar eventos de claim más recientes con rango reducido
-        const currentBlock = await this.client.getBlockNumber()
-        const blocksToSearch = 5000 // Reducir aún más el rango
-        const fromBlock = currentBlock - BigInt(blocksToSearch)
-
-        Logger.debug(
-          TAG,
-          `Searching for claim events from block ${fromBlock} to ${currentBlock} (range: ${blocksToSearch} blocks)`
-        )
-
-        const claimEvents = await this.client.getLogs({
-          address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
-          event: {
-            type: 'event',
-            name: 'SubsidyClaimed',
-            inputs: [
-              { type: 'address', indexed: true, name: 'beneficiary' },
-              { type: 'uint256', indexed: false, name: 'amount' },
-            ],
-          },
-          args: {
-            beneficiary: walletAddress,
-          },
-          fromBlock,
-          toBlock: 'latest',
-        })
-
-        Logger.debug(TAG, `Found ${claimEvents.length} claim events for address ${walletAddress}`)
-
-        if (claimEvents.length > 0) {
-          // Obtener el evento más reciente
-          const latestEvent = claimEvents[claimEvents.length - 1]
-          const eventArgs = parseEventLogs({
-            abi: ReFiColombiaSubsidies.abi,
-            logs: [latestEvent],
-          })[0]?.args as any
-
-          if (eventArgs?.timestamp) {
-            lastClaimTimestamp = Number(eventArgs.timestamp)
-            // Calcular próximo claim disponible (asumiendo 7 días)
-            nextClaimAvailable = lastClaimTimestamp + 7 * 24 * 60 * 60
-            Logger.debug(TAG, `Last claim: ${new Date(lastClaimTimestamp * 1000).toISOString()}`)
-            Logger.debug(
-              TAG,
-              `Next claim available: ${new Date(nextClaimAvailable * 1000).toISOString()}`
-            )
-          }
-        } else {
-          Logger.debug(TAG, 'No recent claim events found in the searched range')
-        }
-      } catch (error) {
-        Logger.warn(TAG, 'Could not fetch claim events, using contract state only:', error)
+      if (lastClaimTimestamp !== undefined) {
+        Logger.debug(TAG, `Last claim: ${new Date(lastClaimTimestamp * 1000).toISOString()}`)
       }
 
       return {
