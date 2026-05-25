@@ -308,6 +308,13 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               size={BtnSizes.FULL}
               style={styles.backButton}
             />
+
+            {!!debugInfo && __DEV__ && (
+              <View style={styles.debugContainer}>
+                <Text style={styles.debugTitle}>Debug Info:</Text>
+                <Text style={styles.debugText}>{debugInfo}</Text>
+              </View>
+            )}
           </View>
         </View>
       )
