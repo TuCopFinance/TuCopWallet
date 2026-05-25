@@ -278,10 +278,8 @@
                                 "revokePhoneNumber.revokeError",
                                 "sendPaymentFailed",
                                 "simplexPurchaseFetchFailed",
-                                "swapScreen.fetchSwapQuoteFailed",
                                 "transactionTimeout",
                                 "ubiAlreadyClaimed",
-                                "ubiClaimError",
                                 "ubiNotBeneficiary"
                             ],
                             "type": "string"
