@@ -3666,6 +3666,17 @@ export const v244Schema = {
   },
 }
 
+// Migration 245 removed the deprecated divviProtocol slice from persisted state.
+// Schemas in this file never carried that slice explicitly, so the schema diff
+// from v244 is just the version bump.
+export const v245Schema = {
+  ...v244Schema,
+  _persist: {
+    ...v244Schema._persist,
+    version: 245,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v244Schema as Partial<RootState>
+  return v245Schema as Partial<RootState>
 }
