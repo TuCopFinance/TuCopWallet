@@ -40,6 +40,10 @@ export async function getLastClaimTimestamp(walletAddress: Address): Promise<num
   const url = new URL(`${TUCOP_BACKEND_URL}/events`)
   url.searchParams.set('address', REFI_COLOMBIA_SUBSIDIES_ADDRESS)
   url.searchParams.set('topic0', SUBSIDY_CLAIMED_TOPIC)
+  // Filter server-side by beneficiary in topic[1]. The verified contract ABI declares
+  // beneficiaryAddress as the only indexed param, so it lives in topic[1]. This keeps
+  // the response small and avoids the Etherscan 1000-row pagination cap.
+  url.searchParams.set('topic1', beneficiaryTopic)
 
   try {
     const response = await fetch(url.toString())
