@@ -66,11 +66,22 @@ export function withPasteAware<P extends ViewProps>(
 
         if (deviceIsIos14OrNewer()) {
           const clipboardHasContent = await Clipboard.hasString()
+          // Re-check mount: the component may have unmounted while the await
+          // above was in flight (e.g. user navigated back during a rapid
+          // forward/back loop). Without this guard, setState on an unmounted
+          // class component throws "undefined is not a function" inside React,
+          // surfacing as a generic crash in ErrorBoundary.
+          if (!this._isMounted) {
+            return
+          }
           this.setState({ isPasteIconVisible: clipboardHasContent, clipboardContent: null })
           return
         }
 
         const clipboardContent = await Clipboard.getString()
+        if (!this._isMounted) {
+          return
+        }
         const { shouldShowClipboard, value } = this.props
         if (
           clipboardContent &&
