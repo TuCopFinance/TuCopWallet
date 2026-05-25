@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -52,7 +53,11 @@ const MarranitoStaking = () => {
 
   const handleStake = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.invalidAmount'))
+      showErrorMessage({
+        error: new Error(t('earnFlow.staking.invalidAmount')),
+        context: { screen: 'MarranitoStaking', action: 'validateAmount' },
+        variant: 'sheet',
+      })
       return
     }
     try {
@@ -85,7 +90,11 @@ const MarranitoStaking = () => {
           ]
         )
       } else {
-        Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.stakeFailed'))
+        showErrorMessage({
+          error: new Error(t('earnFlow.staking.stakeFailed')),
+          context: { screen: 'MarranitoStaking', action: 'stake' },
+          variant: 'sheet',
+        })
       }
     } catch (error) {
       Logger.error(TAG, 'Error staking', error)

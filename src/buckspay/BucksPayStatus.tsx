@@ -12,6 +12,7 @@ import {
 import { resetFlow } from 'src/buckspay/slice'
 import { BucksPayTransactionStatus } from 'src/buckspay/types'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { ErrorMessage } from 'src/components/ErrorMessage'
 import { navigateHome } from 'src/navigator/NavigationService'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
@@ -93,11 +94,15 @@ function BucksPayStatus() {
         </Text>
 
         {isError && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>
-              {error?.startsWith('buckspay.') ? t(error) : error || t('buckspay.unknownError')}
-            </Text>
-          </View>
+          <ErrorMessage
+            error={
+              new Error(
+                error?.startsWith('buckspay.') ? t(error) : error || t('buckspay.unknownError')
+              )
+            }
+            context={{ screen: 'BucksPayStatus', action: 'offrampFlow' }}
+            variant="banner"
+          />
         )}
 
         {!isError && (
@@ -209,15 +214,6 @@ const styles = StyleSheet.create({
     ...typeScale.titleMedium,
     color: Colors.black,
     marginBottom: Spacing.Thick24,
-  },
-  errorContainer: {
-    backgroundColor: Colors.errorLight,
-    padding: Spacing.Regular16,
-    borderRadius: 8,
-  },
-  errorText: {
-    ...typeScale.bodySmall,
-    color: Colors.errorDark,
   },
   stepsContainer: {
     marginBottom: Spacing.Thick24,

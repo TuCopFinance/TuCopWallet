@@ -76,6 +76,7 @@ export const PincodeEnter = ({ route }: Props) => {
       <Pincode
         subtitle={t('confirmPin.title')}
         errorText={errorText}
+        errorContext={{ screen: 'PincodeEnter', action: 'confirmPin' }}
         pin={pin}
         onChangePin={onChangePin}
         onCompletePin={onPressConfirm}
