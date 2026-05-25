@@ -7,6 +7,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { ErrorMessage } from 'src/components/ErrorMessage'
+import RowDivider from 'src/components/RowDivider'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
@@ -270,6 +271,8 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
                     </Text>
                   </View>
                 )}
+
+                {!!ubiStatus.lastClaimTimestamp && !!ubiStatus.nextClaimAvailable && <RowDivider />}
 
                 {!!ubiStatus.nextClaimAvailable && (
                   <View style={styles.detailRow}>
@@ -597,10 +600,6 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     width: '100%',
-    backgroundColor: Colors.gray1,
-    borderRadius: 12,
-    padding: Spacing.Regular16,
-    gap: Spacing.Regular16,
     marginBottom: Spacing.Large32,
   },
   detailRow: {
