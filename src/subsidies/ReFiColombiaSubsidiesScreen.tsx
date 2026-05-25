@@ -238,7 +238,9 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       return (
         <View style={styles.alreadyClaimedContainer}>
           <View style={styles.alreadyClaimedCard}>
-            <Celebration size={72} color={Colors.primary} />
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
 
             <View style={styles.congratsSection}>
               <Text style={styles.congratsTitle}>
@@ -301,7 +303,9 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     return (
       <View style={styles.eligibleContainer}>
         <View style={styles.eligibleCard}>
-          <Celebration size={72} color={Colors.primary} />
+          <View style={styles.iconContainer}>
+            <Celebration size={64} color={Colors.primary} />
+          </View>
 
           <View style={styles.congratsSection}>
             <Text style={styles.congratsTitle}>
@@ -548,25 +552,34 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Thick24,
     marginBottom: Spacing.Large32,
   },
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.successLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.Thick24,
+  },
   congratsTitle: {
-    ...typeScale.titleLarge,
-    color: Colors.primary,
+    ...typeScale.labelLarge,
+    color: Colors.black,
     textAlign: 'center',
-    marginBottom: Spacing.Smallest8,
+    paddingTop: Spacing.Smallest8,
+    paddingBottom: Spacing.Regular16,
   },
   congratsSubtitle: {
-    ...typeScale.bodyLarge,
-    color: Colors.gray3,
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
     textAlign: 'center',
   },
   benefitCard: {
     backgroundColor: Colors.gray1,
     borderRadius: 12,
-    padding: Spacing.Thick24,
+    padding: Spacing.Regular16,
     marginBottom: Spacing.Large32,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    ...getShadowStyle(Shadow.Soft),
+    alignSelf: 'stretch',
+    gap: Spacing.Smallest8,
   },
   benefitTitle: {
     ...typeScale.titleSmall,
@@ -584,8 +597,7 @@ const styles = StyleSheet.create({
     padding: Spacing.Regular16,
     marginBottom: Spacing.Regular16,
     alignSelf: 'stretch',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.successDark,
+    gap: Spacing.Smallest8,
   },
   claimInfoTitle: {
     ...typeScale.labelSemiBoldSmall,
@@ -602,8 +614,7 @@ const styles = StyleSheet.create({
     padding: Spacing.Regular16,
     marginBottom: Spacing.Large32,
     alignSelf: 'stretch',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.warningDark,
+    gap: Spacing.Tiny4,
   },
   nextClaimTitle: {
     ...typeScale.labelSemiBoldSmall,
