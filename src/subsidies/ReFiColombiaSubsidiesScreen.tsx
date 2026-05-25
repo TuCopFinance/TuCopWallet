@@ -161,31 +161,41 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const renderContent = () => {
     if (isCheckingBeneficiary) {
       return (
-        <View style={styles.loadingContainer}>
-          <Celebration size={48} color={Colors.primary} />
-          <Text style={styles.loadingText}>{t('reFiColombiaSubsidies.checking.title')}</Text>
-          <Text style={styles.loadingSubtext}>{t('reFiColombiaSubsidies.checking.subtitle')}</Text>
-          <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
+            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.checking.title')}</Text>
+            <Text style={styles.congratsSubtitle}>
+              {t('reFiColombiaSubsidies.checking.subtitle')}
+            </Text>
+            <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
+          </View>
         </View>
       )
     }
 
     if (ubiStatus === null) {
       return (
-        <View style={styles.errorContainer}>
-          <Celebration size={48} color={Colors.error} />
-          <ErrorMessage
-            error={loadError ?? new Error('ubiStatus null')}
-            context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
-            variant="banner"
-          />
-          <Button
-            onPress={checkUBIStatus}
-            text={t('reFiColombiaSubsidies.error.retry')}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.MEDIUM}
-            style={styles.retryButton}
-          />
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
+            <ErrorMessage
+              error={loadError ?? new Error('ubiStatus null')}
+              context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
+              variant="banner"
+            />
+            <Button
+              onPress={checkUBIStatus}
+              text={t('reFiColombiaSubsidies.error.retry')}
+              type={BtnTypes.SECONDARY}
+              size={BtnSizes.MEDIUM}
+              style={styles.retryButton}
+            />
+          </View>
         </View>
       )
     }
@@ -200,13 +210,13 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       }
 
       return (
-        <View style={styles.notEligibleContainer}>
-          <View style={styles.notEligibleCard}>
-            <Celebration size={56} color={Colors.gray3} />
-            <Text style={styles.notEligibleTitle}>
-              {t('reFiColombiaSubsidies.notEligible.title')}
-            </Text>
-            <Text style={styles.notEligibleDescription}>
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
+            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.notEligible.title')}</Text>
+            <Text style={styles.congratsSubtitle}>
               {t('reFiColombiaSubsidies.notEligible.description')}
             </Text>
             <Button
@@ -236,8 +246,8 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     // Usuario es beneficiario
     if (ubiStatus.hasClaimedThisWeek) {
       return (
-        <View style={styles.alreadyClaimedContainer}>
-          <View style={styles.alreadyClaimedCard}>
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
             <View style={styles.iconContainer}>
               <Celebration size={64} color={Colors.primary} />
             </View>
@@ -305,8 +315,8 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
 
     // Usuario puede reclamar
     return (
-      <View style={styles.eligibleContainer}>
-        <View style={styles.eligibleCard}>
+      <View style={styles.stateContainer}>
+        <View style={styles.stateCard}>
           <View style={styles.iconContainer}>
             <Celebration size={64} color={Colors.primary} />
           </View>
@@ -458,66 +468,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: Spacing.Large32,
   },
-  loadingContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    ...typeScale.titleSmall,
-    color: Colors.primary,
-    marginTop: Spacing.Regular16,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  loadingSubtext: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    marginTop: Spacing.Smallest8,
-    textAlign: 'center',
-  },
   spinner: {
     marginTop: Spacing.Regular16,
   },
-  errorContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.Regular16,
-  },
   retryButton: {
     marginTop: Spacing.Regular16,
-  },
-  notEligibleContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notEligibleCard: {
-    backgroundColor: Colors.gray1,
-    borderRadius: 16,
-    padding: Spacing.Large32,
-    alignItems: 'center',
-    ...getShadowStyle(Shadow.Soft),
-    borderWidth: 1,
-    borderColor: Colors.gray2,
-    marginHorizontal: Spacing.Smallest8,
-    marginVertical: Spacing.Smallest8,
-  },
-  notEligibleTitle: {
-    ...typeScale.titleMedium,
-    color: Colors.gray6,
-    textAlign: 'center',
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
-  },
-  notEligibleDescription: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray3,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: Spacing.Regular16,
   },
   contactInfo: {
     ...typeScale.bodySmall,
@@ -536,11 +491,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Spacing.Regular16,
   },
-  alreadyClaimedContainer: {
+  // Shared chrome for every state (loading, error, notEligible, eligible, alreadyClaimed)
+  // so the screen reads consistently regardless of which branch renders.
+  stateContainer: {
     alignItems: 'center',
     paddingVertical: Spacing.Regular16,
   },
-  alreadyClaimedCard: {
+  stateCard: {
     backgroundColor: Colors.gray1,
     borderRadius: 16,
     padding: Spacing.Large32,
@@ -550,21 +507,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.gray2,
     marginHorizontal: Spacing.Smallest8,
     marginVertical: Spacing.Smallest8,
-  },
-  eligibleContainer: {
-    alignItems: 'center',
-    paddingVertical: Spacing.Regular16,
-  },
-  eligibleCard: {
-    backgroundColor: Colors.gray1,
-    borderRadius: 16,
-    padding: Spacing.Large32,
-    alignItems: 'center',
-    ...getShadowStyle(Shadow.Soft),
-    borderWidth: 1,
-    borderColor: Colors.gray2,
-    marginHorizontal: Spacing.Smallest8,
-    marginVertical: Spacing.Smallest8,
+    alignSelf: 'stretch',
   },
   congratsSection: {
     alignItems: 'center',
