@@ -429,7 +429,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     textAlign: 'center',
     marginBottom: Spacing.Tiny4,
-    fontWeight: '700',
   },
   headerSubtitle: {
     ...typeScale.bodySmall,
@@ -568,7 +567,6 @@ const styles = StyleSheet.create({
     ...typeScale.titleLarge,
     color: Colors.primary,
     textAlign: 'center',
-    fontWeight: '700',
     marginBottom: Spacing.Smallest8,
   },
   congratsSubtitle: {
@@ -577,7 +575,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   benefitCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.gray1,
     borderRadius: 12,
     padding: Spacing.Thick24,
     marginBottom: Spacing.Large32,
@@ -589,7 +587,6 @@ const styles = StyleSheet.create({
     ...typeScale.titleSmall,
     color: Colors.primary,
     marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
   },
   benefitDescription: {
     ...typeScale.bodyMedium,
@@ -597,7 +594,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   claimInfoCard: {
-    backgroundColor: '#E8F5E8',
+    backgroundColor: Colors.successLight,
     borderRadius: 12,
     padding: Spacing.Regular16,
     marginBottom: Spacing.Regular16,
@@ -606,9 +603,8 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.successDark,
   },
   claimInfoTitle: {
-    ...typeScale.bodySmall,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.successDark,
-    fontWeight: '600',
     marginBottom: Spacing.Tiny4,
   },
   claimInfoDate: {
@@ -616,7 +612,7 @@ const styles = StyleSheet.create({
     color: Colors.gray6,
   },
   nextClaimCard: {
-    backgroundColor: '#FFF4E6',
+    backgroundColor: Colors.warningLight,
     borderRadius: 12,
     padding: Spacing.Regular16,
     marginBottom: Spacing.Large32,
@@ -625,9 +621,8 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.warningDark,
   },
   nextClaimTitle: {
-    ...typeScale.bodySmall,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.warningDark,
-    fontWeight: '600',
     marginBottom: Spacing.Tiny4,
   },
   nextClaimTime: {
@@ -674,16 +669,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   debugContainer: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: Colors.gray1,
     borderRadius: 8,
     padding: Spacing.Regular16,
     marginTop: Spacing.Regular16,
     alignSelf: 'stretch',
   },
   debugTitle: {
-    ...typeScale.bodySmall,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.gray6,
-    fontWeight: '600',
     marginBottom: Spacing.Smallest8,
   },
   debugText: {
