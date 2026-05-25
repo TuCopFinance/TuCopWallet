@@ -79,7 +79,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         debug += `Próximo reclamo disponible: ${new Date(status.nextClaimAvailable * 1000).toLocaleString()}\n`
       }
       if (!status.lastClaimTimestamp && status.isBeneficiary) {
-        debug += `Nota: No se pudo verificar el historial de reclamos debido a limitaciones del RPC\n`
+        debug += `Sin claims previos registrados\n`
       }
       setDebugInfo(debug)
     } catch (error) {
