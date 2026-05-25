@@ -1,7 +1,4 @@
 import BigNumber from 'bignumber.js'
-import { showError } from 'src/alert/actions'
-import { ErrorMessages } from 'src/app/ErrorMessages'
-import { store } from 'src/redux/store'
 import ReFiColombiaSubsidiesContract, {
   REFI_COLOMBIA_SUBSIDIES_ADDRESS,
 } from 'src/subsidies/ReFiColombiaSubsidiesContract'
@@ -9,6 +6,19 @@ import { NetworkId } from 'src/transactions/types'
 import { prepareTransactions } from 'src/viem/prepareTransactions'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { Address } from 'viem'
+
+jest.mock('src/components/ErrorMessage', () => ({
+  showErrorMessage: jest.fn(),
+}))
+
+jest.mock('src/utils/errors', () => ({
+  classifyError: jest.fn(() => ({
+    publicMessageKey: 'errors.public.generic',
+    publicMessageFallback: 'Something went wrong',
+    severity: 'error',
+    technical: {},
+  })),
+}))
 
 jest.mock('src/redux/store', () => ({
   store: {
@@ -181,7 +191,8 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     expect(result.success).toBe(true)
   })
 
-  it('dispatches INSUFFICIENT_FUNDS_FOR_GAS when no fee currency has enough balance', async () => {
+  it('shows error for INSUFFICIENT_FUNDS_FOR_GAS when no fee currency has enough balance', async () => {
+    const { showErrorMessage } = jest.requireMock('src/components/ErrorMessage')
     const { feeCurrenciesSelector } = require('src/tokens/selectors')
     ;(feeCurrenciesSelector as jest.Mock).mockReturnValue([])
     ;(prepareTransactions as jest.Mock).mockResolvedValue({
@@ -192,7 +203,12 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     const result = await ReFiColombiaSubsidiesContract.claimSubsidy(mockWalletAddress, 'pass')
 
     expect(mockWallet.sendTransaction).not.toHaveBeenCalled()
-    expect(store.dispatch).toHaveBeenCalledWith(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
+    expect(showErrorMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: { screen: 'subsidies', action: 'prepareClaimTransaction' },
+        variant: 'sheet',
+      })
+    )
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/Not enough balance to pay for gas/)
   })

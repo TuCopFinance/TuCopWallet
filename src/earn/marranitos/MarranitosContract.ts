@@ -1,7 +1,6 @@
-import { showError } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import i18n from 'src/i18n'
-import { store } from 'src/redux/store'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
@@ -227,7 +226,11 @@ export class MarranitosContract {
       return true
     } catch (error) {
       Logger.error(TAG, 'Error staking tokens', error)
-      store.dispatch(showError(ErrorMessages.GENERIC_ERROR))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(ErrorMessages.GENERIC_ERROR),
+        context: { screen: 'MarranitoStaking', action: 'stake' },
+        variant: 'sheet',
+      })
       return false
     }
   }
@@ -336,7 +339,11 @@ export class MarranitosContract {
       return true
     } catch (error) {
       Logger.error(TAG, 'Error withdrawing stake', error)
-      store.dispatch(showError(ErrorMessages.GENERIC_ERROR))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(ErrorMessages.GENERIC_ERROR),
+        context: { screen: 'MarranitosMyStakes', action: 'withdraw' },
+        variant: 'sheet',
+      })
       return false
     }
   }
