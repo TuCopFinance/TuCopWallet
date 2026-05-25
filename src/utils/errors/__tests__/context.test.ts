@@ -1,4 +1,3 @@
-import * as DeviceInfo from 'react-native-device-info'
 import { Platform } from 'react-native'
 import { buildErrorContext } from 'src/utils/errors/context'
 
