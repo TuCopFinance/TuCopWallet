@@ -7,7 +7,6 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { ErrorMessage } from 'src/components/ErrorMessage'
-import RowDivider from 'src/components/RowDivider'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
@@ -271,8 +270,6 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
                     </Text>
                   </View>
                 )}
-
-                {!!ubiStatus.lastClaimTimestamp && !!ubiStatus.nextClaimAvailable && <RowDivider />}
 
                 {!!ubiStatus.nextClaimAvailable && (
                   <View style={styles.detailRow}>
@@ -544,15 +541,30 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.Regular16,
   },
   alreadyClaimedCard: {
+    backgroundColor: Colors.gray1,
+    borderRadius: 16,
+    padding: Spacing.Large32,
     alignItems: 'center',
-    marginTop: Spacing.Large32,
+    ...getShadowStyle(Shadow.Soft),
+    borderWidth: 1,
+    borderColor: Colors.gray2,
+    marginHorizontal: Spacing.Smallest8,
+    marginVertical: Spacing.Smallest8,
   },
   eligibleContainer: {
     alignItems: 'center',
     paddingVertical: Spacing.Regular16,
   },
   eligibleCard: {
+    backgroundColor: Colors.gray1,
+    borderRadius: 16,
+    padding: Spacing.Large32,
     alignItems: 'center',
+    ...getShadowStyle(Shadow.Soft),
+    borderWidth: 1,
+    borderColor: Colors.gray2,
+    marginHorizontal: Spacing.Smallest8,
+    marginVertical: Spacing.Smallest8,
   },
   congratsSection: {
     alignItems: 'center',
