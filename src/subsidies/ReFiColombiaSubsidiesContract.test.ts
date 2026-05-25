@@ -44,7 +44,7 @@ jest.mock('src/web3/contracts', () => ({
 }))
 
 jest.mock('src/tokens/selectors', () => ({
-  _feeCurrenciesByNetworkIdSelector: jest.fn().mockReturnValue({}),
+  feeCurrenciesSelector: jest.fn().mockReturnValue([]),
 }))
 
 jest.mock('src/web3/networkConfig', () => ({
@@ -114,10 +114,8 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
       isNative: false,
     })
 
-    const { _feeCurrenciesByNetworkIdSelector } = require('src/tokens/selectors')
-    _feeCurrenciesByNetworkIdSelector.mockReturnValue({
-      'celo-mainnet': [copmToken],
-    })
+    const { feeCurrenciesSelector } = require('src/tokens/selectors')
+    ;(feeCurrenciesSelector as jest.Mock).mockReturnValue([copmToken])
     ;(prepareTransactions as jest.Mock).mockResolvedValue({
       type: 'possible',
       feeCurrency: copmToken,
@@ -158,10 +156,8 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
       isNative: false,
     })
 
-    const { _feeCurrenciesByNetworkIdSelector } = require('src/tokens/selectors')
-    _feeCurrenciesByNetworkIdSelector.mockReturnValue({
-      'celo-mainnet': [usdmToken],
-    })
+    const { feeCurrenciesSelector } = require('src/tokens/selectors')
+    ;(feeCurrenciesSelector as jest.Mock).mockReturnValue([usdmToken])
     ;(prepareTransactions as jest.Mock).mockResolvedValue({
       type: 'possible',
       feeCurrency: usdmToken,
@@ -186,10 +182,8 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
   })
 
   it('dispatches INSUFFICIENT_FUNDS_FOR_GAS when no fee currency has enough balance', async () => {
-    const { _feeCurrenciesByNetworkIdSelector } = require('src/tokens/selectors')
-    _feeCurrenciesByNetworkIdSelector.mockReturnValue({
-      'celo-mainnet': [],
-    })
+    const { feeCurrenciesSelector } = require('src/tokens/selectors')
+    ;(feeCurrenciesSelector as jest.Mock).mockReturnValue([])
     ;(prepareTransactions as jest.Mock).mockResolvedValue({
       type: 'not-enough-balance-for-gas',
       feeCurrencies: [],
@@ -218,10 +212,8 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
       balance: new BigNumber(50000),
     })
 
-    const { _feeCurrenciesByNetworkIdSelector } = require('src/tokens/selectors')
-    _feeCurrenciesByNetworkIdSelector.mockReturnValue({
-      'celo-mainnet': [celo, copm],
-    })
+    const { feeCurrenciesSelector } = require('src/tokens/selectors')
+    ;(feeCurrenciesSelector as jest.Mock).mockReturnValue([celo, copm])
     ;(prepareTransactions as jest.Mock).mockResolvedValue({
       type: 'possible',
       feeCurrency: celo,
