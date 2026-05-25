@@ -59,9 +59,23 @@ function getDateFromFirstCommit(fromSHA, toSHA) {
 /// MAIN
 ////////////////////////////////////////////////////////////////
 
-const [remoteName, remoteUrl] = process.env.HUSKY_GIT_PARAMS.split(' ')
+// Read from process.argv and stdin instead of legacy Husky 3 env vars
+// (HUSKY_GIT_PARAMS / HUSKY_GIT_STDIN), which are no longer populated under
+// newer Node/Husky combos. argv + stdin is what Git itself passes to any
+// pre-push hook, so this works under any Husky version (or without Husky).
+const [remoteName, remoteUrl] = process.argv.slice(2)
 
-const changes = process.env.HUSKY_GIT_STDIN.split('\n')
+let stdinData = ''
+try {
+  stdinData = require('fs').readFileSync(0, 'utf-8')
+} catch {
+  // No stdin available (e.g. when invoked manually outside a git push) - treat
+  // as no changes and exit cleanly.
+  stdinData = ''
+}
+
+const changes = stdinData
+  .split('\n')
   .filter((line) => line !== '')
   .map((line) => {
     const [localRef, localSHA, remoteRef, remoteSHA] = line.split(' ')
