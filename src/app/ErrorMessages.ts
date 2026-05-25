@@ -31,7 +31,6 @@ export enum ErrorMessages {
   PROVIDER_FETCH_FAILED = 'providerFetchFailed',
   CASH_OUT_LIMIT_EXCEEDED = 'cashOutLimitExceeded',
   PERSONA_ACCOUNT_ENDPOINT_FAIL = 'personaAccountEndpointFail',
-  FETCH_SWAP_QUOTE_FAILED = 'swapScreen.fetchSwapQuoteFailed',
   FIATCONNECT_ADD_ACCOUNT_EXISTS = 'fiatDetailsScreen.addFiatAccountResourceExist',
   FIATCONNECT_ADD_ACCOUNT_FAILED = 'fiatDetailsScreen.addFiatAccountFailed',
   KYC_TRY_AGAIN_FAILED = 'fiatConnectKycStatusScreen.tryAgainFailed',
@@ -40,7 +39,6 @@ export enum ErrorMessages {
   INVITE_WITH_URL_FAILED = 'inviteWithUrl.error',
   UBI_NOT_BENEFICIARY = 'ubiNotBeneficiary',
   UBI_ALREADY_CLAIMED = 'ubiAlreadyClaimed',
-  UBI_CLAIM_ERROR = 'ubiClaimError',
   INSUFFICIENT_FUNDS_FOR_GAS = 'insufficientFundsForGas',
   GENERIC_ERROR = 'genericError',
 }
