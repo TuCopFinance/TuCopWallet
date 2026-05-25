@@ -251,39 +251,43 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               </Text>
             </View>
 
-            {!!ubiStatus.lastClaimTimestamp && (
-              <View style={styles.claimInfoCard}>
-                <Text style={styles.claimInfoTitle}>
-                  {t('reFiColombiaSubsidies.alreadyClaimed.lastClaimTitle')}
-                </Text>
-                <Text style={styles.claimInfoDate}>
-                  {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </Text>
-              </View>
-            )}
+            {(!!ubiStatus.lastClaimTimestamp || !!ubiStatus.nextClaimAvailable) && (
+              <View style={styles.detailsContainer}>
+                {!!ubiStatus.lastClaimTimestamp && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>
+                      {t('reFiColombiaSubsidies.alreadyClaimed.lastClaimTitle')}
+                    </Text>
+                    <Text style={styles.detailValue}>
+                      {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
+                )}
 
-            {!!ubiStatus.nextClaimAvailable && (
-              <View style={styles.nextClaimCard}>
-                <Text style={styles.nextClaimTitle}>
-                  {t('reFiColombiaSubsidies.alreadyClaimed.nextClaimTitle')}
-                </Text>
-                <Text style={styles.nextClaimTime}>
-                  {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
-                </Text>
-                <Text style={styles.nextClaimDate}>
-                  {new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </Text>
+                {!!ubiStatus.nextClaimAvailable && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>
+                      {t('reFiColombiaSubsidies.alreadyClaimed.nextClaimTitle')}
+                    </Text>
+                    <Text style={styles.detailValueLarge}>
+                      {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
+                    </Text>
+                    <Text style={styles.detailValueMuted}>
+                      {new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
 
@@ -591,45 +595,33 @@ const styles = StyleSheet.create({
     color: Colors.gray6,
     lineHeight: 22,
   },
-  claimInfoCard: {
-    backgroundColor: Colors.successLight,
+  detailsContainer: {
+    width: '100%',
+    backgroundColor: Colors.gray1,
     borderRadius: 12,
     padding: Spacing.Regular16,
-    marginBottom: Spacing.Regular16,
-    alignSelf: 'stretch',
+    gap: Spacing.Regular16,
+    marginBottom: Spacing.Large32,
+  },
+  detailRow: {
+    flexDirection: 'column',
     gap: Spacing.Smallest8,
   },
-  claimInfoTitle: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.successDark,
-    marginBottom: Spacing.Tiny4,
-  },
-  claimInfoDate: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray6,
-  },
-  nextClaimCard: {
-    backgroundColor: Colors.warningLight,
-    borderRadius: 12,
-    padding: Spacing.Regular16,
-    marginBottom: Spacing.Large32,
-    alignSelf: 'stretch',
-    gap: Spacing.Tiny4,
-  },
-  nextClaimTitle: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.warningDark,
-    marginBottom: Spacing.Tiny4,
-  },
-  nextClaimTime: {
-    ...typeScale.titleSmall,
-    color: Colors.gray6,
-    fontWeight: '600',
-    marginBottom: Spacing.Tiny4,
-  },
-  nextClaimDate: {
+  detailLabel: {
     ...typeScale.bodySmall,
-    color: Colors.gray3,
+    color: Colors.gray4,
+  },
+  detailValue: {
+    ...typeScale.labelMedium,
+    color: Colors.black,
+  },
+  detailValueLarge: {
+    ...typeScale.labelSemiBoldLarge,
+    color: Colors.black,
+  },
+  detailValueMuted: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   lastClaimInfo: {
     backgroundColor: Colors.gray1,
