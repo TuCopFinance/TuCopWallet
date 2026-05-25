@@ -1,7 +1,7 @@
 import { getLastClaimTimestamp } from 'src/subsidies/subsidyEventHistory'
 import { Address } from 'viem'
 
-const SUBSIDY_CLAIMED_TOPIC = '0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0'
+const SUBSIDY_CLAIMED_TOPIC = '0x00767507495bd1c757db9a339df732dd8507033a8806ece6261167c15afa3af5'
 const WALLET: Address = '0x1726cf86da996bc4b2f393e713f6f8ef83f2e4f6'
 const PADDED_WALLET = '0x0000000000000000000000001726cf86da996bc4b2f393e713f6f8ef83f2e4f6'
 

@@ -284,10 +284,14 @@ export class ReFiColombiaSubsidiesContract {
       const claimEvent = parsedLogs.find((log) => log.eventName === 'SubsidyClaimed')
 
       if (claimEvent) {
-        const { beneficiary, amount } = claimEvent.args as { beneficiary: Address; amount: bigint }
+        const { beneficiaryAddress, amount, contractBalance } = claimEvent.args as {
+          beneficiaryAddress: Address
+          amount: bigint
+          contractBalance: bigint
+        }
         Logger.debug(
           TAG,
-          `SubsidyClaimed event found: beneficiary=${beneficiary}, amount=${amount}`
+          `SubsidyClaimed event found: beneficiary=${beneficiaryAddress}, amount=${amount}, contractBalance=${contractBalance}`
         )
 
         store.dispatch(
