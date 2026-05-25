@@ -1,5 +1,6 @@
-import { showError, showMessage } from 'src/alert/actions'
+import { showMessage } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import { store } from 'src/redux/store'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
@@ -160,7 +161,11 @@ export class ReFiColombiaSubsidiesContract {
 
       // Si el error es que no hay contrato, mostrar un mensaje más específico
       if (error instanceof Error && error.message.includes('No contract deployed')) {
-        store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
+        showErrorMessage({
+          error,
+          context: { screen: 'subsidies', action: 'isBeneficiary' },
+          variant: 'sheet',
+        })
       }
 
       return false
@@ -182,7 +187,11 @@ export class ReFiColombiaSubsidiesContract {
 
       if (!ubiStatus.isBeneficiary) {
         Logger.warn(TAG, `Address ${walletAddress} is not a beneficiary`)
-        store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
+        showErrorMessage({
+          error: new Error(ErrorMessages.UBI_NOT_BENEFICIARY),
+          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          variant: 'sheet',
+        })
         return { success: false, error: 'Not a beneficiary' }
       }
 
@@ -190,8 +199,12 @@ export class ReFiColombiaSubsidiesContract {
         Logger.warn(TAG, `Address ${walletAddress} has already claimed this week`)
         const nextClaimDate = ubiStatus.nextClaimAvailable
           ? new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString()
-          : 'próxima semana'
-        store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          : 'proxima semana'
+        showErrorMessage({
+          error: new Error(ErrorMessages.UBI_ALREADY_CLAIMED),
+          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          variant: 'sheet',
+        })
         return {
           success: false,
           error: `Already claimed this week. Next claim available: ${nextClaimDate}`,
@@ -248,7 +261,11 @@ export class ReFiColombiaSubsidiesContract {
 
       if (prepared.type !== 'possible') {
         Logger.warn(TAG, `Cannot prepare claim transaction: ${prepared.type}`)
-        store.dispatch(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
+        showErrorMessage({
+          error: new Error(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS),
+          context: { screen: 'subsidies', action: 'prepareClaimTransaction' },
+          variant: 'sheet',
+        })
         return {
           success: false,
           error: 'Not enough balance to pay for gas in any supported fee currency',
@@ -322,32 +339,52 @@ export class ReFiColombiaSubsidiesContract {
         // Detectar errores específicos del contrato
         if (errorMessage.includes('Cannot claim yet')) {
           Logger.warn(TAG, 'User tried to claim but cannot claim yet (already claimed this week)')
-          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
         } else if (errorMessage.includes('already claimed')) {
           Logger.warn(TAG, 'User has already claimed this week')
-          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
         } else if (
           errorMessage.includes('Not beneficiary') ||
           errorMessage.includes('not eligible')
         ) {
           Logger.warn(TAG, 'User is not a beneficiary')
-          store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'No eres elegible para este subsidio' }
         } else if (errorMessage.includes('insufficient funds')) {
           Logger.warn(TAG, 'Insufficient funds for gas')
-          store.dispatch(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Fondos insuficientes para pagar las tarifas de gas' }
         } else if (errorMessage.includes('User rejected') || errorMessage.includes('cancelled')) {
           Logger.info(TAG, 'Transaction cancelled by user')
-          return { success: false, error: 'Transacción cancelada por el usuario' }
+          return { success: false, error: 'Transaccion cancelada por el usuario' }
         }
       }
 
-      // Error genérico
+      // Error generico
       Logger.error(TAG, 'Unknown error during claim:', errorMessage)
-      store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(errorMessage),
+        context: { screen: 'subsidies', action: 'claimSubsidy' },
+        variant: 'sheet',
+      })
       return { success: false, error: errorMessage }
     }
   }
