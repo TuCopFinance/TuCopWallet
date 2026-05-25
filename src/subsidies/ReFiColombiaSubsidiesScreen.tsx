@@ -134,6 +134,14 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     }
   }
 
+  const handleApplyForSubsidy = () => {
+    void Linking.openURL('https://tinyurl.com/SubsidiosReFiCol')
+  }
+
+  const handleContactReFi = () => {
+    void Linking.openURL('https://linktr.ee/reficolombia')
+  }
+
   const formatTimeRemaining = (timestamp: number): string => {
     const now = Math.floor(Date.now() / 1000)
     const remaining = timestamp - now
@@ -179,26 +187,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
             variant="banner"
           />
-          <Button
-            onPress={checkUBIStatus}
-            text={t('reFiColombiaSubsidies.error.retry')}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.MEDIUM}
-            style={styles.retryButton}
-          />
         </View>
       )
     }
 
     if (!ubiStatus.isBeneficiary) {
-      const handleApplyForSubsidy = () => {
-        void Linking.openURL('https://tinyurl.com/SubsidiosReFiCol')
-      }
-
-      const handleContactReFi = () => {
-        void Linking.openURL('https://linktr.ee/reficolombia')
-      }
-
       return (
         <View style={styles.notEligibleContainer}>
           <View style={styles.notEligibleCard}>
@@ -209,13 +202,6 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             <Text style={styles.notEligibleDescription}>
               {t('reFiColombiaSubsidies.notEligible.description')}
             </Text>
-            <Button
-              onPress={handleApplyForSubsidy}
-              text={t('reFiColombiaSubsidies.notEligible.applyButton')}
-              type={BtnTypes.PRIMARY}
-              size={BtnSizes.FULL}
-              style={styles.applyButton}
-            />
             <Text style={styles.applyDisclaimer}>
               {t('reFiColombiaSubsidies.notEligible.applyDisclaimer')}
             </Text>
@@ -284,14 +270,6 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
                 </Text>
               </View>
             )}
-
-            <Button
-              onPress={() => navigation.goBack()}
-              text={t('reFiColombiaSubsidies.alreadyClaimed.backButton')}
-              type={BtnTypes.PRIMARY}
-              size={BtnSizes.FULL}
-              style={styles.backButton}
-            />
           </View>
         </View>
       )
@@ -330,19 +308,6 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             </View>
           )}
 
-          <Button
-            onPress={handleClaimSubsidy}
-            text={
-              isLoading
-                ? t('reFiColombiaSubsidies.eligible.claimingButton')
-                : t('reFiColombiaSubsidies.eligible.claimButton')
-            }
-            type={BtnTypes.PRIMARY}
-            size={BtnSizes.FULL}
-            disabled={isLoading}
-            style={styles.claimButton}
-          />
-
           {isLoading && (
             <View style={styles.processingContainer}>
               <ActivityIndicator size="small" color={Colors.primary} />
@@ -360,6 +325,55 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
           )}
         </View>
       </View>
+    )
+  }
+
+  const renderStickyButton = () => {
+    if (isCheckingBeneficiary) {
+      return null
+    }
+    if (ubiStatus === null) {
+      return (
+        <Button
+          onPress={checkUBIStatus}
+          text={t('reFiColombiaSubsidies.error.retry')}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    if (!ubiStatus.isBeneficiary) {
+      return (
+        <Button
+          onPress={handleApplyForSubsidy}
+          text={t('reFiColombiaSubsidies.notEligible.applyButton')}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    if (ubiStatus.hasClaimedThisWeek) {
+      return (
+        <Button
+          onPress={() => navigation.goBack()}
+          text={t('reFiColombiaSubsidies.alreadyClaimed.backButton')}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    return (
+      <Button
+        onPress={handleClaimSubsidy}
+        text={
+          isLoading
+            ? t('reFiColombiaSubsidies.eligible.claimingButton')
+            : t('reFiColombiaSubsidies.eligible.claimButton')
+        }
+        type={BtnTypes.PRIMARY}
+        size={BtnSizes.FULL}
+        disabled={isLoading}
+      />
     )
   }
 
@@ -388,6 +402,10 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       >
         {renderContent()}
       </ScrollView>
+
+      {renderStickyButton() && (
+        <View style={styles.stickyButtonContainer}>{renderStickyButton()}</View>
+      )}
     </SafeAreaView>
   )
 }
@@ -450,6 +468,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: Spacing.Large32,
   },
+  stickyButtonContainer: {
+    paddingHorizontal: Spacing.Thick24,
+    paddingTop: Spacing.Regular16,
+    paddingBottom: Spacing.Regular16,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+  },
   loadingContainer: {
     minHeight: 300,
     justifyContent: 'center',
@@ -476,9 +502,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.Regular16,
-  },
-  retryButton: {
-    marginTop: Spacing.Regular16,
   },
   notEligibleContainer: {
     minHeight: 300,
@@ -517,10 +540,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     textDecorationLine: 'underline',
-  },
-  applyButton: {
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
   },
   applyDisclaimer: {
     ...typeScale.bodyXSmall,
@@ -631,12 +650,6 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray3,
     textAlign: 'center',
-  },
-  claimButton: {
-    ...getShadowStyle(Shadow.Soft),
-  },
-  backButton: {
-    marginTop: Spacing.Regular16,
   },
   processingContainer: {
     flexDirection: 'row',
