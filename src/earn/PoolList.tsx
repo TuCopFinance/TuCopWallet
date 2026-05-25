@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { MARRANITOS_POSITION_TYPE, MY_MARRANITOS_POSITION_TYPE } from 'src/earn/EarnHome'
@@ -107,14 +108,19 @@ export default function PoolList({
         onRefresh && onRefresh()
         Alert.alert(t('earnFlow.staking.withdrawSuccess'))
       } else {
-        Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.withdrawFailed'))
+        showErrorMessage({
+          error: new Error(t('earnFlow.staking.withdrawFailed')),
+          context: { screen: 'PoolList', action: 'withdraw' },
+          variant: 'sheet',
+        })
       }
     } catch (error) {
       Logger.error(TAG, 'Error withdrawing stake', error)
-      Alert.alert(
-        t('earnFlow.staking.error'),
-        error instanceof Error ? error.message : t('earnFlow.staking.withdrawFailed')
-      )
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(t('earnFlow.staking.withdrawFailed')),
+        context: { screen: 'PoolList', action: 'withdraw' },
+        variant: 'sheet',
+      })
     } finally {
       setWithdrawing(null)
     }
