@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import { default as React, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import { LayoutChangeEvent, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   interpolateColor,
   useAnimatedScrollHandler,
@@ -14,6 +14,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import { FilterChip, NetworkFilterChip, isNetworkChip } from 'src/components/FilterChipsCarousel'
 import NetworkMultiSelectBottomSheet from 'src/components/multiSelect/NetworkMultiSelectBottomSheet'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
@@ -314,7 +315,11 @@ export default function EarnHome({ navigation, route }: Props) {
           .filter((item) => !item.claimed)
       )
     } catch (error) {
-      Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(t('earnFlow.staking.errorLoadingStakes')),
+        context: { screen: 'EarnHome', action: 'loadStakes' },
+        variant: 'sheet',
+      })
     }
   }
 
