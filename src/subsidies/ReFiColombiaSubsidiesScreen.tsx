@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { ErrorMessage } from 'src/components/ErrorMessage'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
@@ -33,6 +34,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingBeneficiary, setIsCheckingBeneficiary] = useState(true)
   const [debugInfo, setDebugInfo] = useState<string>('')
+  const [loadError, setLoadError] = useState<Error | null>(null)
 
   useEffect(() => {
     void checkUBIStatus()
@@ -85,6 +87,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     } catch (error) {
       Logger.error(TAG, 'Error checking UBI status', error)
       setUbiStatus(null)
+      setLoadError(error instanceof Error ? error : new Error(String(error)))
       setDebugInfo(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCheckingBeneficiary(false)
@@ -171,14 +174,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       return (
         <View style={styles.errorContainer}>
           <Celebration size={48} color={Colors.error} />
-          <Text style={styles.errorTitle}>{t('reFiColombiaSubsidies.error.title')}</Text>
-          <Text style={styles.errorText}>{t('reFiColombiaSubsidies.error.description')}</Text>
-          {!!debugInfo && __DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
-            </View>
-          )}
+          <ErrorMessage
+            error={loadError ?? new Error('ubiStatus null')}
+            context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
+            variant="banner"
+          />
           <Button
             onPress={checkUBIStatus}
             text={t('reFiColombiaSubsidies.error.retry')}
@@ -476,21 +476,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.Regular16,
-  },
-  errorTitle: {
-    ...typeScale.titleMedium,
-    color: Colors.error,
-    textAlign: 'center',
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
-  },
-  errorText: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray3,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: Spacing.Regular16,
   },
   retryButton: {
     marginTop: Spacing.Regular16,

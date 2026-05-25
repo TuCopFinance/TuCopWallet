@@ -3,10 +3,10 @@ import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { showError } from 'src/alert/actions'
 import { SendEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import BackButton from 'src/components/BackButton'
 import ContactCircle from 'src/components/ContactCircle'
 import LineItemRow from 'src/components/LineItemRow'
@@ -148,8 +148,12 @@ function SendConfirmation(props: Props) {
       prepareTransactionsResult.type === 'possible' &&
       prepareTransactionsResult.transactions[0]
     if (!preparedTransaction) {
-      // This should never happen because the confirm button is disabled if this happens.
-      dispatch(showError(ErrorMessages.SEND_PAYMENT_FAILED))
+      // Defensive guard - button should be disabled when no prepared transaction.
+      showErrorMessage({
+        error: new Error(ErrorMessages.SEND_PAYMENT_FAILED),
+        context: { screen: 'SendConfirmation', action: 'onSend' },
+        variant: 'sheet',
+      })
       return
     }
 

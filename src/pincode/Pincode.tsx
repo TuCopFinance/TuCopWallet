@@ -3,8 +3,10 @@
  * with an input, e.g. get/ensure/set pincode.
  */
 import React, { useEffect } from 'react'
-import { Keyboard, StyleSheet, Text, View } from 'react-native'
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import { showErrorMessage } from 'src/components/ErrorMessage'
+import { ErrorContext } from 'src/components/ErrorMessage/types'
 import NumberKeypad from 'src/components/NumberKeypad'
 import { PIN_LENGTH } from 'src/pincode/authentication'
 import PincodeDisplay from 'src/pincode/PincodeDisplay'
@@ -18,6 +20,7 @@ interface Props {
   title?: string | null // shown as H1
   subtitle?: string | null // shown as regular text
   errorText?: string | null
+  errorContext?: Partial<Pick<ErrorContext, 'screen' | 'action'>>
   maxLength?: number
   pin: string
   onChangePin: (pin: string) => void
@@ -28,6 +31,7 @@ function Pincode({
   title,
   subtitle,
   errorText,
+  errorContext,
   maxLength = PIN_LENGTH,
   pin,
   onChangePin,
@@ -68,7 +72,26 @@ function Pincode({
         <View style={styles.pincodeContainer}>
           <PincodeDisplay pin={pin} maxLength={maxLength} />
         </View>
-        {errorText ? <Text style={styles.error}>{errorText || ''}</Text> : ''}
+        {errorText ? (
+          <View style={styles.errorRow}>
+            <Text style={styles.error}>{errorText}</Text>
+            {errorContext && (
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() =>
+                  showErrorMessage({
+                    error: new Error(errorText),
+                    context: errorContext,
+                    variant: 'sheet',
+                  })
+                }
+              >
+                <Text style={styles.infoIcon}>i</Text>
+              </Pressable>
+            )}
+          </View>
+        ) : null}
         <View style={styles.spacer} />
         <NumberKeypad onDigitPress={onDigitPress} onBackspacePress={onBackspacePress} />
       </ScrollView>
@@ -83,11 +106,29 @@ const styles = StyleSheet.create({
   spacer: {
     flex: 1,
   },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.Thick24,
+    gap: 6,
+  },
   error: {
     ...typeScale.labelMedium,
     color: colors.error,
     textAlign: 'center',
-    marginBottom: Spacing.Thick24,
+  },
+  infoIcon: {
+    ...typeScale.labelMedium,
+    color: colors.white,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    textAlign: 'center',
+    lineHeight: 18,
+    fontWeight: '700',
+    fontSize: 11,
   },
   logo: {
     marginBottom: Spacing.Large32,

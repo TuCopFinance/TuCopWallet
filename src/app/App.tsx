@@ -12,6 +12,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import AppInitGate from 'src/app/AppInitGate'
 import ErrorBoundary from 'src/app/ErrorBoundary'
 import { AUTH0_CLIENT_ID, AUTH0_DOMAIN, isE2EEnv } from 'src/config'
+import { ErrorSheetHost } from 'src/components/ErrorMessage'
 import i18n from 'src/i18n'
 import NavigatorWrapper from 'src/navigator/NavigatorWrapper'
 import { persistor, store } from 'src/redux/store'
@@ -83,6 +84,7 @@ export class App extends React.Component<Props> {
                   <GestureHandlerRootView style={{ flex: 1 }}>
                     <BottomSheetModalProvider>
                       <NavigatorWrapper />
+                      <ErrorSheetHost />
                     </BottomSheetModalProvider>
                   </GestureHandlerRootView>
                 </ErrorBoundary>
