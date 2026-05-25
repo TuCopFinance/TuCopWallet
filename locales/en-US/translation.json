@@ -2980,5 +2980,32 @@
     "recipient": "Recipient",
     "pool": "Pool",
     "viewOnExplorer": "View on explorer"
+  },
+  "errors": {
+    "public": {
+      "insufficient_balance": "Insufficient balance for this operation",
+      "insufficient_gas": "Insufficient balance for the network fee",
+      "user_rejected": "Operation cancelled",
+      "network_error": "No internet connection",
+      "rpc_timeout": "The server is not responding, try again in a few seconds",
+      "contract_revert": "The operation was rejected by the network",
+      "signing_failed": "We could not sign the transaction",
+      "invalid_address": "Invalid address",
+      "unsupported_token": "Unsupported token",
+      "slippage_exceeded": "The price changed too much, try again",
+      "session_expired": "Session expired, please sign in again",
+      "permission_required": "Phone permissions required",
+      "invalid_qr": "Invalid QR code",
+      "load_failed": "We could not load your information",
+      "generic": "Something did not go as expected"
+    },
+    "sheet": {
+      "title": "Error details",
+      "techDetailsToggle": "Technical details",
+      "copyButton": "Copy",
+      "copyConfirmation": "Copied",
+      "shareButton": "Share",
+      "shareSubject": "TuCop error report"
+    }
   }
 }
