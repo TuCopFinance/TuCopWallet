@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import DebugInfoPanel from 'src/components/DebugInfoPanel'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { StackParamList } from 'src/navigator/types'
@@ -167,12 +168,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
           <Celebration size={48} color={Colors.error} />
           <Text style={styles.errorTitle}>{t('reFiMedellinUbi.error.title')}</Text>
           <Text style={styles.errorText}>{t('reFiMedellinUbi.error.description')}</Text>
-          {!!debugInfo && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
-            </View>
-          )}
+          <DebugInfoPanel info={debugInfo} />
           <Button
             onPress={checkUBIStatus}
             text={t('reFiMedellinUbi.error.retry')}
@@ -194,12 +190,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
               {t('reFiMedellinUbi.notEligible.description')}
             </Text>
             <Text style={styles.contactInfo}>{t('reFiMedellinUbi.notEligible.contact')}</Text>
-            {!!debugInfo && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Info:</Text>
-                <Text style={styles.debugText}>{debugInfo}</Text>
-              </View>
-            )}
+            <DebugInfoPanel info={debugInfo} />
           </View>
         </View>
       )
@@ -318,12 +309,7 @@ export default function ReFiMedellinUBIScreen({ navigation }: Props) {
             </View>
           )}
 
-          {!!debugInfo && __DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
-            </View>
-          )}
+          <DebugInfoPanel info={debugInfo} />
         </View>
       </View>
     )
@@ -626,23 +612,5 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
     fontWeight: '500',
-  },
-  debugContainer: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    padding: Spacing.Regular16,
-    marginTop: Spacing.Regular16,
-    alignSelf: 'stretch',
-  },
-  debugTitle: {
-    ...typeScale.bodySmall,
-    color: Colors.gray6,
-    fontWeight: '600',
-    marginBottom: Spacing.Smallest8,
-  },
-  debugText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    fontFamily: 'monospace',
   },
 })

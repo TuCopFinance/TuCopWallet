@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import DebugInfoPanel from 'src/components/DebugInfoPanel'
 import { ErrorMessage } from 'src/components/ErrorMessage'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
@@ -232,12 +233,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             <Text style={styles.contactInfo} onPress={handleContactReFi}>
               {t('reFiColombiaSubsidies.notEligible.contact')}
             </Text>
-            {!!debugInfo && __DEV__ && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Info:</Text>
-                <Text style={styles.debugText}>{debugInfo}</Text>
-              </View>
-            )}
+            <DebugInfoPanel info={debugInfo} />
           </View>
         </View>
       )
@@ -309,12 +305,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               style={styles.backButton}
             />
 
-            {!!debugInfo && __DEV__ && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Info:</Text>
-                <Text style={styles.debugText}>{debugInfo}</Text>
-              </View>
-            )}
+            <DebugInfoPanel info={debugInfo} />
           </View>
         </View>
       )
@@ -377,12 +368,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             </View>
           )}
 
-          {!!debugInfo && __DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
-            </View>
-          )}
+          <DebugInfoPanel info={debugInfo} />
         </View>
       </View>
     )
@@ -616,22 +602,5 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
     fontWeight: '500',
-  },
-  debugContainer: {
-    backgroundColor: Colors.gray1,
-    borderRadius: 8,
-    padding: Spacing.Regular16,
-    marginTop: Spacing.Regular16,
-    alignSelf: 'stretch',
-  },
-  debugTitle: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.gray6,
-    marginBottom: Spacing.Smallest8,
-  },
-  debugText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    fontFamily: 'monospace',
   },
 })
