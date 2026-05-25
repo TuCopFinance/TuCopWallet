@@ -7,10 +7,11 @@ const TAG = 'subsidies/subsidyEventHistory'
 
 const TUCOP_BACKEND_URL = 'https://tucop-backend-production.up.railway.app'
 
-// keccak256("SubsidyClaimed(address,uint256)") topic. Filter the contract logs
-// to this event signature, then match the beneficiary client-side regardless of
-// which indexed position the contract uses.
-const SUBSIDY_CLAIMED_TOPIC = '0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0'
+// keccak256("SubsidyClaimed(address,uint256,uint256)") -- the real event signature
+// emitted by the current ReFi Colombia subsidies contract. The previous 2-arg
+// signature in the local ABI was wrong; verified on Celoscan and against a real
+// claim transaction.
+const SUBSIDY_CLAIMED_TOPIC = '0x00767507495bd1c757db9a339df732dd8507033a8806ece6261167c15afa3af5'
 
 interface EventLog {
   topics?: string[]
