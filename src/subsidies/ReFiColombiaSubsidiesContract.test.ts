@@ -95,10 +95,10 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     publicClient.celo.readContract.mockResolvedValue(true) // isBeneficiary
     publicClient.celo.simulateContract.mockResolvedValue({})
     publicClient.celo.waitForTransactionReceipt.mockResolvedValue({
-      blockNumber: 1n,
+      blockNumber: BigInt(1),
       logs: [],
     })
-    publicClient.celo.getBlockNumber.mockResolvedValue(1000n)
+    publicClient.celo.getBlockNumber.mockResolvedValue(BigInt(1000))
     publicClient.celo.getLogs.mockResolvedValue([])
   })
 
@@ -125,9 +125,9 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
         {
           to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
           data: '0xencoded',
-          gas: 100000n,
-          maxFeePerGas: 1000n,
-          maxPriorityFeePerGas: 100n,
+          gas: BigInt(100000),
+          maxFeePerGas: BigInt(1000),
+          maxPriorityFeePerGas: BigInt(100),
           feeCurrency: copmAddress,
         },
       ],
@@ -169,9 +169,9 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
         {
           to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
           data: '0xencoded',
-          gas: 100000n,
-          maxFeePerGas: 1000n,
-          maxPriorityFeePerGas: 100n,
+          gas: BigInt(100000),
+          maxFeePerGas: BigInt(1000),
+          maxPriorityFeePerGas: BigInt(100),
           feeCurrency: usdmAddress,
         },
       ],
@@ -229,9 +229,9 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
         {
           to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
           data: '0xencoded',
-          gas: 100000n,
-          maxFeePerGas: 1000n,
-          maxPriorityFeePerGas: 100n,
+          gas: BigInt(100000),
+          maxFeePerGas: BigInt(1000),
+          maxPriorityFeePerGas: BigInt(100),
         },
       ],
     })
