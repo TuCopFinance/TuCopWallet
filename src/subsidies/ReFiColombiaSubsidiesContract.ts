@@ -1,8 +1,8 @@
 import { showError, showMessage } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { store } from 'src/redux/store'
-import { _feeCurrenciesByNetworkIdSelector } from 'src/tokens/selectors'
-import { Network, NetworkId } from 'src/transactions/types'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
@@ -274,10 +274,10 @@ export class ReFiColombiaSubsidiesContract {
         args: [],
       })
 
-      const feeCurrencies =
-        _feeCurrenciesByNetworkIdSelector(store.getState() as any)[
-          networkConfig.networkToNetworkId[Network.Celo] as NetworkId
-        ] ?? []
+      const feeCurrencies = feeCurrenciesSelector(
+        store.getState() as any,
+        NetworkId['celo-mainnet']
+      )
 
       Logger.debug(
         TAG,
