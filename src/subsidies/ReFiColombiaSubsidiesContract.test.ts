@@ -102,7 +102,47 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     publicClient.celo.getLogs.mockResolvedValue([])
   })
 
-  it('placeholder, replace with real assertions', () => {
-    expect(true).toBe(true)
+  it('selects COPm as fee currency when wallet holds only COPm', async () => {
+    const copmAddress = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as Address
+    const copmToken = buildTokenBalance({
+      tokenId: 'celo-mainnet:0x8a567e2ae79ca692bd748ab832081c45de4041ea',
+      address: copmAddress,
+      symbol: 'COPm',
+      decimals: 18,
+      balance: new BigNumber(100000),
+      isFeeCurrency: true,
+      isNative: false,
+    })
+
+    const { _feeCurrenciesByNetworkIdSelector } = require('src/tokens/selectors')
+    _feeCurrenciesByNetworkIdSelector.mockReturnValue({
+      'celo-mainnet': [copmToken],
+    })
+    ;(prepareTransactions as jest.Mock).mockResolvedValue({
+      type: 'possible',
+      feeCurrency: copmToken,
+      transactions: [
+        {
+          to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+          data: '0xencoded',
+          gas: 100000n,
+          maxFeePerGas: 1000n,
+          maxPriorityFeePerGas: 100n,
+          feeCurrency: copmAddress,
+        },
+      ],
+    })
+
+    const result = await ReFiColombiaSubsidiesContract.claimSubsidy(mockWalletAddress, 'pass')
+
+    expect(prepareTransactions).toHaveBeenCalledTimes(1)
+    expect(mockWallet.sendTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+        feeCurrency: copmAddress,
+      })
+    )
+    expect(result.success).toBe(true)
+    expect(result.txHash).toBe('0xclaimtxhash')
   })
 })

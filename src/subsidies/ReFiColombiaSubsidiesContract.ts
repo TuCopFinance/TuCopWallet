@@ -1,12 +1,15 @@
 import { showError, showMessage } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { store } from 'src/redux/store'
+import { _feeCurrenciesByNetworkIdSelector } from 'src/tokens/selectors'
+import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
+import { prepareTransactions } from 'src/viem/prepareTransactions'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
-import { Address, parseEventLogs } from 'viem'
+import { Address, encodeFunctionData, parseEventLogs } from 'viem'
 
 import ReFiColombiaSubsidies from 'src/abis/IReFiColombiaSubsidies'
 
@@ -263,15 +266,51 @@ export class ReFiColombiaSubsidiesContract {
         throw new Error('No se pudo desbloquear la cuenta')
       }
 
-      Logger.debug(TAG, 'Executing claim transaction...')
+      Logger.debug(TAG, 'Encoding claim call data...')
 
-      // Ejecutar la transacción de claim
-      const claimTx = await (wallet as any).writeContract({
-        address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+      const claimCallData = encodeFunctionData({
         abi: ReFiColombiaSubsidies.abi,
         functionName: 'claimSubsidy',
         args: [],
       })
+
+      const feeCurrencies =
+        _feeCurrenciesByNetworkIdSelector(store.getState() as any)[
+          networkConfig.networkToNetworkId[Network.Celo] as NetworkId
+        ] ?? []
+
+      Logger.debug(
+        TAG,
+        `Preparing claim transaction with ${feeCurrencies.length} candidate fee currencies`
+      )
+
+      const prepared = await prepareTransactions({
+        feeCurrencies,
+        baseTransactions: [
+          {
+            from: walletAddress,
+            to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+            data: claimCallData,
+          },
+        ],
+        origin: 'subsidies',
+      })
+
+      if (prepared.type !== 'possible') {
+        Logger.warn(TAG, `Cannot prepare claim transaction: ${prepared.type}`)
+        store.dispatch(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
+        return {
+          success: false,
+          error: 'Not enough balance to pay for gas in any supported fee currency',
+        }
+      }
+
+      Logger.debug(
+        TAG,
+        `Sending claim transaction with feeCurrency ${prepared.feeCurrency.symbol} (${prepared.feeCurrency.tokenId})`
+      )
+
+      const claimTx = await wallet.sendTransaction(prepared.transactions[0] as any)
 
       Logger.debug(TAG, `Claim transaction submitted: ${claimTx}`)
 
