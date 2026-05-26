@@ -1,6 +1,6 @@
 export type ErrorSeverity = 'info' | 'warning' | 'error'
 
-export type ErrorVariant = 'banner' | 'fullscreen' | 'inline' | 'toast' | 'alert' | 'sheet'
+type ErrorVariant = 'banner' | 'fullscreen' | 'inline' | 'toast' | 'alert' | 'sheet'
 
 export interface ErrorContext {
   // Injected automatically by buildErrorContext
