@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import DebugInfoPanel from 'src/components/DebugInfoPanel'
+import { ErrorMessage } from 'src/components/ErrorMessage'
 import Celebration from 'src/icons/misc/Celebration'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
@@ -33,6 +35,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingBeneficiary, setIsCheckingBeneficiary] = useState(true)
   const [debugInfo, setDebugInfo] = useState<string>('')
+  const [loadError, setLoadError] = useState<Error | null>(null)
 
   useEffect(() => {
     void checkUBIStatus()
@@ -79,12 +82,13 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         debug += `Próximo reclamo disponible: ${new Date(status.nextClaimAvailable * 1000).toLocaleString()}\n`
       }
       if (!status.lastClaimTimestamp && status.isBeneficiary) {
-        debug += `Nota: No se pudo verificar el historial de reclamos debido a limitaciones del RPC\n`
+        debug += `Sin claims previos registrados\n`
       }
       setDebugInfo(debug)
     } catch (error) {
       Logger.error(TAG, 'Error checking UBI status', error)
       setUbiStatus(null)
+      setLoadError(error instanceof Error ? error : new Error(String(error)))
       setDebugInfo(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCheckingBeneficiary(false)
@@ -131,6 +135,14 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     }
   }
 
+  const handleApplyForSubsidy = () => {
+    void Linking.openURL('https://tinyurl.com/SubsidiosReFiCol')
+  }
+
+  const handleContactReFi = () => {
+    void Linking.openURL('https://linktr.ee/reficolombia')
+  }
+
   const formatTimeRemaining = (timestamp: number): string => {
     const now = Math.floor(Date.now() / 1000)
     const remaining = timestamp - now
@@ -158,76 +170,57 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const renderContent = () => {
     if (isCheckingBeneficiary) {
       return (
-        <View style={styles.loadingContainer}>
-          <Celebration size={48} color={Colors.primary} />
-          <Text style={styles.loadingText}>{t('reFiColombiaSubsidies.checking.title')}</Text>
-          <Text style={styles.loadingSubtext}>{t('reFiColombiaSubsidies.checking.subtitle')}</Text>
-          <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
+            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.checking.title')}</Text>
+            <Text style={styles.congratsSubtitle}>
+              {t('reFiColombiaSubsidies.checking.subtitle')}
+            </Text>
+            <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
+          </View>
         </View>
       )
     }
 
     if (ubiStatus === null) {
       return (
-        <View style={styles.errorContainer}>
-          <Celebration size={48} color={Colors.error} />
-          <Text style={styles.errorTitle}>{t('reFiColombiaSubsidies.error.title')}</Text>
-          <Text style={styles.errorText}>{t('reFiColombiaSubsidies.error.description')}</Text>
-          {!!debugInfo && __DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
             </View>
-          )}
-          <Button
-            onPress={checkUBIStatus}
-            text={t('reFiColombiaSubsidies.error.retry')}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.MEDIUM}
-            style={styles.retryButton}
-          />
+            <ErrorMessage
+              error={loadError ?? new Error('ubiStatus null')}
+              context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
+              variant="banner"
+            />
+            <DebugInfoPanel info={debugInfo} />
+          </View>
         </View>
       )
     }
 
     if (!ubiStatus.isBeneficiary) {
-      const handleApplyForSubsidy = () => {
-        void Linking.openURL('https://tinyurl.com/SubsidiosReFiCol')
-      }
-
-      const handleContactReFi = () => {
-        void Linking.openURL('https://linktr.ee/reficolombia')
-      }
-
       return (
-        <View style={styles.notEligibleContainer}>
-          <View style={styles.notEligibleCard}>
-            <Celebration size={56} color={Colors.gray3} />
-            <Text style={styles.notEligibleTitle}>
-              {t('reFiColombiaSubsidies.notEligible.title')}
-            </Text>
-            <Text style={styles.notEligibleDescription}>
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
+            </View>
+            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.notEligible.title')}</Text>
+            <Text style={styles.congratsSubtitle}>
               {t('reFiColombiaSubsidies.notEligible.description')}
             </Text>
-            <Button
-              onPress={handleApplyForSubsidy}
-              text={t('reFiColombiaSubsidies.notEligible.applyButton')}
-              type={BtnTypes.PRIMARY}
-              size={BtnSizes.FULL}
-              style={styles.applyButton}
-            />
             <Text style={styles.applyDisclaimer}>
               {t('reFiColombiaSubsidies.notEligible.applyDisclaimer')}
             </Text>
             <Text style={styles.contactInfo} onPress={handleContactReFi}>
               {t('reFiColombiaSubsidies.notEligible.contact')}
             </Text>
-            {!!debugInfo && __DEV__ && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Info:</Text>
-                <Text style={styles.debugText}>{debugInfo}</Text>
-              </View>
-            )}
+            <DebugInfoPanel info={debugInfo} />
           </View>
         </View>
       )
@@ -236,25 +229,24 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     // Usuario es beneficiario
     if (ubiStatus.hasClaimedThisWeek) {
       return (
-        <View style={styles.alreadyClaimedContainer}>
-          <View style={styles.alreadyClaimedCard}>
-            <Celebration size={72} color={Colors.primary} />
-
-            <View style={styles.congratsSection}>
-              <Text style={styles.congratsTitle}>
-                {t('reFiColombiaSubsidies.alreadyClaimed.title')}
-              </Text>
-              <Text style={styles.congratsSubtitle}>
-                {t('reFiColombiaSubsidies.alreadyClaimed.subtitle')}
-              </Text>
+        <View style={styles.stateContainer}>
+          <View style={styles.stateCard}>
+            <View style={styles.iconContainer}>
+              <Celebration size={64} color={Colors.primary} />
             </View>
+            <Text style={styles.congratsTitle}>
+              {t('reFiColombiaSubsidies.alreadyClaimed.title')}
+            </Text>
+            <Text style={styles.congratsSubtitle}>
+              {t('reFiColombiaSubsidies.alreadyClaimed.subtitle')}
+            </Text>
 
             {!!ubiStatus.lastClaimTimestamp && (
-              <View style={styles.claimInfoCard}>
-                <Text style={styles.claimInfoTitle}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>
                   {t('reFiColombiaSubsidies.alreadyClaimed.lastClaimTitle')}
                 </Text>
-                <Text style={styles.claimInfoDate}>
+                <Text style={styles.detailValue}>
                   {new Date(ubiStatus.lastClaimTimestamp * 1000).toLocaleDateString('es-ES', {
                     weekday: 'long',
                     year: 'numeric',
@@ -268,14 +260,14 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             )}
 
             {!!ubiStatus.nextClaimAvailable && (
-              <View style={styles.nextClaimCard}>
-                <Text style={styles.nextClaimTitle}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>
                   {t('reFiColombiaSubsidies.alreadyClaimed.nextClaimTitle')}
                 </Text>
-                <Text style={styles.nextClaimTime}>
+                <Text style={styles.detailValueLarge}>
                   {formatTimeRemaining(ubiStatus.nextClaimAvailable)}
                 </Text>
-                <Text style={styles.nextClaimDate}>
+                <Text style={styles.detailValueMuted}>
                   {new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString('es-ES', {
                     weekday: 'long',
                     month: 'long',
@@ -285,13 +277,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               </View>
             )}
 
-            <Button
-              onPress={() => navigation.goBack()}
-              text={t('reFiColombiaSubsidies.alreadyClaimed.backButton')}
-              type={BtnTypes.PRIMARY}
-              size={BtnSizes.FULL}
-              style={styles.backButton}
-            />
+            <DebugInfoPanel info={debugInfo} />
           </View>
         </View>
       )
@@ -299,18 +285,17 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
 
     // Usuario puede reclamar
     return (
-      <View style={styles.eligibleContainer}>
-        <View style={styles.eligibleCard}>
-          <Celebration size={72} color={Colors.primary} />
-
-          <View style={styles.congratsSection}>
-            <Text style={styles.congratsTitle}>
-              {t('reFiColombiaSubsidies.eligible.congratulations')}
-            </Text>
-            <Text style={styles.congratsSubtitle}>
-              {t('reFiColombiaSubsidies.eligible.subtitle')}
-            </Text>
+      <View style={styles.stateContainer}>
+        <View style={styles.stateCard}>
+          <View style={styles.iconContainer}>
+            <Celebration size={64} color={Colors.primary} />
           </View>
+          <Text style={styles.congratsTitle}>
+            {t('reFiColombiaSubsidies.eligible.congratulations')}
+          </Text>
+          <Text style={styles.congratsSubtitle}>
+            {t('reFiColombiaSubsidies.eligible.subtitle')}
+          </Text>
 
           <View style={styles.benefitCard}>
             <Text style={styles.benefitTitle}>
@@ -330,19 +315,6 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             </View>
           )}
 
-          <Button
-            onPress={handleClaimSubsidy}
-            text={
-              isLoading
-                ? t('reFiColombiaSubsidies.eligible.claimingButton')
-                : t('reFiColombiaSubsidies.eligible.claimButton')
-            }
-            type={BtnTypes.PRIMARY}
-            size={BtnSizes.FULL}
-            disabled={isLoading}
-            style={styles.claimButton}
-          />
-
           {isLoading && (
             <View style={styles.processingContainer}>
               <ActivityIndicator size="small" color={Colors.primary} />
@@ -352,14 +324,58 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             </View>
           )}
 
-          {!!debugInfo && __DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Debug Info:</Text>
-              <Text style={styles.debugText}>{debugInfo}</Text>
-            </View>
-          )}
+          <DebugInfoPanel info={debugInfo} />
         </View>
       </View>
+    )
+  }
+
+  const renderStickyButton = () => {
+    if (isCheckingBeneficiary) {
+      return null
+    }
+    if (ubiStatus === null) {
+      return (
+        <Button
+          onPress={checkUBIStatus}
+          text={t('reFiColombiaSubsidies.error.retry')}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    if (!ubiStatus.isBeneficiary) {
+      return (
+        <Button
+          onPress={handleApplyForSubsidy}
+          text={t('reFiColombiaSubsidies.notEligible.applyButton')}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    if (ubiStatus.hasClaimedThisWeek) {
+      return (
+        <Button
+          onPress={() => navigation.goBack()}
+          text={t('reFiColombiaSubsidies.alreadyClaimed.backButton')}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+        />
+      )
+    }
+    return (
+      <Button
+        onPress={handleClaimSubsidy}
+        text={
+          isLoading
+            ? t('reFiColombiaSubsidies.eligible.claimingButton')
+            : t('reFiColombiaSubsidies.eligible.claimButton')
+        }
+        type={BtnTypes.PRIMARY}
+        size={BtnSizes.FULL}
+        disabled={isLoading}
+      />
     )
   }
 
@@ -388,6 +404,10 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       >
         {renderContent()}
       </ScrollView>
+
+      {renderStickyButton() && (
+        <View style={styles.stickyButtonContainer}>{renderStickyButton()}</View>
+      )}
     </SafeAreaView>
   )
 }
@@ -429,7 +449,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     textAlign: 'center',
     marginBottom: Spacing.Tiny4,
-    fontWeight: '700',
   },
   headerSubtitle: {
     ...typeScale.bodySmall,
@@ -451,81 +470,56 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: Spacing.Large32,
   },
-  loadingContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
+  stickyButtonContainer: {
+    paddingHorizontal: Spacing.Thick24,
+    paddingTop: Spacing.Regular16,
+    paddingBottom: Spacing.Regular16,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+  },
+  // Shared chrome applied to every state (loading, error, notEligible, eligible,
+  // alreadyClaimed) so the screen reads consistently regardless of which branch
+  // renders. Matches notEligibleCard's previous look.
+  stateContainer: {
     alignItems: 'center',
+    paddingVertical: Spacing.Regular16,
   },
-  loadingText: {
-    ...typeScale.titleSmall,
-    color: Colors.primary,
-    marginTop: Spacing.Regular16,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  loadingSubtext: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    marginTop: Spacing.Smallest8,
-    textAlign: 'center',
-  },
-  spinner: {
-    marginTop: Spacing.Regular16,
-  },
-  errorContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.Regular16,
-  },
-  errorTitle: {
-    ...typeScale.titleMedium,
-    color: Colors.error,
-    textAlign: 'center',
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
-  },
-  errorText: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray3,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: Spacing.Regular16,
-  },
-  retryButton: {
-    marginTop: Spacing.Regular16,
-  },
-  notEligibleContainer: {
-    minHeight: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notEligibleCard: {
+  stateCard: {
     backgroundColor: Colors.gray1,
     borderRadius: 16,
     padding: Spacing.Large32,
     alignItems: 'center',
+    alignSelf: 'stretch',
     ...getShadowStyle(Shadow.Soft),
     borderWidth: 1,
     borderColor: Colors.gray2,
     marginHorizontal: Spacing.Smallest8,
     marginVertical: Spacing.Smallest8,
   },
-  notEligibleTitle: {
-    ...typeScale.titleMedium,
-    color: Colors.gray6,
-    textAlign: 'center',
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.successLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.Thick24,
   },
-  notEligibleDescription: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray3,
+  congratsTitle: {
+    ...typeScale.labelLarge,
+    color: Colors.black,
     textAlign: 'center',
-    lineHeight: 22,
+    paddingBottom: Spacing.Regular16,
+  },
+  congratsSubtitle: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+    textAlign: 'center',
     marginBottom: Spacing.Regular16,
+  },
+  spinner: {
+    marginTop: Spacing.Regular16,
   },
   contactInfo: {
     ...typeScale.bodySmall,
@@ -534,111 +528,50 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textDecorationLine: 'underline',
   },
-  applyButton: {
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Smallest8,
-  },
   applyDisclaimer: {
     ...typeScale.bodyXSmall,
     color: Colors.gray3,
     textAlign: 'center',
     marginBottom: Spacing.Regular16,
   },
-  alreadyClaimedContainer: {
-    alignItems: 'center',
-    paddingVertical: Spacing.Regular16,
+  detailRow: {
+    flexDirection: 'column',
+    gap: Spacing.Tiny4,
+    alignSelf: 'stretch',
+    marginBottom: Spacing.Regular16,
   },
-  alreadyClaimedCard: {
-    alignItems: 'center',
-    marginTop: Spacing.Large32,
+  detailLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
-  eligibleContainer: {
-    alignItems: 'center',
-    paddingVertical: Spacing.Regular16,
+  detailValue: {
+    ...typeScale.labelMedium,
+    color: Colors.black,
   },
-  eligibleCard: {
-    alignItems: 'center',
+  detailValueLarge: {
+    ...typeScale.labelSemiBoldLarge,
+    color: Colors.black,
   },
-  congratsSection: {
-    alignItems: 'center',
-    marginTop: Spacing.Thick24,
-    marginBottom: Spacing.Large32,
-  },
-  congratsTitle: {
-    ...typeScale.titleLarge,
-    color: Colors.primary,
-    textAlign: 'center',
-    fontWeight: '700',
-    marginBottom: Spacing.Smallest8,
-  },
-  congratsSubtitle: {
-    ...typeScale.bodyLarge,
-    color: Colors.gray3,
-    textAlign: 'center',
+  detailValueMuted: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   benefitCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.white,
     borderRadius: 12,
-    padding: Spacing.Thick24,
-    marginBottom: Spacing.Large32,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    ...getShadowStyle(Shadow.Soft),
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+    alignSelf: 'stretch',
+    gap: Spacing.Smallest8,
   },
   benefitTitle: {
     ...typeScale.titleSmall,
     color: Colors.primary,
-    marginBottom: Spacing.Smallest8,
-    fontWeight: '600',
   },
   benefitDescription: {
     ...typeScale.bodyMedium,
     color: Colors.gray6,
     lineHeight: 22,
-  },
-  claimInfoCard: {
-    backgroundColor: '#E8F5E8',
-    borderRadius: 12,
-    padding: Spacing.Regular16,
-    marginBottom: Spacing.Regular16,
-    alignSelf: 'stretch',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.successDark,
-  },
-  claimInfoTitle: {
-    ...typeScale.bodySmall,
-    color: Colors.successDark,
-    fontWeight: '600',
-    marginBottom: Spacing.Tiny4,
-  },
-  claimInfoDate: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray6,
-  },
-  nextClaimCard: {
-    backgroundColor: '#FFF4E6',
-    borderRadius: 12,
-    padding: Spacing.Regular16,
-    marginBottom: Spacing.Large32,
-    alignSelf: 'stretch',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.warningDark,
-  },
-  nextClaimTitle: {
-    ...typeScale.bodySmall,
-    color: Colors.warningDark,
-    fontWeight: '600',
-    marginBottom: Spacing.Tiny4,
-  },
-  nextClaimTime: {
-    ...typeScale.titleSmall,
-    color: Colors.gray6,
-    fontWeight: '600',
-    marginBottom: Spacing.Tiny4,
-  },
-  nextClaimDate: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
   },
   lastClaimInfo: {
     backgroundColor: Colors.gray1,
@@ -651,12 +584,6 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray3,
     textAlign: 'center',
-  },
-  claimButton: {
-    ...getShadowStyle(Shadow.Soft),
-  },
-  backButton: {
-    marginTop: Spacing.Regular16,
   },
   processingContainer: {
     flexDirection: 'row',
@@ -672,23 +599,5 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
     fontWeight: '500',
-  },
-  debugContainer: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    padding: Spacing.Regular16,
-    marginTop: Spacing.Regular16,
-    alignSelf: 'stretch',
-  },
-  debugTitle: {
-    ...typeScale.bodySmall,
-    color: Colors.gray6,
-    fontWeight: '600',
-    marginBottom: Spacing.Smallest8,
-  },
-  debugText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    fontFamily: 'monospace',
   },
 })

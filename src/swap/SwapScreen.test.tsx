@@ -5,10 +5,8 @@ import React from 'react'
 import { DeviceEventEmitter } from 'react-native'
 import { Provider } from 'react-redux'
 import { ReactTestInstance } from 'react-test-renderer'
-import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SwapEvents } from 'src/analytics/Events'
-import { ErrorMessages } from 'src/app/ErrorMessages'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -48,6 +46,19 @@ const mockGetNumberFormatSettings = jest.fn()
 
 // Use comma as decimal separator for all tests here
 // Input with "." will still work, but it will also work with ",".
+jest.mock('src/components/ErrorMessage', () => ({
+  showErrorMessage: jest.fn(),
+}))
+
+jest.mock('src/utils/errors', () => ({
+  classifyError: jest.fn(() => ({
+    publicMessageKey: 'errors.public.generic',
+    publicMessageFallback: 'Something went wrong',
+    severity: 'error',
+    technical: {},
+  })),
+}))
+
 jest.mock('react-native-localize', () => ({
   getNumberFormatSettings: () => mockGetNumberFormatSettings(),
 }))
@@ -1038,8 +1049,9 @@ describe('SwapScreen', () => {
 
   it('should display an error banner if api request fails', async () => {
     mockFetch.mockReject(new Error('Failed to fetch'))
+    const { showErrorMessage } = jest.requireMock('src/components/ErrorMessage')
 
-    const { swapFromContainer, getByText, store, swapScreen } = renderScreen({})
+    const { swapFromContainer, getByText, swapScreen } = renderScreen({})
 
     selectSwapTokens('CELO', 'cUSD', swapScreen)
     fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '1.234')
@@ -1049,8 +1061,11 @@ describe('SwapScreen', () => {
     })
 
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([showError(ErrorMessages.FETCH_SWAP_QUOTE_FAILED)])
+    expect(showErrorMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: { screen: 'SwapScreen', action: 'fetchSwapQuote' },
+        variant: 'sheet',
+      })
     )
   })
 

@@ -197,12 +197,11 @@ export async function checkForAppUpdate(
     const hasUpdate = compareVersion(currentVersion, latestVersion) < 0
     Logger.info(TAG, `🔄 Has update: ${hasUpdate} (${currentVersion} vs ${latestVersion})`)
 
-    // SIEMPRE forzar actualización cuando hay una versión nueva en tienda
-    // También forzar si la versión actual es menor que minRequiredVersion
-    let isForced = hasUpdate // Forzar si hay cualquier actualización disponible
-    if (minRequiredVersion && compareVersion(currentVersion, minRequiredVersion) < 0) {
-      isForced = true
-    }
+    // Force update only when current version is below the Statsig minRequiredVersion.
+    // A new store version alone shows a soft (dismissible) prompt, not a hard force.
+    const isForced = !!(
+      minRequiredVersion && compareVersion(currentVersion, minRequiredVersion) < 0
+    )
     Logger.info(
       TAG,
       `⚠️ Is forced update: ${isForced} (hasUpdate=${hasUpdate}, minRequired=${minRequiredVersion || 'none'})`
