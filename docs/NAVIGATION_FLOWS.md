@@ -570,4 +570,4 @@ graph TD
 ---
 
 Última actualización: 2026-05-25
-Versión: 1.118.3 (build: 253 / versionCode 1021081771)
+Versión: 1.118.3 (build: 253 / versionCode 1021081772)
