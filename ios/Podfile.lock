@@ -217,15 +217,13 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - OpenSSL-Universal (3.6.2000)
   - PersonaInquirySDK2 (2.3.9)
   - PromisesObjC (2.4.0)
-  - QuickCrypto (1.1.5):
+  - QuickCrypto (1.0.18):
     - DoubleConversion
     - glog
     - hermes-engine
     - NitroModules
-    - OpenSSL-Universal (~> 3.6.2000)
     - RCT-Folly (= 2024.11.18.00)
     - RCTRequired
     - RCTTypeSafety
@@ -1514,27 +1512,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-quick-base64 (3.0.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-restart (0.0.27):
     - React-Core
   - react-native-safe-area-context (5.1.0):
@@ -2318,7 +2295,6 @@ DEPENDENCIES:
   - react-native-launch-arguments (from `../node_modules/react-native-launch-arguments`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
-  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-shake (from `../node_modules/react-native-shake`)
@@ -2417,7 +2393,6 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - nanopb
-    - OpenSSL-Universal
     - PersonaInquirySDK2
     - PromisesObjC
     - RecaptchaInterop
@@ -2534,8 +2509,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
-  react-native-quick-base64:
-    :path: "../node_modules/react-native-quick-base64"
   react-native-restart:
     :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
@@ -2711,10 +2684,9 @@ SPEC CHECKSUMS:
   lottie-react-native: 5d89c05930d4180a1e39b1757d46e6c0eec90255
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NitroModules: 976940466f7d2496b26b439988b1736703e0b73b
-  OpenSSL-Universal: ecee7b138fa75a74ecf00d7ffd248fb584739b9e
   PersonaInquirySDK2: 8153173c5f6d4e964874c9f0d7b375652c9bb6f9
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  QuickCrypto: e631bab9631b91351d2251cea9c07315bebec6f7
+  QuickCrypto: c332806b4e8889c55bed9966154000eadcaec96c
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 6ee92578d332db1d4e03267d3ae98bcf8b780863
   RCTRequired: 5b3da0e0f91fddda935574b81748c3e3d3649ee7
@@ -2754,7 +2726,6 @@ SPEC CHECKSUMS:
   react-native-launch-arguments: d4759f7591e2766e6c5ec746b7032429edaf7058
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: 402dc7916774c96c5a5a9ae533f44aa71e28f0ff
-  react-native-quick-base64: 299affd3bf324640ce3347c1e259f95ce6d1560d
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863
   react-native-safe-area-context: e134b241010ebe2aacdcea013565963d13826faa
   react-native-shake: da1ff7617d3c72352bad20f70cdc1fe4fbd7a874
