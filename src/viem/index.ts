@@ -4,6 +4,7 @@ import {
   ALCHEMY_ETHEREUM_API_KEY,
   ALCHEMY_OPTIMISM_API_KEY,
   ALCHEMY_POLYGON_POS_API_KEY,
+  DEFAULT_FORNO_URL,
 } from 'src/config'
 import { Network } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
@@ -12,16 +13,13 @@ import { PublicClient, Transport, createPublicClient, http } from 'viem'
 export const INTERNAL_RPC_SUPPORTED_NETWORKS = [Network.Arbitrum] as const
 
 export const viemTransports: Record<Network, Transport> = {
-  [Network.Celo]: http(
-    'https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9',
-    {
-      fetchOptions: {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  [Network.Celo]: http(DEFAULT_FORNO_URL, {
+    fetchOptions: {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    }
-  ),
+    },
+  }),
   [Network.Ethereum]: http(networkConfig.alchemyRpcUrl[Network.Ethereum], {
     fetchOptions: {
       headers: {
@@ -66,7 +64,7 @@ export const appViemTransports = {
 export const publicClient = {
   [Network.Celo]: createPublicClient({
     chain: networkConfig.viemChain.celo,
-    transport: http('https://celo-mainnet.core.chainstack.com/ebf11308d0727573a6abe298515f9fa9', {
+    transport: http(DEFAULT_FORNO_URL, {
       fetchOptions: {
         headers: {
           'Content-Type': 'application/json',
