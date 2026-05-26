@@ -7,10 +7,9 @@ import { StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { showError } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SwapEvents } from 'src/analytics/Events'
-import { ErrorMessages } from 'src/app/ErrorMessages'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import BackButton from 'src/components/BackButton'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -339,7 +338,11 @@ export function SwapScreen({ route }: Props) {
   useEffect(() => {
     if (fetchSwapQuoteError) {
       if (!fetchSwapQuoteError.message.includes(NO_QUOTE_ERROR_MESSAGE)) {
-        dispatch(showError(ErrorMessages.FETCH_SWAP_QUOTE_FAILED))
+        showErrorMessage({
+          error: fetchSwapQuoteError,
+          context: { screen: 'SwapScreen', action: 'fetchSwapQuote' },
+          variant: 'sheet',
+        })
       }
     }
   }, [fetchSwapQuoteError])

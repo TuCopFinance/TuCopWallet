@@ -17,6 +17,7 @@ import { SendEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes } from 'src/components/Button'
+import { ErrorMessage } from 'src/components/ErrorMessage'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import KeyboardAwareScrollView from 'src/components/KeyboardAwareScrollView'
 import { LabelWithInfo } from 'src/components/LabelWithInfo'
@@ -307,12 +308,10 @@ export default function EnterAmount({
           />
         )}
         {prepareTransactionError && (
-          <InLineNotification
-            variant={NotificationVariant.Error}
-            title={t('sendEnterAmountScreen.prepareTransactionError.title')}
-            description={t('sendEnterAmountScreen.prepareTransactionError.description')}
-            style={styles.warning}
-            testID="SendEnterAmount/PrepareTransactionError"
+          <ErrorMessage
+            error={prepareTransactionError}
+            context={{ screen: 'SendEnterAmount', action: 'prepareTransaction' }}
+            variant="banner"
           />
         )}
 

@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import PasswordInput from 'src/components/PasswordInput'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
@@ -60,7 +61,11 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
       )
     } catch (error) {
       Logger.error(TAG, 'Error loading stakes', error)
-      Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.errorLoadingStakes'))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(t('earnFlow.staking.errorLoadingStakes')),
+        context: { screen: 'MarranitosMyStakes', action: 'loadStakes' },
+        variant: 'sheet',
+      })
     } finally {
       setLoading(false)
     }
@@ -120,14 +125,19 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
         await loadStakes()
         Alert.alert(t('earnFlow.staking.withdrawSuccess'))
       } else {
-        Alert.alert(t('earnFlow.staking.error'), t('earnFlow.staking.withdrawFailed'))
+        showErrorMessage({
+          error: new Error(t('earnFlow.staking.withdrawFailed')),
+          context: { screen: 'MarranitosMyStakes', action: 'withdraw' },
+          variant: 'sheet',
+        })
       }
     } catch (error) {
       Logger.error(TAG, 'Error withdrawing stake', error)
-      Alert.alert(
-        t('earnFlow.staking.error'),
-        error instanceof Error ? error.message : t('earnFlow.staking.withdrawFailed')
-      )
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(t('earnFlow.staking.withdrawFailed')),
+        context: { screen: 'MarranitosMyStakes', action: 'withdraw' },
+        variant: 'sheet',
+      })
     } finally {
       setWithdrawing(null)
     }
