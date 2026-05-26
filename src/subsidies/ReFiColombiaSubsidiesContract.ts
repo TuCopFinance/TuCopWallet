@@ -40,18 +40,15 @@ export class ReFiColombiaSubsidiesContract {
   }
 
   /**
-   * Verifica si el contrato está desplegado y funcionando
+   * Verifica si el contrato está desplegado.
+   * Lanza el error original de viem (URL, método, etc.) si el RPC falla,
+   * para evitar el mensaje engañoso "No contract deployed" cuando el problema es de red.
    */
   async isContractDeployed(): Promise<boolean> {
-    try {
-      const code = await this.client.getCode({ address: REFI_COLOMBIA_SUBSIDIES_ADDRESS })
-      const isDeployed = !!(code && code !== '0x')
-      Logger.debug(TAG, `Contract deployed: ${isDeployed}, code length: ${code?.length || 0}`)
-      return isDeployed
-    } catch (error) {
-      Logger.error(TAG, 'Error checking contract deployment', error)
-      return false
-    }
+    const code = await this.client.getCode({ address: REFI_COLOMBIA_SUBSIDIES_ADDRESS })
+    const isDeployed = !!(code && code !== '0x')
+    Logger.debug(TAG, `Contract deployed: ${isDeployed}, code length: ${code?.length || 0}`)
+    return isDeployed
   }
 
   /**
