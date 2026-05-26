@@ -168,6 +168,7 @@
     "react-native-picker-select": "^9.3.1",
     "react-native-platform-touchable": "^1.1.1",
     "react-native-qrcode-svg": "^6.3.12",
+    "react-native-quick-base64": "^2.2.2",
     "react-native-quick-crypto": "1.0.18",
     "react-native-reanimated": "3.17.5",
     "react-native-restart": "^0.0.27",
