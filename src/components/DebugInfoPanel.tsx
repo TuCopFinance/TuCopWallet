@@ -20,7 +20,7 @@ export default function DebugInfoPanel({ info, label = 'Debug Info' }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  if (!__DEV__ || !info) {
+  if (!info) {
     return null
   }
 
