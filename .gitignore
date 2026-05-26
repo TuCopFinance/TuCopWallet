@@ -147,3 +147,6 @@ __claude__/
 
 # Build archives
 builds/
+
+# Kotlin compiler caches (Android)
+android/.kotlin/
