@@ -9,7 +9,8 @@ import { cancelCreateOrRestoreAccount } from 'src/account/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { OnboardingEvents } from 'src/analytics/Events'
 import Touchable from 'src/components/Touchable'
-import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
+// Keyless backup imports disabled while the feature is hidden from users.
+// import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 import { nuxNavigationOptions } from 'src/navigator/Headers'
 import { navigate, navigateClearingStack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -20,7 +21,7 @@ import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import CommentsIcon from './comments.svg'
-import EnvelopeIcon from './envelope.svg'
+// import EnvelopeIcon from './envelope.svg' // hidden with keyless backup option
 
 type Props = NativeStackScreenProps<StackParamList, Screens.ImportSelect>
 
@@ -99,7 +100,9 @@ export default function ImportSelect({ navigation }: Props) {
             <Text style={styles.screenTitle}>{t('importSelect.title')}</Text>
             <Text style={styles.screenDescription}>{t('importSelect.description')}</Text>
           </View>
-          <ActionCard
+          {/* Keyless backup (email + phone) restore option is hidden until known bugs are fixed.
+            Restore via recovery phrase remains available below. */}
+          {/* <ActionCard
             title={t('importSelect.emailAndPhone.title')}
             description={t('importSelect.emailAndPhone.description')}
             icon={<EnvelopeIcon />}
@@ -110,7 +113,7 @@ export default function ImportSelect({ navigation }: Props) {
               })
             }
             testID="ImportSelect/CloudBackup"
-          />
+          /> */}
           <ActionCard
             title={t('importSelect.recoveryPhrase.title')}
             description={t('importSelect.recoveryPhrase.description')}
