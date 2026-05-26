@@ -1,6 +1,6 @@
 import { ClassifiedError, ErrorSeverity } from 'src/components/ErrorMessage/types'
 
-export interface ErrorMatcher {
+interface ErrorMatcher {
   test: (error: unknown) => boolean
   publicMessageKey: string
   publicMessageFallback: string
