@@ -569,5 +569,5 @@ graph TD
 
 ---
 
-Última actualización: 2026-04-02
-Versión: 1.118.0 (build: 1021081759)
+Última actualización: 2026-05-25
+Versión: 1.118.3 (build: 253 / versionCode 1021081771)

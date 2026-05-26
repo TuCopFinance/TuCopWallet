@@ -1,14 +1,19 @@
-import { showError, showMessage } from 'src/alert/actions'
+import { showMessage } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { showErrorMessage } from 'src/components/ErrorMessage'
 import { store } from 'src/redux/store'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import getLockableViemWallet from 'src/viem/getLockableWallet'
+import { prepareTransactions } from 'src/viem/prepareTransactions'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
-import { Address, parseEventLogs } from 'viem'
+import { Address, encodeFunctionData, parseEventLogs } from 'viem'
 
 import ReFiColombiaSubsidies from 'src/abis/IReFiColombiaSubsidies'
+import { getLastClaimTimestamp } from 'src/subsidies/subsidyEventHistory'
 
 const TAG = 'subsidies/ReFiColombiaSubsidiesContract'
 
@@ -35,18 +40,15 @@ export class ReFiColombiaSubsidiesContract {
   }
 
   /**
-   * Verifica si el contrato está desplegado y funcionando
+   * Verifica si el contrato está desplegado.
+   * Lanza el error original de viem (URL, método, etc.) si el RPC falla,
+   * para evitar el mensaje engañoso "No contract deployed" cuando el problema es de red.
    */
   async isContractDeployed(): Promise<boolean> {
-    try {
-      const code = await this.client.getCode({ address: REFI_COLOMBIA_SUBSIDIES_ADDRESS })
-      const isDeployed = !!(code && code !== '0x')
-      Logger.debug(TAG, `Contract deployed: ${isDeployed}, code length: ${code?.length || 0}`)
-      return isDeployed
-    } catch (error) {
-      Logger.error(TAG, 'Error checking contract deployment', error)
-      return false
-    }
+    const code = await this.client.getCode({ address: REFI_COLOMBIA_SUBSIDIES_ADDRESS })
+    const isDeployed = !!(code && code !== '0x')
+    Logger.debug(TAG, `Contract deployed: ${isDeployed}, code length: ${code?.length || 0}`)
+    return isDeployed
   }
 
   /**
@@ -115,63 +117,12 @@ export class ReFiColombiaSubsidiesContract {
       const canClaim = await this.canClaimThisWeek(walletAddress)
       Logger.debug(TAG, `Can claim this week: ${canClaim}`)
 
-      // Intentar obtener información de claims previos
-      let lastClaimTimestamp: number | undefined
-      let nextClaimAvailable: number | undefined
+      const lastClaimTimestamp = await getLastClaimTimestamp(walletAddress)
+      const nextClaimAvailable =
+        lastClaimTimestamp !== undefined ? lastClaimTimestamp + 7 * 24 * 60 * 60 : undefined
 
-      try {
-        // Buscar eventos de claim más recientes con rango reducido
-        const currentBlock = await this.client.getBlockNumber()
-        const blocksToSearch = 5000 // Reducir aún más el rango
-        const fromBlock = currentBlock - BigInt(blocksToSearch)
-
-        Logger.debug(
-          TAG,
-          `Searching for claim events from block ${fromBlock} to ${currentBlock} (range: ${blocksToSearch} blocks)`
-        )
-
-        const claimEvents = await this.client.getLogs({
-          address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
-          event: {
-            type: 'event',
-            name: 'SubsidyClaimed',
-            inputs: [
-              { type: 'address', indexed: true, name: 'beneficiary' },
-              { type: 'uint256', indexed: false, name: 'amount' },
-            ],
-          },
-          args: {
-            beneficiary: walletAddress,
-          },
-          fromBlock,
-          toBlock: 'latest',
-        })
-
-        Logger.debug(TAG, `Found ${claimEvents.length} claim events for address ${walletAddress}`)
-
-        if (claimEvents.length > 0) {
-          // Obtener el evento más reciente
-          const latestEvent = claimEvents[claimEvents.length - 1]
-          const eventArgs = parseEventLogs({
-            abi: ReFiColombiaSubsidies.abi,
-            logs: [latestEvent],
-          })[0]?.args as any
-
-          if (eventArgs?.timestamp) {
-            lastClaimTimestamp = Number(eventArgs.timestamp)
-            // Calcular próximo claim disponible (asumiendo 7 días)
-            nextClaimAvailable = lastClaimTimestamp + 7 * 24 * 60 * 60
-            Logger.debug(TAG, `Last claim: ${new Date(lastClaimTimestamp * 1000).toISOString()}`)
-            Logger.debug(
-              TAG,
-              `Next claim available: ${new Date(nextClaimAvailable * 1000).toISOString()}`
-            )
-          }
-        } else {
-          Logger.debug(TAG, 'No recent claim events found in the searched range')
-        }
-      } catch (error) {
-        Logger.warn(TAG, 'Could not fetch claim events, using contract state only:', error)
+      if (lastClaimTimestamp !== undefined) {
+        Logger.debug(TAG, `Last claim: ${new Date(lastClaimTimestamp * 1000).toISOString()}`)
       }
 
       return {
@@ -207,7 +158,11 @@ export class ReFiColombiaSubsidiesContract {
 
       // Si el error es que no hay contrato, mostrar un mensaje más específico
       if (error instanceof Error && error.message.includes('No contract deployed')) {
-        store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
+        showErrorMessage({
+          error,
+          context: { screen: 'subsidies', action: 'isBeneficiary' },
+          variant: 'sheet',
+        })
       }
 
       return false
@@ -229,7 +184,11 @@ export class ReFiColombiaSubsidiesContract {
 
       if (!ubiStatus.isBeneficiary) {
         Logger.warn(TAG, `Address ${walletAddress} is not a beneficiary`)
-        store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
+        showErrorMessage({
+          error: new Error(ErrorMessages.UBI_NOT_BENEFICIARY),
+          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          variant: 'sheet',
+        })
         return { success: false, error: 'Not a beneficiary' }
       }
 
@@ -237,8 +196,12 @@ export class ReFiColombiaSubsidiesContract {
         Logger.warn(TAG, `Address ${walletAddress} has already claimed this week`)
         const nextClaimDate = ubiStatus.nextClaimAvailable
           ? new Date(ubiStatus.nextClaimAvailable * 1000).toLocaleDateString()
-          : 'próxima semana'
-        store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          : 'proxima semana'
+        showErrorMessage({
+          error: new Error(ErrorMessages.UBI_ALREADY_CLAIMED),
+          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          variant: 'sheet',
+        })
         return {
           success: false,
           error: `Already claimed this week. Next claim available: ${nextClaimDate}`,
@@ -263,15 +226,55 @@ export class ReFiColombiaSubsidiesContract {
         throw new Error('No se pudo desbloquear la cuenta')
       }
 
-      Logger.debug(TAG, 'Executing claim transaction...')
+      Logger.debug(TAG, 'Encoding claim call data...')
 
-      // Ejecutar la transacción de claim
-      const claimTx = await (wallet as any).writeContract({
-        address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+      const claimCallData = encodeFunctionData({
         abi: ReFiColombiaSubsidies.abi,
         functionName: 'claimSubsidy',
         args: [],
       })
+
+      const feeCurrencies = feeCurrenciesSelector(
+        store.getState() as any,
+        NetworkId['celo-mainnet']
+      )
+
+      Logger.debug(
+        TAG,
+        `Preparing claim transaction with ${feeCurrencies.length} candidate fee currencies`
+      )
+
+      const prepared = await prepareTransactions({
+        feeCurrencies,
+        baseTransactions: [
+          {
+            from: walletAddress,
+            to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+            data: claimCallData,
+          },
+        ],
+        origin: 'subsidies',
+      })
+
+      if (prepared.type !== 'possible') {
+        Logger.warn(TAG, `Cannot prepare claim transaction: ${prepared.type}`)
+        showErrorMessage({
+          error: new Error(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS),
+          context: { screen: 'subsidies', action: 'prepareClaimTransaction' },
+          variant: 'sheet',
+        })
+        return {
+          success: false,
+          error: 'Not enough balance to pay for gas in any supported fee currency',
+        }
+      }
+
+      Logger.debug(
+        TAG,
+        `Sending claim transaction with feeCurrency ${prepared.feeCurrency.symbol} (${prepared.feeCurrency.tokenId})`
+      )
+
+      const claimTx = await wallet.sendTransaction(prepared.transactions[0] as any)
 
       Logger.debug(TAG, `Claim transaction submitted: ${claimTx}`)
 
@@ -295,10 +298,14 @@ export class ReFiColombiaSubsidiesContract {
       const claimEvent = parsedLogs.find((log) => log.eventName === 'SubsidyClaimed')
 
       if (claimEvent) {
-        const { beneficiary, amount } = claimEvent.args as { beneficiary: Address; amount: bigint }
+        const { beneficiaryAddress, amount, contractBalance } = claimEvent.args as {
+          beneficiaryAddress: Address
+          amount: bigint
+          contractBalance: bigint
+        }
         Logger.debug(
           TAG,
-          `SubsidyClaimed event found: beneficiary=${beneficiary}, amount=${amount}`
+          `SubsidyClaimed event found: beneficiary=${beneficiaryAddress}, amount=${amount}, contractBalance=${contractBalance}`
         )
 
         store.dispatch(
@@ -329,32 +336,52 @@ export class ReFiColombiaSubsidiesContract {
         // Detectar errores específicos del contrato
         if (errorMessage.includes('Cannot claim yet')) {
           Logger.warn(TAG, 'User tried to claim but cannot claim yet (already claimed this week)')
-          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
         } else if (errorMessage.includes('already claimed')) {
           Logger.warn(TAG, 'User has already claimed this week')
-          store.dispatch(showError(ErrorMessages.UBI_ALREADY_CLAIMED))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Ya has reclamado tu subsidio esta semana' }
         } else if (
           errorMessage.includes('Not beneficiary') ||
           errorMessage.includes('not eligible')
         ) {
           Logger.warn(TAG, 'User is not a beneficiary')
-          store.dispatch(showError(ErrorMessages.UBI_NOT_BENEFICIARY))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'No eres elegible para este subsidio' }
         } else if (errorMessage.includes('insufficient funds')) {
           Logger.warn(TAG, 'Insufficient funds for gas')
-          store.dispatch(showError(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS))
+          showErrorMessage({
+            error,
+            context: { screen: 'subsidies', action: 'claimSubsidy' },
+            variant: 'sheet',
+          })
           return { success: false, error: 'Fondos insuficientes para pagar las tarifas de gas' }
         } else if (errorMessage.includes('User rejected') || errorMessage.includes('cancelled')) {
           Logger.info(TAG, 'Transaction cancelled by user')
-          return { success: false, error: 'Transacción cancelada por el usuario' }
+          return { success: false, error: 'Transaccion cancelada por el usuario' }
         }
       }
 
-      // Error genérico
+      // Error generico
       Logger.error(TAG, 'Unknown error during claim:', errorMessage)
-      store.dispatch(showError(ErrorMessages.UBI_CLAIM_ERROR))
+      showErrorMessage({
+        error: error instanceof Error ? error : new Error(errorMessage),
+        context: { screen: 'subsidies', action: 'claimSubsidy' },
+        variant: 'sheet',
+      })
       return { success: false, error: errorMessage }
     }
   }

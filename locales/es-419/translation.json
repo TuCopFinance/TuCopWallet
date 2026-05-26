@@ -3200,5 +3200,32 @@
     "recipient": "Destinatario",
     "pool": "Pool",
     "viewOnExplorer": "Ver en el explorador"
+  },
+  "errors": {
+    "public": {
+      "insufficient_balance": "Saldo insuficiente para esta operacion",
+      "insufficient_gas": "Saldo insuficiente para la comision de red",
+      "user_rejected": "Operacion cancelada",
+      "network_error": "Sin conexion a internet",
+      "rpc_timeout": "El servidor no responde, intenta en unos segundos",
+      "contract_revert": "La operacion fue rechazada por la red",
+      "signing_failed": "No pudimos firmar la transaccion",
+      "invalid_address": "Direccion invalida",
+      "unsupported_token": "Token no soportado",
+      "slippage_exceeded": "El precio cambio demasiado, intenta de nuevo",
+      "session_expired": "Sesion expirada, vuelve a iniciar",
+      "permission_required": "Permisos del telefono requeridos",
+      "invalid_qr": "QR invalido",
+      "load_failed": "No pudimos cargar tu informacion",
+      "generic": "Algo no salio como esperabamos"
+    },
+    "sheet": {
+      "title": "Detalle del error",
+      "techDetailsToggle": "Detalles tecnicos",
+      "copyButton": "Copiar",
+      "copyConfirmation": "Copiado",
+      "shareButton": "Compartir",
+      "shareSubject": "Reporte de error TuCop"
+    }
   }
 }

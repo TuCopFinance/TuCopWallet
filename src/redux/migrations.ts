@@ -2040,4 +2040,9 @@ export const migrations = {
       bucksPayStatus: null,
     },
   }),
+  245: (state: any) => {
+    // Remove deprecated divviProtocol slice from persisted state
+    const { divviProtocol, ...rest } = state
+    return rest
+  },
 }
