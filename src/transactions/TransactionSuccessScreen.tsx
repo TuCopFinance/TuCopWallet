@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Button from 'src/components/Button'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
@@ -95,7 +96,7 @@ function TransactionSuccessScreen({ route }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <Celebration size={64} color={colors.primary} />
@@ -191,7 +192,7 @@ function TransactionSuccessScreen({ route }: Props) {
           testID="TransactionSuccess/Continue"
         />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
