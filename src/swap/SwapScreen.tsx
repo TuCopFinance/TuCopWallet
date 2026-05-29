@@ -138,7 +138,8 @@ const swapSlice = createSlice({
       // raw decimals of token base units when the user taps Max / 25 / 50 / 75.
       state.inputSwapAmount[Field.FROM] = fromTokenBalance
         .multipliedBy(percentage)
-        .toFormat(getInputDecimalsForToken(fromTokenId), BigNumber.ROUND_DOWN, {
+        .decimalPlaces(getInputDecimalsForToken(fromTokenId), BigNumber.ROUND_DOWN)
+        .toFormat({
           decimalSeparator: getNumberFormatSettings().decimalSeparator,
         })
     },
@@ -191,11 +192,9 @@ const swapSlice = createSlice({
       // Round to the destination token's display decimals so the auto-filled
       // TO field doesn't render with full BigNumber precision (the bug behind
       // KNOWN_ISSUES BUG-004 — swap input showing ~18 decimals).
-      state.inputSwapAmount[Field.TO] = newAmount.toFormat(
-        getInputDecimalsForToken(state.toTokenId),
-        BigNumber.ROUND_DOWN,
-        { decimalSeparator }
-      )
+      state.inputSwapAmount[Field.TO] = newAmount
+        .decimalPlaces(getInputDecimalsForToken(state.toTokenId), BigNumber.ROUND_DOWN)
+        .toFormat({ decimalSeparator })
     },
     // When the user presses the confirm swap button
     startConfirmSwap: (state) => {

@@ -147,7 +147,7 @@ export default function GoldSellEnterAmount(_props: Props) {
 
   const onSelectPercentageAmount = (percentage: number) => {
     const amount = xaut0Balance.multipliedBy(percentage)
-    setGoldAmountInput(amount.toFormat(6, BigNumber.ROUND_DOWN, { decimalSeparator }))
+    setGoldAmountInput(amount.decimalPlaces(6, BigNumber.ROUND_DOWN).toFormat({ decimalSeparator }))
     setSelectedPercentage(percentage)
   }
 
@@ -270,10 +270,12 @@ export default function GoldSellEnterAmount(_props: Props) {
                   </Touchable>
                   <Text style={styles.outputAmountText}>
                     {outputAmount
-                      ? outputAmount.toFormat(
-                          getInputDecimalsForToken(selectedOutputToken.tokenId),
-                          BigNumber.ROUND_DOWN
-                        )
+                      ? outputAmount
+                          .decimalPlaces(
+                            getInputDecimalsForToken(selectedOutputToken.tokenId),
+                            BigNumber.ROUND_DOWN
+                          )
+                          .toFormat()
                       : '0'}
                   </Text>
                 </>
