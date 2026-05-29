@@ -36,6 +36,8 @@ import {
   retrieveStoredItem,
   storeItem,
 } from 'src/storage/keychain'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 import Logger from 'src/utils/Logger'
 import { isValidAddress, normalizeAddress } from 'src/utils/address'
 import { ensureError } from 'src/utils/ensureError'
@@ -463,9 +465,10 @@ export async function ensureCorrectPassword(
     return result
   } catch (error) {
     Logger.error(TAG, 'Error attempting to unlock wallet', error, true)
-    Logger.showError(
-      i18n.t(ErrorMessages.ACCOUNT_UNLOCK_FAILED) ?? new Error('Error attempting to unlock wallet')
-    )
+    showToast({
+      message: i18n.t(ErrorMessages.ACCOUNT_UNLOCK_FAILED) ?? 'Error attempting to unlock wallet',
+      variant: NotificationVariant.Error,
+    })
     return false
   }
 }
