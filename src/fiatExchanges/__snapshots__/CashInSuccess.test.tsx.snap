@@ -1,70 +1,132 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CashinInSuccess renders correctly with a provider 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    {
+      "bottom": "additive",
+      "left": "off",
+      "right": "off",
+      "top": "additive",
+    }
+  }
   style={
     {
-      "alignItems": "center",
-      "display": "flex",
       "flex": 1,
-      "flexDirection": "column",
-      "justifyContent": "space-between",
-      "overflow": "hidden",
-      "padding": 32,
     }
   }
 >
-  <View
-    style={
+  <RCTScrollView
+    contentContainerStyle={
       {
-        "alignItems": "center",
-        "display": "flex",
-        "flex": 1,
-        "flexDirection": "column",
+        "flexGrow": 1,
         "justifyContent": "center",
-        "padding": 16,
+        "paddingHorizontal": 16,
       }
     }
   >
-    <Image
-      resizeMode="contain"
-      source={
-        {
-          "testUri": "../../../src/images/assets/fiat-exchange.png",
+    <View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "backgroundColor": "#F8F9F9",
+            "borderColor": "#E6E6E6",
+            "borderRadius": 16,
+            "borderWidth": 1,
+            "elevation": 12,
+            "marginHorizontal": 8,
+            "marginVertical": 8,
+            "padding": 32,
+            "shadowColor": "rgba(156, 164, 169, 0.4)",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 12,
+          }
         }
-      }
-    />
-    <Text
-      style={
-        {
-          "fontFamily": "RedHatDisplayMedium",
-          "fontSize": 18,
-          "lineHeight": 28,
-          "paddingBottom": 16,
-          "paddingTop": 8,
-        }
-      }
-    >
-      cicoSuccess.title
-    </Text>
-    <Text
-      style={
-        {
-          "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
-          "lineHeight": 24,
-          "textAlign": "center",
-        }
-      }
-    >
-      cicoSuccess.bodyWithProvider, {"provider":"Moonpay"}
-    </Text>
-  </View>
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "borderRadius": 60,
+                "height": 120,
+                "justifyContent": "center",
+                "marginBottom": 24,
+                "width": 120,
+              },
+              {
+                "backgroundColor": "#F1FDF1",
+              },
+            ]
+          }
+        >
+          <Image
+            resizeMode="contain"
+            source={
+              {
+                "testUri": "../../../src/images/assets/fiat-exchange.png",
+              }
+            }
+            style={
+              {
+                "height": 100,
+                "width": 100,
+              }
+            }
+          />
+        </View>
+        <Text
+          style={
+            {
+              "color": "#2E3338",
+              "fontFamily": "RedHatDisplayMedium",
+              "fontSize": 18,
+              "lineHeight": 28,
+              "paddingBottom": 16,
+              "paddingTop": 8,
+              "textAlign": "center",
+            }
+          }
+        >
+          cicoSuccess.title
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#666666",
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
+              "lineHeight": 24,
+              "marginBottom": 32,
+              "textAlign": "center",
+            }
+          }
+        >
+          cicoSuccess.bodyWithProvider, {"provider":"Moonpay"}
+        </Text>
+      </View>
+    </View>
+  </RCTScrollView>
   <View
     style={
-      {
-        "flexDirection": "row",
-      }
+      [
+        {
+          "backgroundColor": "#FFFFFF",
+          "paddingBottom": 16,
+          "paddingHorizontal": 24,
+          "paddingTop": 16,
+        },
+        {
+          "borderTopColor": "#E6E6E6",
+          "borderTopWidth": 1,
+        },
+      ]
     }
   >
     <View
@@ -87,15 +149,10 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
         style={
           [
             {
-              "flexDirection": "row",
-            },
-            {
-              "alignSelf": "stretch",
-              "flex": 1,
               "flexDirection": "column",
-              "minWidth": 200,
               "width": "100%",
             },
+            undefined,
           ]
         }
       >
@@ -151,13 +208,14 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
                   "alignItems": "center",
                   "backgroundColor": "#2F4ACD",
                   "flexDirection": "row",
+                  "flexGrow": 1,
                   "height": 48,
                   "justifyContent": "center",
                   "maxHeight": 56,
-                  "minWidth": 120,
                   "opacity": 1,
                   "paddingHorizontal": 24,
                   "paddingVertical": 5,
+                  "width": "100%",
                 },
                 undefined,
               ]
@@ -240,74 +298,136 @@ exports[`CashinInSuccess renders correctly with a provider 1`] = `
       </View>
     </View>
   </View>
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`CashinInSuccess renders correctly without a provider 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    {
+      "bottom": "additive",
+      "left": "off",
+      "right": "off",
+      "top": "additive",
+    }
+  }
   style={
     {
-      "alignItems": "center",
-      "display": "flex",
       "flex": 1,
-      "flexDirection": "column",
-      "justifyContent": "space-between",
-      "overflow": "hidden",
-      "padding": 32,
     }
   }
 >
-  <View
-    style={
+  <RCTScrollView
+    contentContainerStyle={
       {
-        "alignItems": "center",
-        "display": "flex",
-        "flex": 1,
-        "flexDirection": "column",
+        "flexGrow": 1,
         "justifyContent": "center",
-        "padding": 16,
+        "paddingHorizontal": 16,
       }
     }
   >
-    <Image
-      resizeMode="contain"
-      source={
-        {
-          "testUri": "../../../src/images/assets/fiat-exchange.png",
+    <View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "backgroundColor": "#F8F9F9",
+            "borderColor": "#E6E6E6",
+            "borderRadius": 16,
+            "borderWidth": 1,
+            "elevation": 12,
+            "marginHorizontal": 8,
+            "marginVertical": 8,
+            "padding": 32,
+            "shadowColor": "rgba(156, 164, 169, 0.4)",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 12,
+          }
         }
-      }
-    />
-    <Text
-      style={
-        {
-          "fontFamily": "RedHatDisplayMedium",
-          "fontSize": 18,
-          "lineHeight": 28,
-          "paddingBottom": 16,
-          "paddingTop": 8,
-        }
-      }
-    >
-      cicoSuccess.title
-    </Text>
-    <Text
-      style={
-        {
-          "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
-          "lineHeight": 24,
-          "textAlign": "center",
-        }
-      }
-    >
-      cicoSuccess.bodyWithoutProvider
-    </Text>
-  </View>
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "borderRadius": 60,
+                "height": 120,
+                "justifyContent": "center",
+                "marginBottom": 24,
+                "width": 120,
+              },
+              {
+                "backgroundColor": "#F1FDF1",
+              },
+            ]
+          }
+        >
+          <Image
+            resizeMode="contain"
+            source={
+              {
+                "testUri": "../../../src/images/assets/fiat-exchange.png",
+              }
+            }
+            style={
+              {
+                "height": 100,
+                "width": 100,
+              }
+            }
+          />
+        </View>
+        <Text
+          style={
+            {
+              "color": "#2E3338",
+              "fontFamily": "RedHatDisplayMedium",
+              "fontSize": 18,
+              "lineHeight": 28,
+              "paddingBottom": 16,
+              "paddingTop": 8,
+              "textAlign": "center",
+            }
+          }
+        >
+          cicoSuccess.title
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#666666",
+              "fontFamily": "RedHatDisplayRegular",
+              "fontSize": 12,
+              "lineHeight": 24,
+              "marginBottom": 32,
+              "textAlign": "center",
+            }
+          }
+        >
+          cicoSuccess.bodyWithoutProvider
+        </Text>
+      </View>
+    </View>
+  </RCTScrollView>
   <View
     style={
-      {
-        "flexDirection": "row",
-      }
+      [
+        {
+          "backgroundColor": "#FFFFFF",
+          "paddingBottom": 16,
+          "paddingHorizontal": 24,
+          "paddingTop": 16,
+        },
+        {
+          "borderTopColor": "#E6E6E6",
+          "borderTopWidth": 1,
+        },
+      ]
     }
   >
     <View
@@ -330,15 +450,10 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
         style={
           [
             {
-              "flexDirection": "row",
-            },
-            {
-              "alignSelf": "stretch",
-              "flex": 1,
               "flexDirection": "column",
-              "minWidth": 200,
               "width": "100%",
             },
+            undefined,
           ]
         }
       >
@@ -394,13 +509,14 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
                   "alignItems": "center",
                   "backgroundColor": "#2F4ACD",
                   "flexDirection": "row",
+                  "flexGrow": 1,
                   "height": 48,
                   "justifyContent": "center",
                   "maxHeight": 56,
-                  "minWidth": 120,
                   "opacity": 1,
                   "paddingHorizontal": 24,
                   "paddingVertical": 5,
+                  "width": "100%",
                 },
                 undefined,
               ]
@@ -483,5 +599,5 @@ exports[`CashinInSuccess renders correctly without a provider 1`] = `
       </View>
     </View>
   </View>
-</View>
+</RNCSafeAreaView>
 `;
