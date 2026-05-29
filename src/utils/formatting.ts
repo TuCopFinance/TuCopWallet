@@ -2,6 +2,17 @@ import BigNumber from 'bignumber.js'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { CURRENCIES, Currency } from 'src/utils/currencies'
 
+/**
+ * How many decimal places to show in token amount inputs / displays inside
+ * gold + swap flows. We use 6 across the board so that small Oro amounts
+ * (1.000 Pesos ≈ 0.000061 Oro) stay readable without rounding to zero, and
+ * fiat-pegged tokens like Pesos / Dólares show a consistent precision next
+ * to them. The `tokenId` param is kept for future per-token tuning.
+ */
+export function getInputDecimalsForToken(_tokenId?: string): number {
+  return 6
+}
+
 // Returns a localized string that represents the number with the right decimal points.
 export const getMoneyDisplayValue = (
   value: BigNumber.Value,
