@@ -89,7 +89,8 @@ const SwapAmountInput = ({
                 <Text style={styles.tokenName}>{getTokenSymbol(t, token.symbol)}</Text>
                 {showBalance && token.balance && (
                   <Text style={styles.tokenBalance}>
-                    {t('swapScreen.balance')}: {token.balance.toFormat(2)} {token.symbol}
+                    {t('swapScreen.balance')}: {token.balance.toFormat(2)}{' '}
+                    {getTokenSymbol(t, token.symbol, token.tokenId)}
                   </Text>
                 )}
               </View>
