@@ -44,6 +44,7 @@ import { SwapTransaction } from 'src/swap/types'
 import { useLocalToTokenAmount, useTokenInfo, useTokenToLocalAmount } from 'src/tokens/hooks'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 import { getFeeCurrencyAndAmounts, PreparedTransactionsResult } from 'src/viem/prepareTransactions'
@@ -343,7 +344,12 @@ function EarnEnterAmount({ route }: Props) {
   }
 
   const onSelectPercentageAmount = (percentage: number) => {
-    setTokenAmountInput(balanceInInputToken.multipliedBy(percentage).toFormat({ decimalSeparator }))
+    setTokenAmountInput(
+      balanceInInputToken
+        .multipliedBy(percentage)
+        .decimalPlaces(getInputDecimalsForToken(inputToken.tokenId), BigNumber.ROUND_DOWN)
+        .toFormat({ decimalSeparator })
+    )
     setEnteredIn('token')
     setSelectedPercentage(percentage)
 

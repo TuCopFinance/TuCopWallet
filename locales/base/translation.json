@@ -2698,6 +2698,7 @@
       "fee": "Gas Fee",
       "cta": "Collect Earnings",
       "ctaWithdraw": "Withdraw",
+      "ctaWithdrawAndClaim": "Withdraw and claim",
       "ctaReward": "Claim Reward",
       "ctaExit": "Exit Pool",
       "errorTitle": "Something went wrong",
