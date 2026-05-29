@@ -10,7 +10,7 @@ import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { vibrateInformative } from 'src/styles/hapticFeedback'
 import { Spacing } from 'src/styles/styles'
-import Logger from 'src/utils/Logger'
+import { showToast } from 'src/components/showToast'
 
 const PhraseInput = withTextInputPasteAware(TextInput, { top: undefined, right: 12, bottom: 12 })
 
@@ -68,7 +68,7 @@ export class BackupPhraseContainer extends React.Component<Props> {
       return
     }
     Clipboard.setString(words)
-    Logger.showMessage(t('copied'))
+    showToast({ message: t('copied') })
     vibrateInformative()
   }
 
