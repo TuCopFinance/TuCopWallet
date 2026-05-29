@@ -8,7 +8,9 @@ import { TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import DebugInfoPanel from 'src/components/DebugInfoPanel'
 import { ErrorMessage } from 'src/components/ErrorMessage'
-import Celebration from 'src/icons/misc/Celebration'
+import StateCard from 'src/components/StateCard'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
+import Checkmark from 'src/icons/status/Checkmark'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -171,16 +173,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     if (isCheckingBeneficiary) {
       return (
         <View style={styles.stateContainer}>
-          <View style={styles.stateCard}>
-            <View style={styles.iconContainer}>
-              <Celebration size={64} color={Colors.primary} />
-            </View>
-            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.checking.title')}</Text>
-            <Text style={styles.congratsSubtitle}>
-              {t('reFiColombiaSubsidies.checking.subtitle')}
-            </Text>
-            <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
-          </View>
+          <StateCard
+            variant="loading"
+            title={t('reFiColombiaSubsidies.checking.title')}
+            subtitle={t('reFiColombiaSubsidies.checking.subtitle')}
+          />
         </View>
       )
     }
@@ -188,17 +185,18 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     if (ubiStatus === null) {
       return (
         <View style={styles.stateContainer}>
-          <View style={styles.stateCard}>
-            <View style={styles.iconContainer}>
-              <Celebration size={64} color={Colors.primary} />
-            </View>
+          <StateCard
+            variant="error"
+            title={t('reFiColombiaSubsidies.error.title')}
+            subtitle={t('reFiColombiaSubsidies.error.description')}
+          >
             <ErrorMessage
               error={loadError ?? new Error('ubiStatus null')}
               context={{ screen: 'ReFiColombiaSubsidies', action: 'checkUBIStatus' }}
               variant="banner"
             />
             <DebugInfoPanel info={debugInfo} />
-          </View>
+          </StateCard>
         </View>
       )
     }
@@ -206,14 +204,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     if (!ubiStatus.isBeneficiary) {
       return (
         <View style={styles.stateContainer}>
-          <View style={styles.stateCard}>
-            <View style={styles.iconContainer}>
-              <Celebration size={64} color={Colors.primary} />
-            </View>
-            <Text style={styles.congratsTitle}>{t('reFiColombiaSubsidies.notEligible.title')}</Text>
-            <Text style={styles.congratsSubtitle}>
-              {t('reFiColombiaSubsidies.notEligible.description')}
-            </Text>
+          <StateCard
+            variant="info"
+            title={t('reFiColombiaSubsidies.notEligible.title')}
+            subtitle={t('reFiColombiaSubsidies.notEligible.description')}
+          >
             <Text style={styles.applyDisclaimer}>
               {t('reFiColombiaSubsidies.notEligible.applyDisclaimer')}
             </Text>
@@ -221,7 +216,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               {t('reFiColombiaSubsidies.notEligible.contact')}
             </Text>
             <DebugInfoPanel info={debugInfo} />
-          </View>
+          </StateCard>
         </View>
       )
     }
@@ -230,17 +225,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     if (ubiStatus.hasClaimedThisWeek) {
       return (
         <View style={styles.stateContainer}>
-          <View style={styles.stateCard}>
-            <View style={styles.iconContainer}>
-              <Celebration size={64} color={Colors.primary} />
-            </View>
-            <Text style={styles.congratsTitle}>
-              {t('reFiColombiaSubsidies.alreadyClaimed.title')}
-            </Text>
-            <Text style={styles.congratsSubtitle}>
-              {t('reFiColombiaSubsidies.alreadyClaimed.subtitle')}
-            </Text>
-
+          <StateCard
+            variant="success"
+            title={t('reFiColombiaSubsidies.alreadyClaimed.title')}
+            subtitle={t('reFiColombiaSubsidies.alreadyClaimed.subtitle')}
+          >
             {!!ubiStatus.lastClaimTimestamp && (
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>
@@ -278,7 +267,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
             )}
 
             <DebugInfoPanel info={debugInfo} />
-          </View>
+          </StateCard>
         </View>
       )
     }
@@ -286,17 +275,12 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
     // Usuario puede reclamar
     return (
       <View style={styles.stateContainer}>
-        <View style={styles.stateCard}>
-          <View style={styles.iconContainer}>
-            <Celebration size={64} color={Colors.primary} />
-          </View>
-          <Text style={styles.congratsTitle}>
-            {t('reFiColombiaSubsidies.eligible.congratulations')}
-          </Text>
-          <Text style={styles.congratsSubtitle}>
-            {t('reFiColombiaSubsidies.eligible.subtitle')}
-          </Text>
-
+        <StateCard
+          variant="success"
+          icon={<Checkmark width={64} height={64} color={Colors.primary} />}
+          title={t('reFiColombiaSubsidies.eligible.congratulations')}
+          subtitle={t('reFiColombiaSubsidies.eligible.subtitle')}
+        >
           <View style={styles.benefitCard}>
             <Text style={styles.benefitTitle}>
               {t('reFiColombiaSubsidies.eligible.benefitTitle')}
@@ -325,7 +309,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
           )}
 
           <DebugInfoPanel info={debugInfo} />
-        </View>
+        </StateCard>
       </View>
     )
   }
@@ -405,9 +389,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         {renderContent()}
       </ScrollView>
 
-      {renderStickyButton() && (
-        <View style={styles.stickyButtonContainer}>{renderStickyButton()}</View>
-      )}
+      {renderStickyButton() && <StickyCtaBottom>{renderStickyButton()}</StickyCtaBottom>}
     </SafeAreaView>
   )
 }
@@ -470,56 +452,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: Spacing.Large32,
   },
-  stickyButtonContainer: {
-    paddingHorizontal: Spacing.Thick24,
-    paddingTop: Spacing.Regular16,
-    paddingBottom: Spacing.Regular16,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.gray2,
-  },
-  // Shared chrome applied to every state (loading, error, notEligible, eligible,
-  // alreadyClaimed) so the screen reads consistently regardless of which branch
-  // renders. Matches notEligibleCard's previous look.
+  // Wraps the StateCard for any per-state outer alignment / spacing the
+  // ScrollView needs. The card chrome itself lives in <StateCard/>.
   stateContainer: {
     alignItems: 'center',
     paddingVertical: Spacing.Regular16,
-  },
-  stateCard: {
-    backgroundColor: Colors.gray1,
-    borderRadius: 16,
-    padding: Spacing.Large32,
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    ...getShadowStyle(Shadow.Soft),
-    borderWidth: 1,
-    borderColor: Colors.gray2,
-    marginHorizontal: Spacing.Smallest8,
-    marginVertical: Spacing.Smallest8,
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: Colors.successLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.Thick24,
-  },
-  congratsTitle: {
-    ...typeScale.labelLarge,
-    color: Colors.black,
-    textAlign: 'center',
-    paddingBottom: Spacing.Regular16,
-  },
-  congratsSubtitle: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray4,
-    textAlign: 'center',
-    marginBottom: Spacing.Regular16,
-  },
-  spinner: {
-    marginTop: Spacing.Regular16,
   },
   contactInfo: {
     ...typeScale.bodySmall,
