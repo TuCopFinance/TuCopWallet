@@ -41,8 +41,6 @@ import { positionsWithBalanceSelector } from 'src/positions/selectors'
 import { EarnPosition } from 'src/positions/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { NETWORK_NAMES } from 'src/shared/conts'
-import { getFeatureGate } from 'src/statsig'
-import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -239,14 +237,12 @@ export default function EarnPoolInfoScreen({ route, navigation }: Props) {
       networkId,
       depositTokenId: dataProps.depositTokenId,
     })
-    const partialWithdrawalsEnabled = getFeatureGate(
-      StatsigFeatureGates.ALLOW_EARN_PARTIAL_WITHDRAWAL
-    )
-    if (partialWithdrawalsEnabled) {
-      withdrawBottomSheetRef.current?.snapToIndex(0)
-    } else {
-      navigate(Screens.EarnConfirmationScreen, { pool, mode: 'exit', useMax: true })
-    }
+    // Always open the withdraw bottom sheet so the user gets the partial-
+    // withdraw option (with 25/50/75/100 percent buttons in EarnEnterAmount)
+    // instead of being pushed straight to "Retirar todo". The previous
+    // Statsig-gated path defaulted to false for new clients and confused
+    // every Allbridge pool user (BUG-005 in KNOWN_ISSUES).
+    withdrawBottomSheetRef.current?.snapToIndex(0)
   }
 
   const onPressDeposit = () => {

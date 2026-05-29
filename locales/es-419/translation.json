@@ -2700,6 +2700,7 @@
       "fee": "Tarifa estimada",
       "cta": "Recoger ganancias",
       "ctaWithdraw": "Retirar",
+      "ctaWithdrawAndClaim": "Retirar y reclamar",
       "ctaReward": "Reclamar recompensa",
       "ctaExit": "Retirar todo",
       "errorTitle": "Algo salió mal",
