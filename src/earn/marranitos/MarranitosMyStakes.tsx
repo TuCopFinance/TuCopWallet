@@ -13,6 +13,7 @@ import { Shadow } from 'react-native-shadow-2'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { showErrorMessage } from 'src/components/ErrorMessage'
 import PasswordInput from 'src/components/PasswordInput'
+import { showToast } from 'src/components/showToast'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
@@ -114,7 +115,7 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
 
                 if (success === true) {
                   await loadStakes()
-                  Alert.alert(t('earnFlow.staking.withdrawSuccess'))
+                  showToast({ message: t('earnFlow.staking.withdrawSuccess') })
                 }
               },
             },
@@ -123,7 +124,7 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
       } else if (result === true) {
         // Retiro normal exitoso
         await loadStakes()
-        Alert.alert(t('earnFlow.staking.withdrawSuccess'))
+        showToast({ message: t('earnFlow.staking.withdrawSuccess') })
       } else {
         showErrorMessage({
           error: new Error(t('earnFlow.staking.withdrawFailed')),
@@ -157,11 +158,10 @@ const MarranitosMyStakes = ({ listHeaderHeight }: { listHeaderHeight: number }) 
       )
 
       if (success) {
-        Alert.alert(
-          t('earnFlow.staking.withdrawSuccess'),
-          t('earnFlow.staking.withdrawSuccessMessage'),
-          [{ text: t('global.ok') }]
-        )
+        showToast({
+          title: t('earnFlow.staking.withdrawSuccess'),
+          message: t('earnFlow.staking.withdrawSuccessMessage'),
+        })
 
         // Reload stakes
         await loadStakes()

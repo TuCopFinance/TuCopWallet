@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native'
 import { showErrorMessage } from 'src/components/ErrorMessage'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { MARRANITOS_POSITION_TYPE, MY_MARRANITOS_POSITION_TYPE } from 'src/earn/EarnHome'
@@ -97,7 +99,7 @@ export default function PoolList({
 
                 if (success === true) {
                   onRefresh && onRefresh()
-                  Alert.alert(t('earnFlow.staking.withdrawSuccess'))
+                  showToast({ message: t('earnFlow.staking.withdrawSuccess') })
                 }
               },
             },
@@ -106,7 +108,7 @@ export default function PoolList({
       } else if (result === true) {
         // Retiro normal exitoso
         onRefresh && onRefresh()
-        Alert.alert(t('earnFlow.staking.withdrawSuccess'))
+        showToast({ message: t('earnFlow.staking.withdrawSuccess') })
       } else {
         showErrorMessage({
           error: new Error(t('earnFlow.staking.withdrawFailed')),
@@ -128,9 +130,11 @@ export default function PoolList({
 
   const handlePoolSelection = async (pool: any) => {
     if (!walletAddress) {
-      Alert.alert(t('earnFlow.staking.connectRequired'), t('earnFlow.staking.connectToStake'), [
-        { text: t('global.ok') },
-      ])
+      showToast({
+        title: t('earnFlow.staking.connectRequired'),
+        message: t('earnFlow.staking.connectToStake'),
+        variant: NotificationVariant.Warning,
+      })
       return
     }
 
