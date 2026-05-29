@@ -1,35 +1,36 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import StateCard from 'src/components/StateCard'
 import { emptyHeader } from 'src/navigator/Headers'
-import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 export function SanctionedCountryErrorScreen() {
   const { t } = useTranslation()
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.errorMessage}>{t('unsupportedLocation')}</Text>
-    </View>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StateCard variant="error" title={t('unsupportedLocation')} />
+      </ScrollView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
     flex: 1,
-    padding: Spacing.Regular16,
   },
-  errorMessage: {
-    ...typeScale.bodyMedium,
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.Regular16,
   },
 })
 
 SanctionedCountryErrorScreen.navigationOptions = {
   ...emptyHeader,
-  // Prevent swiping back on iOS
   gestureEnabled: false,
   headerLeft: () => null,
 }
