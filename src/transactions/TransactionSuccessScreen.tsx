@@ -2,16 +2,18 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
-import Button from 'src/components/Button'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Button, { BtnSizes } from 'src/components/Button'
+import StateCard from 'src/components/StateCard'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
-import Celebration from 'src/icons/misc/Celebration'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import colors from 'src/styles/colors'
+import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { blockExplorerUrls } from 'src/web3/networkConfig'
@@ -47,151 +49,108 @@ function TransactionSuccessScreen({ route }: Props) {
     navigate(Screens.TabActivity)
   }
 
-  const getTitle = () => {
-    switch (type) {
-      case 'swap':
-        return t('transactionSuccess.swap.title')
-      case 'goldBuy':
-        return t('transactionSuccess.goldBuy.title')
-      case 'goldSell':
-        return t('transactionSuccess.goldSell.title')
-      case 'send':
-        return t('transactionSuccess.send.title')
-      case 'earnDeposit':
-        return t('transactionSuccess.earnDeposit.title')
-      case 'earnWithdraw':
-        return t('transactionSuccess.earnWithdraw.title')
-      case 'earnClaim':
-        return t('transactionSuccess.earnClaim.title')
-      default:
-        return t('transactionSuccess.default.title')
-    }
-  }
+  const titleKey = `transactionSuccess.${type}.title`
+  const subtitleKey = `transactionSuccess.${type}.subtitle`
+  // i18next falls back to the default keys gracefully if `type` is unknown.
+  const title = t(titleKey, { defaultValue: t('transactionSuccess.default.title') })
+  const subtitle = t(subtitleKey, { defaultValue: t('transactionSuccess.default.subtitle') })
 
-  const getSubtitle = () => {
-    switch (type) {
-      case 'swap':
-        return t('transactionSuccess.swap.subtitle')
-      case 'goldBuy':
-        return t('transactionSuccess.goldBuy.subtitle')
-      case 'goldSell':
-        return t('transactionSuccess.goldSell.subtitle')
-      case 'send':
-        return t('transactionSuccess.send.subtitle')
-      case 'earnDeposit':
-        return t('transactionSuccess.earnDeposit.subtitle')
-      case 'earnWithdraw':
-        return t('transactionSuccess.earnWithdraw.subtitle')
-      case 'earnClaim':
-        return t('transactionSuccess.earnClaim.subtitle')
-      default:
-        return t('transactionSuccess.default.subtitle')
-    }
-  }
-
-  const showFromToDetails = () => {
-    // Send only shows the sent amount, not from/to
-    return type !== 'send'
-  }
+  const isSend = type === 'send'
+  const showFromToDetails = !isSend
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <Celebration size={64} color={colors.primary} />
-        </View>
-
-        <Text style={styles.title}>{getTitle()}</Text>
-        <Text style={styles.subtitle}>{getSubtitle()}</Text>
-
-        <View style={styles.detailsContainer}>
-          {type === 'send' ? (
-            <>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{t('transactionSuccess.amount')}</Text>
-                <TokenDisplay
-                  amount={fromAmount}
-                  tokenId={fromTokenId}
-                  showLocalAmount={false}
-                  hideSign={true}
-                  style={styles.tokenDisplay}
-                  testID="TransactionSuccess/Amount"
-                />
-              </View>
-              {(!!recipientName || !!recipientAddress) && (
+        <StateCard variant="success" title={title} subtitle={subtitle}>
+          <View style={styles.detailsContainer}>
+            {isSend ? (
+              <>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t('transactionSuccess.recipient')}</Text>
-                  <Text style={styles.recipientText} testID="TransactionSuccess/Recipient">
-                    {recipientName || recipientAddress}
-                  </Text>
+                  <Text style={styles.detailLabel}>{t('transactionSuccess.amount')}</Text>
+                  <TokenDisplay
+                    amount={fromAmount}
+                    tokenId={fromTokenId}
+                    showLocalAmount={false}
+                    hideSign={true}
+                    style={styles.tokenDisplay}
+                    testID="TransactionSuccess/Amount"
+                  />
                 </View>
-              )}
-            </>
-          ) : (
-            <>
-              {!!poolName && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t('transactionSuccess.pool')}</Text>
-                  <Text style={styles.poolText} testID="TransactionSuccess/Pool">
-                    {poolName}
-                  </Text>
-                </View>
-              )}
-              {showFromToDetails() && (
-                <>
+                {(!!recipientName || !!recipientAddress) && (
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
-                    <TokenDisplay
-                      amount={fromAmount}
-                      tokenId={fromTokenId}
-                      showLocalAmount={false}
-                      hideSign={true}
-                      style={styles.tokenDisplay}
-                      testID="TransactionSuccess/FromAmount"
-                    />
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.recipient')}</Text>
+                    <Text style={styles.recipientText} testID="TransactionSuccess/Recipient">
+                      {recipientName || recipientAddress}
+                    </Text>
                   </View>
+                )}
+              </>
+            ) : (
+              <>
+                {!!poolName && (
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
-                    <TokenDisplay
-                      amount={toAmount}
-                      tokenId={toTokenId}
-                      showLocalAmount={false}
-                      hideSign={true}
-                      style={styles.tokenDisplay}
-                      testID="TransactionSuccess/ToAmount"
-                    />
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.pool')}</Text>
+                    <Text style={styles.poolText} testID="TransactionSuccess/Pool">
+                      {poolName}
+                    </Text>
                   </View>
-                </>
-              )}
-            </>
-          )}
+                )}
+                {showFromToDetails && (
+                  <>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
+                      <TokenDisplay
+                        amount={fromAmount}
+                        tokenId={fromTokenId}
+                        showLocalAmount={false}
+                        hideSign={true}
+                        style={styles.tokenDisplay}
+                        testID="TransactionSuccess/FromAmount"
+                      />
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
+                      <TokenDisplay
+                        amount={toAmount}
+                        tokenId={toTokenId}
+                        showLocalAmount={false}
+                        hideSign={true}
+                        style={styles.tokenDisplay}
+                        testID="TransactionSuccess/ToAmount"
+                      />
+                    </View>
+                  </>
+                )}
+              </>
+            )}
 
-          {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
-            <Touchable
-              style={styles.explorerLink}
-              onPress={handleViewOnExplorer}
-              testID="TransactionSuccess/ViewExplorer"
-            >
-              <View style={styles.explorerLinkContent}>
-                <Text style={styles.explorerLinkText}>
-                  {t('transactionSuccess.viewOnExplorer')}
-                </Text>
-                <ArrowRightThick size={16} color={colors.primary} />
-              </View>
-            </Touchable>
-          )}
-        </View>
+            {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
+              <Touchable
+                style={styles.explorerLink}
+                onPress={handleViewOnExplorer}
+                testID="TransactionSuccess/ViewExplorer"
+              >
+                <View style={styles.explorerLinkContent}>
+                  <Text style={styles.explorerLinkText}>
+                    {t('transactionSuccess.viewOnExplorer')}
+                  </Text>
+                  <ArrowRightThick size={16} color={Colors.primary} />
+                </View>
+              </Touchable>
+            )}
+          </View>
+        </StateCard>
       </View>
 
-      <View style={styles.buttonContainer}>
+      <StickyCtaBottom>
         <Button
-          style={styles.button}
+          size={BtnSizes.FULL}
           text={t('continue')}
           onPress={handleContinue}
           testID="TransactionSuccess/Continue"
         />
-      </View>
-    </View>
+      </StickyCtaBottom>
+    </SafeAreaView>
   )
 }
 
@@ -200,52 +159,22 @@ TransactionSuccessScreen.navigationOptions = () => ({
 })
 
 const styles = StyleSheet.create({
-  container: {
-    overflow: 'hidden',
-    display: 'flex',
+  safeArea: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.Large32,
-    backgroundColor: colors.white,
+    backgroundColor: Colors.white,
   },
   content: {
     flex: 1,
-    padding: Spacing.Regular16,
-    display: 'flex',
-    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.successLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.Thick24,
-  },
-  title: {
-    ...typeScale.labelLarge,
-    color: colors.black,
-    textAlign: 'center',
-    paddingTop: Spacing.Smallest8,
-    paddingBottom: Spacing.Regular16,
-  },
-  subtitle: {
-    ...typeScale.bodyMedium,
-    color: colors.gray4,
-    textAlign: 'center',
-    marginBottom: Spacing.Large32,
+    paddingHorizontal: Spacing.Regular16,
   },
   detailsContainer: {
     width: '100%',
-    backgroundColor: colors.gray1,
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: Spacing.Regular16,
     gap: Spacing.Regular16,
+    marginTop: Spacing.Regular16,
   },
   detailRow: {
     flexDirection: 'column',
@@ -253,19 +182,19 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     ...typeScale.bodySmall,
-    color: colors.gray4,
+    color: Colors.gray4,
   },
   tokenDisplay: {
     ...typeScale.labelMedium,
-    color: colors.black,
+    color: Colors.black,
   },
   recipientText: {
     ...typeScale.labelMedium,
-    color: colors.black,
+    color: Colors.black,
   },
   poolText: {
     ...typeScale.labelMedium,
-    color: colors.black,
+    color: Colors.black,
     fontWeight: '600',
   },
   explorerLink: {
@@ -280,17 +209,7 @@ const styles = StyleSheet.create({
   },
   explorerLinkText: {
     ...typeScale.labelSmall,
-    color: colors.primary,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  button: {
-    minWidth: 200,
-    width: '100%',
-    alignSelf: 'stretch',
-    flex: 1,
-    flexDirection: 'column',
+    color: Colors.primary,
   },
 })
 
