@@ -12,9 +12,10 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import * as Keychain from 'react-native-keychain'
 const mockFetch = fetch as FetchMock
 const mockedKeychain = jest.mocked(Keychain)
-import Logger from 'src/utils/Logger'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 
-jest.mock('src/utils/Logger')
+jest.mock('src/components/showToast')
 
 mockedKeychain.getGenericPassword.mockResolvedValue({
   username: 'some username',
@@ -101,7 +102,10 @@ describe('ProfileSubmenu', () => {
     })
 
     await waitFor(() =>
-      expect(Logger.showError).toHaveBeenCalledWith('revokePhoneNumber.revokeError')
+      expect(showToast).toHaveBeenCalledWith({
+        message: 'revokePhoneNumber.revokeError',
+        variant: NotificationVariant.Error,
+      })
     )
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
