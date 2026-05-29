@@ -519,7 +519,7 @@ describe('SwapScreen', () => {
       `${APPROX_SYMBOL} COP$21.43`
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.5234566652'
+      '1.523456'
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
       `${APPROX_SYMBOL} COP$2.03`
@@ -556,7 +556,7 @@ describe('SwapScreen', () => {
     )
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe('1.234')
     expect(within(swapToContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.5234566652'
+      '1.523456'
     )
     expect(getByText('swapScreen.confirmSwap')).not.toBeDisabled()
   })
@@ -888,7 +888,7 @@ describe('SwapScreen', () => {
       `${APPROX_SYMBOL} COP$21,43`
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1,5234566652'
+      '1,523456'
     )
     expect(within(swapToContainer).getByTestId('SwapAmountInput/FiatValue')).toHaveTextContent(
       `${APPROX_SYMBOL} COP$2,03`
@@ -904,7 +904,7 @@ describe('SwapScreen', () => {
       amountLabel: 'percentage, {"percentage":25}',
       percentage: 25,
       expectedFromAmount: '2.5', // 25% of 10
-      expectedToAmount: '3.0864195', // expectedFromAmount * exchange rate = 2.5 * 1.2345678
+      expectedToAmount: '3.086419', // expectedFromAmount * exchange rate = 2.5 * 1.2345678
     },
     {
       amountLabel: 'percentage, {"percentage":50}',
@@ -916,7 +916,7 @@ describe('SwapScreen', () => {
       amountLabel: 'percentage, {"percentage":75}',
       percentage: 75,
       expectedFromAmount: '7.5',
-      expectedToAmount: '9.2592585',
+      expectedToAmount: '9.259258',
     },
     {
       amountLabel: 'maxSymbol',
@@ -1224,7 +1224,7 @@ describe('SwapScreen', () => {
             fromTokenId: mockCeloTokenId,
             swapAmount: {
               [Field.FROM]: '1.5',
-              [Field.TO]: '1.8518517', // 1.5 * 1.2345678
+              [Field.TO]: '1.851851', // 1.5 * 1.2345678
             },
             updatedField: Field.FROM,
           },

@@ -215,9 +215,9 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     if (!selectedToken) return
     const amount = selectedToken.balance.multipliedBy(percentage)
     setTokenAmountInput(
-      amount.toFormat(getInputDecimalsForToken(selectedToken.tokenId), BigNumber.ROUND_DOWN, {
-        decimalSeparator,
-      })
+      amount
+        .decimalPlaces(getInputDecimalsForToken(selectedToken.tokenId), BigNumber.ROUND_DOWN)
+        .toFormat({ decimalSeparator })
     )
     setSelectedPercentage(percentage)
   }
