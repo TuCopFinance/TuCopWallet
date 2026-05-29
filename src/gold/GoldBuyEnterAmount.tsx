@@ -41,6 +41,7 @@ import { Spacing } from 'src/styles/styles'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 import networkConfig from 'src/web3/networkConfig'
@@ -213,7 +214,11 @@ export default function GoldBuyEnterAmount({ route }: Props) {
   const onSelectPercentageAmount = (percentage: number) => {
     if (!selectedToken) return
     const amount = selectedToken.balance.multipliedBy(percentage)
-    setTokenAmountInput(amount.toFormat({ decimalSeparator }))
+    setTokenAmountInput(
+      amount.toFormat(getInputDecimalsForToken(selectedToken.tokenId), BigNumber.ROUND_DOWN, {
+        decimalSeparator,
+      })
+    )
     setSelectedPercentage(percentage)
   }
 
