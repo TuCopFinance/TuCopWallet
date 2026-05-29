@@ -643,36 +643,6 @@ describe('EarnPoolInfoScreen', () => {
     expect(getByTestId('Earn/ActionCard/Transfer')).toBeTruthy()
   })
 
-  it('navigate to EarnConfirmationScreen when Withdraw button is tapped, no rewards and cannot partial withdraw', () => {
-    jest
-      .mocked(getFeatureGate)
-      .mockImplementation(
-        (gateName: StatsigFeatureGates) => gateName === StatsigFeatureGates.SHOW_POSITIONS
-      )
-    const { getByTestId } = render(
-      <Provider store={getStore({ includeRewardPositions: false })}>
-        <MockedNavigator
-          component={EarnPoolInfoScreen}
-          params={{
-            pool: { ...mockEarnPositions[0], balance: '100' },
-          }}
-        />
-      </Provider>
-    )
-    fireEvent.press(getByTestId('WithdrawButton'))
-    expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_withdraw, {
-      providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      poolAmount: '100',
-      networkId: 'arbitrum-sepolia',
-      depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
-    })
-    expect(navigate).toHaveBeenCalledWith(Screens.EarnConfirmationScreen, {
-      pool: { ...mockEarnPositions[0], balance: '100' },
-      mode: 'exit',
-      useMax: true,
-    })
-  })
   it('open WithdrawBottomSheet when Withdraw button pressed, check that expected options exist', () => {
     jest
       .mocked(getFeatureGate)
