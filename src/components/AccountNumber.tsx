@@ -8,7 +8,7 @@ import { Screens } from 'src/navigator/Screens'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { vibrateInformative } from 'src/styles/hapticFeedback'
-import Logger from 'src/utils/Logger'
+import { showToast } from 'src/components/showToast'
 import { getAddressChunks } from 'src/utils/address'
 
 interface Props {
@@ -24,7 +24,7 @@ export default function AccountNumber({ address, touchDisabled, location }: Prop
       return
     }
     Clipboard.setString(address)
-    Logger.showMessage(t('addressCopied'))
+    showToast({ message: t('addressCopied') })
     vibrateInformative()
 
     if (location === Screens.TransactionDetailsScreen) {
