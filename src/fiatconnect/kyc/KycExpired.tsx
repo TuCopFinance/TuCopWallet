@@ -2,11 +2,13 @@ import { KycStatus as FiatConnectKycStatus } from '@fiatconnect/fiatconnect-type
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FiatExchangeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import StateCard from 'src/components/StateCard'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import getNavigationOptions from 'src/fiatconnect/kyc/getNavigationOptions'
 import { kycTryAgainLoadingSelector } from 'src/fiatconnect/selectors'
 import { kycTryAgain } from 'src/fiatconnect/slice'
@@ -15,7 +17,7 @@ import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
-import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.KycExpired>
@@ -67,27 +69,31 @@ function KycExpired({ route, navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{t('fiatConnectKycStatusScreen.expired.title')}</Text>
-      <Text testID="descriptionText" style={styles.description}>
-        {t('fiatConnectKycStatusScreen.expired.description')}
-      </Text>
-      <Button
-        style={styles.tryAgainButton}
-        testID="tryAgainButton"
-        onPress={onPressTryAgain}
-        text={t('fiatConnectKycStatusScreen.expired.tryAgain')}
-        type={BtnTypes.PRIMARY}
-        size={BtnSizes.MEDIUM}
-      />
-      <Button
-        style={styles.switchButton}
-        testID="switchButton"
-        onPress={onPressSwitch}
-        text={t('fiatConnectKycStatusScreen.expired.switch')}
-        type={BtnTypes.SECONDARY}
-        size={BtnSizes.MEDIUM}
-      />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StateCard
+          variant="warning"
+          title={t('fiatConnectKycStatusScreen.expired.title')}
+          subtitle={t('fiatConnectKycStatusScreen.expired.description')}
+        />
+      </ScrollView>
+      <StickyCtaBottom>
+        <Button
+          testID="tryAgainButton"
+          onPress={onPressTryAgain}
+          text={t('fiatConnectKycStatusScreen.expired.tryAgain')}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+        />
+        <Button
+          style={styles.secondaryButton}
+          testID="switchButton"
+          onPress={onPressSwitch}
+          text={t('fiatConnectKycStatusScreen.expired.switch')}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+        />
+      </StickyCtaBottom>
     </SafeAreaView>
   )
 }
@@ -95,26 +101,14 @@ function KycExpired({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: Spacing.Regular16,
   },
-  title: {
-    ...typeScale.titleSmall,
-    marginHorizontal: 16,
-  },
-  description: {
-    ...typeScale.bodyMedium,
-    textAlign: 'center',
-    marginVertical: 12,
-    marginHorizontal: 24,
-  },
-  tryAgainButton: {
-    marginTop: 12,
-  },
-  switchButton: {
-    marginTop: 12,
-    marginBottom: 100,
+  secondaryButton: {
+    marginTop: Spacing.Smallest8,
   },
   activityIndicatorContainer: {
     paddingVertical: variables.contentPadding,
