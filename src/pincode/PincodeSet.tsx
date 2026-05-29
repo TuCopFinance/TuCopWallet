@@ -39,7 +39,8 @@ import { getCachedPin, setCachedPin } from 'src/pincode/PasswordCache'
 import Pincode from 'src/pincode/Pincode'
 import { RootState } from 'src/redux/reducers'
 import Colors from 'src/styles/colors'
-import Logger from 'src/utils/Logger'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 import { currentAccountSelector } from 'src/web3/selectors'
 
 interface StateProps {
@@ -203,10 +204,13 @@ export class PincodeSet extends React.Component<Props, State> {
         const updated = await updatePin(this.props.account, this.state.oldPin, pin2)
         if (updated) {
           AppAnalytics.track(SettingsEvents.change_pin_new_pin_confirmed)
-          Logger.showMessage(this.props.t('pinChanged'))
+          showToast({ message: this.props.t('pinChanged') })
         } else {
           AppAnalytics.track(SettingsEvents.change_pin_new_pin_error)
-          Logger.showMessage(this.props.t('pinChangeFailed'))
+          showToast({
+            message: this.props.t('pinChangeFailed'),
+            variant: NotificationVariant.Error,
+          })
         }
       } else {
         this.props.setPincodeSuccess(PincodeType.CustomPin)
