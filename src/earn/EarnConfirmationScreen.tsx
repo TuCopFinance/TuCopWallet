@@ -130,6 +130,9 @@ export default function EarnConfirmationScreen({ route }: Props) {
     prepareTransactionsResult?.type !== 'possible' ||
     withdrawStatus === 'loading'
 
+  const showWithdrawAndClaimNotice =
+    mode === 'withdraw' && pool.dataProps.withdrawalIncludesClaim && rewardsTokens.length > 0
+
   const { maxFeeAmount, feeCurrency } = getFeeCurrencyAndAmounts(prepareTransactionsResult)
 
   let feeSection = <GasFeeLoading />
@@ -149,6 +152,17 @@ export default function EarnConfirmationScreen({ route }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Title mode={mode} />
+        {showWithdrawAndClaimNotice && (
+          <InLineNotification
+            variant={NotificationVariant.Info}
+            title={t('earnFlow.enterAmount.withdrawingAndClaimingCard.title')}
+            description={t('earnFlow.enterAmount.withdrawingAndClaimingCard.description', {
+              providerName: pool.appName,
+            })}
+            style={styles.notice}
+            testID="EarnConfirmation/WithdrawAndClaimNotice"
+          />
+        )}
         <View style={styles.collectInfoContainer}>
           {mode !== 'claim-rewards' && (
             <CollectItem
@@ -220,7 +234,9 @@ export default function EarnConfirmationScreen({ route }: Props) {
         size={BtnSizes.FULL}
         text={
           mode === 'withdraw'
-            ? t('earnFlow.collect.ctaWithdraw')
+            ? showWithdrawAndClaimNotice
+              ? t('earnFlow.collect.ctaWithdrawAndClaim')
+              : t('earnFlow.collect.ctaWithdraw')
             : mode === 'exit'
               ? t('earnFlow.collect.ctaExit')
               : t('earnFlow.collect.ctaReward')
@@ -400,6 +416,9 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: Spacing.Regular16,
+  },
+  notice: {
+    marginBottom: Spacing.Regular16,
   },
   gasFeeCryptoLoading: {
     width: 80,
