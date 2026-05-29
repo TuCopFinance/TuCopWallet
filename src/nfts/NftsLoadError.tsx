@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { NftEvents } from 'src/analytics/Events'
+import StateCard from 'src/components/StateCard'
 import Touchable from 'src/components/Touchable'
 import RedLoadingSpinnerToInfo from 'src/icons/loading/RedLoadingSpinnerToInfo'
 import { navigate } from 'src/navigator/NavigationService'
@@ -20,29 +22,25 @@ interface Props {
 
 export default function NftsLoadError({ testID }: Props) {
   const { t } = useTranslation()
+
   function handleSupportPress() {
     Logger.debug(TAG, 'Support Contact pressed')
     navigate(Screens.SupportContact)
   }
 
   useEffect(() => {
-    // Whenever this screen is mounted we've failed to load the NFTs from blockchain-api
     AppAnalytics.track(NftEvents.nft_error_screen_open)
   }, [])
 
   return (
-    <SafeAreaView style={styles.safeArea} testID={testID}>
-      <ScrollView
-        contentContainerStyle={styles.contentContainerStyle}
-        style={styles.scrollContainer}
-      >
-        <View style={styles.center}>
-          <View style={styles.iconMargin}>
-            <RedLoadingSpinnerToInfo />
-          </View>
-          <Text style={styles.title}>{t('nftsLoadErrorScreen.loadErrorTitle')}</Text>
-          <Text style={styles.subTitle}>{t('nftsLoadErrorScreen.loadErrorSubtitle')}</Text>
-        </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']} testID={testID}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StateCard
+          variant="error"
+          title={t('nftsLoadErrorScreen.loadErrorTitle')}
+          subtitle={t('nftsLoadErrorScreen.loadErrorSubtitle')}
+          icon={<RedLoadingSpinnerToInfo />}
+        />
         <View style={styles.contactSupportTouchableContainer}>
           <Touchable
             testID="NftsLoadErrorScreen/ContactSupport"
@@ -62,18 +60,24 @@ export default function NftsLoadError({ testID }: Props) {
 }
 
 const styles = StyleSheet.create({
-  center: {
-    alignItems: 'center',
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.Regular16,
   },
   contactSupportText: {
     ...typeScale.bodySmall,
     textAlign: 'center',
     color: colors.gray3,
   },
-  // Touchable are wrapped in a view to prevent the ripple effect from overflowing on Android
   contactSupportTouchableContainer: {
+    alignSelf: 'center',
     borderRadius: Spacing.Large32,
     overflow: 'hidden',
+    marginTop: Spacing.Regular16,
   },
   contactSupportTouchable: {
     padding: Spacing.Regular16,
@@ -81,31 +85,5 @@ const styles = StyleSheet.create({
   contactSupportLink: {
     color: colors.infoDark,
     textDecorationLine: 'underline',
-  },
-  contentContainerStyle: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  iconMargin: {
-    marginTop: '32%',
-    marginBottom: Spacing.Thick24,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flex: 1,
-    marginHorizontal: Spacing.Thick24,
-  },
-  subTitle: {
-    ...typeScale.bodyMedium,
-    textAlign: 'center',
-    color: colors.gray3,
-  },
-  title: {
-    ...typeScale.titleSmall,
-    marginBottom: Spacing.Smallest8,
-    textAlign: 'center',
   },
 })

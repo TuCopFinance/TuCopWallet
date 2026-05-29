@@ -5,8 +5,8 @@ exports[`BackupComplete renders correctly 1`] = `
   edges={
     {
       "bottom": "additive",
-      "left": "additive",
-      "right": "additive",
+      "left": "off",
+      "right": "off",
       "top": "additive",
     }
   }
@@ -16,42 +16,91 @@ exports[`BackupComplete renders correctly 1`] = `
     }
   }
 >
-  <View
-    style={
+  <RCTScrollView
+    contentContainerStyle={
       {
-        "alignItems": "center",
-        "flex": 1,
+        "flexGrow": 1,
         "justifyContent": "center",
+        "paddingHorizontal": 16,
       }
     }
-    testID="BackupComplete"
   >
-    <svg
-      fill="none"
-      height={32}
-      style={{}}
-      viewBox="0 0 24 24"
-      width={32}
-    >
-      <path
-        d="M20.5 7.33 9.186 18.643 4 13.458l1.33-1.33 3.856 3.847L19.17 6 20.5 7.33Z"
-        fill="#2F4ACD"
-        style={{}}
-      />
-    </svg>
-    <Text
-      style={
-        {
-          "fontFamily": "RedHatDisplayBold",
-          "fontSize": 24,
-          "lineHeight": 32,
-          "marginTop": 20,
-          "paddingHorizontal": 40,
-        }
-      }
-    >
-      backupComplete.2
-    </Text>
-  </View>
+    <View>
+      <View
+        testID="BackupComplete"
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "backgroundColor": "#F8F9F9",
+              "borderColor": "#E6E6E6",
+              "borderRadius": 16,
+              "borderWidth": 1,
+              "elevation": 12,
+              "marginHorizontal": 8,
+              "marginVertical": 8,
+              "padding": 32,
+              "shadowColor": "rgba(156, 164, 169, 0.4)",
+              "shadowOffset": {
+                "height": 2,
+                "width": 0,
+              },
+              "shadowOpacity": 1,
+              "shadowRadius": 12,
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderRadius": 60,
+                  "height": 120,
+                  "justifyContent": "center",
+                  "marginBottom": 24,
+                  "width": 120,
+                },
+                {
+                  "backgroundColor": "#F1FDF1",
+                },
+              ]
+            }
+          >
+            <svg
+              fill="none"
+              height={64}
+              style={{}}
+              viewBox="0 0 24 24"
+              width={32}
+            >
+              <path
+                d="M20.5 7.33 9.186 18.643 4 13.458l1.33-1.33 3.856 3.847L19.17 6 20.5 7.33Z"
+                fill="#137211"
+                style={{}}
+              />
+            </svg>
+          </View>
+          <Text
+            style={
+              {
+                "color": "#2E3338",
+                "fontFamily": "RedHatDisplayMedium",
+                "fontSize": 18,
+                "lineHeight": 28,
+                "paddingBottom": 16,
+                "paddingTop": 8,
+                "textAlign": "center",
+              }
+            }
+          >
+            backupComplete.2
+          </Text>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
 </RNCSafeAreaView>
 `;
