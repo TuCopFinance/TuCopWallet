@@ -2,7 +2,6 @@ import { useRoute } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,6 +12,7 @@ import {
 } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { showErrorMessage } from 'src/components/ErrorMessage'
+import { showToast } from 'src/components/showToast'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -76,19 +76,11 @@ const MarranitoStaking = () => {
       )
 
       if (success) {
-        Alert.alert(
-          t('earnFlow.staking.success'),
-          t('earnFlow.staking.stakeSuccess', { days: pool.days }),
-          [
-            {
-              text: t('global.ok'),
-              onPress: () => {
-                // Navegar a la pantalla de mis inversiones después de completar el staking
-                navigate(Screens.EarnHome)
-              },
-            },
-          ]
-        )
+        showToast({
+          title: t('earnFlow.staking.success'),
+          message: t('earnFlow.staking.stakeSuccess', { days: pool.days }),
+        })
+        navigate(Screens.EarnHome)
       } else {
         showErrorMessage({
           error: new Error(t('earnFlow.staking.stakeFailed')),
@@ -98,10 +90,6 @@ const MarranitoStaking = () => {
       }
     } catch (error) {
       Logger.error(TAG, 'Error staking', error)
-      // Alert.alert(
-      //   t('earnFlow.staking.error'),
-      //   error instanceof Error ? error.message : t('earnFlow.staking.stakeFailed')
-      // )
     } finally {
       setIsStaking(false)
     }

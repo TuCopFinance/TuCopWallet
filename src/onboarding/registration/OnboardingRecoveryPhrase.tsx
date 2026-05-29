@@ -28,7 +28,7 @@ import {
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
-import Logger from 'src/utils/Logger'
+import { showToast } from 'src/components/showToast'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.OnboardingRecoveryPhrase>
 
@@ -77,7 +77,7 @@ function OnboardingRecoveryPhrase({ navigation, route }: Props) {
   const onPressCopy = () => {
     AppAnalytics.track(OnboardingEvents.protect_wallet_copy_phrase)
     Clipboard.setString(accountKey ?? '')
-    Logger.showMessage(t('recoveryPhrase.mnemonicCopied'))
+    showToast({ message: t('recoveryPhrase.mnemonicCopied') })
   }
   const onPressContinue = () => {
     AppAnalytics.track(OnboardingEvents.protect_wallet_complete)

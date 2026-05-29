@@ -1,7 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert,
   Animated,
   FlatList,
   NativeScrollEvent,
@@ -9,6 +8,8 @@ import {
   StyleSheet,
   View,
 } from 'react-native'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 import MarranitosPoolCard from 'src/earn/marranitos/MarranitosPoolCard'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -64,9 +65,11 @@ const MarranitosPools = ({
 
   const handlePoolSelection = async (pool: any) => {
     if (!walletAddress) {
-      Alert.alert(t('earnFlow.staking.connectRequired'), t('earnFlow.staking.connectToStake'), [
-        { text: t('global.ok') },
-      ])
+      showToast({
+        title: t('earnFlow.staking.connectRequired'),
+        message: t('earnFlow.staking.connectToStake'),
+        variant: NotificationVariant.Warning,
+      })
       return
     }
 
