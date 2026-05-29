@@ -8,7 +8,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { getShadowStyle, Shadow, Spacing } from 'src/styles/styles'
 
-export type StateVariant = 'success' | 'error' | 'warning' | 'info' | 'loading'
+type StateVariant = 'success' | 'error' | 'warning' | 'info' | 'loading'
 
 interface Props {
   variant: StateVariant
