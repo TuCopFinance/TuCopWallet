@@ -1,62 +1,56 @@
-# ADR-0002: Redux Saga sobre Redux Thunk
+# ADR-0002: Redux Saga over Redux Thunk
 
-## Estado
+## Status
 
-Aceptado (Heredado)
+Accepted (Inherited)
 
-## Fecha
+## Date
 
-2023-01-01 (decisión original de Valora/MobileStack)
+2023-01-01 (original decision from Valora / MobileStack)
 
-## Contexto
+## Context
 
-La aplicación requiere manejo complejo de efectos secundarios: llamadas API,
-transacciones blockchain, sincronización de estado, retry logic, y flujos
-de usuario multi-paso.
+The application requires complex side-effect management: API calls, blockchain transactions, state synchronization, retry logic, and multi-step user flows.
 
-Esta decisión fue heredada del proyecto base (Valora → MobileStack → TuCOP)
-pero se mantiene por sus beneficios.
+This decision was inherited from the base project (Valora -> MobileStack -> TuCOP) but is preserved for its benefits.
 
-## Opciones Consideradas
+## Options considered
 
-1. **Redux Thunk**: Simple, menos boilerplate, pero difícil de testear y
-   manejar flujos complejos.
+1. **Redux Thunk**: Simple, less boilerplate, but hard to test and to manage complex flows.
 
-2. **Redux Saga**: Generadores, efectos declarativos, fácil testing,
-   manejo de concurrencia, pero curva de aprendizaje.
+2. **Redux Saga**: Generators, declarative effects, easy testing, concurrency control, but learning curve.
 
-3. **Redux Toolkit Query (RTK Query)**: Para data fetching, pero no cubre
-   todos los casos de uso (transacciones, flows complejos).
+3. **Redux Toolkit Query (RTK Query)**: For data fetching, but does not cover all our use cases (transactions, complex flows).
 
-## Decisión
+## Decision
 
-Mantener **Redux Saga** para manejo de side effects.
+Keep **Redux Saga** for side-effect management.
 
-Justificación:
+Rationale:
 
-- Flujos de transacciones blockchain requieren retry, timeout, rollback
-- Testing de sagas es predecible con `redux-saga-test-plan`
-- Efectos como `takeLatest`, `race`, `fork` son esenciales para UX
-- Base de código existente ya usa sagas extensivamente
+- Blockchain transaction flows need retry, timeout, rollback
+- Saga testing is predictable with `redux-saga-test-plan`
+- Effects like `takeLatest`, `race`, `fork` are essential to the UX
+- The existing codebase already uses sagas extensively
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- Control granular sobre flujos async complejos
-- Testing determinístico de side effects
-- Cancelación y race conditions bien manejados
-- Patrones establecidos en el codebase (fácil onboarding)
+- Granular control over complex async flows
+- Deterministic testing of side effects
+- Cancellation and race conditions handled well
+- Established patterns in the codebase (easy onboarding)
 
-### Negativas
+### Negative
 
-- Más boilerplate que thunks simples
-- Curva de aprendizaje para generadores
-- Debugging puede ser complejo
+- More boilerplate than plain thunks
+- Learning curve for generators
+- Debugging can be complex
 
-## Referencias
+## References
 
 - [Redux Saga Documentation](https://redux-saga.js.org/)
 - `src/redux/sagas.ts` - Root saga
-- `src/send/saga.ts` - Ejemplo de saga compleja
-- `src/tokens/saga.ts` - Ejemplo de data fetching
+- `src/send/saga.ts` - Example of a complex saga
+- `src/tokens/saga.ts` - Example of data fetching

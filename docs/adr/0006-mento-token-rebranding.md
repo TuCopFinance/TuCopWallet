@@ -1,68 +1,65 @@
-# ADR-0006: Migración de Branding cXXX → XXXm (Mento Stablecoins)
+# ADR-0006: Branding migration cXXX -> XXXm (Mento stablecoins)
 
-## Estado
+## Status
 
-Propuesto
+Proposed
 
-## Fecha
+## Date
 
 2025-03-27
 
-## Contexto
+## Context
 
-Mento Protocol anunció el rebranding de todas sus stablecoins de `cXXX` a
-`XXXm` para reflejar su estrategia multichain. Por ejemplo:
+Mento Protocol announced the rebranding of all its stablecoins from `cXXX` to `XXXm` to reflect its multichain strategy. Examples:
 
-- cCOP → COPm
-- cUSD → USDm
-- cEUR → EURm
+- cCOP -> COPm
+- cUSD -> USDm
+- cEUR -> EURm
 
-Este cambio es solo de branding (los contratos y direcciones no cambian),
-pero afecta cómo mostramos los tokens a los usuarios.
+This change is branding only (the contracts and addresses do not change), but it affects how we display tokens to users.
 
-## Opciones Consideradas
+## Options considered
 
-1. **Mantener cXXX**: Ignorar el rebranding.
-   Problema: Inconsistente con resto del ecosistema Celo.
+1. **Keep cXXX**: Ignore the rebranding.
+   Problem: inconsistent with the rest of the Celo ecosystem.
 
-2. **Migración gradual**: Mostrar ambos nombres durante transición.
-   Problema: Confusión para usuarios.
+2. **Gradual migration**: Show both names during the transition.
+   Problem: user confusion.
 
-3. **Migración inmediata**: Cambiar todo de una vez.
-   Requiere: Actualizar UI, analytics, traducciones.
+3. **Immediate migration**: Change everything at once.
+   Requires: updating UI, analytics, translations.
 
-4. **Nombres amigables**: Mostrar "Pesos" y "Dólares" al usuario.
-   Ya implementado parcialmente, pero necesita completar.
+4. **Friendly names**: Show "Pesos" and "Dollars" to the user.
+   Already partially implemented, but needs completion.
 
-## Decisión
+## Decision
 
-**Migración completa** a nombres `XXXm` internamente, pero mantener
-**nombres amigables** en la UI:
+**Full migration** to `XXXm` names internally, but keep **friendly names** in the UI:
 
-| Token | Código interno | UI (español) | UI (inglés)     |
-| ----- | -------------- | ------------ | --------------- |
-| COPm  | COPm           | Pesos        | Colombian Pesos |
-| USDm  | USDm           | Dólares      | Dollars         |
-| USDT  | USDT           | Dólares      | Dollars         |
+| Token | Internal code | UI (Spanish) | UI (English)    |
+| ----- | ------------- | ------------ | --------------- |
+| COPm  | COPm          | Pesos        | Colombian Pesos |
+| USDm  | USDm          | Dolares      | Dollars         |
+| USDT  | USDT          | Dolares      | Dollars         |
 
-Regla: El usuario nunca ve "COPm" o "cCOP", solo ve "Pesos".
+Rule: the user never sees "COPm" or "cCOP", only "Pesos".
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- Alineados con branding oficial de Mento
-- UI más amigable para usuarios no-crypto
-- Consistencia en todo el ecosistema
+- Aligned with the official Mento branding
+- Friendlier UI for non-crypto users
+- Consistency across the ecosystem
 
-### Negativas
+### Negative
 
-- Cambios en analytics (eventos con nombres viejos)
-- Actualizar documentación y tests
-- Posible confusión temporal para usuarios existentes
+- Analytics changes (events with old names)
+- Update documentation and tests
+- Possible temporary confusion for existing users
 
-## Referencias
+## References
 
 - [Mento Rebranding Proposal](https://forum.celo.org/t/mento-stablecoin-rebranding-and-strategic-evolution/12639)
 - [Mento Stablecoins](https://www.mento.org/stablecoins)
-- `tasks/plans/mento-rebranding-migration.md` - Plan de implementación
+- `tasks/plans/mento-rebranding-migration.md` - Implementation plan

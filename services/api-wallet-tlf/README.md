@@ -35,7 +35,7 @@ This service is bidirectionally integrated with `twilio-service`:
 - When a user verifies via keyless backup, the number is auto-registered here
 - When a user verifies here, the system checks if they already exist in keyless backup
 
-See `docs/phone-verification.md` for full integration details.
+See [`docs/guides/phone-verification.md`](../../docs/guides/phone-verification.md) for full integration details.
 
 ## TODO
 

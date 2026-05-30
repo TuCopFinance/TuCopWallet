@@ -15,7 +15,7 @@ Convert COPm to COP and send to Colombian bank accounts.
 
 ### API Documentation
 
-See `docs/buckspay-api.md` for full OpenAPI 3.0 specification.
+See [`docs/reference/buckspay-api.md`](../../reference/buckspay-api.md) for full OpenAPI 3.0 specification.
 
 ### Architecture
 
