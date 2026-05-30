@@ -39,6 +39,8 @@ import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -55,6 +57,7 @@ function TabHome(_props: Props) {
   const appState = useSelector(appStateSelector)
   const recipientCache = useSelector(phoneRecipientCacheSelector)
   const isNumberVerified = useSelector(phoneNumberVerifiedSelector)
+  const showDigitalGold = getFeatureGate(StatsigFeatureGates.SHOW_DIGITAL_GOLD)
 
   const dispatch = useDispatch()
   const addCOPmBottomSheetRef = useRef<BottomSheetModalRefType>(null)
@@ -306,7 +309,7 @@ function TabHome(_props: Props) {
               </View>
             </FlatCard>
 
-            <GoldEntrypoint />
+            {showDigitalGold && <GoldEntrypoint />}
 
             <FlatCard
               testID="FlatCard/ReFiColombiaSubsidies"
