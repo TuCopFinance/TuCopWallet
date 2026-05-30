@@ -1,64 +1,62 @@
-# ADR-0007: XAUt0 (Tether Gold) como Feature de Oro Digital
+# ADR-0007: XAUt0 (Tether Gold) as the digital gold feature
 
-## Estado
+## Status
 
-Aceptado
+Accepted
 
-## Fecha
+## Date
 
 2025-03-25
 
-## Contexto
+## Context
 
-Los usuarios colombianos tienen alta demanda de oro como reserva de valor,
-especialmente en contextos de inflación. XAUt0 es Tether Gold bridgeado a
-Celo, respaldado 1:1 por oro físico en bóvedas suizas.
+Colombian users have strong demand for gold as a store of value, particularly in high-inflation contexts. XAUt0 is Tether Gold bridged to Celo, backed 1:1 by physical gold held in Swiss vaults.
 
-TuCOP quiere ofrecer compra/venta de oro digital directamente en la app.
+TuCOP wants to offer gold buy/sell directly inside the app.
 
-## Opciones Consideradas
+## Options considered
 
-1. **Solo información**: Mostrar precio del oro sin trading.
-   Problema: No agrega valor real.
+1. **Information only**: Show gold price without trading.
+   Problem: adds no real value.
 
-2. **DEX externo**: Enviar usuarios a Uniswap/etc para swap.
-   Problema: UX fragmentada, usuarios se pierden.
+2. **External DEX**: Send users to Uniswap / etc for swap.
+   Problem: fragmented UX, users drop off.
 
-3. **Integración nativa**: Swap USDT ↔ XAUt0 en la app.
-   Requiere: Quote provider, UI custom, price alerts.
+3. **Native integration**: USDT <-> XAUt0 swap in the app.
+   Requires: quote provider, custom UI, price alerts.
 
-4. **Staking de oro**: Yield farming con XAUt0.
-   Problema: No hay pools de liquidez suficientes.
+4. **Gold staking**: Yield farming with XAUt0.
+   Problem: not enough liquidity pools.
 
-## Decisión
+## Decision
 
-Implementar **compra/venta nativa de XAUt0** usando USDT como par principal.
+Implement a **native XAUt0 buy/sell** flow using USDT as the primary pair.
 
-Arquitectura:
+Architecture:
 
 - Quote provider: Squid Router (cross-chain aggregator)
-- Precio: CoinGecko API para display
-- Alertas: Sistema local de price alerts
-- Redux slice: `gold` para estado
+- Price: CoinGecko API for display
+- Alerts: local price-alert system
+- Redux slice: `gold` for state
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- Nuevo producto diferenciador para TuCOP
-- UX nativa sin salir de la app
-- Atractivo para usuarios que buscan reserva de valor
-- Preparación para futuros productos DeFi con oro
+- New differentiator product for TuCOP
+- Native UX without leaving the app
+- Attractive to users seeking store of value
+- Foundation for future DeFi-with-gold products
 
-### Negativas
+### Negative
 
-- Liquidez de XAUt0 en Celo es limitada
-- Spreads pueden ser altos en volúmenes grandes
-- Requiere educación al usuario sobre oro tokenizado
+- XAUt0 liquidity on Celo is limited
+- Spreads can be high on large volumes
+- Requires educating users about tokenized gold
 
-## Referencias
+## References
 
 - [Tether Gold](https://gold.tether.to/)
 - [XAUt0 on Celo](https://celoscan.io/token/0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff)
-- `tasks/plans/xaut0-digital-gold.md` - Plan completo
-- `src/gold/` - Implementación
+- `tasks/plans/xaut0-digital-gold.md` - Full plan
+- `src/gold/` - Implementation

@@ -1,41 +1,41 @@
-# ADR-NNNN: [Título de la Decisión]
+# ADR-NNNN: [Title of the decision]
 
-## Estado
+## Status
 
-[Propuesto | Aceptado | Rechazado | Deprecado | Supersedido por ADR-XXXX]
+[Proposed | Accepted | Rejected | Deprecated | Superseded by ADR-XXXX]
 
-## Fecha
+## Date
 
 YYYY-MM-DD
 
-## Contexto
+## Context
 
-[Describe el problema, las fuerzas en juego, y por qué esta decisión es necesaria.
-Include 2-3 oraciones que expliquen la situación.]
+[Describe the problem, the forces at play, and why this decision is needed.
+Include 2-3 sentences that frame the situation.]
 
-## Opciones Consideradas
+## Options considered
 
-1. **Opción A**: [Descripción breve]
-2. **Opción B**: [Descripción breve]
-3. **Opción C**: [Descripción breve]
+1. **Option A**: [Brief description]
+2. **Option B**: [Brief description]
+3. **Option C**: [Brief description]
 
-## Decisión
+## Decision
 
-[La opción elegida y una breve justificación de por qué.]
+[The chosen option and a short justification for why.]
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- [Beneficio 1]
-- [Beneficio 2]
+- [Benefit 1]
+- [Benefit 2]
 
-### Negativas
+### Negative
 
 - [Trade-off 1]
 - [Trade-off 2]
 
-## Referencias
+## References
 
-- [Link a documentación relevante]
-- [Link a issue/PR relacionado]
+- [Link to relevant documentation]
+- [Link to related issue / PR]
