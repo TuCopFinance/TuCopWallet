@@ -263,7 +263,7 @@ SelectOfframpProvider
 
 ### External API
 
-See `docs/buckspay-api.md` for full OpenAPI spec.
+See [`docs/reference/buckspay-api.md`](../../reference/buckspay-api.md) for full OpenAPI spec.
 
 ---
 

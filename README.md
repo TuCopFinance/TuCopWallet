@@ -51,7 +51,7 @@ yarn dev:android
 yarn dev:ios
 ```
 
-For detailed setup instructions, see [docs/wallet-setup.md](docs/wallet-setup.md).
+For detailed setup instructions, see [docs/guides/wallet-setup.md](docs/guides/wallet-setup.md).
 
 ## Project Structure
 
@@ -258,7 +258,6 @@ TuCopWallet/
 ├── CLAUDE.md                       # AI development guidance
 ├── CONTRIBUTING.md                 # Contribution guidelines
 ├── SECURITY.md                     # Security and vulnerability policy
-├── MANUAL_UPLOAD_GUIDE.md          # Manual App Store upload instructions
 └── LICENSE                         # MIT License
 ```
 
@@ -352,19 +351,20 @@ The CI/CD pipeline automatically:
 4. Updates the Railway version backend
 5. Creates a GitHub Release
 
-See [docs/release-process.md](docs/release-process.md) and [docs/ci-cd.md](docs/ci-cd.md) for detailed procedures.
+See [docs/guides/ci-cd.md](docs/guides/ci-cd.md) for the pipeline architecture.
 
 ## Documentation
 
 Full documentation index: [docs/README.md](docs/README.md)
 
-| Category         | Documents                                                                                                      |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Setup**        | [wallet-setup.md](docs/wallet-setup.md), [SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                      |
-| **Release**      | [release-process.md](docs/release-process.md), [ci-cd.md](docs/ci-cd.md), [releases.md](docs/releases.md)      |
-| **Technical**    | [celo-gas-optimization.md](docs/celo-gas-optimization.md), [phone-verification.md](docs/phone-verification.md) |
-| **Integrations** | [buckspay-api.md](docs/buckspay-api.md), [connecting-dapps.md](docs/connecting-dapps.md)                       |
-| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)               |
+| Category         | Documents                                                                                                                                                                                                                                                                        |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Setup**        | [guides/wallet-setup.md](docs/guides/wallet-setup.md), [.github/SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                                                                                                                                  |
+| **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                                          |
+| **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/NAVIGATION_FLOWS.md](docs/reference/NAVIGATION_FLOWS.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md)         |
+| **Integrations** | [reference/buckspay-api.md](docs/reference/buckspay-api.md), [reference/buckspay-implementation.md](docs/reference/buckspay-implementation.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md) |
+| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                                 |
+| **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                                     |
 
 ## URLs & Links
 
@@ -410,7 +410,7 @@ valora-inc/wallet (original Valora wallet)
 
 > **Note**: The entire [mobilestack-xyz](https://github.com/mobilestack-xyz) organization was **archived in January 2026** (all repos read-only). TuCOP Wallet is now independently maintained. Original framework documentation is preserved in [docs/archive/](docs/archive/).
 
-For historical reference on syncing with the upstream fork, see [docs/syncing-forks.md](docs/syncing-forks.md).
+For historical reference on syncing with the upstream fork, see [docs/guides/syncing-forks.md](docs/guides/syncing-forks.md).
 
 ## License
 

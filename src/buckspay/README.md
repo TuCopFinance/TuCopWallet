@@ -56,7 +56,7 @@ interface Transfer {
 
 ## API Integration
 
-See `docs/buckspay-api.md` for full OpenAPI specification.
+See [`docs/reference/buckspay-api.md`](../../docs/reference/buckspay-api.md) for full OpenAPI specification.
 
 ### Key Endpoints
 
@@ -199,6 +199,6 @@ const showBucksPay = getFeatureGate('show_buckspay')
 
 ## Related Documentation
 
-- [BucksPay API](../../docs/buckspay-api.md)
-- [BucksPay Implementation](../../docs/buckspay-implementation.md)
+- [BucksPay API](../../docs/reference/buckspay-api.md)
+- [BucksPay Implementation](../../docs/reference/buckspay-implementation.md)
 - [ADR-0005: BucksPay](../../docs/adr/0005-buckspay-offramp.md)
