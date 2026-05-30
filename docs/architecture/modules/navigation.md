@@ -326,7 +326,7 @@ Supported schemes:
 - `tucop://` - Custom scheme
 - `https://app.tucop.co/` - Universal links
 
-See `docs/deeplinks.md` for full specification.
+See [`docs/reference/deeplinks.md`](../../reference/deeplinks.md) for full specification.
 
 ---
 
