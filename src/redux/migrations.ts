@@ -2045,4 +2045,19 @@ export const migrations = {
     const { divviProtocol, ...rest } = state
     return rest
   },
+  246: (state: any) => {
+    // Rename the misspelled "AccounSetupFailureScreen" persisted value
+    // to "AccountSetupFailureScreen" so users mid-onboarding keep the
+    // right resume target after the screen enum was corrected.
+    if (state.account?.lastOnboardingStepScreen === 'AccounSetupFailureScreen') {
+      return {
+        ...state,
+        account: {
+          ...state.account,
+          lastOnboardingStepScreen: 'AccountSetupFailureScreen',
+        },
+      }
+    }
+    return state
+  },
 }
