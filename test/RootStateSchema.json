@@ -3872,8 +3872,8 @@
         },
         "Screens": {
             "enum": [
-                "AccounSetupFailureScreen",
                 "AccountKeyEducation",
+                "AccountSetupFailureScreen",
                 "BackupComplete",
                 "BackupIntroduction",
                 "BackupPhrase",
@@ -6282,8 +6282,8 @@
                 },
                 "lastOnboardingStepScreen": {
                     "enum": [
-                        "AccounSetupFailureScreen",
                         "AccountKeyEducation",
+                        "AccountSetupFailureScreen",
                         "BackupComplete",
                         "BackupIntroduction",
                         "BackupPhrase",

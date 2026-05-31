@@ -6,7 +6,7 @@ import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 
-function AccounSetupFailureScreen() {
+function AccountSetupFailureScreen() {
   const { t } = useTranslation()
 
   const onPressCloseApp = () => {
@@ -30,6 +30,6 @@ function AccounSetupFailureScreen() {
   )
 }
 
-AccounSetupFailureScreen.navOptions = noHeaderGestureDisabled
+AccountSetupFailureScreen.navOptions = noHeaderGestureDisabled
 
-export default AccounSetupFailureScreen
+export default AccountSetupFailureScreen
