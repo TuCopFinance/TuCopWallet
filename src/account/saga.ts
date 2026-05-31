@@ -94,7 +94,7 @@ export function* initializeAccountSaga() {
     const error = ensureError(err)
     Logger.error(TAG, 'Failed to initialize account', error)
     AppAnalytics.track(OnboardingEvents.initialize_account_error, { error: error.message })
-    navigateClearingStack(Screens.AccounSetupFailureScreen)
+    navigateClearingStack(Screens.AccountSetupFailureScreen)
   }
 }
 

@@ -9,7 +9,8 @@ import {
   ActionTypes as OnboardingActionTypes,
 } from 'src/onboarding/actions'
 import { getRehydratePayload, REHYDRATE, RehydrateAction } from 'src/redux/persist-helper'
-import Logger from 'src/utils/Logger'
+import { NotificationVariant } from 'src/components/InLineNotification'
+import { showToast } from 'src/components/showToast'
 import { isE164NumberStrict } from 'src/utils/phoneNumbers'
 import { Actions as Web3Actions, ActionTypes as Web3ActionTypes } from 'src/web3/actions'
 
@@ -54,22 +55,15 @@ interface UserContactDetails {
 export enum KycStatus {
   Created = 'created',
   Completed = 'completed',
-  Failed = 'failed',
-  Pending = 'pending',
-  Expired = 'expired',
   Approved = 'approved',
-  Declined = 'declined',
-  NeedsReview = 'needs-review',
   NotCreated = 'not-created',
 }
 
-// Maintaining this as it's required for migrations
+// Only NotSubmitted is referenced; older numeric values (1..4) may
+// still exist in persisted state, but migrations always overwrite to
+// NotSubmitted so dropping the TS-level mapping is safe.
 export enum FinclusiveKycStatus {
   NotSubmitted = 0,
-  Submitted = 1,
-  Accepted = 2,
-  Rejected = 3,
-  InReview = 4,
 }
 
 export enum RecoveryPhraseInOnboardingStatus {
@@ -195,9 +189,9 @@ export const reducer = (
     case Actions.DEV_MODE_TRIGGER_CLICKED:
       const newClickCount = (state.devModeClickCount + 1) % 10
       if (newClickCount === 5) {
-        Logger.showMessage('Debug Mode Activated')
+        showToast({ message: 'Debug Mode Activated', variant: NotificationVariant.Info })
       } else if (newClickCount === 0) {
-        Logger.showMessage('Debug Mode Deactivated')
+        showToast({ message: 'Debug Mode Deactivated', variant: NotificationVariant.Info })
       }
       return {
         ...state,
