@@ -1,3 +1,4 @@
+import Clipboard from '@react-native-clipboard/clipboard'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as React from 'react'
 import { useTranslation, WithTranslation } from 'react-i18next'
@@ -16,7 +17,10 @@ import { getStoredMnemonic, onGetMnemonicFail } from 'src/backup/utils'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import CancelButton from 'src/components/CancelButton'
 import CustomHeader from 'src/components/header/CustomHeader'
+import { showToast } from 'src/components/showToast'
 import Switch from 'src/components/Switch'
+import Touchable from 'src/components/Touchable'
+import CopyIcon from 'src/icons/actions/CopyIcon'
 import { withTranslation } from 'src/i18n'
 import { noHeader } from 'src/navigator/Headers'
 import { navigate, pushToStack } from 'src/navigator/NavigationService'
@@ -26,6 +30,8 @@ import { StackParamList } from 'src/navigator/types'
 import { RootState } from 'src/redux/reducers'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { vibrateInformative } from 'src/styles/hapticFeedback'
+import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { currentAccountSelector } from 'src/web3/selectors'
 
@@ -104,6 +110,14 @@ class BackupPhrase extends React.Component<Props, State> {
     return this.props.route.params?.isAccountRemoval ?? false
   }
 
+  onPressCopy = () => {
+    const { mnemonic } = this.state
+    if (!mnemonic) return
+    Clipboard.setString(mnemonic)
+    showToast({ message: this.props.t('copied') })
+    vibrateInformative()
+  }
+
   render() {
     const { t, backupCompleted } = this.props
     const { mnemonic, isConfirmChecked } = this.state
@@ -126,6 +140,12 @@ class BackupPhrase extends React.Component<Props, State> {
             mode={BackupPhraseContainerMode.READONLY}
             type={BackupPhraseType.BACKUP_KEY}
           />
+          <Touchable borderless onPress={this.onPressCopy} testID="BackupPhrase/Copy">
+            <View style={styles.copyButton}>
+              <CopyIcon color={colors.accent} size={20} />
+              <Text style={styles.copyText}>{t('copy')}</Text>
+            </View>
+          </Touchable>
           <Text style={styles.body}>{t('backupKeyWarning')}</Text>
         </ScrollView>
         {(!backupCompleted || this.isAccountRemoval()) && (
@@ -199,6 +219,17 @@ const styles = StyleSheet.create({
   continueButton: {
     paddingHorizontal: variables.contentPadding,
     paddingBottom: variables.contentPadding,
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: Spacing.Smallest8,
+    paddingVertical: Spacing.Regular16,
+  },
+  copyText: {
+    ...typeScale.labelSemiBoldMedium,
+    color: colors.accent,
   },
 })
 
