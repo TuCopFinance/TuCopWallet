@@ -3677,6 +3677,16 @@ export const v245Schema = {
   },
 }
 
+// Migration 246 renames the misspelled "AccounSetupFailureScreen" persisted
+// onboarding-step value to "AccountSetupFailureScreen". No schema-shape diff.
+export const v246Schema = {
+  ...v245Schema,
+  _persist: {
+    ...v245Schema._persist,
+    version: 246,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v245Schema as Partial<RootState>
+  return v246Schema as Partial<RootState>
 }
