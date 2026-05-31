@@ -14,7 +14,7 @@ import { Screens } from 'src/navigator/Screens'
 import { useSelector } from 'src/redux/hooks'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import Logger from 'src/utils/Logger'
+import { showToast } from 'src/components/showToast'
 import { useRevokeCurrentPhoneNumber } from 'src/verify/hooks'
 
 interface Props {
@@ -38,9 +38,10 @@ export const RevokePhoneNumber = ({ forwardedRef }: Props) => {
       setShowRevokeSuccess(true)
     } else if (revokeNumberAsync.status === 'error') {
       forwardedRef.current?.close()
-      Logger.showError(
-        t('revokePhoneNumber.revokeError') ?? new Error('Could not unlink phone number')
-      )
+      showToast({
+        message: t('revokePhoneNumber.revokeError') ?? 'Could not unlink phone number',
+        variant: NotificationVariant.Error,
+      })
     }
 
     const timeout = setTimeout(() => setShowRevokeSuccess(false), TOAST_DISMISS_TIMEOUT_MS)

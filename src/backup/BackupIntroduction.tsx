@@ -1,7 +1,9 @@
+import Clipboard from '@react-native-clipboard/clipboard'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { connect } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { OnboardingEvents } from 'src/analytics/Events'
@@ -11,7 +13,11 @@ import BackupPhraseContainer, {
 } from 'src/backup/BackupPhraseContainer'
 import { useAccountKey } from 'src/backup/utils'
 import Button from 'src/components/Button'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import TextButton from 'src/components/TextButton'
+import Touchable from 'src/components/Touchable'
+import { showToast } from 'src/components/showToast'
+import CopyIcon from 'src/icons/actions/CopyIcon'
 import Logo from 'src/images/Logo'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -19,6 +25,7 @@ import { StackParamList } from 'src/navigator/types'
 import { RootState } from 'src/redux/reducers'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { vibrateInformative } from 'src/styles/hapticFeedback'
 import { Spacing } from 'src/styles/styles'
 
 interface StateProps {
@@ -91,22 +98,39 @@ function AccountKeyPostSetup() {
 
   const { t } = useTranslation()
 
+  const onPressCopy = () => {
+    if (!accountKey) return
+    Clipboard.setString(accountKey)
+    showToast({ message: t('copied') })
+    vibrateInformative()
+  }
+
   return (
-    <ScrollView>
-      <View testID="RecoveryPhraseContainer" style={styles.postSetupContainer}>
-        <Text style={styles.postSetupTitle}>{t('postSetupTitle')}</Text>
-        <BackupPhraseContainer
-          value={accountKey}
-          mode={BackupPhraseContainerMode.READONLY}
-          type={BackupPhraseType.BACKUP_KEY}
-          includeHeader={false}
-        />
-        <Text style={styles.postSetupBody}>{t('postSetupBody')}</Text>
-      </View>
-      <View style={styles.postSetupCTA}>
-        <TextButton onPress={goToAccountKeyGuide}>{t('postSetupCTA')}</TextButton>
-      </View>
-    </ScrollView>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View testID="RecoveryPhraseContainer" style={styles.postSetupContainer}>
+          <Text style={styles.postSetupTitle}>{t('postSetupTitle')}</Text>
+          <BackupPhraseContainer
+            value={accountKey}
+            mode={BackupPhraseContainerMode.READONLY}
+            type={BackupPhraseType.BACKUP_KEY}
+            includeHeader={false}
+          />
+          <Touchable borderless onPress={onPressCopy} testID="BackupPhrase/Copy">
+            <View style={styles.copyButton}>
+              <CopyIcon color={colors.accent} size={20} />
+              <Text style={styles.copyText}>{t('copy')}</Text>
+            </View>
+          </Touchable>
+          <Text style={styles.postSetupBody}>{t('postSetupBody')}</Text>
+        </View>
+      </ScrollView>
+      <StickyCtaBottom>
+        <TextButton onPress={goToAccountKeyGuide} style={styles.postSetupCTA}>
+          {t('postSetupCTA')}
+        </TextButton>
+      </StickyCtaBottom>
+    </SafeAreaView>
   )
 }
 
@@ -131,7 +155,7 @@ const styles = StyleSheet.create({
   },
   postSetupTitle: {
     ...typeScale.titleMedium,
-    marginBottom: Spacing.Smallest8,
+    marginBottom: Spacing.Regular16,
   },
   h1: {
     ...typeScale.titleMedium,
@@ -145,12 +169,26 @@ const styles = StyleSheet.create({
   postSetupBody: {
     ...typeScale.bodyMedium,
     marginVertical: Spacing.Regular16,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
   },
   postSetupCTA: {
     alignSelf: 'center',
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: Spacing.Smallest8,
     paddingVertical: Spacing.Regular16,
-    marginBottom: Spacing.Regular16,
+  },
+  copyText: {
+    ...typeScale.labelSemiBoldMedium,
+    color: colors.accent,
   },
 })
 

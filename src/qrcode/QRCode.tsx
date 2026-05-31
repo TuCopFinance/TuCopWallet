@@ -20,7 +20,7 @@ import variables from 'src/styles/variables'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
 import { navigateToURI } from 'src/utils/linking'
-import Logger from 'src/utils/Logger'
+import { showToast } from 'src/components/showToast'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 interface Props {
@@ -48,7 +48,7 @@ export default function QRCodeDisplay(props: Props) {
   const onPressCopy = () => {
     props.onPressCopy?.()
     Clipboard.setString(address || '')
-    Logger.showMessage(t('addressCopied'))
+    showToast({ message: t('addressCopied') })
     vibrateInformative()
   }
 

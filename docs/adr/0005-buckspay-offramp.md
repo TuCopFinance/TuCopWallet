@@ -1,67 +1,63 @@
-# ADR-0005: BucksPay como Offramp Nativo para Colombia
+# ADR-0005: BucksPay as the native offramp for Colombia
 
-## Estado
+## Status
 
-Aceptado
+Accepted
 
-## Fecha
+## Date
 
 2025-02-01
 
-## Contexto
+## Context
 
-Los usuarios colombianos necesitan convertir COPm (Mento stablecoin) a COP
-en cuentas bancarias colombianas. Las opciones existentes (Ramp, Simplex)
-no soportan Colombia o tienen fees muy altos.
+Colombian users need to convert COPm (Mento stablecoin) to COP in Colombian bank accounts. Existing options (Ramp, Simplex) do not support Colombia or charge very high fees.
 
-BucksPay es un servicio colombiano que ofrece conversión COPm → COP con
-transferencia bancaria directa.
+BucksPay is a Colombian service that offers COPm -> COP conversion with direct bank transfer.
 
-## Opciones Consideradas
+## Options considered
 
-1. **Solo exchanges externos**: Dirigir usuarios a Binance P2P, etc.
-   Problema: UX fragmentada, muchos pasos, usuarios se pierden.
+1. **External exchanges only**: Direct users to Binance P2P, etc.
+   Problem: fragmented UX, many steps, users drop off.
 
-2. **FiatConnect genérico**: Usar protocolo estándar.
-   Problema: Ningún proveedor FiatConnect soporta Colombia.
+2. **Generic FiatConnect**: Use the standard protocol.
+   Problem: no FiatConnect provider supports Colombia.
 
-3. **BucksPay integración nativa**: API directa en la app.
-   Requiere: Pantallas custom, manejo de estado, webhooks.
+3. **Native BucksPay integration**: Direct API in the app.
+   Requires: custom screens, state handling, webhooks.
 
-4. **WebView a BucksPay**: Cargar su web en la app.
-   Problema: UX pobre, no podemos trackear estado.
+4. **WebView to BucksPay**: Load their web app in our app.
+   Problem: poor UX, we can't track state.
 
-## Decisión
+## Decision
 
-Implementar **integración nativa con BucksPay API** como offramp principal
-para usuarios colombianos.
+Implement a **native integration with the BucksPay API** as the primary offramp for Colombian users.
 
-Flujo:
+Flow:
 
-1. Usuario ingresa monto en COPm
-2. Selecciona banco y cuenta destino
-3. Confirma transacción (firma con wallet)
-4. App envía COPm a BucksPay hot wallet
-5. BucksPay procesa y envía COP al banco
-6. Webhooks actualizan estado en tiempo real
+1. User enters an amount in COPm
+2. Selects destination bank and account
+3. Confirms the transaction (signs with wallet)
+4. App sends COPm to the BucksPay hot wallet
+5. BucksPay processes and sends COP to the bank
+6. Webhooks update state in real time
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- UX nativa y fluida para usuarios colombianos
-- Fees competitivos (~1.5%)
-- Transferencia misma día (ACH Colombia)
-- Control total sobre el flujo y UX
+- Native, fluid UX for Colombian users
+- Competitive fees (~1.5%)
+- Same-day transfer (Colombia ACH)
+- Full control over flow and UX
 
-### Negativas
+### Negative
 
-- Dependencia de un solo proveedor
-- Requiere mantener integración custom
-- Backend proxy necesario para webhooks
+- Dependency on a single provider
+- Requires maintaining a custom integration
+- Backend proxy needed for webhooks
 
-## Referencias
+## References
 
-- [BucksPay API Docs](docs/buckspay-api.md)
-- `src/buckspay/` - Implementación
-- `docs/buckspay-implementation.md` - Arquitectura detallada
+- [BucksPay API Docs](../reference/buckspay-api.md)
+- `src/buckspay/` - Implementation
+- [`docs/reference/buckspay-implementation.md`](../reference/buckspay-implementation.md) - Detailed architecture

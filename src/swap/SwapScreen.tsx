@@ -54,6 +54,7 @@ import {
 import { TokenBalance } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
+import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -123,16 +124,24 @@ const swapSlice = createSlice({
     },
     chooseFromAmountPercentage: (
       state,
-      action: PayloadAction<{ fromTokenBalance: BigNumber; percentage: number }>
+      action: PayloadAction<{
+        fromTokenBalance: BigNumber
+        percentage: number
+        fromTokenId?: string
+      }>
     ) => {
-      const { fromTokenBalance, percentage } = action.payload
+      const { fromTokenBalance, percentage, fromTokenId } = action.payload
       state.confirmingSwap = false
       state.startedSwapId = null
       state.selectedPercentage = percentage
-      // If the max percentage is selected, try the current balance first, and we will prompt the user if it's too high
-      state.inputSwapAmount[Field.FROM] = fromTokenBalance.multipliedBy(percentage).toFormat({
-        decimalSeparator: getNumberFormatSettings().decimalSeparator,
-      })
+      // Round to the token's display decimals so the input doesn't show 18
+      // raw decimals of token base units when the user taps Max / 25 / 50 / 75.
+      state.inputSwapAmount[Field.FROM] = fromTokenBalance
+        .multipliedBy(percentage)
+        .decimalPlaces(getInputDecimalsForToken(fromTokenId), BigNumber.ROUND_DOWN)
+        .toFormat({
+          decimalSeparator: getNumberFormatSettings().decimalSeparator,
+        })
     },
     startSelectToken: (state, action: PayloadAction<{ fieldType: Field }>) => {
       state.selectingField = action.payload.fieldType
@@ -180,9 +189,12 @@ const swapSlice = createSlice({
       const parsedAmount = parseInputAmount(state.inputSwapAmount[Field.FROM], decimalSeparator)
 
       const newAmount = parsedAmount.multipliedBy(new BigNumber(quote.price))
-      state.inputSwapAmount[Field.TO] = newAmount.toFormat({
-        decimalSeparator,
-      })
+      // Round to the destination token's display decimals so the auto-filled
+      // TO field doesn't render with full BigNumber precision (the bug behind
+      // KNOWN_ISSUES BUG-004 — swap input showing ~18 decimals).
+      state.inputSwapAmount[Field.TO] = newAmount
+        .decimalPlaces(getInputDecimalsForToken(state.toTokenId), BigNumber.ROUND_DOWN)
+        .toFormat({ decimalSeparator })
     },
     // When the user presses the confirm swap button
     startConfirmSwap: (state) => {
@@ -593,7 +605,13 @@ export function SwapScreen({ route }: Props) {
   }
 
   const handleSelectAmountPercentage = (percentage: number) => {
-    localDispatch(chooseFromAmountPercentage({ fromTokenBalance, percentage }))
+    localDispatch(
+      chooseFromAmountPercentage({
+        fromTokenBalance,
+        percentage,
+        fromTokenId: fromToken?.tokenId,
+      })
+    )
     if (!fromToken) {
       // Should never happen
       return
