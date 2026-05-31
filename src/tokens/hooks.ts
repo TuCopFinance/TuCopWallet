@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
 import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { totalPositionsBalanceUsdSelector } from 'src/positions/selectors'
 import { useSelector } from 'src/redux/hooks'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
@@ -57,29 +58,41 @@ export function useTotalTokenBalance() {
 }
 
 /**
- * Returns total wallet balance including investments (gold/XAUt0)
- * This is the single source of truth for total balance displayed in the app
+ * Returns balances split into "available" (cash-like tokens) and
+ * "investments" (gold + earn positions like Allbridge / Marranitos),
+ * plus the legacy combined total.
+ *
+ * Single source of truth for the home-screen balance display.
  */
 export function useTotalBalanceWithInvestments(goldBalance: BigNumber) {
   const totalTokenBalance = useTotalTokenBalance()
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const positionsBalanceUsd = useSelector(totalPositionsBalanceUsdSelector)
 
-  // Get gold price from Redux state
   const goldPriceUsd = useSelector(
     (state: { gold: { goldPriceUsd: number | null } }) => state.gold.goldPriceUsd
   )
 
-  // Calculate gold value in local currency
   const goldLocalValue =
     goldPriceUsd && usdToLocalRate && !goldBalance.isZero()
       ? new BigNumber(goldPriceUsd).multipliedBy(usdToLocalRate).multipliedBy(goldBalance)
       : new BigNumber(0)
 
-  // Total = tokens + investments
-  const tokenBalance = totalTokenBalance ?? new BigNumber(0)
+  const positionsLocalValue =
+    positionsBalanceUsd && usdToLocalRate
+      ? positionsBalanceUsd.multipliedBy(usdToLocalRate)
+      : new BigNumber(0)
+
+  const availableBalance = totalTokenBalance ?? new BigNumber(0)
+  const investmentsBalance = goldLocalValue.plus(positionsLocalValue)
+
   return {
-    totalBalance: tokenBalance.plus(goldLocalValue),
+    availableBalance,
+    investmentsBalance,
     goldLocalValue,
+    positionsLocalValue,
+    // Legacy: tokens + gold (kept for callers that haven't migrated)
+    totalBalance: availableBalance.plus(goldLocalValue),
   }
 }
 
