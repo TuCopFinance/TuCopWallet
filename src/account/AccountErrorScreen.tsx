@@ -1,8 +1,9 @@
 import React from 'react'
-import { StyleSheet, Text } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import TextButton from 'src/components/TextButton'
-import { typeScale } from 'src/styles/fonts'
+import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import StateCard from 'src/components/StateCard'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import { Spacing } from 'src/styles/styles'
 
 interface Props {
@@ -25,47 +26,44 @@ function AccountErrorScreen({
   onPressSecondary,
 }: Props) {
   return (
-    <SafeAreaView style={styles.content}>
-      <Text style={styles.title} testID={testID}>
-        {title}
-      </Text>
-      <Text style={styles.body}>{description}</Text>
-      <TextButton onPress={onPress} testID={`${testID}Button`}>
-        {buttonLabel}
-      </TextButton>
-      {!!secondaryButtonLabel && onPressSecondary && (
-        <TextButton
-          style={styles.secondaryButton}
-          onPress={onPressSecondary}
-          testID={`${testID}ButtonSecondary`}
-        >
-          {secondaryButtonLabel}
-        </TextButton>
-      )}
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StateCard variant="error" title={title} subtitle={description} testID={testID} />
+      </ScrollView>
+      <StickyCtaBottom>
+        <Button
+          onPress={onPress}
+          text={buttonLabel}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+          testID={`${testID}Button`}
+        />
+        {!!secondaryButtonLabel && onPressSecondary && (
+          <Button
+            style={styles.secondaryButton}
+            onPress={onPressSecondary}
+            text={secondaryButtonLabel}
+            type={BtnTypes.SECONDARY}
+            size={BtnSizes.FULL}
+            testID={`${testID}ButtonSecondary`}
+          />
+        )}
+      </StickyCtaBottom>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  content: {
+  container: {
     flex: 1,
-    marginHorizontal: Spacing.Thick24,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    ...typeScale.titleSmall,
-    textAlign: 'center',
-    paddingBottom: Spacing.Regular16,
-    paddingTop: Spacing.Regular16,
-  },
-  body: {
-    ...typeScale.bodyMedium,
-    textAlign: 'center',
-    paddingBottom: Spacing.Thick24,
+    paddingHorizontal: Spacing.Regular16,
   },
   secondaryButton: {
-    paddingTop: Spacing.Thick24,
+    marginTop: Spacing.Smallest8,
   },
 })
 

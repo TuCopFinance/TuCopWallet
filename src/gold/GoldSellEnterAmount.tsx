@@ -36,6 +36,7 @@ import { Spacing } from 'src/styles/styles'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import { getInputDecimalsForToken } from 'src/utils/formatting'
 import { parseInputAmount } from 'src/utils/parsing'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -146,7 +147,7 @@ export default function GoldSellEnterAmount(_props: Props) {
 
   const onSelectPercentageAmount = (percentage: number) => {
     const amount = xaut0Balance.multipliedBy(percentage)
-    setGoldAmountInput(amount.toFormat({ decimalSeparator }))
+    setGoldAmountInput(amount.decimalPlaces(6, BigNumber.ROUND_DOWN).toFormat({ decimalSeparator }))
     setSelectedPercentage(percentage)
   }
 
@@ -268,7 +269,14 @@ export default function GoldSellEnterAmount(_props: Props) {
                     </>
                   </Touchable>
                   <Text style={styles.outputAmountText}>
-                    {outputAmount ? outputAmount.toFormat(selectedOutputToken.decimals) : '0'}
+                    {outputAmount
+                      ? outputAmount
+                          .decimalPlaces(
+                            getInputDecimalsForToken(selectedOutputToken.tokenId),
+                            BigNumber.ROUND_DOWN
+                          )
+                          .toFormat()
+                      : '0'}
                   </Text>
                 </>
               )}

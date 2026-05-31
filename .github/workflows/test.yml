@@ -23,24 +23,41 @@ jobs:
   mobile:
     name: Mobile
     runs-on: ubuntu-latest
+    env:
+      # On Development PRs, skip the slow Metro bundle build + Jest coverage
+      # report. Both are kept for main-bound PRs / merge queue / pushes so
+      # release-quality runs still validate bundling and ship a coverage
+      # report. This cuts the dev-PR Mobile job from ~6 min to ~2-3 min.
+      IS_DEV_PR: ${{ github.event_name == 'pull_request' && github.base_ref == 'Development' }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/yarn-install
-      - name: Build
-        run: yarn build
+      - name: Typecheck
+        run: yarn build:ts
+      - name: Build (TS + Metro bundle)
+        if: env.IS_DEV_PR != 'true'
+        run: yarn build:metro
       - name: Update RootStateSchema if necessary
         run: yarn test:update-root-state-schema
       - name: Fail if someone forgot to commit "RootStateSchema.json"
         run: git diff --exit-code
-      - name: Run mobile tests
+      - name: Run mobile tests (with coverage)
+        if: env.IS_DEV_PR != 'true'
         run: |
           mkdir -p test-results/jest
           yarn test:ci
+      - name: Run mobile tests (fast, no coverage)
+        if: env.IS_DEV_PR == 'true'
+        run: |
+          mkdir -p test-results/jest
+          yarn test --maxWorkers=50%
       - name: Upload Coverage Report
+        if: env.IS_DEV_PR != 'true'
         uses: actions/upload-artifact@v4
         with:
           path: coverage/lcov-report
       - name: 'Upload to Codecov'
+        if: env.IS_DEV_PR != 'true'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

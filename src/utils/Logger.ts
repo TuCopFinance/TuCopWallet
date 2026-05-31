@@ -2,7 +2,6 @@
 import { format } from 'date-fns'
 import { Platform } from 'react-native'
 import * as RNFS from 'react-native-fs'
-import Toast from 'react-native-simple-toast'
 import { DEFAULT_SENTRY_NETWORK_ERRORS, LOGGER_LEVEL } from 'src/config'
 import { LoggerLevel } from 'src/utils/LoggerLevels'
 import { ensureError } from 'src/utils/ensureError'
@@ -102,20 +101,6 @@ class Logger {
 
   setNetworkErrors = (errors: string[]) => {
     this.networkErrors = errors
-  }
-
-  // TODO: see what to do with this on iOS since there's not native toast
-  showMessage = (message: string) => {
-    Toast.showWithGravity(message, Toast.SHORT, Toast.BOTTOM)
-    this.debug('Toast', message)
-  }
-
-  // TODO(Rossy) Remove this. We should be using the error banner instead.
-  // Do not add new code that uses this.
-  showError = (error: string | Error) => {
-    const errorMsg = this.getErrorMessage(error)
-    Toast.showWithGravity(errorMsg, Toast.SHORT, Toast.BOTTOM)
-    this.error('Toast', errorMsg)
   }
 
   getErrorMessage = (error?: string | Error) => {
