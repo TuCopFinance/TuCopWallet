@@ -3,21 +3,16 @@ import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
 import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
-import {
-  appStateSelector,
-  hideWalletBalancesSelector,
-  phoneNumberVerifiedSelector,
-} from 'src/app/selectors'
+import { appStateSelector, phoneNumberVerifiedSelector } from 'src/app/selectors'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
-import { HideBalanceButton } from 'src/components/TokenBalance'
+import BalanceCard from 'src/components/BalanceCard'
 import Touchable from 'src/components/Touchable'
 import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow } from 'src/fiatExchanges/utils'
@@ -32,8 +27,6 @@ import Swap from 'src/icons/tab-home/Swap'
 import Grow from 'src/icons/tab-home/Grow'
 import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { importContacts } from 'src/identity/actions'
-import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
-import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -43,7 +36,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCOPm, useTotalBalanceWithInvestments, useUSDT } from 'src/tokens/hooks'
+import { useCOPm, useUSDT } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
@@ -177,18 +170,6 @@ function TabHome(_props: Props) {
     }
   }
 
-  const hideWalletBalances = useSelector(hideWalletBalancesSelector)
-  const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const { decimalSeparator } = getNumberFormatSettings()
-
-  // Get gold balance from blockchain
-  const { balance: goldBalance } = useXaut0Balance()
-
-  // Get total balance including investments (centralized calculation)
-  const { totalBalance } = useTotalBalanceWithInvestments(goldBalance)
-
-  const balanceDisplay = hideWalletBalances ? `XX${decimalSeparator}XX` : totalBalance.toFormat(2)
-
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
       <ScrollView
@@ -203,16 +184,9 @@ function TabHome(_props: Props) {
           />
         }
       >
-        <View style={styles.totalBalanceContainer}>
-          <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
-          <View style={styles.totalBalanceRow}>
-            <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
-              {!hideWalletBalances && localCurrencySymbol}
-              {balanceDisplay}
-            </Text>
-            <HideBalanceButton hideBalance={hideWalletBalances} />
-          </View>
+        <BalanceCard testID="TabHome/BalanceCard" />
 
+        <View style={styles.totalBalanceContainer}>
           <View style={styles.row}>
             <View style={[styles.flex, { alignItems: 'center' }]}>
               <ScrollView
@@ -549,23 +523,6 @@ const styles = StyleSheet.create({
     marginTop: 18,
     alignItems: 'center',
     marginBottom: 30,
-  },
-  totalBalanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.Smallest8,
-    marginTop: Spacing.Smallest8,
-  },
-  totalBalance: {
-    ...typeScale.titleLarge,
-    color: Colors.primary,
-  },
-  balanceTitle: {
-    ...typeScale.bodyLarge,
-    color: Colors.secondary,
-    marginLeft: 1,
-    marginTop: 0,
   },
 
   shadow: {
