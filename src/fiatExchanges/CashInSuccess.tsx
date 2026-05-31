@@ -1,19 +1,21 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, StyleSheet, Text, View } from 'react-native'
-import { FiatExchangeEvents } from 'src/analytics/Events'
+import { Image, ScrollView, StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import Button from 'src/components/Button'
+import { FiatExchangeEvents } from 'src/analytics/Events'
+import Button, { BtnSizes } from 'src/components/Button'
+import StateCard from 'src/components/StateCard'
+import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import { fiatExchange } from 'src/images/Images'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 
-type RouteProps = NativeStackScreenProps<StackParamList, Screens.CashInSuccess>
-type Props = RouteProps
+type Props = NativeStackScreenProps<StackParamList, Screens.CashInSuccess>
 
 const capitalizeProvider = (provider?: string) => {
   if (provider) {
@@ -25,36 +27,36 @@ const capitalizeProvider = (provider?: string) => {
 
 function CashInSuccessScreen({ route }: Props) {
   const { t } = useTranslation()
-
   const { provider } = route.params
 
   useEffect(() => {
-    AppAnalytics.track(FiatExchangeEvents.cash_in_success, {
-      provider,
-    })
+    AppAnalytics.track(FiatExchangeEvents.cash_in_success, { provider })
   }, [])
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Image source={fiatExchange} resizeMode={'contain'} />
-        <Text style={styles.title}>{t('cicoSuccess.title')}</Text>
-        <Text style={styles.contentText}>
-          {provider
-            ? t('cicoSuccess.bodyWithProvider', { provider: capitalizeProvider(provider) })
-            : t('cicoSuccess.bodyWithoutProvider')}
-        </Text>
-      </View>
-      <View style={styles.buttonContainer}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StateCard
+          variant="success"
+          title={t('cicoSuccess.title')}
+          subtitle={
+            provider
+              ? t('cicoSuccess.bodyWithProvider', { provider: capitalizeProvider(provider) })
+              : t('cicoSuccess.bodyWithoutProvider')
+          }
+          icon={<Image source={fiatExchange} resizeMode="contain" style={styles.brandImage} />}
+        />
+      </ScrollView>
+      <StickyCtaBottom>
         <Button
-          style={styles.button}
+          size={BtnSizes.FULL}
           text={t('continue')}
           accessibilityLabel={t('continue') ?? undefined}
           onPress={navigateHome}
-          testID={'SuccessContinue'}
+          testID="SuccessContinue"
         />
-      </View>
-    </View>
+      </StickyCtaBottom>
+    </SafeAreaView>
   )
 }
 
@@ -64,40 +66,16 @@ CashInSuccessScreen.navigationOptions = () => ({
 
 const styles = StyleSheet.create({
   container: {
-    overflow: 'hidden',
-    display: 'flex',
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 32,
   },
-  title: {
-    ...typeScale.labelLarge,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: Spacing.Regular16,
   },
-  contentText: {
-    ...typeScale.bodyMedium,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  button: {
-    minWidth: 200,
-    width: '100%',
-    alignSelf: 'stretch',
-    flex: 1,
-    flexDirection: 'column',
+  brandImage: {
+    width: 100,
+    height: 100,
   },
 })
 

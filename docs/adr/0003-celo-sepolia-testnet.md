@@ -1,65 +1,60 @@
-# ADR-0003: Celo Sepolia como Testnet (Deprecar Alfajores)
+# ADR-0003: Celo Sepolia as the testnet (deprecate Alfajores)
 
-## Estado
+## Status
 
-Aceptado
+Accepted
 
-## Fecha
+## Date
 
 2025-03-15
 
-## Contexto
+## Context
 
-Celo migró a L2 (marzo 2025) y la testnet oficial cambió de Alfajores
-(chain ID 44787) a Celo Sepolia (chain ID 44220). Alfajores fue deprecada
-oficialmente por la Celo Foundation.
+Celo migrated to L2 (March 2025) and the official testnet changed from Alfajores (chain ID 44787) to Celo Sepolia (chain ID 44220). Alfajores was officially deprecated by the Celo Foundation.
 
-TuCOP usaba Alfajores para desarrollo y testing. Necesitábamos migrar
-toda la infraestructura de testnet.
+TuCOP used Alfajores for development and testing. We needed to migrate the entire testnet infrastructure.
 
-## Opciones Consideradas
+## Options considered
 
-1. **Mantener Alfajores**: Seguir usando la testnet legacy mientras funcione.
-   Riesgo: podría dejar de funcionar sin aviso.
+1. **Keep Alfajores**: Continue using the legacy testnet while it works.
+   Risk: it could stop working without notice.
 
-2. **Migrar a Celo Sepolia**: Adoptar la nueva testnet oficial.
-   Requiere: actualizar configs, RPC endpoints, faucets, tests.
+2. **Migrate to Celo Sepolia**: Adopt the new official testnet.
+   Requires: updating configs, RPC endpoints, faucets, tests.
 
-3. **Solo mainnet**: Eliminar testnet del workflow.
-   Problema: imposible testear sin tokens reales.
+3. **Mainnet only**: Drop the testnet from the workflow.
+   Problem: impossible to test without real tokens.
 
-## Decisión
+## Decision
 
-Migrar completamente a **Celo Sepolia** y eliminar todas las referencias
-a Alfajores.
+Fully migrate to **Celo Sepolia** and remove all Alfajores references.
 
-Cambios realizados:
+Changes made:
 
-- Chain ID: 44787 → 44220
-- RPC: alfajores-forno.celo-testnet.org → celo-sepolia.infura.io
-- Explorer: alfajores.celoscan.io → celo-sepolia.blockscout.com
-- iOS Schemes: alfajores → testnet
-- Android Flavors: alfajores → sepoliaTestnet
-- .env files: .env.alfajores → .env.testnet
+- Chain ID: 44787 -> 44220
+- RPC: `alfajores-forno.celo-testnet.org` -> `celo-sepolia.infura.io`
+- Explorer: `alfajores.celoscan.io` -> `celo-sepolia.blockscout.com`
+- iOS schemes: `alfajores` -> `testnet`
+- Android flavors: `alfajores` -> `sepoliaTestnet`
+- .env files: `.env.alfajores` -> `.env.testnet`
 
-## Consecuencias
+## Consequences
 
-### Positivas
+### Positive
 
-- Alineados con infraestructura oficial de Celo
-- Testnet más estable y mantenida
-- Mejor soporte de tooling (explorers, faucets)
-- Preparados para futuras actualizaciones de Celo L2
+- Aligned with official Celo infrastructure
+- More stable and maintained testnet
+- Better tooling support (explorers, faucets)
+- Ready for future Celo L2 updates
 
-### Negativas
+### Negative
 
-- Esfuerzo de migración (configs, tests, docs)
-- Tokens de test en Alfajores perdidos
-- Algunos servicios third-party aún no soportan Sepolia
+- Migration effort (configs, tests, docs)
+- Lost test tokens on Alfajores
+- Some third-party services still do not support Sepolia
 
-## Referencias
+## References
 
 - [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)
 - [Celo L2 Migration](https://docs.celo.org/cel2)
-- PR #XX - Migración completa
-- `src/web3/networkConfig.ts` - Configuración de redes
+- `src/web3/networkConfig.ts` - Network configuration

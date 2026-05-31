@@ -23,6 +23,12 @@ jobs:
   vulnerability:
     name: Vulnerabilities
     runs-on: ubuntu-latest
+    # Only block release-quality flows (main PRs, merge queue, cron, manual).
+    # On Development PRs new transitive CVEs land daily and aren't authored by
+    # the PR — skip the gate so day-to-day work isn't blocked. The same scan
+    # still runs on the daily schedule and on the PR to main when we cut a
+    # release, so nothing slips into production unchecked.
+    if: github.event_name != 'pull_request' || github.base_ref == 'main'
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/yarn-install
@@ -61,6 +67,11 @@ jobs:
   knip-regression:
     name: Knip Regression
     runs-on: ubuntu-latest
+    # Release-quality concern: prevents unused exports / dead files from
+    # piling up between releases. Runs on PRs to main, merge queue, cron,
+    # and manual dispatch. Skipped on Development PRs so adding a single
+    # legitimate export (e.g. a new component's type) doesn't block work.
+    if: github.event_name != 'pull_request' || github.base_ref == 'main'
     steps:
       - uses: actions/checkout@v4
         with:
