@@ -14,7 +14,9 @@ import BackupPhraseContainer, {
 import { useAccountKey } from 'src/backup/utils'
 import BottomSheetLegacy from 'src/components/BottomSheetLegacy'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { showToast } from 'src/components/showToast'
 import TextButton from 'src/components/TextButton'
+import Touchable from 'src/components/Touchable'
 import CopyIcon from 'src/icons/actions/CopyIcon'
 import { HeaderTitleWithSubtitle, nuxNavigationOptionsOnboarding } from 'src/navigator/Headers'
 import { Screens } from 'src/navigator/Screens'
@@ -28,7 +30,7 @@ import {
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
-import { showToast } from 'src/components/showToast'
+import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.OnboardingRecoveryPhrase>
 
@@ -99,16 +101,12 @@ function OnboardingRecoveryPhrase({ navigation, route }: Props) {
         <Text style={styles.recoveryPhraseBody}>{t('recoveryPhrase.bodyV1_90')}</Text>
       </ScrollView>
       <View style={styles.bottomSection}>
-        <TextButton
-          style={styles.copyButtonStyle}
-          onPress={onPressCopy}
-          testID={'protectWalletCopy'}
-        >
-          <View style={styles.copyIconStyle}>
-            <CopyIcon color={colors.accent} />
+        <Touchable borderless onPress={onPressCopy} testID="protectWalletCopy">
+          <View style={styles.copyButton}>
+            <CopyIcon color={colors.accent} size={20} />
+            <Text style={styles.copyText}>{t('recoveryPhrase.copy')}</Text>
           </View>
-          {t('recoveryPhrase.copy')}
-        </TextButton>
+        </Touchable>
         <Button
           onPress={onPressContinue}
           text={t('recoveryPhrase.continue')}
@@ -152,20 +150,23 @@ const styles = StyleSheet.create({
   bottomSection: {
     flexGrow: 1,
     justifyContent: 'flex-end',
-    padding: 24,
+    padding: Spacing.Thick24,
   },
-  copyIconStyle: {
-    paddingRight: 10,
-  },
-  copyButtonStyle: {
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'center',
-    justifyContent: 'center',
-    paddingBottom: 30,
+    gap: Spacing.Smallest8,
+    paddingVertical: Spacing.Regular16,
+    paddingBottom: Spacing.Large32,
+  },
+  copyText: {
+    ...typeScale.labelSemiBoldMedium,
     color: colors.accent,
   },
   buttonStyle: {
-    marginTop: 37,
-    marginBottom: 9,
+    marginTop: Spacing.Large32,
+    marginBottom: Spacing.Smallest8,
     textAlign: 'center',
     color: colors.gray3,
   },
@@ -174,31 +175,31 @@ const styles = StyleSheet.create({
   },
   bottomSheetBody: {
     ...typeScale.bodyMedium,
-    marginTop: 12,
-    paddingBottom: 10,
+    marginTop: Spacing.Small12,
+    paddingBottom: Spacing.Smallest8,
   },
   backupPhrase: {
     borderWidth: 1,
     borderColor: colors.black,
-    borderRadius: 8,
+    borderRadius: Spacing.Smallest8,
     marginTop: 0,
   },
   contentContainer: {
     flexGrow: 1,
     justifyContent: 'flex-start',
-    padding: 24,
-    paddingTop: 40,
+    padding: Spacing.Thick24,
+    paddingTop: Spacing.Large32,
   },
   container: {
     flex: 1,
   },
   recoveryPhraseBody: {
-    marginTop: 28,
+    marginTop: Spacing.Thick24,
     ...typeScale.labelSmall,
   },
   recoveryPhraseTitle: {
-    marginTop: 36,
-    marginBottom: 18,
+    marginTop: Spacing.Large32,
+    marginBottom: Spacing.Regular16,
     ...typeScale.titleSmall,
   },
 })
