@@ -8,7 +8,7 @@ import * as React from 'react'
 import { Platform } from 'react-native'
 import SplashScreen from 'react-native-splash-screen'
 import AccountKeyEducation from 'src/account/AccountKeyEducation'
-import AccounSetupFailureScreen from 'src/account/AccountSetupFailureScreen'
+import AccountSetupFailureScreen from 'src/account/AccountSetupFailureScreen'
 import GoldEducation from 'src/account/GoldEducation'
 import LegalSubmenu from 'src/account/LegalSubmenu'
 import Licenses from 'src/account/Licenses'
@@ -321,9 +321,9 @@ const backupScreens = (Navigator: typeof Stack) => (
       options={StoreWipeRecoveryScreen.navOptions}
     />
     <Navigator.Screen
-      name={Screens.AccounSetupFailureScreen}
-      component={AccounSetupFailureScreen}
-      options={AccounSetupFailureScreen.navOptions}
+      name={Screens.AccountSetupFailureScreen}
+      component={AccountSetupFailureScreen}
+      options={AccountSetupFailureScreen.navOptions}
     />
     <Navigator.Screen
       name={Screens.BackupIntroduction}
