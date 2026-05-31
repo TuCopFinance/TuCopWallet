@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { getNumberFormatSettings } from 'react-native-localize'
 import { Shadow } from 'react-native-shadow-2'
 import { hideWalletBalancesSelector } from 'src/app/selectors'
+import BalanceCard from 'src/components/BalanceCard'
 import SectionHead from 'src/components/SectionHead'
-import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
@@ -39,7 +38,6 @@ function TabWallet() {
 
   const hideWalletBalances = useSelector(hideWalletBalancesSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const { decimalSeparator } = getNumberFormatSettings()
   const { t } = useTranslation()
 
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
@@ -53,13 +51,11 @@ function TabWallet() {
   // Get gold balance directly from blockchain
   const { balance: goldBalance } = useXaut0Balance()
 
-  // Get total balance including investments (centralized calculation)
-  const { totalBalance, goldLocalValue } = useTotalBalanceWithInvestments(goldBalance)
+  // Gold local value still needed for the Tus inversiones section below
+  const { goldLocalValue } = useTotalBalanceWithInvestments(goldBalance)
 
   Logger.info('TOKEN', allTokens)
   Logger.info('supportedNetworkIds', supportedNetworkIds)
-
-  const balanceDisplay = hideWalletBalances ? `XX${decimalSeparator}XX` : totalBalance.toFormat(2)
 
   function onPressEarn() {
     navigate(Screens.EarnHome)
@@ -67,13 +63,8 @@ function TabWallet() {
 
   return (
     <View style={styles.container} testID="TabWallet">
-      <Text style={styles.balanceTitle}>{t('tabHome.myWallet')}</Text>
-      <View style={styles.row}>
-        <Text style={styles.totalBalance} testID={'TotalTokenBalance'}>
-          {!hideWalletBalances && localCurrencySymbol}
-          {balanceDisplay}
-        </Text>
-        <HideBalanceButton hideBalance={hideWalletBalances} />
+      <View style={styles.balanceCardWrapper}>
+        <BalanceCard testID="TabWallet/BalanceCard" />
       </View>
       <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 28 }}>
         <ScrollView
@@ -179,6 +170,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 10,
   },
+  balanceCardWrapper: {
+    paddingHorizontal: Spacing.Regular16,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -186,18 +180,7 @@ const styles = StyleSheet.create({
     gap: Spacing.Smallest8,
     marginTop: Spacing.Smallest8,
   },
-  totalBalance: {
-    ...typeScale.titleLarge,
-    color: Colors.primary,
-  },
   contentContainerStyle: { marginTop: Spacing.Large32 },
-  balanceTitle: {
-    ...typeScale.bodyLarge,
-    color: Colors.secondary,
-    margin: 'auto',
-    textAlign: 'center',
-    marginTop: 24,
-  },
   ctaText: {
     ...typeScale.labelSemiBoldSmall,
     color: Colors.gray6,
