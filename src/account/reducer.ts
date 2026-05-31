@@ -55,22 +55,15 @@ interface UserContactDetails {
 export enum KycStatus {
   Created = 'created',
   Completed = 'completed',
-  Failed = 'failed',
-  Pending = 'pending',
-  Expired = 'expired',
   Approved = 'approved',
-  Declined = 'declined',
-  NeedsReview = 'needs-review',
   NotCreated = 'not-created',
 }
 
-// Maintaining this as it's required for migrations
+// Only NotSubmitted is referenced; older numeric values (1..4) may
+// still exist in persisted state, but migrations always overwrite to
+// NotSubmitted so dropping the TS-level mapping is safe.
 export enum FinclusiveKycStatus {
   NotSubmitted = 0,
-  Submitted = 1,
-  Accepted = 2,
-  Rejected = 3,
-  InReview = 4,
 }
 
 export enum RecoveryPhraseInOnboardingStatus {
