@@ -269,7 +269,15 @@ const selectSingleSwapToken = (
     fireEvent.press(within(swapScreen).getByText('swapScreen.noUsdPriceWarning.ctaConfirm'))
   }
 
-  expect(within(swapAmountContainer).getByText(tokenSymbol)).toBeTruthy()
+  // Some symbols are remapped by getTokenSymbol (e.g. USDC -> assets.dollars in test env).
+  const displayedSymbols: Record<string, string> = {
+    USDC: 'assets.dollars',
+    USDm: 'assets.dollars',
+    USAT: 'assets.dollars',
+    USDT: 'assets.dollars',
+  }
+  const expectedDisplaySymbol = displayedSymbols[tokenSymbol] ?? tokenSymbol
+  expect(within(swapAmountContainer).getByText(expectedDisplaySymbol)).toBeTruthy()
 
   if (swapFieldType === Field.TO && !token!.priceUsd) {
     expect(
