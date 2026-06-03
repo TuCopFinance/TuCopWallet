@@ -250,7 +250,7 @@ describe('EarnEnterAmount', () => {
       await waitFor(() => expect(getByText('earnFlow.enterAmount.continue')).not.toBeDisabled())
 
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('8.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('8.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$10.64')
@@ -382,10 +382,10 @@ describe('EarnEnterAmount', () => {
       expect(getByTestId('EarnEnterAmount/Swap/From')).toHaveTextContent('0.00041 ETH')
 
       expect(getByTestId('EarnEnterAmount/Swap/To')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Swap/To')).toHaveTextContent('1.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Swap/To')).toHaveTextContent('1.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('1.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('1.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$1.33')
@@ -494,7 +494,9 @@ describe('EarnEnterAmount', () => {
       await waitFor(() => expect(getByText('earnFlow.enterAmount.continue')).not.toBeDisabled())
 
       expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toHaveTextContent('11.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toHaveTextContent(
+        '11.00 assets.dollars'
+      )
 
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
