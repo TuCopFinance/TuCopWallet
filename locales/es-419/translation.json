@@ -2093,9 +2093,13 @@
     "importToken": "Importar",
     "importTokens": "Importar tokens",
     "balanceInLocalAmount": "Saldo en moneda local",
+    "mentoDollar": "Dolar Mento",
     "pesos": "Pesos",
     "dollars": "Dolares",
     "gold": "Oro",
+    "tetherAmericaUsd": "Tether America USD",
+    "tetherUsd": "Tether USD",
+    "usdCoin": "USD Coin",
     "yourMoney": "Tu dinero",
     "yourInvestments": "Tus inversiones"
   },
