@@ -174,7 +174,7 @@ export default function BalanceCard({ testID }: Props) {
       textColor: Colors.white,
       expandable: true,
       gradient: {
-        colors: ['#0D8A4F', '#056035', '#013D20'],
+        colors: ['#22C55E', '#137211', '#0A4A0B'],
       },
     },
     pesos: {
