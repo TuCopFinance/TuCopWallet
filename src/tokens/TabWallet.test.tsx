@@ -66,7 +66,7 @@ describe('TabWallet', () => {
     )
     expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$23.69')
     expect(getByTestId('cKESBalance')).toHaveTextContent('1,000.00 cKES')
-    expect(getByTestId('cUSDBalance')).toHaveTextContent('10.00 cUSD')
+    expect(getByTestId('cUSDBalance')).toHaveTextContent('10.00 assets.dollars')
   })
   it('shows cKES and cUSD line items when tokens do not have balance', () => {
     const { getByTestId } = render(
@@ -76,7 +76,7 @@ describe('TabWallet', () => {
     )
     expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$0.00')
     expect(getByTestId('cKESBalance')).toHaveTextContent('0.00 cKES')
-    expect(getByTestId('cUSDBalance')).toHaveTextContent('0.00 cUSD')
+    expect(getByTestId('cUSDBalance')).toHaveTextContent('0.00 assets.dollars')
   })
   it('tapping asset navigates to TokenDetails screen', () => {
     const { getByTestId } = render(
