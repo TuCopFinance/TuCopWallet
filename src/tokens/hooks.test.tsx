@@ -9,6 +9,8 @@ import {
   useAmountAsUsd,
   useCashInTokens,
   useCashOutTokens,
+  useDollarBalance,
+  useDollarTokensWithBalance,
   useLocalToTokenAmount,
   useSwappableTokens,
   useTokenInfo,
@@ -558,5 +560,81 @@ describe('useUSDC / useUSDm / useUSAT', () => {
     const { result } = renderWithStore(useUSAT, { tokens: { tokenBalances: {} } })
     // Symbol is either undefined (Sepolia) or USAT (mainnet) - both acceptable.
     expect(result.current === undefined || result.current?.symbol === 'USAT').toBe(true)
+  })
+})
+
+describe('useDollarTokensWithBalance / useDollarBalance', () => {
+  const usdtId = networkConfig.usdtTokenId
+  const usdcId = networkConfig.usdcTokenId
+  const usdmId = networkConfig.usdmTokenId
+
+  // Builds a store with controlled dollar-token balances.
+  // balances: map from tokenId to raw balance string (null = zero/absent)
+  function makeStore(balances: Record<string, string>) {
+    const tokenBalances: Record<string, object> = {}
+    const entries: Array<[string, string]> = [
+      [usdtId, balances[usdtId] ?? '0'],
+      [usdcId, balances[usdcId] ?? '0'],
+      [usdmId, balances[usdmId] ?? '0'],
+    ]
+    for (const [tokenId, balance] of entries) {
+      tokenBalances[tokenId] = {
+        tokenId,
+        networkId: tokenId.split(':')[0],
+        symbol: tokenId.includes('usdt') ? 'USDT' : tokenId.includes('usdc') ? 'USDC' : 'USDm',
+        decimals: 6,
+        balance,
+        address: tokenId.split(':')[1],
+        priceUsd: '1',
+        priceFetchedAt: Date.now(),
+      }
+    }
+    return createMockStore({
+      tokens: { tokenBalances },
+      localCurrency: { usdToLocalRate: '4000' }, // 1 USD = 4000 COP
+    })
+  }
+
+  const wrap =
+    (mockStore: ReturnType<typeof createMockStore>) =>
+    ({ children }: { children: React.ReactNode }) => (
+      <Provider store={mockStore}>{children}</Provider>
+    )
+
+  it('returns only tokens with balance > 0', () => {
+    const mockStore = makeStore({ [usdtId]: '10', [usdcId]: '0', [usdmId]: '5' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    const tokenIds = result.current.map((e) => e.tokenInfo.tokenId)
+    expect(tokenIds).toContain(usdtId)
+    expect(tokenIds).toContain(usdmId)
+    expect(tokenIds).not.toContain(usdcId)
+  })
+
+  it('returns empty array when no dollar token has balance', () => {
+    const mockStore = makeStore({ [usdtId]: '0', [usdcId]: '0', [usdmId]: '0' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current).toHaveLength(0)
+  })
+
+  it('sorts entries by localValue descending', () => {
+    // USDT=5, USDC=20, USDm=10 all at priceUsd=1 and rate=4000
+    // Expected order: USDC (80000) > USDm (40000) > USDT (20000)
+    const mockStore = makeStore({ [usdtId]: '5', [usdcId]: '20', [usdmId]: '10' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    const ids = result.current.map((e) => e.tokenInfo.tokenId)
+    expect(ids).toEqual([usdcId, usdmId, usdtId])
+  })
+
+  it('useDollarBalance returns sum of all dollar token local values', () => {
+    // USDT=10, USDm=5 at priceUsd=1 and rate=4000 => (10+5)*4000 = 60000
+    const mockStore = makeStore({ [usdtId]: '10', [usdcId]: '0', [usdmId]: '5' })
+    const { result } = renderHook(() => useDollarBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current.toNumber()).toBe(60000)
+  })
+
+  it('useDollarBalance returns 0 when no dollar tokens have balance', () => {
+    const mockStore = makeStore({ [usdtId]: '0', [usdcId]: '0', [usdmId]: '0' })
+    const { result } = renderHook(() => useDollarBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current.toNumber()).toBe(0)
   })
 })

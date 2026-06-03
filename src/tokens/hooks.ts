@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
+import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
 import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { totalPositionsBalanceUsdSelector } from 'src/positions/selectors'
 import { useSelector } from 'src/redux/hooks'
@@ -247,4 +248,29 @@ export function useAmountAsUsd(amount: BigNumber, tokenId: string | undefined) {
     return null
   }
   return amount.multipliedBy(tokenInfo.priceUsd)
+}
+
+// Returns each dollar-denominated stable that has a positive balance,
+// sorted by localValue descending. Used for the Dolares card breakdown.
+export function useDollarTokensWithBalance(): Array<{
+  tokenInfo: TokenBalance
+  localValue: BigNumber
+}> {
+  const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
+  const tokens = useSelector((state) => tokensListSelector(state, supportedNetworkIds))
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  return tokens
+    .filter((t) => DOLLAR_TOKEN_IDS.has(t.tokenId) && t.balance.gt(0))
+    .map((t) => {
+      const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+      const localValue = usdToLocalRate ? usdValue.multipliedBy(usdToLocalRate) : new BigNumber(0)
+      return { tokenInfo: t, localValue }
+    })
+    .sort((a, b) => b.localValue.comparedTo(a.localValue))
+}
+
+// Returns the total local-currency value of all dollar stablecoins.
+export function useDollarBalance(): BigNumber {
+  const dollarTokens = useDollarTokensWithBalance()
+  return dollarTokens.reduce((sum, t) => sum.plus(t.localValue), new BigNumber(0))
 }
