@@ -2088,9 +2088,13 @@
     "importToken": "Import",
     "importTokens": "Import Tokens",
     "balanceInLocalAmount": "Balance in local amount",
+    "mentoDollar": "Mento Dollar",
     "pesos": "Colombian Pesos",
     "dollars": "Dollars",
     "gold": "Gold",
+    "tetherAmericaUsd": "Tether America USD",
+    "tetherUsd": "Tether USD",
+    "usdCoin": "USD Coin",
     "yourMoney": "Your money",
     "yourInvestments": "Your investments"
   },
