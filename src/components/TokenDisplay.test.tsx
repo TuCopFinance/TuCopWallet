@@ -3,12 +3,13 @@ import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import 'react-native'
 import { Provider } from 'react-redux'
-import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
+import TokenDisplay, { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
 import { createMockStore, getElementText, RecursivePartial } from 'test/utils'
+import networkConfig from 'src/web3/networkConfig'
 
 describe('TokenDisplay', () => {
   function store(storeOverrides?: RecursivePartial<RootState>) {
@@ -64,7 +65,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toBe('10.00 cUSD')
+      expect(getElementText(getByTestId('test'))).toBe('10.00 assets.dollars')
     })
 
     it('shows local amount when showLocalAmount is true', () => {
@@ -106,7 +107,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('0.0000018 cUSD')
+      expect(getElementText(getByTestId('test'))).toEqual('0.0000018 assets.dollars')
     })
 
     it('hides the symbol when showSymbol is false', () => {
@@ -254,8 +255,36 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual(`${APPROX_SYMBOL} 10.00 cUSD`)
+      expect(getElementText(getByTestId('test'))).toEqual(`${APPROX_SYMBOL} 10.00 assets.dollars`)
     })
+  })
+})
+
+describe('getTokenSymbol', () => {
+  const t = (key: string) => key
+
+  it('maps USDC symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USDC')).toBe('assets.dollars')
+  })
+  it('maps USDm symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USDm')).toBe('assets.dollars')
+  })
+  it('still maps cUSD symbol to assets.dollars (USDm legacy backend symbol)', () => {
+    expect(getTokenSymbol(t, 'cUSD')).toBe('assets.dollars')
+  })
+  it('maps USAT symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USAT')).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USDC when symbol is missing', () => {
+    expect(getTokenSymbol(t, undefined, networkConfig.usdcTokenId)).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USDm', () => {
+    expect(getTokenSymbol(t, undefined, networkConfig.usdmTokenId)).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USAT (mainnet only)', () => {
+    if (networkConfig.usatTokenId) {
+      expect(getTokenSymbol(t, undefined, networkConfig.usatTokenId)).toBe('assets.dollars')
+    }
   })
 })
 
