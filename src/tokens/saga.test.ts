@@ -6,6 +6,7 @@ import { call, select } from 'redux-saga/effects'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AppEvents } from 'src/analytics/Events'
 import { getMultichainFeatures } from 'src/statsig'
+import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import {
   fetchImportedTokenBalances,
   fetchTokenBalancesForAddressByTokenId,
@@ -704,5 +705,93 @@ describe('getTokensInfo USAT priceUsd override', () => {
 
     const result = await getTokensInfo(['celo-mainnet'] as any)
     expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('0.998')
+  })
+})
+
+describe('getTokensInfo USAT priceUsd override - forced mainnet env', () => {
+  // Uses a fake token ID so the tests exercise the override path regardless
+  // of which DEFAULT_TESTNET the env selects. The real networkConfig.usatTokenId
+  // may or may not match fakeUsatTokenId; that is intentional.
+  const fakeUsatTokenId = 'celo-mainnet:0xfake000000000000000000000000000000000001'
+
+  let originalUsatTokenId: string
+
+  beforeEach(() => {
+    mockFetch.resetMocks()
+    originalUsatTokenId = networkConfig.usatTokenId
+    Object.defineProperty(networkConfig, 'usatTokenId', {
+      value: fakeUsatTokenId,
+      writable: true,
+      configurable: true,
+    })
+    // ALLOWED_TOKEN_IDS is evaluated at module load time; inject the fake ID
+    // so getTokensInfo's filter does not strip it out.
+    ALLOWED_TOKEN_IDS.add(fakeUsatTokenId)
+  })
+
+  afterEach(() => {
+    ALLOWED_TOKEN_IDS.delete(fakeUsatTokenId)
+    Object.defineProperty(networkConfig, 'usatTokenId', {
+      value: originalUsatTokenId,
+      writable: true,
+      configurable: true,
+    })
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns NaN string', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: 'NaN',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns no priceUsd field', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          // no priceUsd field
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('leaves USAT priceUsd untouched when backend returns a real finite number', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: '0.998',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('0.998')
   })
 })
