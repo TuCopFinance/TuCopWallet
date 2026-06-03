@@ -94,6 +94,9 @@ interface NetworkConfig {
   usdtTokenId: string
   copmTokenId: string
   xaut0TokenId: string
+  usdcTokenId: string
+  usdmTokenId: string
+  usatTokenId: string // empty string on staging
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
@@ -172,6 +175,18 @@ export const USDT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0x48065fbbe25
 export const XAUT0_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff`
 export const XAUT0_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff`
 export const XAUT0_ADDRESS_MAINNET = '0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff' as Address
+
+// USDC (Circle native on Celo) - 6 decimals
+const USDC_TOKEN_ID_STAGING = `${NetworkId['celo-sepolia']}:0x01c5c0122039549ad1493b8220cabedd739bc44e`
+const USDC_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xceba9300f2b948710d2653dd7b07f33a8b32118c`
+
+// USDm = rebranded cUSD - 18 decimals - SAME contract as cUSD
+const USDM_TOKEN_ID_STAGING = CUSD_TOKEN_ID_STAGING
+const USDM_TOKEN_ID_MAINNET = CUSD_TOKEN_ID_MAINNET
+
+// USAT (Tether America USD, US-regulated Anchorage Digital) - 6 decimals
+// Mainnet-only for V1: not deployed on Celo Sepolia
+const USAT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd2ab3c9a02dbbab236bfec45d1d755df4267f771`
 
 const CLOUD_FUNCTIONS_STAGING = 'https://api.alfajores.valora.xyz'
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
@@ -448,6 +463,9 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     copmTokenId: COPM_TOKEN_ID_STAGING,
     usdtTokenId: USDT_TOKEN_ID_STAGING,
     xaut0TokenId: XAUT0_TOKEN_ID_STAGING,
+    usdcTokenId: USDC_TOKEN_ID_STAGING,
+    usdmTokenId: USDM_TOKEN_ID_STAGING,
+    usatTokenId: '', // USAT not on Celo Sepolia
     spendTokenIds: [USDT_TOKEN_ID_STAGING, COPM_TOKEN_ID_STAGING],
     saveContactsUrl: SAVE_CONTACTS_STAGING,
     getPointsConfigUrl: GET_POINTS_CONFIG_STAGING,
@@ -557,6 +575,9 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
     copmTokenId: COPM_TOKEN_ID_MAINNET,
     usdtTokenId: USDT_TOKEN_ID_MAINNET,
     xaut0TokenId: XAUT0_TOKEN_ID_MAINNET,
+    usdcTokenId: USDC_TOKEN_ID_MAINNET,
+    usdmTokenId: USDM_TOKEN_ID_MAINNET,
+    usatTokenId: USAT_TOKEN_ID_MAINNET,
     spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
     saveContactsUrl: SAVE_CONTACTS_MAINNET,
     getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
