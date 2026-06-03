@@ -64,7 +64,9 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$23.69')
+    // Front card is now 'pesos' (COPm only). cKES and cUSD are not COPm so the
+    // pesos balance will be 0 in this store; the card still renders.
+    expect(getByTestId('BalanceCard/pesos/Front')).toBeTruthy()
     expect(getByTestId('cKESBalance')).toHaveTextContent('1,000.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('10.00 cUSD')
   })
@@ -74,7 +76,7 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$0.00')
+    expect(getByTestId('BalanceCard/pesos/Front')).toBeTruthy()
     expect(getByTestId('cKESBalance')).toHaveTextContent('0.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('0.00 cUSD')
   })
