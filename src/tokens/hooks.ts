@@ -48,6 +48,19 @@ export function useUSDT() {
   return useTokenInfo(networkConfig.usdtTokenId)
 }
 
+export function useUSDC() {
+  return useTokenInfo(networkConfig.usdcTokenId)
+}
+
+export function useUSDm() {
+  return useTokenInfo(networkConfig.usdmTokenId)
+}
+
+export function useUSAT() {
+  // Returns undefined on networks where USAT is not deployed (Sepolia)
+  return useTokenInfo(networkConfig.usatTokenId)
+}
+
 export function useTokensWithUsdValue(networkIds: NetworkId[]) {
   return useSelector((state) => tokensWithUsdValueSelector(state, networkIds))
 }
