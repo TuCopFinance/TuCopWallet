@@ -568,7 +568,7 @@ describe('TransactionDetailsScreen', () => {
 
       expect(getByText('transactionDetailsActions.showCompletedTransactionDetails')).toBeTruthy()
       expect(getByTestId('EarnSwapDeposit/Swap/From')).toHaveTextContent('50.00 CELO')
-      expect(getByTestId('EarnSwapDeposit/Swap/To')).toHaveTextContent('10.00 USDC')
+      expect(getByTestId('EarnSwapDeposit/Swap/To')).toHaveTextContent('10.00 assets.dollars')
     })
 
     it(`renders details action for complete ${TokenTransactionTypeV2.EarnWithdraw} transaction`, () => {

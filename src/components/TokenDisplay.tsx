@@ -52,7 +52,6 @@ export const getTokenSymbol = (t: any, symbol: string | undefined, tokenId?: str
     USDt: t('assets.dollars'),
     USDC: t('assets.dollars'),
     USDm: t('assets.dollars'),
-    cUSD: t('assets.dollars'), // USDm backend may still report legacy symbol
     USAT: t('assets.dollars'),
     XAUt0: t('assets.gold'),
   }

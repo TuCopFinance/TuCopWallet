@@ -37,7 +37,7 @@ describe('TokenBalanceItem', () => {
     )
 
     expect(getByText('Celo Dollar')).toBeTruthy()
-    expect(getByText('10.00 assets.dollars')).toBeTruthy()
+    expect(getByText('10.00 cUSD')).toBeTruthy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
@@ -49,7 +49,7 @@ describe('TokenBalanceItem', () => {
     )
 
     expect(getByText('Celo Dollar')).toBeTruthy()
-    expect(queryByText('10.00 assets.dollars')).toBeFalsy()
+    expect(queryByText('10.00 cUSD')).toBeFalsy()
     expect(queryByTestId('BridgeLabel')).toBeFalsy()
   })
 
@@ -62,7 +62,7 @@ describe('TokenBalanceItem', () => {
     )
 
     expect(getByText('Celo Dollar')).toBeTruthy()
-    expect(getByText('10.00 assets.dollars')).toBeTruthy()
+    expect(getByText('10.00 cUSD')).toBeTruthy()
     expect(getByTestId('BridgeLabel')).toBeTruthy()
   })
 
@@ -74,7 +74,7 @@ describe('TokenBalanceItem', () => {
     )
 
     expect(getByText('Celo Dollar')).toBeTruthy()
-    expect(getByText('10.00 assets.dollars')).toBeTruthy()
+    expect(getByText('10.00 cUSD')).toBeTruthy()
   })
 
   it('correctly triggers optional onPress prop', () => {
