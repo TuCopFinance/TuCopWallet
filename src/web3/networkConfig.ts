@@ -446,6 +446,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_STAGING,
       [Currency.Celo]: CELO_TOKEN_ID_STAGING,
       [CiCoCurrency.USDT]: USDT_TOKEN_ID_STAGING,
+      [CiCoCurrency.USDC]: USDC_TOKEN_ID_STAGING, // also satisfies Currency.USDC (same string 'USDC')
+      [CiCoCurrency.USAT]: '', // also satisfies Currency.USAT (same string 'USAT'); not on Sepolia
       [CiCoCurrency.COPm]: COPM_TOKEN_ID_STAGING,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_STAGING,
@@ -558,6 +560,8 @@ const networkConfigs: { [testnet: string]: NetworkConfig } = {
       [CiCoCurrency.ETH]: ETH_TOKEN_ID_MAINNET,
       [Currency.Celo]: CELO_TOKEN_ID_MAINNET,
       [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET,
+      [CiCoCurrency.USDC]: USDC_TOKEN_ID_MAINNET, // also satisfies Currency.USDC (same string 'USDC')
+      [CiCoCurrency.USAT]: USAT_TOKEN_ID_MAINNET, // also satisfies Currency.USAT (same string 'USAT')
       [CiCoCurrency.COPm]: COPM_TOKEN_ID_MAINNET,
     },
     celoTokenAddress: CELO_TOKEN_ADDRESS_MAINNET,
