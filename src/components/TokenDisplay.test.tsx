@@ -65,7 +65,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toBe('10.00 assets.dollars')
+      expect(getElementText(getByTestId('test'))).toBe('10.00 cUSD')
     })
 
     it('shows local amount when showLocalAmount is true', () => {
@@ -107,7 +107,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual('0.0000018 assets.dollars')
+      expect(getElementText(getByTestId('test'))).toEqual('0.0000018 cUSD')
     })
 
     it('hides the symbol when showSymbol is false', () => {
@@ -255,7 +255,7 @@ describe('TokenDisplay', () => {
           />
         </Provider>
       )
-      expect(getElementText(getByTestId('test'))).toEqual(`${APPROX_SYMBOL} 10.00 assets.dollars`)
+      expect(getElementText(getByTestId('test'))).toEqual(`${APPROX_SYMBOL} 10.00 cUSD`)
     })
   })
 })
@@ -269,8 +269,10 @@ describe('getTokenSymbol', () => {
   it('maps USDm symbol to assets.dollars', () => {
     expect(getTokenSymbol(t, 'USDm')).toBe('assets.dollars')
   })
-  it('still maps cUSD symbol to assets.dollars (USDm legacy backend symbol)', () => {
-    expect(getTokenSymbol(t, 'cUSD')).toBe('assets.dollars')
+  it('cUSD symbol is not mapped by symbol alone (use tokenId for USDm)', () => {
+    // cUSD is handled via tokenId lookup (networkConfig.usdmTokenId), not by symbol.
+    // This prevents false positives on other tokens that happen to report cUSD as symbol.
+    expect(getTokenSymbol(t, 'cUSD')).toBe('cUSD')
   })
   it('maps USAT symbol to assets.dollars', () => {
     expect(getTokenSymbol(t, 'USAT')).toBe('assets.dollars')
@@ -281,10 +283,12 @@ describe('getTokenSymbol', () => {
   it('falls back to tokenId for USDm', () => {
     expect(getTokenSymbol(t, undefined, networkConfig.usdmTokenId)).toBe('assets.dollars')
   })
-  it('falls back to tokenId for USAT (mainnet only)', () => {
-    if (networkConfig.usatTokenId) {
-      expect(getTokenSymbol(t, undefined, networkConfig.usatTokenId)).toBe('assets.dollars')
-    }
+  it('falls back to tokenId for USAT when usatTokenId is present (mainnet)', () => {
+    // On Sepolia, usatTokenId is '' and getTokenSymbol returns undefined for empty string.
+    // On mainnet, it should return assets.dollars.
+    const usatId = networkConfig.usatTokenId
+    const result = getTokenSymbol(t, undefined, usatId || undefined)
+    expect(!usatId || result === 'assets.dollars').toBe(true)
   })
 })
 

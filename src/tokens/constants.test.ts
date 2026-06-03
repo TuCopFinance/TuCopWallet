@@ -22,12 +22,14 @@ describe('ALLOWED_TOKEN_IDS', () => {
     expect(ALLOWED_TOKEN_IDS.has(networkConfig.usdmTokenId)).toBe(true)
   })
 
-  it('includes USAT only when usatTokenId is non-empty', () => {
-    if (networkConfig.usatTokenId) {
-      expect(ALLOWED_TOKEN_IDS.has(networkConfig.usatTokenId)).toBe(true)
-    } else {
-      // On Sepolia, usatTokenId is '' and is excluded.
-      expect(ALLOWED_TOKEN_IDS.has('')).toBe(false)
-    }
+  it('does not include empty string as a token ID (USAT on Sepolia)', () => {
+    // On Sepolia, usatTokenId is '' and the set must not contain empty string.
+    expect(ALLOWED_TOKEN_IDS.has('')).toBe(false)
+  })
+
+  it('includes USAT when usatTokenId is non-empty (mainnet)', () => {
+    // Skipped on Sepolia where usatTokenId is ''.
+    const usatId = networkConfig.usatTokenId
+    expect(!usatId || ALLOWED_TOKEN_IDS.has(usatId)).toBe(true)
   })
 })

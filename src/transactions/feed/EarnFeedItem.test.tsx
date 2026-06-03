@@ -111,7 +111,7 @@ describe.each([
     transaction: mockEarnWithdrawTransaction,
     expectedTitle: 'earnFlow.transactionFeed.earnWithdrawTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnWithdrawSubtitle, {"providerName":"Aave"}',
-    expectedTotal: '+1.00 USDC',
+    expectedTotal: '+1.00 assets.dollars',
     expectedTotalLocal: 'COP$1.33',
   },
   {
@@ -119,7 +119,7 @@ describe.each([
     transaction: mockEarnDepositTransaction,
     expectedTitle: 'earnFlow.transactionFeed.earnDepositTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnDepositSubtitle, {"providerName":"Aave"}',
-    expectedTotal: '-10.00 USDC',
+    expectedTotal: '-10.00 assets.dollars',
     expectedTotalLocal: 'COP$13.30',
   },
   {
@@ -127,7 +127,7 @@ describe.each([
     transaction: mockEarnSwapDeposit,
     expectedTitle: 'earnFlow.transactionFeed.earnDepositTitle',
     expectedSubTitle: 'earnFlow.transactionFeed.earnDepositSubtitle, {"providerName":"Aave"}',
-    expectedTotal: '-10.00 USDC',
+    expectedTotal: '-10.00 assets.dollars',
     expectedTotalLocal: 'COP$13.30',
   },
   {
