@@ -96,7 +96,7 @@ interface NetworkConfig {
   xaut0TokenId: string
   usdcTokenId: string
   usdmTokenId: string
-  usatTokenId: string // empty string on staging
+  usatTokenId: string
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
