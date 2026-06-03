@@ -626,3 +626,83 @@ describe('watchAccountFundedOrLiquidated', () => {
     expect(AppAnalytics.track).toHaveBeenCalledWith(AppEvents.account_liquidated)
   })
 })
+
+describe('getTokensInfo USAT priceUsd override', () => {
+  beforeEach(() => {
+    mockFetch.resetMocks()
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns NaN', async () => {
+    if (!networkConfig.usatTokenId) {
+      // Sepolia: USAT is not in ALLOWED_TOKEN_IDS, override is a no-op.
+      return
+    }
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: 'NaN',
+        },
+        [networkConfig.usdtTokenId]: {
+          tokenId: networkConfig.usdtTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USDT',
+          name: 'Tether USD',
+          decimals: 6,
+          address: '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e',
+          priceUsd: '1.0',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+    // sanity: other tokens untouched
+    expect(result[networkConfig.usdtTokenId]?.priceUsd).toBe('1.0')
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns undefined', async () => {
+    if (!networkConfig.usatTokenId) return
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          // no priceUsd field
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('leaves USAT priceUsd untouched when backend returns a real number', async () => {
+    if (!networkConfig.usatTokenId) return
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: '0.998',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('0.998')
+  })
+})
