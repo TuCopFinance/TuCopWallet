@@ -15,9 +15,13 @@ import {
   useTokenPricesAreStale,
   useTokensInfo,
   useTokenToLocalAmount,
+  useUSDC,
+  useUSDm,
+  useUSAT,
 } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 import { createMockStore } from 'test/utils'
 import {
   mockAccount,
@@ -496,5 +500,82 @@ describe('useTokensInfo', () => {
     })
 
     expect(result.current).toEqual([])
+  })
+})
+
+describe('useUSDC / useUSDm / useUSAT', () => {
+  const renderWithStore = <T,>(hook: () => T, storeState: object) => {
+    const mockStore = createMockStore(storeState)
+    return renderHook(() => hook(), {
+      wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>,
+    })
+  }
+
+  it('useUSDC returns the USDC TokenBalance when present in store', () => {
+    const usdcNetworkId = networkConfig.usdcTokenId.split(':')[0]
+    const { result } = renderWithStore(useUSDC, {
+      tokens: {
+        tokenBalances: {
+          [networkConfig.usdcTokenId]: {
+            tokenId: networkConfig.usdcTokenId,
+            networkId: usdcNetworkId,
+            symbol: 'USDC',
+            decimals: 6,
+            balance: '10',
+            address: networkConfig.usdcTokenId.split(':')[1],
+            priceUsd: '1',
+            priceFetchedAt: Date.now(),
+          },
+        },
+      },
+    })
+    expect(result.current?.symbol).toBe('USDC')
+  })
+
+  it('useUSDm returns the USDm TokenBalance when present', () => {
+    const usdmNetworkId = networkConfig.usdmTokenId.split(':')[0]
+    const { result } = renderWithStore(useUSDm, {
+      tokens: {
+        tokenBalances: {
+          [networkConfig.usdmTokenId]: {
+            tokenId: networkConfig.usdmTokenId,
+            networkId: usdmNetworkId,
+            symbol: 'USDm',
+            decimals: 18,
+            balance: '5',
+            address: networkConfig.usdmTokenId.split(':')[1],
+            priceUsd: '1',
+            priceFetchedAt: Date.now(),
+          },
+        },
+      },
+    })
+    expect(result.current?.symbol).toBe('USDm')
+  })
+
+  it('useUSAT returns the USAT TokenBalance when present (mainnet)', () => {
+    if (!networkConfig.usatTokenId) {
+      // staging: USAT not deployed on Sepolia
+      expect(true).toBe(true)
+      return
+    }
+    const usatNetworkId = networkConfig.usatTokenId.split(':')[0]
+    const { result } = renderWithStore(useUSAT, {
+      tokens: {
+        tokenBalances: {
+          [networkConfig.usatTokenId]: {
+            tokenId: networkConfig.usatTokenId,
+            networkId: usatNetworkId,
+            symbol: 'USAT',
+            decimals: 6,
+            balance: '7',
+            address: networkConfig.usatTokenId.split(':')[1],
+            priceUsd: '1',
+            priceFetchedAt: Date.now(),
+          },
+        },
+      },
+    })
+    expect(result.current?.symbol).toBe('USAT')
   })
 })
