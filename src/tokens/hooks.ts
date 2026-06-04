@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
-import { TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
+import { STABLE_TRANSACTION_MIN_AMOUNT, TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
+import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
 import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { totalPositionsBalanceUsdSelector } from 'src/positions/selectors'
 import { useSelector } from 'src/redux/hooks'
@@ -46,6 +47,19 @@ export function useCOPm() {
 
 export function useUSDT() {
   return useTokenInfo(networkConfig.usdtTokenId)
+}
+
+export function useUSDC() {
+  return useTokenInfo(networkConfig.usdcTokenId)
+}
+
+export function useUSDm() {
+  return useTokenInfo(networkConfig.usdmTokenId)
+}
+
+export function useUSAT() {
+  // Returns undefined on networks where USAT is not deployed (Sepolia)
+  return useTokenInfo(networkConfig.usatTokenId)
 }
 
 export function useTokensWithUsdValue(networkIds: NetworkId[]) {
@@ -234,4 +248,42 @@ export function useAmountAsUsd(amount: BigNumber, tokenId: string | undefined) {
     return null
   }
   return amount.multipliedBy(tokenInfo.priceUsd)
+}
+
+// Returns each dollar-denominated stable that has a non-dust USD value,
+// sorted by localValue descending. Used for the Dolares card breakdown.
+// Dust threshold (>= STABLE_TRANSACTION_MIN_AMOUNT, i.e. 0.01 USD) matches
+// tokensWithUsdValueSelector so row counts agree across screens.
+export function useDollarTokensWithBalance(): Array<{
+  tokenInfo: TokenBalance
+  usdValue: BigNumber
+  localValue: BigNumber
+}> {
+  const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
+  const tokens = useSelector((state) => tokensListSelector(state, supportedNetworkIds))
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  return tokens
+    .filter((t) => {
+      if (!DOLLAR_TOKEN_IDS.has(t.tokenId)) return false
+      const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+      return usdValue.gt(STABLE_TRANSACTION_MIN_AMOUNT)
+    })
+    .map((t) => {
+      const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+      const localValue = usdToLocalRate ? usdValue.multipliedBy(usdToLocalRate) : new BigNumber(0)
+      return { tokenInfo: t, usdValue, localValue }
+    })
+    .sort((a, b) => b.localValue.comparedTo(a.localValue))
+}
+
+// Returns the total local-currency value of all dollar stablecoins.
+export function useDollarBalance(): BigNumber {
+  const dollarTokens = useDollarTokensWithBalance()
+  return dollarTokens.reduce((sum, t) => sum.plus(t.localValue), new BigNumber(0))
+}
+
+// Returns the total USD value of all dollar stablecoins (sum of priceUsd * balance).
+export function useDollarUsdBalance(): BigNumber {
+  const dollarTokens = useDollarTokensWithBalance()
+  return dollarTokens.reduce((sum, t) => sum.plus(t.usdValue), new BigNumber(0))
 }

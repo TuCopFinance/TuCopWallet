@@ -4,6 +4,8 @@ export enum Currency {
   Euro = 'cEUR',
   COP = 'COPm',
   USDT = 'USDT',
+  USDC = 'USDC',
+  USAT = 'USAT',
 }
 
 // Important: when adding new currencies, the string must match the symbol
@@ -13,6 +15,8 @@ export enum CiCoCurrency {
   cUSD = 'cUSD',
   COPm = 'COPm',
   USDT = 'USDT',
+  USDC = 'USDC',
+  USAT = 'USAT',
   cEUR = 'cEUR',
   cREAL = 'cREAL',
   ETH = 'ETH',
@@ -47,6 +51,16 @@ export const CURRENCIES: CurrencyObject = {
     displayDecimals: 2,
     cashTag: 'USDT',
   },
+  [Currency.USDC]: {
+    symbol: '$',
+    displayDecimals: 2,
+    cashTag: 'USDC',
+  },
+  [Currency.USAT]: {
+    symbol: '$',
+    displayDecimals: 2,
+    cashTag: 'USAT',
+  },
   [Currency.Dollar]: {
     symbol: '$',
     displayDecimals: 2,
@@ -72,6 +86,8 @@ export function resolveCurrency(currencyCode: string): Currency | undefined {
     CEUR: Currency.Euro,
     COPM: Currency.COP,
     USDT: Currency.USDT,
+    USDC: Currency.USDC,
+    USAT: Currency.USAT,
   }
   return mapping[currencyCode.toUpperCase()]
 }
@@ -80,10 +96,12 @@ export function resolveCICOCurrency(currencyCode: string): CiCoCurrency {
   const mapping: Record<string, CiCoCurrency | undefined> = {
     CELO: CiCoCurrency.CELO,
     CGLD: CiCoCurrency.CELO,
-    CUSD: CiCoCurrency.USDT,
+    CUSD: CiCoCurrency.USDT, // legacy: cUSD-named code routes to USDT (kept for backwards compat)
     CEUR: CiCoCurrency.cEUR,
     CREAL: CiCoCurrency.cREAL,
     USDT: CiCoCurrency.USDT,
+    USDC: CiCoCurrency.USDC,
+    USAT: CiCoCurrency.USAT,
     COPM: CiCoCurrency.COPm,
   }
   return mapping[currencyCode.toUpperCase()] || CiCoCurrency.CELO
