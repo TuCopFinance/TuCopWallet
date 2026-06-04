@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 246,
+          "version": 247,
         },
         "account": {
           "acceptedTerms": false,
@@ -236,6 +236,9 @@ describe('store state', () => {
           "maxNumRecentDapps": 0,
           "mostPopularDappIds": [],
           "recentDappIds": [],
+        },
+        "dollarsSpend": {
+          "inFlight": null,
         },
         "earn": {
           "depositStatus": "idle",

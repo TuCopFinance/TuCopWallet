@@ -2060,4 +2060,13 @@ export const migrations = {
     }
     return state
   },
+  247: (state: any) => {
+    // Phase 3 foundation: introduce the dollarsSpend slice for multi-step
+    // Dolares swap orchestration. No prior shape exists; seed with the
+    // initial state so the RootState schema validates.
+    return {
+      ...state,
+      dollarsSpend: { inFlight: null },
+    }
+  },
 }
