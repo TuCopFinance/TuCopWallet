@@ -45,6 +45,7 @@ import {
 import { recipientsSaga } from 'src/recipients/saga'
 import { sendSaga } from 'src/send/saga'
 // import { sentrySaga } from 'src/sentry/saga' // Commented out - Sentry disabled
+import { dollarsSpendSaga } from 'src/dollarsSpend/saga'
 import { swapSaga } from 'src/swap/saga'
 import { tokensSaga } from 'src/tokens/saga'
 import { setTokenBalances } from 'src/tokens/slice'
@@ -144,6 +145,7 @@ export function* rootSaga() {
     yield* spawn(dappsSaga)
     yield* spawn(fiatConnectSaga)
     yield* spawn(swapSaga)
+    yield* spawn(dollarsSpendSaga)
     yield* spawn(keylessBackupSaga)
     yield* spawn(nftsSaga)
     yield* spawn(priceHistorySaga)
