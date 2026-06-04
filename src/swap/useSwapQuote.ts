@@ -28,6 +28,77 @@ const DECREASED_SWAP_AMOUNT_GAS_FEE_MULTIPLIER = 1.2
 
 export const NO_QUOTE_ERROR_MESSAGE = 'No quote available'
 
+export interface FetchSwapQuoteArgs {
+  fromTokenId: string
+  toTokenId: string
+  /** Sell amount in whole token units (not wei) */
+  amount: string
+  walletAddress: string
+  slippagePercentage?: string
+}
+
+export interface FetchSwapQuoteResult {
+  fromTokenId: string
+  toTokenId: string
+  /** Raw sell amount in whole token units */
+  swapAmount: { FROM: BigNumber; TO: BigNumber }
+  price: string
+  provider: string
+  estimatedPriceImpact: string | null
+}
+
+/**
+ * Lightweight quote fetcher for price discovery only - no tx preparation.
+ * Used by useMultiSwapQuote to fetch N parallel quotes without React state.
+ */
+export async function fetchSwapQuote(args: FetchSwapQuoteArgs): Promise<FetchSwapQuoteResult> {
+  const { fromTokenId, toTokenId, amount, walletAddress, slippagePercentage = '0.5' } = args
+
+  // Token IDs are in the form "networkId:0xaddress"
+  const fromAddress = fromTokenId.split(':')[1]
+  const toAddress = toTokenId.split(':')[1]
+  const fromNetworkId = fromTokenId.split(':')[0]
+  const toNetworkId = toTokenId.split(':')[0]
+
+  const params: Record<string, string> = {
+    ...(toAddress && { buyToken: toAddress }),
+    buyIsNative: 'false',
+    buyNetworkId: toNetworkId,
+    ...(fromAddress && { sellToken: fromAddress }),
+    sellIsNative: 'false',
+    sellNetworkId: fromNetworkId,
+    sellAmount: amount,
+    userAddress: walletAddress,
+    slippagePercentage,
+  }
+  const queryParams = new URLSearchParams(params).toString()
+  const requestUrl = `${networkConfig.getSwapQuoteUrl}?${queryParams}`
+  const response = await fetch(requestUrl)
+
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+
+  const quote: FetchQuoteResponse = await response.json()
+
+  if (!quote.unvalidatedSwapTransaction) {
+    throw new Error(NO_QUOTE_ERROR_MESSAGE)
+  }
+
+  const tx = quote.unvalidatedSwapTransaction
+  return {
+    fromTokenId,
+    toTokenId,
+    swapAmount: {
+      FROM: new BigNumber(tx.sellAmount),
+      TO: new BigNumber(tx.buyAmount),
+    },
+    price: tx.price,
+    provider: quote.details.swapProvider,
+    estimatedPriceImpact: tx.estimatedPriceImpact,
+  }
+}
+
 interface BaseQuoteResult {
   swapType: SwapType
   toTokenId: string
