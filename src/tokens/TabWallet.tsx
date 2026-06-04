@@ -18,12 +18,18 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useTotalBalanceWithInvestments } from 'src/tokens/hooks'
+import {
+  useDollarBalance,
+  useDollarUsdBalance,
+  useTotalBalanceWithInvestments,
+} from 'src/tokens/hooks'
 import { COPmFirstTokensListSelector } from 'src/tokens/selectors'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
+import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import Logger from 'src/utils/Logger'
 import Grow from 'src/icons/tab-home/Grow'
+import DollarsIcon from 'src/icons/tokens/DollarsIcon'
 import networkConfig from 'src/web3/networkConfig'
 
 function TabWallet() {
@@ -43,10 +49,18 @@ function TabWallet() {
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
   const allTokens = useSelector((state) => COPmFirstTokensListSelector(state, supportedNetworkIds))
 
-  // Filter out XAUt0 from regular tokens (it will be shown in investments section)
+  // Filter out XAUt0 (shown in Investments section) and individual dollar
+  // stablecoins (USDT/USDC/USDm/USAT) — those collapse into a single
+  // "Dolares" row below showing the aggregate, matching the BalanceCard.
   const regularTokens = useMemo(() => {
-    return allTokens.filter((token) => token.tokenId !== networkConfig.xaut0TokenId)
+    return allTokens.filter(
+      (token) =>
+        token.tokenId !== networkConfig.xaut0TokenId && !DOLLAR_TOKEN_IDS.has(token.tokenId)
+    )
   }, [allTokens])
+
+  const dollarLocalValue = useDollarBalance()
+  const dollarUsdValue = useDollarUsdBalance()
 
   // Get gold balance directly from blockchain
   const { balance: goldBalance } = useXaut0Balance()
@@ -98,6 +112,32 @@ function TabWallet() {
                     hideBalances={hideWalletBalances}
                   />
                 ))}
+
+                {dollarLocalValue.gt(0) && (
+                  <View style={styles.goldItem} testID="DollarsBalanceItem">
+                    <DollarsIcon size={32} />
+                    <View style={styles.goldTextContainer}>
+                      <View>
+                        <Text style={styles.goldLabel}>{t('assets.dollars')}</Text>
+                      </View>
+                      <View style={styles.goldBalanceContainer}>
+                        {!hideWalletBalances ? (
+                          <>
+                            <Text style={styles.goldBalance}>
+                              {dollarUsdValue.toFormat(2)} {t('assets.dollars')}
+                            </Text>
+                            <Text style={styles.goldLocalValue}>
+                              {localCurrencySymbol}
+                              {dollarLocalValue.toFormat(2)}
+                            </Text>
+                          </>
+                        ) : (
+                          <Text style={styles.goldBalance}>••••••</Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                )}
 
                 {/* Investments Section - Gold */}
                 <SectionHead text={t('assets.yourInvestments')} style={styles.sectionHeader} />

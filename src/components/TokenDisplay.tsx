@@ -50,6 +50,9 @@ export const getTokenSymbol = (t: any, symbol: string | undefined, tokenId?: str
     'USD₮': t('assets.dollars'),
     USDT: t('assets.dollars'),
     USDt: t('assets.dollars'),
+    USDC: t('assets.dollars'),
+    USDm: t('assets.dollars'),
+    USAT: t('assets.dollars'),
     XAUt0: t('assets.gold'),
   }
 
@@ -68,7 +71,12 @@ export const getTokenSymbol = (t: any, symbol: string | undefined, tokenId?: str
     if (tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    if (tokenId === networkConfig.usdtTokenId) {
+    if (
+      tokenId === networkConfig.usdtTokenId ||
+      tokenId === networkConfig.usdcTokenId ||
+      tokenId === networkConfig.usdmTokenId ||
+      (networkConfig.usatTokenId && tokenId === networkConfig.usatTokenId)
+    ) {
       return t('assets.dollars')
     }
   }
