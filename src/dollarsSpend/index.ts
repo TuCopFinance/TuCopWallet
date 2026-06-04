@@ -20,3 +20,4 @@ export {
   hasInFlightSelector,
   inFlightProgressSelector,
 } from 'src/dollarsSpend/selectors'
+export { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
