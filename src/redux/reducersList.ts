@@ -4,6 +4,7 @@ import bucksPayReducer from 'src/buckspay/slice'
 import goldReducer from 'src/gold/slice'
 import { appReducer as app } from 'src/app/reducers'
 import dappsReducer from 'src/dapps/slice'
+import dollarsSpendReducer from 'src/dollarsSpend/slice'
 import earnReducer from 'src/earn/slice'
 import { reducer as fiatExchanges } from 'src/fiatExchanges/reducer'
 import fiatConnectReducer from 'src/fiatconnect/slice'
@@ -45,6 +46,7 @@ export const reducersList = {
   walletConnect,
   tokens: tokenReducer,
   dapps: dappsReducer,
+  dollarsSpend: dollarsSpendReducer,
   fiatConnect: fiatConnectReducer,
   swap: swapReducer,
   positions: positionsReducer,

@@ -3687,6 +3687,16 @@ export const v246Schema = {
   },
 }
 
+// Migration 247 seeds the new dollarsSpend slice (Phase 3 foundation).
+export const v247Schema = {
+  ...v246Schema,
+  dollarsSpend: { inFlight: null },
+  _persist: {
+    ...v246Schema._persist,
+    version: 247,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v246Schema as Partial<RootState>
+  return v247Schema as Partial<RootState>
 }
