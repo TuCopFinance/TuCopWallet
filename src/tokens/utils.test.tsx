@@ -51,6 +51,8 @@ describe(getHigherBalanceCurrency, () => {
       [Currency.Celo]: undefined,
       [Currency.USDT]: undefined,
       [Currency.COP]: undefined,
+      [Currency.USDC]: undefined,
+      [Currency.USAT]: undefined,
     }
 
     expect(getHigherBalanceCurrency([Currency.Dollar, Currency.Euro], undefinedTokens)).toEqual(
