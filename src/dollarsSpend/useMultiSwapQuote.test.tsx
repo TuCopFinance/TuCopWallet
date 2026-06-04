@@ -41,6 +41,7 @@ describe('useMultiSwapQuote', () => {
   })
 
   it('returns loading=true while quotes are fetching', () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     fetchSwapQuote.mockImplementation(() => new Promise(() => {}))
     const { result } = renderWithStore(() =>
       useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
