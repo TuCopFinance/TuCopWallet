@@ -125,7 +125,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleCollect')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '11.83 USDC'
+      '11.83 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$15.73'
@@ -181,7 +181,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleWithdraw')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '5.91 USDC'
+      '5.91 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$7.86'
@@ -282,7 +282,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleWithdraw')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '11.83 USDC'
+      '11.83 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$15.73'
