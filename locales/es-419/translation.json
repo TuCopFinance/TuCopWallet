@@ -3021,6 +3021,23 @@
   "ubiAlreadyClaimed": "Ya has reclamado tu subsidio esta semana",
   "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
   "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
+  "dollarsSpend": {
+    "tokenLabel": "Dolares",
+    "confirmAggregate": "Vas a cambiar {{usdAmount}} en Dolares a {{toLabel}}",
+    "expandedDetailHeader": "Detalle por token",
+    "stepCount": "{{steps}} pasos",
+    "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "partialSuccess": {
+      "title": "Completaste {{completed}} de {{total}} pasos",
+      "remaining": "Te quedan {{remainingUsd}} por convertir",
+      "retry": "Reintentar restante",
+      "cancel": "Dejar pendiente"
+    },
+    "shortfall": {
+      "title": "Saldo en Dolares insuficiente",
+      "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    }
+  },
   "goldFlow": {
     "gold": "Oro",
     "entrypoint": {
