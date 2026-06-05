@@ -10,6 +10,17 @@ import InLineNotification, { NotificationVariant } from 'src/components/InLineNo
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
+import {
+  DOLARES_VIRTUAL_TOKEN_ID,
+  DolaresMultiStepSummary,
+  executeMultiSwap,
+  multiSwapCleared,
+  planSpend,
+  useDollarBalanceSnapshots,
+  useMultiSwapQuote,
+} from 'src/dollarsSpend'
+import MultiSwapProgressSheet from 'src/dollarsSpend/MultiSwapProgressSheet'
+import PartialSuccessSheet from 'src/dollarsSpend/PartialSuccessSheet'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { buyGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
@@ -162,6 +173,22 @@ export default function GoldBuyConfirmation({ route }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPreparedTransactions, fromToken, xaut0Token, fromAmount])
 
+  const isVirtualDolares = fromTokenId === DOLARES_VIRTUAL_TOKEN_ID
+
+  const dollarSnapshots = useDollarBalanceSnapshots()
+
+  const requestedUsd = useMemo(() => {
+    if (!isVirtualDolares) return new BigNumber(0)
+    return new BigNumber(fromAmount ?? 0)
+  }, [isVirtualDolares, fromAmount])
+
+  const multiSwapPlan = useMemo(() => {
+    if (!isVirtualDolares || requestedUsd.lte(0)) return null
+    return planSpend({ requestedUsd, balances: dollarSnapshots })
+  }, [isVirtualDolares, requestedUsd, dollarSnapshots])
+
+  const multiSwapQuote = useMultiSwapQuote(multiSwapPlan?.steps ?? [], networkConfig.xaut0TokenId)
+
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
 
@@ -233,6 +260,17 @@ export default function GoldBuyConfirmation({ route }: Props) {
   }
 
   const onPressConfirm = () => {
+    if (isVirtualDolares) {
+      if (!multiSwapPlan || multiSwapPlan.shortfall.gt(0)) return
+      dispatch(
+        executeMultiSwap({
+          steps: multiSwapPlan.steps,
+          toTokenId: networkConfig.xaut0TokenId,
+        })
+      )
+      return
+    }
+
     if (!fromToken || !preparedTransactions || !toTokenId) return
 
     // Dispatch the buy action - saga will handle the transaction
@@ -259,7 +297,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
     paddingBottom: Math.max(insets.bottom, Spacing.Regular16),
   }
 
-  if (!fromToken) {
+  if (!isVirtualDolares && !fromToken) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
@@ -272,34 +310,72 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <MultiSwapProgressSheet />
+      <PartialSuccessSheet
+        onRetry={() => {
+          const remaining = planSpend({ requestedUsd, balances: dollarSnapshots })
+          if (remaining.shortfall.gt(0)) return
+          dispatch(
+            executeMultiSwap({ steps: remaining.steps, toTokenId: networkConfig.xaut0TokenId })
+          )
+        }}
+        onCancel={() => dispatch(multiSwapCleared())}
+      />
       <CustomHeader
         style={{ paddingHorizontal: Spacing.Thick24 }}
         left={<BackButton />}
         title={t('goldFlow.buy.confirmTitle')}
       />
       <ScrollView contentContainerStyle={[styles.scrollContent, insetsStyle]}>
-        {/* Swap Summary */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.cardLabel}>{t('goldFlow.buy.youPay')}</Text>
-          <View style={styles.tokenRow}>
-            <TokenIcon token={fromToken} size={IconSize.MEDIUM} />
-            <View style={styles.tokenInfo}>
-              <Text style={styles.tokenAmount}>
-                {parsedFromAmount.toFormat(tokenDisplayDecimals)} {getTokenName(fromToken)}
-              </Text>
-              <TokenDisplay
-                tokenId={fromTokenId}
-                amount={parsedFromAmount}
-                showLocalAmount
-                style={styles.tokenLocalValue}
-              />
+        {/* Virtual Dolares multi-step summary */}
+        {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.lte(0) && (
+          <DolaresMultiStepSummary
+            steps={multiSwapPlan.steps}
+            totalInUsd={multiSwapQuote.totalInUsd}
+            totalOutToken={multiSwapQuote.totalOutToken}
+            toTokenSymbol={xaut0Token?.symbol ?? 'XAUt0'}
+          />
+        )}
+        {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.gt(0) && (
+          <InLineNotification
+            variant={NotificationVariant.Warning}
+            title={t('dollarsSpend.shortfall.title')}
+            description={t('dollarsSpend.shortfall.body', {
+              availableUsd: `$${dollarSnapshots
+                .reduce((sum, s) => sum.plus(s.balance.multipliedBy(s.priceUsd)), new BigNumber(0))
+                .toFormat(2)}`,
+            })}
+            style={styles.warning}
+            testID="GoldBuyConfirmation/Shortfall"
+          />
+        )}
+        {/* Swap Summary (single-token path) */}
+        {!isVirtualDolares && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.cardLabel}>{t('goldFlow.buy.youPay')}</Text>
+            <View style={styles.tokenRow}>
+              <TokenIcon token={fromToken!} size={IconSize.MEDIUM} />
+              <View style={styles.tokenInfo}>
+                <Text style={styles.tokenAmount}>
+                  {parsedFromAmount.toFormat(tokenDisplayDecimals)}{' '}
+                  {getTokenName(fromToken ?? null)}
+                </Text>
+                <TokenDisplay
+                  tokenId={fromTokenId}
+                  amount={parsedFromAmount}
+                  showLocalAmount
+                  style={styles.tokenLocalValue}
+                />
+              </View>
             </View>
           </View>
-        </View>
+        )}
 
-        <View style={styles.arrowContainer}>
-          <Text style={styles.arrowText}>↓</Text>
-        </View>
+        {!isVirtualDolares && (
+          <View style={styles.arrowContainer}>
+            <Text style={styles.arrowText}>↓</Text>
+          </View>
+        )}
 
         <View style={styles.summaryCard}>
           <Text style={styles.cardLabel}>{t('goldFlow.buy.youReceive')}</Text>
@@ -319,36 +395,38 @@ export default function GoldBuyConfirmation({ route }: Props) {
           </View>
         </View>
 
-        {/* Transaction Details */}
-        <View style={styles.detailsCard}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('goldFlow.buy.goldPrice')}</Text>
-            <Text style={styles.detailValue}>
-              {localCurrencySymbol}
-              {localPricePerOz?.toFormat(localPriceDecimals) ??
-                parsedPricePerOz.toFormat(localPriceDecimals)}{' '}
-              / oz
-            </Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
-            {isGettingQuote ? (
-              <ActivityIndicator size="small" color={Colors.primary} />
-            ) : (
+        {/* Transaction Details (single-token path only) */}
+        {!isVirtualDolares && (
+          <View style={styles.detailsCard}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('goldFlow.buy.goldPrice')}</Text>
               <Text style={styles.detailValue}>
-                {parsedGasFee && gasFeeToken
-                  ? `${parsedGasFee.toFormat(6)} ${getGasFeeTokenName()}`
-                  : t('goldFlow.buy.estimatingFee')}
+                {localCurrencySymbol}
+                {localPricePerOz?.toFormat(localPriceDecimals) ??
+                  parsedPricePerOz.toFormat(localPriceDecimals)}{' '}
+                / oz
               </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
+              {isGettingQuote ? (
+                <ActivityIndicator size="small" color={Colors.primary} />
+              ) : (
+                <Text style={styles.detailValue}>
+                  {parsedGasFee && gasFeeToken
+                    ? `${parsedGasFee.toFormat(6)} ${getGasFeeTokenName()}`
+                    : t('goldFlow.buy.estimatingFee')}
+                </Text>
+              )}
+            </View>
+            {!!swapProvider && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('goldFlow.buy.swapProvider')}</Text>
+                <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
+              </View>
             )}
           </View>
-          {!!swapProvider && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('goldFlow.buy.swapProvider')}</Text>
-              <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
-            </View>
-          )}
-        </View>
+        )}
 
         {/* Info Notice */}
         <InLineNotification
@@ -377,8 +455,13 @@ export default function GoldBuyConfirmation({ route }: Props) {
             text={t('goldFlow.buy.confirm')}
             size={BtnSizes.FULL}
             type={BtnTypes.PRIMARY}
-            disabled={isSubmitting || isGettingQuote || !preparedTransactions || !toTokenId}
-            showLoading={isSubmitting || isGettingQuote}
+            disabled={
+              isSubmitting ||
+              (isVirtualDolares
+                ? !multiSwapPlan || multiSwapPlan.shortfall.gt(0)
+                : isGettingQuote || !preparedTransactions || !toTokenId)
+            }
+            showLoading={isSubmitting}
             testID="GoldBuyConfirmation/ConfirmButton"
           />
         </View>
@@ -467,6 +550,9 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Regular16,
   },
   errorNotice: {
+    marginTop: Spacing.Regular16,
+  },
+  warning: {
     marginTop: Spacing.Regular16,
   },
   buttonContainer: {

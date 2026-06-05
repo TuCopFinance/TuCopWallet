@@ -11,13 +11,41 @@ import {
 } from 'src/dollarsSpend/slice'
 import { SpendStep } from 'src/dollarsSpend/types'
 import { swapError, swapSuccess } from 'src/swap/slice'
-import { fetchSwapQuote } from 'src/swap/useSwapQuote'
+import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
+import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 jest.mock('src/swap/useSwapQuote', () => ({
   ...jest.requireActual('src/swap/useSwapQuote'),
-  fetchSwapQuote: jest.fn(),
+  fetchSwapQuoteForExecution: jest.fn(),
 }))
+
+const MOCK_WALLET = '0x1234567890abcdef1234567890abcdef12345678'
+
+const mockFromTokenUsat = {
+  tokenId: 'celo-mainnet:usat',
+  networkId: 'celo-mainnet',
+  symbol: 'USAT',
+  decimals: 6,
+  balance: new BigNumber(100),
+  priceUsd: new BigNumber(1),
+  address: '0xd2ab00000000000000000000000000000000abcd',
+} as any
+
+const mockFromTokenUsdm = {
+  tokenId: 'celo-mainnet:usdm',
+  networkId: 'celo-mainnet',
+  symbol: 'USDm',
+  decimals: 18,
+  balance: new BigNumber(50),
+  priceUsd: new BigNumber(1),
+  address: '0x765de816845861e75a25fca122bb6898b8b1282a',
+} as any
+
+const mockTokensById = {
+  'celo-mainnet:usat': mockFromTokenUsat,
+  'celo-mainnet:usdm': mockFromTokenUsdm,
+}
 
 const stepUsat: SpendStep = {
   tokenId: 'celo-mainnet:usat',
@@ -39,20 +67,29 @@ const mockQuoteResult = (fromTokenId: string) => ({
   price: '4080',
   provider: 'squid',
   estimatedPriceImpact: null,
+  preparedTransactions: { type: 'possible', transactions: [], feeCurrency: mockFromTokenUsat },
+  receivedAt: 1234567890,
+  appFeePercentageIncludedInPrice: undefined,
+  allowanceTarget: '0x0000000000000000000000000000000000000000',
+  sellAmount: '30000000',
+  swapType: 'same-chain' as const,
 })
 
-const MOCK_WALLET = '0x1234567890abcdef1234567890abcdef12345678'
-
-// Base providers shared across tests: mock the wallet select so
-// the saga doesn't crash trying to access state.web3 without a store.
+// Base providers shared across tests.
 function baseProviders(): StaticProvider[] {
-  return [[matchers.select.selector(walletAddressSelector), MOCK_WALLET]]
+  return [
+    [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+    [matchers.select.selector(tokensByIdSelector), mockTokensById],
+    [matchers.select.selector(feeCurrenciesSelector), []],
+  ]
 }
 
 describe('executeMultiSwapSaga', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.mocked(fetchSwapQuote).mockResolvedValue(mockQuoteResult('celo-mainnet:usat') as any)
+    jest
+      .mocked(fetchSwapQuoteForExecution)
+      .mockResolvedValue(mockQuoteResult('celo-mainnet:usat') as any)
   })
 
   it('runs the happy path: 2 steps both succeed', async () => {
@@ -68,7 +105,7 @@ describe('executeMultiSwapSaga', () => {
 
     const providers: (EffectProviders | StaticProvider)[] = [
       ...baseProviders(),
-      [matchers.call.fn(fetchSwapQuote), mockQuoteResult('celo-mainnet:usat')],
+      [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult('celo-mainnet:usat')],
       raceProvider,
     ]
 
@@ -99,7 +136,7 @@ describe('executeMultiSwapSaga', () => {
 
     const providers: (EffectProviders | StaticProvider)[] = [
       ...baseProviders(),
-      [matchers.call.fn(fetchSwapQuote), mockQuoteResult('celo-mainnet:usat')],
+      [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult('celo-mainnet:usat')],
       raceProvider,
     ]
 
@@ -118,7 +155,7 @@ describe('executeMultiSwapSaga', () => {
     const quoteError = new Error('Squid 500')
     const providers: (EffectProviders | StaticProvider)[] = [
       ...baseProviders(),
-      [matchers.call.fn(fetchSwapQuote), Promise.reject(quoteError) as any],
+      [matchers.call.fn(fetchSwapQuoteForExecution), Promise.reject(quoteError) as any],
     ]
 
     await expectSaga(
