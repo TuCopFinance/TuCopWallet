@@ -22,3 +22,4 @@ export {
 } from 'src/dollarsSpend/selectors'
 export { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
 export { buildDolaresVirtualToken } from 'src/dollarsSpend/dolaresVirtualToken'
+export { default as DolaresMultiStepSummary } from 'src/dollarsSpend/DolaresMultiStepSummary'
