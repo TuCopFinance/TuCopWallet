@@ -17,6 +17,7 @@ import {
   getMultichainFeatures,
 } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import SwapScreen from 'src/swap/SwapScreen'
 import { swapStart } from 'src/swap/slice'
 import { FetchQuoteResponse, Field } from 'src/swap/types'
@@ -1918,6 +1919,139 @@ describe('SwapScreen', () => {
       expectedCeloTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
       })
+    })
+  })
+
+  describe('SwapScreen virtual Dolares flow', () => {
+    // Staging dollar token IDs used by useDollarBalanceSnapshots on celo-sepolia.
+    const usdcStagingTokenId = 'celo-sepolia:0x01c5c0122039549ad1493b8220cabedd739bc44e'
+    const usdtStagingTokenId = 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb'
+
+    const dollarBalanceTokens = {
+      [usdcStagingTokenId]: {
+        tokenId: usdcStagingTokenId,
+        networkId: NetworkId['celo-sepolia'],
+        symbol: 'USDC',
+        name: 'USDC',
+        decimals: 6,
+        isSwappable: true,
+        balance: '50',
+        priceUsd: '1',
+        imageUrl: undefined,
+      },
+      [usdtStagingTokenId]: {
+        tokenId: usdtStagingTokenId,
+        networkId: NetworkId['celo-sepolia'],
+        symbol: 'USDT',
+        name: 'USDT',
+        decimals: 6,
+        isSwappable: true,
+        balance: '30',
+        priceUsd: '1',
+        imageUrl: undefined,
+      },
+    }
+
+    const renderWithDollarBalances = ({
+      fromTokenId = DOLARES_VIRTUAL_TOKEN_ID,
+      dollarTokens = dollarBalanceTokens,
+    }: {
+      fromTokenId?: string
+      dollarTokens?: Record<string, object>
+    } = {}) => {
+      const store = createMockStore({
+        tokens: {
+          tokenBalances: {
+            ...mockStoreTokenBalances,
+            ...dollarTokens,
+          },
+        },
+        swap: {
+          lastSwapped: [],
+        },
+      })
+
+      const tree = render(
+        <Provider store={store}>
+          <MockedNavigator
+            component={SwapScreen}
+            params={{ fromTokenId, toTokenNetworkId: undefined }}
+          />
+        </Provider>
+      )
+
+      return { ...tree, store }
+    }
+
+    it('shows multi-step summary when fromTokenId is virtual Dolares and amount is entered', async () => {
+      const { getByTestId, queryByTestId, getAllByTestId } = renderWithDollarBalances({
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+      })
+
+      // With virtual Dolares selected, the from input should be present.
+      const [swapFromContainer] = getAllByTestId('SwapAmountInput')
+
+      // Type an amount within the total balance ($80 available, request $20).
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '20')
+
+      // Without a toTokenId the plan executes but the summary needs a destination token.
+      // The shortfall banner should NOT appear (80 >= 20).
+      expect(queryByTestId('ShortfallBanner')).toBeNull()
+
+      // The multi-step summary container should appear once a toToken is also set.
+      // (Without a toToken the allowSwap gate stays closed, but the plan and card
+      // still render once both conditions are met - the card renders on plan valid
+      // even without toToken being resolved, as fromAmountUsd > 0 and shortfall <= 0.)
+      expect(getByTestId('DolaresMultiStepSummary')).toBeTruthy()
+    })
+
+    it('shows shortfall banner when amount exceeds total dollar balance', async () => {
+      const { getByTestId, getAllByTestId } = renderWithDollarBalances({
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+      })
+
+      const [swapFromContainer] = getAllByTestId('SwapAmountInput')
+
+      // Total balance = 80 USD; request 150 USD to trigger shortfall.
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '150')
+
+      expect(getByTestId('ShortfallBanner')).toBeTruthy()
+    })
+
+    it('dispatches executeMultiSwap on confirm when plan is valid', async () => {
+      const { store, getAllByTestId, getByText, getByTestId } = renderWithDollarBalances({
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+      })
+
+      // Select a "to" token from the bottom sheet so the confirm button enables.
+      const swapScreen = getByTestId('SwapScreen')
+      const [, toTokenBottomSheet] = within(swapScreen).getAllByTestId('TokenBottomSheet')
+      const [swapFromContainer] = getAllByTestId('SwapAmountInput')
+      const [, swapToContainer] = getAllByTestId('SwapAmountInput')
+
+      // Open to-token picker and pick CELO.
+      fireEvent.press(within(swapToContainer).getByTestId('SwapAmountInput/TokenSelect'))
+      fireEvent.press(within(toTokenBottomSheet).getByText('Celo native asset'))
+
+      // Enter an amount within the dollar balance.
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '20')
+
+      // Confirm swap button.
+      const confirmButton = getByText('swapScreen.confirmSwap')
+      expect(confirmButton).not.toBeDisabled()
+      fireEvent.press(confirmButton)
+
+      const actions = store.getActions()
+      expect(actions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'dollarsSpend/executeMultiSwap',
+            payload: expect.objectContaining({
+              toTokenId: mockCeloTokenId,
+            }),
+          }),
+        ])
+      )
     })
   })
 })
