@@ -354,4 +354,92 @@ function useSwapQuote({
   }
 }
 
+export interface FetchSwapQuoteForExecutionArgs extends FetchSwapQuoteArgs {
+  fromToken: TokenBalance
+  feeCurrencies: TokenBalance[]
+}
+
+export interface FetchSwapQuoteForExecutionResult extends FetchSwapQuoteResult {
+  preparedTransactions: PreparedTransactionsResult
+  receivedAt: number
+  appFeePercentageIncludedInPrice: string | undefined
+  allowanceTarget: string
+  sellAmount: string
+  swapType: SwapType
+}
+
+// Heavy variant: fetches a quote AND builds approve + swap transactions.
+// Used by the multi-step orchestrator saga right before each step.
+// NOT for UI previews -- use the light fetchSwapQuote for those.
+export async function fetchSwapQuoteForExecution(
+  args: FetchSwapQuoteForExecutionArgs
+): Promise<FetchSwapQuoteForExecutionResult> {
+  const {
+    fromTokenId,
+    toTokenId,
+    amount,
+    walletAddress,
+    slippagePercentage = '0.5',
+    fromToken,
+    feeCurrencies,
+  } = args
+
+  const fromAddress = fromTokenId.split(':')[1]
+  const toAddress = toTokenId.split(':')[1]
+  const fromNetworkId = fromTokenId.split(':')[0]
+  const toNetworkId = toTokenId.split(':')[0]
+
+  const params: Record<string, string> = {
+    ...(toAddress && { buyToken: toAddress }),
+    buyIsNative: 'false',
+    buyNetworkId: toNetworkId,
+    ...(fromAddress && { sellToken: fromAddress }),
+    sellIsNative: 'false',
+    sellNetworkId: fromNetworkId,
+    sellAmount: amount,
+    userAddress: walletAddress,
+    slippagePercentage,
+  }
+  const queryParams = new URLSearchParams(params).toString()
+  const requestUrl = `${networkConfig.getSwapQuoteUrl}?${queryParams}`
+  const response = await fetch(requestUrl)
+
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+
+  const quote: FetchQuoteResponse = await response.json()
+
+  if (!quote.unvalidatedSwapTransaction) {
+    throw new Error(NO_QUOTE_ERROR_MESSAGE)
+  }
+
+  const tx = quote.unvalidatedSwapTransaction
+  const preparedTransactions = await prepareSwapTransactions(
+    fromToken,
+    Field.FROM,
+    tx,
+    feeCurrencies,
+    walletAddress
+  )
+
+  return {
+    fromTokenId,
+    toTokenId,
+    swapAmount: {
+      FROM: new BigNumber(tx.sellAmount),
+      TO: new BigNumber(tx.buyAmount),
+    },
+    price: tx.price,
+    provider: quote.details.swapProvider,
+    estimatedPriceImpact: tx.estimatedPriceImpact,
+    preparedTransactions,
+    receivedAt: Date.now(),
+    appFeePercentageIncludedInPrice: tx.appFeePercentageIncludedInPrice,
+    allowanceTarget: tx.allowanceTarget,
+    sellAmount: tx.sellAmount,
+    swapType: tx.swapType,
+  }
+}
+
 export default useSwapQuote
