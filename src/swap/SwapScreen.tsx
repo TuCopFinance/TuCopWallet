@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useReducer, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -43,6 +43,7 @@ import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsPrope
 import {
   buildDolaresVirtualToken,
   DOLARES_VIRTUAL_TOKEN_ID,
+  DolaresMultiStepSummary,
   executeMultiSwap,
   multiSwapCleared,
   planSpend,
@@ -274,8 +275,6 @@ export function SwapScreen({ route }: Props) {
   const parsedSlippagePercentage = new BigNumber(maxSlippagePercentage).toFormat()
 
   const { swappableFromTokens, swappableToTokens, areSwapTokensShuffled } = useSwappableTokens()
-
-  const [summaryExpanded, setSummaryExpanded] = useState(false)
 
   const dollarSnapshots = useDollarBalanceSnapshots()
   const dolaresVirtualToken = useMemo(
@@ -1092,31 +1091,12 @@ export function SwapScreen({ route }: Props) {
             multiSwapPlan &&
             multiSwapPlan.shortfall.lte(0) &&
             fromAmountUsd.gt(0) && (
-              <View testID="DolaresMultiStepSummary" style={styles.multiStepSummary}>
-                <Text style={typeScale.titleSmall}>
-                  {t('dollarsSpend.confirmAggregate', {
-                    usdAmount: `$${multiSwapQuote.totalInUsd.toFormat(2)}`,
-                    toLabel: `${multiSwapQuote.totalOutToken.toFormat(2)} ${toToken?.symbol ?? ''}`,
-                  })}
-                </Text>
-                <Touchable onPress={() => setSummaryExpanded((v) => !v)}>
-                  <Text style={styles.expandToggle}>
-                    {summaryExpanded
-                      ? t('dollarsSpend.expandedDetailHeader')
-                      : t('dollarsSpend.stepCount', { steps: multiSwapPlan.steps.length })}
-                  </Text>
-                </Touchable>
-                {summaryExpanded && (
-                  <View>
-                    {multiSwapPlan.steps.map((step) => (
-                      <View key={step.tokenId} style={styles.stepRow}>
-                        <Text style={typeScale.bodySmall}>{step.symbol}</Text>
-                        <Text style={typeScale.bodySmall}>${step.amountUsd.toFormat(2)}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
+              <DolaresMultiStepSummary
+                steps={multiSwapPlan.steps}
+                totalInUsd={multiSwapQuote.totalInUsd}
+                totalOutToken={multiSwapQuote.totalOutToken}
+                toTokenSymbol={toToken?.symbol ?? ''}
+              />
             )}
         </View>
         <Text style={styles.disclaimerText}>
@@ -1283,22 +1263,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningLight,
     borderRadius: Spacing.Smallest8,
     gap: Spacing.Tiny4,
-  },
-  multiStepSummary: {
-    marginTop: Spacing.Thick24,
-    padding: Spacing.Regular16,
-    backgroundColor: colors.gray1,
-    borderRadius: Spacing.Smallest8,
-    gap: Spacing.Small12,
-  },
-  expandToggle: {
-    ...typeScale.labelSmall,
-    color: colors.primary,
-  },
-  stepRow: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    paddingVertical: Spacing.Tiny4,
   },
   bottomSheetButton: {
     marginTop: Spacing.Thick24,
