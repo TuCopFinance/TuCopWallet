@@ -9,8 +9,12 @@ import {
 import { SpendStep } from 'src/dollarsSpend/types'
 import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
 import { Field, SwapInfo } from 'src/swap/types'
-import { FetchSwapQuoteArgs, fetchSwapQuote } from 'src/swap/useSwapQuote'
+import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
+import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
+import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'dollarsSpend/saga'
@@ -37,28 +41,56 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
   yield* put(multiSwapStarted({ steps }))
 
-  const walletAddress = (yield* select(walletAddressSelector)) ?? ''
-
   for (let index = 0; index < steps.length; index++) {
     const step = steps[index]
     const swapId = newSwapId(index)
 
-    const fetchArgs: FetchSwapQuoteArgs = {
-      fromTokenId: step.tokenId,
-      toTokenId,
-      amount: step.amountTokenWhole.toString(),
-      walletAddress,
+    const walletAddress = yield* select(walletAddressSelector)
+    if (!walletAddress) {
+      yield* put(
+        multiSwapStepFailed({
+          index,
+          errorMessage: 'Wallet address unavailable for step execution',
+        })
+      )
+      return
     }
 
-    let freshQuote: Awaited<ReturnType<typeof fetchSwapQuote>>
+    const tokensById = yield* select(tokensByIdSelector, getSupportedNetworkIdsForSwap())
+    const fromToken = tokensById[step.tokenId]
+    if (!fromToken) {
+      yield* put(
+        multiSwapStepFailed({
+          index,
+          errorMessage: `Token not found in wallet state: ${step.symbol}`,
+        })
+      )
+      return
+    }
+
+    const feeCurrencies = yield* select(feeCurrenciesSelector, fromToken.networkId as NetworkId)
+
+    let freshQuote: Awaited<ReturnType<typeof fetchSwapQuoteForExecution>>
     try {
-      freshQuote = yield* call(fetchSwapQuote, fetchArgs)
+      freshQuote = yield* call(fetchSwapQuoteForExecution, {
+        fromTokenId: step.tokenId,
+        toTokenId,
+        amount: step.amountTokenWhole.toString(),
+        walletAddress,
+        fromToken,
+        feeCurrencies,
+      })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       Logger.warn(TAG, `Quote refetch failed for step ${index} (${step.symbol}): ${message}`)
       yield* put(multiSwapStepFailed({ index, errorMessage: message }))
       return
     }
+
+    const serializablePreparedTransactions =
+      freshQuote.preparedTransactions.type === 'possible'
+        ? getSerializablePreparedTransactions(freshQuote.preparedTransactions.transactions)
+        : []
 
     const swapInfo: SwapInfo = {
       swapId,
@@ -72,17 +104,14 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         updatedField: Field.FROM,
       },
       quote: {
-        // preparedTransactions are empty here - this saga only orchestrates at
-        // the price-discovery level. The actual tx preparation is handled by
-        // the swap screen before the user confirms; this saga fires after that.
-        preparedTransactions: [],
-        receivedAt: Date.now(),
+        preparedTransactions: serializablePreparedTransactions,
+        receivedAt: freshQuote.receivedAt,
         price: freshQuote.price,
-        appFeePercentageIncludedInPrice: undefined,
+        appFeePercentageIncludedInPrice: freshQuote.appFeePercentageIncludedInPrice,
         provider: freshQuote.provider,
         estimatedPriceImpact: freshQuote.estimatedPriceImpact,
-        allowanceTarget: '',
-        swapType: 'same-chain',
+        allowanceTarget: freshQuote.allowanceTarget,
+        swapType: freshQuote.swapType,
       },
       areSwapTokensShuffled: false,
     }
