@@ -40,6 +40,18 @@ import SwapAmountInput from 'src/swap/SwapAmountInput'
 import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
 import getCrossChainFee from 'src/swap/getCrossChainFee'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
+import {
+  buildDolaresVirtualToken,
+  DOLARES_VIRTUAL_TOKEN_ID,
+  DolaresMultiStepSummary,
+  executeMultiSwap,
+  multiSwapCleared,
+  planSpend,
+  useDollarBalanceSnapshots,
+  useMultiSwapQuote,
+} from 'src/dollarsSpend'
+import MultiSwapProgressSheet from 'src/dollarsSpend/MultiSwapProgressSheet'
+import PartialSuccessSheet from 'src/dollarsSpend/PartialSuccessSheet'
 import { currentSwapSelector, priceImpactWarningThresholdSelector } from 'src/swap/selectors'
 import { swapStart } from 'src/swap/slice'
 import { AppFeeAmount, Field, SwapAmount, SwapFeeAmount } from 'src/swap/types'
@@ -51,6 +63,7 @@ import {
   feeCurrenciesWithPositiveBalancesSelector,
   tokensByIdSelector,
 } from 'src/tokens/selectors'
+import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
 import { TokenBalance } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
@@ -263,6 +276,21 @@ export function SwapScreen({ route }: Props) {
 
   const { swappableFromTokens, swappableToTokens, areSwapTokensShuffled } = useSwappableTokens()
 
+  const dollarSnapshots = useDollarBalanceSnapshots()
+  const dolaresVirtualToken = useMemo(
+    () =>
+      buildDolaresVirtualToken({
+        snapshots: dollarSnapshots,
+        networkId: networkConfig.defaultNetworkId,
+      }),
+    [dollarSnapshots]
+  )
+
+  const fromTokensWithDolares = useMemo(() => {
+    const filtered = swappableFromTokens.filter((t) => !DOLLAR_TOKEN_IDS.has(t.tokenId))
+    return dolaresVirtualToken ? [dolaresVirtualToken, ...filtered] : filtered
+  }, [swappableFromTokens, dolaresVirtualToken])
+
   const priceImpactWarningThreshold = useSelector(priceImpactWarningThresholdSelector)
 
   const tokensById = useSelector((state) =>
@@ -292,10 +320,13 @@ export function SwapScreen({ route }: Props) {
   const filterChipsTo = useFilterChips(Field.TO, initialToTokenNetworkId)
 
   const { fromToken, toToken } = useMemo(() => {
-    const fromToken = swappableFromTokens.find((token) => token.tokenId === fromTokenId)
+    // Also search fromTokensWithDolares so the virtual Dolares token resolves correctly.
+    const fromToken =
+      swappableFromTokens.find((token) => token.tokenId === fromTokenId) ??
+      fromTokensWithDolares.find((token) => token.tokenId === fromTokenId)
     const toToken = swappableToTokens.find((token) => token.tokenId === toTokenId)
     return { fromToken, toToken }
-  }, [fromTokenId, toTokenId, swappableFromTokens, swappableToTokens])
+  }, [fromTokenId, toTokenId, swappableFromTokens, swappableToTokens, fromTokensWithDolares])
 
   const fromTokenBalance = useTokenInfo(fromToken?.tokenId)?.balance ?? new BigNumber(0)
 
@@ -325,13 +356,28 @@ export function SwapScreen({ route }: Props) {
     [inputSwapAmount]
   )
 
+  const isVirtualDolares = fromTokenId === DOLARES_VIRTUAL_TOKEN_ID
+
+  const fromAmountUsd = useMemo(() => {
+    if (!isVirtualDolares) return new BigNumber(0)
+    return parsedSwapAmount[Field.FROM].gt(0) ? parsedSwapAmount[Field.FROM] : new BigNumber(0)
+  }, [isVirtualDolares, parsedSwapAmount])
+
+  const multiSwapPlan = useMemo(() => {
+    if (!isVirtualDolares || fromAmountUsd.lte(0)) return null
+    return planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
+  }, [isVirtualDolares, fromAmountUsd, dollarSnapshots])
+
+  const multiSwapQuote = useMultiSwapQuote(multiSwapPlan?.steps ?? [], toTokenId ?? '')
+
   const shouldShowMaxSwapAmountWarning =
     feeCurrenciesWithPositiveBalances.length === 1 &&
     fromToken?.tokenId === feeCurrenciesWithPositiveBalances[0].tokenId &&
     fromTokenBalance.gt(0) &&
     parsedSwapAmount[Field.FROM].gte(fromTokenBalance)
 
-  const fromSwapAmountError = confirmingSwap && parsedSwapAmount[Field.FROM].gt(fromTokenBalance)
+  const fromSwapAmountError =
+    !isVirtualDolares && confirmingSwap && parsedSwapAmount[Field.FROM].gt(fromTokenBalance)
 
   const quoteUpdatePending =
     (quote &&
@@ -372,7 +418,13 @@ export function SwapScreen({ route }: Props) {
       quote.swapAmount.eq(parsedSwapAmount[Field.FROM])
 
     const debouncedRefreshQuote = setTimeout(() => {
-      if (fromToken && toToken && parsedSwapAmount[Field.FROM].gt(0) && !quoteKnown) {
+      if (
+        !isVirtualDolares &&
+        fromToken &&
+        toToken &&
+        parsedSwapAmount[Field.FROM].gt(0) &&
+        !quoteKnown
+      ) {
         void refreshQuote(fromToken, toToken, parsedSwapAmount, Field.FROM)
       }
     }, FETCH_UPDATED_QUOTE_DEBOUNCE_TIME)
@@ -387,6 +439,16 @@ export function SwapScreen({ route }: Props) {
   }, [quote])
 
   const handleConfirmSwap = () => {
+    if (isVirtualDolares) {
+      if (!multiSwapPlan || multiSwapPlan.shortfall.gt(0)) {
+        // Shortfall banner is visible; do nothing
+        return
+      }
+      if (!toTokenId) return
+      dispatch(executeMultiSwap({ steps: multiSwapPlan.steps, toTokenId }))
+      return
+    }
+
     if (!quote) {
       return // this should never happen, because the button must be disabled in that cases
     }
@@ -651,7 +713,8 @@ export function SwapScreen({ route }: Props) {
       showSwitchedToNetworkWarning: !!switchedToNetworkId,
       showUnsupportedTokensWarning:
         !quoteUpdatePending && fetchSwapQuoteError?.message.includes(NO_QUOTE_ERROR_MESSAGE),
-      showInsufficientBalanceWarning: parsedSwapAmount[Field.FROM].gt(fromTokenBalance),
+      showInsufficientBalanceWarning:
+        !isVirtualDolares && parsedSwapAmount[Field.FROM].gt(fromTokenBalance),
       showCrossChainFeeWarning:
         !quoteUpdatePending && crossChainFee?.nativeTokenBalanceDeficit.lt(0),
       showDecreaseSpendForGasWarning:
@@ -696,25 +759,38 @@ export function SwapScreen({ route }: Props) {
     showMissingPriceImpactWarning,
   } = getWarningStatuses()
 
-  const allowSwap = useMemo(
-    () =>
+  const allowSwap = useMemo(() => {
+    if (isVirtualDolares) {
+      return (
+        !!toTokenId &&
+        !!multiSwapPlan &&
+        multiSwapPlan.steps.length > 0 &&
+        multiSwapPlan.shortfall.lte(0) &&
+        fromAmountUsd.gt(0)
+      )
+    }
+    return (
       !showDecreaseSpendForGasWarning &&
       !showNotEnoughBalanceForGasWarning &&
       !showInsufficientBalanceWarning &&
       !showCrossChainFeeWarning &&
       !confirmSwapIsLoading &&
       !quoteUpdatePending &&
-      Object.values(parsedSwapAmount).every((amount) => amount.gt(0)),
-    [
-      parsedSwapAmount,
-      quoteUpdatePending,
-      confirmSwapIsLoading,
-      showInsufficientBalanceWarning,
-      showDecreaseSpendForGasWarning,
-      showNotEnoughBalanceForGasWarning,
-      showCrossChainFeeWarning,
-    ]
-  )
+      Object.values(parsedSwapAmount).every((amount) => amount.gt(0))
+    )
+  }, [
+    isVirtualDolares,
+    toTokenId,
+    multiSwapPlan,
+    fromAmountUsd,
+    parsedSwapAmount,
+    quoteUpdatePending,
+    confirmSwapIsLoading,
+    showInsufficientBalanceWarning,
+    showDecreaseSpendForGasWarning,
+    showNotEnoughBalanceForGasWarning,
+    showCrossChainFeeWarning,
+  ])
   const networkFee: SwapFeeAmount | undefined = useMemo(() => {
     return getNetworkFee(quote)
   }, [fromToken, quote])
@@ -774,7 +850,7 @@ export function SwapScreen({ route }: Props) {
   const tokenBottomSheetsConfig = [
     {
       fieldType: Field.FROM,
-      tokens: swappableFromTokens,
+      tokens: fromTokensWithDolares,
       filterChips: filterChipsFrom,
       origin: TokenPickerOrigin.SwapFrom,
     },
@@ -996,6 +1072,32 @@ export function SwapScreen({ route }: Props) {
               style={styles.warning}
             />
           )}
+          {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.gt(0) && (
+            <View testID="ShortfallBanner" style={styles.shortfallBanner}>
+              <Text style={typeScale.labelSemiBoldMedium}>{t('dollarsSpend.shortfall.title')}</Text>
+              <Text style={typeScale.bodySmall}>
+                {t('dollarsSpend.shortfall.body', {
+                  availableUsd: `$${dollarSnapshots
+                    .reduce(
+                      (sum, s) => sum.plus(s.balance.multipliedBy(s.priceUsd)),
+                      new BigNumber(0)
+                    )
+                    .toFormat(2)}`,
+                })}
+              </Text>
+            </View>
+          )}
+          {isVirtualDolares &&
+            multiSwapPlan &&
+            multiSwapPlan.shortfall.lte(0) &&
+            fromAmountUsd.gt(0) && (
+              <DolaresMultiStepSummary
+                steps={multiSwapPlan.steps}
+                totalInUsd={multiSwapQuote.totalInUsd}
+                totalOutToken={multiSwapQuote.totalOutToken}
+                toTokenSymbol={toToken?.symbol ?? ''}
+              />
+            )}
         </View>
         <Text style={styles.disclaimerText}>
           <Trans
@@ -1109,6 +1211,16 @@ export function SwapScreen({ route }: Props) {
         onPressCta={handleDismissSelectTokenNoUsdPrice}
         onDismiss={handleDismissSelectTokenNoUsdPrice}
       />
+      <MultiSwapProgressSheet />
+      <PartialSuccessSheet
+        onRetry={() => {
+          if (!toTokenId) return
+          const remaining = planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
+          if (remaining.shortfall.gt(0)) return
+          dispatch(executeMultiSwap({ steps: remaining.steps, toTokenId }))
+        }}
+        onCancel={() => dispatch(multiSwapCleared())}
+      />
     </SafeAreaView>
   )
 }
@@ -1144,6 +1256,13 @@ const styles = StyleSheet.create({
   },
   warning: {
     marginTop: Spacing.Thick24,
+  },
+  shortfallBanner: {
+    marginTop: Spacing.Thick24,
+    padding: Spacing.Regular16,
+    backgroundColor: colors.warningLight,
+    borderRadius: Spacing.Smallest8,
+    gap: Spacing.Tiny4,
   },
   bottomSheetButton: {
     marginTop: Spacing.Thick24,
