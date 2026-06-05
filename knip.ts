@@ -41,7 +41,6 @@ const config: KnipConfig = {
   ],
   ignore: [
     'src/redux/reducersForSchemaGeneration.ts', // used for root state schema generation
-    'src/dollarsSpend/index.ts', // barrel; consumed by Phase 3.2 UI integration (TokenBottomSheet/Swap/Gold/Send) which ships separately
     'src/analytics/docs.ts', // documents analytics events, no references
     'src/account/__mocks__/Persona.tsx', // unit test mocks
     'src/firebase/remoteConfigValuesDefaults.e2e.ts', // e2e test setup
