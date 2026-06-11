@@ -616,13 +616,13 @@ describe('useDollarTokensWithBalance / useDollarBalance', () => {
     expect(result.current).toHaveLength(0)
   })
 
-  it('sorts entries by localValue descending', () => {
-    // USDT=5, USDC=20, USDm=10 all at priceUsd=1 and rate=4000
-    // Expected order: USDC (80000) > USDm (40000) > USDT (20000)
+  it('lists entries in the canonical picker order (USDT/USDC/USAT/USDm)', () => {
+    // Order is independent of balance / localValue - the home Dolares
+    // breakdown follows the same visual order as every picker.
     const mockStore = makeStore({ [usdtId]: '5', [usdcId]: '20', [usdmId]: '10' })
     const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
     const ids = result.current.map((e) => e.tokenInfo.tokenId)
-    expect(ids).toEqual([usdcId, usdmId, usdtId])
+    expect(ids).toEqual([usdtId, usdcId, usdmId])
   })
 
   it('useDollarBalance returns sum of all dollar token local values', () => {
