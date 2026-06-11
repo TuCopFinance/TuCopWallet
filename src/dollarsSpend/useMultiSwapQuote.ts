@@ -19,7 +19,15 @@ interface UseMultiSwapQuoteResult {
   error?: Error
 }
 
-export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMultiSwapQuoteResult {
+export function useMultiSwapQuote(
+  steps: SpendStep[],
+  toTokenId: string,
+  // ERC-20 decimals of the settlement token. Used to shift the wei-denominated
+  // `buyAmount` returned by getSwapQuote back into whole units before exposing
+  // `totalOutToken` to the UI. Project rule: never surface wei to user-facing
+  // displays - always convert at the boundary.
+  toTokenDecimals: number
+): UseMultiSwapQuoteResult {
   const walletAddress = useSelector(walletAddressSelector)
   const [loading, setLoading] = useState(steps.length > 0)
   const [error, setError] = useState<Error | undefined>(undefined)
@@ -86,9 +94,12 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
           )
         }
       })
-      const sumOut = fulfilled.reduce((sum, q) => sum.plus(q.swapAmount.TO), new BigNumber(0))
+      // q.swapAmount.TO is the API's `buyAmount` in wei. Sum in wei (exact),
+      // then shift once to whole units for display.
+      const sumOutWei = fulfilled.reduce((sum, q) => sum.plus(q.swapAmount.TO), new BigNumber(0))
+      const sumOutWhole = sumOutWei.shiftedBy(-toTokenDecimals)
       setPerStepQuotes(fulfilled)
-      setTotalOutToken(sumOut)
+      setTotalOutToken(sumOutWhole)
       setUnquotedUsd(missingUsd)
       // Only surface error when nothing could be quoted; partial success
       // is a recoverable state for the UI.
