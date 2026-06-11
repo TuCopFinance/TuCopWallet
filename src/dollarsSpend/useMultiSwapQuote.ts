@@ -1,15 +1,21 @@
 import BigNumber from 'bignumber.js'
 import { useEffect, useState } from 'react'
 import { SpendStep } from 'src/dollarsSpend/types'
+import Logger from 'src/utils/Logger'
 import { useSelector } from 'src/redux/hooks'
 import { FetchSwapQuoteResult, fetchSwapQuote } from 'src/swap/useSwapQuote'
 import { walletAddressSelector } from 'src/web3/selectors'
+
+const TAG = 'dollarsSpend/useMultiSwapQuote'
 
 interface UseMultiSwapQuoteResult {
   loading: boolean
   totalInUsd: BigNumber
   totalOutToken: BigNumber
   perStepQuotes: FetchSwapQuoteResult[]
+  // USD value of the planned steps that could NOT be quoted (no Squid route
+  // for that fromToken -> toToken pair, etc.). 0 when all steps resolve.
+  unquotedUsd: BigNumber
   error?: Error
 }
 
@@ -19,6 +25,7 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
   const [error, setError] = useState<Error | undefined>(undefined)
   const [perStepQuotes, setPerStepQuotes] = useState<FetchSwapQuoteResult[]>([])
   const [totalOutToken, setTotalOutToken] = useState<BigNumber>(new BigNumber(0))
+  const [unquotedUsd, setUnquotedUsd] = useState<BigNumber>(new BigNumber(0))
 
   const totalInUsd = steps.reduce((sum, s) => sum.plus(s.amountUsd), new BigNumber(0))
 
@@ -31,6 +38,7 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
       setLoading(false)
       setPerStepQuotes([])
       setTotalOutToken(new BigNumber(0))
+      setUnquotedUsd(new BigNumber(0))
       setError(undefined)
       return
     }
@@ -39,7 +47,10 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
     setLoading(true)
     setError(undefined)
 
-    Promise.all(
+    // Use allSettled instead of all: one missing Squid route shouldn't zero
+    // out the whole aggregated quote. The UI still surfaces the missing USD
+    // amount via `unquotedUsd` so callers can show a partial-coverage banner.
+    void Promise.allSettled(
       steps.map((step) => {
         // The /getSwapQuote endpoint expects the sell amount in the token's
         // smallest unit (wei). The planner carries the amount in whole units,
@@ -55,21 +66,35 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
           walletAddress,
         })
       })
-    )
-      .then((results) => {
-        if (cancelled) return
-        const sumOut = results.reduce((sum, q) => sum.plus(q.swapAmount.TO), new BigNumber(0))
-        setPerStepQuotes(results)
-        setTotalOutToken(sumOut)
-        setLoading(false)
+    ).then((settled) => {
+      if (cancelled) return
+      const fulfilled: FetchSwapQuoteResult[] = []
+      let missingUsd = new BigNumber(0)
+      let lastError: Error | undefined
+      settled.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          fulfilled.push(result.value)
+        } else {
+          const step = steps[index]
+          missingUsd = missingUsd.plus(step.amountUsd)
+          const reason =
+            result.reason instanceof Error ? result.reason : new Error(String(result.reason))
+          lastError = reason
+          Logger.warn(
+            TAG,
+            `Quote unavailable for step ${index} (${step.symbol}, $${step.amountUsd.toFormat(2)}): ${reason.message}`
+          )
+        }
       })
-      .catch((err) => {
-        if (cancelled) return
-        setError(err instanceof Error ? err : new Error(String(err)))
-        setPerStepQuotes([])
-        setTotalOutToken(new BigNumber(0))
-        setLoading(false)
-      })
+      const sumOut = fulfilled.reduce((sum, q) => sum.plus(q.swapAmount.TO), new BigNumber(0))
+      setPerStepQuotes(fulfilled)
+      setTotalOutToken(sumOut)
+      setUnquotedUsd(missingUsd)
+      // Only surface error when nothing could be quoted; partial success
+      // is a recoverable state for the UI.
+      setError(fulfilled.length === 0 ? lastError : undefined)
+      setLoading(false)
+    })
 
     return () => {
       cancelled = true
@@ -82,6 +107,7 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
     totalInUsd,
     totalOutToken,
     perStepQuotes,
+    unquotedUsd,
     error,
   }
 }
