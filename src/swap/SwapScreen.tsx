@@ -43,7 +43,6 @@ import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsPrope
 import {
   buildDolaresVirtualToken,
   DOLARES_VIRTUAL_TOKEN_ID,
-  DolaresMultiStepSummary,
   executeMultiSwap,
   multiSwapCleared,
   planSpend,
@@ -1174,17 +1173,11 @@ export function SwapScreen({ route }: Props) {
               </Text>
             </View>
           )}
-          {isVirtualDolares &&
-            multiSwapPlan &&
-            multiSwapPlan.shortfall.lte(0) &&
-            fromAmountUsd.gt(0) && (
-              <DolaresMultiStepSummary
-                steps={multiSwapPlan.steps}
-                totalInUsd={multiSwapQuote.totalInUsd}
-                totalOutToken={multiSwapQuote.totalOutToken}
-                toTokenSymbol={toToken?.symbol ?? ''}
-              />
-            )}
+          {/* The virtual-FROM spend breakdown moved into the consolidated
+              SwapTransactionDetails panel above (via the spendSteps prop)
+              so both swap directions surface their details in the same
+              shape. GoldBuyConfirmation still uses DolaresMultiStepSummary
+              directly because that flow has its own card layout. */}
         </View>
         <Text style={styles.disclaimerText}>
           <Trans
