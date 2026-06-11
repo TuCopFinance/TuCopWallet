@@ -11,11 +11,16 @@ function snap(
   priceUsd = 1,
   minAmountUsd = 0
 ): DollarTokenBalanceSnapshot {
+  // Real on-chain values: USDT/USDC/USAT = 6, USDm = 18. Exact number does
+  // not affect planSpend, but the type now requires it so the wei-conversion
+  // downstream has what it needs.
+  const decimals = symbol === 'USDm' ? 18 : 6
   return {
     symbol,
     tokenId,
     balance: new BigNumber(balance),
     priceUsd: new BigNumber(priceUsd),
+    decimals,
     minAmountUsd: new BigNumber(minAmountUsd),
   }
 }
