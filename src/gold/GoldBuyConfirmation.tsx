@@ -187,7 +187,11 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return planSpend({ requestedUsd, balances: dollarSnapshots })
   }, [isVirtualDolares, requestedUsd, dollarSnapshots])
 
-  const multiSwapQuote = useMultiSwapQuote(multiSwapPlan?.steps ?? [], networkConfig.xaut0TokenId)
+  const multiSwapQuote = useMultiSwapQuote(
+    multiSwapPlan?.steps ?? [],
+    networkConfig.xaut0TokenId,
+    xaut0Token?.decimals ?? 6
+  )
 
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
