@@ -368,7 +368,11 @@ export function SwapScreen({ route }: Props) {
     return planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
   }, [isVirtualDolares, fromAmountUsd, dollarSnapshots])
 
-  const multiSwapQuote = useMultiSwapQuote(multiSwapPlan?.steps ?? [], toTokenId ?? '')
+  const multiSwapQuote = useMultiSwapQuote(
+    multiSwapPlan?.steps ?? [],
+    toTokenId ?? '',
+    toToken?.decimals ?? 18
+  )
 
   const shouldShowMaxSwapAmountWarning =
     feeCurrenciesWithPositiveBalances.length === 1 &&

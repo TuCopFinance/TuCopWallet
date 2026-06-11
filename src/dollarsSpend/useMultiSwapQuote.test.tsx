@@ -37,6 +37,9 @@ const renderWithStore = <T,>(hook: () => T) => {
   })
 }
 
+// Tests pass `toTokenDecimals=0` so the wei->whole shift inside the hook is a
+// no-op. That keeps the aggregation assertions readable (we don't have to
+// pre-shift every mocked buyAmount); a dedicated test below covers the shift.
 describe('useMultiSwapQuote', () => {
   beforeEach(() => {
     fetchSwapQuote.mockReset()
@@ -46,7 +49,7 @@ describe('useMultiSwapQuote', () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     fetchSwapQuote.mockImplementation(() => new Promise(() => {}))
     const { result } = renderWithStore(() =>
-      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 0)
     )
     expect(result.current.loading).toBe(true)
   })
@@ -62,7 +65,7 @@ describe('useMultiSwapQuote', () => {
     })
 
     const { result } = renderWithStore(() =>
-      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 0)
     )
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.totalInUsd.toString()).toBe('80')
@@ -85,7 +88,7 @@ describe('useMultiSwapQuote', () => {
     })
 
     const { result } = renderWithStore(() =>
-      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 0)
     )
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.perStepQuotes).toHaveLength(1)
@@ -98,7 +101,7 @@ describe('useMultiSwapQuote', () => {
     fetchSwapQuote.mockRejectedValue(new Error('Squid 500'))
 
     const { result } = renderWithStore(() =>
-      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 0)
     )
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.totalOutToken.toString()).toBe('0')
@@ -109,10 +112,26 @@ describe('useMultiSwapQuote', () => {
   })
 
   it('returns zero totals and no quotes when steps is empty', async () => {
-    const { result } = renderWithStore(() => useMultiSwapQuote([], 'celo-mainnet:copm'))
+    const { result } = renderWithStore(() => useMultiSwapQuote([], 'celo-mainnet:copm', 0))
     expect(result.current.loading).toBe(false)
     expect(result.current.totalInUsd.toString()).toBe('0')
     expect(result.current.totalOutToken.toString()).toBe('0')
     expect(result.current.perStepQuotes).toEqual([])
+  })
+
+  it('shifts wei buyAmount back to whole units using toTokenDecimals', async () => {
+    // Mock returns 1e18 wei (= 1 COPm whole at 18 decimals) per step.
+    fetchSwapQuote.mockImplementation(async (args: { fromTokenId: string }) => ({
+      fromTokenId: args.fromTokenId,
+      swapAmount: { FROM: new BigNumber(30), TO: new BigNumber('1000000000000000000') },
+      price: '1',
+    }))
+
+    const { result } = renderWithStore(() =>
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 18)
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    // 2 steps * 1 whole each = 2 whole units, not 2e18 wei.
+    expect(result.current.totalOutToken.toString()).toBe('2')
   })
 })
