@@ -992,10 +992,35 @@ export function SwapScreen({ route }: Props) {
             slippagePercentage={parsedSlippagePercentage}
             fromToken={fromToken}
             toToken={toToken}
-            exchangeRatePrice={quote?.price}
+            // Only pass when TO is the virtual aggregator and resolved to a
+            // distinct concrete token; the panel uses presence to decide
+            // whether to render the "Receiving in" row.
+            settlementToken={
+              toToken?.tokenId === DOLARES_VIRTUAL_TOKEN_ID &&
+              quoteToToken &&
+              quoteToToken.tokenId !== DOLARES_VIRTUAL_TOKEN_ID
+                ? quoteToToken
+                : undefined
+            }
+            // For virtual FROM the panel surfaces the per-token spend
+            // breakdown (USDm / USDC / USDT) in-place; SwapScreen no longer
+            // renders a separate DolaresMultiStepSummary block below the
+            // confirm button.
+            spendSteps={isVirtualDolares ? multiSwapPlan?.steps : undefined}
+            // For virtual FROM the regular `quote.price` is undefined (the
+            // multi-step path skips refreshQuote). Synthesize an effective
+            // rate from the aggregated multi-swap result so the rate row
+            // shows a meaningful value instead of returning null.
+            exchangeRatePrice={
+              isVirtualDolares
+                ? multiSwapQuote.totalInUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
+                  ? multiSwapQuote.totalOutToken.dividedBy(multiSwapQuote.totalInUsd).toString()
+                  : undefined
+                : quote?.price
+            }
             exchangeRateInfoBottomSheetRef={exchangeRateInfoBottomSheetRef}
             swapAmount={parsedSwapAmount[Field.FROM]}
-            fetchingSwapQuote={quoteUpdatePending}
+            fetchingSwapQuote={isVirtualDolares ? multiSwapQuote.loading : quoteUpdatePending}
             appFee={appFee}
             estimatedDurationInSeconds={
               quote?.swapType === 'cross-chain' ? quote.estimatedDurationInSeconds : undefined
