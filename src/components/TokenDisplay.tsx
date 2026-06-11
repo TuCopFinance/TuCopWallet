@@ -3,6 +3,7 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleProp, Text, TextStyle } from 'react-native'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
 import {
   getLocalCurrencyCode,
@@ -123,6 +124,13 @@ function TokenDisplay({
     tokenId?.toLowerCase().includes('0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff') ||
     tokenInfo?.symbol === 'XAUt0'
 
+  // The synthetic virtual "Dolares" aggregator never lives in the Redux
+  // token store, so `tokenInfo` is undefined. Hard-code priceUsd = 1 (USD)
+  // and treat it as known so the picker shows "4.67 Dolares" / "COP$X"
+  // instead of "-" / "Precio no disponible".
+  const isVirtualDolares = tokenId === DOLARES_VIRTUAL_TOKEN_ID
+  const effectivePriceUsd = isVirtualDolares ? new BigNumber(1) : tokenInfo?.priceUsd
+
   // COPm with COP currency should be 1:1 (avoid USD conversion rounding)
   const isCopmWithCopCurrency =
     (tokenId === networkConfig.copmTokenId || tokenInfo?.symbol === 'COPm') &&
@@ -132,14 +140,15 @@ function TokenDisplay({
   const hasSymbolOrIsKnownToken =
     tokenInfo?.symbol ||
     isGoldToken ||
+    isVirtualDolares ||
     tokenId === networkConfig.copmTokenId ||
     tokenId === networkConfig.usdtTokenId
 
   const showError = showLocalAmount
-    ? !localAmount && !isCopmWithCopCurrency && (!tokenInfo?.priceUsd || !localCurrencyExchangeRate)
+    ? !localAmount && !isCopmWithCopCurrency && (!effectivePriceUsd || !localCurrencyExchangeRate)
     : !hasSymbolOrIsKnownToken
 
-  const amountInUsd = tokenInfo?.priceUsd?.multipliedBy(amount)
+  const amountInUsd = effectivePriceUsd?.multipliedBy(amount)
   // For COPm with COP local currency, use token amount directly (1:1)
   const amountInLocalCurrency = isCopmWithCopCurrency
     ? new BigNumber(amount)
@@ -169,7 +178,7 @@ function TokenDisplay({
             : formatValueToDisplay(amountToShow.absoluteValue(), isGoldToken)}
           {!showLocalAmount &&
             showSymbol &&
-            ` ${getTokenSymbol(t, tokenInfo?.symbol, tokenId) ?? ''}`}
+            ` ${getTokenSymbol(t, isVirtualDolares ? 'Dolares' : tokenInfo?.symbol, tokenId) ?? ''}`}
         </>
       )}
     </Text>
