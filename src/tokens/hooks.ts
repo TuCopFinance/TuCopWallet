@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { STABLE_TRANSACTION_MIN_AMOUNT, TIME_UNTIL_TOKEN_INFO_BECOMES_STALE } from 'src/config'
-import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
+import { DOLLAR_TOKEN_IDS, sortDollarTokensForPicker } from 'src/tokens/dollarGroup'
 import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { totalPositionsBalanceUsdSelector } from 'src/positions/selectors'
 import { useSelector } from 'src/redux/hooks'
@@ -251,8 +251,9 @@ export function useAmountAsUsd(amount: BigNumber, tokenId: string | undefined) {
 }
 
 // Returns each dollar-denominated stable that has a non-dust USD value,
-// sorted by localValue descending. Used for the Dolares card breakdown.
-// Dust threshold (>= STABLE_TRANSACTION_MIN_AMOUNT, i.e. 0.01 USD) matches
+// listed in the canonical picker order (USDT / USDC / USAT / USDm). Used
+// for the Dolares card breakdown. Dust threshold
+// (>= STABLE_TRANSACTION_MIN_AMOUNT, i.e. 0.01 USD) matches
 // tokensWithUsdValueSelector so row counts agree across screens.
 export function useDollarTokensWithBalance(): Array<{
   tokenInfo: TokenBalance
@@ -262,18 +263,16 @@ export function useDollarTokensWithBalance(): Array<{
   const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
   const tokens = useSelector((state) => tokensListSelector(state, supportedNetworkIds))
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
-  return tokens
-    .filter((t) => {
-      if (!DOLLAR_TOKEN_IDS.has(t.tokenId)) return false
-      const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
-      return usdValue.gt(STABLE_TRANSACTION_MIN_AMOUNT)
-    })
-    .map((t) => {
-      const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
-      const localValue = usdToLocalRate ? usdValue.multipliedBy(usdToLocalRate) : new BigNumber(0)
-      return { tokenInfo: t, usdValue, localValue }
-    })
-    .sort((a, b) => b.localValue.comparedTo(a.localValue))
+  const filtered = tokens.filter((t) => {
+    if (!DOLLAR_TOKEN_IDS.has(t.tokenId)) return false
+    const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+    return usdValue.gt(STABLE_TRANSACTION_MIN_AMOUNT)
+  })
+  return sortDollarTokensForPicker(filtered).map((t) => {
+    const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+    const localValue = usdToLocalRate ? usdValue.multipliedBy(usdToLocalRate) : new BigNumber(0)
+    return { tokenInfo: t, usdValue, localValue }
+  })
 }
 
 // Returns the total local-currency value of all dollar stablecoins.
