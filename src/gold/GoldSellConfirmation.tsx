@@ -23,8 +23,10 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
+import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -44,21 +46,23 @@ export default function GoldSellConfirmation({ route }: Props) {
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const sellStatus = useSelector(goldSellStatusSelector)
 
-  // Get user-friendly display name for tokens
+  // Get user-friendly display name for tokens. For the four dollar
+  // stablecoins the brand-specific label (Tether USD / USD Coin / Dolar
+  // Mento / Tether America USD) wins so the user can see which concrete
+  // token is settling - the previous fallback to `token.name` exposed
+  // legacy values like "Celo Dollar" for USDm.
   const getTokenName = (token: TokenBalance | null) => {
     if (!token) return ''
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    if (token.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
+    const brandLabelKey = getDollarTokenLabelKey(token.tokenId)
+    if (brandLabelKey) {
+      return t(brandLabelKey)
     }
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'ccop' || symbol === 'copm') {
       return t('assets.pesos')
-    }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
-      return t('assets.dollars')
     }
     return token.name
   }
@@ -253,7 +257,10 @@ export default function GoldSellConfirmation({ route }: Props) {
             <TokenIcon token={toToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedToAmount.toFormat(toToken.decimals)} {getTokenName(toToken)}
+                {parsedToAmount
+                  .decimalPlaces(getInputDecimalsForToken(toToken.tokenId), BigNumber.ROUND_DOWN)
+                  .toFormat()}{' '}
+                {getTokenName(toToken)}
               </Text>
               <TokenDisplay
                 tokenId={toTokenId}
