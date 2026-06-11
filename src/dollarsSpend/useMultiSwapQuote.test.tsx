@@ -71,7 +71,9 @@ describe('useMultiSwapQuote', () => {
     expect(result.current.error).toBeUndefined()
   })
 
-  it('surfaces an error if any quote fetch fails', async () => {
+  it('reports partial coverage when some steps fail to quote', async () => {
+    // One step succeeds, one throws. Aggregator should expose the missing
+    // USD via `unquotedUsd` but keep `error` undefined (recoverable state).
     fetchSwapQuote.mockImplementation(async (args: { fromTokenId: string }) => {
       if (args.fromTokenId.includes('usdm')) {
         throw new Error('Squid 500')
@@ -86,6 +88,23 @@ describe('useMultiSwapQuote', () => {
       useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
     )
     await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.perStepQuotes).toHaveLength(1)
+    expect(result.current.totalOutToken.toString()).toBe('122400')
+    expect(result.current.unquotedUsd.toString()).toBe(stepUsdm.amountUsd.toString())
+    expect(result.current.error).toBeUndefined()
+  })
+
+  it('surfaces the error only when all quote fetches fail', async () => {
+    fetchSwapQuote.mockRejectedValue(new Error('Squid 500'))
+
+    const { result } = renderWithStore(() =>
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm')
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.totalOutToken.toString()).toBe('0')
+    expect(result.current.unquotedUsd.toString()).toBe(
+      stepUsat.amountUsd.plus(stepUsdm.amountUsd).toString()
+    )
     expect(result.current.error?.message).toContain('Squid 500')
   })
 
