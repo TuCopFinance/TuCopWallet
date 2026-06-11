@@ -27,6 +27,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { TokenBalanceItem } from 'src/tokens/TokenBalanceItem'
+import { sortDollarTokensForPicker } from 'src/tokens/dollarGroup'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 
@@ -212,7 +213,7 @@ function TokenBottomSheet({
   const tokenList = useMemo(() => {
     const lowercasedSearchTerm = searchTerm.toLowerCase()
 
-    return tokens.filter((token) => {
+    const filtered = tokens.filter((token) => {
       // Exclude the token if it does not match the active filters
       if (
         !activeFilters.every((filter) => {
@@ -238,6 +239,12 @@ function TokenBottomSheet({
 
       return true
     })
+
+    // Reshuffle dollar tokens into the canonical USDT/USDC/USAT/USDm picker
+    // order. Applied centrally here so every consumer (swap, gold, earn,
+    // send, jumpstart, etc.) lists them the same way without duplicating
+    // the sort at each call site.
+    return sortDollarTokensForPicker(filtered)
   }, [searchTerm, tokens, activeFilters])
 
   useEffect(() => {
