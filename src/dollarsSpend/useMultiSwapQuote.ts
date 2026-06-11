@@ -40,14 +40,21 @@ export function useMultiSwapQuote(steps: SpendStep[], toTokenId: string): UseMul
     setError(undefined)
 
     Promise.all(
-      steps.map((step) =>
-        fetchSwapQuote({
+      steps.map((step) => {
+        // The /getSwapQuote endpoint expects the sell amount in the token's
+        // smallest unit (wei). The planner carries the amount in whole units,
+        // so shift by the token's decimals here. ROUND_DOWN avoids ever
+        // requesting more than the user actually holds.
+        const amountInWei = step.amountTokenWhole
+          .shiftedBy(step.decimals)
+          .toFixed(0, BigNumber.ROUND_DOWN)
+        return fetchSwapQuote({
           fromTokenId: step.tokenId,
           toTokenId,
-          amount: step.amountTokenWhole.toString(),
+          amount: amountInWei,
           walletAddress,
         })
-      )
+      })
     )
       .then((results) => {
         if (cancelled) return
