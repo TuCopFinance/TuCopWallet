@@ -11,12 +11,14 @@ const stepUsat: SpendStep = {
   symbol: 'USAT',
   amountUsd: new BigNumber(30),
   amountTokenWhole: new BigNumber(30),
+  decimals: 6,
 }
 const stepUsdm: SpendStep = {
   tokenId: 'celo-mainnet:usdm',
   symbol: 'USDm',
   amountUsd: new BigNumber(50),
   amountTokenWhole: new BigNumber(50),
+  decimals: 18,
 }
 
 describe('PartialSuccessSheet', () => {

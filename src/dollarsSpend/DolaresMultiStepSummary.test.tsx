@@ -10,6 +10,7 @@ const step: SpendStep = {
   symbol: 'USAT',
   amountUsd: new BigNumber(30),
   amountTokenWhole: new BigNumber(30),
+  decimals: 6,
 }
 
 describe('DolaresMultiStepSummary', () => {
@@ -50,6 +51,7 @@ describe('DolaresMultiStepSummary', () => {
       symbol: 'USDm',
       amountUsd: new BigNumber(50),
       amountTokenWhole: new BigNumber(50),
+      decimals: 18,
     }
     const { getByTestId, queryAllByText } = render(
       <DolaresMultiStepSummary
