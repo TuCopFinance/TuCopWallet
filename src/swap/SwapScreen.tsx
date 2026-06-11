@@ -324,9 +324,23 @@ export function SwapScreen({ route }: Props) {
     const fromToken =
       swappableFromTokens.find((token) => token.tokenId === fromTokenId) ??
       fromTokensWithDolares.find((token) => token.tokenId === fromTokenId)
-    const toToken = swappableToTokens.find((token) => token.tokenId === toTokenId)
+    // Virtual "Dolares" is not a real ERC-20 and never lives in the
+    // swappable list; resolve it explicitly from the synthetic builder so
+    // the swap card can render the aggregated balance when callers (home
+    // CTAs, etc.) route into swap with TO=virtual pre-selected.
+    const toToken =
+      toTokenId === DOLARES_VIRTUAL_TOKEN_ID
+        ? (dolaresVirtualToken ?? undefined)
+        : swappableToTokens.find((token) => token.tokenId === toTokenId)
     return { fromToken, toToken }
-  }, [fromTokenId, toTokenId, swappableFromTokens, swappableToTokens, fromTokensWithDolares])
+  }, [
+    fromTokenId,
+    toTokenId,
+    swappableFromTokens,
+    swappableToTokens,
+    fromTokensWithDolares,
+    dolaresVirtualToken,
+  ])
 
   const fromTokenBalance = useTokenInfo(fromToken?.tokenId)?.balance ?? new BigNumber(0)
 
