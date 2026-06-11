@@ -342,6 +342,17 @@ export function SwapScreen({ route }: Props) {
     dolaresVirtualToken,
   ])
 
+  // When the user picks the virtual "Dolares" as destination, the swap router
+  // still needs a real ERC-20 to settle into. Default to USDT (highest-liquidity
+  // dollar in the wallet strategy); fall back to the first available dollar
+  // token if USDT isn't swappable on the active network.
+  const quoteToToken = useMemo(() => {
+    if (toToken?.tokenId !== DOLARES_VIRTUAL_TOKEN_ID) return toToken
+    const usdt = swappableToTokens.find((t) => t.tokenId === networkConfig.usdtTokenId)
+    if (usdt) return usdt
+    return swappableToTokens.find((t) => DOLLAR_TOKEN_IDS.has(t.tokenId)) ?? toToken
+  }, [toToken, swappableToTokens])
+
   const fromTokenBalance = useTokenInfo(fromToken?.tokenId)?.balance ?? new BigNumber(0)
 
   const currentSwap = useSelector(currentSwapSelector)
@@ -382,10 +393,14 @@ export function SwapScreen({ route }: Props) {
     return planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
   }, [isVirtualDolares, fromAmountUsd, dollarSnapshots])
 
+  // Use the concrete settlement tokenId so multi-step quotes still resolve
+  // when the user picked "Dolares" on BOTH sides (FROM=virtual, TO=virtual).
+  // toTokenDecimals lets the hook shift the wei-denominated buyAmount back
+  // into whole units before the UI consumes it (no wei ever reaches display).
   const multiSwapQuote = useMultiSwapQuote(
     multiSwapPlan?.steps ?? [],
-    toTokenId ?? '',
-    toToken?.decimals ?? 18
+    quoteToToken?.tokenId ?? '',
+    quoteToToken?.decimals ?? 18
   )
 
   const shouldShowMaxSwapAmountWarning =
@@ -397,10 +412,14 @@ export function SwapScreen({ route }: Props) {
   const fromSwapAmountError =
     !isVirtualDolares && confirmingSwap && parsedSwapAmount[Field.FROM].gt(fromTokenBalance)
 
+  // Compare against quoteToToken because for virtual "Dolares" the quote
+  // settles into the concrete fallback (USDT) while toToken stays virtual
+  // for display. Comparing against toToken.tokenId here would mark the
+  // quote as forever pending.
   const quoteUpdatePending =
     (quote &&
       (quote.fromTokenId !== fromToken?.tokenId ||
-        quote.toTokenId !== toToken?.tokenId ||
+        quote.toTokenId !== quoteToToken?.tokenId ||
         !quote.swapAmount.eq(parsedSwapAmount[Field.FROM]))) ||
     fetchingSwapQuote
 
@@ -427,11 +446,13 @@ export function SwapScreen({ route }: Props) {
     // since we use the quote to update the parsedSwapAmount,
     // this hook will be triggered after the quote is first updated. this
     // variable prevents the quote from needlessly being fetched again.
+    // quoteToToken is the concrete settlement token (= toToken in normal
+    // cases, or USDT when the user picked the virtual "Dolares" as TO).
     const quoteKnown =
       fromToken &&
-      toToken &&
+      quoteToToken &&
       quote &&
-      quote.toTokenId === toToken.tokenId &&
+      quote.toTokenId === quoteToToken.tokenId &&
       quote.fromTokenId === fromToken.tokenId &&
       quote.swapAmount.eq(parsedSwapAmount[Field.FROM])
 
@@ -439,18 +460,18 @@ export function SwapScreen({ route }: Props) {
       if (
         !isVirtualDolares &&
         fromToken &&
-        toToken &&
+        quoteToToken &&
         parsedSwapAmount[Field.FROM].gt(0) &&
         !quoteKnown
       ) {
-        void refreshQuote(fromToken, toToken, parsedSwapAmount, Field.FROM)
+        void refreshQuote(fromToken, quoteToToken, parsedSwapAmount, Field.FROM)
       }
     }, FETCH_UPDATED_QUOTE_DEBOUNCE_TIME)
 
     return () => {
       clearTimeout(debouncedRefreshQuote)
     }
-  }, [fromToken, toToken, parsedSwapAmount, quote])
+  }, [fromToken, quoteToToken, parsedSwapAmount, quote])
 
   useEffect(() => {
     localDispatch(quoteUpdated({ quote }))
@@ -462,8 +483,11 @@ export function SwapScreen({ route }: Props) {
         // Shortfall banner is visible; do nothing
         return
       }
-      if (!toTokenId) return
-      dispatch(executeMultiSwap({ steps: multiSwapPlan.steps, toTokenId }))
+      // Use the concrete settlement tokenId so the multi-step saga always
+      // gets a real ERC-20 destination, even when TO is the virtual Dolares.
+      const settlementTokenId = quoteToToken?.tokenId
+      if (!settlementTokenId) return
+      dispatch(executeMultiSwap({ steps: multiSwapPlan.steps, toTokenId: settlementTokenId }))
       return
     }
 
@@ -921,12 +945,32 @@ export function SwapScreen({ route }: Props) {
             </Touchable>
           </View>
           <SwapAmountInput
-            parsedInputValue={parsedSwapAmount[Field.TO]}
-            inputValue={inputSwapAmount[Field.TO]}
+            // For virtual "Dolares" on FROM the regular `quote` is never
+            // fetched (the FROM is synthetic; refreshQuote is gated). Show
+            // the aggregated multi-swap output here instead so the user can
+            // see how much they will receive across all the underlying steps.
+            // Cap the displayed decimals via getInputDecimalsForToken so the
+            // TO field doesn't dump full BigNumber precision into the UI
+            // (project rule: never surface raw chain precision to displays).
+            parsedInputValue={
+              isVirtualDolares ? multiSwapQuote.totalOutToken : parsedSwapAmount[Field.TO]
+            }
+            inputValue={
+              isVirtualDolares
+                ? multiSwapQuote.totalOutToken.gt(0)
+                  ? multiSwapQuote.totalOutToken
+                      .decimalPlaces(
+                        getInputDecimalsForToken(toToken?.tokenId),
+                        BigNumber.ROUND_DOWN
+                      )
+                      .toFormat({ decimalSeparator })
+                  : ''
+                : inputSwapAmount[Field.TO]
+            }
             onSelectToken={handleShowTokenSelect(Field.TO)}
             token={toToken}
             style={styles.toSwapAmountInput}
-            loading={quoteUpdatePending}
+            loading={isVirtualDolares ? multiSwapQuote.loading : quoteUpdatePending}
             buttonPlaceholder={t('swapScreen.selectTokenLabel')}
             editable={false}
             borderRadius={Spacing.Regular16}
