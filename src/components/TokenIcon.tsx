@@ -56,8 +56,14 @@ const IconSizeToStyle = {
   },
 }
 
-// Tokens que usan iconos SVG personalizados
-const SVG_ICON_SYMBOLS = ['COPm', 'cCOP', 'XAUt0', 'USDT', 'USD₮']
+// Tokens que usan iconos SVG personalizados.
+// 'Dolares' is the symbol of the synthetic virtual aggregator (tokenId
+// 'virtual:dolares'), which has no imageUrl; route it through DollarsIcon so
+// the picker shows a real icon instead of the "Dola" text fallback. Concrete
+// dollar tokens (USDT / USDC / USDm / USAT) are intentionally NOT here -
+// they have brand-specific imageUrl logos that the FastImage branch below
+// renders, so the user can visually tell them apart.
+const SVG_ICON_SYMBOLS = ['COPm', 'cCOP', 'XAUt0', 'Dolares']
 
 interface Props {
   token: BaseToken | Token
@@ -93,7 +99,10 @@ export default function TokenIcon({
         />
       )
     }
-    if (symbol === 'USDT' || symbol === 'USD₮') {
+    if (symbol === 'Dolares') {
+      // Synthetic virtual aggregator only (tokenId 'virtual:dolares'). Concrete
+      // dollar brands (USDT / USDC / USDm / USAT) are now routed through their
+      // own imageUrl logos so the user can tell them apart visually.
       return (
         <DollarsIcon
           size={tokenImageSize}
