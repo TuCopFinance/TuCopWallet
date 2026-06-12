@@ -1954,9 +1954,11 @@ describe('SwapScreen', () => {
 
     const renderWithDollarBalances = ({
       fromTokenId = DOLARES_VIRTUAL_TOKEN_ID,
+      toTokenId,
       dollarTokens = dollarBalanceTokens,
     }: {
       fromTokenId?: string
+      toTokenId?: string
       dollarTokens?: Record<string, object>
     } = {}) => {
       const store = createMockStore({
@@ -1975,7 +1977,7 @@ describe('SwapScreen', () => {
         <Provider store={store}>
           <MockedNavigator
             component={SwapScreen}
-            params={{ fromTokenId, toTokenNetworkId: undefined }}
+            params={{ fromTokenId, toTokenId, toTokenNetworkId: undefined }}
           />
         </Provider>
       )
@@ -1983,9 +1985,12 @@ describe('SwapScreen', () => {
       return { ...tree, store }
     }
 
-    it('shows multi-step summary when fromTokenId is virtual Dolares and amount is entered', async () => {
+    it('renders the per-token spend breakdown inside the transaction-details panel when fromTokenId is virtual Dolares', async () => {
       const { getByTestId, queryByTestId, getAllByTestId } = renderWithDollarBalances({
         fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        // SwapTransactionDetails needs a resolved toToken to render anything
+        // (the panel hides its rows when fromToken or toToken is missing).
+        toTokenId: mockCusdTokenId,
       })
 
       // With virtual Dolares selected, the from input should be present.
@@ -1994,15 +1999,14 @@ describe('SwapScreen', () => {
       // Type an amount within the total balance ($80 available, request $20).
       fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '20')
 
-      // Without a toTokenId the plan executes but the summary needs a destination token.
-      // The shortfall banner should NOT appear (80 >= 20).
+      // Shortfall banner should NOT appear (80 >= 20).
       expect(queryByTestId('ShortfallBanner')).toBeNull()
 
-      // The multi-step summary container should appear once a toToken is also set.
-      // (Without a toToken the allowSwap gate stays closed, but the plan and card
-      // still render once both conditions are met - the card renders on plan valid
-      // even without toToken being resolved, as fromAmountUsd > 0 and shortfall <= 0.)
-      expect(getByTestId('DolaresMultiStepSummary')).toBeTruthy()
+      // The standalone DolaresMultiStepSummary card is gone; the breakdown
+      // now lives inside SwapTransactionDetails so both directions render in
+      // the same panel.
+      expect(queryByTestId('DolaresMultiStepSummary')).toBeNull()
+      expect(getByTestId('SwapTransactionDetails/SpendBreakdown')).toBeTruthy()
     })
 
     it('shows shortfall banner when amount exceeds total dollar balance', async () => {

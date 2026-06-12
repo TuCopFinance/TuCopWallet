@@ -5,6 +5,7 @@ import * as React from 'react'
 import { useMemo } from 'react'
 import { Linking, Platform, StyleSheet, View } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
+import SplashScreen from 'react-native-splash-screen'
 import ShakeForSupport from 'src/account/ShakeForSupport'
 import AlertBanner from 'src/alert/AlertBanner'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -215,6 +216,10 @@ export const NavigatorWrapper = () => {
   }
 
   if (shouldForceUpgrade) {
+    // The MainStackScreen effect that normally calls SplashScreen.hide() never
+    // runs when we return early; dismiss it here so the UpgradeScreen is
+    // actually visible instead of being covered by the native splash forever.
+    requestAnimationFrame(() => SplashScreen.hide())
     return (
       <UpgradeScreen
         updateInfo={updateInfo || undefined}
