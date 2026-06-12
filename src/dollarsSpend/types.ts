@@ -27,6 +27,11 @@ export interface SpendStep {
   symbol: DollarSymbol
   amountUsd: BigNumber // USD value of this step (priceUsd * tokenAmount)
   amountTokenWhole: BigNumber // amount in token's whole units (BigNumber, decimal)
+  // ERC-20 decimals for the fromToken. Carried on the step so downstream
+  // quote callers (useMultiSwapQuote, executeMultiSwap saga) can shift the
+  // whole-unit amount into the smallest-unit (wei) form the Squid /
+  // getSwapQuote endpoint requires.
+  decimals: number
 }
 
 export interface MultiSwapPlan {
@@ -41,6 +46,7 @@ export interface DollarTokenBalanceSnapshot {
   symbol: DollarSymbol
   balance: BigNumber // whole-units BigNumber
   priceUsd: BigNumber // USD per token (e.g., 0.998)
+  decimals: number // ERC-20 decimals - forwarded into planned SpendStep
   // Smallest amount accepted by Squid for this token's swap, in USD.
   // Tokens with `balance * priceUsd < minAmountUsd` are skipped (dust filter).
   // 0 means "no minimum known yet" - planner treats it as 0 (no filter).

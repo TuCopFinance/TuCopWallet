@@ -17,7 +17,6 @@ import {
   multiSwapCleared,
   planSpend,
   useDollarBalanceSnapshots,
-  useMultiSwapQuote,
 } from 'src/dollarsSpend'
 import MultiSwapProgressSheet from 'src/dollarsSpend/MultiSwapProgressSheet'
 import PartialSuccessSheet from 'src/dollarsSpend/PartialSuccessSheet'
@@ -187,8 +186,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return planSpend({ requestedUsd, balances: dollarSnapshots })
   }, [isVirtualDolares, requestedUsd, dollarSnapshots])
 
-  const multiSwapQuote = useMultiSwapQuote(multiSwapPlan?.steps ?? [], networkConfig.xaut0TokenId)
-
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
 
@@ -329,12 +326,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
       <ScrollView contentContainerStyle={[styles.scrollContent, insetsStyle]}>
         {/* Virtual Dolares multi-step summary */}
         {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.lte(0) && (
-          <DolaresMultiStepSummary
-            steps={multiSwapPlan.steps}
-            totalInUsd={multiSwapQuote.totalInUsd}
-            totalOutToken={multiSwapQuote.totalOutToken}
-            toTokenSymbol={xaut0Token?.symbol ?? 'XAUt0'}
-          />
+          <DolaresMultiStepSummary steps={multiSwapPlan.steps} />
         )}
         {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.gt(0) && (
           <InLineNotification

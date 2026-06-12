@@ -9,6 +9,7 @@ import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
+import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
 import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
@@ -17,8 +18,8 @@ import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useCOPm, useDollarBalance, useDollarTokensWithBalance } from 'src/tokens/hooks'
-import networkConfig from 'src/web3/networkConfig'
+import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { useCOPm, useDollarTokensWithBalance, useDollarUsdBalance } from 'src/tokens/hooks'
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -43,18 +44,6 @@ const OVERLAP = CARD_BEHIND_HEIGHT - PEEK // 36px
 // excluded so the breakdown matches the user's mental model of "what
 // the wallet manages".
 const SUPPORTED_INVESTMENT_APP_IDS = new Set(['aave', 'allbridge'])
-
-// Maps a tokenId to an i18n key for the per-token breakdown row label.
-// Falls back to the token symbol when no mapping exists.
-function getDollarTokenLabelKey(tokenId: string): string | null {
-  if (tokenId === networkConfig.usdtTokenId) return 'assets.tetherUsd'
-  if (tokenId === networkConfig.usdcTokenId) return 'assets.usdCoin'
-  if (tokenId === networkConfig.usdmTokenId) return 'assets.mentoDollar'
-  if (networkConfig.usatTokenId && tokenId === networkConfig.usatTokenId) {
-    return 'assets.tetherAmericaUsd'
-  }
-  return null
-}
 
 // Recurse nested AppToken positions to collect every claimable token.
 function collectClaimableTokens(tokens: Token[]): Token[] {
@@ -102,7 +91,7 @@ export default function BalanceCard({ testID }: Props) {
 
   const copmToken = useCOPm()
   const dollarTokensWithBalance = useDollarTokensWithBalance()
-  const dolaresBalance = useDollarBalance()
+  const dolaresUsdBalance = useDollarUsdBalance()
 
   const pesosBalance =
     copmToken && copmToken.priceUsd && usdToLocalRate
@@ -125,9 +114,9 @@ export default function BalanceCard({ testID }: Props) {
   const format = (value: BigNumber) =>
     hideBalances ? `XX${decimalSeparator}XX` : value.toFormat(2)
 
-  const renderAmount = (value: BigNumber) => (
+  const renderAmount = (value: BigNumber, symbol: string | null = localCurrencySymbol) => (
     <>
-      {!hideBalances && localCurrencySymbol}
+      {!hideBalances && symbol}
       {format(value)}
     </>
   )
@@ -140,6 +129,7 @@ export default function BalanceCard({ testID }: Props) {
       visible: boolean
       label: string
       amount: BigNumber
+      symbol?: string
       textColor: string
       expandable: boolean
       gradient?: { colors: string[]; locations?: number[] }
@@ -168,9 +158,10 @@ export default function BalanceCard({ testID }: Props) {
       },
     },
     dolares: {
-      visible: dolaresBalance.gt(0),
+      visible: dolaresUsdBalance.gt(0),
       label: t('tabHome.dolaresBalance'),
-      amount: dolaresBalance,
+      amount: dolaresUsdBalance,
+      symbol: LocalCurrencySymbol.USD,
       textColor: Colors.white,
       expandable: true,
       gradient: {
@@ -212,7 +203,7 @@ export default function BalanceCard({ testID }: Props) {
           {meta.label}
         </Text>
         <Text style={[styles.behindAmount, { color: meta.textColor }]} numberOfLines={1}>
-          {renderAmount(meta.amount)}
+          {renderAmount(meta.amount, meta.symbol ?? localCurrencySymbol)}
         </Text>
       </View>
     )
@@ -260,7 +251,7 @@ export default function BalanceCard({ testID }: Props) {
     if (activeCard === 'dolares') {
       return (
         <>
-          {dollarTokensWithBalance.map(({ tokenInfo, localValue }) => {
+          {dollarTokensWithBalance.map(({ tokenInfo, usdValue }) => {
             const labelKey = getDollarTokenLabelKey(tokenInfo.tokenId)
             const label = labelKey ? t(labelKey) : tokenInfo.symbol
             return (
@@ -268,7 +259,9 @@ export default function BalanceCard({ testID }: Props) {
                 <Text style={rowLabelStyle} numberOfLines={1}>
                   {label}
                 </Text>
-                <Text style={rowAmountStyle}>{renderAmount(localValue)}</Text>
+                <Text style={rowAmountStyle}>
+                  {renderAmount(usdValue, LocalCurrencySymbol.USD)}
+                </Text>
               </View>
             )
           })}
@@ -362,7 +355,7 @@ export default function BalanceCard({ testID }: Props) {
           style={[styles.frontAmount, { color: meta.textColor }]}
           testID={`BalanceCard/${activeCard}/Front`}
         >
-          {renderAmount(meta.amount)}
+          {renderAmount(meta.amount, meta.symbol ?? localCurrencySymbol)}
         </Text>
 
         {expanded && meta.expandable && (

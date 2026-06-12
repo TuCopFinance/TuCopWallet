@@ -43,7 +43,7 @@ import {
   DOLARES_VIRTUAL_TOKEN_ID,
   useDollarBalanceSnapshots,
 } from 'src/dollarsSpend'
-import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
+import { DOLLAR_TOKEN_IDS, getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -90,15 +90,18 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   const { getQuote, loading: isGettingQuote, error: quoteError } = useGoldQuote()
 
-  // Get user-friendly display name for tokens (same pattern as TokenBalanceItem)
-  // Uses tokenId first, then symbol as fallback for different USDT variants
+  // Get user-friendly display name for tokens. For the four concrete dollar
+  // tokens the brand-specific label (USDT / USDC / USDm / USAT short symbols)
+  // wins so the chip stays consistent with the picker rows and the success
+  // screen. Falls back to "Dolares" for the synthetic virtual aggregator.
   const getTokenName = (token: TokenBalance) => {
     // Check by tokenId first (most reliable)
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    if (token.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
+    const brandLabelKey = getDollarTokenLabelKey(token.tokenId)
+    if (brandLabelKey) {
+      return t(brandLabelKey)
     }
     if (token.tokenId === networkConfig.xaut0TokenId) {
       return t('goldFlow.gold')
@@ -108,7 +111,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     if (symbol === 'ccop' || symbol === 'copm') {
       return t('assets.pesos')
     }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+    if (symbol === 'dolares') {
       return t('assets.dollars')
     }
     if (symbol === 'xaut0' || symbol === 'xaut') {

@@ -1,4 +1,5 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
+import BigNumber from 'bignumber.js'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 import {
   multiSwapCompleted,
@@ -72,10 +73,16 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
     let freshQuote: Awaited<ReturnType<typeof fetchSwapQuoteForExecution>>
     try {
+      // getSwapQuote expects smallest-unit (wei). Step carries whole units;
+      // shift by decimals to match the regular swap path. ROUND_DOWN keeps
+      // the requested amount within the user's balance.
+      const amountInWei = step.amountTokenWhole
+        .shiftedBy(step.decimals)
+        .toFixed(0, BigNumber.ROUND_DOWN)
       freshQuote = yield* call(fetchSwapQuoteForExecution, {
         fromTokenId: step.tokenId,
         toTokenId,
-        amount: step.amountTokenWhole.toString(),
+        amount: amountInWei,
         walletAddress,
         fromToken,
         feeCurrencies,

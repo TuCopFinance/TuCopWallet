@@ -4297,6 +4297,9 @@
                 "amountUsd": {
                     "$ref": "#/definitions/BigNumber"
                 },
+                "decimals": {
+                    "type": "number"
+                },
                 "symbol": {
                     "$ref": "#/definitions/DollarSymbol"
                 },
@@ -4307,6 +4310,7 @@
             "required": [
                 "amountTokenWhole",
                 "amountUsd",
+                "decimals",
                 "symbol",
                 "tokenId"
             ],
