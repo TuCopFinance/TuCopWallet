@@ -45,6 +45,7 @@ export function planSpend({
       symbol,
       amountUsd: takeUsd,
       amountTokenWhole: takeTokenWhole,
+      decimals: snap.decimals,
     })
 
     remaining = remaining.minus(takeUsd)

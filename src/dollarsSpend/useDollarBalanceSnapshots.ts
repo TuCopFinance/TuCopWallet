@@ -36,6 +36,7 @@ export function useDollarBalanceSnapshots(): DollarTokenBalanceSnapshot[] {
         symbol,
         balance,
         priceUsd: new BigNumber(token.priceUsd),
+        decimals: token.decimals,
         minAmountUsd: new BigNumber(0),
       })
     }

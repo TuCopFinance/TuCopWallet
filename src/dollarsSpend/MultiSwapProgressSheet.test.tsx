@@ -11,6 +11,7 @@ const step: SpendStep = {
   symbol: 'USAT',
   amountUsd: new BigNumber(30),
   amountTokenWhole: new BigNumber(30),
+  decimals: 6,
 }
 
 describe('MultiSwapProgressSheet', () => {

@@ -7,8 +7,11 @@ import Button, { BtnSizes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import TokenDisplay from 'src/components/TokenDisplay'
+import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
+import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { useTokenInfo } from 'src/tokens/hooks'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -99,24 +102,20 @@ function TransactionSuccessScreen({ route }: Props) {
                   <>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
-                      <TokenDisplay
+                      <TokenAmountWithBrand
                         amount={fromAmount}
                         tokenId={fromTokenId}
-                        showLocalAmount={false}
-                        hideSign={true}
-                        style={styles.tokenDisplay}
                         testID="TransactionSuccess/FromAmount"
+                        textStyle={styles.tokenDisplay}
                       />
                     </View>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
-                      <TokenDisplay
+                      <TokenAmountWithBrand
                         amount={toAmount}
                         tokenId={toTokenId}
-                        showLocalAmount={false}
-                        hideSign={true}
-                        style={styles.tokenDisplay}
                         testID="TransactionSuccess/ToAmount"
+                        textStyle={styles.tokenDisplay}
                       />
                     </View>
                   </>
@@ -151,6 +150,56 @@ function TransactionSuccessScreen({ route }: Props) {
         />
       </StickyCtaBottom>
     </SafeAreaView>
+  )
+}
+
+// Renders the on-chain amount (via TokenDisplay, which already caps decimals
+// and routes through `getTokenSymbol`) and appends the brand-specific dollar
+// label when the token is one of the four dollar stablecoins (USDT / USDC /
+// USDm / USAT). This way the success screen reads e.g. "0.04 Tether USD"
+// instead of the generic "0.04 Dolares" - the user can tell which concrete
+// brand actually landed in their wallet.
+function TokenAmountWithBrand({
+  amount,
+  tokenId,
+  testID,
+  textStyle,
+}: {
+  amount: string
+  tokenId: string
+  testID: string
+  textStyle: object
+}) {
+  const { t } = useTranslation()
+  const tokenInfo = useTokenInfo(tokenId)
+  const brandLabelKey = getDollarTokenLabelKey(tokenId)
+  return (
+    <View style={styles.brandRow}>
+      {tokenInfo && <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />}
+      {brandLabelKey ? (
+        <>
+          <TokenDisplay
+            amount={amount}
+            tokenId={tokenId}
+            showLocalAmount={false}
+            showSymbol={false}
+            hideSign={true}
+            style={textStyle}
+            testID={testID}
+          />
+          <Text style={textStyle}>{` ${t(brandLabelKey)}`}</Text>
+        </>
+      ) : (
+        <TokenDisplay
+          amount={amount}
+          tokenId={tokenId}
+          showLocalAmount={false}
+          hideSign={true}
+          style={textStyle}
+          testID={testID}
+        />
+      )}
+    </View>
   )
 }
 
@@ -210,6 +259,11 @@ const styles = StyleSheet.create({
   explorerLinkText: {
     ...typeScale.labelSmall,
     color: Colors.primary,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.Smallest8,
   },
 })
 
