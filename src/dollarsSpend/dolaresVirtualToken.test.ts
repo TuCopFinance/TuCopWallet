@@ -20,6 +20,7 @@ describe('buildDolaresVirtualToken', () => {
           tokenId: 'celo-mainnet:usat',
           balance: new BigNumber(30),
           priceUsd: new BigNumber(1),
+          decimals: 6,
           minAmountUsd: new BigNumber(0),
         },
         {
@@ -27,6 +28,7 @@ describe('buildDolaresVirtualToken', () => {
           tokenId: 'celo-mainnet:usdm',
           balance: new BigNumber(50),
           priceUsd: new BigNumber(1),
+          decimals: 18,
           minAmountUsd: new BigNumber(0),
         },
       ],
