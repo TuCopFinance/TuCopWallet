@@ -1,0 +1,383 @@
+yarn run v1.22.22
+$ /Users/0xj4an/Workspaces/tucop-finance/code/TuCopWallet/node_modules/.bin/knip --no-gitignore
+Unused files (22)
+src/analytics/AsyncStoragePersistor.ts
+src/analytics/InjectTraits.ts
+src/components/EarnIcon.tsx
+src/components/PasswordInput.tsx
+src/components/ShopTokensButton.tsx
+src/dappsExplorer/DiscoverDappsCard.tsx
+src/icons/_unused/AddCCOP.tsx
+src/icons/_unused/CloudCheck.tsx
+src/icons/_unused/Envelope.tsx
+src/icons/_unused/ExploreTokens.tsx
+src/icons/features/EarnGrowIcon.tsx
+src/icons/features/ShopToken.tsx
+src/icons/navigator/Home.tsx
+src/icons/tab-home/Withdraw.tsx
+src/identity/smsRetrieval.ts
+src/images/Blob.tsx
+src/images/Palm.tsx
+src/lib/useTransactionInFlight/types.ts
+src/lib/useTransactionInFlight/useTransactionInFlight.ts
+src/sentry/actions.ts
+src/sentry/saga.ts
+src/viem/celoGasOptimizer.ts
+Unlisted dependencies (19)
+node-fetch                                                                e2e/src/utils/dappList.js                
+pngjs                                                                     e2e/src/utils/utils.js                   
+./node_modules/react-native/jest/assetFileTransformer.js                  jest.config.js                           
+metro-config                                                              metro.config.js                          
+metro-config/src/defaults/defaults                                        metro.config.js                          
+metro-config/src/defaults/exclusionList                                   metro.config.js                          
+node-fetch                                                                scripts/test_update_checker.js           
+request                                                                   scripts/translateFile.js                 
+@redux-saga/types                                                         src/fiatExchanges/saga.ts                
+src/icons/lottie-json/loadingSpinnerGreen.json                            src/icons/loading/GreenLoadingSpinner.tsx
+src/icons/lottie-json/loadingSpinnerGreen.json                            src/icons/loading/LoadingSpinner.tsx     
+@redux-saga/types                                                         src/import/saga.ts                       
+src/pincode/pin-blocklist-hibpv7-top-25k-with-keyboard-translations.json  src/pincode/authentication.ts            
+test/RootStateSchema.json                                                 src/redux/store.test.ts                  
+react-native-animatable                                                   src/send/EnterAmount.tsx                 
+@sentry/core                                                              src/sentry/Sentry.ts                     
+@sentry/core                                                              src/sentry/SentryTransactionHub.ts       
+statsig-js                                                                src/statsig/index.test.ts                
+statsig-js                                                                src/statsig/index.ts
+Unlisted binaries (7)
+adb       package.json
+awk       package.json
+export    package.json
+licenses  package.json
+pidcat    package.json
+sed       package.json
+watchman  package.json
+Unused exports (120)
+updateStatsigAndNavigate              function  src/account/saga.ts:220:18                          
+watchUpdateStatsigAndNavigate         function  src/account/saga.ts:231:18                          
+watchClearStoredAccount               function  src/account/saga.ts:238:18                          
+watchInitializeAccount                function  src/account/saga.ts:243:18                          
+watchSignedMessage                    function  src/account/saga.ts:247:18                          
+SENTINEL_MIGRATE_COMMENT              unknown   src/account/saga.ts:49:14                           
+errorSelector                         unknown   src/alert/reducer.ts:50:14                          
+setLoggedIn                           unknown   src/app/actions.ts:212:14                           
+notificationSpotlightSeen             unknown   src/app/actions.ts:353:14                           
+initializePublicConfig                function  src/app/saga.ts:436:18                              
+logPhoneNumberTypeEnabledSelector     unknown   src/app/selectors.ts:40:14                          
+maxSwapSlippagePercentageSelector     unknown   src/app/selectors.ts:62:14                          
+networkTimeoutSecondsSelector         unknown   src/app/selectors.ts:69:14                          
+decryptMnemonic                       function  src/backup/utils.ts:106:23                          
+bucksPayCodeSelector                  unknown   src/buckspay/selectors.ts:6:14                      
+useFetchArticles                      function  src/celoNews/CeloNewsFeed.tsx:41:17                 
+getFullCurrencyName                   function  src/components/CurrencyDisplay.tsx:106:17           
+EncryptionFeeIcon                     unknown   src/components/FeeIcon.tsx:78:14                    
+CTextInput                            class     src/components/TextInput.tsx:41:14                  
+watchDappSelected                     function  src/dapps/saga.ts:116:18                            
+watchFetchDappsList                   function  src/dapps/saga.ts:120:18                            
+dappsCategoriesSelector               unknown   src/dapps/selectors.ts:27:14                        
+mostPopularDappsSelector              unknown   src/dapps/selectors.ts:78:14                        
+favoriteDappsSelector                 unknown   src/dapps/selectors.ts:86:14                        
+SPEND_ORDER                           unknown   src/dollarsSpend/types.ts:16:14                     
+BIDALI_CURRENCIES                     unknown   src/fiatExchanges/BidaliScreen.tsx:25:14            
+isSimplexQuote                        unknown   src/fiatExchanges/quotes/ExternalQuote.ts:39:14     
+quotesByReceiveAmountComparator       unknown   src/fiatExchanges/quotes/normalizeQuotes.ts:31:14   
+importProviderLogos                   function  src/fiatExchanges/saga.ts:169:18                    
+isSimplexQuote                        unknown   src/fiatExchanges/utils.tsx:231:14                  
+TAG                                   unknown   src/fiatconnect/FiatDetailsScreen.tsx:41:14         
+watchFetchFiatConnectQuotes           function  src/fiatconnect/saga.ts:1135:18                     
+watchFetchFiatConnectProviders        function  src/fiatconnect/saga.ts:1139:18                     
+watchAttemptReturnUserFlow            function  src/fiatconnect/saga.ts:1143:18                     
+simpleReadChannel                     function  src/firebase/firebase.ts:345:17                     
+waitForFirebaseAuth                   function  src/firebase/saga.ts:25:18                          
+syncLanguageSelection                 function  src/firebase/saga.ts:70:18                          
+watchLanguage                         function  src/firebase/saga.ts:78:18                          
+fetchGoldPriceFromApi                 function  src/gold/api.ts:137:23                              
+goldPriceFetchedAtSelector            unknown   src/gold/selectors.ts:60:14                         
+goldBuyTxHashSelector                 unknown   src/gold/selectors.ts:69:14                         
+goldSellTxHashSelector                unknown   src/gold/selectors.ts:71:14                         
+resetGoldFlow                         unknown   src/gold/slice.ts:197:3                             
+setGoldIconVariant                    unknown   src/gold/slice.ts:200:3                             
+estimateGoldSwapGas                   function  src/gold/useGoldQuote.ts:414:23                     
+useNotifications                      function  src/home/NotificationBox.tsx:255:17                 
+refreshAllBalances                    function  src/home/saga.ts:41:18                              
+watchRefreshBalances                  function  src/home/saga.ts:50:18                              
+watchOtaTranslations                  function  src/i18n/saga.ts:69:18                              
+default                               unknown   src/icons/biometry/Iris.tsx:22:8                    
+IMPORT_CONTACTS_TIMEOUT               unknown   src/identity/contactMapping.ts:50:14                
+validateRecipientAddressSaga          function  src/identity/saga.ts:28:18                          
+importContactsProgressSelector        unknown   src/identity/selectors.ts:9:14                      
+watchImportBackupPhrase               function  src/import/saga.ts:244:18                           
+MAX_BALANCE_CHECK_TASKS               unknown   src/import/saga.ts:46:14                            
+convertLocalAmountToCurrency          function  src/localCurrency/convert.ts:21:17                  
+drawerHeader                          unknown   src/navigator/Headers.tsx:110:14                    
+headerWithCancelButton                unknown   src/navigator/Headers.tsx:119:14                    
+headerWithBackEditButtons             unknown   src/navigator/Headers.tsx:124:14                    
+HeaderTitleWithTokenBalance           function  src/navigator/Headers.tsx:185:17                    
+navbarStyle                           unknown   src/navigator/NavigatorWrapper.tsx:286:14           
+headerArea                            unknown   src/navigator/NavigatorWrapper.tsx:292:14           
+MarranitosMyStakes                    unknown   src/navigator/Screens.tsx:131:14                    
+networkConnectedSelector              unknown   src/networkInfo/selectors.ts:3:14                   
+nftsSelector                          unknown   src/nfts/selectors.ts:9:14                          
+PincodeSet                            class     src/pincode/PincodeSet.tsx:89:14                    
+ensureCorrectPassword                 function  src/pincode/authentication.ts:458:23                
+BIOMETRY_VERIFICATION_DELAY           unknown   src/pincode/authentication.ts:67:14                 
+watchPreviewMode                      function  src/positions/saga.ts:364:18                        
+watchShortcuts                        function  src/positions/saga.ts:377:18                        
+claimableShortcutSelector             unknown   src/positions/selectors.ts:106:14                   
+showPositionsSelector                 unknown   src/positions/selectors.ts:21:14                    
+showClaimShortcutsSelector            unknown   src/positions/selectors.ts:22:14                    
+shortcutsSelector                     unknown   src/positions/selectors.ts:99:14                    
+mapStateToProps                       unknown   src/qrcode/StyledQRCode.tsx:16:14                   
+UriDataType                           unknown   src/qrcode/schema.ts:16:14                          
+stripUndefined                        unknown   src/qrcode/schema.ts:40:14                          
+filterRecipients                      function  src/recipients/recipient.ts:268:17                  
+appRecipientCacheSelector             unknown   src/recipients/reducer.ts:79:14                     
+allRewardsSendersSelector             unknown   src/recipients/reducer.ts:84:14                     
+ValidateRecipientAccount              class     src/send/ValidateRecipientAccount.tsx:95:14         
+updateLastUsedCurrency                unknown   src/send/actions.ts:139:14                          
+getRecentPayments                     unknown   src/send/selectors.ts:8:14                          
+initializeSentry                      function  src/sentry/Sentry.ts:107:18                         
+initializeSentryUserContext           function  src/sentry/Sentry.ts:127:18                         
+sentryRoutingInstrumentation          unknown   src/sentry/Sentry.ts:41:14                          
+default                               unknown   src/styles/styles.ts:67:8                           
+ReFiColombiaSubsidiesContract         class     src/subsidies/ReFiColombiaSubsidiesContract.ts:31:14
+useActions                            unknown   src/tokens/TokenDetails.tsx:181:14                  
+useSpendTokens                        function  src/tokens/hooks.ts:185:17                          
+fetchTokenBalancesSuccess             unknown   src/tokens/slice.ts:163:3                           
+tokenSupportsComments                 function  src/tokens/utils.ts:36:17                           
+useTransactionFeedV2Query             unknown   src/transactions/api.ts:58:16                       
+TRANSACTIONS_QUERY                    unknown   src/transactions/feed/queryHelper.ts:622:14         
+getTransactionReceipt                 function  src/transactions/saga.ts:36:18                      
+feedFirstPageSelector                 unknown   src/transactions/selectors.ts:140:14                
+formattedStandByTransactionsSelector  unknown   src/transactions/selectors.ts:25:14                 
+isTokenTxTypeSent                     function  src/transactions/transferFeedUtils.ts:157:17        
+useTransactionRecipient               function  src/transactions/transferFeedUtils.ts:40:17         
+performAutomaticUpdateCheck           function  src/utils/appUpdateChecker.ts:309:23                
+navigateToWalletStorePage             function  src/utils/linking.ts:8:17                           
+timeDeltaInSeconds                    unknown   src/utils/time.ts:54:14                             
+assertNever                           function  src/utils/typescript.ts:28:17                       
+assertUnreachable                     unknown   src/utils/typescript.ts:4:14                        
+CELO_FEE_CURRENCIES                   unknown   src/viem/celoGasConfig.ts:26:14                     
+CELO_SEPOLIA_FEE_CURRENCIES           unknown   src/viem/celoGasConfig.ts:36:14                     
+getFeeCurrencies                      function  src/viem/celoGasConfig.ts:46:17                     
+CELO_MAINNET_ID                       unknown   src/viem/celoGasConfig.ts:4:14                      
+CELO_SEPOLIA_ID                       unknown   src/viem/celoGasConfig.ts:5:14                      
+getOptimalFeeCurrency                 function  src/viem/celoGasConfig.ts:68:17                     
+showRequestDetails                    unknown   src/walletConnect/actions.ts:165:14                 
+clientDestroyed                       unknown   src/walletConnect/actions.ts:201:14                 
+showWalletConnectionSuccessMessage    function  src/walletConnect/saga.ts:861:18                    
+ACCOUNT_STORAGE_KEY_PREFIX            unknown   src/web3/KeychainAccounts.ts:23:14                  
+WEI_DECIMALS                          unknown   src/web3/consts.ts:3:14                             
+XAUT0_TOKEN_ID_STAGING                unknown   src/web3/networkConfig.ts:175:14                    
+XAUT0_TOKEN_ID_MAINNET                unknown   src/web3/networkConfig.ts:176:14                    
+XAUT0_ADDRESS_MAINNET                 unknown   src/web3/networkConfig.ts:177:14                    
+getAccountAddress                     function  src/web3/saga.ts:225:18                             
+default                               unknown   src/webview/WebViewAndroidBottomSheet.tsx:98:8
+Unused exports in namespaces (4)
+SEGMENT_API_KEY       unknown   src/config.ts:130:14                     
+email                 unknown   src/images/Images.ts:15:14               
+welcomeBackground     unknown   src/images/Images.ts:22:14               
+isScreenOnForeground  function  src/navigator/NavigationService.ts:203:23
+Unused exported types (144)
+Props                                        type       src/account/Education.tsx:42:13                                   
+RegistrationProperties                       interface  src/account/updateAccountRegistration.ts:3:18                     
+ShowAlertAction                              interface  src/alert/actions.ts:27:18                                        
+WalletConnect1Properties                     interface  src/analytics/Properties.tsx:969:18                               
+AppUnmounted                                 interface  src/app/actions.ts:102:18                                         
+SetSessionId                                 interface  src/app/actions.ts:106:18                                         
+AndroidMobileServicesAvailabilityChecked     interface  src/app/actions.ts:123:18                                         
+PhoneNumberVerificationCompleted             interface  src/app/actions.ts:129:18                                         
+PhoneNumberRevoked                           interface  src/app/actions.ts:135:18                                         
+InviteLinkConsumed                           interface  src/app/actions.ts:140:18                                         
+PushNotificationsPermissionChanged           interface  src/app/actions.ts:150:18                                         
+NotificationSpotlightSeen                    interface  src/app/actions.ts:161:18                                         
+SetPublicConfig                              interface  src/app/actions.ts:174:18                                         
+Lock                                         interface  src/app/actions.ts:90:18                                          
+Unlock                                       interface  src/app/actions.ts:94:18                                          
+AppMounted                                   interface  src/app/actions.ts:98:18                                          
+State                                        interface  src/buckspay/slice.ts:16:18                                       
+BucksPayFlowStatus                           type       src/buckspay/slice.ts:7:13                                        
+BucksPayOfframpInfo                          interface  src/buckspay/types.ts:29:18                                       
+BucksPayErrorResponse                        interface  src/buckspay/types.ts:80:18                                       
+ButtonProps                                  interface  src/components/Button.tsx:36:18                                   
+CodeRowProps                                 interface  src/components/CodeRow.tsx:21:18                                  
+DisplayType                                  enum       src/components/CurrencyDisplay.tsx:21:13                          
+Props                                        interface  src/components/RowDivider.tsx:6:18                                
+SingleDigitInputProps                        interface  src/components/SingleDigitInput.tsx:6:18                          
+Props                                        type       src/components/TextInput.tsx:24:13                                
+TextInputProps                               type       src/components/TextInputWithButtons.tsx:38:13                     
+PhoneValidatorProps                          interface  src/components/ValidatedTextInput.tsx:24:18                       
+IntegerValidatorProps                        interface  src/components/ValidatedTextInput.tsx:29:18                       
+DecimalValidatorProps                        interface  src/components/ValidatedTextInput.tsx:33:18                       
+CustomValidatorProps                         interface  src/components/ValidatedTextInput.tsx:39:18                       
+ValidatorProps                               type       src/components/ValidatedTextInput.tsx:44:13                       
+ValidatedTextInputProps                      type       src/components/ValidatedTextInput.tsx:50:13                       
+CategoryWithDapps                            interface  src/dapps/selectors.ts:5:18                                       
+FetchDappsListCompletedAction                interface  src/dapps/slice.ts:39:18                                          
+FetchDappsListErrorAction                    interface  src/dapps/slice.ts:45:18                                          
+FavoriteDappAction                           interface  src/dapps/slice.ts:49:18                                          
+ExecuteMultiSwapPayload                      interface  src/dollarsSpend/saga.ts:23:18                                    
+State                                        interface  src/dollarsSpend/slice.ts:11:18                                   
+AssignProviderToTxHashAction                 interface  src/fiatExchanges/actions.ts:39:18                                
+SetProviderLogos                             interface  src/fiatExchanges/actions.ts:54:18                                
+ProviderInfo                                 interface  src/fiatExchanges/utils.tsx:123:18                                
+ProviderQuote                                type       src/fiatExchanges/utils.tsx:129:13                                
+CicoQuote                                    interface  src/fiatExchanges/utils.tsx:152:18                                
+CloudFunctionDigitalAsset                    enum       src/fiatExchanges/utils.tsx:41:13                                 
+UserAccountCreationData                      interface  src/fiatExchanges/utils.tsx:74:18                                 
+CachedFiatAccountUse                         interface  src/fiatconnect/slice.ts:103:18                                   
+FetchQuotesAction                            interface  src/fiatconnect/slice.ts:113:18                                   
+AttemptReturnUserFlowAction                  interface  src/fiatconnect/slice.ts:121:18                                   
+FetchFiatConnectQuotesCompletedAction        interface  src/fiatconnect/slice.ts:135:18                                   
+FetchFailedAction                            interface  src/fiatconnect/slice.ts:139:18                                   
+FetchFiatConnectProvidersCompletedAction     interface  src/fiatconnect/slice.ts:142:18                                   
+FiatAccountUsedAction                        type       src/fiatconnect/slice.ts:146:13                                   
+CreateFiatConnectTransferAction              interface  src/fiatconnect/slice.ts:147:18                                   
+CreateFiatConnectTransferFailedAction        interface  src/fiatconnect/slice.ts:155:18                                   
+CreateFiatConnectTransferCompletedAction     interface  src/fiatconnect/slice.ts:160:18                                   
+CacheFiatConnectTransferAction               type       src/fiatconnect/slice.ts:166:13                                   
+CreateFiatConnectTransferTxProcessingAction  interface  src/fiatconnect/slice.ts:168:18                                   
+FirebaseAuthorizedAction                     interface  src/firebase/actions.ts:5:18                                      
+CmcQuoteResponse                             interface  src/gold/api.ts:30:18                                             
+DiaAssetQuotationResponse                    interface  src/gold/api.ts:48:18                                             
+State                                        interface  src/gold/slice.ts:13:18                                           
+GoldQuoteParams                              interface  src/gold/useGoldQuote.ts:79:18                                    
+GoldQuoteResult                              interface  src/gold/useGoldQuote.ts:86:18                                    
+VisitHomeAction                              interface  src/home/actions.ts:18:18                                         
+SetLoadingAction                             interface  src/home/actions.ts:22:18                                         
+UpdateNotificationsAction                    interface  src/home/actions.ts:27:18                                         
+DismissNotificationAction                    interface  src/home/actions.ts:32:18                                         
+NotificationTexts                            interface  src/home/reducers.ts:9:18                                         
+UseAppUpdateCheckerOptions                   interface  src/hooks/useAppUpdateChecker.ts:12:18                            
+UseAppUpdateCheckerReturn                    interface  src/hooks/useAppUpdateChecker.ts:29:18                            
+Props                                        interface  src/icons/actions/Share.tsx:5:18                                  
+Props                                        interface  src/icons/auth/EyeIcon.tsx:5:18                                   
+Props                                        interface  src/icons/auth/HiddenEyeIcon.tsx:5:18                             
+Props                                        interface  src/icons/misc/ThumbsUpIllustration.tsx:5:18                      
+Props                                        interface  src/icons/navigation/Times.tsx:5:18                               
+UpdateE164PhoneNumberAddressesAction         interface  src/identity/actions.ts:30:18                                     
+UpdateKnownAddressesAction                   interface  src/identity/actions.ts:36:18                                     
+EndFetchingAddressesAction                   interface  src/identity/actions.ts:47:18                                     
+ImportContactsAction                         interface  src/identity/actions.ts:53:18                                     
+UpdateImportContactProgress                  interface  src/identity/actions.ts:57:18                                     
+EndImportContactsAction                      interface  src/identity/actions.ts:64:18                                     
+ValidateRecipientAddressSuccessAction        interface  src/identity/actions.ts:77:18                                     
+ValidateRecipientAddressResetAction          interface  src/identity/actions.ts:83:18                                     
+RequireSecureSendAction                      interface  src/identity/actions.ts:88:18                                     
+AddressVerificationStatusReceivedAction      interface  src/identity/actions.ts:99:18                                     
+AddressInfoToDisplay                         interface  src/identity/reducer.ts:16:18                                     
+ImportContactProgress                        interface  src/identity/reducer.ts:29:18                                     
+SecureSendDetails                            interface  src/identity/reducer.ts:45:18                                     
+ImportBackupPhraseSuccessAction              interface  src/import/actions.ts:22:18                                       
+ImportBackupPhraseFailureAction              interface  src/import/actions.ts:30:18                                       
+CreateKeylessBackupDto                       interface  src/keylessBackup/types.ts:28:18                                  
+KeylessBackupDto                             interface  src/keylessBackup/types.ts:35:18                                  
+LinkWalletToPhoneRequest                     interface  src/keylessBackup/types.ts:47:18                                  
+KeylessBackupServiceResponse                 interface  src/keylessBackup/types.ts:53:18                                  
+OtpVerificationResponse                      interface  src/keylessBackup/types.ts:59:18                                  
+KeylessBackupSession                         interface  src/keylessBackup/types.ts:65:18                                  
+FetchCurrentRateFailureAction                interface  src/localCurrency/actions.ts:15:18                                
+SelectPreferredCurrencyAction                interface  src/localCurrency/actions.ts:19:18                                
+FetchCurrentRateSuccessAction                interface  src/localCurrency/actions.ts:8:18                                 
+Global                                       interface  src/missingGlobals.ts:6:18                                        
+FetchNftsFailedAction                        interface  src/nfts/slice.ts:8:18                                            
+NftMediaType                                 enum       src/nfts/types.ts:41:13                                           
+ContractPosition                             interface  src/positions/types.ts:104:18                                     
+SerializedDecimalNumber                      type       src/positions/types.ts:4:13                                       
+TokenCategory                                type       src/positions/types.ts:61:13                                      
+AbstractPosition                             interface  src/positions/types.ts:63:18                                      
+PositionDisplayProps                         interface  src/positions/types.ts:6:18                                       
+AbstractToken                                interface  src/positions/types.ts:80:18                                      
+BaseToken                                    interface  src/positions/types.ts:93:18                                      
+SendPaymentSuccessAction                     interface  src/send/actions.ts:50:18                                         
+SendPaymentFailureAction                     interface  src/send/actions.ts:56:18                                         
+UpdateLastUsedCurrencyAction                 interface  src/send/actions.ts:60:18                                         
+PaymentInfo                                  interface  src/send/reducers.ts:12:18                                        
+FetchSwapQuoteArgs                           interface  src/swap/useSwapQuote.ts:31:18                                    
+FetchSwapQuoteForExecutionArgs               interface  src/swap/useSwapQuote.ts:357:18                                   
+FetchSwapQuoteForExecutionResult             interface  src/swap/useSwapQuote.ts:362:18                                   
+StoredTokenBalanceWithAddress                interface  src/tokens/slice.ts:50:18                                         
+StoredTokenBalancesWithAddress               interface  src/tokens/slice.ts:82:18                                         
+Props                                        interface  src/transactions/feed/detailContent/FeeRowItem.tsx:10:18          
+Props                                        interface  src/transactions/feed/detailContent/SwapContent.tsx:19:18         
+Props                                        interface  src/transactions/feed/detailContent/TokenApprovalDetails.tsx:13:18
+QueryHookResult                              interface  src/transactions/feed/queryHelper.ts:42:18                        
+AppStoreVersionInfo                          interface  src/utils/appUpdateChecker.ts:9:18                                
+CurrencyInfo                                 interface  src/utils/currencies.ts:35:18                                     
+LocalMoneyAmount                             interface  src/utils/moneyAmount.ts:3:18                                     
+BigIntProps                                  type       src/viem/preparedTransactionSerialization.ts:14:13                
+MapValuesToString                            type       src/viem/preparedTransactionSerialization.ts:16:13                
+SessionDeleted                               interface  src/walletConnect/actions.ts:101:18                               
+InitialiseClient                             interface  src/walletConnect/actions.ts:37:18                                
+ClientInitialised                            interface  src/walletConnect/actions.ts:40:18                                
+ClientDestroyed                              interface  src/walletConnect/actions.ts:43:18                                
+ShowRequestDetails                           interface  src/walletConnect/actions.ts:65:18                                
+RemoveExpiredSessions                        interface  src/walletConnect/actions.ts:81:18                                
+SessionCreated                               interface  src/walletConnect/actions.ts:96:18                                
+WalletConnectSession                         type       src/walletConnect/types.ts:19:13                                  
+WalletConnectPayloadRequest                  type       src/walletConnect/types.ts:21:13                                  
+PendingAction                                type       src/walletConnect/types.ts:23:13                                  
+Session                                      type       src/walletConnect/types.ts:25:13                                  
+PendingSession                               type       src/walletConnect/types.ts:30:13                                  
+WalletConnectSessionRequest                  interface  src/walletConnect/types.ts:7:18                                   
+BlockExplorerUrls                            type       src/web3/networkConfig.ts:132:13                                  
+NetworkIdToNetwork                           type       src/web3/networkConfig.ts:141:13                                  
+Testnets                                     enum       src/web3/networkConfig.ts:31:13
+Unused exported enum members (26)
+INITIALIZE_ACCOUNT_FAILURE    Actions                     src/account/actions.ts:18:3           
+Featured                      DappSection                 src/dapps/types.ts:2:3                
+MostPopular                   DappSection                 src/dapps/types.ts:5:3                
+pay                           NotificationBannerCTATypes  src/home/types.ts:21:3                
+COP                           LocalCurrencySymbol         src/localCurrency/consts.ts:8:3       
+TokenDetailsMoreActions       Screens                     src/navigator/Screens.tsx:99:3        
+LearnPoints                   AdventureCardName           src/onboarding/types.ts:4:3           
+Merchant                      RecipientType               src/recipients/recipient.ts:46:3      
+pincode_enter                 SentryTransaction           src/sentry/SentryTransactions.tsx:10:3
+pincode_set                   SentryTransaction           src/sentry/SentryTransactions.tsx:11:3
+send_payment                  SentryTransaction           src/sentry/SentryTransactions.tsx:12:3
+wallet_connect_connection     SentryTransaction           src/sentry/SentryTransactions.tsx:13:3
+wallet_connect_transaction    SentryTransaction           src/sentry/SentryTransactions.tsx:14:3
+fetch_balances                SentryTransaction           src/sentry/SentryTransactions.tsx:7:3 
+fetch_positions               SentryTransaction           src/sentry/SentryTransactions.tsx:8:3 
+import_contacts               SentryTransaction           src/sentry/SentryTransactions.tsx:9:3 
+SAVE_CONTACTS                 StatsigFeatureGates         src/statsig/types.ts:25:3             
+SHOW_CASH_IN_TOKEN_FILTERS    StatsigFeatureGates         src/statsig/types.ts:35:3             
+SHOW_ZERION_TRANSACTION_FEED  StatsigFeatureGates         src/statsig/types.ts:42:3             
+SHOW_DIGITAL_GOLD             StatsigFeatureGates         src/statsig/types.ts:43:3             
+GatewayFee                    FeeType                     src/transactions/types.ts:228:3       
+EncryptionFee                 FeeType                     src/transactions/types.ts:229:3       
+CLOSE_PENDING_SESSION         Actions                     src/walletConnect/actions.ts:16:3     
+REQUEST_FULFILLED             Actions                     src/walletConnect/actions.ts:21:3     
+accountsChanged               SupportedEvents             src/walletConnect/constants.ts:13:3   
+chainChanged                  SupportedEvents             src/walletConnect/constants.ts:14:3
+Unused exported class members (15)
+defaultProps                 default           src/components/CircleButton.tsx:19:10                
+getScrollRef                 default           src/components/KeyboardAwareScrollView.tsx:43:3      
+focusInputOrDismissKeyboard  default           src/components/KeyboardAwareScrollView.tsx:47:3      
+defaultProps                 default           src/components/KeyboardSpacer.tsx:50:10              
+defaultProps                 default           src/icons/actions/Paste.tsx:12:10                    
+defaultProps                 default           src/icons/actions/Search.tsx:12:10                   
+defaultProps                 default           src/icons/auth/Backspace.tsx:12:10                   
+defaultProps                 default           src/icons/loading/LoadingSpinner.tsx:9:10            
+defaultProps                 default           src/icons/status/Checkmark.tsx:14:10                 
+defaultProps                 default           src/icons/status/Error.tsx:14:10                     
+defaultProps                 default           src/icons/ui/ClockIcon.tsx:12:10                     
+defaultProps                 default           src/icons/ui/RadioButton.tsx:13:10                   
+defaultProps                 default           src/images/GuideKeyIcon.tsx:10:10                    
+navigationOptions            RegulatoryTerms   src/onboarding/registration/RegulatoryTerms.tsx:47:10
+getLoadAccount               KeychainAccounts  src/web3/KeychainAccounts.ts:307:3
+Duplicate exports (13)
+RevokePhoneNumber, default                src/RevokePhoneNumber.tsx                
+App, default                              src/app/App.tsx                          
+SanctionedCountryErrorScreen, default     src/app/SanctionedCountryErrorScreen.tsx 
+InLineNotification, default               src/components/InLineNotification.tsx    
+PhoneNumberWithFlag, default              src/components/PhoneNumberWithFlag.tsx   
+ImageErrorIcon, default                   src/icons/ui/ImageErrorIcon.tsx          
+NavigatorWrapper, default                 src/navigator/NavigatorWrapper.tsx       
+PincodeEnter, default                     src/pincode/PincodeEnter.tsx             
+SwapScreen, default                       src/swap/SwapScreen.tsx                  
+SwapTransactionDetails, default           src/swap/SwapTransactionDetails.tsx      
+getWalletAddress, getAccount              src/web3/saga.ts                         
+walletAddressSelector, currentAccount...  src/web3/selectors.ts                    
+WebViewAndroidBottomSheet, default        src/webview/WebViewAndroidBottomSheet.tsx
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

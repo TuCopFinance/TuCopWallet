@@ -1,0 +1,76 @@
+S5 Spike — Gaps captured during BucksPay prototype (integration C)
+
+Target file: src/buckspay/saga.ts (offrampSaga + pollStatusSaga, 206 lines total)
+
+GAP C1: 24h polling exceeds reasonable hook lifecycle.
+  The user can close the app, reopen it 12h later, and expect the
+  status poll to resume. The hook's React lifetime is bounded by
+  screen mount. BucksPay solves this with `resumeTrackingSaga` —
+  saga reads persisted state at app start and resumes the race().
+  -> v4 fix: the hook's customPoll is NOT a long-lived async function.
+     It is a CALLBACK invoked by the in-flight slice's saga whenever
+     a poll tick is due. The slice owns the poll cadence and the
+     persistence; the customPoll callback merely says "is the tx
+     final yet? if so, with what status?". For buckspay, customPoll
+     calls getTransactionStatus(txHash) and returns 'succeeded' if
+     status === 'FINISHED', null otherwise (keep polling).
+
+GAP C2: customPoll must be feature-specific (BucksPay status enum
+  has FINISHED, IN_PROGRESS, ERROR, NOT_FOUND).
+  -> v4 fix: customPoll signature is
+     `(descriptor: InFlightDescriptor) => Promise<InFlightStatus | null>`.
+     null means keep polling, non-null means transition.
+
+GAP C3: customPoll registration timing.
+  The hook starts the flow on screen mount; the saga later picks up
+  the pending-confirmation status and dispatches the poll. customPoll
+  is feature-specific code — where does it live? Options:
+    (a) Pass at hook init: useTransactionInFlight({ customPoll: ... }).
+        Problem: hook only mounted on screen; for resume after restart
+        the hook doesn't exist yet.
+    (b) Register at hook init via a saga channel keyed by flowKind.
+        Slice's saga dispatches a side effect; feature saga (buckspay)
+        listens for 'pollRequested' actions scoped to flowKind='buckspay'
+        and calls its own getTransactionStatus.
+    (c) Pass at start(): start({ ..., customPoll: ... }). Hook converts
+        it into a serializable saga-friendly handle.
+  -> Decision: (b). The hook's slice emits `pollRequested({ flowId,
+     flowKind })`. Feature saga (buckspay/saga) handles this action
+     for its flowKind and dispatches the result back. This decouples
+     the hook from React lifecycle and survives app restarts via
+     standard saga persistence.
+
+GAP C4: API surface: do we still need customPoll on the hook?
+  -> Yes for ergonomics. Hook accepts an OPTIONAL customPoll callback
+     for foreground React-driven flows. If provided, it short-circuits
+     the saga channel. If not, the saga path (b above) handles it.
+     The pre-agreed extension point #1 is satisfied: customPoll is
+     the documented hook-level escape hatch.
+  -> ergonomic addition: customPoll's return type is exactly
+     `Promise<InFlightStatus | null>`. Empty / null means "keep going".
+
+GAP C5: retryClassifier for buckspay.
+  buckspay errors include POLLING_TIMEOUT (custom string), API submit
+  failures (3 retries with backoff), and on-chain failures (sendPreparedTransactions).
+  Each maps to a different ErrorClass:
+    - POLLING_TIMEOUT  -> { kind: 'rpc-timeout', retryable: false }
+    - API submit fail  -> { kind: 'connectivity', retryable: true }
+    - On-chain fail    -> { kind: 'revert', retryable: true }
+  -> v4 fix: pre-agreed extension point #2 covers this exactly.
+     Buckspay registers retryClassifier at hook init (or at start time
+     via featureMetadata).
+
+GAP C6: The hook's 'pending-confirmation' status semantics.
+  For buckspay, "submitted" (tx hash exists) means tx is mined on Celo
+  immediately, but the offramp is NOT done until the webhook reports
+  FINISHED. So 'pending-confirmation' here means "on-chain mined,
+  off-chain not yet final". The hook treats this as a single status
+  regardless of feature; the customPoll defines what "final" means.
+  -> RESOLVED: design is sound. Document in API doc.
+
+Net v4 changes (final API):
+  - Add `customPoll` and `retryClassifier` as optional hook init args.
+  - These are the TWO and ONLY pre-agreed extension points.
+  - Saga-fallback channel pattern documented but not part of the hook's
+    typed API surface (sagas dispatch raw actions; the inFlight slice's
+    own saga handles polling when customPoll is unset).
