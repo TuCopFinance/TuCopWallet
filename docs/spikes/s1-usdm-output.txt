@@ -1,0 +1,36 @@
+================================================================
+S1: submitting EIP-7702 tx (type 0x04) with CIP-64 feeCurrency
+================================================================
+Account:            0x4D0d9e458e8a0D0C2c033B1fc2fE5a182837c3D2
+Delegating to:      0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4
+FeeCurrency token:  USDm
+FeeCurrency addr:   0x765de816845861e75a25fca122bb6898b8b1282a
+--- Pre-balances ---
+CELO:  59753416779231321028
+USDm:  631966618297600708
+COPm:  2198893862650758923724
+--- Authorization signed ---
+chainId: 42220
+nonce:   8
+addr:    0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4
+--- Tx submitted ---
+Hash: 0xda5201baf205b149dd9c9755d8e7c33d59e1a460ea76911e978a5d6a14bb1723
+--- Receipt ---
+Status:     success
+Block:      69685872
+GasUsed:    72804
+EffPrice:   12911400000
+Type:       0x7b
+Logs count: 4
+ log addr= 0x765de816845861e75a25fca122bb6898b8b1282a topic0= 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+ log addr= 0x765de816845861e75a25fca122bb6898b8b1282a topic0= 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+ log addr= 0x765de816845861e75a25fca122bb6898b8b1282a topic0= 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+ log addr= 0x765de816845861e75a25fca122bb6898b8b1282a topic0= 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+--- Post-balances ---
+CELO:  59753416779231321028 (delta: 0 )
+USDm:  631026616732000708 (delta: -940001565600000 )
+COPm:  2198893862650758923724 (delta: 0 )
+--- Verdict ---
+CELO debited:     0
+USDm  debited: 940001565600000
+RESULT: feeCurrency HONORED — gas paid in USDm
