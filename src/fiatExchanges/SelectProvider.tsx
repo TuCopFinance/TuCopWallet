@@ -426,8 +426,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
           analyticsData={analyticsData}
         />
       ))}
-      {(tokenInfo.networkId === NetworkId['celo-mainnet'] ||
-        tokenInfo.networkId === NetworkId['celo-sepolia']) && (
+      {tokenInfo.networkId === NetworkId['celo-mainnet'] && (
         <LegacyMobileMoneySection
           providers={legacyMobileMoneyProviders || []}
           tokenId={tokenInfo.tokenId}

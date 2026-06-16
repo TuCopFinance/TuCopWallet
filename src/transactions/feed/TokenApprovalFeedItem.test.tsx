@@ -14,7 +14,7 @@ describe('TokenApprovalFeedItem', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      showApprovalTxsInHomefeed: ['ethereum-sepolia'],
+      showApprovalTxsInHomefeed: ['ethereum-mainnet'],
     })
   })
 

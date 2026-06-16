@@ -23,9 +23,9 @@ jest.mock('src/statsig', () => ({
   ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn(() => {
     return {
-      showCico: ['celo-sepolia', 'ethereum-sepolia'],
-      showSend: ['celo-sepolia', 'ethereum-sepolia'],
-      showSwap: ['celo-sepolia', 'ethereum-sepolia'],
+      showCico: ['celo-mainnet', 'ethereum-mainnet'],
+      showSend: ['celo-mainnet', 'ethereum-mainnet'],
+      showSwap: ['celo-mainnet', 'ethereum-mainnet'],
     }
   }),
   getFeatureGate: jest.fn().mockReturnValue(true),
@@ -479,7 +479,7 @@ describe('TokenDetails', () => {
             tokenId: mockTestTokenTokenId,
             balance: '10',
             isManuallyImported: true,
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             symbol: 'TT',
           },
         },

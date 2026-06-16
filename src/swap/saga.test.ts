@@ -228,7 +228,7 @@ const store = createMockStore({
       },
       [mockUSDCTokenId]: {
         name: 'USDC coin',
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         tokenId: mockUSDCTokenId,
         address: mockUSDCAddress,
         symbol: 'USDC',
@@ -253,7 +253,7 @@ const store = createMockStore({
         priceUsd: '0.1',
         address: mockTestTokenAddress,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'TT',
         name: 'Imported Token',
         decimals: 18,
@@ -325,14 +325,14 @@ describe(swapSubmitSaga, () => {
   beforeEach(() => {
     sendCallCount = 0
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
   })
 
   const testCases = [
     {
       network: Network.Celo,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       fromTokenId: mockCeurTokenId,
       fromTokenAddress: mockCeurAddress,
       toTokenId: mockCeloTokenId,
@@ -343,7 +343,7 @@ describe(swapSubmitSaga, () => {
     },
     {
       network: Network.Celo,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       fromTokenId: mockCeurTokenId,
       fromTokenAddress: mockCeurAddress,
       toTokenId: mockCeloTokenId,
@@ -355,7 +355,7 @@ describe(swapSubmitSaga, () => {
     },
     {
       network: Network.Ethereum,
-      networkId: NetworkId['ethereum-sepolia'],
+      networkId: NetworkId['ethereum-mainnet'],
       fromTokenId: mockUSDCTokenId,
       fromTokenAddress: mockUSDCAddress,
       toTokenId: mockEthTokenId,
@@ -550,7 +550,7 @@ describe(swapSubmitSaga, () => {
           fromTokenId: mockCeurTokenId,
           toTokenId: mockCeloTokenId,
           transactionHash: '0x1',
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         })
       )
       .put(
@@ -560,7 +560,7 @@ describe(swapSubmitSaga, () => {
             tag: 'swap/saga',
             description: 'Swap/Execute',
           },
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           type: TokenTransactionTypeV2.SwapTransaction,
           inAmount: {
             value: mockSwapWithNativeSellToken.payload.userInput.swapAmount[Field.TO],
@@ -605,7 +605,7 @@ describe(swapSubmitSaga, () => {
             tag: 'swap/saga',
             description: 'Swap/Approve',
           },
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           type: TokenTransactionTypeV2.Approval,
           transactionHash: mockApproveTxReceipt.transactionHash,
           tokenId: mockCeurTokenId,
@@ -620,7 +620,7 @@ describe(swapSubmitSaga, () => {
             tag: 'swap/saga',
             description: 'Swap/Execute',
           },
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           type: TokenTransactionTypeV2.SwapTransaction,
           inAmount: {
             value: mockSwapWithWBTCBuyToken.payload.userInput.swapAmount[Field.TO],
@@ -648,7 +648,7 @@ describe(swapSubmitSaga, () => {
             tag: 'swap/saga',
             description: 'Swap/Approve',
           },
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           type: TokenTransactionTypeV2.Approval,
           transactionHash: mockApproveTxReceipt.transactionHash,
           tokenId: mockCeurTokenId,
@@ -663,7 +663,7 @@ describe(swapSubmitSaga, () => {
             tag: 'swap/saga',
             description: 'Swap/Execute',
           },
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           type: TokenTransactionTypeV2.CrossChainSwapTransaction,
           inAmount: {
             value: mockSwap.payload.userInput.swapAmount[Field.TO],
@@ -695,7 +695,7 @@ describe(swapSubmitSaga, () => {
           fromTokenId: mockCeurTokenId,
           toTokenId: mockTestTokenTokenId,
           transactionHash: '0x2',
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         })
       )
       .run()
@@ -735,11 +735,11 @@ describe(swapSubmitSaga, () => {
       error: 'fake error',
       toToken: mockCeloAddress,
       toTokenId: mockCeloTokenId,
-      toTokenNetworkId: NetworkId['celo-sepolia'],
+      toTokenNetworkId: NetworkId['celo-mainnet'],
       toTokenIsImported: false,
       fromToken: mockCeurAddress,
       fromTokenId: mockCeurTokenId,
-      fromTokenNetworkId: NetworkId['celo-sepolia'],
+      fromTokenNetworkId: NetworkId['celo-mainnet'],
       fromTokenIsImported: false,
       amount: mockSwap.payload.userInput.swapAmount[Field.TO],
       amountType: 'buyAmount',

@@ -31,10 +31,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereuim-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -100,10 +100,10 @@ const staleTokens = {
 
 jest.mocked(getMultichainFeatures).mockReturnValue({
   showBalances: [
-    NetworkId['ethereum-sepolia'],
-    NetworkId['celo-sepolia'],
-    NetworkId['arbitrum-sepolia'],
-    NetworkId['op-sepolia'],
+    NetworkId['ethereum-mainnet'],
+    NetworkId['celo-mainnet'],
+    NetworkId['arbitrum-one'],
+    NetworkId['op-mainnet'],
   ],
 })
 

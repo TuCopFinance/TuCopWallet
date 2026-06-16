@@ -208,20 +208,20 @@ describe(convertTokenToLocalAmount, () => {
 
 describe(getTokenId, () => {
   it('returns Celo native token correctly', () => {
-    const tokenId = getTokenId(NetworkId['celo-sepolia'], networkConfig.celoTokenAddress)
-    expect(tokenId).toEqual('celo-sepolia:native')
+    const tokenId = getTokenId(NetworkId['celo-mainnet'], networkConfig.celoTokenAddress)
+    expect(tokenId).toEqual('celo-mainnet:native')
   })
   it('returns normal Celo token correctly', () => {
-    const tokenId = getTokenId(NetworkId['celo-sepolia'], '0xsomeaddress')
-    expect(tokenId).toEqual('celo-sepolia:0xsomeaddress')
+    const tokenId = getTokenId(NetworkId['celo-mainnet'], '0xsomeaddress')
+    expect(tokenId).toEqual('celo-mainnet:0xsomeaddress')
   })
   it('returns Ethereum native token correctly', () => {
-    const tokenId = getTokenId(NetworkId['ethereum-sepolia'])
-    expect(tokenId).toEqual('ethereum-sepolia:native')
+    const tokenId = getTokenId(NetworkId['ethereum-mainnet'])
+    expect(tokenId).toEqual('ethereum-mainnet:native')
   })
   it('returns normal Ethereum token correctly', () => {
-    const tokenId = getTokenId(NetworkId['ethereum-sepolia'], '0xsomeaddress')
-    expect(tokenId).toEqual('ethereum-sepolia:0xsomeaddress')
+    const tokenId = getTokenId(NetworkId['ethereum-mainnet'], '0xsomeaddress')
+    expect(tokenId).toEqual('ethereum-mainnet:0xsomeaddress')
   })
 })
 

@@ -125,7 +125,7 @@ describe('TransactionDetailsScreen', () => {
     status?: TransactionStatus
   }): TokenTransfer {
     return {
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       type,
       transactionHash: '0x544367eaf2b01622dd1c7b75a6b19bf278d72127aecfb2e5106424c40c268e8b',
       timestamp: 1542306118,
@@ -161,7 +161,7 @@ describe('TransactionDetailsScreen', () => {
       },
     ],
     status = TransactionStatus.Complete,
-    networkId = NetworkId['celo-sepolia'],
+    networkId = NetworkId['celo-mainnet'],
   }: {
     inAmount?: TokenAmount
     outAmount?: TokenAmount
@@ -546,7 +546,7 @@ describe('TransactionDetailsScreen', () => {
                 symbol: 'USDC',
                 balance: '50',
                 priceUsd: '1',
-                networkId: NetworkId['arbitrum-sepolia'],
+                networkId: NetworkId['arbitrum-one'],
                 priceFetchedAt: Date.now(),
               },
               [mockCeloTokenId]: {
@@ -555,7 +555,7 @@ describe('TransactionDetailsScreen', () => {
                 symbol: 'CELO',
                 balance: '100',
                 priceUsd: '0.5',
-                networkId: NetworkId['celo-sepolia'],
+                networkId: NetworkId['celo-mainnet'],
                 priceFetchedAt: Date.now(),
               },
             },
@@ -593,7 +593,7 @@ describe('TransactionDetailsScreen', () => {
     }: Partial<DepositOrWithdraw>): DepositOrWithdraw {
       return {
         type: TokenTransactionTypeV2.Deposit,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         timestamp: 1234567890,
         block: '123456',
         transactionHash: '0x123',
@@ -727,7 +727,7 @@ describe('TransactionDetailsScreen', () => {
       })
 
       expect(getByText('transactionDetailsActions.showCompletedTransactionDetails')).toBeTruthy()
-      expect(getByText(NETWORK_NAMES[NetworkId['celo-sepolia']])).toBeTruthy()
+      expect(getByText(NETWORK_NAMES[NetworkId['celo-mainnet']])).toBeTruthy()
     })
 
     it('renders fees correctly', () => {
@@ -825,22 +825,22 @@ describe('TransactionDetailsScreen', () => {
       storeOverrides: {
         tokens: {
           tokenBalances: {
-            'ethereum-sepolia:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
+            'ethereum-mainnet:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
               name: 'USD Coin',
               balance: '0',
-              tokenId: 'ethereum-sepolia:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-              networkId: NetworkId['ethereum-sepolia'],
+              tokenId: 'ethereum-mainnet:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+              networkId: NetworkId['ethereum-mainnet'],
               decimals: 6,
               address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
               symbol: 'USDC',
             },
-            'ethereum-sepolia:native': {
+            'ethereum-mainnet:native': {
               name: 'Ether',
               isNative: true,
               priceUsd: '2051.31',
               balance: '0',
-              networkId: NetworkId['ethereum-sepolia'],
-              tokenId: 'ethereum-sepolia:native',
+              networkId: NetworkId['ethereum-mainnet'],
+              tokenId: 'ethereum-mainnet:native',
               decimals: 18,
               priceFetchedAt: Date.now(),
               symbol: 'ETH',
@@ -899,7 +899,7 @@ describe('TransactionDetailsScreen', () => {
     expect(getByText('swapTransactionDetailPage.network')).toBeTruthy()
     expect(
       getByText(
-        'swapTransactionDetailPage.networkValue, {"fromNetwork":"Celo Sepolia","toNetwork":"Ethereum Sepolia"}'
+        'swapTransactionDetailPage.networkValue, {"fromNetwork":"Celo","toNetwork":"Ethereum"}'
       )
     ).toBeTruthy()
 
@@ -999,7 +999,7 @@ describe('TransactionDetailsScreen', () => {
   it(`navigates to the celo block explorer url on tap on details action when network is celo`, () => {
     const { getByText } = renderScreen({
       transaction: swapTransaction({
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         status: TransactionStatus.Complete,
       }),
     })
@@ -1010,7 +1010,7 @@ describe('TransactionDetailsScreen', () => {
       Screens.WebViewScreen,
       expect.objectContaining({
         uri: expect.stringMatching(
-          RegExp(`^${new URL(blockExplorerUrls[NetworkId['celo-sepolia']].baseTxUrl).origin}`)
+          RegExp(`^${new URL(blockExplorerUrls[NetworkId['celo-mainnet']].baseTxUrl).origin}`)
         ),
       })
     )
@@ -1019,7 +1019,7 @@ describe('TransactionDetailsScreen', () => {
   it(`navigates to the ethereum block explorer url on tap on details action when the network is ethereum`, () => {
     const { getByText } = renderScreen({
       transaction: swapTransaction({
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         status: TransactionStatus.Complete,
       }),
     })
@@ -1030,7 +1030,7 @@ describe('TransactionDetailsScreen', () => {
       Screens.WebViewScreen,
       expect.objectContaining({
         uri: expect.stringMatching(
-          RegExp(`^${new URL(blockExplorerUrls[NetworkId['ethereum-sepolia']].baseTxUrl).origin}`)
+          RegExp(`^${new URL(blockExplorerUrls[NetworkId['ethereum-mainnet']].baseTxUrl).origin}`)
         ),
       })
     )
@@ -1051,7 +1051,7 @@ describe('TransactionDetailsScreen', () => {
   it(`navigates to the celo block explorer url on tap on block explorer link when network is celo`, () => {
     const { getByText } = renderScreen({
       transaction: swapTransaction({
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         status: TransactionStatus.Complete,
       }),
     })
@@ -1062,7 +1062,7 @@ describe('TransactionDetailsScreen', () => {
       Screens.WebViewScreen,
       expect.objectContaining({
         uri: expect.stringMatching(
-          RegExp(`^${new URL(blockExplorerUrls[NetworkId['celo-sepolia']].baseTxUrl).origin}`)
+          RegExp(`^${new URL(blockExplorerUrls[NetworkId['celo-mainnet']].baseTxUrl).origin}`)
         ),
       })
     )
@@ -1071,7 +1071,7 @@ describe('TransactionDetailsScreen', () => {
   it(`navigates to the ethereum block explorer url on tap on block explorer link when the network is ethereum`, () => {
     const { getByText } = renderScreen({
       transaction: swapTransaction({
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         status: TransactionStatus.Complete,
       }),
     })
@@ -1082,7 +1082,7 @@ describe('TransactionDetailsScreen', () => {
       Screens.WebViewScreen,
       expect.objectContaining({
         uri: expect.stringMatching(
-          RegExp(`^${new URL(blockExplorerUrls[NetworkId['ethereum-sepolia']].baseTxUrl).origin}`)
+          RegExp(`^${new URL(blockExplorerUrls[NetworkId['ethereum-mainnet']].baseTxUrl).origin}`)
         ),
       })
     )
