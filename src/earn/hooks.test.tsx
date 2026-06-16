@@ -111,7 +111,7 @@ const mockSwapDepositResponseBody = {
     ],
     dataProps: {
       swapTransaction: {
-        chainId: 11142220,
+        chainId: 42220,
         buyAmount: '994820',
         sellAmount: '1785876928077378476',
         buyTokenAddress: mockArbArbAddress,
@@ -184,7 +184,7 @@ const expectedSwapDepositPrepareTransactionsResult = {
     appFeePercentageIncludedInPrice: '0.6',
     buyAmount: '994820',
     buyTokenAddress: mockArbArbAddress,
-    chainId: 11142220,
+    chainId: 42220,
     data: '0x0',
     estimatedGasUse: '971972',
     estimatedPriceImpact: '0.0',

@@ -96,7 +96,7 @@ describe(getEncryptedMnemonic, () => {
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 11142220,
+        chainId: 42220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
@@ -134,7 +134,7 @@ describe(getEncryptedMnemonic, () => {
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 11142220,
+        chainId: 42220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
@@ -169,7 +169,7 @@ describe(getEncryptedMnemonic, () => {
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 11142220,
+        chainId: 42220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
@@ -202,7 +202,7 @@ describe(deleteEncryptedMnemonic, () => {
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 11142220,
+        chainId: 42220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
@@ -232,7 +232,7 @@ describe(deleteEncryptedMnemonic, () => {
     expect(jest.mocked(SiweClient)).toHaveBeenCalledWith(
       {
         accountAddress: expect.any(String),
-        chainId: 11142220,
+        chainId: 42220,
         clockUrl: networkConfig.cabClockUrl,
         loginUrl: networkConfig.cabLoginUrl,
         sessionDurationMs: 300000,
