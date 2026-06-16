@@ -1,0 +1,22 @@
+No files changed, compilation skipped
+
+Ran 2 tests for test/BatchExecutorV2.invariant.t.sol:BatchExecutorV2InvariantTest
+[PASS] invariant_contractHoldsNoBalance() (runs: 200, calls: 3000, reverts: 3000)
+
+╭-----------------+----------+-------+---------+----------╮
+| Contract        | Selector | Calls | Reverts | Discards |
++=========================================================+
+| BatchExecutorV2 | execute  | 3000  | 3000    | 0        |
+╰-----------------+----------+-------+---------+----------╯
+
+[PASS] invariant_executeRevertsForExternalCallers() (runs: 200, calls: 3000, reverts: 3000)
+
+╭-----------------+----------+-------+---------+----------╮
+| Contract        | Selector | Calls | Reverts | Discards |
++=========================================================+
+| BatchExecutorV2 | execute  | 3000  | 3000    | 0        |
+╰-----------------+----------+-------+---------+----------╯
+
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 279.95ms (556.22ms CPU time)
+
+Ran 1 test suite in 280.42ms (279.95ms CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
