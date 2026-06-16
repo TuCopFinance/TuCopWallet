@@ -1,0 +1,3 @@
+[submodule "contracts-spike/lib/forge-std"]
+	path = contracts-spike/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
