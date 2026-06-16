@@ -79,8 +79,8 @@ describe('EarnPoolInfoScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showCico: [NetworkId['arbitrum-sepolia']],
-      showSwap: [NetworkId['celo-sepolia'], NetworkId['arbitrum-sepolia']],
+      showCico: [NetworkId['arbitrum-one']],
+      showSwap: [NetworkId['celo-mainnet'], NetworkId['arbitrum-one']],
     })
     jest
       .mocked(getFeatureGate)
@@ -326,8 +326,8 @@ describe('EarnPoolInfoScreen', () => {
     expect(navigateToURI).toHaveBeenCalledWith('https://app.aave.com/?marketName=proto_arbitrum_v3')
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_view_pool, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: 'arbitrum-sepolia',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
     })
   })
@@ -388,9 +388,9 @@ describe('EarnPoolInfoScreen', () => {
     await waitFor(() => expect(getByTestId(testId)).toBeVisible())
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_info_icon, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       type,
-      networkId: 'arbitrum-sepolia',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
     })
   })
@@ -404,8 +404,8 @@ describe('EarnPoolInfoScreen', () => {
     fireEvent.press(getByText('earnFlow.poolInfoScreen.deposit'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_deposit, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: 'arbitrum-sepolia',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
       hasDepositToken: true,
       hasTokensOnSameNetwork: false,
@@ -435,8 +435,8 @@ describe('EarnPoolInfoScreen', () => {
     fireEvent.press(getByText('earnFlow.poolInfoScreen.deposit'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_deposit, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: 'arbitrum-sepolia',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
       hasDepositToken: false,
       hasTokensOnSameNetwork: true,
@@ -545,8 +545,8 @@ describe('EarnPoolInfoScreen', () => {
     fireEvent.press(getByText('earnFlow.poolInfoScreen.deposit'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_deposit, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: 'arbitrum-sepolia',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
       hasDepositToken: false,
       hasTokensOnSameNetwork: false,
@@ -631,8 +631,8 @@ describe('EarnPoolInfoScreen', () => {
     fireEvent.press(getByText('earnFlow.poolInfoScreen.deposit'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_info_tap_deposit, {
       providerId: 'aave',
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: 'arbitrum-sepolia',
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: 'arbitrum-one',
       depositTokenId: mockEarnPositions[0].dataProps.depositTokenId,
       hasDepositToken: false,
       hasTokensOnSameNetwork: false,

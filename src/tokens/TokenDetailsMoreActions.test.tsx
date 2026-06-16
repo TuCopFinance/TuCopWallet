@@ -26,7 +26,7 @@ const mockStoredCeloTokenBalance: StoredTokenBalance = {
   isFeeCurrency: true,
   canTransferWithComment: true,
   priceFetchedAt: Date.now(),
-  networkId: NetworkId['celo-sepolia'],
+  networkId: NetworkId['celo-mainnet'],
   isSwappable: true,
   isCashInEligible: true,
   isCashOutEligible: true,

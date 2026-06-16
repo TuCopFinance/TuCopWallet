@@ -53,7 +53,7 @@ describe('TokenImport', () => {
 
   describe('when only Celo network is enabled', () => {
     beforeEach(() => {
-      mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([NetworkId['celo-sepolia']])
+      mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([NetworkId['celo-mainnet']])
     })
 
     it('renders correctly', () => {
@@ -111,11 +111,11 @@ describe('TokenImport', () => {
       const mockStore = {
         tokens: {
           tokenBalances: {
-            ['celo-sepolia:0x123']: {
+            ['celo-mainnet:0x123']: {
               networkIconUrl: 'celoNativeTokenImageUrl',
               balance: '10',
-              networkId: NetworkId['celo-sepolia'],
-              tokenId: 'celo-sepolia:0x123',
+              networkId: NetworkId['celo-mainnet'],
+              tokenId: 'celo-mainnet:0x123',
             },
           },
         },
@@ -146,8 +146,8 @@ describe('TokenImport', () => {
           symbol: 'ABC',
           name: 'ABC Coin',
           decimals: 18,
-          networkId: NetworkId['celo-sepolia'],
-          tokenId: `celo-sepolia:${mockPoofAddress}`,
+          networkId: NetworkId['celo-mainnet'],
+          tokenId: `celo-mainnet:${mockPoofAddress}`,
           networkIconUrl: 'celoNativeTokenImageUrl',
         })
       )
@@ -255,8 +255,8 @@ describe('TokenImport', () => {
   describe('when more than one network is enabled', () => {
     beforeEach(() => {
       mocked(getSupportedNetworkIdsForTokenBalances).mockReturnValue([
-        NetworkId['celo-sepolia'],
-        NetworkId['ethereum-sepolia'],
+        NetworkId['celo-mainnet'],
+        NetworkId['ethereum-mainnet'],
       ])
     })
 
@@ -288,7 +288,7 @@ describe('TokenImport', () => {
       const importButton = getByText('tokenImport.importButton')
 
       fireEvent.press(getByTestId('NetworkDropdown-Touchable'))
-      fireEvent.press(getByTestId('NetworkDropdown-Ethereum Sepolia'))
+      fireEvent.press(getByTestId('NetworkDropdown-Ethereum'))
 
       fireEvent.changeText(tokenAddressInput, mockPoofAddress)
       expect(tokenSymbolInput).toBeDisabled()
@@ -318,7 +318,7 @@ describe('TokenImport', () => {
       expect(importButton).toBeDisabled()
 
       fireEvent.press(getByTestId('NetworkDropdown-Touchable'))
-      fireEvent.press(getByTestId('NetworkDropdown-Ethereum Sepolia'))
+      fireEvent.press(getByTestId('NetworkDropdown-Ethereum'))
 
       await waitFor(() => expect(tokenSymbolInput.props.value).toBe('ABC'))
       expect(importButton).toBeEnabled()
@@ -328,11 +328,11 @@ describe('TokenImport', () => {
       const mockStore = {
         tokens: {
           tokenBalances: {
-            ['ethereum-sepolia:0x123']: {
+            ['ethereum-mainnet:0x123']: {
               networkIconUrl: 'nativeTokenImageUrl',
               balance: '10',
-              networkId: NetworkId['ethereum-sepolia'],
-              tokenId: 'ethereum-sepolia:0x123',
+              networkId: NetworkId['ethereum-mainnet'],
+              tokenId: 'ethereum-mainnet:0x123',
             },
           },
         },
@@ -349,7 +349,7 @@ describe('TokenImport', () => {
       const importButton = getByText('tokenImport.importButton')
 
       fireEvent.press(getByTestId('NetworkDropdown-Touchable'))
-      fireEvent.press(getByTestId('NetworkDropdown-Ethereum Sepolia'))
+      fireEvent.press(getByTestId('NetworkDropdown-Ethereum'))
 
       fireEvent.changeText(tokenAddressInput, mockPoofAddress)
       expect(tokenSymbolInput).toBeDisabled()
@@ -366,8 +366,8 @@ describe('TokenImport', () => {
           symbol: 'ABC',
           name: 'ABC Coin',
           decimals: 18,
-          networkId: NetworkId['ethereum-sepolia'],
-          tokenId: `ethereum-sepolia:${mockPoofAddress}`,
+          networkId: NetworkId['ethereum-mainnet'],
+          tokenId: `ethereum-mainnet:${mockPoofAddress}`,
           networkIconUrl: 'nativeTokenImageUrl',
         })
       )

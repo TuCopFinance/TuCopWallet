@@ -137,24 +137,24 @@ export const mockAaveArbUsdcAddress = '0x460b97BD498E1157530AEb3086301d5225b9121
 export const mockArbArbAddress = '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase()
 export const mockCkesAddress = '0x1e0433c1769271eccf4cff9fddd515eefe6cdf92'.toLowerCase()
 
-export const mockCusdTokenId = `celo-sepolia:${mockCusdAddress}`
-export const mockCeurTokenId = `celo-sepolia:${mockCeurAddress}`
-export const mockCeloTokenId = `celo-sepolia:native`
-export const mockPoofTokenId = `celo-sepolia:${mockPoofAddress}`
-export const mockTestTokenTokenId = `celo-sepolia:${mockTestTokenAddress}`
-export const mockCrealTokenId = `celo-sepolia:${mockCrealAddress}`
-export const mockWBTCTokenId = `celo-sepolia:${mockWBTCAddress}`
-export const mockEthTokenId = 'ethereum-sepolia:native'
-export const mockUSDCTokenId = `ethereum-sepolia:${mockUSDCAddress}` // legacy: ethereum-sepolia for swap tests
+export const mockCusdTokenId = `celo-mainnet:${mockCusdAddress}`
+export const mockCeurTokenId = `celo-mainnet:${mockCeurAddress}`
+export const mockCeloTokenId = `celo-mainnet:native`
+export const mockPoofTokenId = `celo-mainnet:${mockPoofAddress}`
+export const mockTestTokenTokenId = `celo-mainnet:${mockTestTokenAddress}`
+export const mockCrealTokenId = `celo-mainnet:${mockCrealAddress}`
+export const mockWBTCTokenId = `celo-mainnet:${mockWBTCAddress}`
+export const mockEthTokenId = 'ethereum-mainnet:native'
+export const mockUSDCTokenId = `ethereum-mainnet:${mockUSDCAddress}` // legacy: ethereum-mainnet for swap tests
 export const mockUSDCCeloTokenId = `celo-mainnet:${mockUSDCCeloAddress}`
 export const mockUSDmTokenId = `celo-mainnet:${mockUSDmAddress}`
 export const mockUSATTokenId = `celo-mainnet:${mockUSATAddress}`
-export const mockArbEthTokenId = `arbitrum-sepolia:native`
-export const mockOPTokenId = `op-sepolia:native`
-export const mockArbUsdcTokenId = `arbitrum-sepolia:${mockUSDCAddress}`
-export const mockArbArbTokenId = `arbitrum-sepolia:${mockArbArbAddress}`
-export const mockAaveArbUsdcTokenId = `arbitrum-sepolia:${mockAaveArbUsdcAddress}`
-export const mockCkesTokenId = `celo-sepolia:${mockCkesAddress}`
+export const mockArbEthTokenId = `arbitrum-one:native`
+export const mockOPTokenId = `op-mainnet:native`
+export const mockArbUsdcTokenId = `arbitrum-one:${mockUSDCAddress}`
+export const mockArbArbTokenId = `arbitrum-one:${mockArbArbAddress}`
+export const mockAaveArbUsdcTokenId = `arbitrum-one:${mockAaveArbUsdcAddress}`
+export const mockCkesTokenId = `celo-mainnet:${mockCkesAddress}`
 
 export const mockQrCodeData2 = {
   address: mockAccount2Invite,
@@ -421,7 +421,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '0.1',
     address: mockPoofAddress,
     tokenId: mockPoofTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'POOF',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_POOF.png',
@@ -434,7 +434,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '1.16',
     address: mockCeurAddress,
     tokenId: mockCeurTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'cEUR',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cEUR.png',
@@ -452,7 +452,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '1.001',
     address: mockCusdAddress,
     tokenId: mockCusdTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'cUSD',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cUSD.png',
@@ -471,7 +471,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '13.25085583155252100584',
     address: mockCeloAddress,
     tokenId: mockCeloTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'CELO', // NOT cGLD, see https://github.com/valora-inc/address-metadata/blob/c84ef7056fa066ef86f9b4eb295ae248f363f67a/src/data/mainnet/tokens-info.json#L173
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/CELO.png',
     name: 'Celo native asset',
@@ -489,7 +489,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '0.17',
     address: mockCrealAddress,
     tokenId: mockCrealTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'cREAL',
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/cREAL.png',
     name: 'Celo Real',
@@ -505,7 +505,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     priceUsd: '1500',
     address: null,
     tokenId: mockEthTokenId,
-    networkId: NetworkId['ethereum-sepolia'],
+    networkId: NetworkId['ethereum-mainnet'],
     symbol: 'ETH',
     imageUrl: 'https://example.com/address-metadata/main/assets/tokens/ETH.png',
     name: 'Ether',
@@ -518,7 +518,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockUSDCTokenId]: {
     name: 'USDC coin',
-    networkId: NetworkId['ethereum-sepolia'],
+    networkId: NetworkId['ethereum-mainnet'],
     tokenId: mockUSDCTokenId,
     address: mockUSDCAddress,
     symbol: 'USDC',
@@ -533,7 +533,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockArbEthTokenId]: {
     name: 'Ethereum',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     tokenId: mockArbEthTokenId,
     address: null,
     symbol: 'ETH',
@@ -546,7 +546,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockOPTokenId]: {
     name: 'Ethereum',
-    networkId: NetworkId['op-sepolia'],
+    networkId: NetworkId['op-mainnet'],
     tokenId: mockOPTokenId,
     address: null,
     symbol: 'ETH',
@@ -559,7 +559,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockArbUsdcTokenId]: {
     name: 'USD Coin',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     tokenId: mockArbUsdcTokenId,
     address: mockUSDCAddress,
     symbol: 'USDC',
@@ -571,7 +571,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockArbArbTokenId]: {
     name: 'Arbitrum',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     tokenId: mockArbArbTokenId,
     address: mockArbArbAddress,
     symbol: 'ARB',
@@ -583,7 +583,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockAaveArbUsdcTokenId]: {
     name: 'Aave USDC',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     tokenId: mockAaveArbUsdcTokenId,
     address: mockAaveArbUsdcAddress,
     symbol: 'AUSDC',
@@ -595,7 +595,7 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
   },
   [mockCkesTokenId]: {
     name: 'cKES',
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     tokenId: mockCkesTokenId,
     address: mockCkesAddress,
     symbol: 'cKES',
@@ -1674,10 +1674,10 @@ export const mockPositions: Position[] = [
 export const mockRewardsPositions: Position[] = [
   {
     type: 'app-token',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-    tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-    positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+    tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+    positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
     appId: 'aave',
     appName: 'Aave',
     symbol: 'aArbUSDCn',
@@ -1702,19 +1702,19 @@ export const mockRewardsPositions: Position[] = [
         {
           amount: '0.047640282134479525',
           label: 'Rewards',
-          tokenId: 'arbitrum-sepolia:0x912ce59144191c1204e64559fe8253a0e49e6548',
+          tokenId: 'arbitrum-one:0x912ce59144191c1204e64559fe8253a0e49e6548',
         },
       ],
       rewardsPositionIds: [
-        'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
+        'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
       ],
       depositTokenId: mockArbUsdcTokenId,
-      withdrawTokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+      withdrawTokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
     },
     tokens: [
       {
         tokenId: mockArbUsdcTokenId,
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         address: mockUSDCAddress,
         symbol: 'USDC',
         decimals: 6,
@@ -1732,8 +1732,8 @@ export const mockRewardsPositions: Position[] = [
   {
     type: 'contract-position',
     address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-    networkId: NetworkId['arbitrum-sepolia'],
-    positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
+    networkId: NetworkId['arbitrum-one'],
+    positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
     appId: 'aave',
     appName: 'Aave',
     displayProps: {
@@ -1748,8 +1748,8 @@ export const mockRewardsPositions: Position[] = [
         decimals: 18,
         imageUrl:
           'https://raw.githubusercontent.com/valora-inc/address-metadata/main/assets/tokens/ARB.png',
-        networkId: NetworkId['arbitrum-sepolia'],
-        tokenId: 'arbitrum-sepolia:0x912ce59144191c1204e64559fe8253a0e49e6548',
+        networkId: NetworkId['arbitrum-one'],
+        tokenId: 'arbitrum-one:0x912ce59144191c1204e64559fe8253a0e49e6548',
         networkIconUrl:
           'https://raw.githubusercontent.com/valora-inc/address-metadata/main/assets/tokens/ARB.png',
         priceUsd: '0.5443',
@@ -1771,10 +1771,10 @@ export const mockRewardsPositions: Position[] = [
 export const mockEarnPositions: EarnPosition[] = [
   {
     type: 'app-token',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-    tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-    positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+    tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+    positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
     appId: 'aave',
     appName: 'Aave',
     symbol: 'aArbSepUSDC',
@@ -1794,20 +1794,20 @@ export const mockEarnPositions: EarnPosition[] = [
       ],
       earningItems: [],
       depositTokenId: mockArbUsdcTokenId,
-      withdrawTokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+      withdrawTokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       tvl: '1360000',
       contractCreatedAt: '2024-03-08T02:23:53.000Z',
       manageUrl: 'https://app.aave.com/?marketName=proto_arbitrum_v3',
       termsUrl: 'termsUrl',
       rewardsPositionIds: [
-        'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
+        'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives',
       ],
       claimType: 'earnings',
     },
     tokens: [
       {
         tokenId: mockArbUsdcTokenId,
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         address: mockUSDCAddress,
         symbol: 'USDC',
         decimals: 6,
@@ -1832,10 +1832,10 @@ export const mockEarnPositions: EarnPosition[] = [
   },
   {
     type: 'app-token',
-    networkId: NetworkId['ethereum-sepolia'],
+    networkId: NetworkId['ethereum-mainnet'],
     address: '0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
-    tokenId: 'ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
-    positionId: 'ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
+    tokenId: 'ethereum-mainnet:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
+    positionId: 'ethereum-mainnet:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
     appId: 'aave',
     appName: 'Aave',
     symbol: 'aEthETH',
@@ -1855,14 +1855,14 @@ export const mockEarnPositions: EarnPosition[] = [
       ],
       earningItems: [],
       depositTokenId: mockEthTokenId,
-      withdrawTokenId: 'ethereum-sepolia:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
+      withdrawTokenId: 'ethereum-mainnet:0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
       contractCreatedAt: '2023-07-04T08:25:48.000Z',
       manageUrl: 'https://app.aave.com/?marketName=proto_mainnet_v3',
     },
     tokens: [
       {
         tokenId: mockEthTokenId,
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         symbol: 'ETH',
         decimals: 6,
         priceUsd: '0',
@@ -1903,7 +1903,7 @@ export const mockShortcuts: Shortcut[] = [
     id: 'claim-rewards',
     name: 'Claim',
     description: 'Claim rewards',
-    networkIds: [NetworkId['arbitrum-sepolia']],
+    networkIds: [NetworkId['arbitrum-one']],
     category: 'claim',
     appId: 'aave',
   },
@@ -1983,7 +1983,7 @@ export const mockNftAllFields: NftWithMetadata = {
   ownerAddress: mockAccount,
   tokenId: '1',
   tokenUri: 'https://example.com/1',
-  networkId: NetworkId['celo-sepolia'],
+  networkId: NetworkId['celo-mainnet'],
 }
 
 export const mockNftMinimumFields: Nft = {
@@ -2049,10 +2049,10 @@ export const mockTypedData = {
 } as const
 
 export const mockApprovalTransaction: TokenApproval = {
-  tokenId: 'ethereum-sepolia:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  tokenId: 'ethereum-mainnet:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
   timestamp: 1695389027000,
   type: TokenTransactionTypeV2.Approval,
-  networkId: NetworkId['ethereum-sepolia'],
+  networkId: NetworkId['ethereum-mainnet'],
   block: '18191655',
   approvedAmount: null,
   transactionHash: '0xdad953e4a5dbc282b8e966aeb03a9b2361b60a6ccec4bc97fa0213d8ca67d3ee',
@@ -2060,7 +2060,7 @@ export const mockApprovalTransaction: TokenApproval = {
     {
       type: 'SECURITY_FEE',
       amount: {
-        tokenId: 'ethereum-sepolia:native',
+        tokenId: 'ethereum-mainnet:native',
         value: '0.00103133153065659',
       },
     },
@@ -2088,7 +2088,7 @@ export const mockClaimRewardTransaction: ClaimReward = {
       type: 'SECURITY_FEE',
     },
   ],
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   appName: 'Aave',
   timestamp: Date.now(),
   transactionHash: '0xHASH2',
@@ -2115,7 +2115,7 @@ export const mockEarnClaimRewardTransaction: EarnClaimReward = {
       type: 'SECURITY_FEE',
     },
   ],
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   providerId: 'aave',
   timestamp: Date.now(),
   transactionHash: '0xHASH2',
@@ -2147,7 +2147,7 @@ export const mockEarnDepositTransaction: EarnDeposit = {
       type: 'SECURITY_FEE',
     },
   ],
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   providerId: 'aave',
   timestamp: Date.now(),
   transactionHash: '0xHASH1',
@@ -2197,7 +2197,7 @@ export const mockEarnSwapDeposit: EarnSwapDeposit = {
       type: 'SECURITY_FEE',
     },
   ],
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   timestamp: Date.now(),
   transactionHash: '0xHASH1',
   status: TransactionStatus.Complete,
@@ -2229,7 +2229,7 @@ export const mockEarnWithdrawTransaction: EarnWithdraw = {
       type: 'SECURITY_FEE',
     },
   ],
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   providerId: 'aave',
   timestamp: Date.now(),
   transactionHash: '0xHASH0',

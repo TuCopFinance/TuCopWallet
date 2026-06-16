@@ -1,9 +1,8 @@
 import { DOLLAR_TOKEN_IDS, getDollarTokenIds, isDollarToken } from 'src/tokens/dollarGroup'
 import networkConfig from 'src/web3/networkConfig'
 
-// Tests run against whichever network the test env uses (DEFAULT_TESTNET).
-// We assert membership by reading networkConfig so the tests stay correct
-// regardless of testnet vs mainnet.
+// Assertions read networkConfig so the tests stay correct against the
+// mainnet-only configuration shipped by the app.
 
 describe('DOLLAR_TOKEN_IDS', () => {
   it('includes USDT token ID', () => {
@@ -18,8 +17,8 @@ describe('DOLLAR_TOKEN_IDS', () => {
     expect(DOLLAR_TOKEN_IDS.has(networkConfig.usdmTokenId)).toBe(true)
   })
 
-  it('does not contain empty string (USAT absent on Sepolia where usatTokenId is empty)', () => {
-    // filter(Boolean) in dollarGroup.ts must drop the empty-string USAT id on Sepolia
+  it('does not contain empty string', () => {
+    // filter(Boolean) in dollarGroup.ts drops any empty-string token id
     expect(DOLLAR_TOKEN_IDS.has('')).toBe(false)
   })
 

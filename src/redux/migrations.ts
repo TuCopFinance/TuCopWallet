@@ -1657,22 +1657,12 @@ export const migrations = {
     },
   }),
   204: (state: any) => {
-    function chooseNetworkId({
-      networkId,
-      network,
-    }: {
-      networkId?: NetworkId
-      network?: 'celo' | 'celoAlfajores'
-    }) {
+    function chooseNetworkId({ networkId, network }: { networkId?: NetworkId; network?: string }) {
       // hooks API has been returning 'networkId' since 4/2/2024, so users who have been active since then already have networkId in state
       if (networkId) {
         return networkId
       }
-      // users inactive since before 4/2 have 'network' in their state
-      if (network) {
-        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
-      }
-      // should never happen, but only celo mainnet has been released so far
+      // users inactive since before 4/2 have 'network' in their state - default everything to mainnet now
       return NetworkId['celo-mainnet']
     }
 
@@ -1681,15 +1671,13 @@ export const migrations = {
       networks,
     }: {
       networkIds?: NetworkId[]
-      networks?: ('celo' | 'celoAlfajores')[]
+      networks?: string[]
     }) {
       if (networkIds) {
         return networkIds
       }
       if (networks) {
-        return networks.map((network) =>
-          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
-        )
+        return networks.map(() => NetworkId['celo-mainnet'])
       }
       // should never happen, but only celo mainnet has been released so far
       return [NetworkId['celo-mainnet']]
@@ -1700,7 +1688,7 @@ export const migrations = {
       positions: {
         ...state.positions,
         shortcuts: state.positions.shortcuts.map(
-          (shortcut: { networks?: ('celo' | 'celoAlfajores')[]; networkIds?: NetworkId[] }) => {
+          (shortcut: { networks?: string[]; networkIds?: NetworkId[] }) => {
             return {
               ..._.omit(shortcut, 'networks'),
               networkIds: chooseNetworkIds(shortcut),
@@ -1709,14 +1697,14 @@ export const migrations = {
         ),
         positions: state.positions.positions.map(
           (position: {
-            network?: 'celo' | 'celoAlfajores'
+            network?: string
             networkId?: NetworkId
-            tokens: { network: 'celo' | 'celoAlfajores' }[]
+            tokens: { network: string }[]
           }) => {
             // deliberately using types specific to this migration since they are frozen, whereas types used in the app
             //  can have breaking changes relevant to this migration
             type LegacyToken = {
-              network?: 'celo' | 'celoAlfajores'
+              network?: string
               networkId?: NetworkId
               tokens?: LegacyToken[]
             }
@@ -1885,9 +1873,7 @@ export const migrations = {
     for (const networkId of Object.keys(state.transactions.transactionsByNetworkId)) {
       const transactions = []
       for (const tx of state.transactions.transactionsByNetworkId[networkId]) {
-        ;(networkId === NetworkId['arbitrum-one'] || networkId === NetworkId['arbitrum-sepolia']) &&
-        tx.providerId &&
-        tx.providerId === 'aave-v3'
+        networkId === NetworkId['arbitrum-one'] && tx.providerId && tx.providerId === 'aave-v3'
           ? transactions.push({ ...tx, providerId: 'aave' })
           : transactions.push(tx)
       }
@@ -1997,10 +1983,9 @@ export const migrations = {
     },
   }),
   240: (state: any) => {
-    // Migrate persisted state from deprecated Alfajores (celo-alfajores) to Celo Sepolia (celo-sepolia)
-    const stateStr = JSON.stringify(state)
-    const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
-    return JSON.parse(migratedStr)
+    // Historical migration retained for version continuity; deprecated test
+    // networks were collapsed into Celo mainnet in a subsequent app release.
+    return state
   },
   241: (state: any) => ({
     ...state,

@@ -18,7 +18,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -31,7 +31,7 @@ const mockBalances = {
     tokenBalances: {
       [copmTokenId]: {
         name: 'COPm',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         tokenId: copmTokenId,
         address: copmTokenId.split(':')[1],
         symbol: 'COPm',
@@ -44,7 +44,7 @@ const mockBalances = {
       },
       [usdtTokenId]: {
         name: 'USDT',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         tokenId: usdtTokenId,
         address: usdtTokenId.split(':')[1],
         symbol: 'USDT',
@@ -68,7 +68,7 @@ jest.mock('src/fiatExchanges/utils', () => ({
 jest.mock('src/tokens/hooks', () => ({
   ...jest.requireActual('src/tokens/hooks'),
   useUSDT: () => ({
-    tokenId: 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb',
+    tokenId: 'celo-mainnet:0xd077a400968890eacc75cdc901f0356c943e4fdb',
     symbol: 'USDT',
   }),
 }))
@@ -152,7 +152,7 @@ describe('TabHome', () => {
 
     fireEvent.press(getByTestId('FlatCard/AddCOPm'))
     expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
-      tokenId: 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb',
+      tokenId: 'celo-mainnet:0xd077a400968890eacc75cdc901f0356c943e4fdb',
       flow: 'CashIn',
       tokenSymbol: 'USDT',
     })

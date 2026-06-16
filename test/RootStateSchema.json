@@ -2326,16 +2326,10 @@
         "NetworkId": {
             "enum": [
                 "arbitrum-one",
-                "arbitrum-sepolia",
                 "base-mainnet",
-                "base-sepolia",
                 "celo-mainnet",
-                "celo-sepolia",
                 "ethereum-mainnet",
-                "ethereum-sepolia",
                 "op-mainnet",
-                "op-sepolia",
-                "polygon-pos-amoy",
                 "polygon-pos-mainnet"
             ],
             "type": "string"
@@ -7083,19 +7077,7 @@
                     },
                     "type": "array"
                 },
-                "arbitrum-sepolia": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
                 "base-mainnet": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
-                "base-sepolia": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },
@@ -7107,37 +7089,13 @@
                     },
                     "type": "array"
                 },
-                "celo-sepolia": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
                 "ethereum-mainnet": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },
                     "type": "array"
                 },
-                "ethereum-sepolia": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
                 "op-mainnet": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
-                "op-sepolia": {
-                    "items": {
-                        "$ref": "#/definitions/TokenTransaction"
-                    },
-                    "type": "array"
-                },
-                "polygon-pos-amoy": {
                     "items": {
                         "$ref": "#/definitions/TokenTransaction"
                     },

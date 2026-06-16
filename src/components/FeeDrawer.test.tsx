@@ -52,7 +52,7 @@ describe('FeeDrawer', () => {
           tokens: {
             tokenBalances: {
               [mockCusdTokenId]: {
-                networkId: NetworkId['celo-sepolia'],
+                networkId: NetworkId['celo-mainnet'],
                 address: mockCusdAddress,
                 tokenId: mockCusdTokenId,
                 symbol: 'cUSD',
@@ -61,7 +61,7 @@ describe('FeeDrawer', () => {
                 priceFetchedAt: Date.now(),
               },
               [mockCeloTokenId]: {
-                networkId: NetworkId['celo-sepolia'],
+                networkId: NetworkId['celo-mainnet'],
                 address: mockCeloAddress,
                 tokenId: mockCeloTokenId,
                 symbol: 'CELO',

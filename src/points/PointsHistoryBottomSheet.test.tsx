@@ -13,7 +13,7 @@ import { RecursivePartial, createMockStore } from 'test/utils'
 jest.mock('src/statsig', () => ({
   ...jest.requireActual('src/statsig/__mocks__/index'),
   getMultichainFeatures: jest.fn().mockReturnValue({
-    showSwap: ['celo-sepolia'],
+    showSwap: ['celo-mainnet'],
   }),
 }))
 
@@ -24,7 +24,7 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 10,
       createdAt: '2024-03-05T20:26:25.000Z',
       metadata: {
-        tokenId: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        tokenId: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       },
     },
     {
@@ -41,7 +41,7 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
         liveLinkType: 'erc20',
-        tokenId: 'celo-sepolia:native',
+        tokenId: 'celo-mainnet:native',
       },
     },
     {
@@ -49,8 +49,8 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
-        to: 'celo-sepolia:native',
-        from: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        to: 'celo-mainnet:native',
+        from: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       },
     },
     {
@@ -58,8 +58,8 @@ const MOCK_RESPONSE_NO_NEXT_PAGE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
-        to: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
-        from: 'celo-sepolia:native',
+        to: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        from: 'celo-mainnet:native',
       },
     },
     {
@@ -114,7 +114,7 @@ describe(PointsHistoryBottomSheet, () => {
     await waitFor(() => expect(tree.getByTestId('PointsHistoryList').props.data.length).toBe(2))
 
     expect(
-      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo Sepolia"}')
+      tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo"}')
     ).toBeTruthy()
     expect(
       tree.getByText('points.history.cards.createLiveLink.subtitle.erc20, {"tokenSymbol":"CELO"}')

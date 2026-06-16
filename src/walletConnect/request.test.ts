@@ -19,8 +19,7 @@ import {
   mockCusdTokenId,
   mockTypedData,
 } from 'test/values'
-import { sepolia as ethereumSepolia } from 'viem/chains'
-import { celoSepolia } from 'src/viem/celoSepolia'
+import { celo, mainnet as ethereumMainnet } from 'viem/chains'
 
 jest.mock('src/web3/networkConfig', () => {
   const originalModule = jest.requireActual('src/web3/networkConfig')
@@ -29,7 +28,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -84,7 +83,7 @@ const state = createMockStore({
         symbol: 'cUSD',
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -94,7 +93,7 @@ const state = createMockStore({
         symbol: 'cEUR',
         address: mockCeurAddress,
         tokenId: mockCeurTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -104,7 +103,7 @@ const state = createMockStore({
         symbol: 'CELO',
         address: mockCeloAddress,
         tokenId: mockCeloTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         isFeeCurrency: true,
         priceFetchedAt: Date.now(),
       },
@@ -116,7 +115,7 @@ describe(handleRequest, () => {
   let viemWallet: Partial<ViemWallet>
 
   beforeAll(function* () {
-    viemWallet = yield* getViemWallet(celoSepolia)
+    viemWallet = yield* getViemWallet(celo)
   })
 
   beforeEach(() => {
@@ -126,14 +125,14 @@ describe(handleRequest, () => {
   it('chooses the correct wallet for the request', async () => {
     await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11155111' })
       .withState(state)
-      .call(getViemWallet, ethereumSepolia)
-      .not.call(getViemWallet, celoSepolia)
+      .call(getViemWallet, ethereumMainnet)
+      .not.call(getViemWallet, celo)
       .run()
 
     await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11142220' })
       .withState(state)
-      .call(getViemWallet, celoSepolia)
-      .not.call(getViemWallet, ethereumSepolia)
+      .call(getViemWallet, celo)
+      .not.call(getViemWallet, ethereumMainnet)
       .run()
   })
 

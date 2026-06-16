@@ -67,10 +67,10 @@ const MOCK_EARN_POSITIONS_RESPONSE = {
   data: [
     {
       type: 'app-token',
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-      tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+      tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       appId: 'aave',
       appName: 'Aave',
       symbol: 'aArbSepUSDC',
@@ -85,17 +85,17 @@ const MOCK_EARN_POSITIONS_RESPONSE = {
           {
             percentage: 1.9194202601763743,
             label: 'Earnings APY',
-            tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+            tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
           },
         ],
         earningItems: [],
-        depositTokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-        withdrawTokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+        depositTokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+        withdrawTokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       },
       tokens: [
         {
-          tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-          networkId: NetworkId['arbitrum-sepolia'],
+          tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+          networkId: NetworkId['arbitrum-one'],
           address: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
           symbol: 'USDC',
           decimals: 6,
@@ -137,7 +137,7 @@ describe(fetchPositionsSaga, () => {
       showPositions: [NetworkId['celo-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      supportedPools: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+      supportedPools: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
       supportedAppIds: ['aave'],
     })
     await expectSaga(fetchPositionsSaga)
@@ -165,7 +165,7 @@ describe(fetchPositionsSaga, () => {
       showPositions: [NetworkId['celo-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      supportedPools: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+      supportedPools: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
       supportedAppIds: ['aave'],
     })
     await expectSaga(fetchPositionsSaga)

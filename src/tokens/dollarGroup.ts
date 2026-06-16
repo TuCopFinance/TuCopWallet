@@ -1,8 +1,7 @@
 import networkConfig from 'src/web3/networkConfig'
 
 // Set of token IDs that represent USD-denominated stablecoins shown
-// as "Dolares" on the home screen. USAT is mainnet-only; on Sepolia
-// networkConfig.usatTokenId is '' and filter(Boolean) drops it.
+// as "Dolares" on the home screen.
 export const DOLLAR_TOKEN_IDS = new Set<string>(
   [
     networkConfig.usdtTokenId,

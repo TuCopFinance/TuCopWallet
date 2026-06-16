@@ -175,14 +175,14 @@ describe('home reducer', () => {
     const updatedState = reducer(
       undefined,
       celebratedNftFound({
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         contractAddress: mockContractAddress,
         ...mockRewardProperties,
       })
     )
 
     expect(updatedState.nftCelebration).toEqual({
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       contractAddress: mockContractAddress,
       status: NftCelebrationStatus.celebrationReadyToDisplay,
       ...mockRewardProperties,
