@@ -20,7 +20,7 @@ describe(SessionRequest, () => {
       requiredNamespaces: {
         eip155: {
           methods: ['eth_sendTransaction', 'personal_sign'],
-          chains: ['eip155:11155111', 'eip155:11142220'],
+          chains: ['eip155:1', 'eip155:42220'],
           events: ['chainChanged', 'accountsChanged'],
         },
       },
@@ -54,15 +54,15 @@ describe(SessionRequest, () => {
     proposal: pendingSession.params,
     supportedNamespaces: {
       eip155: {
-        chains: ['eip155:11155111', 'eip155:11142220'],
+        chains: ['eip155:1', 'eip155:42220'],
         methods: Object.values(SupportedActions) as string[],
         events: Object.values(SupportedEvents) as string[],
-        accounts: [`eip155:11155111:${mockAccount}`, `eip155:11142220:${mockAccount}`],
+        accounts: [`eip155:1:${mockAccount}`, `eip155:42220:${mockAccount}`],
       },
     },
   })
 
-  const supportedChains = ['eip155:11142220']
+  const supportedChains = ['eip155:42220']
 
   const store = createMockStore({})
 
@@ -78,7 +78,7 @@ describe(SessionRequest, () => {
             version={2}
             pendingSession={pendingSession}
             namespacesToApprove={namespacesToApprove}
-            supportedChains={['eip155:11155111', 'eip155:11142220']}
+            supportedChains={['eip155:1', 'eip155:42220']}
           />
         </Provider>
       )
