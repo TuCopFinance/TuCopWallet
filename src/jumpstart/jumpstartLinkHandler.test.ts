@@ -52,7 +52,7 @@ describe('jumpstartLinkHandler', () => {
     expect(result).toEqual(['0xHASH'])
     expect(fetchWithTimeout).toHaveBeenCalledTimes(1)
     expect(fetchWithTimeout).toHaveBeenCalledWith(
-      `${networkConfig.walletJumpstartUrl}?index=1&beneficiary=${mockBeneficiary}&signature=${mockSignature}&sendTo=${mockUserAddress}&assetType=erc20&networkId=celo-sepolia`,
+      `${networkConfig.walletJumpstartUrl}?index=1&beneficiary=${mockBeneficiary}&signature=${mockSignature}&sendTo=${mockUserAddress}&assetType=erc20&networkId=celo-mainnet`,
       expect.any(Object),
       expect.any(Number)
     )
@@ -80,7 +80,7 @@ describe('jumpstartLinkHandler', () => {
         mockPrivateKey,
         mockUserAddress
       )
-    ).rejects.toThrow('Already claimed all jumpstart rewards for celo-sepolia')
+    ).rejects.toThrow('Already claimed all jumpstart rewards for celo-mainnet')
 
     expect(fetchWithTimeout).not.toHaveBeenCalled()
   })

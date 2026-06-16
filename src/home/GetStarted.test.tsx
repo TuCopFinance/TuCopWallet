@@ -17,7 +17,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -29,7 +29,7 @@ const mockStoreWithCOPm = createMockStore({
     tokenBalances: {
       [copmTokenId]: {
         name: 'COPm',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         tokenId: copmTokenId,
         address: copmTokenId.split(':')[1],
         symbol: 'COPm',

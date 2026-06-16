@@ -123,7 +123,7 @@ function createSession(proposerMetadata: CoreTypes.Metadata): SessionTypes.Struc
 beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(getMultichainFeatures).mockReturnValue({
-    showWalletConnect: [NetworkId['celo-sepolia']],
+    showWalletConnect: [NetworkId['celo-mainnet']],
   })
 })
 
@@ -286,7 +286,7 @@ describe('showSessionRequest', () => {
 
   it('includes all supported chains for session approval', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showWalletConnect: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showWalletConnect: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     const state = createMockStore({}).getState()
     await expectSaga(_showSessionRequest, sessionProposal)

@@ -31,7 +31,7 @@ const _baseFeePerGas = parseGwei('1')
 const transactions = [
   {
     from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     data: '0x3d18b912',
     to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
   } as const,
@@ -80,7 +80,7 @@ const mockResponseBody = {
   data: {
     transactions: [
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',
@@ -94,13 +94,13 @@ const mockSwapDepositResponseBody = {
   data: {
     transactions: [
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',
       },
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',

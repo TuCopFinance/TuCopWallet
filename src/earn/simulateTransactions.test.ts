@@ -49,7 +49,7 @@ describe('simulateTransactions', () => {
     )
     const simulatedTransactions = await simulateTransactions({
       baseTransactions: mockBaseTransactions,
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
     })
     expect(mockFetch).toHaveBeenCalledWith(
       networkConfig.simulateTransactionsUrl,
@@ -60,7 +60,7 @@ describe('simulateTransactions', () => {
         },
         body: JSON.stringify({
           transactions: mockBaseTransactions,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
         }),
       })
     )
@@ -77,7 +77,7 @@ describe('simulateTransactions', () => {
     await expect(
       simulateTransactions({
         baseTransactions: mockBaseTransactions,
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
       })
     ).rejects.toThrow(
       'Failed to simulate transactions. status 500, text: {"status":"ERROR","error":"something went wrong"}'
@@ -93,7 +93,7 @@ describe('simulateTransactions', () => {
     await expect(
       simulateTransactions({
         baseTransactions: mockBaseTransactions,
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
       })
     ).rejects.toThrow(
       'Expected 2 simulated transactions, got 1, response: [{"status":"success","blockNumber":"1","gasNeeded":3000,"gasUsed":2800,"gasPrice":"1"}]'
@@ -112,7 +112,7 @@ describe('simulateTransactions', () => {
     await expect(
       simulateTransactions({
         baseTransactions: mockBaseTransactions,
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
       })
     ).rejects.toThrow(
       'Failed to simulate transaction for base transaction {"from":"0x456","to":"0x789","data":"0xencodedData"}. response: {"status":"failure","blockNumber":"1","gasNeeded":50000,"gasUsed":49800,"gasPrice":"1"}'

@@ -71,7 +71,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -110,7 +110,7 @@ const mockStoreTokenBalances = {
   },
   [mockTestTokenTokenId]: {
     tokenId: mockTestTokenTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     symbol: 'TT',
     name: 'Test Token',
     isSwappable: false,
@@ -336,8 +336,8 @@ describe('SwapScreen', () => {
       swapBuyAmountEnabled: true,
     })
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
-      showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
+      showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       maxSlippagePercentage: '0.3',
@@ -405,27 +405,27 @@ describe('SwapScreen', () => {
 
     const commonAnalyticsProps = {
       areSwapTokensShuffled: false,
-      fromTokenId: 'celo-sepolia:native',
-      fromTokenNetworkId: 'celo-sepolia',
+      fromTokenId: 'celo-mainnet:native',
+      fromTokenNetworkId: 'celo-mainnet',
       fromTokenSymbol: 'CELO',
       switchedNetworkId: false,
-      tokenNetworkId: 'celo-sepolia',
+      tokenNetworkId: 'celo-mainnet',
     }
     expect(AppAnalytics.track).toHaveBeenCalledWith(SwapEvents.swap_screen_confirm_token, {
       ...commonAnalyticsProps,
       fieldType: 'FROM',
-      tokenId: 'celo-sepolia:native',
+      tokenId: 'celo-mainnet:native',
       tokenPositionInList: 1,
       tokenSymbol: 'CELO',
     })
     expect(AppAnalytics.track).toHaveBeenCalledWith(SwapEvents.swap_screen_confirm_token, {
       ...commonAnalyticsProps,
       fieldType: 'TO',
-      tokenId: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+      tokenId: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       tokenPositionInList: 2,
       tokenSymbol: 'cUSD',
-      toTokenId: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
-      toTokenNetworkId: 'celo-sepolia',
+      toTokenId: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+      toTokenNetworkId: 'celo-mainnet',
       toTokenSymbol: 'cUSD',
     })
   })
@@ -554,9 +554,9 @@ describe('SwapScreen', () => {
       `${
         networkConfig.getSwapQuoteUrl
       }?buyToken=${mockCusdAddress}&buyIsNative=false&buyNetworkId=${
-        NetworkId['celo-sepolia']
+        NetworkId['celo-mainnet']
       }&sellToken=${mockCeloAddress}&sellIsNative=true&sellNetworkId=${
-        NetworkId['celo-sepolia']
+        NetworkId['celo-mainnet']
       }&sellAmount=1234000000000000000&userAddress=${mockAccount.toLowerCase()}&slippagePercentage=0.3`
     )
 
@@ -579,7 +579,7 @@ describe('SwapScreen', () => {
 
     selectSwapTokens('CELO', 'USDC', swapScreen)
     expect(
-      queryByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Ethereum Sepolia"}')
+      queryByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Ethereum"}')
     ).toBeFalsy()
 
     expect(getByText('swapScreen.crossChainNotification')).toBeTruthy()
@@ -614,7 +614,7 @@ describe('SwapScreen', () => {
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
     expect(
       getByText(
-        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Sepolia","tokenSymbol":"CELO","tokenAmount":"1"}'
+        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo","tokenSymbol":"CELO","tokenAmount":"1"}'
       )
     ).toBeTruthy()
   })
@@ -649,7 +649,7 @@ describe('SwapScreen', () => {
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
     expect(
       getByText(
-        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo Sepolia","tokenSymbol":"CELO","tokenAmount":"1"}'
+        'swapScreen.crossChainFeeWarning.body, {"networkName":"Celo","tokenSymbol":"CELO","tokenAmount":"1"}'
       )
     ).toBeTruthy()
   })
@@ -733,11 +733,11 @@ describe('SwapScreen', () => {
       {
         toToken: mockCusdAddress,
         toTokenId: mockCusdTokenId,
-        toTokenNetworkId: NetworkId['celo-sepolia'],
+        toTokenNetworkId: NetworkId['celo-mainnet'],
         toTokenIsImported: false,
         fromToken: mockCeloAddress,
         fromTokenId: mockCeloTokenId,
-        fromTokenNetworkId: NetworkId['celo-sepolia'],
+        fromTokenNetworkId: NetworkId['celo-mainnet'],
         fromTokenIsImported: false,
         amount: '100000',
         amountType: 'sellAmount',
@@ -803,11 +803,11 @@ describe('SwapScreen', () => {
       {
         toToken: mockCusdAddress,
         toTokenId: mockCusdTokenId,
-        toTokenNetworkId: NetworkId['celo-sepolia'],
+        toTokenNetworkId: NetworkId['celo-mainnet'],
         toTokenIsImported: false,
         fromToken: mockCeloAddress,
         fromTokenId: mockCeloTokenId,
-        fromTokenNetworkId: NetworkId['celo-sepolia'],
+        fromTokenNetworkId: NetworkId['celo-mainnet'],
         fromTokenIsImported: false,
         amount: '100000',
         amountType: 'sellAmount',
@@ -883,9 +883,9 @@ describe('SwapScreen', () => {
       `${
         networkConfig.getSwapQuoteUrl
       }?buyToken=${mockCusdAddress}&buyIsNative=false&buyNetworkId=${
-        NetworkId['celo-sepolia']
+        NetworkId['celo-mainnet']
       }&sellToken=${mockCeloAddress}&sellIsNative=true&sellNetworkId=${
-        NetworkId['celo-sepolia']
+        NetworkId['celo-mainnet']
       }&sellAmount=1234000000000000000&userAddress=${mockAccount.toLowerCase()}&slippagePercentage=0.3`
     )
 
@@ -1263,11 +1263,11 @@ describe('SwapScreen', () => {
     expect(AppAnalytics.track).toHaveBeenCalledWith(SwapEvents.swap_review_submit, {
       toToken: mockCusdAddress,
       toTokenId: mockCusdTokenId,
-      toTokenNetworkId: NetworkId['celo-sepolia'],
+      toTokenNetworkId: NetworkId['celo-mainnet'],
       toTokenIsImported: false,
       fromToken: mockCeloAddress,
       fromTokenId: mockCeloTokenId,
-      fromTokenNetworkId: NetworkId['celo-sepolia'],
+      fromTokenNetworkId: NetworkId['celo-mainnet'],
       fromTokenIsImported: false,
       amount: '10',
       amountType: 'sellAmount',
@@ -1495,11 +1495,11 @@ describe('SwapScreen', () => {
     selectSingleSwapToken(swapToContainer, 'USDC', swapScreen, Field.TO)
 
     expect(
-      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Ethereum Sepolia"}')
+      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Ethereum"}')
     ).toBeTruthy()
     expect(
       getByText(
-        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Ethereum Sepolia","context":"swapFrom"}'
+        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Ethereum","context":"swapFrom"}'
       )
     ).toBeTruthy()
 
@@ -1524,11 +1524,11 @@ describe('SwapScreen', () => {
     selectSingleSwapToken(swapFromContainer, 'cUSD', swapScreen, Field.FROM)
 
     expect(
-      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Celo Sepolia"}')
+      getByText('swapScreen.switchedToNetworkWarning.title, {"networkName":"Celo"}')
     ).toBeTruthy()
     expect(
       getByText(
-        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Celo Sepolia","context":"swapTo"}'
+        'swapScreen.switchedToNetworkWarning.body, {"networkName":"Celo","context":"swapTo"}'
       )
     ).toBeTruthy()
   })
@@ -1819,8 +1819,8 @@ describe('SwapScreen', () => {
     it('should show "popular" tokens', () => {
       const mockedPopularTokens = [mockUSDCTokenId, mockPoofTokenId]
       jest.mocked(getMultichainFeatures).mockReturnValue({
-        showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
-        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showSwap: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
+        showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
       jest.mocked(getDynamicConfigParams).mockReturnValue({
         popularTokenIds: mockedPopularTokens,
@@ -1855,10 +1855,10 @@ describe('SwapScreen', () => {
 
     it('should show the network filters when there are multiple supported networks', () => {
       const expectedEthTokens = expectedAllFromTokens.filter(
-        (token) => token.networkId === NetworkId['ethereum-sepolia']
+        (token) => token.networkId === NetworkId['ethereum-mainnet']
       )
       const expectedCeloTokens = expectedAllFromTokens.filter(
-        (token) => token.networkId === NetworkId['celo-sepolia']
+        (token) => token.networkId === NetworkId['celo-mainnet']
       )
 
       const { swapFromContainer, tokenBottomSheets, getAllByTestId } = renderScreen({})
@@ -1873,7 +1873,7 @@ describe('SwapScreen', () => {
       fireEvent.press(within(tokenBottomSheet).getByText('tokenBottomSheet.filters.selectNetwork'))
 
       // select celo filter
-      fireEvent.press(within(networkMultiSelect).getByTestId('Celo Sepolia-icon'))
+      fireEvent.press(within(networkMultiSelect).getByTestId('Celo-icon'))
 
       expectedCeloTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
@@ -1883,7 +1883,7 @@ describe('SwapScreen', () => {
       )
 
       // select eth filter
-      fireEvent.press(within(networkMultiSelect).getByTestId('Ethereum Sepolia-icon'))
+      fireEvent.press(within(networkMultiSelect).getByTestId('Ethereum-icon'))
 
       expectedEthTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
@@ -1905,10 +1905,10 @@ describe('SwapScreen', () => {
 
     it('should show pre-selected network filter from route params', async () => {
       const expectedCeloTokens = expectedAllToTokens.filter(
-        (token) => token.networkId === NetworkId['celo-sepolia']
+        (token) => token.networkId === NetworkId['celo-mainnet']
       )
       const { tokenBottomSheets } = renderScreen({
-        toTokenNetworkId: NetworkId['celo-sepolia'],
+        toTokenNetworkId: NetworkId['celo-mainnet'],
       })
       const tokenBottomSheet = tokenBottomSheets[1] // "to" token selection
 
@@ -1923,14 +1923,14 @@ describe('SwapScreen', () => {
   })
 
   describe('SwapScreen virtual Dolares flow', () => {
-    // Staging dollar token IDs used by useDollarBalanceSnapshots on celo-sepolia.
-    const usdcStagingTokenId = 'celo-sepolia:0x01c5c0122039549ad1493b8220cabedd739bc44e'
-    const usdtStagingTokenId = 'celo-sepolia:0xd077a400968890eacc75cdc901f0356c943e4fdb'
+    // Fixture token IDs used by useDollarBalanceSnapshots.
+    const usdcStagingTokenId = 'celo-mainnet:0x01c5c0122039549ad1493b8220cabedd739bc44e'
+    const usdtStagingTokenId = 'celo-mainnet:0xd077a400968890eacc75cdc901f0356c943e4fdb'
 
     const dollarBalanceTokens = {
       [usdcStagingTokenId]: {
         tokenId: usdcStagingTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'USDC',
         name: 'USDC',
         decimals: 6,
@@ -1941,7 +1941,7 @@ describe('SwapScreen', () => {
       },
       [usdtStagingTokenId]: {
         tokenId: usdtStagingTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'USDT',
         name: 'USDT',
         decimals: 6,

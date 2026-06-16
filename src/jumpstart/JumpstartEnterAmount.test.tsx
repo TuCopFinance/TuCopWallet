@@ -97,7 +97,7 @@ describe('JumpstartEnterAmount', () => {
     jest.clearAllMocks()
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        'celo-sepolia': {
+        'celo-mainnet': {
           contractAddress: '0xjumpstart',
         },
       },
@@ -193,7 +193,7 @@ describe('JumpstartEnterAmount', () => {
         amountInUsd: '0.29',
         localCurrency: 'COP',
         localCurrencyExchangeRate: '1.33',
-        networkId: 'celo-sepolia',
+        networkId: 'celo-mainnet',
         tokenAmount: '0.25',
         tokenId: mockCeurTokenId,
         tokenSymbol: 'cEUR',

@@ -14,7 +14,7 @@ jest.mock('src/statsig', () => ({
   ...jest.requireActual('src/statsig/__mocks__/index'),
   getFeatureGate: jest.fn().mockReturnValue(false),
   getMultichainFeatures: jest.fn(() => ({
-    showBalances: ['celo-sepolia'],
+    showBalances: ['celo-mainnet'],
   })),
 }))
 
