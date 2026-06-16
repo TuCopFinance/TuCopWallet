@@ -1,8 +1,18 @@
-import { Mento } from '@mento-protocol/mento-sdk'
+import { ChainId, deadlineFromMinutes, Mento } from '@mento-protocol/mento-sdk'
 import dotenv from 'dotenv'
-// Would be nice to use viem, but mento is using ethers
-import { Contract, providers, utils, Wallet } from 'ethers'
-import { Address } from 'viem'
+import {
+  Address,
+  createPublicClient,
+  createWalletClient,
+  encodeFunctionData,
+  formatUnits,
+  getAddress,
+  Hex,
+  http,
+  parseUnits,
+} from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { celo } from 'viem/chains'
 import {
   E2E_TEST_FAUCET,
   E2E_TEST_WALLET,
@@ -11,7 +21,9 @@ import {
 } from './consts'
 import { checkBalance, getCeloTokensBalance } from './utils'
 
-const provider = new providers.JsonRpcProvider('https://forno.celo.org/')
+const RPC_URL = 'https://forno.celo.org/'
+
+const publicClient = createPublicClient({ chain: celo, transport: http(RPC_URL) })
 
 dotenv.config({ path: `${__dirname}/../.env` })
 
@@ -19,23 +31,23 @@ const valoraTestFaucetSecret = process.env['E2E_TEST_FAUCET_SECRET']!
 
 interface Token {
   symbol: string
-  address: string // Mento expects address to be in checksum format, or else it won't find the trading pair
+  address: Address // Mento expects address to be in checksum format, or else it won't find the trading pair
   decimals: number
 }
 
 const CELO: Token = {
   symbol: 'CELO',
-  address: utils.getAddress('0x471ece3750da237f93b8e339c536989b8978a438'),
+  address: getAddress('0x471ece3750da237f93b8e339c536989b8978a438'),
   decimals: 18,
 }
 const CUSD: Token = {
   symbol: 'cUSD',
-  address: utils.getAddress('0x765de816845861e75a25fca122bb6898b8b1282a'),
+  address: getAddress('0x765de816845861e75a25fca122bb6898b8b1282a'),
   decimals: 18,
 }
 const CEUR: Token = {
   symbol: 'cEUR',
-  address: utils.getAddress('0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73'),
+  address: getAddress('0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73'),
   decimals: 18,
 }
 const TOKENS_BY_SYMBOL: Record<string, Token> = {
@@ -57,8 +69,13 @@ const TOKENS_BY_SYMBOL: Record<string, Token> = {
   console.table(faucetTokenBalances)
 
   // Connect Valora E2E Test Faucet - Private Key Stored in GitHub Secrets
-  const signer = new Wallet(valoraTestFaucetSecret, provider)
-  const mento = await Mento.create(signer)
+  const faucetAccount = privateKeyToAccount(valoraTestFaucetSecret as Hex)
+  const walletClient = createWalletClient({
+    account: faucetAccount,
+    chain: celo,
+    transport: http(RPC_URL),
+  })
+  const mento = await Mento.create(ChainId.CELO, RPC_URL)
 
   // Balance Faucet
   let totalTokenHoldings = 0 // the absolute number of faucet tokens the faucet is holding
@@ -69,6 +86,20 @@ const TOKENS_BY_SYMBOL: Record<string, Token> = {
   })
   const targetFaucetTokenBalance = totalTokenHoldings / REFILL_TOKENS.length
 
+  async function sendCallParams(params: {
+    to: string
+    data: string
+    value: string
+  }): Promise<{ hash: Hex; status: 'success' | 'reverted' }> {
+    const hash = await walletClient.sendTransaction({
+      to: params.to as Address,
+      data: params.data as Hex,
+      value: BigInt(params.value),
+    })
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    return { hash, status: receipt.status }
+  }
+
   async function swapSell(
     sellToken: Token,
     buyToken: Token,
@@ -76,42 +107,40 @@ const TOKENS_BY_SYMBOL: Record<string, Token> = {
     maxSlippagePercent: number
   ) {
     try {
-      const sellAmountInSmallestUnit = utils.parseUnits(sellAmount.toString(), sellToken.decimals)
-      const quoteAmountOut = await mento.getAmountOut(
+      const sellAmountInSmallestUnit = parseUnits(sellAmount.toString(), sellToken.decimals)
+      const quoteAmountOut = await mento.quotes.getAmountOut(
         sellToken.address,
         buyToken.address,
         sellAmountInSmallestUnit
       )
       console.log(
-        `Selling ${sellAmount} ${sellToken.symbol} for ~${utils.formatUnits(
+        `Selling ${sellAmount} ${sellToken.symbol} for ~${formatUnits(
           quoteAmountOut,
           buyToken.decimals
         )} ${buyToken.symbol} with max slippage of ${maxSlippagePercent}%.`
       )
-      const allowanceTxObj = await mento.increaseTradingAllowance(
-        sellToken.address,
-        sellAmountInSmallestUnit
-      )
-      const allowanceTx = await signer.sendTransaction(allowanceTxObj)
-      const allowanceReceipt = await allowanceTx.wait()
-      console.log(
-        `Received allowance tx hash ${allowanceReceipt.transactionHash} with status ${allowanceReceipt.status}`
-      )
-      // allow maxSlippagePercent from quote
-      const amountOutMin = quoteAmountOut.mul(100 - maxSlippagePercent).div(100)
-      const swapTxObj = await mento.swapIn(
+
+      // buildSwapTransaction returns approval (if needed) + swap in one shot
+      const { approval, swap } = await mento.swap.buildSwapTransaction(
         sellToken.address,
         buyToken.address,
         sellAmountInSmallestUnit,
-        amountOutMin
+        faucetAccount.address,
+        faucetAccount.address,
+        { slippageTolerance: maxSlippagePercent, deadline: deadlineFromMinutes(5) }
       )
-      const swapTx = await signer.sendTransaction(swapTxObj)
-      const swapTxReceipt = await swapTx.wait()
-      console.log(
-        `Received swap tx hash ${swapTxReceipt.transactionHash} with status ${swapTxReceipt.status}`
-      )
-      if (swapTxReceipt.status !== 1) {
-        throw new Error(`Swap reverted. Tx hash: ${swapTxReceipt.transactionHash}`)
+
+      if (approval) {
+        const allowanceResult = await sendCallParams(approval)
+        console.log(
+          `Received allowance tx hash ${allowanceResult.hash} with status ${allowanceResult.status}`
+        )
+      }
+
+      const swapResult = await sendCallParams(swap.params)
+      console.log(`Received swap tx hash ${swapResult.hash} with status ${swapResult.status}`)
+      if (swapResult.status !== 'success') {
+        throw new Error(`Swap reverted. Tx hash: ${swapResult.hash}`)
       }
     } catch (err) {
       console.log(`Failed to sell ${sellToken.symbol} for ${buyToken.symbol}`, err)
@@ -125,36 +154,50 @@ const TOKENS_BY_SYMBOL: Record<string, Token> = {
     maxSlippagePercent: number
   ) {
     try {
-      const buyAmountInSmallestUnit = utils.parseUnits(buyAmount.toString(), buyToken.decimals)
-      const quoteAmountIn = await mento.getAmountIn(
+      const buyAmountInSmallestUnit = parseUnits(buyAmount.toString(), buyToken.decimals)
+
+      // mento-sdk v3 only exposes getAmountOut (exact-input). For exact-output
+      // semantics (target a specific buyAmount), estimate the required sellAmount
+      // by probing the price: quote 1 unit of sellToken -> X units of buyToken,
+      // then sellAmount ~= buyAmount / X. Inflate by maxSlippagePercent to cover
+      // execution slippage.
+      const probeAmount = parseUnits('1', sellToken.decimals)
+      const probeOut = await mento.quotes.getAmountOut(
         sellToken.address,
         buyToken.address,
-        buyAmountInSmallestUnit
+        probeAmount
       )
+      // priceBuyPerSell (in smallest units of both tokens)
+      // sellAmountSmallest = buyAmountSmallest * probeAmount / probeOut
+      const estimatedSellAmount =
+        (buyAmountInSmallestUnit * probeAmount) / (probeOut === 0n ? 1n : probeOut)
+      const slippageNumerator = BigInt(Math.round((100 + maxSlippagePercent) * 100))
+      const sellAmountWithSlippage = (estimatedSellAmount * slippageNumerator) / 10_000n
+
       console.log(
-        `Buying ${buyAmount} ${buyToken.symbol} with ~${utils.formatUnits(quoteAmountIn, sellToken.decimals)} ${sellToken.symbol} with max slippage of ${maxSlippagePercent}%.`
+        `Buying ${buyAmount} ${buyToken.symbol} with ~${formatUnits(sellAmountWithSlippage, sellToken.decimals)} ${sellToken.symbol} with max slippage of ${maxSlippagePercent}%.`
       )
-      // allow maxSlippagePercent from quote
-      const amountInMax = quoteAmountIn.mul(100 + maxSlippagePercent).div(100)
-      const allowanceTxObj = await mento.increaseTradingAllowance(sellToken.address, amountInMax)
-      const allowanceTx = await signer.sendTransaction(allowanceTxObj)
-      const allowanceReceipt = await allowanceTx.wait()
-      console.log(
-        `Received allowance tx hash ${allowanceReceipt.transactionHash} with status ${allowanceReceipt.status}`
-      )
-      const swapTxObj = await mento.swapOut(
+
+      const { approval, swap } = await mento.swap.buildSwapTransaction(
         sellToken.address,
         buyToken.address,
-        buyAmountInSmallestUnit,
-        amountInMax
+        sellAmountWithSlippage,
+        faucetAccount.address,
+        faucetAccount.address,
+        { slippageTolerance: maxSlippagePercent, deadline: deadlineFromMinutes(5) }
       )
-      const swapTx = await signer.sendTransaction(swapTxObj)
-      const swapTxReceipt = await swapTx.wait()
-      console.log(
-        `Received swap tx hash ${swapTxReceipt.transactionHash} with status ${swapTxReceipt.status}`
-      )
-      if (swapTxReceipt.status !== 1) {
-        throw new Error(`Swap reverted. Tx hash: ${swapTxReceipt.transactionHash}`)
+
+      if (approval) {
+        const allowanceResult = await sendCallParams(approval)
+        console.log(
+          `Received allowance tx hash ${allowanceResult.hash} with status ${allowanceResult.status}`
+        )
+      }
+
+      const swapResult = await sendCallParams(swap.params)
+      console.log(`Received swap tx hash ${swapResult.hash} with status ${swapResult.status}`)
+      if (swapResult.status !== 'success') {
+        throw new Error(`Swap reverted. Tx hash: ${swapResult.hash}`)
       }
     } catch (err) {
       console.log(`Failed to buy ${buyToken.symbol} with ${sellToken.symbol}`, err)
@@ -195,24 +238,40 @@ const TOKENS_BY_SYMBOL: Record<string, Token> = {
   async function transferToken(
     token: Token,
     amount: string, // in decimal
-    to: string
-  ): Promise<providers.TransactionReceipt> {
-    const abi = ['function transfer(address to, uint256 value) returns (bool)']
-    const contract = new Contract(token.address, abi, signer)
+    to: Address
+  ): Promise<{ hash: Hex; status: 'success' | 'reverted' }> {
+    const erc20TransferAbi = [
+      {
+        type: 'function',
+        name: 'transfer',
+        stateMutability: 'nonpayable',
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' },
+        ],
+        outputs: [{ name: '', type: 'bool' }],
+      },
+    ] as const
 
-    const amountInSmallestUnit = utils.parseUnits(amount, token.decimals)
-    const txObj = await contract.populateTransaction.transfer(to, amountInSmallestUnit)
-    const tx = await signer.sendTransaction(txObj)
-    const receipt = await tx.wait()
-    console.log(
-      `Received transfer tx hash ${receipt.transactionHash} with status ${receipt.status}`
-    )
+    const amountInSmallestUnit = parseUnits(amount, token.decimals)
+    const data = encodeFunctionData({
+      abi: erc20TransferAbi,
+      functionName: 'transfer',
+      args: [to, amountInSmallestUnit],
+    })
 
-    if (receipt.status !== 1) {
-      throw new Error(`Transfer reverted. Tx hash: ${receipt.transactionHash}`)
+    const hash = await walletClient.sendTransaction({
+      to: token.address,
+      data,
+    })
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    console.log(`Received transfer tx hash ${hash} with status ${receipt.status}`)
+
+    if (receipt.status !== 'success') {
+      throw new Error(`Transfer reverted. Tx hash: ${hash}`)
     }
 
-    return receipt
+    return { hash, status: receipt.status }
   }
 
   // Set Amount To Send
