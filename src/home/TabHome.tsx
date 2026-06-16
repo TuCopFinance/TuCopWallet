@@ -1,11 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
-import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
@@ -14,7 +12,6 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
 import Touchable from 'src/components/Touchable'
-import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
@@ -65,18 +62,6 @@ function TabHome(_props: Props) {
     setRefreshing(false)
   }, [])
 
-  const showTestnetBanner = () => {
-    dispatch(
-      showMessage(
-        t('testnetAlert.1', { testnet: _.startCase(DEFAULT_TESTNET) }),
-        ALERT_BANNER_DURATION,
-        null,
-        null,
-        t('testnetAlert.0', { testnet: _.startCase(DEFAULT_TESTNET) })
-      )
-    )
-  }
-
   const tryImportContacts = async () => {
     // Skip if contacts have already been imported or the user hasn't verified their phone number.
     if (Object.keys(recipientCache).length || !isNumberVerified) {
@@ -90,12 +75,6 @@ function TabHome(_props: Props) {
   }
 
   useEffect(() => {
-    // TODO find a better home for this, its unrelated to wallet home
-    // Sentry user context removed
-    if (SHOW_TESTNET_BANNER) {
-      showTestnetBanner()
-    }
-
     // Waiting 1/2 sec before triggering to allow
     // rest of feed to load unencumbered
     setTimeout(tryImportContacts, 500)

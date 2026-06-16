@@ -138,7 +138,7 @@ describe('depositSubmitSaga', () => {
   const expectedAnalyticsProps = {
     depositTokenId: mockArbUsdcTokenId,
     depositTokenAmount: '100',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     providerId: mockEarnPositions[0].appId,
     poolId: mockEarnPositions[0].positionId,
     mode: 'deposit',
@@ -152,7 +152,7 @@ describe('depositSubmitSaga', () => {
       tag: 'earn/saga',
       description: 'Earn/Approve',
     },
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     tokenId: mockArbUsdcTokenId,
     transactionHash: '0x1',
     type: TokenTransactionTypeV2.Approval,
@@ -166,7 +166,7 @@ describe('depositSubmitSaga', () => {
       tag: 'earn/saga',
       description: 'Earn/Deposit',
     },
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     inAmount: {
       value: '100',
       tokenId: mockAaveArbUsdcTokenId,
@@ -187,7 +187,7 @@ describe('depositSubmitSaga', () => {
       tag: 'earn/saga',
       description: 'Earn/SwapDeposit',
     },
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     swap: {
       inAmount: {
         value: '100',
@@ -281,7 +281,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x2',
         })
       )
@@ -329,7 +329,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x2',
         })
       )
@@ -382,7 +382,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x2',
         })
       )
@@ -440,7 +440,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x2',
         })
       )
@@ -495,7 +495,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x3',
         })
       )
@@ -539,7 +539,7 @@ describe('depositSubmitSaga', () => {
       .put(
         depositSuccess({
           tokenId: mockArbUsdcTokenId,
-          networkId: NetworkId['arbitrum-sepolia'],
+          networkId: NetworkId['arbitrum-one'],
           transactionHash: '0x2',
         })
       )
@@ -679,7 +679,7 @@ describe('depositSubmitSaga', () => {
 
 describe('withdrawSubmitSaga', () => {
   const mockRewards = [
-    { tokenId: 'arbitrum-sepolia:0x912ce59144191c1204e64559fe8253a0e49e6548', amount: '0.01' },
+    { tokenId: 'arbitrum-one:0x912ce59144191c1204e64559fe8253a0e49e6548', amount: '0.01' },
   ]
   const mockPool = mockRewardsPositions[0] as EarnPosition
   const serializableWithdrawTx: SerializableTransactionRequest = {
@@ -728,7 +728,7 @@ describe('withdrawSubmitSaga', () => {
   const expectedAnalyticsPropsWithRewards = {
     depositTokenId: mockArbUsdcTokenId,
     tokenAmount: '10.75',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     providerId: 'aave',
     rewards: mockRewards,
     poolId: mockRewardsPositions[0].positionId,
@@ -737,7 +737,7 @@ describe('withdrawSubmitSaga', () => {
 
   const expectedAnalyticsPropsClaim = {
     depositTokenId: mockArbUsdcTokenId,
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     providerId: 'aave',
     rewards: mockRewards,
     poolId: mockRewardsPositions[0].positionId,
@@ -755,7 +755,7 @@ describe('withdrawSubmitSaga', () => {
       tag: 'earn/saga',
       description: 'Earn/Withdraw',
     },
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     inAmount: {
       value: '10.75',
       tokenId: mockArbUsdcTokenId,
@@ -777,7 +777,7 @@ describe('withdrawSubmitSaga', () => {
       tag: 'earn/saga',
       description: 'Earn/ClaimReward-1',
     },
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     amount: {
       value: '0.01',
       tokenId: mockArbArbTokenId,

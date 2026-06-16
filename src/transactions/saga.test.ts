@@ -36,7 +36,7 @@ describe('watchPendingTransactions', () => {
 
   const pendingTransaction: StandbyTransaction = {
     context: { id: transactionId },
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     type: TokenTransactionTypeV2.Sent,
     metadata: {},
     amount: {
@@ -119,7 +119,7 @@ describe('watchPendingTransactions', () => {
         id: transactionId,
       },
       status: TransactionStatus.Pending,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       type: TokenTransactionTypeV2.SwapTransaction,
       transactionHash,
       timestamp: 1234,
@@ -158,7 +158,7 @@ describe('watchPendingTransactions', () => {
         trackPointsEvent({
           activityId: 'swap',
           transactionHash,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           toTokenId: mockCeurTokenId,
           fromTokenId: mockCusdTokenId,
         })
@@ -208,7 +208,7 @@ describe('watchPendingTransactions', () => {
             standbyTransactions: [
               {
                 ...pendingTransaction,
-                networkId: NetworkId['ethereum-sepolia'],
+                networkId: NetworkId['ethereum-mainnet'],
                 feeCurrencyId: mockEthTokenId,
               },
             ],
@@ -271,9 +271,9 @@ describe('watchPendingTransactions', () => {
       .provide([
         [
           call(getSupportedNetworkIdsForSend),
-          [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+          [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
         ],
-        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-sepolia']]],
+        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-mainnet']]],
         [matchers.spawn.fn(watchPendingTransactionsInNetwork), null],
       ])
       .run()
@@ -290,8 +290,8 @@ describe('watchPendingTransactions', () => {
   it('does spawn a watching loop for only allowed network', async () => {
     await expectSaga(watchPendingTransactions)
       .provide([
-        [call(getSupportedNetworkIdsForSend), [NetworkId['celo-sepolia']]],
-        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-sepolia']]],
+        [call(getSupportedNetworkIdsForSend), [NetworkId['celo-mainnet']]],
+        [call(getSupportedNetworkIdsForSwap), [NetworkId['celo-mainnet']]],
         [matchers.spawn.fn(watchPendingTransactionsInNetwork), null],
       ])
       .run()

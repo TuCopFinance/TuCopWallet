@@ -12,7 +12,7 @@ export const DOLARES_VIRTUAL_TOKEN_ID = 'virtual:dolares'
 // available as long as possible. Order is a constant; trivial to change.
 //
 // NOTE: this is an array of tokenId getters because networkConfig is read
-// lazily (some tokens are mainnet-only and resolve to '' on Sepolia).
+// lazily.
 export const SPEND_ORDER: ReadonlyArray<keyof typeof networkConfig> = [
   'usatTokenId',
   'usdmTokenId',

@@ -26,7 +26,7 @@ jest.mock('src/statsig', () => {
   return {
     getFeatureGate: jest.fn(),
     getMultichainFeatures: jest.fn(() => ({
-      showBalances: ['celo-sepolia', 'ethereum-sepolia'],
+      showBalances: ['celo-mainnet', 'ethereum-mainnet'],
     })),
   }
 })
@@ -39,26 +39,26 @@ const storeWithAssets = {
         tokenId: mockEthTokenId,
         balance: '0',
         priceUsd: '5',
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         showZeroBalance: true,
         isNative: true,
         symbol: 'ETH',
       },
       ['token1']: {
         tokenId: 'token1',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         balance: '10',
         symbol: 'TK1',
       },
       ['token2']: {
         tokenId: 'token2',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         balance: '0',
         symbol: 'TK2',
       },
       ['token3']: {
         tokenId: 'token3',
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         balance: '20',
         symbol: 'TK3',
       },
@@ -69,9 +69,9 @@ const storeWithAssets = {
   },
   nfts: {
     nfts: [
-      { ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] },
-      { ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] },
-      { ...mockNftNullMetadata, networkId: NetworkId['celo-sepolia'] },
+      { ...mockNftAllFields, networkId: NetworkId['celo-mainnet'] },
+      { ...mockNftMinimumFields, networkId: NetworkId['ethereum-mainnet'] },
+      { ...mockNftNullMetadata, networkId: NetworkId['celo-mainnet'] },
     ],
     nftsLoading: false,
     nftsError: null,
@@ -217,12 +217,12 @@ describe('AssetList', () => {
     fireEvent.press(getAllByTestId('NftGallery/NftImage')[1])
     expect(navigate).toHaveBeenCalledTimes(2)
     expect(navigate).toHaveBeenCalledWith(Screens.NftsInfoCarousel, {
-      nfts: [{ ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] }],
-      networkId: NetworkId['celo-sepolia'],
+      nfts: [{ ...mockNftAllFields, networkId: NetworkId['celo-mainnet'] }],
+      networkId: NetworkId['celo-mainnet'],
     })
     expect(navigate).toHaveBeenCalledWith(Screens.NftsInfoCarousel, {
-      nfts: [{ ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] }],
-      networkId: NetworkId['ethereum-sepolia'],
+      nfts: [{ ...mockNftMinimumFields, networkId: NetworkId['ethereum-mainnet'] }],
+      networkId: NetworkId['ethereum-mainnet'],
     })
   })
 

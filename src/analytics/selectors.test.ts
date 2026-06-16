@@ -12,10 +12,10 @@ beforeEach(() => {
 })
 
 const mockEthTokens = {
-  'ethereum-sepolia:native': {
+  'ethereum-mainnet:native': {
     name: 'Ether',
-    tokenId: 'ethereum-sepolia:native',
-    networkId: NetworkId['ethereum-sepolia'],
+    tokenId: 'ethereum-mainnet:native',
+    networkId: NetworkId['ethereum-mainnet'],
     symbol: 'ETH',
     decimals: 18,
     imageUrl: '',
@@ -24,10 +24,10 @@ const mockEthTokens = {
     priceFetchedAt: Date.now(),
     isNative: true,
   },
-  'ethereum-sepolia:0xl': {
+  'ethereum-mainnet:0xl': {
     name: 'l',
-    tokenId: 'ethereum-sepolia:0xl',
-    networkId: NetworkId['ethereum-sepolia'],
+    tokenId: 'ethereum-mainnet:0xl',
+    networkId: NetworkId['ethereum-mainnet'],
     address: '0xl',
     symbol: 'L',
     decimals: 18,
@@ -45,10 +45,10 @@ const mockState = {
   },
   tokens: {
     tokenBalances: {
-      'celo-sepolia:0xcusd': {
+      'celo-mainnet:0xcusd': {
         name: 'Celo Dollars',
-        tokenId: 'celo-sepolia:0xcusd',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xcusd',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xcusd',
         symbol: 'cUSD',
         decimals: 18,
@@ -58,10 +58,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-sepolia:0xceur': {
+      'celo-mainnet:0xceur': {
         name: 'Celo Euros',
-        tokenId: 'celo-sepolia:0xceur',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xceur',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xceur',
         symbol: 'cEUR',
         decimals: 18,
@@ -71,10 +71,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-sepolia:native': {
+      'celo-mainnet:native': {
         name: 'Celo',
-        tokenId: 'celo-sepolia:native',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:native',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xcelo',
         symbol: 'CELO',
         decimals: 18,
@@ -85,10 +85,10 @@ const mockState = {
         priceFetchedAt: Date.now(),
         isFeeCurrency: true,
       },
-      'celo-sepolia:0xa': {
+      'celo-mainnet:0xa': {
         name: 'a',
-        tokenId: 'celo-sepolia:0xa',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xa',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xa',
         symbol: 'A',
         decimals: 18,
@@ -97,10 +97,10 @@ const mockState = {
         balance: '1',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xb': {
+      'celo-mainnet:0xb': {
         name: 'b',
-        tokenId: 'celo-sepolia:0xb',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xb',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xb',
         symbol: 'B',
         decimals: 18,
@@ -109,10 +109,10 @@ const mockState = {
         balance: '3',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xc': {
+      'celo-mainnet:0xc': {
         name: 'c',
-        tokenId: 'celo-sepolia:0xc',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xc',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xc',
         symbol: 'C',
         decimals: 18,
@@ -121,10 +121,10 @@ const mockState = {
         balance: '2',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xd': {
+      'celo-mainnet:0xd': {
         name: 'd',
-        tokenId: 'celo-sepolia:0xd',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xd',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xd',
         symbol: 'D',
         decimals: 18,
@@ -133,10 +133,10 @@ const mockState = {
         balance: '0.01',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xe': {
+      'celo-mainnet:0xe': {
         name: 'e',
-        tokenId: 'celo-sepolia:0xe',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xe',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xe',
         symbol: 'E',
         decimals: 18,
@@ -145,10 +145,10 @@ const mockState = {
         balance: '7',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xf': {
+      'celo-mainnet:0xf': {
         name: 'f',
-        tokenId: 'celo-sepolia:0xf',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xf',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xf',
         symbol: 'F',
         decimals: 18,
@@ -157,10 +157,10 @@ const mockState = {
         balance: '6',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xg': {
+      'celo-mainnet:0xg': {
         name: 'g',
-        tokenId: 'celo-sepolia:0xg',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xg',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xg',
         symbol: 'G',
         decimals: 18,
@@ -169,10 +169,10 @@ const mockState = {
         balance: '10',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xh': {
+      'celo-mainnet:0xh': {
         name: 'h',
-        tokenId: 'celo-sepolia:0xh',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xh',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xh',
         symbol: 'H',
         decimals: 18,
@@ -181,10 +181,10 @@ const mockState = {
         balance: '9.123456789',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xi': {
+      'celo-mainnet:0xi': {
         name: 'i',
-        tokenId: 'celo-sepolia:0xi',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xi',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xi',
         symbol: 'I',
         decimals: 18,
@@ -193,10 +193,10 @@ const mockState = {
         balance: '1000',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xj': {
+      'celo-mainnet:0xj': {
         name: 'j',
-        tokenId: 'celo-sepolia:0xj',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xj',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xj',
         symbol: '', // Empty on purpose, will end up using the address
         decimals: 18,
@@ -205,10 +205,10 @@ const mockState = {
         balance: '11.003',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xk': {
+      'celo-mainnet:0xk': {
         name: 'k',
-        tokenId: 'celo-sepolia:0xk',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xk',
+        networkId: NetworkId['celo-mainnet'],
         address: '0xk',
         symbol: 'K',
         decimals: 18,
@@ -232,7 +232,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-sepolia:0xa',
+            tokenId: 'celo-mainnet:0xa',
             balance: '1',
             priceUsd: '10',
           },
@@ -249,7 +249,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-sepolia:0xb',
+            tokenId: 'celo-mainnet:0xb',
             balance: '1',
             priceUsd: '1.11',
           },
@@ -266,7 +266,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-sepolia:0xc',
+            tokenId: 'celo-mainnet:0xc',
             balance: '1',
             priceUsd: '2.22',
           },
@@ -283,7 +283,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-sepolia:0xd',
+            tokenId: 'celo-mainnet:0xd',
             balance: '1',
             priceUsd: '0.01234',
           },
@@ -300,7 +300,7 @@ const mockState = {
         },
         tokens: [
           {
-            tokenId: 'celo-sepolia:0xe',
+            tokenId: 'celo-mainnet:0xe',
             balance: '10',
             priceUsd: '7',
           },
@@ -343,13 +343,13 @@ const expectedTraitsForAllNetworks = {
   topTenPositions:
     'b-Title E:70.00,a-Title A:10.00,c-Title C:2.22,b-Title B:1.11,d-Title D which is rea:0.01',
   totalBalanceUsd: 20831.636783945,
-  totalCeloSepoliaBalanceUsd: 5681.606783945,
-  totalEthereumSepoliaBalanceUsd: 15150.03,
+  totalCeloMainnetBalanceUsd: 5681.606783945,
+  totalEthereumMainnetBalanceUsd: 15150.03,
   totalPositionsBalanceUsd: 83.34234,
   walletAddress: '0x0000000000000000000000000000000000007e57',
   hasTokenBalance: true,
-  hasCeloSepoliaTokenBalance: true,
-  hasEthereumSepoliaTokenBalance: true,
+  hasCeloMainnetTokenBalance: true,
+  hasEthereumMainnetTokenBalance: true,
   pointsBalance: '50',
 }
 
@@ -357,24 +357,24 @@ describe('getCurrentUserTraits', () => {
   it('returns the current user traits with tokens from multiple networks', () => {
     const state = getMockStoreData(mockState)
     expect(
-      getCurrentUserTraits(state, [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']])
+      getCurrentUserTraits(state, [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']])
     ).toStrictEqual(expectedTraitsForAllNetworks)
   })
   it('sets correct hasTokenBalance fields if all tokens in one network have no balance', () => {
     const mockTokenBalances = {
       ...mockState.tokens.tokenBalances,
-      'ethereum-sepolia:native': {
-        ...mockEthTokens['ethereum-sepolia:native'],
+      'ethereum-mainnet:native': {
+        ...mockEthTokens['ethereum-mainnet:native'],
         balance: '0',
       },
-      'ethereum-sepolia:0xl': {
-        ...mockEthTokens['ethereum-sepolia:0xl'],
+      'ethereum-mainnet:0xl': {
+        ...mockEthTokens['ethereum-mainnet:0xl'],
         balance: '0',
       },
     }
     const state = getMockStoreData({ ...mockState, tokens: { tokenBalances: mockTokenBalances } })
     expect(
-      getCurrentUserTraits(state, [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']])
+      getCurrentUserTraits(state, [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']])
     ).toStrictEqual({
       ...expectedTraitsForAllNetworks,
       ethBalance: 0,
@@ -382,8 +382,8 @@ describe('getCurrentUserTraits', () => {
       otherTenTokens: 'I:1000,K:80,0xj:11.003,G:10,H:9.12345,E:7,F:6,B:3,C:2,A:1',
       tokenCount: 13,
       totalBalanceUsd: 5681.606783945,
-      totalEthereumSepoliaBalanceUsd: 0,
-      hasEthereumSepoliaTokenBalance: false,
+      totalEthereumMainnetBalanceUsd: 0,
+      hasEthereumMainnetTokenBalance: false,
     })
   })
 })

@@ -28,7 +28,7 @@ function getStore({ zeroBalance = false }: { zeroBalance?: boolean } = {}) {
           isFeeCurrency: true,
           canTransferWithComment: true,
           priceFetchedAt: Date.now(),
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         },
         [mockCusdTokenId]: {
           tokenId: mockCusdTokenId,
@@ -43,7 +43,7 @@ function getStore({ zeroBalance = false }: { zeroBalance?: boolean } = {}) {
           isFeeCurrency: true,
           canTransferWithComment: true,
           priceFetchedAt: Date.now(),
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         },
       },
     },
@@ -55,7 +55,7 @@ describe('TabWallet', () => {
     jest.clearAllMocks()
     jest.mocked(getFeatureGate).mockRestore()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showBalances: [NetworkId['celo-sepolia']],
+      showBalances: [NetworkId['celo-mainnet']],
     })
   })
   it('shows correct total balance, cKES and cUSD line items when tokens have balance', () => {

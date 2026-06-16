@@ -58,7 +58,6 @@ export function useUSDm() {
 }
 
 export function useUSAT() {
-  // Returns undefined on networks where USAT is not deployed (Sepolia)
   return useTokenInfo(networkConfig.usatTokenId)
 }
 

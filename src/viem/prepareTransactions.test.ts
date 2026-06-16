@@ -933,7 +933,7 @@ describe('prepareTransactions module', () => {
       mocked(estimateGas).mockResolvedValue(BigInt(123))
       await tryEstimateTransactions(
         [{ from: '0x123' }],
-        { ...mockFeeCurrencies[0], networkId: NetworkId['arbitrum-sepolia'] },
+        { ...mockFeeCurrencies[0], networkId: NetworkId['arbitrum-one'] },
         client === 'app public'
       )
       expect(estimateGas).toHaveBeenCalledWith(expectedClient[Network.Arbitrum], expect.anything())
@@ -942,7 +942,7 @@ describe('prepareTransactions module', () => {
       await expect(
         tryEstimateTransactions(
           [{ from: '0x123' }],
-          { ...mockFeeCurrencies[0], networkId: NetworkId['ethereum-sepolia'] },
+          { ...mockFeeCurrencies[0], networkId: NetworkId['ethereum-mainnet'] },
           true
         )
       ).rejects.toThrowError('App transport not available for network ethereum')
