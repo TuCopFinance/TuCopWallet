@@ -1,0 +1,235 @@
+3:The cheapest, fastest, most reliable cross-chain layer, routing value for 1,000+ integrators including MetaMask, Ripple, and MiniPay.
+22:[**Apply for an Integrator ID**](https://squidrouter.typeform.com/integrator-id?typeform-source=app.gitbook.com) then explore how to build below:
+34:## Squid's Integrators Include
+41:# Integrator Quickstart
+45:### Step 1: Get Your Integrator ID
+47:1. Apply for an[ integrator ID](https://squidrouter.typeform.com/integrator-id?typeform-source=app.gitbook.com).
+48:2. Check your email for the integrator ID.
+52:Replace `YOUR_INTEGRATOR_ID` in the following curl command with your actual integrator ID and replace `ADD_ADDRESS` with an address, then paste it into your terminal and hit enter:
+56:-H 'x-integrator-id: YOUR_INTEGRATOR_ID' \
+95:## **Squid’s Integrators Include**
+187:1. Registered for an Integrator ID with the Squid Team.
+190:### Getting an Integrator ID
+192:To use the Squid Widget, you need to register for an Integrator ID:
+194:1. Complete the [Integrator ID request form](https://squidrouter.typeform.com/integrator-id?typeform-source=docs.squidrouter.com).
+195:2. You will receive your Integrator ID via email.
+281:          integratorId: "<your-integrator-id>",
+306:Make sure to replace `<your-integrator-id>` with the Integrator ID you received from Squid.
+320:    integratorId: "<your-integrator-id>",
+414:          integratorId: "<your-integrator-id>",
+424:Replace `<your-integrator-id>` with the Integrator ID you received from Squid.
+447:3. Verify that you've added the correct `integratorId` and `apiUrl` in the widget config.
+514:          integratorId: "<your-integrator-id>",
+526:Replace `<your-integrator-id>` with the Integrator ID you received from Squid.
+567:3. Check that you've added the correct `integratorId` and `apiUrl` in the widget config.
+619:* Adjust the `width` and `height` attributes as needed to fit your layout.
+673:        integratorId: "<your-integrator-id>",
+783:The `style` attribute enables customisation of the widget theme's colors, opacity and the inclusion of a divider between the "from" and "to" sections.
+858:If you would like the widget to be slightly transparent, there is an advanced attribute for this:
+1102:        integratorId: "<your-integrator-id>",
+1142:  integratorId: string;
+1164:    integratorAddress: string;
+1296:### Integrator Fee Structure
+1298:Squid v2 allows integrators to implement their own fee structure on top of Squid's platform fees. This document details the structure of Integrator fees implemented on through Squid.
+1301:Note, Squid splits all fees collected by integrators 50/50. Please see the Platform Fee Structure section for more detail.
+1303:#### Integrator Fee Configuration
+1305:As an integrator, you can implement the following fee structures:
+1312:#### Implementing Integrator Fees
+1314:In order to prevent abuse an abuse of the fee collection system, we implement the `collectFees` parameter on the backend for integrators.
+1322:Within the returned route request, all fees (including your integrator fees and Squid's platform fees) are aggregated into a single "Service fee" in the route response. This appears in the `feeCosts` array and `route.actions`:
+1359:<mark style="color:yellow;">Squid splits all fees collected by integrators 50/50.</mark>
+1361:In the future, Squid may charge additional platform fees on top of integrator fees. These may include:
+1371:Total Fee = Platform Fees + Integrator Fees
+1374:Note: In some cases, Squid may allow integrators to waive certain platform fees. Please contact us for more information on fee customization options.
+1377:# Information for Integrators
+1455:Squid website only! This is possible for widget integrators by setting [default chains and tokens](/old-v2-documentation-deprecated/add-a-widget/widget/customization-guide/default-chains-and-tokens) via iframe URL or widget config
+1500:The widget wraps Squid's cross-chain routing API and SDK, so integrators get a fully-featured deposit / payment flow (route quoting, wallet connection, transaction execution and progress tracking) with minimal dev effort. It's the fastest way to accept cross-chain deposits or one-shot payments into your app.
+1507:* Integrator branding (name + logo) rendered inside the widget
+1532:The Deposit Widget supports every chain and token available on Squid's routing API, including EVM chains, Cosmos chains, XRPL, Bitcoin and Solana. The destination chain and token are fixed by you (the integrator) via configuration; users pick any supported source chain and token from inside the widget.
+1555:1. Registered for an Integrator ID with the Squid Team.
+1559:### Getting an Integrator ID
+1561:To use the Deposit Widget, you need to register for an Integrator ID:
+1563:1. Complete the [Integrator ID request form](https://squidrouter.typeform.com/integrator-id?typeform-source=docs.squidrouter.com).
+1564:2. You will receive your Integrator ID via email.
+1598:When you receive your Integrator ID, we'll follow up by email to set up a dedicated Telegram group with your team. That group is your direct line to the Squid team for any questions or assistance during integration.
+1635:  integrator: {
+1636:    id: "<your-integrator-id>",
+1651:Replace `<your-integrator-id>` with the Integrator ID you received from Squid, and `destinationAddress` / `destinationToken` with the address and token you want to receive.
+1706:  integrator: {
+1707:    id: "<your-integrator-id>",
+1720:Replace `<your-integrator-id>` with the Integrator ID you received from Squid.
+1789:  integrator: {
+1790:    id: "<your-integrator-id>",
+1803:Replace `<your-integrator-id>` with the Integrator ID you received from Squid.
+1820:The Deposit Widget takes a single `config` prop, typed as `DepositConfig`. Like the Swap Widget, it accepts your **Integrator ID** and a **theme** for customization. On top of that, it adds the settings specific to deposits and payments: the destination address and token, and the `mode`.
+1833:* **`"payment"`** — the integrator fixes the amount via an extra `amount: string` field. Use this for checkout / pay-this-invoice flows.
+1844:| `integrator.id`            | `string`                 | ✅                     | Your Integrator ID. Required for Squid to route and account for your traffic.                          |
+1845:| `integrator.name`          | `string`                 | ✅                     | Displayed in the widget header so users know which app they're paying / depositing to.                 |
+1846:| `integrator.logoUrl`       | `string`                 | ✅                     | URL of your logo, displayed alongside the name.                                                        |
+1861:  integrator: {
+1862:    id: "<your-integrator-id>",
+1880:  integrator: {
+1881:    id: "<your-integrator-id>",
+1924:  integratorId: "<partner-id>",
+1929:`integratorId` for squid to keep track of partners, complete the [form](https://l19g3aali76.typeform.com/integrator-id) to acquire it.
+1972:The main attribute to update is `customContractCalls`.
+2133:        integratorId: "<your integrator id>",
+2192:const integratorId: string = process.env.INTEGRATOR_ID!;
+2217:          "x-integrator-id": integratorId,
+2245:        "x-integrator-id": integratorId,
+2369:const integratorId: string = process.env.INTEGRATOR_ID!;
+2393:          "x-integrator-id": integratorId,
+2421:        "x-integrator-id": integratorId,
+2558:const integratorId: string = process.env.INTEGRATOR_ID!;
+2612:          "x-integrator-id": integratorId,
+2639:        "x-integrator-id": integratorId,
+2884:const integratorId: string = process.env.INTEGRATOR_ID!; // get one at https://form.typeform.com/to/cqFtqSvX
+2911:          "x-integrator-id": integratorId,
+2938:        "x-integrator-id": integratorId,
+3070:        "x-integrator-id": integratorId,
+3110:| `x-integrator-id` | Integrator ID for Squid to keep track of partners, complete the [form](https://form.typeform.com/to/cqFtqSvX) to acquire it |
+3137:| `integratorId`              | string  | The integrator ID associated with the transaction                                          |
+3187:* Funds are always transferred from the `msg.sender` on the source chain (this could be the user for direct calls to Squid Intents, or a smart contract like Multicall)
+3315:All Squid API requests require authentication via an **integrator ID**. This page covers how to obtain credentials, use them correctly, and follow security best practices.
+3319:## Get Your Integrator ID
+3321:1. **Apply** via the [Integrator ID request form](https://squidrouter.typeform.com/integrator-id).
+3322:2. **Check your email** — you will receive your integrator ID shortly after applying.
+3325:The integrator ID is required for all API, SDK, and widget integrations. The Squid API will reject any request without a valid integrator ID.
+3330:## Using Your Integrator ID
+3334:Include your integrator ID in the `x-integrator-id` HTTP header on every request:
+3338:  -H 'x-integrator-id: YOUR_INTEGRATOR_ID' \
+3345:Pass your integrator ID when creating the Squid SDK instance:
+3352:  integratorId: "YOUR_INTEGRATOR_ID",
+3360:Include your integrator ID in the widget configuration:
+3365:    integratorId: "YOUR_INTEGRATOR_ID",
+3375:If the integrator ID is missing or invalid, the API returns:
+3379:  "message": "x-integrator-id header is missing",
+3389:**Never expose your integrator ID in client-side code** if your ID has elevated privileges or custom rate limits. For public-facing widget integrations, the standard integrator ID is safe to include in frontend code.
+3393:* **Environment variables**: Store your integrator ID in environment variables (`.env`), not in source code.
+3404:All API requests must include a valid `x-integrator-id` header. Requests without this header will receive:
+3408:  "message": "x-integrator-id header is missing",
+3417:Every integrator ID is issued with a **requests-per-second (RPS)** limit that controls how many API calls you can make per second across all endpoints.
+3421:| **Testing / Development** | 1 RPS       | Issued with every new integrator ID                          |
+3511:| `401`       | `UNAUTHORIZED`   | Missing or invalid `x-integrator-id` header                                         |
+3524:| `x-integrator-id header is missing`        | Request missing the required auth header                 | Add the `x-integrator-id` header to every request                                                                 |
+3614:// Initialize the Squid client with the base URL and integrator ID
+3618:    integratorId: integratorId,
+3653:const integratorId: string = process.env.INTEGRATOR_ID!;
+3656:if (!privateKey || !integratorId || !FROM_CHAIN_RPC) {
+3657:  console.error("Missing environment variables. Ensure PRIVATE_KEY, INTEGRATOR_ID, and FROM_CHAIN_RPC_ENDPOINT are set.");
+3676:// Initialize the Squid client with the base URL and integrator ID
+3680:    integratorId: integratorId,
+3780:    integratorId: integratorId,
+3845:const integratorId: string = process.env.INTEGRATOR_ID!;
+3874:    integratorId: integratorId,
+4034:    integratorId: integratorId,
+4128:    integratorId: process.env.INTEGRATOR_ID,
+4270:    integratorId: process.env.INTEGRATOR_ID,
+4295:    integratorId,    // optional
+4306:| `quoteId`       | string | Yes      | The quote ID from the route response. Required for Squid Intents status tracking. Also enables volume and token activity sharing with integrators. |
+4308:| `integratorId`  | string | No       | Your integrator ID                                                                                                                                 |
+4313:The `quoteId` can be found at the top level of the route response. Including this parameter in status requests will enable volume and specific token activity sharing with integrators in the near future:
+4371:* Funds are always transferred from the `msg.sender` on the source chain (this could be the user for direct calls to Squid Intents, or a smart contract like Multicall)
+4518:  integratorId: "your-integrator-id",
+4717:2. [**Collecting Fees**](/old-v2-documentation-deprecated/key-concepts/collect-fees-1)**:** Always integrators to collect fees associated with transactions. Note, this function is currently not available for v2 yet.
+4850:| `bypassGuardrails`         | `boolean`          | No                               | Ignores slippage warnings on the returned route response. **If set to true, the integrator is liable for any loss of funds during the route.**                                                                                                                                                      |
+5087:Exact output requires the `ExactOutputRouting` feature flag. Contact the Squid team to enable it for your integrator ID.
+5146:* **Feature flag required** — `ExactOutputRouting` must be enabled for your integrator ID.
+5194:          "x-integrator-id": integratorId,
+5440:    integratorId: integratorId,
+5857:The `quoteId` can be found at the top level of the route response. Including this parameter in status requests will enable volume and specific token activity sharing with integrators in the near future:
+5873:  integratorId?: string;
+5893:        "x-integrator-id": integratorId,
+6010:* Funds are always transferred from the `msg.sender` on the source chain (this could be the user for direct calls to Squid Intents, or a smart contract like Multicall)
+6027:### Integrator Fee Structure
+6029:Squid allows integrators to implement their own fee structure on top of Squid's platform fees. This document details the structure of Integrator fees implemented on through Squid.
+6032:Note, Squid splits all fees collected by integrators 50/50. Please see the Platform Fee Structure section for more detail.
+6034:#### Integrator Fee Configuration
+6036:As an integrator, you can implement the following fee structures:
+6045:Within the returned route request, all fees (including your integrator fees and Squid's platform fees) are aggregated into a single "Service fee" in the route response. This appears in the `feeCosts` array and `route.actions`:
+6082:<mark style="color:yellow;">Squid splits all fees collected by integrators 50/50.</mark>
+6084:In the future, Squid may charge additional platform fees on top of integrator fees.
+6089:Total Fee = Platform Fees + Integrator Fees
+6092:Note: In some cases, Squid may allow integrators to waive certain platform fees. Please contact us for more information on fee customization options.
+6097:Integrators can reach out to Squid to implement fee capture on their cross-chain swaps.
+6099:Squid takes 50% of any fees collected by an integratorAddress.
+6117:        integratorAddress: "0x", 
+6125:| integratorAddress | The EVM address of the integrator that will receive the fee                                                        |
+6133:        "name": "Integrator Fee",
+6134:        "description": "Integrator Fee",
+6164:        "integratorAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+6187:You can check the Squid fee collector smart contracts for the balance of each token for the integrator address.\
+6190:You can read balances by putting in the "token address" and "integratorAddress" into the getBalance function\
+6222:| `x-integrator-id` | `header` | Yes          | Your unique integrator ID. Requests count toward your Rate Limit (RPS). |
+6226:* Global History: Returns all transactions associated with the wallet across all integrators.
+6234:--header 'x-integrator-id: your-integrator-id'
+6238:const getWalletHistory = async (address, integratorId) => {
+6242:      headers: { "x-integrator-id": integratorId },
+6316:  integratorId: "squid-test"
+6443:* Integrator fee support built in
+6465:1. If you don't already have a Squid integration, [apply for an integrator ID](https://squidrouter.typeform.com/integrator-id)
+6466:2. Contact the Squid team to enable Squid Intents on your integrator ID
+6484:Integrating Squid Intents follows the same flow as a standard Squid integration. If you already have Squid integrated, the only steps are to have Squid Intents enabled on your integrator ID, poll for status with a `quoteId`, and handle the transaction request type.
+6486:Squid Intents must be enabled on your integrator ID. Reach out to the Squid team to get started.
+6516:      "x-integrator-id": integratorId,
+6621:        "x-integrator-id": integratorId,
+6677:* Funds are transferred from the `msg.sender` on the source chain
+6692:<mark style="color:yellow;">**With Squid intents whitelabeling, integrators can deploy their own solver network and multi-chain liquidity within Squid’s cross-chain routing infrastructure.**</mark> This enables a seamless, branded trading experience while leveraging Squid Intents' intent-based order system.
+6740:Currently, Bitcoin and Solana integrations are in a closed beta. Please reach out if you would like to have the functionality enabled for your integrator ID.
+6963:> **Squid Intents must be enabled on your integrator ID.** Reach out to the Squid team to request Squid Intents access before integrating with XRPL.
+7058:    integratorId: "<your-integrator-id>",
+7100:    integratorId: "<your-integrator-id>",
+7147:The Squid Deposit Widget provides a streamlined deposit and payment flow for accepting cross-chain funds into an XRPL address. Unlike the Swap Widget, the destination is fixed by you (the integrator) — users only choose their source chain and token.
+7198:| `integrator.id`            | `string`                 | ✅                     | Your Integrator ID.                                                                                 |
+7199:| `integrator.name`          | `string`                 | ✅                     | Displayed in the widget header.                                                                     |
+7200:| `integrator.logoUrl`       | `string`                 | ✅                     | URL of your logo, displayed alongside the name.                                                     |
+7223:  integrator: {
+7224:    id: "<your-integrator-id>",
+7245:  integrator: {
+7246:    id: "<your-integrator-id>",
+7272:  integrator: {
+7273:    id: "<your-integrator-id>",
+7295:  integrator: {
+7296:    id: "<your-integrator-id>",
+7320:  integrator: {
+7321:    id: "<your-integrator-id>",
+7370:      "x-integrator-id": "<your-integrator-id>",
+7432:The Squid SDK provides the same XRPL routing capabilities. After initializing the SDK with your integrator ID, use `squid.route()` with the same parameters as the API examples above, then execute using the returned transaction request.
+7460:      "x-integrator-id": "<your-integrator-id>",
+7474:> **Squid Intents must be enabled on your integrator ID.** Reach out to the Squid team to request Squid Intents access before integrating with Stellar.
+7501:* **Integrator ID** — A valid Squid integrator ID with Squid Intents enabled.
+7519:const integratorId: string = process.env.INTEGRATOR_ID!;
+7541:          "x-integrator-id": integratorId,
+7562:        "x-integrator-id": integratorId,
+7734:const integratorId: string = process.env.INTEGRATOR_ID!;
+7752:    integratorId: integratorId,
+7848:    integratorId: integratorId,
+7942:    "x-integrator-id": "<your-integrator-id>",
+7976:> **Squid Intents must be enabled on your integrator ID.** Reach out to the Squid team to request Squid Intents access before integrating with Hedera.
+8061:const integratorId: string = process.env.INTEGRATOR_ID!;
+8083:        "x-integrator-id": integratorId,
+8097:      "x-integrator-id": integratorId,
+8255:const integratorId: string = process.env.INTEGRATOR_ID!;
+8274:    integratorId: integratorId,
+8359:    integratorId: integratorId,
+8431:  headers: { "x-integrator-id": "<your-integrator-id>" },
+8498:			'x-integrator-id': integratorId,
+8507:			'x-integrator-id': integratorId,
+8798:Please contact the Squid team to confirm current availability and to enable Squid Intents on your integrator ID.
+8831:* In order to utilize Squid, you must first request an [integrator ID](https://squidrouter.typeform.com/integrator-id?typeform-source=circle)(API Key) which will be sent to your email.
+8848:    'integratorId': '<your-integrator-id>',
+8882:          integratorId: "<your-integrator-id>",
+9005:        "x-integrator-id": "<your-integrator-id>",
+9045:        "x-integrator-id": "<your-integrator-id>",
+9073:  integratorId: "<your-integrator-id>",
+9101:  integratorId: "<your-integrator-id>",
+9137:* Squid Intents uses a **RFQ intent-based protocol design** and **TEE-verified batched settlement**.
+9175:* A [**Squid Integrator ID**](https://squidrouter.typeform.com/integrator-id)
+9341:* A [**Squid Integrator ID**](https://squidrouter.typeform.com/integrator-id)
+9396:You will need a funded agent wallet (USDC or any Squid-supported token on any supported chain) and your Squid Integrator ID.
+9417:      integratorId: "your-integrator-id"
+9431:| `integratorId` | `string`                            | Yes      | Your Squid integrator ID                                                                |
+9519:curl -H "x-integrator-id: YOUR_ID" \
+9528:const squid = new Squid({ integratorId: "YOUR_ID" });
+9591:			'x-integrator-id': integratorId,
+9644:    integratorId: "your-integrator-id"

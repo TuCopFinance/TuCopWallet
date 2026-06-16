@@ -1,0 +1,19 @@
+yarn why v1.22.22
+[1/4] Why do we have the module "ethers"...?
+[2/4] Initialising dependency graph...
+[3/4] Finding dependency...
+[4/4] Calculating file sizes...
+info => Found "ethers@5.7.2"
+info Has been hoisted to "ethers"
+info This module exists because it's specified in "devDependencies".
+info Disk size without dependencies: "10.32MB"
+info Disk size with unique dependencies: "18.81MB"
+info Disk size with transitive dependencies: "22.32MB"
+info Number of shared dependencies: 35
+info => Found "@fiatconnect/fiatconnect-sdk#ethers@6.13.4"
+info This module exists because "@fiatconnect#fiatconnect-sdk" depends on it.
+info Disk size without dependencies: "15.7MB"
+info Disk size with unique dependencies: "26.41MB"
+info Disk size with transitive dependencies: "26.6MB"
+info Number of shared dependencies: 8
+Done in 0.30s.
