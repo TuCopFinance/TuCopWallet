@@ -78,7 +78,7 @@ describe('getLockableWallet', () => {
     const mockRequest = jest.fn(async ({ method }) => {
       switch (method) {
         case 'eth_chainId':
-          return toHex(BigInt(11142220))
+          return toHex(BigInt(42220))
         case 'eth_getTransactionCount':
           return toHex(BigInt(1))
         case 'eth_getBlockByNumber':

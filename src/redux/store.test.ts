@@ -385,6 +385,7 @@ describe('store state', () => {
           "inviteRewardsVersion": "none",
           "isEncryptingComment": false,
           "isSending": false,
+          "lastUsedTokenId": undefined,
           "recentPayments": [],
           "recentRecipients": [],
         },

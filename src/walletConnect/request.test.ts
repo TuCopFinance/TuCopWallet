@@ -38,7 +38,7 @@ const signTransactionRequest = {
     method: SupportedActions.eth_signTransaction,
     params: [{ from: '0xTEST', to: '0xTEST', data: '0x', nonce: 7, gas: '0x5208', value: '0x01' }],
   },
-  chainId: 'eip155:11142220',
+  chainId: 'eip155:42220',
 }
 const serializableTransactionRequest = signTransactionRequest.request
   .params[0] as SerializableTransactionRequest
@@ -47,7 +47,7 @@ const sendTransactionRequest = {
     method: SupportedActions.eth_sendTransaction,
     params: [{ from: '0xTEST', to: '0xTEST', data: '0x', nonce: 7, gas: '0x5208', value: '0x01' }],
   },
-  chainId: 'eip155:11142220',
+  chainId: 'eip155:42220',
 }
 const serializableSendTransactionRequest = sendTransactionRequest.request
   .params[0] as SerializableTransactionRequest
@@ -56,21 +56,21 @@ const personalSignRequest = {
     method: SupportedActions.personal_sign,
     params: ['Some message', '0xdeadbeef'],
   },
-  chainId: 'eip155:11142220',
+  chainId: 'eip155:42220',
 }
 const signTypedDataRequest = {
   request: {
     method: SupportedActions.eth_signTypedData,
     params: ['0xdeadbeef', JSON.stringify(mockTypedData)],
   },
-  chainId: 'eip155:11142220',
+  chainId: 'eip155:42220',
 }
 const signTypedDataV4Request = {
   request: {
     method: SupportedActions.eth_signTypedData_v4,
     params: ['0xdeadbeef', JSON.stringify(mockTypedData)],
   },
-  chainId: 'eip155:11142220',
+  chainId: 'eip155:42220',
 }
 
 const state = createMockStore({
@@ -123,13 +123,13 @@ describe(handleRequest, () => {
   })
 
   it('chooses the correct wallet for the request', async () => {
-    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11155111' })
+    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:1' })
       .withState(state)
       .call(getViemWallet, ethereumMainnet)
       .not.call(getViemWallet, celo)
       .run()
 
-    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:11142220' })
+    await expectSaga(handleRequest, { ...personalSignRequest, chainId: 'eip155:42220' })
       .withState(state)
       .call(getViemWallet, celo)
       .not.call(getViemWallet, ethereumMainnet)
