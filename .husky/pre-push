@@ -1,1 +1,1 @@
-node ./scripts/hooks/pre-push.js
+node ./scripts/hooks/pre-push.js "$@"
