@@ -92,7 +92,7 @@ describe('EarnDepositBottomSheet', () => {
   const commonAnalyticsProperties = {
     depositTokenId: mockArbUsdcTokenId,
     depositTokenAmount: '100',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     providerId: mockEarnPositions[0].appId,
     poolId: mockEarnPositions[0].positionId,
   }
@@ -133,7 +133,7 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByTestId('EarnDeposit/ProviderInfo')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.network')).toBeTruthy()
-    expect(getByText('Arbitrum Sepolia')).toBeTruthy()
+    expect(getByText('Arbitrum One')).toBeTruthy()
 
     expect(
       getByText('earnFlow.depositBottomSheet.footerV1_93, {"providerName":"Aave"}')
@@ -177,7 +177,7 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByTestId('EarnDeposit/ProviderInfo')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.network')).toBeTruthy()
-    expect(getByText('Arbitrum Sepolia')).toBeTruthy()
+    expect(getByText('Arbitrum One')).toBeTruthy()
 
     expect(
       getByText('earnFlow.depositBottomSheet.footerV1_93, {"providerName":"Aave"}')

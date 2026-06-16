@@ -229,10 +229,10 @@ describe('handleDeepLink', () => {
   })
 
   it('Handles jumpstart links', async () => {
-    const deepLink = `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart/0xPrivateKey/celo-sepolia`
+    const deepLink = `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart/0xPrivateKey/celo-mainnet`
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        [NetworkId['celo-sepolia']]: { contractAddress: '0xTEST' },
+        [NetworkId['celo-mainnet']]: { contractAddress: '0xTEST' },
       },
     })
     await expectSaga(handleDeepLink, openDeepLink(deepLink))
@@ -247,7 +247,7 @@ describe('handleDeepLink', () => {
       .run()
 
     expect(jumpstartLinkHandler).toHaveBeenCalledWith(
-      'celo-sepolia',
+      'celo-mainnet',
       '0xTEST',
       '0xPrivateKey',
       '0xwallet'

@@ -25,7 +25,7 @@ describe('PoolCard', () => {
               ...mockEarnPositions[0].tokens,
               {
                 tokenId: mockArbEthTokenId,
-                networkId: NetworkId['arbitrum-sepolia'],
+                networkId: NetworkId['arbitrum-one'],
                 address: 'native',
                 symbol: 'ETH',
                 decimals: 6,
@@ -40,9 +40,7 @@ describe('PoolCard', () => {
     )
 
     expect(getByText('USDC / ETH')).toBeTruthy()
-    expect(
-      getByText('earnFlow.poolCard.onNetwork, {"networkName":"Arbitrum Sepolia"}')
-    ).toBeTruthy()
+    expect(getByText('earnFlow.poolCard.onNetwork, {"networkName":"Arbitrum One"}')).toBeTruthy()
     expect(getByText('earnFlow.poolCard.percentage, {"percentage":"1.92"}')).toBeTruthy()
     expect(getByText('COP$1,808,800.00')).toBeTruthy()
   })
@@ -58,8 +56,8 @@ describe('PoolCard', () => {
     fireEvent.press(getByTestId('PoolCard'))
     // TODO(ACT-1321): Assert that it correctly navigates to PoolDetails screen
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_pool_card_press, {
-      poolId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      networkId: NetworkId['arbitrum-sepolia'],
+      poolId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      networkId: NetworkId['arbitrum-one'],
       depositTokenId: mockArbUsdcTokenId,
       poolAmount: '10',
       providerId: 'aave',

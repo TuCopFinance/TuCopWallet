@@ -44,10 +44,10 @@ yarn install
 cp secrets.json.template secrets.json
 # Edit secrets.json with your API keys
 
-# 3. Run on Android (testnet)
+# 3. Run on Android (mainnetdev)
 yarn dev:android
 
-# 4. Run on iOS (testnet)
+# 4. Run on iOS (mainnetdev)
 yarn dev:ios
 ```
 
@@ -266,10 +266,8 @@ TuCopWallet/
 ### Development
 
 ```bash
-yarn dev:android              # Run on Android (testnet)
-yarn dev:android:mainnet      # Run on Android (mainnet)
-yarn dev:ios                  # Run on iOS (testnet)
-yarn dev:ios:mainnet          # Run on iOS (mainnet)
+yarn dev:android              # Run on Android (Celo mainnet dev)
+yarn dev:ios                  # Run on iOS (Celo mainnet dev)
 ```
 
 ### Testing & Quality
@@ -291,14 +289,10 @@ yarn version --major          # Bump major (1.0.0 → 2.0.0)
 
 ## iOS Build Schemes
 
-| Scheme                   | Network      | Display Name             | Use For                 |
-| ------------------------ | ------------ | ------------------------ | ----------------------- |
-| `MobileStack-testnetdev` | Celo Sepolia | TuCop (Celo Sepolia dev) | **Primary development** |
-| `MobileStack-testnet`    | Celo Sepolia | TuCop Celo Sepolia       | Testing                 |
-| `MobileStack-mainnet`    | Celo mainnet | TuCop                    | Production              |
-| `MobileStack-mainnetdev` | Celo mainnet | TuCop (dev)              | Advanced testing        |
-
-> **Testnet**: Celo Sepolia (chain ID 11142220). See [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia).
+| Scheme                   | Network      | Display Name | Use For                 |
+| ------------------------ | ------------ | ------------ | ----------------------- |
+| `MobileStack-mainnet`    | Celo mainnet | TuCop        | Production              |
+| `MobileStack-mainnetdev` | Celo mainnet | TuCop (dev)  | **Primary development** |
 
 ## Android Build Configuration
 
@@ -315,12 +309,11 @@ Release build: `cd android && ./gradlew bundleMainnetRelease`
 
 ## Network Configuration
 
-|          | Mainnet                            | Celo Sepolia (testnet)                                  |
-| -------- | ---------------------------------- | ------------------------------------------------------- |
-| Chain ID | 42220                              | 11142220                                                |
-| RPC      | `https://forno.celo.org/`          | `https://forno.celo-sepolia.celo-testnet.org/`          |
-| Explorer | [celoscan.io](https://celoscan.io) | [sepolia.celoscan.io](https://sepolia.celoscan.io/)     |
-| Faucet   | —                                  | [faucet.celo.org](https://faucet.celo.org/celo-sepolia) |
+|          | Celo Mainnet                       |
+| -------- | ---------------------------------- |
+| Chain ID | 42220                              |
+| RPC      | `https://forno.celo.org/`          |
+| Explorer | [celoscan.io](https://celoscan.io) |
 
 ## Backend Services
 

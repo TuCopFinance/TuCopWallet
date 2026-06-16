@@ -18,10 +18,11 @@ export interface ExpectedLaunchArgs {
 }
 
 // extract secrets from secrets.json
-const keyOrUndefined = (file: any, secretsKey: any, attribute: any) => {
-  if (secretsKey in file) {
-    if (attribute in file[secretsKey]) {
-      return file[secretsKey][attribute]
+const SECRETS_KEY = 'mainnet'
+const keyOrUndefined = (file: any, attribute: any) => {
+  if (SECRETS_KEY in file) {
+    if (attribute in file[SECRETS_KEY]) {
+      return file[SECRETS_KEY][attribute]
     }
   }
   return undefined
@@ -56,81 +57,54 @@ export const STABLE_TRANSACTION_MIN_AMOUNT = 0.01
 export const TOKEN_MIN_AMOUNT = 0.00000001
 // The minimum amount for a wallet to be considered as "funded"
 export const DOLLAR_MIN_AMOUNT_ACCOUNT_FUNDED = 0.01
-// The number of seconds before the sender can reclaim the payment.
-export const DEFAULT_TESTNET = configOrThrow('DEFAULT_TESTNET')
 // Additional gas added when setting the fee currency
 // See details where used.
 export const STATIC_GAS_PADDING = 50_000
 
 export const TIME_UNTIL_TOKEN_INFO_BECOMES_STALE = 12 * ONE_HOUR_IN_MILLIS
 
-export const DEFAULT_FORNO_URL =
-  DEFAULT_TESTNET === 'mainnet'
-    ? 'https://forno.celo.org/'
-    : 'https://forno.celo-sepolia.celo-testnet.org/'
+export const DEFAULT_FORNO_URL = 'https://forno.celo.org/'
 
 export const APP_BUNDLE_ID = configOrThrow('APP_BUNDLE_ID')
 export const DEEP_LINK_URL_SCHEME = configOrThrow('DEEP_LINK_URL_SCHEME')
 
 // The network that FiatConnect providers operate on
-export const FIATCONNECT_NETWORK =
-  DEFAULT_TESTNET === 'mainnet' ? Network.Mainnet : Network.Alfajores
+export const FIATCONNECT_NETWORK = Network.Mainnet
 
 export const STATSIG_ENV = {
-  tier: DEFAULT_TESTNET === 'mainnet' ? 'production' : 'development',
+  tier: 'production',
 }
 export const E2E_TEST_STATSIG_ID = 'e2e_test_statsig_id'
 
 // Keyless backup settings
-export const TORUS_NETWORK =
-  DEFAULT_TESTNET === 'mainnet'
-    ? TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
-    : TORUS_SAPPHIRE_NETWORK.SAPPHIRE_DEVNET
+export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
 
 // FEATURE FLAGS
 export const FIREBASE_ENABLED = false
-export const SHOW_TESTNET_BANNER = stringToBoolean(Config.SHOW_TESTNET_BANNER || 'false')
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 // SECRETS
 export const WEB3AUTH_CLIENT_ID =
   'BAJWXF8YqQSoNtdfX3z-vxgkZ0ZfN0hJVT0eGuf9BqoRbojNIxthU0wnW0oBScduV6XLeEePSmVhHQXuaqBMjcw'
 
-export const ALCHEMY_ETHEREUM_API_KEY = keyOrUndefined(
-  secretsFile,
-  DEFAULT_TESTNET,
-  'ALCHEMY_ETHEREUM_API_KEY'
-)
-export const ALCHEMY_ARBITRUM_API_KEY = keyOrUndefined(
-  secretsFile,
-  DEFAULT_TESTNET,
-  'ALCHEMY_ARBITRUM_API_KEY'
-)
-export const ALCHEMY_OPTIMISM_API_KEY = keyOrUndefined(
-  secretsFile,
-  DEFAULT_TESTNET,
-  'ALCHEMY_OPTIMISM_API_KEY'
-)
+export const ALCHEMY_ETHEREUM_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_ETHEREUM_API_KEY')
+export const ALCHEMY_ARBITRUM_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_ARBITRUM_API_KEY')
+export const ALCHEMY_OPTIMISM_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_OPTIMISM_API_KEY')
 export const ALCHEMY_POLYGON_POS_API_KEY = keyOrUndefined(
   secretsFile,
-  DEFAULT_TESTNET,
   'ALCHEMY_POLYGON_POS_API_KEY'
 )
-export const ALCHEMY_BASE_API_KEY = keyOrUndefined(
-  secretsFile,
-  DEFAULT_TESTNET,
-  'ALCHEMY_BASE_API_KEY'
-)
+export const ALCHEMY_BASE_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_BASE_API_KEY')
 
-export const ZENDESK_API_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'ZENDESK_API_KEY')
+export const ZENDESK_API_KEY = keyOrUndefined(secretsFile, 'ZENDESK_API_KEY')
 export const STATSIG_API_KEY =
-  keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'STATSIG_API_KEY') ??
+  keyOrUndefined(secretsFile, 'STATSIG_API_KEY') ??
   // dummy key as fallback for e2e tests, which use local mode
   'client-EJqhHubOhMkds7D1mgwMQG1mFkXtZHF5sfq5Pcila1o'
-export const SEGMENT_API_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'SEGMENT_API_KEY')
-export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'SENTRY_CLIENT_URL')
-export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'RECAPTCHA_SITE_KEY')
-export const BIDALI_URL = keyOrUndefined(secretsFile, DEFAULT_TESTNET, 'BIDALI_URL')
+export const SEGMENT_API_KEY = keyOrUndefined(secretsFile, 'SEGMENT_API_KEY')
+export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, 'SENTRY_CLIENT_URL')
+export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, 'RECAPTCHA_SITE_KEY')
+export const BIDALI_URL = keyOrUndefined(secretsFile, 'BIDALI_URL')
 
 export const WALLET_CONNECT_PROJECT_ID = 'dcc6ce1fc698ea19c114e7afe1bc469f'
 export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'

@@ -70,9 +70,6 @@ interface TokenBalance extends BaseToken {
 // Mainnet: "celo-mainnet:0x{lowercase_address}"
 const COPM_TOKEN_ID = 'celo-mainnet:0x8a567e2ae79ca692bd748ab832081c45de4041ea'
 
-// Testnet: "celo-sepolia:0x{lowercase_address}"
-const COPM_TESTNET_ID = 'celo-sepolia:0x5f8d55c3627d2dc0a2b4afa798f877242f382f67'
-
 // Native token (no address)
 const CELO_TOKEN_ID = 'celo-mainnet:native'
 ```

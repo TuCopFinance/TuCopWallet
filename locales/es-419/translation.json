@@ -1295,10 +1295,6 @@
   "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> y otro no podrán redimir sus invitaciones",
   "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> y otros no podrán redimir sus invitaciones",
   "escrowedPaymentReminderSmsNoData": "Un recordatorio amigable de que aún no has reclamado tus {{currency}} con {{appName}}. ¡Descarga la aplicación móvil para empezar!",
-  "testnetAlert": {
-    "0": "{{testnet}}",
-    "1": "Te recordamos que estás utilizando la compilación de red {{testnet}} - los saldos que se muestran no son reales."
-  },
   "dollarBalance": "<0></0> $t(celoDollars)",
   "feedItemAddress": "{{address}}",
   "feedItemDepositInfo": "{{comment}}",
@@ -1322,7 +1318,6 @@
   "feedItemFailedTransaction": "Transacción fallida",
   "feedItemFaucetTitle": "Celo",
   "feedItemFaucetInfo": "{{faucet}} Faucet",
-  "feedItemFaucetInfo_noTestnet": "Faucet",
   "feedItemInviteSentTitle": "Celo",
   "feedItemInviteSentInfo": "Invitaste a {{nameOrNumber}}",
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
@@ -2225,7 +2220,6 @@
   "viewOnEthereumBlockExplorer": "Ver en Etherscan",
   "viewOnArbiscan": "Ver en Arbiscan",
   "viewOnOPMainnetExplorer": "Ver en OP Mainnet Explorer",
-  "viewOnOPSepoliaExplorer": "Ver en OP Sepolia Explorer",
   "viewOnPolygonPoSScan": "Ver en PolygonScan",
   "viewOnBaseScan": "Ver en BaseScan",
   "viewOnAxelarScan": "Ver en AxelarScan",

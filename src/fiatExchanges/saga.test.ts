@@ -269,7 +269,7 @@ describe(tagTxsWithProviderInfo, () => {
 
     await expectSaga(
       tagTxsWithProviderInfo,
-      updateTransactions({ networkId: NetworkId['celo-sepolia'], transactions })
+      updateTransactions({ networkId: NetworkId['celo-mainnet'], transactions })
     )
       .provide([
         [select(providerLogosSelector), mockProviderLogos],
