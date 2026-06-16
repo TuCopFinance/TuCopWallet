@@ -1,0 +1,19 @@
+'forge clean' running (wd: /Users/0xj4an/Workspaces/tucop-finance/code/TuCopWallet/contracts-spike)
+'forge config --json' running
+'forge build --build-info src/BatchExecutorV2.sol' running (wd: /Users/0xj4an/Workspaces/tucop-finance/code/TuCopWallet/contracts-spike)
+INFO:Detectors:
+Detector: calls-loop
+BatchExecutorV2.execute(BatchExecutorV2.Call[]) (src/BatchExecutorV2.sol#33-40) has external calls inside a loop: (ok,ret) = calls[i].target.call{value: calls[i].value}(calls[i].data) (src/BatchExecutorV2.sol#37)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Detector: low-level-calls
+Low level call in BatchExecutorV2.execute(BatchExecutorV2.Call[]) (src/BatchExecutorV2.sol#33-40):
+	- (ok,ret) = calls[i].target.call{value: calls[i].value}(calls[i].data) (src/BatchExecutorV2.sol#37)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Slither:src/BatchExecutorV2.sol analyzed (3 contracts with 101 detectors), 2 result(s) found
+
+Severity classification (per Slither default impact levels):
+- calls-loop: INFORMATIONAL (low severity, intended behavior for batch executors)
+- low-level-calls: INFORMATIONAL (low severity, .call is required for arbitrary inner calls)
+
+ZERO high or medium severity issues found.
