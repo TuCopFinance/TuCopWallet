@@ -203,7 +203,7 @@ const renderScreen = ({
 const defaultQuote: FetchQuoteResponse = {
   unvalidatedSwapTransaction: {
     swapType: 'same-chain',
-    chainId: 11142220,
+    chainId: 42220,
     price: '1.2345678',
     guaranteedPrice: '1.1234567',
     appFeePercentageIncludedInPrice: undefined,
@@ -1924,12 +1924,12 @@ describe('SwapScreen', () => {
 
   describe('SwapScreen virtual Dolares flow', () => {
     // Fixture token IDs used by useDollarBalanceSnapshots.
-    const usdcStagingTokenId = 'celo-mainnet:0x01c5c0122039549ad1493b8220cabedd739bc44e'
-    const usdtStagingTokenId = 'celo-mainnet:0xd077a400968890eacc75cdc901f0356c943e4fdb'
+    const usdcMainnetTokenId = 'celo-mainnet:0xceba9300f2b948710d2653dd7b07f33a8b32118c'
+    const usdtMainnetTokenId = 'celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e'
 
     const dollarBalanceTokens = {
-      [usdcStagingTokenId]: {
-        tokenId: usdcStagingTokenId,
+      [usdcMainnetTokenId]: {
+        tokenId: usdcMainnetTokenId,
         networkId: NetworkId['celo-mainnet'],
         symbol: 'USDC',
         name: 'USDC',
@@ -1939,8 +1939,8 @@ describe('SwapScreen', () => {
         priceUsd: '1',
         imageUrl: undefined,
       },
-      [usdtStagingTokenId]: {
-        tokenId: usdtStagingTokenId,
+      [usdtMainnetTokenId]: {
+        tokenId: usdtMainnetTokenId,
         networkId: NetworkId['celo-mainnet'],
         symbol: 'USDT',
         name: 'USDT',

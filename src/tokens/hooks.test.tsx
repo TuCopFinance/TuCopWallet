@@ -314,10 +314,10 @@ describe('useSwappableTokens', () => {
     })
 
     const expectedToTokens1 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens1 = [mockCrealTokenId, mockPoofTokenId, mockCeloTokenId, ethTokenId]
+    const expectedFromTokens1 = [mockCeloTokenId, ethTokenId, mockCrealTokenId, mockPoofTokenId]
 
-    const expectedToTokens2 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens2 = [mockCrealTokenId, mockCeloTokenId, ethTokenId, mockPoofTokenId]
+    const expectedToTokens2 = [ethTokenId, mockCeloTokenId]
+    const expectedFromTokens2 = [ethTokenId, mockCeloTokenId, mockPoofTokenId, mockCrealTokenId]
 
     const { result: result1 } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
