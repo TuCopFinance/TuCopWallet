@@ -1,0 +1,3 @@
+yarn run v1.22.22
+$ /Users/0xj4an/Workspaces/tucop-finance/code/TuCopWallet/node_modules/.bin/knip --no-gitignore --include dependencies
+Done in 11.38s.
