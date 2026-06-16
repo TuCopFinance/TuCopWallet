@@ -1,0 +1,71 @@
+S5 Spike — Gaps captured during DollarsSpend prototype (integration B)
+
+Target file: src/dollarsSpend/saga.ts (executeMultiSwapSaga, 154 lines total)
+
+GAP B1: Sagas cannot call hooks — actions must be exported.
+  The hook ultimately wraps a Redux slice. For sagas to participate
+  in the same in-flight state, the slice's action creators must be
+  exported and callable via yield* put().
+  -> v3 fix: export `inFlightStart`, `inFlightAdvance`, `inFlightFail`,
+     `inFlightRetry`, `inFlightAbort` from the same module. Hook
+     dispatches these internally. Saga dispatches them directly.
+
+GAP B2: Multi-step status needs first-class support.
+  v2 InFlightStatus has 'progress' and 'partial-failure' but the hook
+  never transitions to them. dollarsSpend saga loops over steps and
+  emits multiSwapStepSucceeded / multiSwapStepFailed for each. The
+  hook needs an advance() variant that also bumps currentStep.
+  -> v3 fix: advance(flowId, 'progress', { currentStep: i+1,
+     completedStepIndices: [...] }) is enough — advance() already
+     accepts a Partial patch. v3 needs no API change; documentation
+     is the only deliverable.
+
+GAP B3: Final status mapping.
+  When the loop ends, dollarsSpend dispatches multiSwapCompleted.
+  The hook's terminal states are 'succeeded' / 'partial-failure' /
+  'failed'. Mapping rule: if all steps succeeded -> 'succeeded'.
+  If any failed AND any succeeded -> 'partial-failure'. If ALL
+  failed (or first failed) -> 'failed'. Saga is responsible for
+  choosing the terminal status.
+  -> RESOLVED: no API change. Saga calls advance() with the right
+     terminal status based on its own accounting.
+
+GAP B4: Race against external success/error (swap saga inside the loop).
+  dollarsSpend saga internally puts swapStart and races on
+  swapSuccess/swapError. The IN-FLIGHT hook's notion of "step
+  succeeded" is separate from the swap slice's success/error.
+  This is fine: each step's swap is a sub-transaction; the
+  outer dollarsSpend flow has its own descriptor with steps=N.
+  -> RESOLVED: nested flows are OK because flowKind disambiguates
+     them. UI scoped to scopeToFlowKind='swap' won't see the
+     dollarsSpend descriptor. The inner swap saga can still emit
+     its own in-flight events for the swap descriptor — but in
+     practice we will NOT do that during dollarsSpend (the outer
+     descriptor owns the user-visible state).
+
+GAP B5: Error class derivation from string messages.
+  dollarsSpend currently dispatches multiSwapStepFailed({ index,
+  errorMessage: string }). The hook needs ErrorClass.
+  -> v3 fix: saga should classify; if it can't, dispatch with
+     ErrorClass.kind='unknown' and the retryClassifier extension
+     point (introduced in v4) maps the raw error to a real kind.
+
+GAP B6: Hook's start() returns a string flowId, but saga is dispatched
+  via createAction. The saga has no way to receive the flowId from
+  the screen-side hook call.
+  -> v3 fix: either (a) the saga generates its own flowId and the
+     screen subscribes to the global hook (scopeToFlowKind=
+     'dollarsSpend') to find it, OR (b) the action payload carries
+     a pre-allocated flowId from the caller.
+  -> Decision: (a). Sagas are the source of truth for flowId when
+     the flow originates from saga action. The hook's "current"
+     selector returns whatever descriptor exists for the scoped
+     kind. UI doesn't need to pass the flowId around.
+
+Net v3 changes (additive, not breaking):
+  - Export raw Redux actions alongside the hook for saga use.
+  - Document the multi-step transition pattern (saga calls
+    advance() repeatedly).
+  - Document the nested flow pattern (don't emit inner-swap
+    descriptors during dollarsSpend).
+  - No type signature change for the hook itself.
