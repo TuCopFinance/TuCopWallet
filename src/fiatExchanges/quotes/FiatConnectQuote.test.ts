@@ -57,7 +57,7 @@ const mockTokenInfo = {
   lastKnownPriceUsd: new BigNumber('1'),
   symbol: 'cUSD',
   tokenId: mockCusdTokenId,
-  networkId: NetworkId['celo-sepolia'],
+  networkId: NetworkId['celo-mainnet'],
   address: mockCusdAddress,
   isFeeCurrency: true,
   canTransferWithComment: true,

@@ -88,8 +88,8 @@ describe(SessionRequest, () => {
       expect(getByText('walletConnectRequest.connectWalletAction')).toBeTruthy()
       expect(queryByText('dismiss')).toBeFalsy()
       const networkChips = queryByTestId('SessionRequest/NetworkChips')
-      expect(networkChips?.children[0]).toHaveTextContent('Celo Sepolia')
-      expect(networkChips?.children[1]).toHaveTextContent('Ethereum Sepolia')
+      expect(networkChips?.children[0]).toHaveTextContent('Celo')
+      expect(networkChips?.children[1]).toHaveTextContent('Ethereum')
       expect(getByText(mockAccount.toLowerCase())).toBeTruthy()
     })
 

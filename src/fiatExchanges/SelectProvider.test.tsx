@@ -170,7 +170,7 @@ describe(SelectProviderScreen, () => {
           ipAddress: MOCK_IP_ADDRESS,
         },
         walletAddress: mockAccount.toLowerCase(),
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
       })
     )
   })
@@ -236,7 +236,7 @@ describe(SelectProviderScreen, () => {
       lowestFeePaymentMethod: undefined,
       lowestFeeProvider: undefined,
       lowestFeeCryptoAmount: undefined,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
     }
     mocked(getProviderSelectionAnalyticsData).mockReturnValue(mockAnalyticsData)
     render(

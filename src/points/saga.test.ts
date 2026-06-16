@@ -69,8 +69,8 @@ const MOCK_HISTORY_RESPONSE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-05T19:26:25.000Z',
       metadata: {
-        to: 'celo-sepolia:native',
-        from: 'celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
+        to: 'celo-mainnet:native',
+        from: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       },
     },
     {
@@ -78,8 +78,8 @@ const MOCK_HISTORY_RESPONSE: GetHistoryResponse = {
       pointsAmount: 20,
       createdAt: '2024-03-04T19:26:25.000Z',
       metadata: {
-        to: 'celo-sepolia:0xe4d517785d091d3c54818832db6094bcc2744545',
-        from: 'celo-sepolia:native',
+        to: 'celo-mainnet:0xe4d517785d091d3c54818832db6094bcc2744545',
+        from: 'celo-mainnet:native',
       },
     },
     {
@@ -88,8 +88,8 @@ const MOCK_HISTORY_RESPONSE: GetHistoryResponse = {
 
       createdAt: '2024-03-04T19:26:25.000Z',
       metadata: {
-        to: 'celo-sepolia:0xe4d517785d091d3c54818832db6094bcc2744545',
-        from: 'celo-sepolia:native',
+        to: 'celo-mainnet:0xe4d517785d091d3c54818832db6094bcc2744545',
+        from: 'celo-mainnet:native',
       },
     },
   ],
@@ -626,7 +626,7 @@ describe('watchSwapSuccess', () => {
       swapId: 'some-id',
       fromTokenId: 'some-from-token-id',
       toTokenId: 'some-to-token-id',
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       transactionHash: '0x123' as Hash,
     })
 
@@ -654,7 +654,7 @@ describe('watchDepositSuccess', () => {
   it('should call sendPointsEvent with transformed payload', async () => {
     const mockAction = depositSuccess({
       tokenId: 'token-id',
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       transactionHash: '0x123' as Hash,
     })
 
@@ -684,7 +684,7 @@ describe('watchLiveLinkCreated', () => {
       liveLinkType: 'erc20' as const,
       beneficiaryAddress: mockAccount as Address,
       transactionHash: '0x456' as Hash,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       tokenId: 'some-token-id',
       amount: '10',
     })

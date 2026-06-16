@@ -65,17 +65,11 @@ function TransactionDetails({ transaction, title, subtitle, children, retryHandl
 
   const networkIdToExplorerString: Record<NetworkId, string> = {
     [NetworkId['celo-mainnet']]: t('viewOnCeloScan'),
-    [NetworkId['celo-sepolia']]: t('viewOnCeloScan'),
     [NetworkId['ethereum-mainnet']]: t('viewOnEthereumBlockExplorer'),
-    [NetworkId['ethereum-sepolia']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['arbitrum-one']]: t('viewOnArbiscan'),
-    [NetworkId['arbitrum-sepolia']]: t('viewOnArbiscan'),
     [NetworkId['op-mainnet']]: t('viewOnOPMainnetExplorer'),
-    [NetworkId['op-sepolia']]: t('viewOnOPSepoliaExplorer'),
     [NetworkId['polygon-pos-mainnet']]: t('viewOnPolygonPoSScan'),
-    [NetworkId['polygon-pos-amoy']]: t('viewOnPolygonPoSScan'),
     [NetworkId['base-mainnet']]: t('viewOnBaseScan'),
-    [NetworkId['base-sepolia']]: t('viewOnBaseScan'),
   }
 
   const explorerName = showCrossChainSwapExplorer

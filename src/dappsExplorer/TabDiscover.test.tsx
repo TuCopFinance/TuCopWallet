@@ -64,7 +64,7 @@ describe('TabDiscover', () => {
         tokens: {
           tokenBalances: {
             [mockAaveArbUsdcTokenId]: {
-              networkId: NetworkId['arbitrum-sepolia'],
+              networkId: NetworkId['arbitrum-one'],
               address: mockAaveArbUsdcAddress,
               tokenId: mockAaveArbUsdcTokenId,
               symbol: 'aArbSepUSDC',
@@ -76,7 +76,7 @@ describe('TabDiscover', () => {
         },
         positions: {
           positions: [{ ...mockEarnPositions[0], balance: '10' }],
-          earnPositionIds: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+          earnPositionIds: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
         },
       })
 
