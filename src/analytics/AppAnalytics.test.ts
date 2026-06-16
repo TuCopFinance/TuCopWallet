@@ -172,7 +172,7 @@ describe('AppAnalytics', () => {
       'statsig-key',
       { userID: 'someUserId' },
       // Segment client is disabled, so overrideStableID uses device uniqueID as fallback
-      { environment: { tier: 'development' }, overrideStableID: mockDeviceId, localMode: false }
+      { environment: { tier: 'production' }, overrideStableID: mockDeviceId, localMode: false }
     )
   })
 
