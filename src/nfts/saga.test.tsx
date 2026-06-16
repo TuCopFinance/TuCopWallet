@@ -71,7 +71,7 @@ describe('Given Nfts saga', () => {
       mockFetch.resetMocks()
       jest.clearAllMocks()
       jest.mocked(getMultichainFeatures).mockReturnValue({
-        showNfts: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showNfts: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
     })
 
@@ -84,15 +84,15 @@ describe('Given Nfts saga', () => {
         .put(
           fetchNftsCompleted({
             nfts: [
-              { ...mockNftAllFields, networkId: NetworkId['celo-sepolia'] },
-              { ...mockNftMinimumFields, networkId: NetworkId['ethereum-sepolia'] },
+              { ...mockNftAllFields, networkId: NetworkId['celo-mainnet'] },
+              { ...mockNftMinimumFields, networkId: NetworkId['ethereum-mainnet'] },
             ],
           })
         )
         .run()
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=celo-sepolia`,
+        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=celo-mainnet`,
         {
           headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
           method: 'GET',
@@ -100,7 +100,7 @@ describe('Given Nfts saga', () => {
         }
       )
       expect(mockFetch).toHaveBeenCalledWith(
-        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=ethereum-sepolia`,
+        `${networkConfig.getNftsByOwnerAddressUrl}?address=0xabc&networkId=ethereum-mainnet`,
         {
           headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
           method: 'GET',
@@ -131,7 +131,7 @@ describe('Given Nfts saga', () => {
         .provide([[select(walletAddressSelector), '0xabc']])
         .put(
           fetchNftsFailed({
-            error: 'Unable to fetch NFTs for celo-sepolia: 500 {"message":"something went wrong"}',
+            error: 'Unable to fetch NFTs for celo-mainnet: 500 {"message":"something went wrong"}',
           })
         )
         .run()

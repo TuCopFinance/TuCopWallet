@@ -59,10 +59,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereuim-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -134,7 +134,7 @@ describe(sendPaymentSaga, () => {
         addStandbyTransaction({
           context: { id: 'mock' },
           type: TokenTransactionTypeV2.Sent,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           amount: {
             value: BigNumber(10).negated().toString(),
             tokenAddress: mockCusdAddress,
@@ -162,7 +162,7 @@ describe(sendPaymentSaga, () => {
       usdAmount: '10',
       tokenAddress: mockCusdAddress,
       tokenId: mockCusdTokenId,
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       isTokenManuallyImported: false,
     })
   })
@@ -176,7 +176,7 @@ describe(sendPaymentSaga, () => {
         addStandbyTransaction({
           context: { id: 'mock' },
           type: TokenTransactionTypeV2.Sent,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           amount: {
             value: BigNumber(10).negated().toString(),
             tokenAddress: mockCeloAddress,
@@ -200,7 +200,7 @@ describe(sendPaymentSaga, () => {
       usdAmount: '10',
       tokenAddress: mockCeloAddress,
       tokenId: mockCeloTokenId,
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       isTokenManuallyImported: false,
     })
     expect(AppAnalytics.track).toHaveBeenCalledWith(CeloExchangeEvents.celo_withdraw_completed, {

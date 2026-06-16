@@ -15,17 +15,11 @@ export enum Network {
 
 export enum NetworkId {
   'celo-mainnet' = 'celo-mainnet',
-  'celo-sepolia' = 'celo-sepolia',
   'ethereum-mainnet' = 'ethereum-mainnet',
-  'ethereum-sepolia' = 'ethereum-sepolia',
   'arbitrum-one' = 'arbitrum-one',
-  'arbitrum-sepolia' = 'arbitrum-sepolia',
   'op-mainnet' = 'op-mainnet',
-  'op-sepolia' = 'op-sepolia',
   'polygon-pos-mainnet' = 'polygon-pos-mainnet',
-  'polygon-pos-amoy' = 'polygon-pos-amoy',
   'base-mainnet' = 'base-mainnet',
-  'base-sepolia' = 'base-sepolia',
 }
 
 export type PendingStandbyTransaction<T> = {

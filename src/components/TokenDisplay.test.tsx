@@ -21,30 +21,30 @@ describe('TokenDisplay', () => {
       },
       tokens: {
         tokenBalances: {
-          ['celo-sepolia:0xusd']: {
+          ['celo-mainnet:0xusd']: {
             address: '0xusd',
-            tokenId: 'celo-sepolia:0xusd',
+            tokenId: 'celo-mainnet:0xusd',
             symbol: 'cUSD',
             balance: '50',
             priceUsd: '1',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             priceFetchedAt: Date.now(),
           },
-          ['celo-sepolia:0xeur']: {
+          ['celo-mainnet:0xeur']: {
             address: '0xeur',
-            tokenId: 'celo-sepolia:0xeur',
+            tokenId: 'celo-mainnet:0xeur',
             symbol: 'cEUR',
             balance: '50',
             priceUsd: '1.2',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             priceFetchedAt: Date.now(),
           },
-          ['ethereum-sepolia:native']: {
-            tokenId: 'ethereum-sepolia:native',
+          ['ethereum-mainnet:native']: {
+            tokenId: 'ethereum-mainnet:native',
             symbol: 'ETH',
             balance: '10',
             priceUsd: '5',
-            networkId: NetworkId['ethereum-sepolia'],
+            networkId: NetworkId['ethereum-mainnet'],
             priceFetchedAt: Date.now(),
           },
         },
@@ -60,7 +60,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -74,7 +74,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -88,7 +88,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={10}
-            tokenId={'ethereum-sepolia:native'}
+            tokenId={'ethereum-mainnet:native'}
             testID="test"
           />
         </Provider>
@@ -102,7 +102,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={0.00000182421}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -117,7 +117,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -132,7 +132,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -145,7 +145,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'ethereum-sepolia:native'}
+            tokenId={'ethereum-mainnet:native'}
             localAmount={{
               currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
@@ -165,7 +165,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             showExplicitPositiveSign={true}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -179,7 +179,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={-10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -190,7 +190,7 @@ describe('TokenDisplay', () => {
     it('shows a dash by default when the token doesnt exist', () => {
       const { getByTestId } = render(
         <Provider store={store()}>
-          <TokenDisplay amount={10} tokenId={'celo-sepolia:does-not-exist'} testID="test" />
+          <TokenDisplay amount={10} tokenId={'celo-mainnet:does-not-exist'} testID="test" />
         </Provider>
       )
       expect(getElementText(getByTestId('test'))).toEqual('-')
@@ -201,7 +201,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-sepolia:does-not-exist'}
+            tokenId={'celo-mainnet:does-not-exist'}
             testID="test"
             errorFallback="US$ --"
           />
@@ -215,7 +215,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-sepolia:does-not-exist'}
+            tokenId={'celo-mainnet:does-not-exist'}
             localAmount={{
               currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
@@ -235,7 +235,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             hideSign={true}
             amount={-10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -249,7 +249,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             showApprox={true}
             testID="test"
           />
@@ -284,7 +284,7 @@ describe('getTokenSymbol', () => {
     expect(getTokenSymbol(t, undefined, networkConfig.usdmTokenId)).toBe('assets.dollars')
   })
   it('falls back to tokenId for USAT when usatTokenId is present (mainnet)', () => {
-    // On Sepolia, usatTokenId is '' and getTokenSymbol returns undefined for empty string.
+    // On Mainnet, usatTokenId is '' and getTokenSymbol returns undefined for empty string.
     // On mainnet, it should return assets.dollars.
     const usatId = networkConfig.usatTokenId
     const result = getTokenSymbol(t, undefined, usatId || undefined)

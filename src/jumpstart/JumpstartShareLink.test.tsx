@@ -32,7 +32,7 @@ describe('JumpstartShareLink', () => {
   }
   const expectedTrackedProperties = {
     tokenId: mockCusdTokenId,
-    networkId: 'celo-sepolia',
+    networkId: 'celo-mainnet',
     amountInUsd: '12.345',
   }
 

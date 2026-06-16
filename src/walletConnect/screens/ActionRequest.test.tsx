@@ -207,7 +207,7 @@ describe('ActionRequest with WalletConnect V2', () => {
         )
       ).toBeTruthy()
       expect(
-        getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo Sepolia"}')
+        getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo"}')
       ).toBeTruthy()
       const fee = within(getByTestId('EstimatedNetworkFee'))
       expect(fee.getByText('0.0007 CELO')).toBeTruthy() // gas * (_baseFeePerGas + maxPriorityFeePerGas)

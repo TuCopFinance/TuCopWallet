@@ -37,7 +37,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -443,7 +443,7 @@ describe('ReviewScreen', () => {
           flow: CICOFlow.CashOut,
           fiatConnectQuote: mockProps.route.params.normalizedQuote,
           fiatAccountId: '123',
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           serializablePreparedTransaction:
             getSerializablePreparedTransaction(mockPreparedTransaction),
         }),

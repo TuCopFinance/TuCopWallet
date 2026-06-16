@@ -8,16 +8,16 @@
 import { NetworkId } from 'src/transactions/types'
 
 const defaultMultichainFeatures: Record<string, NetworkId[]> = {
-  showCico: [NetworkId['celo-sepolia']],
-  showBalances: [NetworkId['celo-sepolia']],
-  showSend: [NetworkId['celo-sepolia']],
-  showSwap: [NetworkId['celo-sepolia']],
-  showTransfers: [NetworkId['celo-sepolia']],
-  showWalletConnect: [NetworkId['celo-sepolia']],
+  showCico: [NetworkId['celo-mainnet']],
+  showBalances: [NetworkId['celo-mainnet']],
+  showSend: [NetworkId['celo-mainnet']],
+  showSwap: [NetworkId['celo-mainnet']],
+  showTransfers: [NetworkId['celo-mainnet']],
+  showWalletConnect: [NetworkId['celo-mainnet']],
   showApprovalTxsInHomefeed: [] as NetworkId[],
-  showNfts: [NetworkId['celo-sepolia']],
-  showPositions: [NetworkId['celo-sepolia']],
-  showShortcuts: [NetworkId['celo-sepolia']],
+  showNfts: [NetworkId['celo-mainnet']],
+  showPositions: [NetworkId['celo-mainnet']],
+  showShortcuts: [NetworkId['celo-mainnet']],
 }
 
 export const getMultichainFeatures = jest.fn(() => defaultMultichainFeatures)

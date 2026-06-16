@@ -33,7 +33,7 @@ describe('pointsActivitiesSelector', () => {
   beforeEach(() => {
     jest
       .mocked(getDynamicConfigParams)
-      .mockReturnValue({ jumpstartContracts: { 'celo-sepolia': '0x1234' } })
+      .mockReturnValue({ jumpstartContracts: { 'celo-mainnet': '0x1234' } })
   })
 
   it('should return an empty array if there are no activities', () => {
