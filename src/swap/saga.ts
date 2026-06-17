@@ -27,6 +27,9 @@ import {
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
+import { simulateSwapTransaction } from 'src/lib/preflight'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
@@ -34,7 +37,7 @@ import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import { decodeFunctionData, erc20Abi } from 'viem'
+import { Address, decodeFunctionData, erc20Abi } from 'viem'
 
 const TAG = 'swap/saga'
 
@@ -242,6 +245,52 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       feeCurrencyId,
     })
     createSwapStandbyTxHandlers.push(createSwapStandbyTx)
+
+    // Pre-flight simulation (Track B / WRI): when the swap requires a separate
+    // approve + swap pair, simulate the swap call against the latest state. If
+    // the swap would revert for non-allowance reasons (slippage, paused
+    // router, etc), abort BEFORE emitting the approve so the user does not end
+    // up with a dangling allowance. Guarded by a Statsig flag for safe rollout.
+    const preflightOn = yield* call(
+      getFeatureGate,
+      StatsigFeatureGates.WRI_PREFLIGHT_SWAP_SIMULATION
+    )
+    if (preflightOn && preparedTransactions.length > 1) {
+      const swapTx = preparedTransactions[preparedTransactions.length - 1]
+      if (swapTx?.to && swapTx?.data !== undefined) {
+        const approvedAmountForSim =
+          preparedTransactions[0]?.data && preparedTransactions[0].to === fromToken.address
+            ? (() => {
+                try {
+                  const decoded = decodeFunctionData({
+                    abi: erc20Abi,
+                    data: preparedTransactions[0].data!,
+                  })
+                  if (decoded.functionName === 'approve' && decoded.args) {
+                    return decoded.args[1] as bigint
+                  }
+                } catch {
+                  // fall through
+                }
+                return BigInt(0)
+              })()
+            : BigInt(0)
+
+        const sim = yield* call(simulateSwapTransaction, publicClient[network], {
+          from: wallet.account.address as Address,
+          to: swapTx.to as Address,
+          data: (swapTx.data ?? '0x') as `0x${string}`,
+          value: BigInt(swapTx.value ?? 0),
+          assumedAllowance: approvedAmountForSim,
+          sellToken: fromToken.address as Address,
+        })
+        if (sim.kind === 'revert') {
+          Logger.warn(TAG, `Pre-flight swap simulation reverted: ${sim.reason}`)
+          yield* put(swapError(swapId))
+          return
+        }
+      }
+    }
 
     const txHashes = yield* call(
       sendPreparedTransactions,
