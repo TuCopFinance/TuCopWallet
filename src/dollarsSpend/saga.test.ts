@@ -8,6 +8,7 @@ import {
   multiSwapStarted,
   multiSwapStepFailed,
   multiSwapStepSucceeded,
+  multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
 import { SpendStep } from 'src/dollarsSpend/types'
 import { swapError, swapSuccess } from 'src/swap/slice'
@@ -125,6 +126,10 @@ describe('executeMultiSwapSaga', () => {
   })
 
   it('halts and emits stepFailed when a step swap fails', async () => {
+    // The saga uses delay(50) between stepFailed and transitionComplete to
+    // give the UI a frame for the transitional message. Use real timers so
+    // jest.useFakeTimers() (global) does not stall the saga.
+    jest.useRealTimers()
     let raceCallIndex = 0
     const raceProvider: EffectProviders = {
       race(_effect, _next) {
@@ -142,31 +147,42 @@ describe('executeMultiSwapSaga', () => {
       raceProvider,
     ]
 
-    await expectSaga(
-      executeMultiSwapSaga,
-      executeMultiSwap({ steps: [stepUsat, stepUsdm], toTokenId: 'celo-mainnet:copm' })
-    )
-      .provide(providers)
-      .put(multiSwapStepSucceeded({ index: 0 }))
-      .put.actionType(multiSwapStepFailed.type)
-      .not.put.actionType(multiSwapCompleted.type)
-      .silentRun()
+    try {
+      await expectSaga(
+        executeMultiSwapSaga,
+        executeMultiSwap({ steps: [stepUsat, stepUsdm], toTokenId: 'celo-mainnet:copm' })
+      )
+        .provide(providers)
+        .put(multiSwapStepSucceeded({ index: 0 }))
+        .put.actionType(multiSwapStepFailed.type)
+        .put.actionType(multiSwapTransitionComplete.type)
+        .not.put.actionType(multiSwapCompleted.type)
+        .silentRun(500)
+    } finally {
+      jest.useFakeTimers()
+    }
   })
 
   it('emits stepFailed when a quote refetch throws', async () => {
+    jest.useRealTimers()
     const quoteError = new Error('Squid 500')
     const providers: (EffectProviders | StaticProvider)[] = [
       ...baseProviders(),
       [matchers.call.fn(fetchSwapQuoteForExecution), Promise.reject(quoteError) as any],
     ]
 
-    await expectSaga(
-      executeMultiSwapSaga,
-      executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
-    )
-      .provide(providers)
-      .put.actionType(multiSwapStepFailed.type)
-      .not.put.actionType(multiSwapCompleted.type)
-      .silentRun()
+    try {
+      await expectSaga(
+        executeMultiSwapSaga,
+        executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+      )
+        .provide(providers)
+        .put.actionType(multiSwapStepFailed.type)
+        .put.actionType(multiSwapTransitionComplete.type)
+        .not.put.actionType(multiSwapCompleted.type)
+        .silentRun(500)
+    } finally {
+      jest.useFakeTimers()
+    }
   })
 })
