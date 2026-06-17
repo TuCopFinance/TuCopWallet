@@ -3863,6 +3863,10 @@
             ],
             "type": "string"
         },
+        "Record<string,InFlightDescriptor>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "Record<string,[string,...string[]]>": {
             "additionalProperties": false,
             "type": "object"
@@ -6151,6 +6155,18 @@
             ],
             "type": "object"
         },
+        "State_29": {
+            "additionalProperties": false,
+            "properties": {
+                "byFlow": {
+                    "$ref": "#/definitions/Record<string,InFlightDescriptor>"
+                }
+            },
+            "required": [
+                "byFlow"
+            ],
+            "type": "object"
+        },
         "State_3": {
             "anyOf": [
                 {
@@ -8078,6 +8094,9 @@
         "tokens": {
             "$ref": "#/definitions/State_15"
         },
+        "transactionInFlight": {
+            "$ref": "#/definitions/State_29"
+        },
         "transactions": {
             "$ref": "#/definitions/State_6"
         },
@@ -8116,6 +8135,7 @@
         "send",
         "swap",
         "tokens",
+        "transactionInFlight",
         "transactions",
         "walletConnect",
         "web3"
