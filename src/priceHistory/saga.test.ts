@@ -56,7 +56,10 @@ describe('watchFetchTokenPriceHistory', () => {
   })
 
   it('logs an error on failed fetches', async () => {
-    mockFetch.mockResponseOnce('Internal Server Error', {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires, and a larger run() timeout.
+    jest.useRealTimers()
+    mockFetch.mockResponse('Internal Server Error', {
       status: 500,
     })
 
@@ -72,7 +75,8 @@ describe('watchFetchTokenPriceHistory', () => {
           tokenId: mockCusdTokenId,
         })
       )
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
 
     expect(Logger.error).toHaveBeenLastCalledWith(
       'priceHistory/saga',
@@ -107,7 +111,11 @@ describe('watchFetchTokenPriceHistory', () => {
         testName: 'handles 500 response',
       },
     ])('$testName', async ({ status, statusText }) => {
-      mockFetch.mockResponseOnce(statusText, {
+      // fetchWithTimeout now retries 3x on 5xx with real backoff. For 4xx
+      // there's no retry, but using real timers + mockResponse is harmless and
+      // keeps the parameterized cases consistent.
+      jest.useRealTimers()
+      mockFetch.mockResponse(statusText, {
         status: status,
       })
       await expect(
@@ -115,6 +123,7 @@ describe('watchFetchTokenPriceHistory', () => {
       ).rejects.toThrow(
         `Failed to fetch price history for ${mockCusdTokenId}: ${status} ${statusText}`
       )
+      jest.useFakeTimers()
     })
   })
 })

@@ -67,7 +67,10 @@ describe('simulateTransactions', () => {
     expect(simulatedTransactions).toEqual(mockSimulatedTransactions)
   })
   it('should throw an error if the response is not ok', async () => {
-    mockFetch.mockResponseOnce(
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse(
       JSON.stringify({
         status: 'ERROR',
         error: 'something went wrong',
@@ -82,6 +85,7 @@ describe('simulateTransactions', () => {
     ).rejects.toThrow(
       'Failed to simulate transactions. status 500, text: {"status":"ERROR","error":"something went wrong"}'
     )
+    jest.useFakeTimers()
   })
   it('should throw an error if the number of simulated transactions does not match the number of base transactions', async () => {
     mockFetch.mockResponseOnce(
