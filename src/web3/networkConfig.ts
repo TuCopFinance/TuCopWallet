@@ -82,6 +82,7 @@ interface NetworkConfig {
   ceurTokenId: string
   crealTokenId: string
   celoTokenId: string
+  batchExecutorAddressCelo: Address
   spendTokenIds: string[]
   saveContactsUrl: string
   getPointsConfigUrl: string
@@ -146,6 +147,15 @@ const USDM_TOKEN_ID_MAINNET = CUSD_TOKEN_ID_MAINNET
 
 // USAT (Tether America USD, US-regulated Anchorage Digital) - 6 decimals
 const USAT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd2ab3c9a02dbbab236bfec45d1d755df4267f771`
+
+// BatchExecutor contract that the EOA delegates to via EIP-7702 for the
+// dollarsSpend single-tx path (Track C). Used by saga7702.ts to encode the
+// authorization + execute(calls) calldata.
+//
+// TODO(WRI Track C Task 2): Replace with the actual deployed address once the
+// user authorizes the production deploy. Until that lands, the saga7702 path
+// stays gated off behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1.
+export const BATCH_EXECUTOR_ADDRESS_CELO: Address = '0x0000000000000000000000000000000000000000'
 
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
 
@@ -370,6 +380,7 @@ const networkConfig: NetworkConfig = {
   usdcTokenId: USDC_TOKEN_ID_MAINNET,
   usdmTokenId: USDM_TOKEN_ID_MAINNET,
   usatTokenId: USAT_TOKEN_ID_MAINNET,
+  batchExecutorAddressCelo: BATCH_EXECUTOR_ADDRESS_CELO,
   spendTokenIds: [CUSD_TOKEN_ID_MAINNET, CELO_TOKEN_ID_MAINNET],
   saveContactsUrl: SAVE_CONTACTS_MAINNET,
   getPointsConfigUrl: GET_POINTS_CONFIG_MAINNET,
