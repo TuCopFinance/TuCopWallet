@@ -152,10 +152,12 @@ const USAT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd2ab3c9a02dbbab236
 // dollarsSpend single-tx path (Track C). Used by saga7702.ts to encode the
 // authorization + execute(calls) calldata.
 //
-// TODO(WRI Track C Task 2): Replace with the actual deployed address once the
-// user authorizes the production deploy. Until that lands, the saga7702 path
-// stays gated off behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1.
-export const BATCH_EXECUTOR_ADDRESS_CELO: Address = '0x0000000000000000000000000000000000000000'
+// Deployed on Celo mainnet (chainId 42220) via DeployBatchExecutor.s.sol:
+//   tx: 0x7744ce5119aa90310acea1eff58c64187203a96976c432eb980cf93451df1e61
+//   block: 69680022 (0x4275196)
+// The saga7702 path stays gated behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1
+// until Phase 1 internal dogfood + Phase 2 production rollout.
+export const BATCH_EXECUTOR_ADDRESS_CELO: Address = '0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4'
 
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
 
