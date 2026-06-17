@@ -10,6 +10,12 @@ import {
   multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
 import { SpendStep } from 'src/dollarsSpend/types'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
@@ -59,6 +65,23 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
   yield* put(multiSwapStarted({ steps }))
 
+  const flowId = `dollarsSpend-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+  // Derive networkId from the first step's tokenId (format: "celo-mainnet:0x...")
+  const networkId = (steps[0]?.tokenId.split(':')[0] ?? 'celo-mainnet') as NetworkId
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'dollarsSpend',
+      steps: steps.length,
+      currentStep: 0,
+      status: 'progress',
+      preparedTransactions: [],
+      networkId,
+      retryCount: 0,
+      startedAt: Date.now(),
+    })
+  )
+
   for (let index = 0; index < steps.length; index++) {
     const step = steps[index]
     const swapId = newSwapId(index)
@@ -73,6 +96,12 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       )
       // Give the UI one frame to render the transitional message before
       // committing to PartialSuccessSheet. Bridges the render gap.
+      yield* put(
+        inFlightFail({
+          flowId,
+          errorClass: classifyError(new Error('Wallet address unavailable')),
+        })
+      )
       yield* delay(50)
       yield* put(multiSwapTransitionComplete())
       return
@@ -85,6 +114,12 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         multiSwapStepFailed({
           index,
           errorMessage: `Token not found in wallet state: ${step.symbol}`,
+        })
+      )
+      yield* put(
+        inFlightFail({
+          flowId,
+          errorClass: classifyError(new Error(`Token not found: ${step.symbol}`)),
         })
       )
       yield* delay(50)
@@ -114,6 +149,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       const message = err instanceof Error ? err.message : String(err)
       Logger.warn(TAG, `Quote refetch failed for step ${index} (${step.symbol}): ${message}`)
       yield* put(multiSwapStepFailed({ index, errorMessage: message }))
+      yield* put(inFlightFail({ flowId, errorClass: classifyError(err) }))
       yield* delay(50)
       yield* put(multiSwapTransitionComplete())
       return
@@ -159,12 +195,21 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
     if (success) {
       yield* put(multiSwapStepSucceeded({ index }))
+      yield* put(
+        inFlightAdvance({ flowId, toStatus: 'progress', patch: { currentStep: index + 1 } })
+      )
     } else if (error) {
       Logger.warn(TAG, `Swap failed at step ${index} (${step.symbol})`)
       yield* put(
         multiSwapStepFailed({
           index,
           errorMessage: `Swap failed at step ${index} (${step.symbol})`,
+        })
+      )
+      yield* put(
+        inFlightFail({
+          flowId,
+          errorClass: classifyError(new Error(`Swap failed at step ${index} (${step.symbol})`)),
         })
       )
       yield* delay(50)
@@ -174,6 +219,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
   }
 
   yield* put(multiSwapCompleted())
+  yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 }
 
 export function* dollarsSpendSaga() {
