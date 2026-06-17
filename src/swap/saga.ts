@@ -24,10 +24,17 @@ import {
   getPrefixedTxAnalyticsProperties,
   getTxReceiptAnalyticsProperties,
 } from 'src/transactions/utils'
+import { classifyError } from 'src/lib/errors'
+import { simulateSwapTransaction } from 'src/lib/preflight'
+import {
+  inFlightAbort,
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
-import { simulateSwapTransaction } from 'src/lib/preflight'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { publicClient } from 'src/viem'
@@ -110,6 +117,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     yield* put(swapError(swapId))
     return
   }
+
+  const flowId = `swap-${swapId}`
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'swap',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId: fromToken.networkId,
+      retryCount: 0,
+      startedAt: swapSubmittedAt,
+    })
+  )
 
   const fromTokenBalance = fromToken.balance.shiftedBy(fromToken.decimals).toString()
   const estimatedSellTokenUsdValue = calculateEstimatedUsdValue({
@@ -287,6 +309,12 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         if (sim.kind === 'revert') {
           Logger.warn(TAG, `Pre-flight swap simulation reverted: ${sim.reason}`)
           yield* put(swapError(swapId))
+          yield* put(
+            inFlightFail({
+              flowId,
+              errorClass: classifyError(new Error(`Pre-flight reverted: ${sim.reason}`)),
+            })
+          )
           return
         }
       }
@@ -329,6 +357,7 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         networkId,
       })
     )
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
     // Navigate to success screen
     navigate(Screens.TransactionSuccessScreen, {
@@ -356,12 +385,14 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(TAG, 'Swap cancelled by user')
       yield* put(swapCancel(swapId))
+      yield* put(inFlightAbort({ flowId }))
       return
     }
     const error = ensureError(err)
     // dispatch the error early, in case the rest of the handling throws
     // and leaves the app in a bad state
     yield* put(swapError(swapId))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
     // Only vibrate if we haven't already submitted the transaction
     // since the user may be doing something else on the app by now
     // (different screen or a new swap)
