@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 247,
+          "version": 249,
         },
         "account": {
           "acceptedTerms": false,
@@ -239,6 +239,7 @@ describe('store state', () => {
         },
         "dollarsSpend": {
           "inFlight": null,
+          "transitioning": false,
         },
         "earn": {
           "depositStatus": "idle",
@@ -397,6 +398,9 @@ describe('store state', () => {
         "tokens": {
           "error": false,
           "tokenBalances": {},
+        },
+        "transactionInFlight": {
+          "byFlow": {},
         },
         "transactions": {
           "feedFirstPage": [],
