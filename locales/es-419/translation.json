@@ -3258,5 +3258,8 @@
       "shareButton": "Compartir",
       "shareSubject": "Reporte de error TuCop"
     }
+  },
+  "preflight": {
+    "advisory": "Estamos por iniciar tu {{noun}}. No cierres la app y asegurate de tener buena conexion."
   }
 }
