@@ -2067,4 +2067,15 @@ export const migrations = {
       },
     }
   },
+  249: (state: any) => {
+    // Track A Task 4: seed the new `transactionInFlight` slice that backs the
+    // useTransactionInFlight hook (the keystone abstraction for in-flight
+    // transaction state across feature flows). No prior shape to migrate.
+    return {
+      ...state,
+      transactionInFlight: {
+        byFlow: {},
+      },
+    }
+  },
 }
