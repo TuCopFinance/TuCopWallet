@@ -1,16 +1,16 @@
 import { GoldPriceData } from 'src/gold/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
+import networkConfig from 'src/web3/networkConfig'
 
 const TAG = 'gold/api'
 
-// Primary API: CoinMarketCap for XAUt (Tether Gold) token price
-// This tracks the actual XAUt token price, not just physical gold
-const CMC_API_URL = 'https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest'
-const CMC_API_KEY = 'b0118ca69c6a4db5bead46556855df5d'
-const XAUT_CMC_ID = '5176' // XAUt token ID on CoinMarketCap
+// Primary source: TuCop backend price proxy.
+// The backend owns the upstream provider credential; the mobile app never
+// holds a CoinMarketCap (or equivalent) API key. Endpoint contract:
+//   GET /api/prices/xaut?vs=usd  ->  { symbol, vs, priceUsd, asOf }
 
-// Fallback API: DIA Data for XAUt specific pricing
+// Fallback API: DIA Data for XAUt specific pricing (provides 24h change).
 // Documentation: https://www.diadata.org/
 const DIA_XAUT_API_URL =
   'https://api.diadata.org/v1/assetQuotation/Ethereum/0x68749665FF8D2d112Fa859AA293F07A622782F38'
@@ -26,22 +26,12 @@ const FALLBACK_GOLD_PRICE: GoldPriceData = {
   timestamp: Date.now(),
 }
 
-// CoinMarketCap response format for XAUt
-export interface CmcQuoteResponse {
-  data: {
-    [id: string]: {
-      id: number
-      name: string
-      symbol: string
-      quote: {
-        USD: {
-          price: number
-          percent_change_24h: number
-          last_updated: string
-        }
-      }
-    }
-  }
+// TuCop backend price endpoint response format
+export interface TucopXautPriceResponse {
+  symbol: string
+  vs: string
+  priceUsd: number
+  asOf: string
 }
 
 // DIA Data response format
@@ -63,38 +53,35 @@ function isCacheValid(): boolean {
 }
 
 /**
- * Fetch XAUt token price from CoinMarketCap (primary source)
- * This tracks the actual XAUt (Tether Gold) token price
- * Documentation: https://coinmarketcap.com/api/documentation/v1/
+ * Fetch XAUt token price from the TuCop backend price proxy (primary source).
+ * The backend keeps the upstream provider credential; the mobile app does not.
+ * The proxy returns only the current USD price, so price24hChange is filled
+ * by the DIA fallback path when available (here defaulted to 0).
  */
-async function fetchFromCoinMarketCap(): Promise<GoldPriceData> {
-  Logger.debug(TAG, 'Fetching XAUt price from CoinMarketCap')
+async function fetchFromTucopBackend(): Promise<GoldPriceData> {
+  Logger.debug(TAG, 'Fetching XAUt price from TuCop backend')
 
-  const url = `${CMC_API_URL}?id=${XAUT_CMC_ID}`
-
-  const response = await fetchWithTimeout(url, {
+  const response = await fetchWithTimeout(networkConfig.getXautPriceUrl, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
-      'X-CMC_PRO_API_KEY': CMC_API_KEY,
     },
   })
 
   if (!response.ok) {
     const errorText = await response.text()
-    throw new Error(`CoinMarketCap API error: HTTP ${response.status} - ${errorText}`)
+    throw new Error(`TuCop price proxy error: HTTP ${response.status} - ${errorText}`)
   }
 
-  const data: CmcQuoteResponse = await response.json()
-  const xautData = data.data[XAUT_CMC_ID]
+  const data: TucopXautPriceResponse = await response.json()
 
-  if (!xautData) {
-    throw new Error('XAUt data not found in CoinMarketCap response')
+  if (typeof data.priceUsd !== 'number' || !Number.isFinite(data.priceUsd)) {
+    throw new Error('Invalid priceUsd in TuCop price proxy response')
   }
 
   return {
-    priceUsd: xautData.quote.USD.price,
-    price24hChange: xautData.quote.USD.percent_change_24h,
+    priceUsd: data.priceUsd,
+    price24hChange: 0,
     timestamp: Date.now(),
   }
 }
@@ -131,8 +118,8 @@ async function fetchFromDiaApi(): Promise<GoldPriceData> {
 }
 
 /**
- * Fetch XAUt token price from API with caching
- * Uses CoinMarketCap as primary source, DIA as fallback
+ * Fetch XAUt token price from API with caching.
+ * Uses the TuCop backend proxy as primary source, DIA Data as fallback.
  */
 export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   // Return cached price if still valid
@@ -141,14 +128,14 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
     return cachedGoldPrice
   }
 
-  // Try CoinMarketCap first (tracks actual XAUt token price)
+  // Try TuCop backend proxy first
   try {
-    const priceData = await fetchFromCoinMarketCap()
+    const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
-    Logger.debug(TAG, 'Got XAUt price from CoinMarketCap', { price: priceData.priceUsd })
+    Logger.debug(TAG, 'Got XAUt price from TuCop backend', { price: priceData.priceUsd })
     return priceData
   } catch (primaryError: any) {
-    Logger.warn(TAG, 'CoinMarketCap failed, trying DIA fallback', primaryError.message)
+    Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
   }
 
   // Fallback to DIA Data
