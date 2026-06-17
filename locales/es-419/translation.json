@@ -3261,5 +3261,15 @@
   },
   "preflight": {
     "advisory": "Estamos por iniciar tu {{noun}}. No cierres la app y asegurate de tener buena conexion."
+  },
+  "result": {
+    "succeeded": "Tu {{noun}} se completo correctamente.",
+    "connectivity": "Se te fue la conexion a mitad de tu {{noun}} y por eso no se completo. Lo intentamos de nuevo?",
+    "appBackgrounded": "Cerraste la app mientras tu {{noun}} estaba en curso. Quieres retomarlo?",
+    "gasInsufficient": "No alcanzo el saldo para pagar la comision de red. Recarga un poquito mas y volvemos a intentar.",
+    "slippage": "El precio se movio mas de lo permitido y cancelamos tu {{noun}} para protegerte. Lo intentamos de nuevo?",
+    "revert": "La red rechazo tu {{noun}}. No se cobro nada. Lo intentamos de nuevo?",
+    "rpcTimeout": "La red blockchain no respondio a tiempo. Lo intentamos de nuevo?",
+    "unknown": "Algo no salio como esperabamos. Lo intentamos de nuevo o nos contactas?"
   }
 }
