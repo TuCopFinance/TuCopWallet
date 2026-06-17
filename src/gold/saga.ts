@@ -3,6 +3,13 @@ import BigNumber from 'bignumber.js'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { fetchGoldPriceWithFallback } from 'src/gold/api'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAbort,
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import { enabledPriceAlertsSelector } from 'src/gold/selectors'
 import {
   buyGoldError,
@@ -104,6 +111,7 @@ function* checkPriceAlertsSaga(currentPrice: number) {
 function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
   const { fromTokenId, fromAmount, quote } = action.payload
   const { preparedTransactions: serializablePreparedTransactions, toAmount } = quote
+  const flowId = `gold-buy-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
 
   const tokensById = yield* select((state) =>
     tokensByIdSelector(state, getSupportedNetworkIdsForSwap())
@@ -124,6 +132,20 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     yield* put(buyGoldError('Unknown network'))
     return
   }
+
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'gold',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId,
+      retryCount: 0,
+      startedAt: Date.now(),
+    })
+  )
 
   const buyApproveContext = newTransactionContext(TAG, 'GoldBuy/Approve')
   const buyExecuteContext = newTransactionContext(TAG, 'GoldBuy/Execute')
@@ -221,6 +243,7 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     }
 
     yield* put(buyGoldSuccess({ txHash: swapTxHash }))
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
     // Import XAUt0 token so it shows in wallet
     yield* put(
@@ -258,6 +281,7 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(TAG, 'Gold buy cancelled by user')
       yield* put(buyGoldError('Cancelled'))
+      yield* put(inFlightAbort({ flowId }))
       return
     }
 
@@ -265,6 +289,7 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     Logger.error(TAG, 'Error buying gold', error)
     vibrateError()
     yield* put(buyGoldError(error.message))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
 
     AppAnalytics.track(GoldEvents.gold_buy_submit_error, {
       amount: fromAmount,
@@ -279,6 +304,7 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
 function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
   const { toTokenId, xautAmount, quote } = action.payload
   const { preparedTransactions: serializablePreparedTransactions, toAmount, fromTokenId } = quote
+  const flowId = `gold-sell-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
 
   const tokensById = yield* select((state) =>
     tokensByIdSelector(state, getSupportedNetworkIdsForSwap())
@@ -299,6 +325,20 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     yield* put(sellGoldError('Unknown network'))
     return
   }
+
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'gold',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId,
+      retryCount: 0,
+      startedAt: Date.now(),
+    })
+  )
 
   const sellApproveContext = newTransactionContext(TAG, 'GoldSell/Approve')
   const sellExecuteContext = newTransactionContext(TAG, 'GoldSell/Execute')
@@ -392,6 +432,7 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     }
 
     yield* put(sellGoldSuccess({ txHash: swapTxHash }))
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
     // Show success vibration and navigate to success screen
     vibrateSuccess()
@@ -413,6 +454,7 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(TAG, 'Gold sell cancelled by user')
       yield* put(sellGoldError('Cancelled'))
+      yield* put(inFlightAbort({ flowId }))
       return
     }
 
@@ -420,6 +462,7 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     Logger.error(TAG, 'Error selling gold', error)
     vibrateError()
     yield* put(sellGoldError(error.message))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
 
     AppAnalytics.track(GoldEvents.gold_sell_submit_error, {
       amount: xautAmount,
