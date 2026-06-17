@@ -2,6 +2,13 @@ import { showErrorOrFallback } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { CeloExchangeEvents, SendEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAbort,
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { handleQRCodeDefault, handleQRCodeSecureSend, shareSVGImage } from 'src/qrcode/utils'
@@ -47,6 +54,7 @@ export function* sendPaymentSaga({
   fromModal,
   preparedTransaction: serializablePreparedTransaction,
 }: SendPaymentAction) {
+  const flowId = `send-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
   try {
     const context = newTransactionContext(TAG, 'Send payment')
     const recipientAddress = recipient.address
@@ -60,6 +68,20 @@ export function* sendPaymentSaga({
     if (!tokenInfo) {
       throw new Error(`Could not find token info for token id: ${tokenId}`)
     }
+
+    yield* put(
+      inFlightStart({
+        flowId,
+        flowKind: 'send',
+        steps: 1,
+        currentStep: 0,
+        status: 'preparing',
+        preparedTransactions: [serializablePreparedTransaction],
+        networkId: tokenInfo.networkId,
+        retryCount: 0,
+        startedAt: Date.now(),
+      })
+    )
 
     const createStandbyTransaction = (
       transactionHash: string,
@@ -89,12 +111,16 @@ export function* sendPaymentSaga({
       amount
     )
 
+    yield* put(inFlightAdvance({ flowId, toStatus: 'submitting' }))
+
     const [hash] = yield* call(
       sendPreparedTransactions,
       [serializablePreparedTransaction],
       tokenInfo.networkId,
       [createStandbyTransaction]
     )
+
+    yield* put(inFlightAdvance({ flowId, toStatus: 'pending-confirmation' }))
 
     const receipt = yield* call(
       [publicClient[networkIdToNetwork[tokenInfo.networkId]], 'waitForTransactionReceipt'],
@@ -123,6 +149,7 @@ export function* sendPaymentSaga({
     }
 
     yield* put(sendPaymentSuccess({ amount, tokenId }))
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
     // Show success vibration and navigate to success screen
     vibrateSuccess()
@@ -145,10 +172,12 @@ export function* sendPaymentSaga({
     const error = ensureError(err)
     if (error.message === ErrorMessages.PIN_INPUT_CANCELED) {
       Logger.info(`${TAG}/sendPaymentSaga`, 'Send cancelled by user')
+      yield* put(inFlightAbort({ flowId }))
       return
     }
     Logger.error(`${TAG}/sendPaymentSaga`, 'Send payment failed', error)
     AppAnalytics.track(SendEvents.send_tx_error, { error: error.message })
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
   }
 }
 
