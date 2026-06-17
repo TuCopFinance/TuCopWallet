@@ -3271,5 +3271,14 @@
     "revert": "La red rechazo tu {{noun}}. No se cobro nada. Lo intentamos de nuevo?",
     "rpcTimeout": "La red blockchain no respondio a tiempo. Lo intentamos de nuevo?",
     "unknown": "Algo no salio como esperabamos. Lo intentamos de nuevo o nos contactas?"
+  },
+  "progress": {
+    "preparing": "Preparando tu {{noun}}...",
+    "awaitingPin": "Confirma tu PIN para continuar",
+    "submitting": "Enviando tu {{noun}} a la red...",
+    "pendingConfirmation": "Esperando confirmacion de la red...",
+    "multiStep": "Paso {{currentStep}} de {{total}}",
+    "succeeded": "Listo. Tu {{noun}} se completo.",
+    "connectivityLost": "Perdimos la conexion. Tu {{noun}} sigue en curso; esperando que vuelvas a tener conexion."
   }
 }
