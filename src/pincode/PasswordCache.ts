@@ -11,10 +11,32 @@ let pepperCache: SecretCache = {}
 let passwordHashCache: SecretCache = {}
 let passwordCache: SecretCache = {}
 
+// Refcounted per-account lock that prevents inactivity-based eviction while a
+// long-running transactional flow (e.g. sendPreparedTransactions) is in flight.
+// Each pinTransactional must be paired with an endTransactional in a finally block.
+const transactionalLocks = new Map<string, number>()
+
+export function pinTransactional(account: string): void {
+  transactionalLocks.set(account, (transactionalLocks.get(account) ?? 0) + 1)
+}
+
+export function endTransactional(account: string): void {
+  const current = transactionalLocks.get(account) ?? 0
+  if (current <= 1) {
+    transactionalLocks.delete(account)
+  } else {
+    transactionalLocks.set(account, current - 1)
+  }
+}
+
 function getCachedValue(cache: SecretCache, account: string) {
   // TODO(Rossy) use a monotonic clock here?
   const value = cache[account]
   if (value && value.secret && value.timestamp && Date.now() - value.timestamp < CACHE_TIMEOUT) {
+    return value.secret
+  } else if (value && value.secret && transactionalLocks.has(account)) {
+    // Pinned by an in-flight transactional saga: hold the value past the
+    // inactivity TTL so multi-step flows don't re-prompt for PIN mid-flow.
     return value.secret
   } else {
     // Clear values in cache when they're expired
@@ -68,4 +90,5 @@ export function clearPasswordCaches() {
   pepperCache = {}
   passwordHashCache = {}
   passwordCache = {}
+  transactionalLocks.clear()
 }
