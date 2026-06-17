@@ -9,6 +9,7 @@ import SplashScreen from 'react-native-splash-screen'
 import ShakeForSupport from 'src/account/ShakeForSupport'
 import AlertBanner from 'src/alert/AlertBanner'
 import AppAnalytics from 'src/analytics/AppAnalytics'
+import DeepLinkRecovery from 'src/app/DeepLinkRecovery'
 import UpgradeScreen from 'src/app/UpgradeScreen'
 import { activeScreenChanged } from 'src/app/actions'
 import { getAppLocked } from 'src/app/selectors'
@@ -259,6 +260,7 @@ export const NavigatorWrapper = () => {
           </View>
         )}
         <AlertBanner />
+        <DeepLinkRecovery />
         <ShakeForSupport />
         <JumpstartClaimStatusToasts />
       </View>
