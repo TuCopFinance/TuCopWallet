@@ -71,10 +71,14 @@ describe('FiatConnect helpers', () => {
       expect(providers).toMatchObject([fakeProviderInfo])
     })
     it('Throws an error on failure', async () => {
-      mockFetch.mockResponseOnce(JSON.stringify({ providers: [] }), { status: 500 })
+      // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+      // so the sleep between retries actually fires.
+      jest.useRealTimers()
+      mockFetch.mockResponse(JSON.stringify({ providers: [] }), { status: 500 })
       await expect(async () => await getFiatConnectProviders(mockAccount)).rejects.toThrow()
 
       expect(Logger.error).toHaveBeenCalled()
+      jest.useFakeTimers()
     })
     it('Does not call with providers query param if there are no providers', async () => {
       mockFetch.mockResponseOnce(JSON.stringify({ providers: [] }), { status: 200 })
@@ -144,10 +148,14 @@ describe('FiatConnect helpers', () => {
       expect(quotes).toHaveLength(0)
     })
     it('returns an empty array if fetch fails', async () => {
-      mockFetch.mockResponseOnce(JSON.stringify({ quotes: [] }), { status: 500 })
+      // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+      // so the sleep between retries actually fires.
+      jest.useRealTimers()
+      mockFetch.mockResponse(JSON.stringify({ quotes: [] }), { status: 500 })
       const quotes = await getFiatConnectQuotes(getQuotesInput)
       expect(quotes).toEqual([])
       expect(Logger.error).toHaveBeenCalled()
+      jest.useFakeTimers()
     })
     it('returns quotes', async () => {
       mockFetch.mockResponseOnce(JSON.stringify({ quotes: mockGetFiatConnectQuotesResponse }), {
