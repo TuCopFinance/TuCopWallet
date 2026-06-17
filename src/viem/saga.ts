@@ -1,3 +1,4 @@
+import { endTransactional, pinTransactional } from 'src/pincode/PasswordCache'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { BaseStandbyTransaction, addStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -59,41 +60,54 @@ export function* sendPreparedTransactions(
   // Unlock account before executing tx
   yield* call(getConnectedUnlockedAccount)
 
-  // @ts-ignore typed-redux-saga erases the parameterized types causing error, we can address this separately
-  let nonce: number = yield* call(getTransactionCount, wallet, {
-    address: wallet.account.address,
-    blockTag: 'pending',
-  })
-
-  const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
-  const txHashes: Hash[] = []
-  for (let i = 0; i < preparedTransactions.length; i++) {
-    const preparedTransaction = preparedTransactions[i]
-    const createBaseStandbyTransaction = createBaseStandbyTransactions[i]
-
-    const signedTx = yield* call([wallet, 'signTransaction'], {
-      ...preparedTransaction,
-      nonce: nonce++,
-    } as any)
-    const hash = yield* call([wallet, 'sendRawTransaction'], {
-      serializedTransaction: signedTx,
+  // Hold the PIN cache for the duration of this multi-step transactional saga
+  // so the inactivity TTL cannot expire between signing iterations and force
+  // a mid-flow PIN re-prompt. Released on success, failure, or abort.
+  const account = wallet.account.address
+  pinTransactional(account)
+  try {
+    // @ts-ignore typed-redux-saga erases the parameterized types causing error, we can address this separately
+    let nonce: number = yield* call(getTransactionCount, wallet, {
+      address: wallet.account.address,
+      blockTag: 'pending',
     })
 
-    Logger.debug(
-      `${TAG}/sendTransactionsSaga`,
-      'Successfully sent transaction to the network',
-      hash
-    )
+    const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
+    const txHashes: Hash[] = []
+    for (let i = 0; i < preparedTransactions.length; i++) {
+      const preparedTransaction = preparedTransactions[i]
+      const createBaseStandbyTransaction = createBaseStandbyTransactions[i]
 
-    const tokensById = yield* select((state) => tokensByIdSelector(state, [networkId]))
-    const feeCurrencyId = getFeeCurrencyToken([preparedTransaction], networkId, tokensById)?.tokenId
+      const signedTx = yield* call([wallet, 'signTransaction'], {
+        ...preparedTransaction,
+        nonce: nonce++,
+      } as any)
+      const hash = yield* call([wallet, 'sendRawTransaction'], {
+        serializedTransaction: signedTx,
+      })
 
-    const standByTx = createBaseStandbyTransaction(hash, feeCurrencyId)
-    if (standByTx) {
-      yield* put(addStandbyTransaction(standByTx))
+      Logger.debug(
+        `${TAG}/sendTransactionsSaga`,
+        'Successfully sent transaction to the network',
+        hash
+      )
+
+      const tokensById = yield* select((state) => tokensByIdSelector(state, [networkId]))
+      const feeCurrencyId = getFeeCurrencyToken(
+        [preparedTransaction],
+        networkId,
+        tokensById
+      )?.tokenId
+
+      const standByTx = createBaseStandbyTransaction(hash, feeCurrencyId)
+      if (standByTx) {
+        yield* put(addStandbyTransaction(standByTx))
+      }
+      txHashes.push(hash)
     }
-    txHashes.push(hash)
-  }
 
-  return txHashes
+    return txHashes
+  } finally {
+    endTransactional(account)
+  }
 }
