@@ -92,8 +92,8 @@ interface NetworkConfig {
   getWalletTransactionsUrl: string
   getWalletBalancesUrl: string
   getExchangeRateUrl: string
-  blockscoutApiUrl: string
-  blockscoutApiKey: string
+  getXautPriceUrl: string
+  blockscoutProxyBase: string
 }
 
 const ALCHEMY_ETHEREUM_RPC_URL_MAINNET = 'https://eth-mainnet.g.alchemy.com/v2/'
@@ -266,10 +266,12 @@ const SET_REGISTRATION_PROPERTIES_AUTH_MAINNET = {
 
 const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 
-// Blockscout Pro API for transaction history
-const BLOCKSCOUT_API_URL_MAINNET = 'https://api.blockscout.com/42220/api/v2'
-const BLOCKSCOUT_API_KEY =
-  'proapi_bKq9uPjU8efoqgyU2cWqB5Bgq9eqHJjUJFU5d32TGL833jaLdJ53AyKNEGct6WcSw_cK2q52'
+// TuCop backend proxies (Railway). Used to remove third-party API keys from the mobile app:
+// - /api/prices/xaut       -> XAUt0 USD price (replaces CoinMarketCap)
+// - /api/v2/...            -> Blockscout passthrough (replaces direct Blockscout calls + key)
+const TUCOP_BACKEND_BASE = 'https://tucop-backend-production.up.railway.app'
+const GET_XAUT_PRICE_URL = `${TUCOP_BACKEND_BASE}/api/prices/xaut?vs=usd`
+const BLOCKSCOUT_PROXY_BASE = `${TUCOP_BACKEND_BASE}/api/v2`
 
 const networkConfig: NetworkConfig = {
   networkId: '42220',
@@ -382,8 +384,8 @@ const networkConfig: NetworkConfig = {
   getWalletTransactionsUrl: GET_WALLET_TRANSACTIONS_MAINNET,
   getWalletBalancesUrl: GET_WALLET_BALANCES_MAINNET,
   getExchangeRateUrl: GET_EXCHANGE_RATE_MAINNET,
-  blockscoutApiUrl: BLOCKSCOUT_API_URL_MAINNET,
-  blockscoutApiKey: BLOCKSCOUT_API_KEY,
+  getXautPriceUrl: GET_XAUT_PRICE_URL,
+  blockscoutProxyBase: BLOCKSCOUT_PROXY_BASE,
 }
 
 const CELOSCAN_BASE_URL_MAINNET = 'https://celoscan.io'
