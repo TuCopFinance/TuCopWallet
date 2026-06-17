@@ -3187,5 +3187,9 @@
     "multiStep": "Step {{currentStep}} of {{total}}",
     "succeeded": "Done. Your {{noun}} completed.",
     "connectivityLost": "We lost connection. Your {{noun}} is still in progress; waiting for connection to come back."
+  },
+  "recovery": {
+    "banner": "Your transfer was left in progress. Tap to see details.",
+    "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
   }
 }
