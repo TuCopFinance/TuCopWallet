@@ -3165,5 +3165,8 @@
       "priceBelow": "Notify when price is below",
       "delete": "Delete"
     }
+  },
+  "preflight": {
+    "advisory": "We're about to start your {{noun}}. Don't close the app and make sure you have good connection."
   }
 }
