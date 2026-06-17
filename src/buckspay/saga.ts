@@ -13,6 +13,12 @@ import {
 } from 'src/buckspay/slice'
 import { bucksPayFlowStatusSelector, bucksPayTransactionHashSelector } from 'src/buckspay/selectors'
 import { BankDetails, BucksPayTransactionStatus } from 'src/buckspay/types'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { sendPreparedTransactions } from 'src/viem/saga'
@@ -127,6 +133,7 @@ export function* offrampSaga(
   }>
 ) {
   const { bankDetails, preparedTransactions } = action.payload
+  const flowId = `buckspay-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
 
   try {
     const walletAddress: string | null = yield* select(walletAddressSelector)
@@ -137,6 +144,20 @@ export function* offrampSaga(
     if (!preparedTransactions || preparedTransactions.length === 0) {
       throw new Error('No prepared transactions')
     }
+
+    yield* put(
+      inFlightStart({
+        flowId,
+        flowKind: 'buckspay',
+        steps: 1,
+        currentStep: 0,
+        status: 'submitting',
+        preparedTransactions,
+        networkId: NetworkId['celo-mainnet'],
+        retryCount: 0,
+        startedAt: Date.now(),
+      })
+    )
 
     // Step 1: Send COPm to BucksPay wallet
     Logger.info(TAG, 'Sending crypto to BucksPay wallet')
@@ -154,6 +175,7 @@ export function* offrampSaga(
     }
 
     yield* put(cryptoSent({ transactionHash: txHash }))
+    yield* put(inFlightAdvance({ flowId, toStatus: 'pending-confirmation' }))
     navigate(Screens.BucksPayStatus)
 
     // Step 2: Submit to BucksPay API (with retry)
@@ -161,14 +183,19 @@ export function* offrampSaga(
     yield* put(apiSubmitted({ code: apiResult.code }))
 
     // Step 3: Poll for status (cancellable via resetFlow)
-    yield* race({
+    const result = yield* race({
       poll: call(pollStatusSaga, txHash),
       cancel: take(resetFlow.type),
     })
+
+    if ((result as { poll?: unknown }).poll !== undefined) {
+      yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
+    }
   } catch (error: any) {
     Logger.error(TAG, 'Offramp failed', error)
     const errorKey = error.message === 'POLLING_TIMEOUT' ? 'buckspay.pollingTimeout' : undefined
     yield* put(offrampError(errorKey || error.message || 'Unknown error'))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
   } finally {
     if (yield* cancelled()) {
       Logger.info(TAG, 'Offramp saga was cancelled')
