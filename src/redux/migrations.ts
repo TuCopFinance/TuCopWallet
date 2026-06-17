@@ -2054,4 +2054,17 @@ export const migrations = {
       dollarsSpend: { inFlight: null },
     }
   },
+  248: (state: any) => {
+    // Track B Task 4: add `transitioning` flag to dollarsSpend so the
+    // TransactionFlowShell can render a brief transitional state and avoid
+    // the blank frame between multiSwapStepFailed and PartialSuccessSheet
+    // committing. Default to false for existing persisted state.
+    return {
+      ...state,
+      dollarsSpend: {
+        ...state.dollarsSpend,
+        transitioning: false,
+      },
+    }
+  },
 }
