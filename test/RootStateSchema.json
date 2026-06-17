@@ -3867,6 +3867,10 @@
             "additionalProperties": false,
             "type": "object"
         },
+        "Record<string,SentTxRecord[]>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "Record<string,[string,...string[]]>": {
             "additionalProperties": false,
             "type": "object"
@@ -6177,6 +6181,18 @@
                 }
             ]
         },
+        "State_30": {
+            "additionalProperties": false,
+            "properties": {
+                "byFlow": {
+                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
+                }
+            },
+            "required": [
+                "byFlow"
+            ],
+            "type": "object"
+        },
         "State_4": {
             "additionalProperties": false,
             "properties": {
@@ -8088,6 +8104,9 @@
         "send": {
             "$ref": "#/definitions/State_4"
         },
+        "sentTransactionLog": {
+            "$ref": "#/definitions/State_30"
+        },
         "swap": {
             "$ref": "#/definitions/State_19"
         },
@@ -8133,6 +8152,7 @@
         "priceHistory",
         "recipients",
         "send",
+        "sentTransactionLog",
         "swap",
         "tokens",
         "transactionInFlight",

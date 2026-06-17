@@ -3721,6 +3721,18 @@ export const v249Schema = {
   },
 }
 
+// Migration 250 seeds the new `sentTransactionLog` slice (Track B Task 1 —
+// idempotency layer for sendPreparedTransactions so that crashed/restarted
+// saga reentries can resume without re-broadcasting submitted transactions).
+export const v250Schema = {
+  ...v249Schema,
+  sentTransactionLog: { byFlow: {} },
+  _persist: {
+    ...v249Schema._persist,
+    version: 250,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v249Schema as Partial<RootState>
+  return v250Schema as Partial<RootState>
 }

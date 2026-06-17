@@ -2078,4 +2078,16 @@ export const migrations = {
       },
     }
   },
+  250: (state: any) => {
+    // Track B Task 1: seed the new `sentTransactionLog` slice. This backs the
+    // idempotency layer in `sendPreparedTransactions` so that a crash mid-batch
+    // can be recovered on saga reentry without re-broadcasting transactions
+    // that were already submitted to the network.
+    return {
+      ...state,
+      sentTransactionLog: {
+        byFlow: {},
+      },
+    }
+  },
 }

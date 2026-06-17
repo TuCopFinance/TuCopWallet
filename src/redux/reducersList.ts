@@ -26,6 +26,7 @@ import swapReducer from 'src/swap/slice'
 import tokenReducer from 'src/tokens/slice'
 import { transactionInFlightReducer } from 'src/lib/useTransactionInFlight'
 import transactionsReducer from 'src/transactions/slice'
+import { sentTransactionLogReducer } from 'src/viem/sentTransactionLog'
 import { reducer as walletConnect } from 'src/walletConnect/reducer'
 import { reducer as web3 } from 'src/web3/reducer'
 
@@ -60,4 +61,5 @@ export const reducersList = {
   buckspay: bucksPayReducer,
   gold: goldReducer,
   transactionInFlight: transactionInFlightReducer,
+  sentTransactionLog: sentTransactionLogReducer,
 } as const
