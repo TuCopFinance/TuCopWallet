@@ -41,6 +41,7 @@ export enum StatsigFeatureGates {
   ALLOW_EARN_PARTIAL_WITHDRAWAL = 'allow_earn_partial_withdrawal',
   SHOW_ZERION_TRANSACTION_FEED = 'show_zerion_transaction_feed',
   SHOW_DIGITAL_GOLD = 'show_digital_gold',
+  WRI_PREFLIGHT_SWAP_SIMULATION = 'wri_preflight_swap_simulation',
 }
 
 export enum StatsigExperiments {
