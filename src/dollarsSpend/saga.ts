@@ -1,6 +1,7 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
 import { call, delay, put, race, select, take, takeEvery } from 'typed-redux-saga'
+import { executeDollarsSpend7702Saga } from 'src/dollarsSpend/saga7702'
 import {
   multiSwapCompleted,
   multiSwapStarted,
@@ -9,6 +10,8 @@ import {
   multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
 import { SpendStep } from 'src/dollarsSpend/types'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
 import { Field, SwapInfo } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
@@ -38,6 +41,19 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
   const { steps, toTokenId } = action.payload
 
   if (steps.length === 0) {
+    return
+  }
+
+  // Track C: when the EIP-7702 / CIP-64 single-tx path is enabled, hand off to
+  // the new saga. The legacy sequential loop below is the fallback whenever
+  // the flag is off, the BatchExecutor isn't deployed yet, or the new path
+  // throws (the new saga handles its own error dispatch).
+  const sevenSevenZeroTwoOn = yield* call(
+    getFeatureGate,
+    StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1
+  )
+  if (sevenSevenZeroTwoOn) {
+    yield* call(executeDollarsSpend7702Saga, action)
     return
   }
 

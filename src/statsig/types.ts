@@ -42,6 +42,7 @@ export enum StatsigFeatureGates {
   SHOW_ZERION_TRANSACTION_FEED = 'show_zerion_transaction_feed',
   SHOW_DIGITAL_GOLD = 'show_digital_gold',
   WRI_PREFLIGHT_SWAP_SIMULATION = 'wri_preflight_swap_simulation',
+  WRI_DOLLARS_SPEND_7702_V1 = 'wri_dollars_spend_7702_v1',
 }
 
 export enum StatsigExperiments {
