@@ -10,6 +10,9 @@ evm_version = "prague"
 [rpc_endpoints]
 celo = "https://forno.celo.org"
 
+[etherscan]
+celo = { key = "${CELOSCAN_API_KEY}", url = "https://api.celoscan.io/api", chain = 42220 }
+
 [invariant]
 runs = 50000
 depth = 100
