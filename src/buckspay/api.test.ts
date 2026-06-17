@@ -44,9 +44,13 @@ describe('buckspay/api', () => {
     })
 
     it('throws with HTTP status when no message in error body', async () => {
-      mockFetch.mockResponseOnce(JSON.stringify({}), { status: 500 })
+      // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+      // so the sleep between retries actually fires.
+      jest.useRealTimers()
+      mockFetch.mockResponse(JSON.stringify({}), { status: 500 })
 
       await expect(checkUserExists('0x1234')).rejects.toThrow('HTTP 500')
+      jest.useFakeTimers()
     })
   })
 

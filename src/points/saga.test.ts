@@ -334,14 +334,18 @@ describe('getPointsConfig', () => {
   })
 
   it('sets error state if error while fetching', async () => {
-    mockFetch.mockResponseOnce('Internal Server Error', {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('Internal Server Error', {
       status: 500,
     })
 
     await expectSaga(getPointsConfig)
       .put(getPointsConfigError())
       .not.put(getPointsConfigSucceeded(expect.anything()))
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
   })
 })
 
@@ -379,14 +383,17 @@ describe('getPointsBalance', () => {
   })
 
   it('should store an error on failed balance fetch', async () => {
-    mockFetch.mockResponseOnce(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
 
     await expectSaga(getPointsBalance, getHistoryStarted({ getNextPage: false }))
       .withState(createMockStore().getState())
       .put(getPointsBalanceStarted())
       .not.put(getPointsBalanceSucceeded(expect.anything()))
       .put(getPointsBalanceError())
-      .run()
+      .run(5000)
 
     expect(fetchWithTimeoutSpy).toHaveBeenCalledWith(
       `${networkConfig.getPointsBalanceUrl}?address=${mockAccount.toLowerCase()}`,
@@ -394,6 +401,7 @@ describe('getPointsBalance', () => {
         method: 'GET',
       }
     )
+    jest.useFakeTimers()
   })
 })
 
