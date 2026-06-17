@@ -33,11 +33,15 @@ describe(fetchUserLocationData, () => {
       ipAddress: null,
     }
 
+    // fetchWithTimeout now retries 3x on network error with real backoff;
+    // need real timers so the sleep between retries actually fires.
+    jest.useRealTimers()
     mockFetch.mockReject(new Error('Location data service unavailable'))
 
     await expectSaga(fetchUserLocationData)
       .provide([[select(defaultCountryCodeSelector), singaporeCallingCode]])
       .put(updateUserLocationData(MOCK_PHONE_LOCATION_DATA))
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
   })
 })
