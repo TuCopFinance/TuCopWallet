@@ -3178,5 +3178,14 @@
     "revert": "The network rejected your {{noun}}. Nothing was charged. Try again?",
     "rpcTimeout": "The blockchain network did not respond in time. Try again?",
     "unknown": "Something did not go as expected. Want to try again or contact us?"
+  },
+  "progress": {
+    "preparing": "Preparing your {{noun}}...",
+    "awaitingPin": "Confirm your PIN to continue",
+    "submitting": "Sending your {{noun}} to the network...",
+    "pendingConfirmation": "Waiting for network confirmation...",
+    "multiStep": "Step {{currentStep}} of {{total}}",
+    "succeeded": "Done. Your {{noun}} completed.",
+    "connectivityLost": "We lost connection. Your {{noun}} is still in progress; waiting for connection to come back."
   }
 }
