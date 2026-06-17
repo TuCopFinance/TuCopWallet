@@ -49,8 +49,7 @@ import {
   useDollarBalanceSnapshots,
   useMultiSwapQuote,
 } from 'src/dollarsSpend'
-import MultiSwapProgressSheet from 'src/dollarsSpend/MultiSwapProgressSheet'
-import PartialSuccessSheet from 'src/dollarsSpend/PartialSuccessSheet'
+import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { currentSwapSelector, priceImpactWarningThresholdSelector } from 'src/swap/selectors'
 import { swapStart } from 'src/swap/slice'
 import { AppFeeAmount, Field, SwapAmount, SwapFeeAmount } from 'src/swap/types'
@@ -1291,8 +1290,7 @@ export function SwapScreen({ route }: Props) {
         onPressCta={handleDismissSelectTokenNoUsdPrice}
         onDismiss={handleDismissSelectTokenNoUsdPrice}
       />
-      <MultiSwapProgressSheet />
-      <PartialSuccessSheet
+      <TransactionFlowShell
         onRetry={() => {
           if (!toTokenId) return
           const remaining = planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })

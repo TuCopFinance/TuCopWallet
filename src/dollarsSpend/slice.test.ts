@@ -3,6 +3,7 @@ import reducer, {
   multiSwapStarted,
   multiSwapStepSucceeded,
   multiSwapStepFailed,
+  multiSwapTransitionComplete,
   multiSwapCompleted,
   multiSwapCleared,
 } from 'src/dollarsSpend/slice'
@@ -25,7 +26,10 @@ const stepUsdm: SpendStep = {
 
 describe('dollarsSpend slice', () => {
   it('returns initial state', () => {
-    expect(reducer(undefined, { type: 'init' })).toEqual({ inFlight: null })
+    expect(reducer(undefined, { type: 'init' })).toEqual({
+      inFlight: null,
+      transitioning: false,
+    })
   })
 
   it('handles multiSwapStarted by setting inFlight with planned steps', () => {
@@ -43,7 +47,7 @@ describe('dollarsSpend slice', () => {
     expect(next.inFlight?.completedSteps).toBe(1)
   })
 
-  it('records failedAtIndex and lastError on step failure', () => {
+  it('records failedAtIndex and lastError on step failure and sets transitioning', () => {
     const startedState = reducer(undefined, multiSwapStarted({ steps: [stepUsat, stepUsdm] }))
     const failed = reducer(
       startedState,
@@ -51,6 +55,19 @@ describe('dollarsSpend slice', () => {
     )
     expect(failed.inFlight?.failedAtIndex).toBe(1)
     expect(failed.inFlight?.lastError).toBe('slippage exceeded')
+    expect(failed.transitioning).toBe(true)
+  })
+
+  it('clears transitioning on multiSwapTransitionComplete', () => {
+    const startedState = reducer(undefined, multiSwapStarted({ steps: [stepUsat] }))
+    const failed = reducer(
+      startedState,
+      multiSwapStepFailed({ index: 0, errorMessage: 'tx reverted' })
+    )
+    expect(failed.transitioning).toBe(true)
+    const settled = reducer(failed, multiSwapTransitionComplete())
+    expect(settled.transitioning).toBe(false)
+    expect(settled.inFlight?.failedAtIndex).toBe(0)
   })
 
   it('clears inFlight on multiSwapCompleted', () => {
@@ -72,11 +89,11 @@ describe('dollarsSpend slice', () => {
 
   it('ignores stepSucceeded when no in-flight session', () => {
     const state = reducer(undefined, multiSwapStepSucceeded({ index: 0 }))
-    expect(state).toEqual({ inFlight: null })
+    expect(state).toEqual({ inFlight: null, transitioning: false })
   })
 
   it('ignores stepFailed when no in-flight session', () => {
     const state = reducer(undefined, multiSwapStepFailed({ index: 0, errorMessage: 'x' }))
-    expect(state).toEqual({ inFlight: null })
+    expect(state).toEqual({ inFlight: null, transitioning: false })
   })
 })
