@@ -14,6 +14,9 @@ import Checkmark from 'src/icons/status/Checkmark'
 import TuCOPLogo from 'src/navigator/Logo.svg'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
+import { classifyError } from 'src/lib/errors'
+import { useTransactionInFlight } from 'src/lib/useTransactionInFlight'
+import { NetworkId } from 'src/transactions/types'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
 import ReFiColombiaSubsidiesContract, {
@@ -33,6 +36,7 @@ type Props = NativeStackScreenProps<StackParamList, Screens.ReFiColombiaSubsidie
 export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const { t } = useTranslation()
   const walletAddress = useSelector(walletAddressSelector)
+  const { start, advance, fail, abort } = useTransactionInFlight({ scopeToFlowKind: 'subsidy' })
   const [ubiStatus, setUbiStatus] = useState<UBIClaimStatus | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingBeneficiary, setIsCheckingBeneficiary] = useState(true)
@@ -100,12 +104,22 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const handleClaimSubsidy = async () => {
     if (!walletAddress || !ubiStatus) return
 
+    let flowId: string | undefined
     try {
       setIsLoading(true)
       Logger.debug(TAG, 'Starting claim process with biometric authentication')
 
-      // Usar el sistema de autenticación de la app que maneja automáticamente Face ID/Touch ID
+      flowId = start({
+        flowKind: 'subsidy',
+        steps: 1,
+        preparedTransactions: [],
+        networkId: NetworkId['celo-mainnet'],
+      })
+
+      // Usar el sistema de autenticacion de la app que maneja automaticamente Face ID/Touch ID
       const password = await getPassword(walletAddress, true, false)
+
+      advance(flowId, 'submitting')
 
       Logger.debug(TAG, 'Authentication successful, proceeding with claim')
       const result = await ReFiColombiaSubsidiesContract.claimSubsidy(
@@ -116,21 +130,30 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       Logger.debug(TAG, 'Claim result:', result)
 
       if (result.success) {
-        // Analítica
+        // Analitica
         AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
+        advance(flowId, 'succeeded')
 
-        // Actualizar el estado después del éxito
+        // Actualizar el estado despues del exito
         await checkUBIStatus()
 
-        // Regresar a la pantalla anterior después del éxito
+        // Regresar a la pantalla anterior despues del exito
         navigation.goBack()
       } else {
         Logger.warn(TAG, 'Claim failed:', result.error)
-        // El error ya se mostró en el contrato, solo actualizamos el estado
+        fail(flowId, classifyError(new Error(result.error ?? 'Subsidy claim failed')))
+        // El error ya se mostro en el contrato, solo actualizamos el estado
         await checkUBIStatus()
       }
     } catch (error) {
       Logger.error(TAG, 'Error in claim process', error)
+      if (flowId) {
+        if (error instanceof Error && error.message?.includes('cancel')) {
+          abort(flowId)
+        } else {
+          fail(flowId, classifyError(error))
+        }
+      }
       await checkUBIStatus()
     } finally {
       setIsLoading(false)
