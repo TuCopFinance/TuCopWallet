@@ -3280,5 +3280,9 @@
     "multiStep": "Paso {{currentStep}} de {{total}}",
     "succeeded": "Listo. Tu {{noun}} se completo.",
     "connectivityLost": "Perdimos la conexion. Tu {{noun}} sigue en curso; esperando que vuelvas a tener conexion."
+  },
+  "recovery": {
+    "banner": "Tu transferencia se quedo a medias, ver detalles.",
+    "staleBanner": "Tienes una operacion sin completar desde hace mas de un dia. Revisala."
   }
 }
