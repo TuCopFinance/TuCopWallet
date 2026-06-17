@@ -3709,6 +3709,18 @@ export const v248Schema = {
   },
 }
 
+// Migration 249 seeds the new `transactionInFlight` slice that backs the
+// useTransactionInFlight hook (Track A Task 4 — the keystone in-flight tx
+// state abstraction consumed by all feature flows).
+export const v249Schema = {
+  ...v248Schema,
+  transactionInFlight: { byFlow: {} },
+  _persist: {
+    ...v248Schema._persist,
+    version: 249,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v248Schema as Partial<RootState>
+  return v249Schema as Partial<RootState>
 }
