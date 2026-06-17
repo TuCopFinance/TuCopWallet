@@ -291,6 +291,9 @@ describe('usePrepareEnterAmountTransactionsCallback', () => {
       ),
     })
 
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
     mockFetch.mockResponse(JSON.stringify({}), {
       status: 500,
     })
@@ -298,5 +301,6 @@ describe('usePrepareEnterAmountTransactionsCallback', () => {
     await expect(result.current.refreshPreparedTransactions(mockRefreshArgs)).rejects.toEqual(
       new Error('Unable to trigger shortcut: 500 Internal Server Error')
     )
+    jest.useFakeTimers()
   })
 })

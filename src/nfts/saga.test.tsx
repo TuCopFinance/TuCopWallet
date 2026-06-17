@@ -6,6 +6,7 @@ import { DEEP_LINK_URL_SCHEME } from 'src/config'
 import { Actions, celebratedNftFound, nftRewardReadyToDisplay } from 'src/home/actions'
 import { NftCelebrationStatus } from 'src/home/reducers'
 import { nftCelebrationSelector } from 'src/home/selectors'
+import { _resetForTests as resetCircuitBreaker } from 'src/lib/circuitBreaker/circuitBreaker'
 import * as nftSaga from 'src/nfts/saga'
 import { handleFetchNfts, watchFirstFetchCompleted } from 'src/nfts/saga'
 import { fetchNftsCompleted, fetchNftsFailed } from 'src/nfts/slice'
@@ -125,16 +126,22 @@ describe('Given Nfts saga', () => {
     })
 
     it('should save error on fetch fail', async () => {
+      // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+      // so the sleep between retries actually fires, and a larger run() timeout.
+      // Reset the circuit breaker so prior tests in the same worker don't leave
+      // the host short-circuited (which would return a synthetic 503).
+      resetCircuitBreaker()
+      jest.useRealTimers()
       mockFetch.mockResponse(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
 
+      // fetchNftsForSupportedNetworks runs celo-mainnet + ethereum-mainnet in
+      // parallel via Promise.all. Either may surface first when both fail, so
+      // we assert on the action type rather than the exact network in the msg.
       await expectSaga(handleFetchNfts)
         .provide([[select(walletAddressSelector), '0xabc']])
-        .put(
-          fetchNftsFailed({
-            error: 'Unable to fetch NFTs for celo-mainnet: 500 {"message":"something went wrong"}',
-          })
-        )
-        .run()
+        .put.actionType(fetchNftsFailed.type)
+        .run(5000)
+      jest.useFakeTimers()
     })
 
     it('should not fetch when no wallet address found', async () => {
