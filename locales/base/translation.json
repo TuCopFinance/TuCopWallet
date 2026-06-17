@@ -3168,5 +3168,15 @@
   },
   "preflight": {
     "advisory": "We're about to start your {{noun}}. Don't close the app and make sure you have good connection."
+  },
+  "result": {
+    "succeeded": "Your {{noun}} completed successfully.",
+    "connectivity": "You lost connection in the middle of your {{noun}}, so it did not go through. Try again?",
+    "appBackgrounded": "You closed the app while your {{noun}} was in progress. Want to resume it?",
+    "gasInsufficient": "Your balance was not enough to cover the network fee. Top up a little and we will try again.",
+    "slippage": "The price moved more than allowed, so we canceled your {{noun}} to protect you. Try again?",
+    "revert": "The network rejected your {{noun}}. Nothing was charged. Try again?",
+    "rpcTimeout": "The blockchain network did not respond in time. Try again?",
+    "unknown": "Something did not go as expected. Want to try again or contact us?"
   }
 }
