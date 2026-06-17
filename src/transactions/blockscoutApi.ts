@@ -11,8 +11,8 @@ import networkConfig from 'src/web3/networkConfig'
 
 const TAG = 'transactions/blockscoutApi'
 
-// Blockscout API base URL for Celo mainnet
-const BLOCKSCOUT_API_BASE = 'https://celo.blockscout.com/api/v2'
+// Use TuCop backend Blockscout passthrough so the API key stays on the server.
+const BLOCKSCOUT_API_BASE = networkConfig.blockscoutProxyBase
 
 // System contracts to ignore (internal transfers, fees, etc)
 const SYSTEM_CONTRACTS = new Set([
