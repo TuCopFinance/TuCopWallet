@@ -10,10 +10,15 @@ interface InFlight {
 
 export interface State {
   inFlight: InFlight | null
+  // True for a brief window after multiSwapStepFailed dispatches and before
+  // the UI commits to PartialSuccessSheet. Bridges the render gap where both
+  // sheets would otherwise return null. See TransactionFlowShell.
+  transitioning: boolean
 }
 
 const initialState: State = {
   inFlight: null,
+  transitioning: false,
 }
 
 const slice = createSlice({
@@ -27,6 +32,7 @@ const slice = createSlice({
         failedAtIndex: null,
         lastError: null,
       }
+      state.transitioning = false
     },
     multiSwapStepSucceeded(state, action: PayloadAction<{ index: number }>) {
       if (!state.inFlight) return
@@ -36,12 +42,18 @@ const slice = createSlice({
       if (!state.inFlight) return
       state.inFlight.failedAtIndex = action.payload.index
       state.inFlight.lastError = action.payload.errorMessage
+      state.transitioning = true
+    },
+    multiSwapTransitionComplete(state) {
+      state.transitioning = false
     },
     multiSwapCompleted(state) {
       state.inFlight = null
+      state.transitioning = false
     },
     multiSwapCleared(state) {
       state.inFlight = null
+      state.transitioning = false
     },
   },
 })
@@ -50,6 +62,7 @@ export const {
   multiSwapStarted,
   multiSwapStepSucceeded,
   multiSwapStepFailed,
+  multiSwapTransitionComplete,
   multiSwapCompleted,
   multiSwapCleared,
 } = slice.actions

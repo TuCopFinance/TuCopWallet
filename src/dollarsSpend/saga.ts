@@ -1,11 +1,12 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
-import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
+import { call, delay, put, race, select, take, takeEvery } from 'typed-redux-saga'
 import {
   multiSwapCompleted,
   multiSwapStarted,
   multiSwapStepFailed,
   multiSwapStepSucceeded,
+  multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
 import { SpendStep } from 'src/dollarsSpend/types'
 import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
@@ -54,6 +55,10 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
           errorMessage: 'Wallet address unavailable for step execution',
         })
       )
+      // Give the UI one frame to render the transitional message before
+      // committing to PartialSuccessSheet. Bridges the render gap.
+      yield* delay(50)
+      yield* put(multiSwapTransitionComplete())
       return
     }
 
@@ -66,6 +71,8 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
           errorMessage: `Token not found in wallet state: ${step.symbol}`,
         })
       )
+      yield* delay(50)
+      yield* put(multiSwapTransitionComplete())
       return
     }
 
@@ -91,6 +98,8 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       const message = err instanceof Error ? err.message : String(err)
       Logger.warn(TAG, `Quote refetch failed for step ${index} (${step.symbol}): ${message}`)
       yield* put(multiSwapStepFailed({ index, errorMessage: message }))
+      yield* delay(50)
+      yield* put(multiSwapTransitionComplete())
       return
     }
 
@@ -142,6 +151,8 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
           errorMessage: `Swap failed at step ${index} (${step.symbol})`,
         })
       )
+      yield* delay(50)
+      yield* put(multiSwapTransitionComplete())
       return
     }
   }

@@ -18,8 +18,7 @@ import {
   planSpend,
   useDollarBalanceSnapshots,
 } from 'src/dollarsSpend'
-import MultiSwapProgressSheet from 'src/dollarsSpend/MultiSwapProgressSheet'
-import PartialSuccessSheet from 'src/dollarsSpend/PartialSuccessSheet'
+import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { buyGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
@@ -307,8 +306,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <MultiSwapProgressSheet />
-      <PartialSuccessSheet
+      <TransactionFlowShell
         onRetry={() => {
           const remaining = planSpend({ requestedUsd, balances: dollarSnapshots })
           if (remaining.shortfall.gt(0)) return
