@@ -19,10 +19,14 @@ describe(fetchExchangeRate, () => {
   })
 
   it('throws when received status is other than 200', async () => {
-    mockFetch.mockResponseOnce('error', { status: 500, statusText: 'some error' })
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('error', { status: 500, statusText: 'some error' })
 
     const result = fetchExchangeRate(LocalCurrencyCode.COP)
     await expect(result).rejects.toThrow('Failed to fetch exchange rate: 500 some error')
+    jest.useFakeTimers()
   })
 
   it('throws when receives unxepected data', async () => {

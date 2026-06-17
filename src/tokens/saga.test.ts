@@ -124,11 +124,15 @@ describe('getTokensInfo', () => {
     })
   })
   it('throws if request does not complete within timeout', async () => {
-    mockFetch.mockResponseOnce('error!', { status: 500, statusText: 'some error' })
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('error!', { status: 500, statusText: 'some error' })
     await expect(getTokensInfo([NetworkId['celo-mainnet']])).rejects.toEqual(
       new Error('Failure response fetching token info. 500  some error')
     )
     expect(Logger.error).toHaveBeenCalledTimes(1)
+    jest.useFakeTimers()
   })
 })
 describe(fetchTokenBalancesSaga, () => {
@@ -358,10 +362,14 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: [NetworkId['celo-mainnet']],
     })
-    mockFetch.mockResponseOnce('error', { status: 500, statusText: 'some error' })
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('error', { status: 500, statusText: 'some error' })
 
     const result = fetchTokenBalancesForAddressByTokenId('some-address')
     await expect(result).rejects.toThrow('Failed to fetch token balances: 500 some error')
+    jest.useFakeTimers()
   })
 })
 
