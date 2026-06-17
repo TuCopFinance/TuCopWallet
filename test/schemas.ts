@@ -3697,6 +3697,18 @@ export const v247Schema = {
   },
 }
 
+// Migration 248 adds `transitioning` to dollarsSpend (Track B Task 4) so the
+// TransactionFlowShell can bridge the render gap between step failure and
+// PartialSuccessSheet without showing a blank frame.
+export const v248Schema = {
+  ...v247Schema,
+  dollarsSpend: { inFlight: null, transitioning: false },
+  _persist: {
+    ...v247Schema._persist,
+    version: 248,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v247Schema as Partial<RootState>
+  return v248Schema as Partial<RootState>
 }

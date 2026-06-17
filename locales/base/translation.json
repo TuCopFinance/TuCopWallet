@@ -3052,6 +3052,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "transitioning": "Finishing your operation...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",
       "remaining": "Te quedan {{remainingUsd}} por convertir",
