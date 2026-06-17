@@ -5525,10 +5525,14 @@
                             "type": "null"
                         }
                     ]
+                },
+                "transitioning": {
+                    "type": "boolean"
                 }
             },
             "required": [
-                "inFlight"
+                "inFlight",
+                "transitioning"
             ],
             "type": "object"
         },
