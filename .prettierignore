@@ -27,3 +27,6 @@ fastlane/README.md
 # Spike workspace (forge/Solidity not on prettier path)
 contracts-spike/
 
+# Production contracts (forge / Solidity not on prettier path)
+contracts/
+
