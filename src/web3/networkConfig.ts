@@ -152,15 +152,21 @@ const USAT_TOKEN_ID_MAINNET = `${NetworkId['celo-mainnet']}:0xd2ab3c9a02dbbab236
 // dollarsSpend single-tx path (Track C). Used by saga7702.ts to encode the
 // authorization + execute(calls) calldata.
 //
-// TODO(WRI Track C Task 2): Replace with the address from the hardened
-// production contract (contracts/src/BatchExecutor.sol) once the user
-// authorizes the production deploy. A prior deploy via the spike script
-// (tx 0x7744ce5119aa90310acea1eff58c64187203a96976c432eb980cf93451df1e61
-// at 0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4) used the SPIKE source which
-// lacks the onlySelf modifier + ReentrancyGuard, so it must NOT be wired
-// here. The saga7702 path stays gated behind WRI_DOLLARS_SPEND_7702_V1 so
-// no user funds touch the zero-address while we wait.
-export const BATCH_EXECUTOR_ADDRESS_CELO: Address = '0x0000000000000000000000000000000000000000'
+// Deployed on Celo mainnet (chainId 42220) via
+// contracts/script/DeployBatchExecutor.s.sol targeting the hardened source
+// at contracts/src/BatchExecutor.sol (onlySelf modifier + ReentrancyGuard):
+//   tx: 0xf95d4dd423c9f300c00347360ca61d6d5c91152575f8e81358bb161546923c0c
+//   block: 69877584 (0x42c3d50)
+//   gasUsed: 268,405 (0x41675)
+// Bytecode verified on-chain: 1783 chars matches the hardened artifact.
+//
+// An earlier deploy (0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4, tx
+// 0x7744ce5119aa90310acea1eff58c64187203a96976c432eb980cf93451df1e61) used
+// the SPIKE source and must never be wired here.
+//
+// The saga7702 path stays gated behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1
+// until Phase 1 internal dogfood + Phase 2 production rollout flip the flag.
+export const BATCH_EXECUTOR_ADDRESS_CELO: Address = '0xaE6a87E88b55644Eda54C3AA55B11944eE5E1DFe'
 
 const CLOUD_FUNCTIONS_MAINNET = 'https://api.mainnet.valora.xyz'
 
