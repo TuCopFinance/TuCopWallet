@@ -215,7 +215,11 @@ const RESOLVE_ID_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/resolveId`
 
 const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
 
-const GET_SWAP_QUOTE_URL = `${CLOUD_FUNCTIONS_MAINNET}/getSwapQuote`
+// Swap quote now flows through TuCop's own backend proxy so the TuCop Squid
+// integratorId is attached (Squid attribution + revenue share lands with us
+// instead of Valora). The backend at TUCOP_BACKEND_BASE below preserves the
+// FetchQuoteResponse shape that this app already consumes (drop-in URL flip).
+const GET_SWAP_QUOTE_URL = 'https://tucop-backend-production.up.railway.app/api/swap/quote'
 
 const HOOKS_API_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/hooks-api`
 
