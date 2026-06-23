@@ -2,6 +2,8 @@
 
 # Wallet Robustness Initiative — Plan 04: Track D (Stack Hygiene + Sepolia Removal + Valora Migration)
 
+**Status:** SHIPPED. Sepolia and all testnet references removed from wallet code, config, and CI. Husky upgraded. ethers v5 removed where reachable. Hardcoded CoinMarketCap API key relocated to backend; the wallet now calls [tucop-backend-production.up.railway.app](https://tucop-backend-production.up.railway.app) for the XAUt0 price feed instead. `fetchWithTimeout` upgraded with 3-attempt exponential backoff + jitter. The actual backend repo lives at [TuCOPWallet-Backend](../../../TuCOPWallet-Backend/) (note: the plan originally referred to it as `api-wallet-tucop`; the real name is `tucopwallet-backend` and the public URL is `tucop-backend-production.up.railway.app`). Valora-migration acceleration in progress: the next concrete step is the Squid `/api/swap/quote` proxy on the backend (brief delivered 2026-06-23). Original checkboxes left untouched as historical record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Clean up the wallet's stack debt (ethers v5 removal, husky upgrade, prettier/lint config), remove all Celo Sepolia / testnet support from the codebase, accelerate the Valora API migration roadmap, and relocate hardcoded API keys to the project's own backend.
