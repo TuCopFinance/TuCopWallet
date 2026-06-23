@@ -2,6 +2,8 @@
 
 # Wallet Robustness Initiative — Plan 01: Track A (Foundations — 8 Reusable Abstractions)
 
+**Status:** SHIPPED. All 8 reusable primitives merged into `Development`: error taxonomy ([src/lib/errors/](../../src/lib/errors/)), retry helper ([src/lib/retry/retry.ts](../../src/lib/retry/retry.ts)), `PinRequiredGate` ([src/components/PinRequiredGate.tsx](../../src/components/PinRequiredGate.tsx)), `useTransactionInFlight` keystone ([src/lib/useTransactionInFlight/](../../src/lib/useTransactionInFlight/)) with persistence migration v249, `ConfirmationSheet` + `TransactionProgressSheet` + `TransactionResultSheet` ([src/components/](../../src/components/)), `DeepLinkRecovery` ([src/app/DeepLinkRecovery.tsx](../../src/app/DeepLinkRecovery.tsx)). Original checkboxes left untouched as historical record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 
 **Goal:** Build the 8 reusable primitives identified in the wallet-wide audit, so that subsequent feature migrations in Tracks B, C, and D can drop into a shared abstraction instead of reimplementing the same patterns per feature.

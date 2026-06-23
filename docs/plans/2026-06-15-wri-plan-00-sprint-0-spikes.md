@@ -2,6 +2,8 @@
 
 # Wallet Robustness Initiative — Plan 00: Sprint 0 Spikes
 
+**Status:** SHIPPED 2026-06-16. All 5 spikes resolved. Outcome docs in [docs/spikes/](../spikes/): S1 PASS (CIP-64 + 7702 single-tx confirmed on Celo mainnet), S2 PASS (ethers v5 removable), S3 UNKNOWN_PENDING_OUTREACH (calldata analysis strongly suggests PASS; superseded by TuCop's own Squid integrator path, not blocking), S4 APPROVED (self-audit protocol locked), S5 APPROVED (`useTransactionInFlight` v4 API). Plan was research-only; no production code merged from this plan. Original checkboxes left untouched as historical record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Execute the 5 research spikes (S1-S5) defined in the design spec section 5 to resolve the technical unknowns that gate the rest of the initiative.
