@@ -2,6 +2,8 @@
 
 # Wallet Robustness Initiative — Plan 03: Track C (EIP-7702 Migration)
 
+**Status:** SHIPPED through Task 4. Production `BatchExecutor` (hardened, `onlySelf` + `ReentrancyGuard`) deployed on Celo mainnet at `0xaE6a87E88b55644Eda54C3AA55B11944eE5E1DFe` (tx `0xf95d4dd423c9f300c00347360ca61d6d5c91152575f8e81358bb161546923c0c`, block 69877584). Source verified on Celoscan. Address wired in [src/web3/networkConfig.ts](../../src/web3/networkConfig.ts). Saga at [src/dollarsSpend/saga7702.ts](../../src/dollarsSpend/saga7702.ts) gated behind `StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1` (default false). Revoke-delegation helper at [src/lib/revoke7702/revokeDelegation.ts](../../src/lib/revoke7702/revokeDelegation.ts). Legacy `executeMultiSwapSaga` keeps fallback path with `useTransactionInFlight` integration ([src/dollarsSpend/saga.ts](../../src/dollarsSpend/saga.ts)). Pending tasks 5 (Phase 1 dogfood) and 6 (Phase 2 production rollout) are operational — Statsig flag flips, not code. An earlier spike deploy at `0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4` must never be wired. Original checkboxes left untouched as historical record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 
 **Goal:** Migrate the "Dolares → Pesos" (dollarsSpend) flow from N sequential transactions to a single atomic EIP-7702 batched transaction, eliminating partial-failure mid-flow and reducing on-chain overhead. Gates the rollout behind the S4 audit checklist and the kill-switch flag `wri_dollars_spend_7702_v1`.
