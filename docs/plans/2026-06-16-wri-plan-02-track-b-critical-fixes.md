@@ -2,6 +2,8 @@
 
 # Wallet Robustness Initiative — Plan 02: Track B (Critical Fixes)
 
+**Status:** SHIPPED 6/7 fixes. The five recurring patterns are addressed: (1) idempotency landed via `sentTransactionLog` slice with migration v250 ([src/viem/sentTransactionLog/](../../src/viem/sentTransactionLog/)); (2) orphan-approve mitigation via swap pre-flight simulation ([src/lib/preflight/swapSimulation.ts](../../src/lib/preflight/swapSimulation.ts)) + PartialSuccessSheet retry path; (3) in-flight persistence via the Track A keystone (migration v249); (4) PIN cache TTL via refcounted `pinTransactional` / `endTransactional` in [src/pincode/PasswordCache.ts](../../src/pincode/PasswordCache.ts); (5) MultiSwapProgressSheet / PartialSuccessSheet double-null window closed by `TransactionFlowShell` + `multiSwapTransitionComplete`. Remaining item from this plan is fully covered by Track C work. Original checkboxes left untouched as historical record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the five recurring patterns of fragility identified in the wallet-wide audit: (1) zero idempotency in `sendPreparedTransactions`, (2) orphan approve transactions when subsequent swaps fail, (3) in-flight transaction state lost on app close, (4) PIN cache expiry mid-multi-step flow, (5) double-null guard rendering in `PartialSuccessSheet` / `MultiSwapProgressSheet`.
