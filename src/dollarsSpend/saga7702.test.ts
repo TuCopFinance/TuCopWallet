@@ -16,6 +16,7 @@ import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
+import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 jest.mock('src/statsig')
@@ -156,6 +157,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         [matchers.select.selector(feeCurrenciesSelector), []],
         [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+        [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
       ])
       .put(multiSwapStarted({ steps: [stepUsat] }))
       .put(multiSwapStepSucceeded({ index: 0 }))
