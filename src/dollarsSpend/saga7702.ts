@@ -18,6 +18,7 @@ import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
+import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'dollarsSpend/saga7702'
@@ -156,6 +157,15 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     if (!account) {
       throw new Error('Wallet has no account loaded')
     }
+
+    // Unlock the keychain account before signing. Without this, the
+    // PrivateKeyAccount that backs the keychain LocalAccount is null and
+    // `signAuthorization` (delegated through getUnlockedAccount in
+    // src/viem/keychainAccountToAccount.ts) throws
+    // "authentication needed: password or unlock". The legacy path goes
+    // through sendPreparedTransactions which calls this internally; this
+    // 7702 path signs directly via signAuthorization so it must unlock here.
+    yield* call(getConnectedUnlockedAccount)
 
     // Sign EIP-7702 authorization delegating THIS EOA -> BatchExecutor.
     // executor: 'self' so viem uses the wallet's nonce sequence. Wrap in a
