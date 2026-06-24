@@ -37,7 +37,9 @@ function SwapFeedItem({ transaction }: Props) {
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
 
-  // Get friendly token name - also accepts tokenId for when token info isn't available
+  // Get friendly token name - also accepts tokenId for when token info isn't available.
+  // Per .claude/rules/tokens.md the entire USAT/USDm/USDC/USDT group is shown as
+  // "Dolares" in the UI; only XAUt0 is "Oro" and COPm is "Pesos".
   const getTokenName = (token: any, tokenId?: string) => {
     // First check by tokenId (works even when token info not loaded)
     const idToCheck = tokenId || token?.tokenId
@@ -45,7 +47,12 @@ function SwapFeedItem({ transaction }: Props) {
       if (idToCheck === networkConfig.copmTokenId) {
         return t('assets.pesos')
       }
-      if (idToCheck === networkConfig.usdtTokenId) {
+      if (
+        idToCheck === networkConfig.usdtTokenId ||
+        idToCheck === networkConfig.usdcTokenId ||
+        idToCheck === networkConfig.usdmTokenId ||
+        idToCheck === networkConfig.usatTokenId
+      ) {
         return t('assets.dollars')
       }
       if (idToCheck === networkConfig.xaut0TokenId) {
@@ -61,12 +68,21 @@ function SwapFeedItem({ transaction }: Props) {
       return '...'
     }
 
-    // Check by symbol as fallback
+    // Check by symbol as fallback. Note 'cusd' is the legacy on-chain symbol for
+    // USDm and 'usat' is sometimes shown lowercased; both must collapse to Dolares.
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'copm' || symbol === 'ccop') {
       return t('assets.pesos')
     }
-    if (symbol === 'usdt' || symbol === 'usd₮' || symbol === 'usdt0') {
+    if (
+      symbol === 'usdt' ||
+      symbol === 'usd₮' ||
+      symbol === 'usdt0' ||
+      symbol === 'usdc' ||
+      symbol === 'usdm' ||
+      symbol === 'cusd' ||
+      symbol === 'usat'
+    ) {
       return t('assets.dollars')
     }
     if (symbol === 'xaut0' || symbol === 'xaut') {
