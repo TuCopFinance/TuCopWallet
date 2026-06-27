@@ -219,9 +219,11 @@ const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
 // integratorId is attached (Squid attribution + revenue share lands with us
 // instead of Valora). The backend at TUCOP_BACKEND_BASE below preserves the
 // FetchQuoteResponse shape that this app already consumes (drop-in URL flip).
-const GET_SWAP_QUOTE_URL = 'https://tucop-backend-production.up.railway.app/api/swap/quote'
+const TUCOP_BACKEND_BASE_URL = 'https://tucop-backend-production.up.railway.app'
 
-const HOOKS_API_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/hooks-api`
+const GET_SWAP_QUOTE_URL = `${TUCOP_BACKEND_BASE_URL}/api/swap/quote`
+
+const HOOKS_API_URL_MAINNET = `${TUCOP_BACKEND_BASE_URL}/hooks-api`
 
 const JUMPSTART_CLAIM_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/walletJumpstart`
 
