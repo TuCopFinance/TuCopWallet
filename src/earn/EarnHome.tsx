@@ -34,6 +34,8 @@ import {
   positionsStatusSelector,
 } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
@@ -105,7 +107,15 @@ export default function EarnHome({ navigation, route }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const pools = useSelector(earnPositionsSelector)
+  const allPoolsFromBackend = useSelector(earnPositionsSelector)
+  const neeruVaultsEnabled = getFeatureGate(StatsigFeatureGates.SHOW_NEERU_VAULTS)
+  const pools = useMemo(
+    () =>
+      neeruVaultsEnabled
+        ? allPoolsFromBackend
+        : allPoolsFromBackend.filter((p) => p.appId !== 'neeru-vaults'),
+    [allPoolsFromBackend, neeruVaultsEnabled]
+  )
 
   const activeTab = route.params?.activeEarnTab ?? EarnTabType.AllPools
 

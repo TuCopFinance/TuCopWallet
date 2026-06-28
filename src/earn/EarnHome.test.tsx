@@ -122,4 +122,66 @@ describe('EarnHome', () => {
     expect(tabItems[0]).toHaveTextContent('earnFlow.poolFilters.allPools')
     expect(tabItems[1]).toHaveTextContent('earnFlow.poolFilters.myPools')
   })
+
+  describe('Neeru Vaults gate', () => {
+    const neeruPool = {
+      ...mockEarnPositions[0],
+      positionId:
+        'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:category-1',
+      address: '0xd05cdf2dc56d97333c547519df58d56145766294',
+      networkId: 'celo-mainnet',
+      appId: 'neeru-vaults',
+      appName: 'Neeru Vaults',
+      displayProps: {
+        ...mockEarnPositions[0].displayProps,
+        title: 'NEERU_TEST_TITLE_30D',
+      },
+    }
+
+    const storeWithNeeru = createMockStore({
+      tokens: { tokenBalances: { ...mockTokenBalances } },
+      positions: {
+        positions: [mockEarnPositions[0], neeruPool, mockEarnPositions[1]],
+        earnPositionIds: [
+          mockEarnPositions[0].positionId,
+          neeruPool.positionId,
+          mockEarnPositions[1].positionId,
+        ],
+        status: 'success' as Status,
+        positionsFetchedAt: Date.now(),
+      },
+    })
+
+    it('hides neeru-vaults pools when SHOW_NEERU_VAULTS gate is off (default)', () => {
+      // beforeEach already mocks gate so only SHOW_POSITIONS is true.
+      const { queryByText } = render(
+        <Provider store={storeWithNeeru}>
+          <MockedNavigator
+            component={EarnHome}
+            params={{ activeEarnTab: EarnTabType.AllPools }}
+          />
+        </Provider>
+      )
+      expect(queryByText('NEERU_TEST_TITLE_30D')).toBeNull()
+    })
+
+    it('shows neeru-vaults pools when SHOW_NEERU_VAULTS gate is on', () => {
+      jest
+        .mocked(getFeatureGate)
+        .mockImplementation(
+          (g) =>
+            g === StatsigFeatureGates.SHOW_POSITIONS ||
+            g === StatsigFeatureGates.SHOW_NEERU_VAULTS
+        )
+      const { getByText } = render(
+        <Provider store={storeWithNeeru}>
+          <MockedNavigator
+            component={EarnHome}
+            params={{ activeEarnTab: EarnTabType.AllPools }}
+          />
+        </Provider>
+      )
+      expect(getByText('NEERU_TEST_TITLE_30D')).toBeTruthy()
+    })
+  })
 })
