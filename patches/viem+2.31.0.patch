@@ -1,0 +1,30 @@
+diff --git a/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js b/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
+index aa510c6..ec3e749 100644
+--- a/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
++++ b/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
+@@ -23,8 +23,8 @@ async function waitForTransactionReceipt(client, { confirmations = 1, hash, onRe
+     const { promise, resolve, reject } = (0, withResolvers_js_1.withResolvers)();
+     const timer = timeout
+         ? setTimeout(() => {
+-            _unwatch();
+-            _unobserve();
++            if (typeof _unwatch === 'function') _unwatch();
++            if (typeof _unobserve === 'function') _unobserve();
+             reject(new transaction_js_1.WaitForTransactionReceiptTimeoutError({ hash }));
+         }, timeout)
+         : undefined;
+diff --git a/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js b/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
+index 166c4a5..579c248 100644
+--- a/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
++++ b/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
+@@ -60,8 +60,8 @@ timeout = 180_000, }) {
+     const { promise, resolve, reject } = withResolvers();
+     const timer = timeout
+         ? setTimeout(() => {
+-            _unwatch();
+-            _unobserve();
++            if (typeof _unwatch === 'function') _unwatch();
++            if (typeof _unobserve === 'function') _unobserve();
+             reject(new WaitForTransactionReceiptTimeoutError({ hash }));
+         }, timeout)
+         : undefined;
