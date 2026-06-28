@@ -54,7 +54,11 @@ import { currentSwapSelector, priceImpactWarningThresholdSelector } from 'src/sw
 import { swapStart } from 'src/swap/slice'
 import { AppFeeAmount, Field, SwapAmount, SwapFeeAmount } from 'src/swap/types'
 import useFilterChips from 'src/swap/useFilterChips'
-import useSwapQuote, { NO_QUOTE_ERROR_MESSAGE, QuoteResult } from 'src/swap/useSwapQuote'
+import useSwapQuote, {
+  NO_QUOTE_ERROR_MESSAGE,
+  QuoteResult,
+  SWAP_UPSTREAM_TRANSIENT_ERROR,
+} from 'src/swap/useSwapQuote'
 import { useSwappableTokens, useTokenInfo } from 'src/tokens/hooks'
 import {
   feeCurrenciesSelector,
@@ -75,7 +79,28 @@ import { v4 as uuidv4 } from 'uuid'
 
 const TAG = 'SwapScreen'
 
-const FETCH_UPDATED_QUOTE_DEBOUNCE_TIME = 200
+// Bumped from 200ms to 500ms after measuring 429 amplification in prod:
+// Squid enforces a 10 RPS per-wallet limit, and 200ms allows up to 5 hits per
+// second on typing. 500ms collapses keystroke bursts into a single quote call
+// while still feeling responsive. See useMultiSwapQuote for the matching
+// debounce on the multi-step Dolares -> Pesos path.
+const FETCH_UPDATED_QUOTE_DEBOUNCE_TIME = 500
+
+// Hard floor for any swap leg. Below this, Squid's routes for stablecoin /
+// COPm pairs hit minimum-input or slippage failures and the tx reverts on
+// chain (verified with 1000 COPm -> USDC at ~$0.29 USD, tx
+// 0xec65f5d042014201173a4e90204ddf4f2f0db89fdf871998172ea7a0885cfece).
+// We gate the Confirm button when the requested USD value falls below this
+// threshold so the user is never asked to spend gas on a doomed swap.
+//
+// Threshold = $0.50, not $1.00, because user-facing token amounts come from
+// real on-chain priceUsd which deviates from a perfect peg (USDT typically
+// ~$0.998, USDC ~$1.001). "1 USDT" looks like a dollar to the user but the
+// USD value math is $0.998. A $1 threshold would block "1 of any stable"
+// most of the time, which is hostile UX. $0.50 still blocks the actual
+// failure cases without surprising the user.
+const MIN_SWAP_USD = 0.5
+
 const DEFAULT_INPUT_SWAP_AMOUNT: SwapAmount = {
   [Field.FROM]: '',
   [Field.TO]: '',
@@ -428,9 +453,20 @@ export function SwapScreen({ route }: Props) {
     AppAnalytics.track(SwapEvents.swap_screen_open)
   }, [])
 
+  const isTransientUpstreamError =
+    !!fetchSwapQuoteError?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR) ||
+    !!multiSwapQuote.error?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR)
+
   useEffect(() => {
     if (fetchSwapQuoteError) {
-      if (!fetchSwapQuoteError.message.includes(NO_QUOTE_ERROR_MESSAGE)) {
+      if (
+        !fetchSwapQuoteError.message.includes(NO_QUOTE_ERROR_MESSAGE) &&
+        // Transient upstream errors (429 exhausted / 502 squid down) show as
+        // an inline notification below the swap inputs so the user can just
+        // try again. Surfacing them in the generic "Algo no salio" sheet
+        // makes a recoverable backend hiccup look like the app is broken.
+        !isTransientUpstreamError
+      ) {
         showErrorMessage({
           error: fetchSwapQuoteError,
           context: { screen: 'SwapScreen', action: 'fetchSwapQuote' },
@@ -438,7 +474,7 @@ export function SwapScreen({ route }: Props) {
         })
       }
     }
-  }, [fetchSwapQuoteError])
+  }, [fetchSwapQuoteError, isTransientUpstreamError])
 
   useEffect(() => {
     // since we use the quote to update the parsedSwapAmount,
@@ -746,6 +782,15 @@ export function SwapScreen({ route }: Props) {
   ).find((token) => token.isNative)
   const crossChainFee = getCrossChainFee(quote, crossChainFeeCurrency)
 
+  // Compute the swap value in USD so we can gate against the wallet-wide
+  // MIN_SWAP_USD floor regardless of whether the user is on the legacy
+  // single-token path or the virtual Dolares aggregate path.
+  const swapValueUsd = useMemo(() => {
+    if (isVirtualDolares) return fromAmountUsd
+    if (!fromToken || !fromToken.priceUsd) return new BigNumber(0)
+    return parsedSwapAmount[Field.FROM].multipliedBy(fromToken.priceUsd)
+  }, [isVirtualDolares, fromAmountUsd, fromToken, parsedSwapAmount])
+
   const getWarningStatuses = () => {
     // NOTE: If a new condition is added here, make sure to update `allowSwap` below if
     // the condition should prevent the user from swapping.
@@ -753,6 +798,12 @@ export function SwapScreen({ route }: Props) {
       showSwitchedToNetworkWarning: !!switchedToNetworkId,
       showUnsupportedTokensWarning:
         !quoteUpdatePending && fetchSwapQuoteError?.message.includes(NO_QUOTE_ERROR_MESSAGE),
+      // Block any swap below MIN_SWAP_USD. Squid's per-route minimums (e.g.
+      // 1000 COPm ~= $0.29) would otherwise let the user confirm a tx that
+      // reverts on chain (gas wasted). Surfaced as a banner before the
+      // "Confirmar intercambio" button.
+      showBelowMinSwapWarning:
+        parsedSwapAmount[Field.FROM].gt(0) && swapValueUsd.gt(0) && swapValueUsd.lt(MIN_SWAP_USD),
       showInsufficientBalanceWarning:
         !isVirtualDolares && parsedSwapAmount[Field.FROM].gt(fromTokenBalance),
       showCrossChainFeeWarning:
@@ -797,9 +848,15 @@ export function SwapScreen({ route }: Props) {
     showPriceImpactWarning,
     showUnsupportedTokensWarning,
     showMissingPriceImpactWarning,
+    showBelowMinSwapWarning,
   } = getWarningStatuses()
 
   const allowSwap = useMemo(() => {
+    if (showBelowMinSwapWarning) return false
+    // No quote was obtained because Squid returned 429/502. The saga would
+    // hit the same upstream and fail, so disable Confirmar until the next
+    // refresh succeeds (the banner above tells the user to retry).
+    if (isTransientUpstreamError) return false
     if (isVirtualDolares) {
       return (
         !!toTokenId &&
@@ -830,14 +887,68 @@ export function SwapScreen({ route }: Props) {
     showDecreaseSpendForGasWarning,
     showNotEnoughBalanceForGasWarning,
     showCrossChainFeeWarning,
+    showBelowMinSwapWarning,
+    isTransientUpstreamError,
   ])
+  // For the Dolares -> Pesos aggregate path the single `quote` is undefined
+  // (the wallet runs N parallel quotes via useMultiSwapQuote). Synthesize the
+  // fee components from the multi-step aggregate so the FeeInfoBottomSheet
+  // shows real values instead of falling back to "Desconocido".
+  //
+  // - Network fee: rough flat estimate per step expressed in USDm (~Celo L2
+  //   gas cost for a swap leg). USDm is in the wallet's token registry so the
+  //   FeeAmount component can display it; CELO native, the real payer, is
+  //   intentionally absent from the registry.
+  // - App fee: the real per-step aggregated Squid app-fee summed in USD,
+  //   surfaced via useMultiSwapQuote.aggregateAppFeeUsd. Also expressed in
+  //   USDm (1:1 with USD for display).
+  //
+  // Calibration: on-chain measurement from tx 0xb7aa617c... showed a 3-step
+  // atomic 7702 batch consumed 793,860 gas at 202 Gwei effective price. At
+  // CELO ~ $0.30 that is $0.048 USD total, i.e. $0.016 per step. We round up
+  // slightly to $0.020 to stay conservative under gas-price spikes; the user
+  // never pays more on-chain than the max anyway.
+  const NETWORK_FEE_USD_PER_STEP_ESTIMATE = new BigNumber(0.02)
+  const NETWORK_FEE_MAX_MULTIPLIER = 1.5 // matches Celo L2 maxFee buffer
+  const usdmTokenForFeeDisplay = useMemo(() => {
+    return tokensById[networkConfig.usdmTokenId]
+  }, [tokensById])
+
   const networkFee: SwapFeeAmount | undefined = useMemo(() => {
+    if (isVirtualDolares) {
+      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      const stepCount = multiSwapPlan?.steps.length ?? 0
+      if (stepCount === 0) return undefined
+      const estimateUsd = NETWORK_FEE_USD_PER_STEP_ESTIMATE.multipliedBy(stepCount)
+      return {
+        token: usdmTokenForFeeDisplay,
+        amount: estimateUsd,
+        maxAmount: estimateUsd.multipliedBy(NETWORK_FEE_MAX_MULTIPLIER),
+      }
+    }
     return getNetworkFee(quote)
-  }, [fromToken, quote])
+  }, [isVirtualDolares, multiSwapQuote.loading, multiSwapPlan, usdmTokenForFeeDisplay, quote])
 
   const feeToken = networkFee?.token ? tokensById[networkFee.token.tokenId] : undefined
 
   const appFee: AppFeeAmount | undefined = useMemo(() => {
+    if (isVirtualDolares) {
+      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      // Average percentage across the legs that contributed to the aggregate.
+      const fulfilledWithFee = multiSwapQuote.perStepQuotes.filter(
+        (q) => q.appFeePercentageIncludedInPrice
+      )
+      const avgPercentage = fulfilledWithFee.length
+        ? fulfilledWithFee
+            .reduce((sum, q) => sum.plus(q.appFeePercentageIncludedInPrice ?? 0), new BigNumber(0))
+            .dividedBy(fulfilledWithFee.length)
+        : new BigNumber(0)
+      return {
+        amount: multiSwapQuote.aggregateAppFeeUsd,
+        token: usdmTokenForFeeDisplay,
+        percentage: avgPercentage,
+      }
+    }
     if (!quote || !fromToken) {
       return undefined
     }
@@ -849,7 +960,16 @@ export function SwapScreen({ route }: Props) {
       token: fromToken,
       percentage,
     }
-  }, [quote, parsedSwapAmount, fromToken])
+  }, [
+    isVirtualDolares,
+    multiSwapQuote.loading,
+    multiSwapQuote.perStepQuotes,
+    multiSwapQuote.aggregateAppFeeUsd,
+    usdmTokenForFeeDisplay,
+    quote,
+    parsedSwapAmount,
+    fromToken,
+  ])
 
   useEffect(() => {
     if (showPriceImpactWarning || showMissingPriceImpactWarning) {
@@ -1146,6 +1266,24 @@ export function SwapScreen({ route }: Props) {
               variant={NotificationVariant.Warning}
               title={t('swapScreen.missingSwapImpactWarning.title')}
               description={t('swapScreen.missingSwapImpactWarning.body')}
+              style={styles.warning}
+            />
+          )}
+          {showBelowMinSwapWarning && (
+            <InLineNotification
+              variant={NotificationVariant.Warning}
+              title={t('swapScreen.belowMinSwapWarning.title')}
+              description={t('swapScreen.belowMinSwapWarning.body', {
+                minSwapUsd: MIN_SWAP_USD.toFixed(2),
+              })}
+              style={styles.warning}
+            />
+          )}
+          {isTransientUpstreamError && (
+            <InLineNotification
+              variant={NotificationVariant.Warning}
+              title={t('swapScreen.upstreamUnavailableWarning.title')}
+              description={t('swapScreen.upstreamUnavailableWarning.body')}
               style={styles.warning}
             />
           )}
