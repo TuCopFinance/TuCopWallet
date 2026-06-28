@@ -1850,6 +1850,14 @@
       "title": "Before you swap",
       "body": "We can't estimate the value of this swap. {{appName}} is not responsible if you choose to proceed."
     },
+    "belowMinSwapWarning": {
+      "title": "Amount too small",
+      "body": "The minimum swap amount is approximately ${{minSwapUsd}} USD. Increase the amount to continue."
+    },
+    "upstreamUnavailableWarning": {
+      "title": "Service temporarily unavailable",
+      "body": "We couldn't get a quote. Please try again in a few seconds."
+    },
     "confirmSwapFailedWarning": {
       "title": "Something went wrong",
       "body": "The network speed is slow or there is an unknown error. Please try again later"
@@ -3052,6 +3060,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "atomicProgress": "Cambiando tus Dolares a Pesos...",
     "transitioning": "Finishing your operation...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",

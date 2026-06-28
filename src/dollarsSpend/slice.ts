@@ -6,6 +6,10 @@ interface InFlight {
   completedSteps: number
   failedAtIndex: number | null
   lastError: string | null
+  // When the 7702 atomic path runs, the entire plan resolves in a single tx.
+  // The progress sheet hides the "Paso X de N" counter and shows a single
+  // "Procesando tu cambio" copy because the per-step granularity is meaningless.
+  isAtomic: boolean
 }
 
 export interface State {
@@ -25,12 +29,13 @@ const slice = createSlice({
   name: 'dollarsSpend',
   initialState,
   reducers: {
-    multiSwapStarted(state, action: PayloadAction<{ steps: SpendStep[] }>) {
+    multiSwapStarted(state, action: PayloadAction<{ steps: SpendStep[]; isAtomic?: boolean }>) {
       state.inFlight = {
         plannedSteps: action.payload.steps,
         completedSteps: 0,
         failedAtIndex: null,
         lastError: null,
+        isAtomic: action.payload.isAtomic ?? false,
       }
       state.transitioning = false
     },
