@@ -28,6 +28,18 @@ jest.mock('src/web3/contracts', () => ({
   ...jest.requireActual('src/web3/contracts'),
   getViemWallet: jest.fn(),
 }))
+// saga7702 reads on-chain balanceOf, getBalance, and getCode through
+// publicClient[Network.Celo]. Stub the whole map so each test can override the
+// methods it cares about.
+jest.mock('src/viem', () => ({
+  publicClient: {
+    celo: {
+      readContract: jest.fn().mockResolvedValue(BigInt('100000000')), // matches stepUsat amount
+      getBalance: jest.fn().mockResolvedValue(BigInt(1)), // > 0 -> picks CELO native
+      getCode: jest.fn().mockResolvedValue('0x'),
+    },
+  },
+}))
 
 const MOCK_WALLET = '0x1234567890abcdef1234567890abcdef12345678'
 
@@ -141,7 +153,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
     expect(wallet.sendTransaction).not.toHaveBeenCalled()
   })
 
-  it('when flag is on, signs an EIP-7702 authorization pointing at the BatchExecutor and submits one tx', async () => {
+  it('when flag is on, submits a single CIP-64 (or eip1559) tx invoking execute() on the EOA', async () => {
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
     const wallet = mockWallet()
@@ -159,26 +171,22 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
       ])
-      .put(multiSwapStarted({ steps: [stepUsat] }))
+      .put(multiSwapStarted({ steps: [stepUsat], isAtomic: true }))
       .put(multiSwapStepSucceeded({ index: 0 }))
       .put(multiSwapCompleted())
       .not.put.actionType(multiSwapStepFailed.type)
       .silentRun()
 
-    expect(wallet.signAuthorization).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contractAddress: networkConfig.batchExecutorAddressCelo,
-        executor: 'self',
-      })
-    )
+    // The relay handles the EIP-7702 delegation upstream; saga7702 does NOT
+    // sign an authorization or include an authorizationList. It only sends the
+    // CIP-64 / eip1559 execute() tx against the already-delegated EOA.
+    expect(wallet.signAuthorization).not.toHaveBeenCalled()
     expect(wallet.sendTransaction).toHaveBeenCalledTimes(1)
     const sendArg = wallet.sendTransaction.mock.calls[0][0]
     expect(sendArg.to).toBe(MOCK_WALLET)
-    expect(sendArg.authorizationList).toHaveLength(1)
-    // Fee currency is the first step's underlying ERC-20 address derived from
-    // the tokenId (`celo-mainnet:<address>` -> `<address>`). Here the mock
-    // step uses `celo-mainnet:usat` so we expect the second segment back.
-    expect(sendArg.feeCurrency).toBe('usat')
+    expect(sendArg.authorizationList).toBeUndefined()
+    // CELO native balance > 0 in the mock -> no feeCurrency (eip1559 type 0x02).
+    expect(sendArg.feeCurrency).toBeUndefined()
   })
 
   it('dispatches multiSwapStepFailed when the 7702 batch submission throws', async () => {
