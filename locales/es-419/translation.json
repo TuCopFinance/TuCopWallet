@@ -2929,6 +2929,12 @@
       "sixtyDays": "60 dias",
       "ninetyDays": "90 dias"
     },
+    "cardSubtitle": {
+      "flexible": "Flexible",
+      "thirtyDays": "Deposito a 30 dias",
+      "sixtyDays": "Deposito a 60 dias",
+      "ninetyDays": "Deposito a 90 dias"
+    },
     "detail": {
       "header": "Tus depositos {{trancheLabel}}",
       "aggregateBalance": "Total en {{trancheLabel}}: {{amount}} Pesos",

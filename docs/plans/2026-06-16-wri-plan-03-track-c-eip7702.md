@@ -16,11 +16,11 @@
 
 **Source spikes:**
 
-- [docs/spikes/s1-cip64-7702.md](../spikes/s1-cip64-7702.md) (PASS — single-tx pattern confirmed on Celo mainnet; no CELO bootstrap needed)
-- [docs/spikes/s3-squid-attribution.md](../spikes/s3-squid-attribution.md) (UNKNOWN_PENDING_OUTREACH — calldata analysis strongly suggests PASS; user action: send Discord outreach)
-- [docs/spikes/s4-self-audit-protocol.md](../spikes/s4-self-audit-protocol.md) (APPROVED — operational checklist for the production contract)
+- [docs/research/s1-cip64-7702.md](../research/s1-cip64-7702.md) (PASS — single-tx pattern confirmed on Celo mainnet; no CELO bootstrap needed)
+- [docs/research/s3-squid-attribution.md](../research/s3-squid-attribution.md) (UNKNOWN_PENDING_OUTREACH — calldata analysis strongly suggests PASS; user action: send Discord outreach)
+- [docs/research/s4-self-audit-protocol.md](../research/s4-self-audit-protocol.md) (APPROVED — operational checklist for the production contract)
 
-**Spike-validated reference contract:** [`contracts-spike/src/BatchExecutorV2.sol`](../../contracts-spike/src/BatchExecutorV2.sol). This source is graduated as-is to production.
+**Spike-validated reference contract:** [`contracts-research/src/BatchExecutorV2.sol`](../../contracts-research/src/BatchExecutorV2.sol). This source is graduated as-is to production.
 
 **Git workflow:** branches `feature/wri-<short>` off `Development`. Full automation. Conventional commits. NEVER --no-verify. NEVER mention testnet (locked decision #11). Per locked decision #9, NO percentage-based rollout — go from simulator/internal-dogfood validation directly to 100%, with the kill-switch flag as the safety net.
 
@@ -33,11 +33,11 @@
 
 ## Task 1: Graduate `BatchExecutor` to a production location
 
-Move the spike-validated contract from `contracts-spike/` to a production-shipping location with proper organization, comments, and tests.
+Move the spike-validated contract from `contracts-research/` to a production-shipping location with proper organization, comments, and tests.
 
 **Files:**
 
-- Create: `contracts/src/BatchExecutor.sol` (graduated source; identical to `contracts-spike/src/BatchExecutorV2.sol` byte-for-byte except header comment)
+- Create: `contracts/src/BatchExecutor.sol` (graduated source; identical to `contracts-research/src/BatchExecutorV2.sol` byte-for-byte except header comment)
 - Create: `contracts/foundry.toml` (production Foundry config)
 - Create: `contracts/test/BatchExecutor.invariant.t.sol` (50,000-run invariants)
 - Create: `contracts/test/BatchExecutor.fork.t.sol` (mainnet fork test, 100 randomized batches)
@@ -90,14 +90,14 @@ fail_on_revert = false
 - [ ] **Step 4: Copy `BatchExecutorV2.sol` source as `BatchExecutor.sol`**
 
 ```bash
-cp contracts-spike/src/BatchExecutorV2.sol contracts/src/BatchExecutor.sol
+cp contracts-research/src/BatchExecutorV2.sol contracts/src/BatchExecutor.sol
 ```
 
 Edit the header comment block to reflect production identity (drop "production candidate" wording; mark as the shipping contract).
 
 - [ ] **Step 5: Add the three test suites**
 
-Copy `contracts-spike/test/BatchExecutorV2.invariant.t.sol` to `contracts/test/BatchExecutor.invariant.t.sol` and rename contract references accordingly.
+Copy `contracts-research/test/BatchExecutorV2.invariant.t.sol` to `contracts/test/BatchExecutor.invariant.t.sol` and rename contract references accordingly.
 
 Create `contracts/test/BatchExecutor.fork.t.sol`:
 
@@ -181,13 +181,13 @@ Expected: same 2 informational findings (`calls-loop`, `low-level-calls`) as the
 
 - [ ] **Step 8: Manual review sign-off**
 
-Create `docs/spikes/s4-manual-review-signoff.md` with two reviewers' names + date + SWC registry items each reviewed (per S4 checklist in [docs/spikes/s4-self-audit-protocol.md](../spikes/s4-self-audit-protocol.md)). This is a manual step; the implementing agent prepares the file template; the actual reviewers sign.
+Create `docs/research/s4-manual-review-signoff.md` with two reviewers' names + date + SWC registry items each reviewed (per S4 checklist in [docs/research/s4-self-audit-protocol.md](../research/s4-self-audit-protocol.md)). This is a manual step; the implementing agent prepares the file template; the actual reviewers sign.
 
 REPORT TO USER:
 
 ```
 contracts/src/BatchExecutor.sol is ready for manual review.
-Please assign two reviewers and have them sign off via docs/spikes/s4-manual-review-signoff.md.
+Please assign two reviewers and have them sign off via docs/research/s4-manual-review-signoff.md.
 ```
 
 - [ ] **Step 9: Update .prettierignore and .gitmodules**
@@ -200,7 +200,7 @@ Append `contracts/` to `.prettierignore`. The `.gitmodules` should now contain e
 git add -A
 git commit -m "feat(contracts): graduate BatchExecutor to production from spike workspace"
 git push -u origin feature/wri-c-batch-executor-prod
-gh pr create --base Development --title "feat(contracts): graduate BatchExecutor to production" --body "Graduates the S1-validated, S4-protocol-approved BatchExecutor source from contracts-spike to contracts/. 50k invariant runs pass, fork test passes, Slither zero high/medium, differential test passes. Manual review signoff in docs/spikes/s4-manual-review-signoff.md."
+gh pr create --base Development --title "feat(contracts): graduate BatchExecutor to production" --body "Graduates the S1-validated, S4-protocol-approved BatchExecutor source from contracts-research to contracts/. 50k invariant runs pass, fork test passes, Slither zero high/medium, differential test passes. Manual review signoff in docs/research/s4-manual-review-signoff.md."
 gh pr merge --auto --squash --delete-branch
 ```
 
@@ -214,7 +214,7 @@ The production deploy. Single shot. Record the address as a tracked constant in 
 
 - Create: `contracts/script/DeployBatchExecutor.s.sol`
 - Modify: `src/web3/networkConfig.ts` (add `BATCH_EXECUTOR_ADDRESS` constant for celo-mainnet)
-- Create: `docs/spikes/s4-manual-review-signoff.md` (the production deploy is gated on this being present and signed)
+- Create: `docs/research/s4-manual-review-signoff.md` (the production deploy is gated on this being present and signed)
 
 - [ ] **Step 1: Branch + create script**
 
@@ -370,7 +370,7 @@ export function* executeDollarsSpend7702Saga(
 }
 ```
 
-(Full implementation expands the comments into real code. The S1 spike scripts under `contracts-spike/scripts/` are reference implementations.)
+(Full implementation expands the comments into real code. The S1 spike scripts under `contracts-research/scripts/` are reference implementations.)
 
 - [ ] **Step 3: Modify dispatcher in `saga.ts`**
 
@@ -476,7 +476,7 @@ At day 30, generate a summary report:
 
 ```bash
 # Pull Sentry metrics and write summary
-node scripts/wri-phase1-summary.mjs > docs/spikes/c-phase1-summary.md
+node scripts/wri-phase1-summary.mjs > docs/research/c-phase1-summary.md
 ```
 
 - [ ] **Step 5: Decision gate — proceed to Phase 2 or extend**

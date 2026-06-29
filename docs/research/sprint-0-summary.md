@@ -20,7 +20,7 @@
 
 ### Track A (Foundations) — PROCEED with S5-validated API
 
-S5 confirmed the v4 hook API satisfies Swap + DollarsSpend + BucksPay simultaneously with only the two pre-agreed extension points (`customPoll`, `retryClassifier`). Track A's plan must use the v4 signatures from `docs/spikes/s5-tx-in-flight-api.md` verbatim.
+S5 confirmed the v4 hook API satisfies Swap + DollarsSpend + BucksPay simultaneously with only the two pre-agreed extension points (`customPoll`, `retryClassifier`). Track A's plan must use the v4 signatures from `docs/research/s5-tx-in-flight-api.md` verbatim.
 
 ### Track B (Critical Fixes) — PROCEED
 
@@ -68,5 +68,5 @@ All four plans can be written immediately. Execution parallelism per Approach 1 
 
 ## Pending non-blocking items
 
-- **S3 Squid outreach** — Discord message ready at `docs/spikes/s3-squid-discord-draft.md`. Awaiting user action to send to Squid Discord. If Squid confirms calldata-only IntegratorId attribution: Track C proceeds with confidence. If Squid confirms attribution requires direct EOA→Router pattern: Track C re-scoped to non-Squid flows only.
+- **S3 Squid outreach** — Discord message ready at `docs/research/s3-squid-discord-draft.md`. Awaiting user action to send to Squid Discord. If Squid confirms calldata-only IntegratorId attribution: Track C proceeds with confidence. If Squid confirms attribution requires direct EOA→Router pattern: Track C re-scoped to non-Squid flows only.
 - **Spike wallet remaining funds** — Spike wallet `0x4D0d9e458e8a0D0C2c033B1fc2fE5a182837c3D2` retains approximately 59 CELO, 0.63 USDm, 2202 COPm. Available for additional spike runs in Track C development. At project end, residual funds returned to user-designated address.

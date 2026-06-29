@@ -2,25 +2,25 @@
 
 # Wallet Robustness Initiative — Plan 00: Sprint 0 Spikes
 
-**Status:** SHIPPED 2026-06-16. All 5 spikes resolved. Outcome docs in [docs/spikes/](../spikes/): S1 PASS (CIP-64 + 7702 single-tx confirmed on Celo mainnet), S2 PASS (ethers v5 removable), S3 UNKNOWN_PENDING_OUTREACH (calldata analysis strongly suggests PASS; superseded by TuCop's own Squid integrator path, not blocking), S4 APPROVED (self-audit protocol locked), S5 APPROVED (`useTransactionInFlight` v4 API). Plan was research-only; no production code merged from this plan. Original checkboxes left untouched as historical record.
+**Status:** SHIPPED 2026-06-16. All 5 spikes resolved. Outcome docs in [docs/research/](../research/): S1 PASS (CIP-64 + 7702 single-tx confirmed on Celo mainnet), S2 PASS (ethers v5 removable), S3 UNKNOWN_PENDING_OUTREACH (calldata analysis strongly suggests PASS; superseded by TuCop's own Squid integrator path, not blocking), S4 APPROVED (self-audit protocol locked), S5 APPROVED (`useTransactionInFlight` v4 API). Plan was research-only; no production code merged from this plan. Original checkboxes left untouched as historical record.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Execute the 5 research spikes (S1-S5) defined in the design spec section 5 to resolve the technical unknowns that gate the rest of the initiative.
 
-**Architecture:** Five parallel research workstreams, each time-boxed and producing a written outcome document under `docs/spikes/`. No production code is merged from this plan. Spike branches stay isolated; results inform the per-track plans.
+**Architecture:** Five parallel research workstreams, each time-boxed and producing a written outcome document under `docs/research/`. No production code is merged from this plan. Spike branches stay isolated; results inform the per-track plans.
 
 **Tech Stack:** viem 2.24.1, Foundry (forge / cast / anvil), TypeScript (tsx for one-off scripts), GitHub CLI for outreach drafting.
 
 **Source spec:** [docs/specs/2026-06-15-wallet-robustness-initiative-design.md](../specs/2026-06-15-wallet-robustness-initiative-design.md) (sections 5.S1-5.S5).
 
-**Git workflow:** Each spike on its own branch `spike/wri-s<N>-<short>`. Spike output documents are committed to `docs/spikes/`. Per locked decision #11, all on-chain work uses Celo mainnet with a dedicated low-stakes spike wallet (less than USD 5 total exposure). NEVER Sepolia / Alfajores / testnet.
+**Git workflow:** Each spike on its own branch `spike/wri-s<N>-<short>`. Spike output documents are committed to `docs/research/`. Per locked decision #11, all on-chain work uses Celo mainnet with a dedicated low-stakes spike wallet (less than USD 5 total exposure). NEVER Sepolia / Alfajores / testnet.
 
 **Spike-wallet conventions:**
 
 - Single dedicated EOA used across S1, S3, S4. Mnemonic stored in `~/.tucop-spike-wallet.txt` (chmod 600, gitignored at repo root via `.git/info/exclude`).
 - Funded with USD 5 max total: 0.50 CELO (gas), 2 USDm, 2 COPm. Funded by user manually before T0 of S1.
-- Address is recorded in `docs/spikes/wallet.txt` after generation.
+- Address is recorded in `docs/research/wallet.txt` after generation.
 
 ---
 
@@ -28,11 +28,11 @@
 
 **Files:**
 
-- Create: `docs/spikes/README.md`
-- Create: `docs/spikes/wallet.txt`
-- Create: `contracts-spike/` (new directory, not in `src/`)
-- Create: `contracts-spike/foundry.toml`
-- Create: `contracts-spike/.gitignore`
+- Create: `docs/research/README.md`
+- Create: `docs/research/wallet.txt`
+- Create: `contracts-research/` (new directory, not in `src/`)
+- Create: `contracts-research/foundry.toml`
+- Create: `contracts-research/.gitignore`
 - Modify: `.git/info/exclude`
 
 - [ ] **Step 1: Add spike-only files to local git exclude**
@@ -42,10 +42,10 @@ Run:
 ```bash
 printf '%s\n' \
   '/.tucop-spike-wallet.txt' \
-  '/docs/spikes/wallet.txt' \
-  '/contracts-spike/out/' \
-  '/contracts-spike/cache/' \
-  '/contracts-spike/broadcast/' \
+  '/docs/research/wallet.txt' \
+  '/contracts-research/out/' \
+  '/contracts-research/cache/' \
+  '/contracts-research/broadcast/' \
   >> .git/info/exclude
 ```
 
@@ -66,15 +66,15 @@ Expected: three version lines printed, all non-empty. If `command not found`, in
 Run:
 
 ```bash
-mkdir -p contracts-spike docs/spikes
-cd contracts-spike && forge init --no-commit --no-git --offline --quiet . && cd ..
+mkdir -p contracts-research docs/research
+cd contracts-research && forge init --no-commit --no-git --offline --quiet . && cd ..
 ```
 
-Expected: `contracts-spike/{src,test,script,lib,foundry.toml}` exists.
+Expected: `contracts-research/{src,test,script,lib,foundry.toml}` exists.
 
 - [ ] **Step 4: Configure Foundry for Celo mainnet**
 
-Write `contracts-spike/foundry.toml`:
+Write `contracts-research/foundry.toml`:
 
 ```toml
 [profile.default]
@@ -97,7 +97,7 @@ Note: `evm_version = "prague"` is required so Foundry emits EIP-7702 (tx type 0x
 
 - [ ] **Step 5: Write README for the spike workspace**
 
-Write `docs/spikes/README.md`:
+Write `docs/research/README.md`:
 
 ```markdown
 # WRI Sprint 0 Spike Outputs
@@ -115,7 +115,7 @@ This directory holds research outcomes from the 5 Sprint 0 spikes defined in
 
 `wallet.txt` (gitignored) holds the dedicated spike-wallet address used by S1, S3, S4.
 
-`contracts-spike/` (sibling of `src/` in repo root) holds the Foundry workspace
+`contracts-research/` (sibling of `src/` in repo root) holds the Foundry workspace
 for S1 and S4 contract experiments. Not shipped to users.
 ```
 
@@ -125,10 +125,10 @@ Run:
 
 ```bash
 git checkout -b spike/wri-s0-bootstrap
-git add docs/spikes/README.md contracts-spike/foundry.toml contracts-spike/.gitignore
+git add docs/research/README.md contracts-research/foundry.toml contracts-research/.gitignore
 git commit -m "chore: bootstrap WRI Sprint 0 spike workspace"
 git push -u origin spike/wri-s0-bootstrap
-gh pr create --base Development --title "chore: bootstrap WRI Sprint 0 spike workspace" --body "Initial Foundry + docs/spikes scaffolding for the 5 Sprint 0 research spikes. No production code touched. See [spec section 5](../specs/2026-06-15-wallet-robustness-initiative-design.md)."
+gh pr create --base Development --title "chore: bootstrap WRI Sprint 0 spike workspace" --body "Initial Foundry + docs/research scaffolding for the 5 Sprint 0 research spikes. No production code touched. See [spec section 5](../specs/2026-06-15-wallet-robustness-initiative-design.md)."
 gh pr checks --watch
 ```
 
@@ -141,7 +141,7 @@ Expected: CI green, then auto-merge per locked decision #10 of the spec.
 **Files:**
 
 - Create: `~/.tucop-spike-wallet.txt` (outside repo, chmod 600)
-- Create: `docs/spikes/wallet.txt` (gitignored)
+- Create: `docs/research/wallet.txt` (gitignored)
 
 - [ ] **Step 1: Generate a fresh EOA mnemonic locally**
 
@@ -163,8 +163,8 @@ MNEMONIC="$(cat ~/.tucop-spike-wallet.txt)" node -e "
 const { mnemonicToAccount } = require('viem/accounts');
 const acct = mnemonicToAccount(process.env.MNEMONIC);
 console.log(acct.address);
-" > docs/spikes/wallet.txt
-cat docs/spikes/wallet.txt
+" > docs/research/wallet.txt
+cat docs/research/wallet.txt
 ```
 
 Expected: a 42-character `0x...` address printed to the file and stdout. Confirm the address starts with `0x` and has 40 hex chars after.
@@ -190,7 +190,7 @@ Wait for user confirmation. Do not proceed to S1 Task 2 until user says "funded"
 Once user confirms, run:
 
 ```bash
-ADDR="$(cat docs/spikes/wallet.txt)"
+ADDR="$(cat docs/research/wallet.txt)"
 cast balance "$ADDR" --rpc-url https://forno.celo.org
 cast call 0x765de816845861e75a25fca122bb6898b8b1282a "balanceOf(address)(uint256)" "$ADDR" --rpc-url https://forno.celo.org
 cast call 0x8a567e2ae79ca692bd748ab832081c45de4041ea "balanceOf(address)(uint256)" "$ADDR" --rpc-url https://forno.celo.org
@@ -206,12 +206,12 @@ If any zero, halt and re-prompt user.
 
 **Files:**
 
-- Create: `contracts-spike/src/BatchExecutor.sol`
-- Create: `contracts-spike/test/BatchExecutor.t.sol`
+- Create: `contracts-research/src/BatchExecutor.sol`
+- Create: `contracts-research/test/BatchExecutor.t.sol`
 
 - [ ] **Step 1: Write the failing test**
 
-Write `contracts-spike/test/BatchExecutor.t.sol`:
+Write `contracts-research/test/BatchExecutor.t.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -247,14 +247,14 @@ contract BatchExecutorTest is Test {
 Run:
 
 ```bash
-cd contracts-spike && forge test --match-test test_executesSequentialCalls -vvv
+cd contracts-research && forge test --match-test test_executesSequentialCalls -vvv
 ```
 
 Expected: FAIL with `BatchExecutor` not found / compilation error.
 
 - [ ] **Step 3: Write the BatchExecutor contract**
 
-Write `contracts-spike/src/BatchExecutor.sol`:
+Write `contracts-research/src/BatchExecutor.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -297,7 +297,7 @@ Run:
 ```bash
 cd ..
 git checkout -b spike/wri-s1-cip64-7702
-git add contracts-spike/src/BatchExecutor.sol contracts-spike/test/BatchExecutor.t.sol
+git add contracts-research/src/BatchExecutor.sol contracts-research/test/BatchExecutor.t.sol
 git commit -m "test(spike): add minimal BatchExecutor for S1"
 ```
 
@@ -307,12 +307,12 @@ git commit -m "test(spike): add minimal BatchExecutor for S1"
 
 **Files:**
 
-- Create: `contracts-spike/script/DeployBatchExecutor.s.sol`
-- Modify: `docs/spikes/wallet.txt` (append deployed address)
+- Create: `contracts-research/script/DeployBatchExecutor.s.sol`
+- Modify: `docs/research/wallet.txt` (append deployed address)
 
 - [ ] **Step 1: Write deployment script**
 
-Write `contracts-spike/script/DeployBatchExecutor.s.sol`:
+Write `contracts-research/script/DeployBatchExecutor.s.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -350,7 +350,7 @@ chmod 600 ~/.tucop-spike-wallet.pk
 Run:
 
 ```bash
-cd contracts-spike
+cd contracts-research
 SPIKE_WALLET_PK="0x$(cat ~/.tucop-spike-wallet.pk)" \
   forge script script/DeployBatchExecutor.s.sol --rpc-url celo --broadcast --slow
 cd ..
@@ -363,7 +363,7 @@ Expected: console output line `BatchExecutor deployed at: 0x[FULL_ADDRESS]`. Cap
 Run:
 
 ```bash
-echo "S1 BatchExecutor: 0x[FULL_DEPLOYED_ADDRESS]" >> docs/spikes/wallet.txt
+echo "S1 BatchExecutor: 0x[FULL_DEPLOYED_ADDRESS]" >> docs/research/wallet.txt
 ```
 
 Replace `[FULL_DEPLOYED_ADDRESS]` with the exact 40-hex-char string from Step 3. Per global rule, no truncation.
@@ -378,18 +378,18 @@ Open `https://celoscan.io/address/0x[FULL_DEPLOYED_ADDRESS]` in browser. Confirm
 
 **Files:**
 
-- Create: `contracts-spike/scripts/s1-submit-7702-with-feecurrency.ts`
-- Create: `contracts-spike/package.json`
+- Create: `contracts-research/scripts/s1-submit-7702-with-feecurrency.ts`
+- Create: `contracts-research/package.json`
 
 - [ ] **Step 1: Initialize Node workspace in spike dir**
 
 Run:
 
 ```bash
-cd contracts-spike
+cd contracts-research
 cat > package.json <<'EOF'
 {
-  "name": "tucop-spike-scripts",
+  "name": "tucop-research-scripts",
   "private": true,
   "type": "module",
   "scripts": {
@@ -413,7 +413,7 @@ Expected: `yarn install` exits 0.
 
 - [ ] **Step 2: Write the EIP-7702 submission script**
 
-Write `contracts-spike/scripts/s1-submit-7702-with-feecurrency.ts`:
+Write `contracts-research/scripts/s1-submit-7702-with-feecurrency.ts`:
 
 ```ts
 import {
@@ -484,9 +484,9 @@ try {
 Run:
 
 ```bash
-cd contracts-spike
-BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/spikes/wallet.txt | awk '{print $NF}')"
-yarn s1 "$BATCH_EXEC" USDm 2>&1 | tee ../docs/spikes/s1-usdm-output.txt
+cd contracts-research
+BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/research/wallet.txt | awk '{print $NF}')"
+yarn s1 "$BATCH_EXEC" USDm 2>&1 | tee ../docs/research/s1-usdm-output.txt
 cd ..
 ```
 
@@ -501,9 +501,9 @@ Possible outcomes:
 Run:
 
 ```bash
-cd contracts-spike
-BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/spikes/wallet.txt | awk '{print $NF}')"
-yarn s1 "$BATCH_EXEC" COPm 2>&1 | tee ../docs/spikes/s1-copm-output.txt
+cd contracts-research
+BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/research/wallet.txt | awk '{print $NF}')"
+yarn s1 "$BATCH_EXEC" COPm 2>&1 | tee ../docs/research/s1-copm-output.txt
 cd ..
 ```
 
@@ -514,7 +514,7 @@ Same possible outcomes as Step 3.
 Run:
 
 ```bash
-ADDR="$(head -1 docs/spikes/wallet.txt)"
+ADDR="$(head -1 docs/research/wallet.txt)"
 cast balance "$ADDR" --rpc-url https://forno.celo.org
 cast call 0x765de816845861e75a25fca122bb6898b8b1282a "balanceOf(address)(uint256)" "$ADDR" --rpc-url https://forno.celo.org
 cast call 0x8a567e2ae79ca692bd748ab832081c45de4041ea "balanceOf(address)(uint256)" "$ADDR" --rpc-url https://forno.celo.org
@@ -527,7 +527,7 @@ Note pre/post balances. Difference reveals which currency paid the gas.
 Run:
 
 ```bash
-git add docs/spikes/s1-usdm-output.txt docs/spikes/s1-copm-output.txt
+git add docs/research/s1-usdm-output.txt docs/research/s1-copm-output.txt
 git commit -m "chore(spike): capture S1 raw output for USDm and COPm fee currency tests"
 ```
 
@@ -537,11 +537,11 @@ git commit -m "chore(spike): capture S1 raw output for USDm and COPm fee currenc
 
 **Files:**
 
-- Create: `docs/spikes/s1-cip64-7702.md`
+- Create: `docs/research/s1-cip64-7702.md`
 
 - [ ] **Step 1: Synthesize findings**
 
-Write `docs/spikes/s1-cip64-7702.md`:
+Write `docs/research/s1-cip64-7702.md`:
 
 ```markdown
 # S1: CIP-64 + tx type 0x04 viability on Celo mainnet
@@ -608,7 +608,7 @@ Fill in the bracketed values with actual data from Tasks 1-4. No placeholders le
 
 - [ ] **Step 2: Update the spikes README**
 
-Modify `docs/spikes/README.md` line for S1:
+Modify `docs/research/README.md` line for S1:
 
 ```diff
 - | S1 | [`s1-cip64-7702.md`](s1-cip64-7702.md) | pending |
@@ -620,10 +620,10 @@ Modify `docs/spikes/README.md` line for S1:
 Run:
 
 ```bash
-git add docs/spikes/s1-cip64-7702.md docs/spikes/README.md
+git add docs/research/s1-cip64-7702.md docs/research/README.md
 git commit -m "docs(spike): record S1 CIP-64 + tx 0x04 verdict"
 git push -u origin spike/wri-s1-cip64-7702
-gh pr create --base Development --title "spike(S1): CIP-64 + EIP-7702 viability outcome" --body "Outcome document for Spike S1 per spec section 5. Verdict: see [s1-cip64-7702.md](docs/spikes/s1-cip64-7702.md)."
+gh pr create --base Development --title "spike(S1): CIP-64 + EIP-7702 viability outcome" --body "Outcome document for Spike S1 per spec section 5. Verdict: see [s1-cip64-7702.md](docs/research/s1-cip64-7702.md)."
 gh pr checks --watch
 ```
 
@@ -646,8 +646,8 @@ Stop. Do not proceed with S3 spike-wallet on-chain test (S3 falls back to docs/o
 
 **Files:**
 
-- Create: `docs/spikes/s2-ethers-v5-deps.md`
-- Create: `docs/spikes/s2-ethers-tree.txt` (raw `yarn why` output)
+- Create: `docs/research/s2-ethers-v5-deps.md`
+- Create: `docs/research/s2-ethers-tree.txt` (raw `yarn why` output)
 
 - [ ] **Step 1: Capture the full dep tree for ethers**
 
@@ -657,7 +657,7 @@ Run:
 git checkout Development
 git pull
 git checkout -b spike/wri-s2-ethers-v5-deps
-yarn why ethers 2>&1 | tee docs/spikes/s2-ethers-tree.txt
+yarn why ethers 2>&1 | tee docs/research/s2-ethers-tree.txt
 ```
 
 Expected: full tree with `ethers@5.7.2` and every dependent listed.
@@ -667,7 +667,7 @@ Expected: full tree with `ethers@5.7.2` and every dependent listed.
 Run:
 
 ```bash
-yarn knip --no-gitignore --include dependencies 2>&1 | tee docs/spikes/s2-knip-deps.txt
+yarn knip --no-gitignore --include dependencies 2>&1 | tee docs/research/s2-knip-deps.txt
 ```
 
 Expected: list of potentially unused dependencies. ethers may or may not appear (it's used in `src/`).
@@ -678,17 +678,17 @@ Run:
 
 ```bash
 grep -rn "from 'ethers'\|from \"ethers\"\|require('ethers')\|require(\"ethers\")" src/ \
-  > docs/spikes/s2-ethers-direct-uses.txt
-wc -l docs/spikes/s2-ethers-direct-uses.txt
+  > docs/research/s2-ethers-direct-uses.txt
+wc -l docs/research/s2-ethers-direct-uses.txt
 ```
 
 Expected: list of files importing ethers. Number is the count of direct call sites to migrate.
 
 - [ ] **Step 4: For each top-level dep that pulls ethers, document upgrade path**
 
-Identify the unique top-level dependents from `docs/spikes/s2-ethers-tree.txt`. For each, look up the latest version on npm and whether it has dropped ethers v5.
+Identify the unique top-level dependents from `docs/research/s2-ethers-tree.txt`. For each, look up the latest version on npm and whether it has dropped ethers v5.
 
-Write `docs/spikes/s2-ethers-v5-deps.md`:
+Write `docs/research/s2-ethers-v5-deps.md`:
 
 ```markdown
 # S2: ethers v5 transitive dependency audit
@@ -736,7 +736,7 @@ Fill in actual rows. Verify each via `npm view <pkg> peerDependencies` and `npm 
 Run:
 
 ```bash
-git add docs/spikes/s2-*
+git add docs/research/s2-*
 git commit -m "docs(spike): record S2 ethers v5 dep audit verdict"
 git push -u origin spike/wri-s2-ethers-v5-deps
 gh pr create --base Development --title "spike(S2): ethers v5 transitive deps audit outcome" --body "Outcome document for Spike S2 per spec section 5."
@@ -749,8 +749,8 @@ gh pr checks --watch
 
 **Files:**
 
-- Create: `docs/spikes/s3-squid-attribution.md`
-- Create: `docs/spikes/s3-squid-discord-draft.md`
+- Create: `docs/research/s3-squid-attribution.md`
+- Create: `docs/research/s3-squid-discord-draft.md`
 
 - [ ] **Step 1: Re-read Squid public docs for IntegratorId mechanics**
 
@@ -760,16 +760,16 @@ Run:
 git checkout Development
 git pull
 git checkout -b spike/wri-s3-squid-attribution
-mkdir -p docs/spikes
-curl -s https://docs.squidrouter.com/llms-full.txt -o docs/spikes/s3-squid-docs.txt
-grep -in "integrator\|attribut\|tx.origin\|msg.sender" docs/spikes/s3-squid-docs.txt | tee docs/spikes/s3-squid-docs-greps.txt
+mkdir -p docs/research
+curl -s https://docs.squidrouter.com/llms-full.txt -o docs/research/s3-squid-docs.txt
+grep -in "integrator\|attribut\|tx.origin\|msg.sender" docs/research/s3-squid-docs.txt | tee docs/research/s3-squid-docs-greps.txt
 ```
 
 Expected: any mention of how IntegratorId is parsed. If silent on `tx.origin` vs `msg.sender`, escalate to outreach (next step).
 
 - [ ] **Step 2: Draft a Discord message to Squid team**
 
-Write `docs/spikes/s3-squid-discord-draft.md`:
+Write `docs/research/s3-squid-discord-draft.md`:
 
 ```markdown
 # Discord outreach draft to Squid team
@@ -798,7 +798,7 @@ Thanks!
 REPORT TO USER:
 
 ```
-Drafted Discord message for Squid team at docs/spikes/s3-squid-discord-draft.md.
+Drafted Discord message for Squid team at docs/research/s3-squid-discord-draft.md.
 Action required: please send this message in the Squid Discord and reply here with their response.
 If no response within 3 business days, S3 falls back to the on-chain test (Step 4).
 ```
@@ -817,7 +817,7 @@ If unclear / no response after 3 days, proceed to Step 5 (on-chain test).
 
 ONLY RUN IF S1 PASSED. If S1 failed, skip this and mark S3 verdict as UNKNOWN with Squid's documented behavior as the best-available info.
 
-Write `contracts-spike/scripts/s3-squid-via-batch.ts`:
+Write `contracts-research/scripts/s3-squid-via-batch.ts`:
 
 ```ts
 import { createWalletClient, createPublicClient, http, encodeFunctionData, parseAbi } from 'viem'
@@ -902,10 +902,10 @@ console.log('NEXT: check Squid dashboard for attribution to integrator ID.')
 Run:
 
 ```bash
-cd contracts-spike
-BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/spikes/wallet.txt | awk '{print $NF}')"
+cd contracts-research
+BATCH_EXEC="$(grep 'S1 BatchExecutor' ../docs/research/wallet.txt | awk '{print $NF}')"
 yarn add tsx
-npx tsx scripts/s3-squid-via-batch.ts "$BATCH_EXEC" 2>&1 | tee ../docs/spikes/s3-onchain-output.txt
+npx tsx scripts/s3-squid-via-batch.ts "$BATCH_EXEC" 2>&1 | tee ../docs/research/s3-onchain-output.txt
 cd ..
 ```
 
@@ -924,7 +924,7 @@ Wait for user response. Set verdict based on result.
 
 - [ ] **Step 7: Write the S3 outcome document**
 
-Write `docs/spikes/s3-squid-attribution.md` similar structure to S1's outcome:
+Write `docs/research/s3-squid-attribution.md` similar structure to S1's outcome:
 
 ```markdown
 # S3: Squid IntegratorId behavior under EIP-7702
@@ -970,7 +970,7 @@ Does Squid attribution preserve IntegratorId when swap is called via an EIP-7702
 Run:
 
 ```bash
-git add docs/spikes/s3-*
+git add docs/research/s3-*
 git commit -m "docs(spike): record S3 Squid attribution under 7702 verdict"
 git push -u origin spike/wri-s3-squid-attribution
 gh pr create --base Development --title "spike(S3): Squid IntegratorId under EIP-7702 outcome"
@@ -983,9 +983,9 @@ gh pr checks --watch
 
 **Files:**
 
-- Create: `docs/spikes/s4-self-audit-protocol.md`
-- Create: `contracts-spike/src/BatchExecutorV2.sol` (production candidate, draft)
-- Create: `contracts-spike/test/BatchExecutorV2.invariant.t.sol`
+- Create: `docs/research/s4-self-audit-protocol.md`
+- Create: `contracts-research/src/BatchExecutorV2.sol` (production candidate, draft)
+- Create: `contracts-research/test/BatchExecutorV2.invariant.t.sol`
 
 - [ ] **Step 1: Draft a production-candidate BatchExecutor with safety primitives**
 
@@ -995,11 +995,11 @@ Run:
 git checkout Development
 git pull
 git checkout -b spike/wri-s4-self-audit-protocol
-cd contracts-spike
+cd contracts-research
 forge install OpenZeppelin/openzeppelin-contracts --no-commit
 ```
 
-Write `contracts-spike/src/BatchExecutorV2.sol`:
+Write `contracts-research/src/BatchExecutorV2.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1045,7 +1045,7 @@ contract BatchExecutorV2 is ReentrancyGuard {
 
 - [ ] **Step 2: Write Foundry invariant tests**
 
-Write `contracts-spike/test/BatchExecutorV2.invariant.t.sol`:
+Write `contracts-research/test/BatchExecutorV2.invariant.t.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1071,7 +1071,7 @@ contract BatchExecutorV2InvariantTest is Test {
 
 - [ ] **Step 3: Run invariant tests with 50k runs**
 
-Update `contracts-spike/foundry.toml` to set invariant config:
+Update `contracts-research/foundry.toml` to set invariant config:
 
 ```toml
 [invariant]
@@ -1095,14 +1095,14 @@ Install Slither if missing: `pip install slither-analyzer`.
 Run:
 
 ```bash
-slither src/BatchExecutorV2.sol --solc-remaps "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/" --filter-paths lib 2>&1 | tee ../docs/spikes/s4-slither-output.txt
+slither src/BatchExecutorV2.sol --solc-remaps "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/" --filter-paths lib 2>&1 | tee ../docs/research/s4-slither-output.txt
 ```
 
 Expected: zero issues at high or medium severity.
 
 - [ ] **Step 5: Document the audit checklist**
 
-Write `docs/spikes/s4-self-audit-protocol.md`:
+Write `docs/research/s4-self-audit-protocol.md`:
 
 ```markdown
 # S4: Self-audit protocol for BatchExecutor.sol
@@ -1113,7 +1113,7 @@ Write `docs/spikes/s4-self-audit-protocol.md`:
 
 ## Contract under audit
 
-[`contracts-spike/src/BatchExecutorV2.sol`](../../contracts-spike/src/BatchExecutorV2.sol) — final version (or path to wherever Track C lands).
+[`contracts-research/src/BatchExecutorV2.sol`](../../contracts-research/src/BatchExecutorV2.sol) — final version (or path to wherever Track C lands).
 
 ## Invariants
 
@@ -1128,8 +1128,8 @@ Write `docs/spikes/s4-self-audit-protocol.md`:
 - [ ] Foundry invariant tests: minimum 50k runs, depth 100. Output: [s4-invariant-output.txt](s4-invariant-output.txt).
 - [ ] Slither: zero high/medium severity. Output: [s4-slither-output.txt](s4-slither-output.txt).
 - [ ] Mythril symbolic execution on `execute()`. Output: [s4-mythril-output.txt](s4-mythril-output.txt).
-- [ ] Fork test against Celo mainnet state, 100 randomized batches. Test file: `contracts-spike/test/BatchExecutorV2.fork.t.sol`.
-- [ ] Differential test: batched vs. sequential equivalence for the same input set. Test file: `contracts-spike/test/BatchExecutorV2.differential.t.sol`.
+- [ ] Fork test against Celo mainnet state, 100 randomized batches. Test file: `contracts-research/test/BatchExecutorV2.fork.t.sol`.
+- [ ] Differential test: batched vs. sequential equivalence for the same input set. Test file: `contracts-research/test/BatchExecutorV2.differential.t.sol`.
 - [ ] Manual review by two reviewers using SWC registry checklist (SWC-107 reentrancy, SWC-101 overflow, SWC-105 unprotected ether withdrawal, SWC-114 transaction order dependence, SWC-116 timestamp dependence). Sign-off file: [s4-manual-review-signoff.md](s4-manual-review-signoff.md).
 - [ ] Internal team dogfood on Celo mainnet for 30 days with small personal funds before public flag flip.
 
@@ -1149,7 +1149,7 @@ If a bug is discovered post-deployment with users delegated to this contract:
 
 ## Implications for Track C
 
-- The production `BatchExecutor.sol` lands in `src/contracts/` (new) or stays in `contracts-spike/` until graduation.
+- The production `BatchExecutor.sol` lands in `src/contracts/` (new) or stays in `contracts-research/` until graduation.
 - The Track C plan must include each checklist item as a task.
 ```
 
@@ -1158,7 +1158,7 @@ If a bug is discovered post-deployment with users delegated to this contract:
 REPORT TO USER:
 
 ```
-S4 protocol drafted: docs/spikes/s4-self-audit-protocol.md.
+S4 protocol drafted: docs/research/s4-self-audit-protocol.md.
 This is the checklist we will follow before deploying BatchExecutor with user funds, given no external audit budget.
 Please review the invariants, checklist, and rollback plan, and reply "APPROVED" or list any items to adjust.
 ```
@@ -1170,7 +1170,7 @@ Wait for user approval before merging.
 Run:
 
 ```bash
-git add docs/spikes/s4-* contracts-spike/src/BatchExecutorV2.sol contracts-spike/test/BatchExecutorV2.invariant.t.sol contracts-spike/foundry.toml
+git add docs/research/s4-* contracts-research/src/BatchExecutorV2.sol contracts-research/test/BatchExecutorV2.invariant.t.sol contracts-research/foundry.toml
 git commit -m "docs(spike): record S4 self-audit protocol for BatchExecutor"
 git push -u origin spike/wri-s4-self-audit-protocol
 gh pr create --base Development --title "spike(S4): BatchExecutor self-audit protocol outcome"
@@ -1190,7 +1190,7 @@ Per locked decision rule, do NOT auto-merge until user reports APPROVED in Step 
 - Modify: `src/swap/SwapScreen.tsx` (prototype usage, not merged)
 - Modify: `src/dollarsSpend/saga.ts` (prototype usage, not merged)
 - Modify: `src/buckspay/saga.ts` (prototype usage, not merged)
-- Create: `docs/spikes/s5-tx-in-flight-api.md`
+- Create: `docs/research/s5-tx-in-flight-api.md`
 
 > **Important:** This spike is exploratory. The branch `spike/wri-s5-tx-in-flight` is NOT merged to `Development`. Only the outcome doc `s5-tx-in-flight-api.md` is merged (in a separate small PR).
 
@@ -1304,7 +1304,7 @@ export function useTransactionInFlight(
 
 Open `src/swap/SwapScreen.tsx`. Locate the `handleConfirmSwap` (or equivalent) handler. Replace its inline swap-dispatch logic with a call into `useTransactionInFlight`. Capture: what extra params did the swap flow need that aren't in the v1 hook?
 
-Note observed gaps in a scratch file `docs/spikes/s5-gaps-swap.txt`:
+Note observed gaps in a scratch file `docs/research/s5-gaps-swap.txt`:
 
 ```text
 GAP A1: swap needs slippage param to retry — extend descriptor
@@ -1320,7 +1320,7 @@ Refactor `src/lib/useTransactionInFlight/useTransactionInFlight.ts` to address g
 
 Open `src/dollarsSpend/saga.ts`. Refactor `executeMultiSwapSaga` to use the hook via dispatched actions (since sagas don't use hooks directly, the hook's underlying actions must be available as saga puts).
 
-This step reveals whether the hook can be expressed as Redux actions cleanly. Capture gaps in `docs/spikes/s5-gaps-dollarsSpend.txt`.
+This step reveals whether the hook can be expressed as Redux actions cleanly. Capture gaps in `docs/research/s5-gaps-dollarsSpend.txt`.
 
 - [ ] **Step 7: Update hook to v3 — incorporate dollarsSpend gaps**
 
@@ -1330,7 +1330,7 @@ Add multi-step support (`currentStep`, `steps`, `partial-failure` status). Re-ru
 
 Open `src/buckspay/saga.ts`. buckspay polls a webhook status for 24h. Refactor to use the hook with an extended `pending-confirmation` status that accepts a custom poll function.
 
-Capture gaps in `docs/spikes/s5-gaps-buckspay.txt`.
+Capture gaps in `docs/research/s5-gaps-buckspay.txt`.
 
 - [ ] **Step 9: Update hook to v4 — final API with two pre-agreed extension points**
 
@@ -1343,7 +1343,7 @@ Verify all three prototypes compile against v4 of the hook with NO further hook 
 
 - [ ] **Step 10: Document final API in outcome doc**
 
-Write `docs/spikes/s5-tx-in-flight-api.md`:
+Write `docs/research/s5-tx-in-flight-api.md`:
 
 ````markdown
 # S5: useTransactionInFlight final API
@@ -1401,9 +1401,9 @@ Run:
 ```bash
 git checkout Development
 git checkout -b spike/wri-s5-tx-in-flight-outcome
-# Cherry-pick ONLY the docs/spikes/s5-* files
-git checkout spike/wri-s5-tx-in-flight -- docs/spikes/s5-*
-git add docs/spikes/s5-*
+# Cherry-pick ONLY the docs/research/s5-* files
+git checkout spike/wri-s5-tx-in-flight -- docs/research/s5-*
+git add docs/research/s5-*
 git commit -m "docs(spike): record S5 useTransactionInFlight final API"
 # Also merge the spec section 6.1.4 update
 git checkout spike/wri-s5-tx-in-flight -- docs/specs/2026-06-15-wallet-robustness-initiative-design.md
@@ -1422,8 +1422,8 @@ The prototype branch `spike/wri-s5-tx-in-flight` stays as a reference but is NOT
 
 **Files:**
 
-- Create: `docs/spikes/sprint-0-summary.md`
-- Modify: `docs/spikes/README.md` (final status table)
+- Create: `docs/research/sprint-0-summary.md`
+- Modify: `docs/research/README.md` (final status table)
 
 - [ ] **Step 1: Aggregate all 5 spike verdicts**
 
@@ -1431,7 +1431,7 @@ Read each `s1-*.md` through `s5-*.md` outcome doc on `Development` (now merged).
 
 - [ ] **Step 2: Write Sprint 0 summary**
 
-Write `docs/spikes/sprint-0-summary.md`:
+Write `docs/research/sprint-0-summary.md`:
 
 ```markdown
 # Sprint 0 Summary — Gate Decisions for the WRI
@@ -1467,7 +1467,7 @@ Write the per-track plans:
 
 - [ ] **Step 3: Update spikes README final status**
 
-Modify `docs/spikes/README.md`:
+Modify `docs/research/README.md`:
 
 ```diff
 - | S1 | [`s1-cip64-7702.md`](s1-cip64-7702.md) | pending |
@@ -1480,7 +1480,7 @@ Modify `docs/spikes/README.md`:
 REPORT TO USER:
 
 ```
-Sprint 0 complete. Summary at docs/spikes/sprint-0-summary.md.
+Sprint 0 complete. Summary at docs/research/sprint-0-summary.md.
 
 Verdicts:
 - S1: [PASS/FAIL]
@@ -1505,7 +1505,7 @@ Run:
 ```bash
 git checkout Development && git pull
 git checkout -b spike/wri-sprint-0-summary
-git add docs/spikes/sprint-0-summary.md docs/spikes/README.md
+git add docs/research/sprint-0-summary.md docs/research/README.md
 git commit -m "docs(spike): record Sprint 0 summary and gate decisions"
 git push -u origin spike/wri-sprint-0-summary
 gh pr create --base Development --title "spike: Sprint 0 summary and gate decisions"
@@ -1539,5 +1539,5 @@ Hook method names consistent: `start`, `advance`, `retry`, `abort`. Used same in
 
 ### Open concerns
 
-- viem 2.24.1 supports EIP-7702 since 2.21.x per release notes. Confirm at S1 Task 4 Step 2 if `signAuthorization` is available; if not, bump viem in `contracts-spike/package.json` to 2.21+.
+- viem 2.24.1 supports EIP-7702 since 2.21.x per release notes. Confirm at S1 Task 4 Step 2 if `signAuthorization` is available; if not, bump viem in `contracts-research/package.json` to 2.21+.
 - The S1 Task 4 script casts `feeCurrency` via `@ts-expect-error`. viem may have proper Celo chain types; check viem celo extension first. Acceptable workaround for the spike either way.

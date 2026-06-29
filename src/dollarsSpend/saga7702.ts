@@ -47,7 +47,7 @@ interface InnerCall {
  *      paid in USDm/USDC/USAT/USDT rather than CELO.
  *
  * Confirmed live on Celo mainnet in the S1 spike. See
- * contracts-spike/scripts/s1-submit-7702-with-feecurrency.mjs.
+ * contracts-research/scripts/s1-submit-7702-with-feecurrency.mjs.
  *
  * On any failure (auth, quote, submit) we dispatch multiSwapStepFailed at
  * index 0 because the entire batch is atomic — there is no partial success
