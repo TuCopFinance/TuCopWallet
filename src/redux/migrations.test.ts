@@ -1900,4 +1900,21 @@ describe('Redux persist migrations', () => {
     expectedSchema.identity = _.omit(oldSchema.identity, 'hasSeenVerificationNux')
     expect(migratedSchema).toStrictEqual(expectedSchema)
   })
+
+  describe('migration 252', () => {
+    it('seeds the neeru slice with initial state', () => {
+      const oldState = { someOtherKey: 'preserved' } as any
+      const newState = migrations[252](oldState)
+      expect(newState.someOtherKey).toBe('preserved')
+      expect(newState.neeru).toEqual({
+        fetchStatus: 'idle',
+        positions: [],
+        lastSyncedBlock: null,
+        lastSyncedAt: null,
+        closeStatus: 'idle',
+        closingPositionId: null,
+        lastError: null,
+      })
+    })
+  })
 })
