@@ -2240,6 +2240,9 @@
                         "number"
                     ]
                 },
+                "isAtomic": {
+                    "type": "boolean"
+                },
                 "lastError": {
                     "type": [
                         "null",
@@ -2256,6 +2259,7 @@
             "required": [
                 "completedSteps",
                 "failedAtIndex",
+                "isAtomic",
                 "lastError",
                 "plannedSteps"
             ],

@@ -5,6 +5,14 @@ import { DollarTokenBalanceSnapshot, MultiSwapPlan, SpendStep } from 'src/dollar
 // See spec rationale: spend least-liquid / most-regulated first.
 const SPEND_ORDER_SYMBOLS: SpendStep['symbol'][] = ['USAT', 'USDm', 'USDC', 'USDT']
 
+// Dust tolerance: when the user types the exact rounded balance displayed on
+// screen ("$3.00 Dolares") but the actual on-chain sum is a few cents less
+// (e.g. USDT 1.984 + USDm 0.994 = 2.979), planSpend would otherwise compute a
+// $0.021 shortfall and the UI would surface "Saldo insuficiente". We tolerate
+// sub-cent gaps by treating shortfall < $0.05 as 0; the swap just proceeds
+// with the actual balance and the user is not blocked by the rounding lie.
+const SHORTFALL_DUST_TOLERANCE_USD = 0.05
+
 export function planSpend({
   requestedUsd,
   balances,
@@ -51,8 +59,10 @@ export function planSpend({
     remaining = remaining.minus(takeUsd)
   }
 
-  return {
-    steps,
-    shortfall: BigNumber.max(remaining, new BigNumber(0)),
-  }
+  const rawShortfall = BigNumber.max(remaining, new BigNumber(0))
+  // Collapse dust shortfalls to 0 so the user can swap their full displayed
+  // balance even when sub-cent on-chain precision means the actual sum is
+  // slightly below the rounded-to-2-decimals saldo.
+  const shortfall = rawShortfall.lt(SHORTFALL_DUST_TOLERANCE_USD) ? new BigNumber(0) : rawShortfall
+  return { steps, shortfall }
 }

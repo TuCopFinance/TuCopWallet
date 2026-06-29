@@ -1,4 +1,5 @@
 import { Actions as AccountActions } from 'src/account/actions'
+import { multiSwapCompleted } from 'src/dollarsSpend/slice'
 import { depositSuccess, withdrawSuccess } from 'src/earn/slice'
 import { createFiatConnectTransferCompleted } from 'src/fiatconnect/slice'
 import { notificationsChannel } from 'src/firebase/firebase'
@@ -63,6 +64,10 @@ export function* watchRefreshBalances() {
       createFiatConnectTransferCompleted.type,
       depositTransactionSucceeded.type,
       swapSuccess.type,
+      // 7702 atomic batch (Dolares -> Pesos) marks completion without
+      // emitting per-step swapSuccess actions, so we need its own trigger
+      // here for the home screen balances to refresh.
+      multiSwapCompleted.type,
     ],
     safely(withLoading(withTimeout(REFRESH_TIMEOUT, refreshAllBalances)))
   )
