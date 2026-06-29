@@ -14,7 +14,7 @@
 
 **Source spec:** [docs/specs/2026-06-15-wallet-robustness-initiative-design.md](../specs/2026-06-15-wallet-robustness-initiative-design.md) sections 9.1–9.7 and locked decisions #3, #8, #11, #12.
 
-**Source spike:** [docs/spikes/s2-ethers-v5-deps.md](../spikes/s2-ethers-v5-deps.md) (PASS) — confirms ethers v5 is removable with one file rewrite plus one dep bump.
+**Source spike:** [docs/research/s2-ethers-v5-deps.md](../research/s2-ethers-v5-deps.md) (PASS) — confirms ethers v5 is removable with one file rewrite plus one dep bump.
 
 **Git workflow:** branches `feature/wri-<short>` off `Development`. Full automation per locked decision (commit, push, PR, auto-merge on green CI). NEVER --no-verify. NEVER force-push. Conventional commits in English. Per locked decision #11, NEVER mention or use Sepolia/Alfajores/testnet outside the removal context itself.
 
