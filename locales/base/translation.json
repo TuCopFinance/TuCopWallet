@@ -2924,7 +2924,7 @@
     },
     "detail": {
       "header": "Your {{categoryLabel}} positions",
-      "aggregateBalance": "Total in {{categoryLabel}}",
+      "aggregateBalance": "Total in {{categoryLabel}}: {{amount}} Pesos",
       "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% monthly",
       "depositCta": "Deposit",
       "noPositions": "You don't have positions in this option yet",
@@ -2942,8 +2942,8 @@
       }
     },
     "positionRow": {
-      "principal": "Principal: {{amount}}",
-      "interest": "Earned: {{amount}}",
+      "principal": "Principal: {{amount}} Pesos",
+      "interest": "Earned: {{amount}} Pesos",
       "maturity": "Available {{date}}",
       "flexible": "No minimum time",
       "depositedAt": "Deposited on {{date}}",
@@ -2962,7 +2962,7 @@
     "emergencyCloseSheet": {
       "title": "Emergency withdrawal",
       "subtitle": "The fund cannot pay interest right now",
-      "explanation": "You can recover your principal of {{principal}} now, but you will forfeit the {{interest}} of interest you earned. This is irreversible.",
+      "explanation": "You can recover your principal of {{principal}} Pesos now, but you will forfeit the {{interest}} Pesos of interest you earned. This is irreversible.",
       "alternative": "If you can wait, the fund usually recovers within a few hours.",
       "primaryCta": "Wait and try again later",
       "secondaryCta": "Withdraw principal only",

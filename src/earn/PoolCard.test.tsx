@@ -43,10 +43,67 @@ describe('PoolCard', () => {
       </Provider>
     )
 
-    expect(getByText('USDC / ETH')).toBeTruthy()
+    // USDC -> "Dólares" via getTokenDisplayName per wallet manual; ETH stays as-is
+    expect(getByText('Dólares / ETH')).toBeTruthy()
     expect(getByText('earnFlow.poolCard.onNetwork, {"networkName":"Arbitrum One"}')).toBeTruthy()
     expect(getByText('earnFlow.poolCard.percentage, {"percentage":"1.92"}')).toBeTruthy()
     expect(getByText('COP$1,808,800.00')).toBeTruthy()
+  })
+
+  describe('card title display', () => {
+    it('renders Neeru pool with displayProps.title (tranche label) instead of token symbol', () => {
+      const neeruPool = {
+        ...mockEarnPositions[0],
+        appId: 'neeru-vaults',
+        displayProps: {
+          ...mockEarnPositions[0].displayProps,
+          title: '30 dias',
+        },
+      }
+      const { getByText, queryByText } = render(
+        <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
+          <PoolCard pool={neeruPool} testID="PoolCard.neeru-30d" />
+        </Provider>
+      )
+      expect(getByText('30 dias')).toBeTruthy()
+      // Should NOT show raw token symbol when Neeru
+      expect(queryByText('USDC')).toBeNull()
+      expect(queryByText('cCOP')).toBeNull()
+    })
+
+    it('maps token symbol via getTokenDisplayName for non-Neeru pools (cCOP -> Pesos)', () => {
+      // Simulate a non-Neeru pool whose token symbol is the legacy cCOP
+      const poolWithLegacySymbol = {
+        ...mockEarnPositions[0],
+        appId: 'allbridge',
+        tokens: [
+          {
+            ...mockEarnPositions[0].tokens[0],
+            symbol: 'cCOP',
+          },
+        ],
+      }
+      // To make tokensByIdSelector resolve, override the token balance with cCOP symbol
+      const storeWithCCop = createMockStore({
+        tokens: {
+          tokenBalances: {
+            ...mockTokenBalances,
+            [poolWithLegacySymbol.tokens[0].tokenId]: {
+              ...mockTokenBalances[mockArbUsdcTokenId],
+              tokenId: poolWithLegacySymbol.tokens[0].tokenId,
+              symbol: 'cCOP',
+            },
+          },
+        },
+      })
+      const { getByText, queryByText } = render(
+        <Provider store={storeWithCCop}>
+          <PoolCard pool={poolWithLegacySymbol} testID="PoolCard.legacy" />
+        </Provider>
+      )
+      expect(getByText('Pesos')).toBeTruthy()
+      expect(queryByText('cCOP')).toBeNull()
+    })
   })
 
   it('correct behavior when tapping pool card', () => {

@@ -37,18 +37,21 @@ export default function NeeruCloseSheet({ position, onClose }: Props) {
     >
       <View style={styles.body}>
         <Text style={styles.subtitle}>{t('neeruVaults.closeSheet.currentPayout')}</Text>
-        <Row label={t('neeruVaults.closeSheet.amountLabel')} value={payout.principal} />
-        <Row label={t('neeruVaults.closeSheet.interestLabel')} value={payout.interest} />
+        <Row
+          label={t('neeruVaults.closeSheet.amountLabel')}
+          value={`${payout.principal} Pesos`}
+        />
+        <Row label={t('neeruVaults.closeSheet.interestLabel')} value={`${payout.interest} Pesos`} />
         {payout.isEarly && (
           <Row
             label={t('neeruVaults.closeSheet.penaltyLabel', {
               percentage: payout.penaltyBps / 100,
             })}
-            value={`-${penaltyAmount}`}
+            value={`-${penaltyAmount} Pesos`}
             negative
           />
         )}
-        <Row label={t('neeruVaults.closeSheet.totalLabel')} value={payout.total} bold />
+        <Row label={t('neeruVaults.closeSheet.totalLabel')} value={`${payout.total} Pesos`} bold />
         {payout.isEarly && (
           <Text style={styles.warning}>
             {t('neeruVaults.closeSheet.earlyWarning', { date: maturityDate })}
