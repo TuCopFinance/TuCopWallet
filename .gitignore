@@ -151,6 +151,7 @@ builds/
 # Kotlin compiler caches (Android)
 android/.kotlin/
 
-# Foundry deployment broadcast logs (local outputs of `forge script --broadcast`)
-contracts/broadcast/
+# Foundry research/spike deployment broadcasts (production deploys live under
+# contracts/broadcast/ and ARE tracked as audit trail; contracts-research/ is
+# scratch work that should not be committed).
 contracts-research/broadcast/
