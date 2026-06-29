@@ -21,7 +21,7 @@ import {
   TokenBalancesWithAddress,
 } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import { isVersionBelowMinimum } from 'src/utils/versionCheck'
 import networkConfig from 'src/web3/networkConfig'
 import { isFeeCurrency, sortByUsdBalance, usdBalance } from './utils'
@@ -260,14 +260,30 @@ export const tokensByUsdBalanceSelector = createSelector(
 export const tokensByCurrencySelector = createSelector(
   tokensListWithAddressSelector,
   (tokens): CurrencyTokens => {
-    const cUsdTokenInfo = tokens.find((token) => token?.symbol === Currency.Dollar)
-    const cEurTokenInfo = tokens.find((token) => token?.symbol === Currency.Euro)
-    const copmTokenInfo = tokens.find((token) => token?.symbol === Currency.COP)
-    // Currency.Celo === 'cGLD' for legacy reasons, so we just use a hard-coded string.
-    const celoTokenInfo = tokens.find((token) => token?.symbol === 'CELO')
-    const usdtTokenInfo = tokens.find((token) => token?.symbol === Currency.USDT)
-    const usdcTokenInfo = tokens.find((token) => token?.symbol === Currency.USDC)
-    const usatTokenInfo = tokens.find((token) => token?.symbol === Currency.USAT)
+    // Currency enum values do NOT always match the on-chain token symbol (Mento
+    // stables were rebranded cXXX -> XXXm without redeploying), so resolve via
+    // CURRENCY_TO_CHAIN_SYMBOL when comparing against token.symbol.
+    const cUsdTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Dollar]
+    )
+    const cEurTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Euro]
+    )
+    const copmTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.COP]
+    )
+    const celoTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Celo]
+    )
+    const usdtTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USDT]
+    )
+    const usdcTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USDC]
+    )
+    const usatTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USAT]
+    )
 
     return {
       [Currency.Dollar]: cUsdTokenInfo,

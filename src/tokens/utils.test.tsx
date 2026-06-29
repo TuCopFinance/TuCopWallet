@@ -39,9 +39,11 @@ describe(getHigherBalanceCurrency, () => {
   it('should return the currency with the higher balance in the local currency', () => {
     expect(
       getHigherBalanceCurrency([Currency.Dollar, Currency.Euro, Currency.Celo], tokens)
-    ).toEqual('cGLD')
-    expect(getHigherBalanceCurrency([Currency.Dollar, Currency.Euro], tokens)).toEqual('cUSD')
-    expect(getHigherBalanceCurrency([Currency.Dollar], tokens)).toEqual('cUSD')
+    ).toEqual(Currency.Celo)
+    expect(getHigherBalanceCurrency([Currency.Dollar, Currency.Euro], tokens)).toEqual(
+      Currency.Dollar
+    )
+    expect(getHigherBalanceCurrency([Currency.Dollar], tokens)).toEqual(Currency.Dollar)
   })
 
   it('should return `undefined` when balances are `null`', () => {

@@ -15,7 +15,7 @@ import { Screens } from 'src/navigator/Screens'
 import { Position } from 'src/positions/types'
 import { Recipient } from 'src/recipients/recipient'
 import { Network, NetworkId, StandbyTransaction, TokenTransaction } from 'src/transactions/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import networkConfig from 'src/web3/networkConfig'
 import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
 import { ToggleableOnboardingFeatures } from 'src/onboarding/types'
@@ -36,8 +36,12 @@ export function updateCachedQuoteParams(cachedQuoteParams: {
     Object.entries(kycSchemas).forEach(([kycSchema, cachedParams]) => {
       newCachedQuoteParams[providerId][kycSchema] = {
         ...cachedParams,
+        // Historical migration check: at the time this ran, Currency.Celo's
+        // value was 'cGLD'. The internal enum has since been rebranded to
+        // Currency.Celo = 'CELO', so we hardcode the literal 'cGLD' to keep
+        // matching the values that real wallets had persisted at v106.
         cryptoType:
-          cachedParams.cryptoType === Currency.Celo ? CiCoCurrency.CELO : cachedParams.cryptoType,
+          cachedParams.cryptoType === 'cGLD' ? CiCoCurrency.CELO : cachedParams.cryptoType,
       }
     })
   })
@@ -324,18 +328,22 @@ export const migrations = {
     localCurrency: {
       ...state.localCurrency,
       exchangeRate: undefined,
+      // Historical migration: at v16, Currency enum values were 'cUSD', 'cEUR',
+      // 'cGLD'. Hardcoded as literals because the enum was later rebranded to
+      // USDm/EURm/CELO and downstream migrations (e.g. v146) read these keys
+      // expecting the legacy strings.
       exchangeRates: {
-        [Currency.Dollar]: state.localCurrency.exchangeRate,
-        [Currency.Euro]: null,
-        [Currency.Celo]: null,
+        cUSD: state.localCurrency.exchangeRate,
+        cEUR: null,
+        cGLD: null,
       },
     },
     stableToken: {
       ...state.stableToken,
       balance: undefined,
       balances: {
-        [Currency.Dollar]: state.stableToken.balance,
-        [Currency.Euro]: null,
+        cUSD: state.stableToken.balance,
+        cEUR: null,
       },
     },
     escrow: {
@@ -1028,9 +1036,13 @@ export const migrations = {
     fiatConnect: {
       ...state.fiatConnect,
       cachedFiatAccountUses: state.fiatConnect.cachedFiatAccountUses.map(
-        (use: { cryptoType: Currency }) => ({
+        // Historical migration: at v106 the persisted cryptoType could be the
+        // legacy literal 'cGLD' (Currency.Celo's old value before the internal
+        // rebrand to 'CELO'). Hardcoded so future-changes to the enum value
+        // do not silently break the upgrade path for wallets stuck at v106.
+        (use: { cryptoType: string }) => ({
           ...use,
-          cryptoType: use.cryptoType === Currency.Celo ? CiCoCurrency.CELO : use.cryptoType,
+          cryptoType: use.cryptoType === 'cGLD' ? CiCoCurrency.CELO : use.cryptoType,
         })
       ),
       cachedQuoteParams: updateCachedQuoteParams(state.fiatConnect.cachedQuoteParams),
@@ -1260,7 +1272,9 @@ export const migrations = {
       ..._.omit(state.localCurrency, 'exchangeRates'),
       // We were previously fetching cUSD to local, but blockchain-api was returning USD to local
       // assuming cUSD == USD, so it's correct to keep this rate here
-      usdToLocalRate: state.localCurrency.exchangeRates[Currency.Dollar],
+      // Historical: v16 wrote exchangeRates['cUSD']. Hardcoded literal so this
+      // migration stays correct if Currency.Dollar's value is rebranded later.
+      usdToLocalRate: state.localCurrency.exchangeRates.cUSD,
     },
   }),
   147: (state: any) => ({

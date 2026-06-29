@@ -12,7 +12,7 @@ import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { updateCachedQuoteParams } from 'src/redux/migrations'
 import { RootState } from 'src/redux/store'
 import { Network, NetworkId, StandbyTransaction, TokenTransaction } from 'src/transactions/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import networkConfig from 'src/web3/networkConfig'
 import {
   mockCeloAddress,
@@ -570,10 +570,14 @@ export const v16Schema = {
   },
   localCurrency: {
     ...v15Schema.localCurrency,
+    // Historical persisted shape: at v16, Currency enum values held legacy
+    // on-chain symbols ('cGLD'/'cEUR'/'cUSD'). The enum has since been
+    // rebranded internally (CELO/EURm/USDm) but historical state fixtures must
+    // keep the literal keys that real wallets had on disk.
     exchangeRates: {
-      [Currency.Celo]: '3',
-      [Currency.Euro]: '2',
-      [Currency.Dollar]: v15Schema.localCurrency.exchangeRate,
+      cGLD: '3',
+      cEUR: '2',
+      cUSD: v15Schema.localCurrency.exchangeRate,
     },
     exchangeRate: undefined,
     fetchRateFailed: false,
@@ -581,14 +585,15 @@ export const v16Schema = {
   stableToken: {
     ...v15Schema.stableToken,
     balances: {
-      [Currency.Euro]: null,
-      [Currency.Dollar]: v15Schema.stableToken.balance ?? null,
+      cEUR: null,
+      cUSD: v15Schema.stableToken.balance ?? null,
     },
     balance: undefined,
   },
   send: {
     ...v15Schema.send,
-    lastUsedCurrency: Currency.Dollar,
+    // Historical: at v16 Currency.Dollar held the legacy literal 'cUSD'.
+    lastUsedCurrency: 'cUSD',
   },
   exchange: {
     ...v15Schema.exchange,
@@ -2005,7 +2010,8 @@ export const v107Schema = {
     ...v106Schema.fiatConnect,
     cachedFiatAccountUses: v106Schema.fiatConnect.cachedFiatAccountUses.map((use: any) => ({
       ...use,
-      cryptoType: use.cryptoType === Currency.Celo ? CiCoCurrency.CELO : use.cryptoType,
+      // Historical: Currency.Celo held the legacy literal 'cGLD' at this version.
+      cryptoType: use.cryptoType === 'cGLD' ? CiCoCurrency.CELO : use.cryptoType,
     })),
     cachedQuoteParams: updateCachedQuoteParams(v106Schema.fiatConnect.cachedQuoteParams),
   },
@@ -2497,7 +2503,8 @@ export const v146Schema = {
   },
   localCurrency: {
     ..._.omit(v145Schema.localCurrency, 'exchangeRates'),
-    usdToLocalRate: v145Schema.localCurrency.exchangeRates[Currency.Dollar],
+    // Historical: v16 wrote exchangeRates['cUSD'] (legacy literal).
+    usdToLocalRate: v145Schema.localCurrency.exchangeRates.cUSD,
   },
 }
 
