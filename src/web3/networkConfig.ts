@@ -96,6 +96,7 @@ interface NetworkConfig {
   getXautPriceUrl: string
   blockscoutProxyBase: string
   wriDelegateRelayUrl: string
+  tucopBackendApiUrl: string
 }
 
 const ALCHEMY_ETHEREUM_RPC_URL_MAINNET = 'https://eth-mainnet.g.alchemy.com/v2/'
@@ -417,6 +418,7 @@ const networkConfig: NetworkConfig = {
   getXautPriceUrl: GET_XAUT_PRICE_URL,
   blockscoutProxyBase: BLOCKSCOUT_PROXY_BASE,
   wriDelegateRelayUrl: WRI_DELEGATE_RELAY_URL,
+  tucopBackendApiUrl: TUCOP_BACKEND_BASE,
 }
 
 const CELOSCAN_BASE_URL_MAINNET = 'https://celoscan.io'
