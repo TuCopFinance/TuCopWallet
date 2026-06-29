@@ -168,7 +168,7 @@ is high enough to require explicit sign-off.
 1. **Owner action:** send `s3-squid-discord-draft.md` via Squid Discord.
 2. **Wait for response** (target: 5 business days, escalate at 14).
 3. **Update this file with verdict** (PASS / FAIL / NEEDS-TEST) and
-   update `docs/spikes/README.md` accordingly.
+   update `docs/research/README.md` accordingly.
 4. **Gate Track C** in the WRI plan based on the final verdict.
 
 ## Artifacts
