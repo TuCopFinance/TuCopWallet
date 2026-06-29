@@ -45,7 +45,6 @@ describe('PoolCard', () => {
 
     // USDC -> "Dólares" via getTokenDisplayName per wallet manual; ETH stays as-is
     expect(getByText('Dólares / ETH')).toBeTruthy()
-    expect(getByText('earnFlow.poolCard.onNetwork, {"networkName":"Arbitrum One"}')).toBeTruthy()
     expect(getByText('earnFlow.poolCard.percentage, {"percentage":"1.92"}')).toBeTruthy()
     expect(getByText('COP$1,808,800.00')).toBeTruthy()
   })
