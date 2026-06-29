@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-native-screens/ios/RNSScreenContentWrapper.mm b/node_modules/react-native-screens/ios/RNSScreenContentWrapper.mm
+index 68558e9..254dc4d 100644
+--- a/node_modules/react-native-screens/ios/RNSScreenContentWrapper.mm
++++ b/node_modules/react-native-screens/ios/RNSScreenContentWrapper.mm
+@@ -76,7 +76,11 @@ - (void)attachToAncestorScreenView
+   RNSScreen *_Nullable screen =
+       static_cast<RNSScreen *_Nullable>([[self findFirstScreenViewAncestor] reactViewController]);
+   if (screen == nil) {
+-    RCTLogError(@"Failed to find parent screen controller from %@.", self);
++    // Downgraded from RCTLogError to RCTLogInfo: this fires on every iOS
++    // navigation parallax transition when the content wrapper is briefly
++    // outside its parent screen during the animation. Cosmetic noise, not
++    // a real failure (see RNSScreenContentWrapper.mm line ~74).
++    RCTLogInfo(@"RNSScreenContentWrapper: no parent screen during transition (cosmetic): %@", self);
+     return;
+   }
+   [self attachToAncestorScreenViewStartingFrom:screen];

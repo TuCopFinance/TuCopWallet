@@ -44,6 +44,15 @@ export function keychainAccountToAccount({
   return {
     ...account,
     source: 'keychain',
+    // EIP-7702 support. viem's toAccount() factory only exposes signMessage /
+    // signTransaction / signTypedData on the returned LocalAccount, so the
+    // wallet's signAuthorization Action throws AccountTypeNotSupportedError
+    // ("The signAuthorization Action does not support JSON-RPC Accounts"
+    // — misleading; the underlying check is `if (!account.signAuthorization)`).
+    // Delegate to the unlocked PrivateKeyAccount, which implements it natively.
+    async signAuthorization(...args: Parameters<PrivateKeyAccount['signAuthorization']>) {
+      return getUnlockedAccount().signAuthorization(...args)
+    },
     // This is meant to be called by KeychainAccounts
     unlock: (privateKey: Hex) => {
       const privateKeyAccount = privateKeyToAccount(privateKey)
