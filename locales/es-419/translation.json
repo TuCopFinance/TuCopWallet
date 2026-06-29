@@ -2940,12 +2940,6 @@
         "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
         "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
         "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
-      },
-      "transparency": {
-        "title": "Transparencia",
-        "sourceLine": "Codigo fuente",
-        "contractLine": "Contrato",
-        "sourceUrl": "https://github.com/NeeruFi/neeru-vaults"
       }
     },
     "positionRow": {

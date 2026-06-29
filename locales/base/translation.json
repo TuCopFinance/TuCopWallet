@@ -2933,12 +2933,6 @@
         "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
         "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
         "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
-      },
-      "transparency": {
-        "title": "Transparency",
-        "sourceLine": "Source code",
-        "contractLine": "Contract",
-        "sourceUrl": "https://github.com/NeeruFi/neeru-vaults"
       }
     },
     "positionRow": {
