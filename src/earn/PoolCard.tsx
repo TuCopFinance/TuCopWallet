@@ -92,6 +92,10 @@ export default function PoolCard({
       poolAmount: balance,
       providerId: appId,
     })
+    if (pool.appId === 'neeru-vaults') {
+      navigate(Screens.NeeruVaultDetail, { pool })
+      return
+    }
     navigate(Screens.EarnPoolInfoScreen, { pool })
   }
 
