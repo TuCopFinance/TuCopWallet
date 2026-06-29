@@ -91,6 +91,7 @@ export type StackParamList = {
   }
   [Screens.EarnHome]: { activeEarnTab?: EarnTabType } | undefined
   [Screens.EarnPoolInfoScreen]: { pool: EarnPosition }
+  [Screens.NeeruVaultDetail]: { pool: EarnPosition }
   [Screens.ErrorScreen]: {
     errorMessage?: string
   }
