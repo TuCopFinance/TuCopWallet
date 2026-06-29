@@ -3733,6 +3733,19 @@ export const v250Schema = {
   },
 }
 
+// Migration 251 adds `inFlight.isAtomic` to dollarsSpend so the
+// MultiSwapProgressSheet can differentiate the atomic 7702 path ("Cambiando
+// tus Dolares a Pesos...") from the legacy multi-step path ("Paso X de N")
+// without breaking persisted in-flight state. Only applies when a user has
+// an in-flight multi-swap when the app updates; otherwise no-op.
+export const v251Schema = {
+  ...v250Schema,
+  _persist: {
+    ...v250Schema._persist,
+    version: 251,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v250Schema as Partial<RootState>
+  return v251Schema as Partial<RootState>
 }

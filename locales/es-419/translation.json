@@ -1855,6 +1855,14 @@
       "title": "Antes de cambiar",
       "body": "No podemos estimar el valor de este intercambio. {{appName}} no se hace responsable si decides proceder."
     },
+    "belowMinSwapWarning": {
+      "title": "Monto muy pequeño",
+      "body": "El monto mínimo por intercambio es de aproximadamente ${{minSwapUsd}} USD. Aumenta el monto para continuar."
+    },
+    "upstreamUnavailableWarning": {
+      "title": "Servicio temporalmente no disponible",
+      "body": "No pudimos obtener una cotización. Vuelve a intentarlo en unos segundos."
+    },
     "confirmSwapFailedWarning": {
       "title": "Algo salió mal",
       "body": "La velocidad de la red es lenta o hay un error desconocido. Vuelve a intentarlo más tarde"
@@ -3094,6 +3102,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "atomicProgress": "Cambiando tus Dolares a Pesos...",
     "transitioning": "Finalizando tu cambio...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",

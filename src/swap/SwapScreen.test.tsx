@@ -231,6 +231,10 @@ const preparedTransactions: SerializableTransactionRequest[] = [
     data: '0x095ea7b3000000000000000000000000000000000000000000000000000000000000012300000000000000000000000000000000000000000000000011200c7644d50000',
     from: '0x0000000000000000000000000000000000007E57',
     gas: '21000',
+    // 21000 * 60 / 100 = 12600 (matches the calibration added in
+    // src/viem/prepareTransactions.ts:tryEstimateTransaction to make
+    // getEstimatedGasFee reflect realistic on-chain usage instead of LIMIT)
+    _estimatedGasUse: '12600',
     maxFeePerGas: '12000000000',
     maxPriorityFeePerGas: '2000000000',
     _baseFeePerGas: '6000000000',
@@ -240,6 +244,9 @@ const preparedTransactions: SerializableTransactionRequest[] = [
     data: '0x0',
     from: '0x0000000000000000000000000000000000007E57',
     gas: '1800000',
+    // The swap (second) tx has no fresh estimateGas call in this fixture so
+    // _estimatedGasUse stays undefined, matching the actual saga output.
+    _estimatedGasUse: undefined,
     maxFeePerGas: '12000000000',
     maxPriorityFeePerGas: '2000000000',
     _baseFeePerGas: '6000000000',
@@ -1279,8 +1286,14 @@ describe('SwapScreen', () => {
       gas: 1821000,
       maxGasFee: 0.021852,
       maxGasFeeUsd: 0.28529642665785426,
-      estimatedGasFee: 0.014568,
-      estimatedGasFeeUsd: 0.19019761777190283,
+      // _estimatedGasUse calibration: approval tx has 21000 * 0.6 = 12600,
+      // swap tx falls back to its 1.8M gas limit (no fresh estimateGas in
+      // the fixture). Total estimated gas = 12600 + 1800000 = 1812600.
+      // estimatedGasFee = 1812600 * (6 + 2) Gwei = 14_500_800_000_000_000 wei
+      //                 = 0.0145008 CELO (vs 0.014568 pre-calibration)
+      estimatedGasFee: 0.0145008,
+      estimatedGasFeeUsd: 0.1893202646750967,
+      appFeePercentageIncludedInPrice: undefined,
       feeCurrency: undefined,
       feeCurrencySymbol: 'CELO',
       txCount: 2,
@@ -1620,7 +1633,7 @@ describe('SwapScreen', () => {
     fireEvent.press(confirmDecrease)
 
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.2165184' // 1.234 minus the max fee calculated for the swap
+      '1.21659904' // 1.234 minus the max fee calculated for the swap (uses calibrated _estimatedGasUse = gas * 0.6)
     )
 
     await act(() => {
@@ -1673,7 +1686,7 @@ describe('SwapScreen', () => {
     fireEvent.press(confirmDecrease)
 
     expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
-      '1.2165184' // 1.234 (max balance) minus the max fee calculated for the swap
+      '1.21659904' // 1.234 (max balance) minus the max fee calculated for the swap (calibrated _estimatedGasUse = gas * 0.6)
     )
 
     await act(() => {

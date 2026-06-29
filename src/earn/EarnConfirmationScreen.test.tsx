@@ -155,7 +155,7 @@ describe('EarnConfirmationScreen', () => {
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       rewardsPositions: [mockRewardsPositions[1]],
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.mainnet.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: '10.75',
       useMax: true,
     })
@@ -201,7 +201,7 @@ describe('EarnConfirmationScreen', () => {
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       rewardsPositions: [mockRewardsPositions[1]],
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.mainnet.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: txAmount,
     })
     expect(queryByText('earnFlow.collect.reward')).toBeFalsy()
@@ -246,7 +246,7 @@ describe('EarnConfirmationScreen', () => {
       feeCurrencies: mockStoreBalancesToTokenBalances([mockTokenBalances[mockArbEthTokenId]]),
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.mainnet.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: '10.75',
       useMax: true,
       rewardsPositions: [mockRewardsPositions[1]],

@@ -95,6 +95,7 @@ interface NetworkConfig {
   getExchangeRateUrl: string
   getXautPriceUrl: string
   blockscoutProxyBase: string
+  wriDelegateRelayUrl: string
 }
 
 const ALCHEMY_ETHEREUM_RPC_URL_MAINNET = 'https://eth-mainnet.g.alchemy.com/v2/'
@@ -298,6 +299,7 @@ const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 // - /api/v2/...            -> Blockscout passthrough (replaces direct Blockscout calls + key)
 const TUCOP_BACKEND_BASE = 'https://tucop-backend-production.up.railway.app'
 const GET_XAUT_PRICE_URL = `${TUCOP_BACKEND_BASE}/api/prices/xaut?vs=usd`
+const WRI_DELEGATE_RELAY_URL = `${TUCOP_BACKEND_BASE}/api/wri/delegate-relay`
 const BLOCKSCOUT_PROXY_BASE = `${TUCOP_BACKEND_BASE}/api/v2`
 
 const networkConfig: NetworkConfig = {
@@ -414,6 +416,7 @@ const networkConfig: NetworkConfig = {
   getExchangeRateUrl: GET_EXCHANGE_RATE_MAINNET,
   getXautPriceUrl: GET_XAUT_PRICE_URL,
   blockscoutProxyBase: BLOCKSCOUT_PROXY_BASE,
+  wriDelegateRelayUrl: WRI_DELEGATE_RELAY_URL,
 }
 
 const CELOSCAN_BASE_URL_MAINNET = 'https://celoscan.io'
