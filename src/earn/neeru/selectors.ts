@@ -12,8 +12,7 @@ export const neeruClosingPositionIdSelector = (state: RootState) =>
 export const neeruLastErrorSelector = (state: RootState) => neeruSlice(state).lastError
 
 const neeruBackendPositionsSelector = (state: RootState) => neeruSlice(state).positions
-const neeruOptimisticPositionsSelector = (state: RootState) =>
-  neeruSlice(state).optimisticPositions
+const neeruOptimisticPositionsSelector = (state: RootState) => neeruSlice(state).optimisticPositions
 
 // Merged view: backend positions plus optimistic entries that the
 // backend has not surfaced yet, deduped by depositTxHash so a

@@ -47,9 +47,7 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
           </View>
         )}
         {isStale && (
-          <Text style={styles.staleNote}>
-            {t('neeruVaults.positionRow.optimisticTakingLong')}
-          </Text>
+          <Text style={styles.staleNote}>{t('neeruVaults.positionRow.optimisticTakingLong')}</Text>
         )}
       </View>
       {isOptimistic ? (

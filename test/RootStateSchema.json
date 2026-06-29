@@ -2369,6 +2369,9 @@
                 "monthlyRatePercentage": {
                     "type": "number"
                 },
+                "optimistic": {
+                    "type": "boolean"
+                },
                 "positionId": {
                     "type": "string"
                 },
@@ -2380,6 +2383,9 @@
                         "null",
                         "string"
                     ]
+                },
+                "staleOptimistic": {
+                    "type": "boolean"
                 },
                 "startTs": {
                     "type": "number"
@@ -2473,6 +2479,12 @@
                         "number"
                     ]
                 },
+                "optimisticPositions": {
+                    "items": {
+                        "$ref": "#/definitions/NeeruIndividualPosition"
+                    },
+                    "type": "array"
+                },
                 "positions": {
                     "items": {
                         "$ref": "#/definitions/NeeruIndividualPosition"
@@ -2487,6 +2499,7 @@
                 "lastError",
                 "lastSyncedAt",
                 "lastSyncedBlock",
+                "optimisticPositions",
                 "positions"
             ],
             "type": "object"
@@ -4208,6 +4221,7 @@
                 "MarranitoStaking",
                 "MarranitosMyStakes",
                 "MultichainBeta",
+                "NeeruVaultDetail",
                 "NftsInfoCarousel",
                 "NotificationCenter",
                 "OnboardingRecoveryPhrase",
@@ -6693,6 +6707,7 @@
                         "MarranitoStaking",
                         "MarranitosMyStakes",
                         "MultichainBeta",
+                        "NeeruVaultDetail",
                         "NftsInfoCarousel",
                         "NotificationCenter",
                         "OnboardingRecoveryPhrase",
