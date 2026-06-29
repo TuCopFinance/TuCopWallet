@@ -334,6 +334,16 @@ describe('store state', () => {
           "preferredCurrencyCode": "COP",
           "usdToLocalRate": "1.33",
         },
+        "neeru": {
+          "closeStatus": "idle",
+          "closingPositionId": null,
+          "fetchStatus": "idle",
+          "lastError": null,
+          "lastSyncedAt": null,
+          "lastSyncedBlock": null,
+          "optimisticPositions": [],
+          "positions": [],
+        },
         "networkInfo": {
           "connected": false,
           "rehydrated": true,

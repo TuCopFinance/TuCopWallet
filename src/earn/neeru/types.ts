@@ -23,6 +23,11 @@ export interface NeeruIndividualPosition {
   depositTxHash: string
   renewedFromPositionId: string | null
   currentPayoutIfClosed: NeeruPositionPayout
+  // Optimistic-UI flags. Absent for positions sourced from the
+  // backend; present on entries the wallet seeded locally after a
+  // successful Deposit and before the indexer surfaces it.
+  optimistic?: boolean
+  staleOptimistic?: boolean
 }
 
 export interface NeeruPositionsResponse {

@@ -2946,12 +2946,6 @@
         "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
         "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
         "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
-      },
-      "transparency": {
-        "title": "Transparencia",
-        "sourceLine": "Codigo fuente",
-        "contractLine": "Contrato",
-        "sourceUrl": "https://github.com/NeeruFi/neeru-vaults"
       }
     },
     "positionRow": {
@@ -2960,7 +2954,11 @@
       "maturity": "Disponible el {{date}}",
       "flexible": "Sin tiempo minimo",
       "depositedAt": "Depositado el {{date}}",
-      "manageCta": "Gestionar"
+      "manageCta": "Gestionar",
+      "processingBadge": "Procesando",
+      "optimisticTakingLong": "Esto puede tardar un par de minutos. Vuelve a intentar.",
+      "refreshCta": "Refrescar",
+      "viewOnCeloscanCta": "Ver en Celoscan"
     },
     "closeSheet": {
       "title": "Retira tu deposito",
