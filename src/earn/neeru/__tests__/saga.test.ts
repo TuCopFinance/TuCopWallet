@@ -4,12 +4,14 @@ import { fetchNeeruPositions } from 'src/earn/neeru/api'
 import {
   NEERU_LOW_POOL_ACTION,
   closeNeeruPositionSaga,
+  emergencyCloseNeeruPositionSaga,
   fetchNeeruPositionsSaga,
 } from 'src/earn/neeru/saga'
 import {
   closePositionFailure,
   closePositionStart,
   closePositionSuccess,
+  emergencyCloseStart,
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
@@ -107,6 +109,44 @@ describe('closeNeeruPositionSaga', () => {
 
   it('on generic error, dispatches closePositionFailure', async () => {
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: 'boom' }))
+      .run()
+  })
+})
+
+describe('emergencyCloseNeeruPositionSaga', () => {
+  const WALLET = '0x' + 'a'.repeat(40)
+  const POSITION_ID = '5678'
+
+  it('happy path: dispatches closePositionSuccess', async () => {
+    const fakeTxs = [{ to: '0x', data: '0x', value: '0', networkId: 'celo-mainnet' }]
+    await expectSaga(
+      emergencyCloseNeeruPositionSaga,
+      emergencyCloseStart({ positionId: POSITION_ID })
+    )
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
+        [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
+        [matchers.call.fn(sendPreparedTransactions), []],
+      ])
+      .put(closePositionSuccess({ positionId: POSITION_ID }))
+      .run()
+  })
+
+  it('failure: dispatches closePositionFailure with error message', async () => {
+    await expectSaga(
+      emergencyCloseNeeruPositionSaga,
+      emergencyCloseStart({ positionId: POSITION_ID })
+    )
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
