@@ -1,12 +1,16 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import StateCard from 'src/components/StateCard'
 import { inFlightSelector } from 'src/dollarsSpend/selectors'
 import { useSelector } from 'src/redux/hooks'
-import Colors from 'src/styles/colors'
-import { typeScale } from 'src/styles/fonts'
-import { Spacing } from 'src/styles/styles'
 
+// Standardized progress sheet for both the legacy multi-step Dolares -> Pesos
+// path (shows "Paso X de N: convirtiendo SYMBOL") and the atomic 7702 path
+// (shows a single in-progress copy because the per-step counter would lie).
+//
+// Uses the shared StateCard component with the `loading` variant so the visual
+// language matches every other transaction in-flight surface in the wallet
+// (spinner + card + soft shadow + title typography).
 export default function MultiSwapProgressSheet() {
   const { t } = useTranslation()
   const inFlight = useSelector(inFlightSelector)
@@ -15,33 +19,30 @@ export default function MultiSwapProgressSheet() {
     return null
   }
 
-  const currentIndex = inFlight.completedSteps // 0-based index of the in-progress step
+  if (inFlight.isAtomic) {
+    return (
+      <StateCard
+        variant="loading"
+        title={t('dollarsSpend.atomicProgress')}
+        testID="MultiSwapProgressSheet"
+      />
+    )
+  }
+
+  const currentIndex = inFlight.completedSteps
   const total = inFlight.plannedSteps.length
   const currentStep = inFlight.plannedSteps[currentIndex]
   if (!currentStep) return null
 
   return (
-    <View style={styles.container} testID="MultiSwapProgressSheet">
-      <Text style={styles.text}>
-        {t('dollarsSpend.stepProgress', {
-          index: currentIndex + 1,
-          total,
-          symbol: currentStep.symbol,
-        })}
-      </Text>
-    </View>
+    <StateCard
+      variant="loading"
+      title={t('dollarsSpend.stepProgress', {
+        index: currentIndex + 1,
+        total,
+        symbol: currentStep.symbol,
+      })}
+      testID="MultiSwapProgressSheet"
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: Spacing.Thick24,
-    backgroundColor: Colors.white,
-    borderRadius: Spacing.Regular16,
-  },
-  text: {
-    ...typeScale.labelMedium,
-    color: Colors.black,
-    textAlign: 'center',
-  },
-})

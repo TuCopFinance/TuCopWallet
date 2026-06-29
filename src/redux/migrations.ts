@@ -2090,4 +2090,19 @@ export const migrations = {
       },
     }
   },
+  251: (state: any) => {
+    // Track C: dollarsSpend `inFlight.isAtomic` flag. If a user persisted an
+    // in-flight from before the migration, default to false (legacy multi-step).
+    if (!state.dollarsSpend?.inFlight) return state
+    return {
+      ...state,
+      dollarsSpend: {
+        ...state.dollarsSpend,
+        inFlight: {
+          ...state.dollarsSpend.inFlight,
+          isAtomic: false,
+        },
+      },
+    }
+  },
 }

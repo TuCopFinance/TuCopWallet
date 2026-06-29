@@ -189,9 +189,16 @@ describe('prepareTransactions module', () => {
         maxPriorityFeePerGas: BigInt(2),
         baseFeePerGas: BigInt(80),
       })
-      mocked(estimateGas).mockResolvedValue(BigInt(1_000))
+      // Bumped from 1_000 to 1_500 after introducing the realistic
+      // _estimatedGasUse = gas * 0.60 calibration in tryEstimateTransaction.
+      // With gas=1000 the realistic estimate of 600 * 82 = 49,200 fits in
+      // fee currency 2's 70k balance, which would defeat this test's intent.
+      // gas=1500 keeps the realistic estimate (900 * 82 = 73,800) above the
+      // 70k balance limit.
+      mocked(estimateGas).mockResolvedValue(BigInt(1_500))
 
-      // estimated gas fee (80+2)*1k = 82k units, too high for either fee currency
+      // estimated gas fee using _estimatedGasUse (900) * (80+2) = 73.8k units,
+      // too high for either fee currency
 
       const result = await prepareTransactions({
         feeCurrencies: mockFeeCurrencies,
@@ -255,6 +262,7 @@ describe('prepareTransactions module', () => {
             data: '0xdata',
 
             gas: BigInt(1000),
+            _estimatedGasUse: BigInt(600),
             maxFeePerGas: BigInt(100),
             maxPriorityFeePerGas: BigInt(2),
             _baseFeePerGas: BigInt(50),
@@ -522,6 +530,7 @@ describe('prepareTransactions module', () => {
             data: '0xdata',
 
             gas: BigInt(500),
+            _estimatedGasUse: BigInt(300),
             maxFeePerGas: BigInt(1),
             maxPriorityFeePerGas: BigInt(2),
             _baseFeePerGas: BigInt(1),
@@ -584,6 +593,7 @@ describe('prepareTransactions module', () => {
             data: '0xdata',
 
             gas: BigInt(500),
+            _estimatedGasUse: BigInt(300),
             maxFeePerGas: BigInt(1),
             maxPriorityFeePerGas: BigInt(2),
             feeCurrency: mockFeeCurrencies[1].address,
@@ -647,6 +657,7 @@ describe('prepareTransactions module', () => {
             data: '0xdata',
 
             gas: BigInt(500),
+            _estimatedGasUse: BigInt(300),
             maxFeePerGas: BigInt(1),
             maxPriorityFeePerGas: BigInt(2),
             _baseFeePerGas: BigInt(1),
@@ -704,6 +715,7 @@ describe('prepareTransactions module', () => {
             data: '0xdata',
 
             gas: BigInt(500),
+            _estimatedGasUse: BigInt(300),
             maxFeePerGas: BigInt(1),
             maxPriorityFeePerGas: BigInt(2),
             _baseFeePerGas: BigInt(1),
@@ -808,6 +820,7 @@ describe('prepareTransactions module', () => {
       expect(estimateTransactionOutput).toStrictEqual({
         from: '0x123',
         gas: BigInt(123),
+        _estimatedGasUse: BigInt(73), // 123 * 60 / 100 = 73.8 -> 73 (BigInt floor)
         maxFeePerGas: BigInt(456),
         maxPriorityFeePerGas: BigInt(2),
         _baseFeePerGas: BigInt(200),
@@ -828,6 +841,7 @@ describe('prepareTransactions module', () => {
       expect(estimateTransactionOutput).toStrictEqual({
         from: '0x123',
         gas: BigInt(123),
+        _estimatedGasUse: BigInt(73), // 123 * 60 / 100 = 73.8 -> 73 (BigInt floor)
         maxFeePerGas: BigInt(456),
         feeCurrency: '0xabc',
         maxPriorityFeePerGas: BigInt(789),
@@ -907,6 +921,7 @@ describe('prepareTransactions module', () => {
         {
           from: '0x123',
           gas: BigInt(123),
+          _estimatedGasUse: BigInt(73), // 123 * 60 / 100 = 73.8 -> 73 (BigInt floor)
           maxFeePerGas: BigInt(10),
           maxPriorityFeePerGas: BigInt(2),
           _baseFeePerGas: BigInt(5),
