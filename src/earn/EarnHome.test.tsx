@@ -8,10 +8,11 @@ import { Status } from 'src/earn/slice'
 import { EarnTabType } from 'src/earn/types'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
+import { NetworkId } from 'src/transactions/types'
 import { ONE_DAY_IN_MILLIS } from 'src/utils/time'
 import MockedNavigator from 'test/MockedNavigator'
 import { createMockStore } from 'test/utils'
-import { mockEarnPositions, mockTokenBalances } from 'test/values'
+import { mockCusdAddress, mockCusdTokenId, mockEarnPositions, mockTokenBalances } from 'test/values'
 
 jest.mock('src/statsig')
 
@@ -126,16 +127,27 @@ describe('EarnHome', () => {
   describe('Neeru Vaults gate', () => {
     const neeruPool = {
       ...mockEarnPositions[0],
-      positionId:
-        'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:tranche-1',
+      positionId: 'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:tranche-1',
       address: '0xd05cdf2dc56d97333c547519df58d56145766294',
-      networkId: 'celo-mainnet',
+      networkId: NetworkId['celo-mainnet'],
       appId: 'neeru-vaults',
       appName: 'Neeru Vaults',
       displayProps: {
         ...mockEarnPositions[0].displayProps,
         title: 'NEERU_TEST_TITLE_30D',
       },
+      // EarnHome filters out pools whose tokens aren't in the user's tokenList.
+      // mockEarnPositions[0] inherits arbitrum tokens, which a Celo-only app
+      // strips. Pin to a Celo token present in mockTokenBalances so the gate
+      // assertions actually exercise the filter.
+      tokens: [
+        {
+          ...mockEarnPositions[0].tokens[0],
+          tokenId: mockCusdTokenId,
+          networkId: NetworkId['celo-mainnet'],
+          address: mockCusdAddress,
+        },
+      ],
     }
 
     const storeWithNeeru = createMockStore({
@@ -152,17 +164,16 @@ describe('EarnHome', () => {
       },
     })
 
+    const neeruPoolCardTestId = `PoolCard/${neeruPool.positionId}`
+
     it('hides neeru-vaults pools when SHOW_NEERU_VAULTS gate is off (default)', () => {
       // beforeEach already mocks gate so only SHOW_POSITIONS is true.
-      const { queryByText } = render(
+      const { queryByTestId } = render(
         <Provider store={storeWithNeeru}>
-          <MockedNavigator
-            component={EarnHome}
-            params={{ activeEarnTab: EarnTabType.AllPools }}
-          />
+          <MockedNavigator component={EarnHome} params={{ activeEarnTab: EarnTabType.AllPools }} />
         </Provider>
       )
-      expect(queryByText('NEERU_TEST_TITLE_30D')).toBeNull()
+      expect(queryByTestId(neeruPoolCardTestId)).toBeNull()
     })
 
     it('shows neeru-vaults pools when SHOW_NEERU_VAULTS gate is on', () => {
@@ -170,18 +181,14 @@ describe('EarnHome', () => {
         .mocked(getFeatureGate)
         .mockImplementation(
           (g) =>
-            g === StatsigFeatureGates.SHOW_POSITIONS ||
-            g === StatsigFeatureGates.SHOW_NEERU_VAULTS
+            g === StatsigFeatureGates.SHOW_POSITIONS || g === StatsigFeatureGates.SHOW_NEERU_VAULTS
         )
-      const { getByText } = render(
+      const { getByTestId } = render(
         <Provider store={storeWithNeeru}>
-          <MockedNavigator
-            component={EarnHome}
-            params={{ activeEarnTab: EarnTabType.AllPools }}
-          />
+          <MockedNavigator component={EarnHome} params={{ activeEarnTab: EarnTabType.AllPools }} />
         </Provider>
       )
-      expect(getByText('NEERU_TEST_TITLE_30D')).toBeTruthy()
+      expect(getByTestId(neeruPoolCardTestId)).toBeTruthy()
     })
   })
 })
