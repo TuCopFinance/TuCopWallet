@@ -2907,6 +2907,74 @@
       "noStakes": "You don't have any active stakes"
     }
   },
+  "neeruVaults": {
+    "tranches": {
+      "flexible": "Flexible",
+      "thirtyDays": "30 days",
+      "sixtyDays": "60 days",
+      "ninetyDays": "90 days"
+    },
+    "detail": {
+      "header": "Your {{categoryLabel}} positions",
+      "aggregateBalance": "Total in {{categoryLabel}}",
+      "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% monthly",
+      "depositCta": "Deposit",
+      "noPositions": "You don't have positions in this option yet",
+      "descriptionByCategory": {
+        "flexible": "Withdraw anytime with no minimum lock",
+        "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
+        "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
+        "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
+      },
+      "transparency": {
+        "title": "Transparency",
+        "sourceLine": "Source code",
+        "contractLine": "Contract",
+        "sourceUrl": "https://github.com/NeeruFi/neeru-vaults"
+      }
+    },
+    "positionRow": {
+      "principal": "Principal: {{amount}}",
+      "interest": "Earned: {{amount}}",
+      "maturity": "Available {{date}}",
+      "flexible": "No minimum time",
+      "depositedAt": "Deposited on {{date}}",
+      "manageCta": "Manage"
+    },
+    "closeSheet": {
+      "title": "Withdraw your deposit",
+      "currentPayout": "You will receive",
+      "principalLabel": "Principal",
+      "interestLabel": "Interest earned",
+      "penaltyLabel": "Early withdrawal fee ({{percentage}}%)",
+      "totalLabel": "Total",
+      "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your principal.",
+      "confirmCta": "Confirm withdrawal"
+    },
+    "emergencyCloseSheet": {
+      "title": "Emergency withdrawal",
+      "subtitle": "The fund cannot pay interest right now",
+      "explanation": "You can recover your principal of {{principal}} now, but you will forfeit the {{interest}} of interest you earned. This is irreversible.",
+      "alternative": "If you can wait, the fund usually recovers within a few hours.",
+      "primaryCta": "Wait and try again later",
+      "secondaryCta": "Withdraw principal only"
+    },
+    "errors": {
+      "fetchPositionsFailed": "We couldn't load your positions. Pull down to retry.",
+      "closeFailed": "We couldn't process the withdrawal. Try again.",
+      "unknown": "Something went wrong. Try again.",
+      "invalidCategory": "Invalid tranche selected.",
+      "invalidAmount": "Invalid amount.",
+      "amountBelowMin": "Minimum deposit: {{minAmount}} Pesos.",
+      "depositsPaused": "Deposits are temporarily paused.",
+      "globalCapExceeded": "The fund is full. Try later.",
+      "categoryCapExceeded": "This option is full. Try another or come back later.",
+      "rateNotSet": "This option is not available right now.",
+      "positionStale": "Refresh your positions and try again.",
+      "positionAlreadyClosed": "This position is already closed.",
+      "serviceUnavailable": "The service is temporarily unavailable. Try later."
+    }
+  },
   "global": {
     "ok": "OK",
     "cancel": "Cancel",
