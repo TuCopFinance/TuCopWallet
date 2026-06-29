@@ -2105,16 +2105,4 @@ export const migrations = {
       },
     }
   },
-  252: (state: any) => ({
-    ...state,
-    neeru: {
-      fetchStatus: 'idle',
-      positions: [],
-      lastSyncedBlock: null,
-      lastSyncedAt: null,
-      closeStatus: 'idle',
-      closingPositionId: null,
-      lastError: null,
-    },
-  }),
 }
