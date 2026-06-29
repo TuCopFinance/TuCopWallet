@@ -373,16 +373,20 @@ const networkConfig: NetworkConfig = {
     [Network.Base]: base,
   },
   currencyToTokenId: {
+    // CiCoCurrency.CELO === Currency.Celo === 'CELO' (single key satisfies both)
     [CiCoCurrency.CELO]: CELO_TOKEN_ID_MAINNET,
+    // External-facing CiCoCurrency keeps legacy cXXX strings (FiatConnect contract).
     [CiCoCurrency.cUSD]: CUSD_TOKEN_ID_MAINNET,
     [CiCoCurrency.cEUR]: CEUR_TOKEN_ID_MAINNET,
     [CiCoCurrency.cREAL]: CREAL_TOKEN_ID_MAINNET,
     [CiCoCurrency.ETH]: ETH_TOKEN_ID_MAINNET,
-    [Currency.Celo]: CELO_TOKEN_ID_MAINNET,
-    [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET,
-    [CiCoCurrency.USDC]: USDC_TOKEN_ID_MAINNET, // also satisfies Currency.USDC (same string 'USDC')
-    [CiCoCurrency.USAT]: USAT_TOKEN_ID_MAINNET, // also satisfies Currency.USAT (same string 'USAT')
-    [CiCoCurrency.COPm]: COPM_TOKEN_ID_MAINNET,
+    // Internal-facing Currency uses new XXXm naming and points to the same token.
+    [Currency.Dollar]: CUSD_TOKEN_ID_MAINNET,
+    [Currency.Euro]: CEUR_TOKEN_ID_MAINNET,
+    [CiCoCurrency.USDT]: USDT_TOKEN_ID_MAINNET, // also satisfies Currency.USDT (same string 'USDT')
+    [CiCoCurrency.USDC]: USDC_TOKEN_ID_MAINNET, // also satisfies Currency.USDC
+    [CiCoCurrency.USAT]: USAT_TOKEN_ID_MAINNET, // also satisfies Currency.USAT
+    [CiCoCurrency.COPm]: COPM_TOKEN_ID_MAINNET, // also satisfies Currency.COP
   },
   celoTokenAddress: CELO_TOKEN_ADDRESS_MAINNET,
   celoGasPriceMinimumAddress: CELO_GAS_PRICE_MINIMUM_ADDRESS_MAINNET,
