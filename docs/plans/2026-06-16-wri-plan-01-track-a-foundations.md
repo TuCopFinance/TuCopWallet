@@ -13,7 +13,7 @@
 **Tech Stack:** viem 2.24.1, Redux Toolkit 2.4, redux-saga 1.3, @gorhom/bottom-sheet 4.6, react-native-reanimated 3.17, @react-native-community/netinfo, react-i18next.
 
 **Source spec:** [docs/specs/2026-06-15-wallet-robustness-initiative-design.md](../specs/2026-06-15-wallet-robustness-initiative-design.md) section 6.
-**Source spike:** [docs/spikes/s5-tx-in-flight-api.md](../spikes/s5-tx-in-flight-api.md) (APPROVED — defines the canonical hook API).
+**Source spike:** [docs/research/s5-tx-in-flight-api.md](../research/s5-tx-in-flight-api.md) (APPROVED — defines the canonical hook API).
 
 **Git workflow:** `feature/wri-<short>` branches off `Development`. Full automation. Conventional commits in English. NEVER --no-verify. NEVER mention testnet (locked decision #11).
 
@@ -288,7 +288,7 @@ This is the keystone abstraction. The S5 spike produced the v4 API verbatim; thi
 - Modify: `src/redux/migrations.ts` (v241 migration adding the empty slice)
 - Modify: `src/redux/store.ts` (persist whitelist; transform that scrubs volatile fields)
 
-The full type signatures, hook signature, and action creators are recorded verbatim in [`docs/spikes/s5-tx-in-flight-api.md`](../spikes/s5-tx-in-flight-api.md). Copy the signatures from the S5 outcome doc.
+The full type signatures, hook signature, and action creators are recorded verbatim in [`docs/research/s5-tx-in-flight-api.md`](../research/s5-tx-in-flight-api.md). Copy the signatures from the S5 outcome doc.
 
 - [ ] **Step 1: Branch + tests**
 
@@ -509,7 +509,7 @@ No TBD / TODO / FIXME. Tests show pseudo-code that matches existing project patt
 
 ### Type / API consistency
 
-`InFlightDescriptor`, `InFlightStatus`, `ErrorClass`, `FlowKind`, hook signature — all sourced verbatim from `docs/spikes/s5-tx-in-flight-api.md`. Action creator names (`inFlightStart`, etc.) consistent between the actions file and saga callers.
+`InFlightDescriptor`, `InFlightStatus`, `ErrorClass`, `FlowKind`, hook signature — all sourced verbatim from `docs/research/s5-tx-in-flight-api.md`. Action creator names (`inFlightStart`, etc.) consistent between the actions file and saga callers.
 
 ### Open concerns
 

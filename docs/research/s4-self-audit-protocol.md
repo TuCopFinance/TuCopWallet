@@ -9,7 +9,7 @@
 
 ## Contract under audit
 
-[`contracts-spike/src/BatchExecutorV2.sol`](../../contracts-spike/src/BatchExecutorV2.sol) — production-candidate. ~30 lines of business logic, uses OpenZeppelin's `ReentrancyGuard`.
+[`contracts-research/src/BatchExecutorV2.sol`](../../contracts-research/src/BatchExecutorV2.sol) — production-candidate. ~30 lines of business logic, uses OpenZeppelin's `ReentrancyGuard`.
 
 ## Invariants (the five properties we hold true at all times)
 
@@ -23,11 +23,11 @@
 
 Each item must be checked off (and its evidence file produced) before the production contract is deployed and the Statsig flag is flipped to 100%.
 
-- [ ] **Foundry invariant tests**: minimum 50,000 runs, depth 100. Evidence: `contracts-spike/test/BatchExecutorV2.invariant.t.sol` + `forge test --match-contract BatchExecutorV2InvariantTest -vvv` output. Two invariants tested: `invariant_contractHoldsNoBalance`, `invariant_executeRevertsForExternalCallers`.
-- [x] **Slither static analysis**: zero high/medium severity. Evidence: [`contracts-spike/.slither/s4-slither-output.txt`](../../contracts-spike/.slither/s4-slither-output.txt). Result: 2 informational findings (`calls-loop`, `low-level-calls`) — both intentional design choices for a batch executor, both informational severity, both noted in this protocol as expected behavior.
+- [ ] **Foundry invariant tests**: minimum 50,000 runs, depth 100. Evidence: `contracts-research/test/BatchExecutorV2.invariant.t.sol` + `forge test --match-contract BatchExecutorV2InvariantTest -vvv` output. Two invariants tested: `invariant_contractHoldsNoBalance`, `invariant_executeRevertsForExternalCallers`.
+- [x] **Slither static analysis**: zero high/medium severity. Evidence: [`contracts-research/.slither/s4-slither-output.txt`](../../contracts-research/.slither/s4-slither-output.txt). Result: 2 informational findings (`calls-loop`, `low-level-calls`) — both intentional design choices for a batch executor, both informational severity, both noted in this protocol as expected behavior.
 - [ ] **Mythril symbolic execution** on `execute()`: run `myth analyze src/BatchExecutorV2.sol --solv 0.8.26`. Acceptance: no high-severity SWC findings.
-- [ ] **Fork test against Celo mainnet state, 100 randomized batches**: test file `contracts-spike/test/BatchExecutorV2.fork.t.sol` to be added in Track C. Acceptance: 100% pass rate, no unexpected reverts.
-- [ ] **Differential test**: batched (via BatchExecutorV2) vs sequential (vanilla approve+swap+approve+swap+approve+swap from the dollarsSpend flow) equivalence. Test file `contracts-spike/test/BatchExecutorV2.differential.t.sol` to be added in Track C. Acceptance: identical final state (token balances, allowances at zero after execution).
+- [ ] **Fork test against Celo mainnet state, 100 randomized batches**: test file `contracts-research/test/BatchExecutorV2.fork.t.sol` to be added in Track C. Acceptance: 100% pass rate, no unexpected reverts.
+- [ ] **Differential test**: batched (via BatchExecutorV2) vs sequential (vanilla approve+swap+approve+swap+approve+swap from the dollarsSpend flow) equivalence. Test file `contracts-research/test/BatchExecutorV2.differential.t.sol` to be added in Track C. Acceptance: identical final state (token balances, allowances at zero after execution).
 - [ ] **Manual review by two reviewers** using SWC registry checklist. SWC IDs to explicitly verify:
   - SWC-107 (reentrancy): covered by `nonReentrant` modifier + invariant 3.
   - SWC-101 (integer overflow): Solidity 0.8.26 has checked arithmetic by default. The only counter is `i` in the loop, bounded by `calls.length` which is calldata-bounded. No overflow path.
@@ -36,7 +36,7 @@ Each item must be checked off (and its evidence file produced) before the produc
   - SWC-116 (timestamp dependence): no `block.timestamp` usage.
   - SWC-104 (unchecked call return): `if (!ok) revert CallFailed(i, ret)` checks every return.
   - SWC-129 (typographical errors / shadowing): none, single-file, no inheritance besides ReentrancyGuard.
-    Sign-off file: `docs/spikes/s4-manual-review-signoff.md` to be created in Track C with both reviewers' names + date.
+    Sign-off file: `docs/research/s4-manual-review-signoff.md` to be created in Track C with both reviewers' names + date.
 - [ ] **Internal team dogfood on Celo mainnet**: 30 days, small personal funds, behind Statsig flag `wri_dollars_spend_7702_v1` for internal team only. Evidence: at least 30 successful real swaps via the batched path with zero stuck delegations and zero unexpected reverts.
 
 ## Rollback / recovery plan
