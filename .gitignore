@@ -150,3 +150,7 @@ builds/
 
 # Kotlin compiler caches (Android)
 android/.kotlin/
+
+# Foundry deployment broadcast logs (local outputs of `forge script --broadcast`)
+contracts/broadcast/
+contracts-research/broadcast/
