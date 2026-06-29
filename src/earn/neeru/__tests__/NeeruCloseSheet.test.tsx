@@ -34,7 +34,7 @@ describe('NeeruCloseSheet', () => {
     const store = createMockStore({ neeru: initialNeeruState } as any)
     const { getByText } = render(
       <Provider store={store}>
-        <NeeruCloseSheet position={pos} onClose={() => {}} />
+        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
       </Provider>
     )
     // Translation mock returns keys, so we assert on the principal/interest VALUES
@@ -48,7 +48,7 @@ describe('NeeruCloseSheet', () => {
     const spy = jest.spyOn(store, 'dispatch')
     const { getByTestId } = render(
       <Provider store={store}>
-        <NeeruCloseSheet position={pos} onClose={() => {}} />
+        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
       </Provider>
     )
     fireEvent.press(getByTestId('NeeruCloseSheet.Confirm'))

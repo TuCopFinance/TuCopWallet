@@ -1,12 +1,24 @@
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
-import { fetchNeeruPositionsSaga } from 'src/earn/neeru/saga'
 import {
+  NEERU_INTEREST_POOL_LOW_ACTION,
+  closeNeeruPositionSaga,
+  fetchNeeruPositionsSaga,
+} from 'src/earn/neeru/saga'
+import {
+  closePositionFailure,
+  closePositionStart,
+  closePositionSuccess,
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
 } from 'src/earn/neeru/slice'
+import { triggerShortcutRequest } from 'src/positions/saga'
+import { hooksApiUrlSelector } from 'src/positions/selectors'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { prepareTransactions } from 'src/viem/prepareTransactions'
+import { sendPreparedTransactions } from 'src/viem/saga'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 describe('fetchNeeruPositionsSaga', () => {
@@ -55,7 +67,53 @@ describe('fetchNeeruPositionsSaga', () => {
         )
         dispatchedSuccess = !!(successCalls && successCalls.length > 0)
       })
-      .catch(() => {})
+      .catch(jest.fn())
     expect(dispatchedSuccess).toBe(false)
+  })
+})
+
+describe('closeNeeruPositionSaga', () => {
+  const WALLET = '0x' + 'a'.repeat(40)
+  const POSITION_ID = '1234'
+
+  it('dispatches success on happy path', async () => {
+    const fakeTxs = [{ to: '0x', data: '0x', value: '0', networkId: 'celo-mainnet' }]
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
+        [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
+        [matchers.call.fn(sendPreparedTransactions), []],
+      ])
+      .put(closePositionSuccess({ positionId: POSITION_ID }))
+      .run()
+  })
+
+  it('on InterestPoolLow revert, dispatches NEERU_INTEREST_POOL_LOW_ACTION + closePositionFailure', async () => {
+    const err = new Error('Reverted: InterestPoolLow')
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), Promise.reject(err)],
+      ])
+      .put({ type: NEERU_INTEREST_POOL_LOW_ACTION, payload: { positionId: POSITION_ID } })
+      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .run()
+  })
+
+  it('on generic error, dispatches closePositionFailure', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: 'boom' }))
+      .run()
   })
 })
