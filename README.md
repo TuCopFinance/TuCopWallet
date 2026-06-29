@@ -15,7 +15,7 @@ TuCOP Wallet is a React Native mobile application that provides digital wallet s
 
 | Layer          | Technology                           |
 | -------------- | ------------------------------------ |
-| **Frontend**   | React Native 0.72.15 + TypeScript    |
+| **Frontend**   | React Native 0.77.3 + TypeScript     |
 | **State**      | Redux Toolkit + Redux Saga           |
 | **Navigation** | React Navigation 7.x                 |
 | **Blockchain** | Viem (Celo network)                  |
@@ -77,7 +77,6 @@ TuCopWallet/
 │   │   ├── e2e-pr.yml              #     E2E on pull requests
 │   │   └── ...                     #     Translation checks, semantic PR, faucet balance
 │   ├── CODEOWNERS                  #   Code ownership rules
-│   ├── CONTRIBUTING.md             #   → Redirects to /CONTRIBUTING.md
 │   ├── SETUP_CHECKLIST.md          #   CI/CD secrets & certificates checklist
 │   └── pull_request_template.md    #   PR template
 │
@@ -195,12 +194,11 @@ TuCopWallet/
 │   ├── ci-cd.md                    #   CI/CD pipeline architecture
 │   ├── celo-gas-optimization.md    #   Celo L2 gas fee optimization
 │   ├── phone-verification.md       #   Integrated phone verification design
-│   ├── buckspay-implementation.md  #   BucksPay offramp implementation
-│   ├── buckspay-api.md             #   BucksPay API reference (OpenAPI 3.0)
+│   ├── integrations.md             #   External services the wallet integrates with
 │   ├── connecting-dapps.md         #   WalletConnect v2 DApp guide
 │   ├── deeplinks.md                #   Deep linking specification
 │   ├── releases.md                 #   Release reference
-│   ├── syncing-forks.md            #   Upstream fork sync guide (historical)
+│   ├── navigation-flows.md         #   User-facing navigation flows
 │   └── archive/                    #   Legacy Mobile Stack documentation
 │       ├── runbook.md              #     Original framework setup runbook
 │       ├── wallet.md               #     Original Valora wallet docs
@@ -350,14 +348,14 @@ See [docs/guides/ci-cd.md](docs/guides/ci-cd.md) for the pipeline architecture.
 
 Full documentation index: [docs/README.md](docs/README.md)
 
-| Category         | Documents                                                                                                                                                                                                                                                                        |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Setup**        | [guides/wallet-setup.md](docs/guides/wallet-setup.md), [.github/SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                                                                                                                                  |
-| **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                                          |
-| **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/NAVIGATION_FLOWS.md](docs/reference/NAVIGATION_FLOWS.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md)         |
-| **Integrations** | [reference/buckspay-api.md](docs/reference/buckspay-api.md), [reference/buckspay-implementation.md](docs/reference/buckspay-implementation.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md) |
-| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                                 |
-| **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                                     |
+| Category         | Documents                                                                                                                                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Setup**        | [guides/wallet-setup.md](docs/guides/wallet-setup.md), [.github/SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                                                                                                                  |
+| **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                          |
+| **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md), [reference/integrations.md](docs/reference/integrations.md) |
+| **Integrations** | [reference/integrations.md](docs/reference/integrations.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md), [guides/navigation-flows.md](docs/guides/navigation-flows.md)     |
+| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                 |
+| **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                     |
 
 ## URLs & Links
 
@@ -403,7 +401,7 @@ valora-inc/wallet (original Valora wallet)
 
 > **Note**: The entire [mobilestack-xyz](https://github.com/mobilestack-xyz) organization was **archived in January 2026** (all repos read-only). TuCOP Wallet is now independently maintained. Original framework documentation is preserved in [docs/archive/](docs/archive/).
 
-For historical reference on syncing with the upstream fork, see [docs/guides/syncing-forks.md](docs/guides/syncing-forks.md).
+For historical reference on syncing with the upstream fork, see [docs/archive/2026-01-mobile-stack/syncing-forks.md](docs/archive/2026-01-mobile-stack/syncing-forks.md).
 
 ## License
 
