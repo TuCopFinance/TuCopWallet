@@ -2914,6 +2914,74 @@
       "noStakes": "No tienes ningún stake activo"
     }
   },
+  "neeruVaults": {
+    "tranches": {
+      "flexible": "Flexible",
+      "thirtyDays": "30 dias",
+      "sixtyDays": "60 dias",
+      "ninetyDays": "90 dias"
+    },
+    "detail": {
+      "header": "Tus depositos {{trancheLabel}}",
+      "aggregateBalance": "Total en {{trancheLabel}}",
+      "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% mensual",
+      "depositCta": "Depositar",
+      "noPositions": "Todavia no tienes depositos en esta opcion",
+      "descriptionByTranche": {
+        "flexible": "Retira en cualquier momento, sin tiempo minimo",
+        "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
+        "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
+        "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
+      },
+      "transparency": {
+        "title": "Transparencia",
+        "sourceLine": "Codigo fuente",
+        "contractLine": "Contrato",
+        "sourceUrl": "https://github.com/NeeruFi/neeru-vaults"
+      }
+    },
+    "positionRow": {
+      "principal": "Capital: {{amount}}",
+      "interest": "Ganado: {{amount}}",
+      "maturity": "Disponible el {{date}}",
+      "flexible": "Sin tiempo minimo",
+      "depositedAt": "Depositado el {{date}}",
+      "manageCta": "Gestionar"
+    },
+    "closeSheet": {
+      "title": "Retira tu deposito",
+      "currentPayout": "Recibiras",
+      "principalLabel": "Capital",
+      "interestLabel": "Intereses ganados",
+      "penaltyLabel": "Comision por retiro temprano ({{percentage}}%)",
+      "totalLabel": "Total",
+      "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al capital.",
+      "confirmCta": "Confirmar retiro"
+    },
+    "emergencyCloseSheet": {
+      "title": "Retiro de emergencia",
+      "subtitle": "El fondo no puede pagar intereses en este momento",
+      "explanation": "Puedes recuperar tu capital de {{principal}} ahora, pero perderas los {{interest}} de interes que generaste. Esta accion no se puede revertir.",
+      "alternative": "Si puedes esperar, el fondo se recupera generalmente en unas horas.",
+      "primaryCta": "Esperar e intentar despues",
+      "secondaryCta": "Retirar solo el capital"
+    },
+    "errors": {
+      "fetchPositionsFailed": "No pudimos cargar tus depositos. Desliza hacia abajo para reintentar.",
+      "closeFailed": "No pudimos procesar el retiro. Intenta de nuevo.",
+      "unknown": "Algo salio mal. Intenta de nuevo.",
+      "invalidTranche": "Opcion invalida.",
+      "invalidAmount": "Monto invalido.",
+      "amountBelowMin": "Deposito minimo: {{minAmount}} Pesos.",
+      "depositsPaused": "Los depositos estan temporalmente pausados.",
+      "globalCapExceeded": "El fondo esta lleno. Intenta mas tarde.",
+      "trancheCapExceeded": "Esta opcion esta llena. Prueba otra o intenta mas tarde.",
+      "rateNotSet": "Esta opcion no esta disponible en este momento.",
+      "positionStale": "Actualiza tus depositos y reintenta.",
+      "positionAlreadyClosed": "Este deposito ya fue cerrado.",
+      "serviceUnavailable": "El servicio no esta disponible en este momento. Intenta mas tarde."
+    }
+  },
   "global": {
     "ok": "Aceptar",
     "cancel": "Cancelar",
