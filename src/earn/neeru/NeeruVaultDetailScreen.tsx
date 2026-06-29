@@ -101,7 +101,7 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
         <Text style={styles.header}>{t('neeruVaults.detail.header', { trancheLabel })}</Text>
         <Text style={styles.description}>{description}</Text>
         <Text style={styles.total}>
-          {t('neeruVaults.detail.aggregateBalance', { trancheLabel })}: {total}
+          {t('neeruVaults.detail.aggregateBalance', { trancheLabel, amount: total })}
         </Text>
 
         {positions.length === 0 ? (
