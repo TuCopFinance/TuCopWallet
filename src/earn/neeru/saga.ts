@@ -1,5 +1,15 @@
+import BigNumber from 'bignumber.js'
+import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
 import {
+  NEERU_CONTRACT_ADDRESS,
+  NEERU_CATEGORY_LABEL_KEYS,
+  NeeruCategoryId,
+} from 'src/earn/neeru/constants'
+import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
+import { computePayout, monthlyPercentFromRateValue } from 'src/earn/neeru/rateConversion'
+import {
+  addOptimisticPosition,
   closePositionFailure,
   closePositionStart,
   closePositionSuccess,
@@ -7,7 +17,10 @@ import {
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
+  markOptimisticPositionStale,
+  removeOptimisticPosition,
 } from 'src/earn/neeru/slice'
+import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { hooksApiUrlSelector } from 'src/positions/selectors'
 import { RawShortcutTransaction } from 'src/positions/slice'
 import { triggerShortcutRequest } from 'src/positions/saga'
@@ -21,11 +34,21 @@ import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactio
 import { sendPreparedTransactions } from 'src/viem/saga'
 import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { call, put, select, spawn, takeLeading } from 'typed-redux-saga'
+import { call, delay, put, race, select, spawn, takeLeading } from 'typed-redux-saga'
 
 const TAG = 'earn/neeru/saga'
 
 export const NEERU_LOW_POOL_ACTION = 'neeru/interestPoolLow' as const
+
+const NEERU_OPTIMISTIC_POLL_INTERVAL_MS = 15_000
+const NEERU_OPTIMISTIC_TIMEOUT_MS = 5 * 60_000
+
+const CATEGORY_DURATION_SECONDS: Record<NeeruCategoryId, number> = {
+  0: 0,
+  1: 30 * 86_400,
+  2: 60 * 86_400,
+  3: 90 * 86_400,
+}
 
 function isLowPoolError(error: Error): boolean {
   return error.message.includes('InterestPoolLow')
@@ -164,6 +187,137 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
 
 export function* watchEmergencyCloseNeeruPosition() {
   yield* takeLeading(emergencyCloseStart.type, emergencyCloseNeeruPositionSaga)
+}
+
+function buildOptimisticPosition({
+  txHash,
+  blockNumber,
+  tranche,
+  amountRaw,
+  rateValue,
+}: {
+  txHash: string
+  blockNumber: number
+  tranche: NeeruCategoryId
+  amountRaw: string
+  rateValue: string
+}): NeeruIndividualPosition {
+  const amountDecimal = new BigNumber(amountRaw).shiftedBy(-18).toFixed()
+  const startTs = Math.floor(Date.now() / 1000)
+  const endTs = tranche === 0 ? 0 : startTs + CATEGORY_DURATION_SECONDS[tranche]
+  return {
+    positionId: `optimistic:${txHash}`,
+    tranche,
+    categoryLabel: NEERU_CATEGORY_LABEL_KEYS[tranche],
+    principal: amountDecimal,
+    accruedInterest: '0',
+    rateValue,
+    monthlyRatePercentage: monthlyPercentFromRateValue(rateValue),
+    startTs,
+    endTs,
+    depositBlock: blockNumber,
+    depositTxHash: txHash,
+    renewedFromPositionId: null,
+    currentPayoutIfClosed: computePayout({
+      principal: amountDecimal,
+      accruedInterest: '0',
+      penaltyBps: 0,
+      isEarly: tranche !== 0,
+    }),
+    optimistic: true,
+    staleOptimistic: false,
+  }
+}
+
+export function* pollUntilBackendCatchesUp({
+  baseUrl,
+  walletAddress,
+  txHash,
+}: {
+  baseUrl: string
+  walletAddress: string
+  txHash: string
+}): Generator<any, true, any> {
+  while (true) {
+    yield* delay(NEERU_OPTIMISTIC_POLL_INTERVAL_MS)
+    try {
+      const response = yield* call(fetchNeeruPositions, { baseUrl, walletAddress })
+      const found = response.positions.find(
+        (p) => p.depositTxHash.toLowerCase() === txHash.toLowerCase()
+      )
+      if (found) {
+        yield* put(
+          fetchPositionsSuccess({
+            positions: response.positions,
+            lastSyncedBlock: response.lastSyncedBlock,
+            lastSyncedAt: response.lastSyncedAt,
+          })
+        )
+        return true
+      }
+    } catch (e) {
+      const err = ensureError(e)
+      Logger.warn(TAG, 'optimistic poll failed; will retry', err)
+    }
+  }
+}
+
+// Extracted so tests can mock this single call() and control the race
+// outcome deterministically without timing-sensitive plumbing.
+export function* awaitOptimisticResolution(args: {
+  baseUrl: string
+  walletAddress: string
+  txHash: string
+}): Generator<any, 'matched' | 'timedOut', any> {
+  const result = yield* race({
+    matched: call(pollUntilBackendCatchesUp, args),
+    timedOut: delay(NEERU_OPTIMISTIC_TIMEOUT_MS),
+  })
+  return result.matched ? 'matched' : 'timedOut'
+}
+
+export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    Logger.warn(TAG, 'no wallet address, skipping optimistic flow')
+    return
+  }
+  const parsed = parseDepositEvent(receipt, NEERU_CONTRACT_ADDRESS)
+  if (!parsed) {
+    Logger.warn(TAG, 'no Deposit event in receipt; falling back to normal fetch', {
+      tx: receipt.transactionHash,
+    })
+    yield* put(fetchPositionsStart())
+    return
+  }
+  const tranche = parsed.tranche
+  if (tranche < 0 || tranche > 3) {
+    Logger.warn(TAG, 'tranche out of range in Deposit event', { tranche })
+    return
+  }
+  const txHash = receipt.transactionHash.toLowerCase()
+  const optimistic = buildOptimisticPosition({
+    txHash,
+    blockNumber: Number(receipt.blockNumber),
+    tranche: tranche as NeeruCategoryId,
+    amountRaw: parsed.principal,
+    rateValue: parsed.rateValue,
+  })
+  yield* put(addOptimisticPosition(optimistic))
+
+  const baseUrl = networkConfig.tucopBackendApiUrl
+  const outcome = yield* call(awaitOptimisticResolution, {
+    baseUrl,
+    walletAddress,
+    txHash,
+  })
+
+  if (outcome === 'matched') {
+    yield* put(removeOptimisticPosition({ depositTxHash: txHash }))
+  } else {
+    Logger.warn(TAG, 'optimistic deposit not surfaced by backend within timeout', { tx: txHash })
+    yield* put(markOptimisticPositionStale({ depositTxHash: txHash }))
+  }
 }
 
 export function* neeruSaga() {
