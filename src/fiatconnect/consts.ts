@@ -8,10 +8,17 @@ export const FIATCONNECT_CURRENCY_TO_WALLET_CURRENCY: Partial<Record<FiatType, L
     [FiatType.USD]: LocalCurrencyCode.USD,
   }
 
+// Maps the wallet's internal Currency value (e.g. 'USDm', 'EURm', 'CELO') to the
+// FiatConnect protocol's CryptoType (which keeps legacy 'cUSD'/'cEUR'/'cREAL'
+// strings because they are an external protocol contract we don't control).
+// Legacy on-chain symbols (cUSD/cEUR/cREAL) are also accepted as keys so callers
+// that still pass the raw token.symbol resolve correctly.
 export const WALLET_CRYPTO_TO_FIATCONNECT_CRYPTO: Record<string, CryptoType | undefined> = {
   CELO: CryptoType.CELO,
-  cEUR: CryptoType.cEUR,
+  USDm: CryptoType.cUSD,
+  EURm: CryptoType.cEUR,
   cUSD: CryptoType.cUSD,
+  cEUR: CryptoType.cEUR,
   cREAL: CryptoType.cREAL,
   COPm: 'COPm',
   USDT: 'USDT',

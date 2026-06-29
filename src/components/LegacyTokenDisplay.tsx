@@ -4,7 +4,7 @@ import { StyleProp, TextStyle } from 'react-native'
 import TokenDisplay from 'src/components/TokenDisplay'
 import { useTokenInfoByAddress, useTokenInfoWithAddressBySymbol } from 'src/tokens/hooks'
 import { LocalAmount } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 
 interface Props {
   amount: BigNumber.Value
@@ -41,8 +41,11 @@ function LegacyTokenDisplay({
   }
 
   const tokenInfoFromAddress = useTokenInfoByAddress(tokenAddress)
+  // Look up the token by its on-chain symbol, which may differ from the
+  // Currency enum value (Mento stables: enum is USDm/EURm internally but on
+  // chain they are still cUSD/cEUR after the rebrand).
   const tokenInfoFromCurrency = useTokenInfoWithAddressBySymbol(
-    currency! === Currency.Celo ? 'CELO' : currency!
+    currency ? CURRENCY_TO_CHAIN_SYMBOL[currency] : (currency as unknown as string)
   )
   const tokenInfo = tokenInfoFromAddress || tokenInfoFromCurrency
   return (
