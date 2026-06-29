@@ -104,4 +104,22 @@ describe('NeeruVaultDetailScreen', () => {
     // Full contract address must NOT be truncated
     expect(getByText(/0xD05CDF2DC56D97333c547519dF58D56145766294/)).toBeTruthy()
   })
+
+  it('opens NeeruCloseSheet when a position row Manage is pressed', () => {
+    const store = createMockStore({
+      neeru: {
+        ...initialNeeruState,
+        positions: [positionFor('555')],
+        fetchStatus: 'success',
+      },
+    } as any)
+    const { getByTestId, queryByTestId } = render(
+      <Provider store={store}>
+        <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
+      </Provider>
+    )
+    expect(queryByTestId('NeeruCloseSheet')).toBeNull()
+    fireEvent.press(getByTestId('NeeruPositionRow.Manage.555'))
+    expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
+  })
 })
