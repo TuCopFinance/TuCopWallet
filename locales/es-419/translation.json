@@ -2972,7 +2972,8 @@
       "explanation": "Puedes recuperar tu capital de {{principal}} ahora, pero perderas los {{interest}} de interes que generaste. Esta accion no se puede revertir.",
       "alternative": "Si puedes esperar, el fondo se recupera generalmente en unas horas.",
       "primaryCta": "Esperar e intentar despues",
-      "secondaryCta": "Retirar solo el capital"
+      "secondaryCta": "Retirar solo el capital",
+      "confirmAgain": "Toca de nuevo para confirmar"
     },
     "errors": {
       "fetchPositionsFailed": "No pudimos cargar tus depositos. Desliza hacia abajo para reintentar.",
