@@ -14,9 +14,11 @@ import {
   NeeruTrancheId,
   trancheIdFromPositionId,
 } from 'src/earn/neeru/constants'
+import NeeruCloseSheet from 'src/earn/neeru/NeeruCloseSheet'
 import NeeruPositionRow from 'src/earn/neeru/NeeruPositionRow'
 import { neeruFetchStatusSelector, neeruPositionsByTrancheSelector } from 'src/earn/neeru/selectors'
 import { fetchPositionsStart } from 'src/earn/neeru/slice'
+import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -40,6 +42,9 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const dispatch = useDispatch()
   const fetchStatus = useSelector(neeruFetchStatusSelector)
   const byTranche = useSelector(neeruPositionsByTrancheSelector)
+  const [selectedPosition, setSelectedPosition] = React.useState<NeeruIndividualPosition | null>(
+    null
+  )
 
   const trancheId = trancheIdFromPositionId(pool.positionId)
 
@@ -84,9 +89,7 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
               <NeeruPositionRow
                 key={p.positionId}
                 position={p}
-                onManagePress={() => {
-                  // Wired in Phase 7 (close sheet). No-op for now.
-                }}
+                onManagePress={(pos) => setSelectedPosition(pos)}
               />
             ))}
           </View>
@@ -117,6 +120,9 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
           </Text>
         </View>
       </ScrollView>
+      {selectedPosition && (
+        <NeeruCloseSheet position={selectedPosition} onClose={() => setSelectedPosition(null)} />
+      )}
     </SafeAreaView>
   )
 }
