@@ -15,9 +15,15 @@ import {
   categoryIdFromPositionId,
 } from 'src/earn/neeru/constants'
 import NeeruCloseSheet from 'src/earn/neeru/NeeruCloseSheet'
+import NeeruEmergencyCloseSheet from 'src/earn/neeru/NeeruEmergencyCloseSheet'
 import NeeruPositionRow from 'src/earn/neeru/NeeruPositionRow'
-import { neeruFetchStatusSelector, neeruPositionsByCategorySelector } from 'src/earn/neeru/selectors'
-import { fetchPositionsStart } from 'src/earn/neeru/slice'
+import {
+  neeruCloseStatusSelector,
+  neeruFetchStatusSelector,
+  neeruLastErrorSelector,
+  neeruPositionsByCategorySelector,
+} from 'src/earn/neeru/selectors'
+import { emergencyCloseStart, fetchPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -41,16 +47,33 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const fetchStatus = useSelector(neeruFetchStatusSelector)
+  const closeStatus = useSelector(neeruCloseStatusSelector)
+  const lastError = useSelector(neeruLastErrorSelector)
   const byTranche = useSelector(neeruPositionsByCategorySelector)
   const [selectedPosition, setSelectedPosition] = React.useState<NeeruIndividualPosition | null>(
     null
   )
+  const [emergencyTarget, setEmergencyTarget] = React.useState<NeeruIndividualPosition | null>(null)
+  const lastSelectedRef = React.useRef<NeeruIndividualPosition | null>(null)
 
   const trancheId = categoryIdFromPositionId(pool.positionId)
 
   useEffect(() => {
     dispatch(fetchPositionsStart())
   }, [dispatch])
+
+  useEffect(() => {
+    if (selectedPosition) {
+      lastSelectedRef.current = selectedPosition
+    }
+  }, [selectedPosition])
+
+  useEffect(() => {
+    if (closeStatus === 'error' && lastError === 'InterestPoolLow' && lastSelectedRef.current) {
+      setEmergencyTarget(lastSelectedRef.current)
+      setSelectedPosition(null)
+    }
+  }, [closeStatus, lastError])
 
   if (trancheId === null) {
     return null
@@ -122,6 +145,16 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
       </ScrollView>
       {selectedPosition && (
         <NeeruCloseSheet position={selectedPosition} onClose={() => setSelectedPosition(null)} />
+      )}
+      {emergencyTarget && (
+        <NeeruEmergencyCloseSheet
+          position={emergencyTarget}
+          onCancel={() => setEmergencyTarget(null)}
+          onConfirm={(pos) => {
+            dispatch(emergencyCloseStart({ positionId: pos.positionId }))
+            setEmergencyTarget(null)
+          }}
+        />
       )}
     </SafeAreaView>
   )

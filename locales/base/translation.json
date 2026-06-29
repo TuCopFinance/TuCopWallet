@@ -2965,7 +2965,8 @@
       "explanation": "You can recover your principal of {{principal}} now, but you will forfeit the {{interest}} of interest you earned. This is irreversible.",
       "alternative": "If you can wait, the fund usually recovers within a few hours.",
       "primaryCta": "Wait and try again later",
-      "secondaryCta": "Withdraw principal only"
+      "secondaryCta": "Withdraw principal only",
+      "confirmAgain": "Tap again to confirm"
     },
     "errors": {
       "fetchPositionsFailed": "We couldn't load your positions. Pull down to retry.",
