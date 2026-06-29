@@ -4,6 +4,8 @@ import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import PoolCard from 'src/earn/PoolCard'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import { NetworkId } from 'src/transactions/types'
 import { createMockStore } from 'test/utils'
 import {
@@ -12,6 +14,8 @@ import {
   mockEarnPositions,
   mockTokenBalances,
 } from 'test/values'
+
+jest.mock('src/navigator/NavigationService', () => ({ navigate: jest.fn() }))
 
 describe('PoolCard', () => {
   it('renders correctly', () => {
@@ -61,6 +65,32 @@ describe('PoolCard', () => {
       depositTokenId: mockArbUsdcTokenId,
       poolAmount: '10',
       providerId: 'aave',
+    })
+  })
+
+  describe('navigation branching', () => {
+    beforeEach(() => jest.clearAllMocks())
+
+    it('routes non-Neeru pools to EarnPoolInfoScreen', () => {
+      const pool = { ...mockEarnPositions[0], appId: 'allbridge' }
+      const { getByTestId } = render(
+        <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
+          <PoolCard pool={pool} testID="PoolCard.allbridge" />
+        </Provider>
+      )
+      fireEvent.press(getByTestId('PoolCard.allbridge'))
+      expect(navigate).toHaveBeenCalledWith(Screens.EarnPoolInfoScreen, { pool })
+    })
+
+    it('routes Neeru pools to NeeruVaultDetail', () => {
+      const pool = { ...mockEarnPositions[0], appId: 'neeru-vaults' }
+      const { getByTestId } = render(
+        <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
+          <PoolCard pool={pool} testID="PoolCard.neeru" />
+        </Provider>
+      )
+      fireEvent.press(getByTestId('PoolCard.neeru'))
+      expect(navigate).toHaveBeenCalledWith(Screens.NeeruVaultDetail, { pool })
     })
   })
 })
