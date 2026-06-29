@@ -3,13 +3,10 @@ import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getAddress } from 'viem'
-import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import Touchable from 'src/components/Touchable'
 import {
-  FONDO_COPM_MVP_ADDRESS,
   NEERU_TRANCHE_LABEL_KEYS,
   NeeruTrancheId,
   trancheIdFromPositionId,
@@ -82,7 +79,6 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const positions = byTranche[trancheId]
   const trancheLabel = t(NEERU_TRANCHE_LABEL_KEYS[trancheId])
   const description = t(DESCRIPTION_KEY_BY_TRANCHE[trancheId])
-  const sourceUrl = t('neeruVaults.detail.transparency.sourceUrl')
   const total = positions
     .reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
     .toFixed(2)
@@ -126,22 +122,6 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
           testID="NeeruVaultDetail.DepositCta"
           style={styles.cta}
         />
-
-        <View style={styles.transparency}>
-          <Text style={styles.transparencyTitle}>{t('neeruVaults.detail.transparency.title')}</Text>
-          <Touchable
-            testID="NeeruVaultDetail.SourceLink"
-            onPress={() => Linking.openURL(sourceUrl)}
-          >
-            <Text style={styles.transparencyLink}>
-              {t('neeruVaults.detail.transparency.sourceLine')}: {sourceUrl}
-            </Text>
-          </Touchable>
-          <Text style={styles.transparencyText}>
-            {t('neeruVaults.detail.transparency.contractLine')}:{' '}
-            {getAddress(FONDO_COPM_MVP_ADDRESS)}
-          </Text>
-        </View>
       </ScrollView>
       {selectedPosition && (
         <NeeruCloseSheet position={selectedPosition} onClose={() => setSelectedPosition(null)} />
@@ -174,24 +154,4 @@ const styles = StyleSheet.create({
   },
   positionsList: { gap: Spacing.Smallest8 },
   cta: { marginTop: Spacing.Large32 },
-  transparency: {
-    marginTop: Spacing.Large32,
-    padding: Spacing.Regular16,
-    backgroundColor: Colors.gray1,
-    borderRadius: 12,
-    gap: Spacing.Tiny4,
-  },
-  transparencyTitle: {
-    ...typeScale.labelSmall,
-    color: Colors.gray3,
-    marginBottom: Spacing.Smallest8,
-  },
-  transparencyLink: {
-    ...typeScale.bodySmall,
-    color: Colors.accent,
-  },
-  transparencyText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-  },
 })
