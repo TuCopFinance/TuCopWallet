@@ -28,7 +28,7 @@ const pos: NeeruIndividualPosition = {
 
 describe('NeeruPositionRow', () => {
   it('renders principal and interest', () => {
-    const { getByText } = render(<NeeruPositionRow position={pos} onManagePress={() => {}} />)
+    const { getByText } = render(<NeeruPositionRow position={pos} onManagePress={jest.fn()} />)
     expect(getByText(/10000/)).toBeTruthy()
     expect(getByText(/82.5/)).toBeTruthy()
   })
