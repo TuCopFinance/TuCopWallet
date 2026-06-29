@@ -23,10 +23,16 @@ import { Field, SwapInfo } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
-import { NetworkId } from 'src/transactions/types'
+import { Network, NetworkId } from 'src/transactions/types'
+import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
+import { publicClient } from 'src/viem'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
+import { getViemWallet } from 'src/web3/contracts'
+import networkConfig from 'src/web3/networkConfig'
+import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { walletAddressSelector } from 'src/web3/selectors'
+import { Address } from 'viem'
 
 const TAG = 'dollarsSpend/saga'
 
@@ -50,17 +56,174 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     return
   }
 
-  // Track C: when the EIP-7702 / CIP-64 single-tx path is enabled, hand off to
-  // the new saga. The legacy sequential loop below is the fallback whenever
-  // the flag is off, the BatchExecutor isn't deployed yet, or the new path
-  // throws (the new saga handles its own error dispatch).
+  // Track C: when the EIP-7702 / CIP-64 single-tx path is enabled AND the
+  // user's EOA is already delegated to our hardened BatchExecutor, hand off
+  // to the new saga. The legacy sequential loop below is the fallback for:
+  //   - flag off
+  //   - user not delegated yet (until the sponsored-relay endpoint is live,
+  //     first-time users without CELO go through legacy; once relayed and
+  //     delegated, every subsequent run takes the 7702 path)
+  //   - the BatchExecutor address being misconfigured
+  //   - the new path throwing (the new saga handles its own error dispatch)
+  //
+  // Why two conditions instead of trying to combine 7702 + CIP-64 in a single
+  // tx: in Celo, type 0x04 (EIP-7702 authorizationList) and type 0x7b (CIP-64
+  // feeCurrency) are mutually-exclusive tx envelopes. A user with a persistent
+  // delegation can submit a CIP-64 tx that calls execute() on their own EOA
+  // (which runs the BatchExecutor code) paying gas in a stable. A user without
+  // delegation needs a separate tx 0x04 first, which costs CELO and is the
+  // relay's job.
   const sevenSevenZeroTwoOn = yield* call(
     getFeatureGate,
     StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1
   )
   if (sevenSevenZeroTwoOn) {
-    yield* call(executeDollarsSpend7702Saga, action)
-    return
+    const walletAddress = yield* select(walletAddressSelector)
+    if (walletAddress) {
+      const expectedDesignator = `0xef0100${networkConfig.batchExecutorAddressCelo
+        .slice(2)
+        .toLowerCase()}`
+      const code = yield* call(() =>
+        publicClient[Network.Celo].getCode({ address: walletAddress as Address })
+      )
+      let isOurDelegation = (code ?? '').toLowerCase() === expectedDesignator
+
+      // If not delegated yet, ask the backend's sponsored-relay endpoint to
+      // submit the type-0x04 setup tx. The relay pays gas in CELO from a
+      // TuCop hot wallet so users without CELO can still bootstrap the
+      // delegation. On success the relay waits for receipt + verifies code
+      // before responding 200, so by then the delegation is on-chain.
+      // Any failure (rate limit, hot wallet down, signing issue) silently
+      // falls through to the legacy multi-step path so the user always
+      // gets a working flow.
+      if (!isOurDelegation) {
+        try {
+          const wallet = yield* call(getViemWallet, networkConfig.viemChain[Network.Celo])
+          if (wallet.account) {
+            yield* call(getConnectedUnlockedAccount)
+            // No `executor` field: the relay (not the user) submits the tx, so
+            // the signed authorization must use the EOA's CURRENT nonce, not
+            // nonce+1. Setting executor:'self' would lock the auth to a tx
+            // submitted by the EOA itself; the relay's tx would then mismatch.
+            const auth = yield* call(() =>
+              wallet.signAuthorization({
+                account: wallet.account!,
+                contractAddress: networkConfig.batchExecutorAddressCelo,
+              })
+            )
+            // viem's authorization object uses bigint fields; serialize for JSON.
+            const relayBody = {
+              userAddress: walletAddress,
+              signedAuthorization: {
+                chainId: `0x${auth.chainId.toString(16)}`,
+                address: networkConfig.batchExecutorAddressCelo,
+                nonce: `0x${auth.nonce.toString(16)}`,
+                yParity: auth.yParity === 0 ? '0x0' : '0x1',
+                r: auth.r,
+                s: auth.s,
+              },
+            }
+
+            // Backend spec: happy path 3-7s; recommend 20s client timeout to
+            // cover worst-case mining variance + safety margin.
+            const RELAY_TIMEOUT_MS = 20_000
+            const RELAY_MAX_ATTEMPTS = 3
+
+            // Try the relay up to RELAY_MAX_ATTEMPTS times. We hand-roll the
+            // retry loop here (instead of relying solely on fetchWithTimeout's
+            // built-in 5xx retry) because we need:
+            //   - 429: respect Retry-After header
+            //   - 502 "unverified": re-check on-chain getCode before retrying,
+            //     since the delegation tx may have mined despite the relay's
+            //     verification step failing
+            //   - 503/400: do not retry; fall through to legacy
+            let attempt = 0
+            while (attempt < RELAY_MAX_ATTEMPTS && !isOurDelegation) {
+              const res = yield* call(
+                fetchWithTimeout,
+                networkConfig.wriDelegateRelayUrl,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(relayBody),
+                },
+                RELAY_TIMEOUT_MS
+              )
+
+              if (res.ok) {
+                const body = (yield* call(() => res.json())) as { status?: string }
+                if (body.status === 'delegated' || body.status === 'already_delegated') {
+                  isOurDelegation = true
+                }
+                break
+              }
+
+              if (res.status === 429) {
+                const retryAfterRaw = res.headers.get('retry-after')
+                const retryAfterSec = retryAfterRaw ? Number(retryAfterRaw) : NaN
+                const waitMs = Number.isFinite(retryAfterSec)
+                  ? Math.min(retryAfterSec * 1000, 5_000)
+                  : 1_000
+                Logger.warn(TAG, `relay 429; waiting ${waitMs}ms then retrying`)
+                yield* delay(waitMs)
+                attempt += 1
+                continue
+              }
+
+              if (res.status === 502) {
+                // The relay submitted a tx but couldn't verify the on-chain
+                // code update within its own deadline. The tx may still have
+                // mined by now. Re-check before retrying so we don't re-sign
+                // a duplicate authorization.
+                Logger.warn(TAG, `relay 502; rechecking on-chain delegation`)
+                const recheckCode = yield* call(() =>
+                  publicClient[Network.Celo].getCode({ address: walletAddress as Address })
+                )
+                if ((recheckCode ?? '').toLowerCase() === expectedDesignator) {
+                  Logger.info(TAG, `delegation now present on-chain after 502; proceeding`)
+                  isOurDelegation = true
+                  break
+                }
+                // Exponential backoff: 1s, 2s.
+                const backoffMs = 1_000 * 2 ** attempt
+                yield* delay(backoffMs)
+                attempt += 1
+                continue
+              }
+
+              if (res.status === 503) {
+                Logger.warn(TAG, `relay 503 (degraded); falling back to legacy`)
+                break
+              }
+
+              if (res.status === 400) {
+                Logger.warn(
+                  TAG,
+                  `relay 400 (validation); likely a client bug; falling back to legacy`
+                )
+                break
+              }
+
+              Logger.warn(TAG, `relay returned ${res.status}; falling back to legacy multi-step`)
+              break
+            }
+          }
+        } catch (err) {
+          Logger.warn(
+            TAG,
+            `relay flow threw, falling back to legacy: ${
+              err instanceof Error ? err.message : String(err)
+            }`
+          )
+        }
+      }
+
+      if (isOurDelegation) {
+        yield* call(executeDollarsSpend7702Saga, action)
+        return
+      }
+    }
+    // Fall through to legacy when not delegated and relay didn't deliver.
   }
 
   yield* put(multiSwapStarted({ steps }))
