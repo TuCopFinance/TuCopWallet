@@ -21,6 +21,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getTokenDisplayName } from 'src/tokens/utils'
 
 export default function PoolCard({
   pool,
@@ -84,6 +85,16 @@ export default function PoolCard({
 
   const totalYieldRate = getTotalYieldRate(pool).toFixed(2)
 
+  // For Neeru pools, prefer the per-tranche label from backend (Flexible / 30 dias / 60 dias / 90 dias)
+  // so the 4 Neeru cards are distinguishable. For other providers, fall back to user-friendly token
+  // display names (cCOP -> Pesos, USDT/USDC -> Dolares, etc.) per the wallet manual.
+  const cardTitle = useMemo(() => {
+    if (pool.appId === 'neeru-vaults' && pool.displayProps.title) {
+      return pool.displayProps.title
+    }
+    return tokensInfo.map((token) => getTokenDisplayName(token.symbol)).join(' / ')
+  }, [pool, tokensInfo])
+
   const onPress = () => {
     AppAnalytics.track(EarnEvents.earn_pool_card_press, {
       poolId: positionId,
@@ -117,9 +128,7 @@ export default function PoolCard({
               />
             ))}
             <View style={styles.titleTextContainer}>
-              <Text style={styles.titleTokens}>
-                {tokensInfo.map((token) => token.symbol).join(' / ')}
-              </Text>
+              <Text style={styles.titleTokens}>{cardTitle}</Text>
               <Text style={styles.titleNetwork}>
                 {t('earnFlow.poolCard.onNetwork', { networkName: NETWORK_NAMES[networkId] })}
               </Text>
