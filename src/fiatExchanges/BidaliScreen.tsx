@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { tokensByCurrencySelector } from 'src/tokens/selectors'
 import { getHigherBalanceCurrency } from 'src/tokens/utils'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import networkConfig from 'src/web3/networkConfig'
 
 // Note for later when adding CELO: make sure that Currency.Celo maps to CELO and not cGLD
@@ -40,9 +40,12 @@ function useInitialJavaScript(
     // When a payment request is needed, Bidali calls the provided `onPaymentRequest` method.
     // When a new url needs to be open (currently for FAQ, Terms of Service), `openUrl` is called by Bidali.
     // See also the comment in the `onMessage` handler
+    // Bidali expects the legacy upper-cased on-chain symbol (CUSD/CEUR) for
+    // paymentCurrency, not the new internal Currency value (USDM/EURM).
+    const paymentCurrencyForBidali = CURRENCY_TO_CHAIN_SYMBOL[currency].toUpperCase()
     setInitialJavaScript(`
       window.walletApp = {
-        paymentCurrency: "${currency.toUpperCase()}",
+        paymentCurrency: "${paymentCurrencyForBidali}",
         phoneNumber: ${JSON.stringify(e164PhoneNumber)},
         balances: ${jsonBalances},
         onPaymentRequest: function (paymentRequest) {
@@ -113,10 +116,16 @@ function BidaliScreen({ route, navigation }: Props) {
   const jsonBalances = useMemo(
     () =>
       JSON.stringify(
-        // Maps supported currencies to an object with their balance
-        // Example: [cUSD, cEUR] to { CUSD: X, CEUR: Y }
+        // Maps supported currencies to an object with their balance.
+        // Example: [Currency.Dollar, Currency.Euro] -> { CUSD: X, CEUR: Y }.
+        // Bidali expects the legacy upper-cased on-chain symbols (CUSD/CEUR),
+        // not the new internal Currency values (USDM/EURM), so we resolve via
+        // CURRENCY_TO_CHAIN_SYMBOL before upper-casing.
         Object.fromEntries(
-          BIDALI_CURRENCIES.map((currency) => [currency.toUpperCase(), tokens[currency]?.balance])
+          BIDALI_CURRENCIES.map((currency) => [
+            CURRENCY_TO_CHAIN_SYMBOL[currency].toUpperCase(),
+            tokens[currency]?.balance,
+          ])
         )
       ),
     [tokens]
