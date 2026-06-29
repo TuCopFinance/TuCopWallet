@@ -10,6 +10,10 @@ const exec = (args) => execSync(args).toString().trim()
 // Set this to the FIRST day where commits are valid!
 const THRESHOLD_DATE = new Date('2019-07-17')
 
+// Git sends this SHA when there is no commit on one side of the push
+// (e.g. localSHA on a branch delete, remoteSHA on a new-branch push).
+const ZERO_SHA = '0000000000000000000000000000000000000000'
+
 ////////////////////////////////////////////////////////////////
 /// UTILITY FUNCTIONS
 ////////////////////////////////////////////////////////////////
@@ -19,7 +23,7 @@ function mergeBaseFor(refA, refB) {
 }
 
 function getCommitRange(change, remoteName) {
-  if (change.remoteSHA === '0000000000000000000000000000000000000000') {
+  if (change.remoteSHA === ZERO_SHA) {
     // pushing a new branch
     // => commit range = changes from main
     const fromSHA = mergeBaseFor(`${remoteName}/main`, change.localSHA)
@@ -83,6 +87,12 @@ const changes = stdinData
   })
 
 for (const change of changes) {
+  // Branch deletion: localSHA is all zeros and there are no incoming commits
+  // to validate. Skip; getCommitRange would otherwise call `git merge-base`
+  // with an invalid SHA and abort the entire push.
+  if (change.localSHA === ZERO_SHA) {
+    continue
+  }
   // console.log('Checking commits to push to ', change.remoteRef)
   const [from, to] = getCommitRange(change, remoteName)
 
