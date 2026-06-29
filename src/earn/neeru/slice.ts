@@ -1,9 +1,11 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
+import { REHYDRATE, RehydrateAction, getRehydratePayload } from 'src/redux/persist-helper'
 import { NeeruCloseStatus, NeeruFetchStatus, NeeruIndividualPosition } from 'src/earn/neeru/types'
 
 export interface NeeruState {
   fetchStatus: NeeruFetchStatus
   positions: NeeruIndividualPosition[]
+  optimisticPositions: NeeruIndividualPosition[]
   lastSyncedBlock: number | null
   lastSyncedAt: string | null
   closeStatus: NeeruCloseStatus
@@ -14,6 +16,7 @@ export interface NeeruState {
 export const initialState: NeeruState = {
   fetchStatus: 'idle',
   positions: [],
+  optimisticPositions: [],
   lastSyncedBlock: null,
   lastSyncedAt: null,
   closeStatus: 'idle',
@@ -66,6 +69,43 @@ const slice = createSlice({
       state.closingPositionId = action.payload.positionId
       state.lastError = null
     },
+    addOptimisticPosition: (state, action: PayloadAction<NeeruIndividualPosition>) => {
+      const incoming = action.payload
+      const existingIdx = state.optimisticPositions.findIndex(
+        (p) => p.depositTxHash === incoming.depositTxHash
+      )
+      if (existingIdx >= 0) {
+        state.optimisticPositions[existingIdx] = incoming
+      } else {
+        state.optimisticPositions.push(incoming)
+      }
+    },
+    removeOptimisticPosition: (state, action: PayloadAction<{ depositTxHash: string }>) => {
+      state.optimisticPositions = state.optimisticPositions.filter(
+        (p) => p.depositTxHash !== action.payload.depositTxHash
+      )
+    },
+    markOptimisticPositionStale: (state, action: PayloadAction<{ depositTxHash: string }>) => {
+      const target = state.optimisticPositions.find(
+        (p) => p.depositTxHash === action.payload.depositTxHash
+      )
+      if (target) {
+        target.staleOptimistic = true
+      }
+    },
+    clearOptimisticPositions: (state) => {
+      state.optimisticPositions = []
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
+      ...state,
+      ...getRehydratePayload(action, 'neeru'),
+      // Always reset transient optimistic state on app start. The
+      // backend-truth `positions` array stays as-is from disk so the
+      // pre-fetch UI has something to show.
+      optimisticPositions: [],
+    }))
   },
 })
 
@@ -77,6 +117,10 @@ export const {
   closePositionSuccess,
   closePositionFailure,
   emergencyCloseStart,
+  addOptimisticPosition,
+  removeOptimisticPosition,
+  markOptimisticPositionStale,
+  clearOptimisticPositions,
 } = slice.actions
 
 export default slice.reducer

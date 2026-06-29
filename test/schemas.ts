@@ -3738,8 +3738,25 @@ export const v250Schema = {
 // tus Dolares a Pesos...") from the legacy multi-step path ("Paso X de N")
 // without breaking persisted in-flight state. Only applies when a user has
 // an in-flight multi-swap when the app updates; otherwise no-op.
+//
+// Also reflects the runtime addition of the `neeru` slice (Neeru Vaults
+// earn integration). Phase 3 (#208) originally bumped to v252 to seed
+// the slice; PR #209 reverted the version bump because autoMergeLevel2
+// + the slice's REHYDRATE handler handle the missing-field case for
+// existing users without a migration. The test schema still has to
+// surface the slice shape so the RootStateSchema validation passes.
 export const v251Schema = {
   ...v250Schema,
+  neeru: {
+    fetchStatus: 'idle',
+    positions: [],
+    optimisticPositions: [],
+    lastSyncedBlock: null,
+    lastSyncedAt: null,
+    closeStatus: 'idle',
+    closingPositionId: null,
+    lastError: null,
+  },
   _persist: {
     ...v250Schema._persist,
     version: 251,
