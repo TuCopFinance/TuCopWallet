@@ -142,7 +142,7 @@ export default function PoolCard({
             ))}
             <View style={styles.titleTextContainer}>
               <Text style={styles.titleTokens}>{cardTitle}</Text>
-              {cardSubtitle && <Text style={styles.cardSubtitle}>{cardSubtitle}</Text>}
+              {cardSubtitle ? <Text style={styles.cardSubtitle}>{cardSubtitle}</Text> : null}
             </View>
           </View>
           <View style={styles.keyValueContainer}>

@@ -3,6 +3,8 @@ import BigNumber from 'bignumber.js'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import { EarnDepositTxsReceiptProperties } from 'src/analytics/Properties'
+import { NEERU_APP_ID } from 'src/earn/neeru/constants'
+import { handleNeeruDepositOptimistic } from 'src/earn/neeru/saga'
 import {
   depositCancel,
   depositError,
@@ -47,7 +49,7 @@ import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { networkIdToNetwork } from 'src/web3/networkConfig'
-import { all, call, put, select, takeLeading } from 'typed-redux-saga'
+import { all, call, fork, put, select, takeLeading } from 'typed-redux-saga'
 import { decodeFunctionData, erc20Abi } from 'viem'
 
 const TAG = 'earn/saga'
@@ -307,6 +309,14 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
       })
     )
     yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
+
+    if (pool.appId === NEERU_APP_ID) {
+      // Detached so navigation to TransactionSuccessScreen proceeds while
+      // the polling loop runs in the background. The Neeru position card
+      // renders an optimistic placeholder until the backend indexer
+      // surfaces the real entry.
+      yield* fork(handleNeeruDepositOptimistic, depositTxReceipt)
+    }
 
     // Show success vibration and navigate to success screen
     vibrateSuccess()
