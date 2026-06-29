@@ -21,6 +21,14 @@ import { Spacing } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
+import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+
+const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
+  0: 'neeruVaults.cardSubtitle.flexible',
+  1: 'neeruVaults.cardSubtitle.thirtyDays',
+  2: 'neeruVaults.cardSubtitle.sixtyDays',
+  3: 'neeruVaults.cardSubtitle.ninetyDays',
+}
 
 export default function PoolCard({
   pool,
@@ -84,15 +92,21 @@ export default function PoolCard({
 
   const totalYieldRate = getTotalYieldRate(pool).toFixed(2)
 
-  // For Neeru pools, prefer the per-tranche label from backend (Flexible / 30 dias / 60 dias / 90 dias)
-  // so the 4 Neeru cards are distinguishable. For other providers, fall back to user-friendly token
-  // display names (cCOP -> Pesos, USDT/USDC -> Dolares, etc.) per the wallet manual.
-  const cardTitle = useMemo(() => {
-    if (pool.appId === 'neeru-vaults' && pool.displayProps.title) {
-      return pool.displayProps.title
-    }
-    return tokensInfo.map((token) => getTokenDisplayName(token.symbol)).join(' / ')
-  }, [pool, tokensInfo])
+  // Card title is always the user-friendly token display name per the wallet manual
+  // (cCOP -> Pesos, USDT/USDC/USDm -> Dolares, etc).
+  const cardTitle = useMemo(
+    () => tokensInfo.map((token) => getTokenDisplayName(token.symbol)).join(' / '),
+    [tokensInfo]
+  )
+
+  // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
+  const cardSubtitle = useMemo(() => {
+    if (pool.appId !== 'neeru-vaults') return null
+    const trancheId = categoryIdFromPositionId(pool.positionId)
+    if (trancheId === null) return null
+    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[trancheId]
+    return t(key)
+  }, [pool, t])
 
   const onPress = () => {
     AppAnalytics.track(EarnEvents.earn_pool_card_press, {
@@ -128,6 +142,7 @@ export default function PoolCard({
             ))}
             <View style={styles.titleTextContainer}>
               <Text style={styles.titleTokens}>{cardTitle}</Text>
+              {cardSubtitle && <Text style={styles.cardSubtitle}>{cardSubtitle}</Text>}
             </View>
           </View>
           <View style={styles.keyValueContainer}>
@@ -185,6 +200,10 @@ const styles = StyleSheet.create({
   titleTokens: {
     color: Colors.black,
     ...typeScale.labelSemiBoldSmall,
+  },
+  cardSubtitle: {
+    color: Colors.gray3,
+    ...typeScale.bodyXSmall,
   },
   keyValueContainer: {
     gap: Spacing.Smallest8,

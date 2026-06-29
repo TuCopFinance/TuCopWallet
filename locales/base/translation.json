@@ -2922,6 +2922,12 @@
       "sixtyDays": "60 days",
       "ninetyDays": "90 days"
     },
+    "cardSubtitle": {
+      "flexible": "Flexible",
+      "thirtyDays": "30-day deposit",
+      "sixtyDays": "60-day deposit",
+      "ninetyDays": "90-day deposit"
+    },
     "detail": {
       "header": "Your {{categoryLabel}} positions",
       "aggregateBalance": "Total in {{categoryLabel}}: {{amount}} Pesos",
