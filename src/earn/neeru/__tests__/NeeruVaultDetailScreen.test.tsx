@@ -122,4 +122,41 @@ describe('NeeruVaultDetailScreen', () => {
     fireEvent.press(getByTestId('NeeruPositionRow.Manage.555'))
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
   })
+
+  it('opens NeeruEmergencyCloseSheet when close fails with InterestPoolLow', () => {
+    // Start with idle state so user can tap Manage to seed lastSelectedRef
+    const store = createMockStore({
+      neeru: {
+        ...initialNeeruState,
+        positions: [positionFor('789')],
+        fetchStatus: 'success',
+      },
+    } as any)
+    const { getByTestId, queryByTestId, rerender } = render(
+      <Provider store={store}>
+        <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
+      </Provider>
+    )
+    // User taps Manage, seeding lastSelectedRef + opening close sheet
+    fireEvent.press(getByTestId('NeeruPositionRow.Manage.789'))
+    expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
+
+    // Backend / chain now reports InterestPoolLow via slice update
+    const failedStore = createMockStore({
+      neeru: {
+        ...initialNeeruState,
+        positions: [positionFor('789')],
+        fetchStatus: 'success',
+        closeStatus: 'error',
+        lastError: 'InterestPoolLow',
+      },
+    } as any)
+    rerender(
+      <Provider store={failedStore}>
+        <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
+      </Provider>
+    )
+
+    expect(queryByTestId('NeeruEmergencyCloseSheet')).toBeTruthy()
+  })
 })

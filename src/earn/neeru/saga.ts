@@ -3,6 +3,7 @@ import {
   closePositionFailure,
   closePositionStart,
   closePositionSuccess,
+  emergencyCloseStart,
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
@@ -116,7 +117,57 @@ export function* watchCloseNeeruPosition() {
   yield* takeLeading(closePositionStart.type, closeNeeruPositionSaga)
 }
 
+export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emergencyCloseStart>) {
+  const { positionId } = action.payload
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    Logger.warn(TAG, 'no wallet address, skipping emergency close')
+    return
+  }
+  const hooksApiUrl = yield* select(hooksApiUrlSelector)
+  const feeCurrencies = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
+
+  try {
+    const response: { transactions: RawShortcutTransaction[] } = yield* call(
+      triggerShortcutRequest,
+      hooksApiUrl,
+      {
+        address: walletAddress,
+        appId: 'neeru-vaults',
+        networkId: NetworkId['celo-mainnet'],
+        shortcutId: 'withdraw-principal-only',
+        positionId,
+      }
+    )
+    const prepared: PreparedTransactionsResult = yield* call(prepareTransactions, {
+      feeCurrencies,
+      baseTransactions: rawShortcutTransactionsToTransactionRequests(response.transactions),
+      isGasSubsidized: false,
+      origin: 'earn-withdraw' as const,
+    })
+    if (prepared.type !== 'possible') {
+      throw new Error(`Cannot prepare emergency tx: ${prepared.type}`)
+    }
+    yield* call(
+      sendPreparedTransactions,
+      getSerializablePreparedTransactions(prepared.transactions),
+      NetworkId['celo-mainnet'],
+      []
+    )
+    yield* put(closePositionSuccess({ positionId }))
+  } catch (e) {
+    const error = ensureError(e)
+    Logger.error(TAG, 'emergency close failed', error)
+    yield* put(closePositionFailure({ positionId, error: error.message }))
+  }
+}
+
+export function* watchEmergencyCloseNeeruPosition() {
+  yield* takeLeading(emergencyCloseStart.type, emergencyCloseNeeruPositionSaga)
+}
+
 export function* neeruSaga() {
   yield* spawn(watchFetchNeeruPositions)
   yield* spawn(watchCloseNeeruPosition)
+  yield* spawn(watchEmergencyCloseNeeruPosition)
 }

@@ -2,6 +2,7 @@ import reducer, {
   closePositionFailure,
   closePositionStart,
   closePositionSuccess,
+  emergencyCloseStart,
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
@@ -84,5 +85,12 @@ describe('neeru slice', () => {
     state = reducer(state, closePositionFailure({ positionId: '1234', error: 'InterestPoolLow' }))
     expect(state.closeStatus).toBe('error')
     expect(state.lastError).toBe('InterestPoolLow')
+  })
+
+  it('emergencyCloseStart sets loading + closingPositionId', () => {
+    const state = reducer(initialState, emergencyCloseStart({ positionId: '99' }))
+    expect(state.closeStatus).toBe('loading')
+    expect(state.closingPositionId).toBe('99')
+    expect(state.lastError).toBeNull()
   })
 })

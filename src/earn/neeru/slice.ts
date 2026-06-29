@@ -61,6 +61,11 @@ const slice = createSlice({
       state.closingPositionId = null
       state.lastError = action.payload.error
     },
+    emergencyCloseStart: (state, action: PayloadAction<{ positionId: string }>) => {
+      state.closeStatus = 'loading'
+      state.closingPositionId = action.payload.positionId
+      state.lastError = null
+    },
   },
 })
 
@@ -71,6 +76,7 @@ export const {
   closePositionStart,
   closePositionSuccess,
   closePositionFailure,
+  emergencyCloseStart,
 } = slice.actions
 
 export default slice.reducer
