@@ -91,18 +91,17 @@ describe('NeeruVaultDetailScreen', () => {
     expect(getByText('neeruVaults.detail.noPositions')).toBeTruthy()
   })
 
-  it('renders transparency disclaimer block with contract address', () => {
+  it('does not render the legacy transparency block', () => {
     const store = createMockStore({
       neeru: { ...initialNeeruState, fetchStatus: 'success' },
     } as any)
-    const { getByText } = render(
+    const { queryByText } = render(
       <Provider store={store}>
         <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
       </Provider>
     )
-    expect(getByText('neeruVaults.detail.transparency.title')).toBeTruthy()
-    // Full contract address must NOT be truncated
-    expect(getByText(/0xD05CDF2DC56D97333c547519dF58D56145766294/)).toBeTruthy()
+    expect(queryByText('neeruVaults.detail.transparency.title')).toBeNull()
+    expect(queryByText(/0xD05CDF2DC56D97333c547519dF58D56145766294/)).toBeNull()
   })
 
   it('opens NeeruCloseSheet when a position row Manage is pressed', () => {
