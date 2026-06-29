@@ -2941,7 +2941,11 @@
       "maturity": "Available {{date}}",
       "flexible": "No minimum time",
       "depositedAt": "Deposited on {{date}}",
-      "manageCta": "Manage"
+      "manageCta": "Manage",
+      "processingBadge": "Processing",
+      "optimisticTakingLong": "This is taking a couple of minutes. Try again.",
+      "refreshCta": "Refresh",
+      "viewOnCeloscanCta": "View on Celoscan"
     },
     "closeSheet": {
       "title": "Withdraw your deposit",

@@ -2948,7 +2948,11 @@
       "maturity": "Disponible el {{date}}",
       "flexible": "Sin tiempo minimo",
       "depositedAt": "Depositado el {{date}}",
-      "manageCta": "Gestionar"
+      "manageCta": "Gestionar",
+      "processingBadge": "Procesando",
+      "optimisticTakingLong": "Esto puede tardar un par de minutos. Vuelve a intentar.",
+      "refreshCta": "Refrescar",
+      "viewOnCeloscanCta": "Ver en Celoscan"
     },
     "closeSheet": {
       "title": "Retira tu deposito",
