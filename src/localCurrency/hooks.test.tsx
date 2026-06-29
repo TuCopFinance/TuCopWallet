@@ -83,7 +83,6 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
     })
   })
 
-  // Special case for CELO because of the cGLD symbol/enum value used historically
   it('returns the expected values when the currency is CELO', async () => {
     render(
       <Provider store={createStore()}>
@@ -93,7 +92,7 @@ describe(localCurrencyHooks.useLocalCurrencyToShow, () => {
 
     expect(useLocalCurrencyToShowSpy).toHaveReturnedTimes(1)
     expect(useLocalCurrencyToShowSpy).toHaveReturnedWith({
-      amountCurrency: 'cGLD',
+      amountCurrency: 'CELO',
       localCurrencyCode: 'COP',
       localCurrencyExchangeRate: '10',
     })

@@ -15,7 +15,7 @@ import {
 } from 'src/transactions/types'
 import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
 import { ToggleableOnboardingFeatures } from 'src/onboarding/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import { Screens } from 'src/navigator/Screens'
 import {
   DEFAULT_DAILY_PAYMENT_LIMIT_CUSD_LEGACY,
@@ -450,11 +450,13 @@ describe('Redux persist migrations', () => {
       },
     })
     expect(migratedSchema.localCurrency.exchangeRates).toBeDefined()
-    expect(migratedSchema.localCurrency.exchangeRates[Currency.Dollar]).toEqual(
+    // v16 wrote exchangeRates['cUSD'] and balances['cUSD'] using the legacy
+    // literal that Currency.Dollar held at the time.
+    expect(migratedSchema.localCurrency.exchangeRates.cUSD).toEqual(
       v15Schema.localCurrency.exchangeRate
     )
     expect(migratedSchema.stableToken.balance).toBeUndefined()
-    expect(migratedSchema.stableToken.balances[Currency.Dollar]).toEqual('150')
+    expect(migratedSchema.stableToken.balances.cUSD).toEqual('150')
     expect(migratedSchema.escrow.isReclaiming).toBeFalsy()
     expect(migratedSchema.escrow.sentEscrowedPayments.length).toEqual(0)
   })
@@ -855,6 +857,10 @@ describe('Redux persist migrations', () => {
   })
 
   it('works from v106 to v107', () => {
+    // Historical fixture: at v106, persisted state used legacy on-chain symbols
+    // ('cUSD', 'cGLD'). The migration only transforms Currency.Celo -> CELO.
+    // We use literal strings to reflect what real wallets had on disk at v106
+    // (the Currency enum was later rebranded internally to USDm/EURm/CELO).
     const oldSchema = {
       ...v106Schema,
       fiatConnect: {
@@ -862,11 +868,11 @@ describe('Redux persist migrations', () => {
         cachedFiatAccountUses: [
           {
             providerId: 'provider-two',
-            cryptoType: Currency.Dollar,
+            cryptoType: 'cUSD',
           },
           {
             providerId: 'provider-one',
-            cryptoType: Currency.Celo,
+            cryptoType: 'cGLD',
           },
         ],
         cachedQuoteParams: {
@@ -874,14 +880,14 @@ describe('Redux persist migrations', () => {
             ['some-schema']: {
               cryptoAmount: '10',
               fiatAmount: '10',
-              cryptoType: Currency.Dollar,
+              cryptoType: 'cUSD',
             },
           },
           'some-other-provider': {
             ['some-schema']: {
               cryptoAmount: '10',
               fiatAmount: '10',
-              cryptoType: Currency.Celo,
+              cryptoType: 'cGLD',
             },
           },
         },
@@ -1219,8 +1225,9 @@ describe('Redux persist migrations', () => {
     const oldSchema = v145Schema
     const migratedSchema = migrations[146](oldSchema)
     const expectedSchema: any = _.cloneDeep(oldSchema)
-    expectedSchema.localCurrency.usdToLocalRate =
-      oldSchema.localCurrency.exchangeRates[Currency.Dollar]
+    // v16 wrote exchangeRates['cUSD'] (legacy Currency.Dollar literal); v146
+    // reads it under that same key when promoting to usdToLocalRate.
+    expectedSchema.localCurrency.usdToLocalRate = oldSchema.localCurrency.exchangeRates.cUSD
     delete expectedSchema.localCurrency.exchangeRates
     expect(migratedSchema).toStrictEqual(expectedSchema)
   })
