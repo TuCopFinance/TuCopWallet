@@ -17,6 +17,7 @@ import {
 import { dappsSaga } from 'src/dapps/saga'
 import { fetchDappsListCompleted } from 'src/dapps/slice'
 import { earnSaga } from 'src/earn/saga'
+import { neeruSaga } from 'src/earn/neeru/saga'
 import { goldSaga } from 'src/gold/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
@@ -151,6 +152,7 @@ export function* rootSaga() {
     yield* spawn(priceHistorySaga)
     yield* spawn(pointsSaga)
     yield* spawn(earnSaga)
+    yield* spawn(neeruSaga)
     yield* spawn(bucksPaySaga)
     yield* spawn(goldSaga)
   } catch (error) {
