@@ -2327,6 +2327,179 @@
             ],
             "type": "string"
         },
+        "NeeruCloseStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "loading",
+                "success"
+            ],
+            "type": "string"
+        },
+        "NeeruFetchStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "loading",
+                "success"
+            ],
+            "type": "string"
+        },
+        "NeeruIndividualPosition": {
+            "additionalProperties": false,
+            "properties": {
+                "accruedInterest": {
+                    "type": "string"
+                },
+                "currentPayoutIfClosed": {
+                    "$ref": "#/definitions/NeeruPositionPayout"
+                },
+                "rateValue": {
+                    "type": "string"
+                },
+                "depositBlock": {
+                    "type": "number"
+                },
+                "depositTxHash": {
+                    "type": "string"
+                },
+                "endTs": {
+                    "type": "number"
+                },
+                "monthlyRatePercentage": {
+                    "type": "number"
+                },
+                "positionId": {
+                    "type": "string"
+                },
+                "principal": {
+                    "type": "string"
+                },
+                "renewedFromPositionId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "startTs": {
+                    "type": "number"
+                },
+                "tranche": {
+                    "$ref": "#/definitions/NeeruCategoryId"
+                },
+                "categoryLabel": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "accruedInterest",
+                "currentPayoutIfClosed",
+                "rateValue",
+                "depositBlock",
+                "depositTxHash",
+                "endTs",
+                "monthlyRatePercentage",
+                "positionId",
+                "principal",
+                "renewedFromPositionId",
+                "startTs",
+                "tranche",
+                "categoryLabel"
+            ],
+            "type": "object"
+        },
+        "NeeruPositionPayout": {
+            "additionalProperties": false,
+            "properties": {
+                "interest": {
+                    "type": "string"
+                },
+                "interestAfterPenalty": {
+                    "type": "string"
+                },
+                "isEarly": {
+                    "type": "boolean"
+                },
+                "penaltyBps": {
+                    "type": "number"
+                },
+                "principal": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "interest",
+                "interestAfterPenalty",
+                "isEarly",
+                "penaltyBps",
+                "principal",
+                "total"
+            ],
+            "type": "object"
+        },
+        "NeeruState": {
+            "additionalProperties": false,
+            "properties": {
+                "closeStatus": {
+                    "$ref": "#/definitions/NeeruCloseStatus"
+                },
+                "closingPositionId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "fetchStatus": {
+                    "$ref": "#/definitions/NeeruFetchStatus"
+                },
+                "lastError": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "lastSyncedAt": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "lastSyncedBlock": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "positions": {
+                    "items": {
+                        "$ref": "#/definitions/NeeruIndividualPosition"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "closeStatus",
+                "closingPositionId",
+                "fetchStatus",
+                "lastError",
+                "lastSyncedAt",
+                "lastSyncedBlock",
+                "positions"
+            ],
+            "type": "object"
+        },
+        "NeeruCategoryId": {
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "type": "number"
+        },
         "NetworkId": {
             "enum": [
                 "arbitrum-one",
@@ -8064,6 +8237,9 @@
         "localCurrency": {
             "$ref": "#/definitions/State_11"
         },
+        "neeru": {
+            "$ref": "#/definitions/NeeruState"
+        },
         "networkInfo": {
             "$ref": "#/definitions/State_2"
         },
@@ -8149,6 +8325,7 @@
         "jumpstart",
         "keylessBackup",
         "localCurrency",
+        "neeru",
         "networkInfo",
         "nfts",
         "points",
