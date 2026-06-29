@@ -82,9 +82,9 @@ Task-oriented walkthroughs: how to accomplish a specific job.
 
 Active, forward-looking design specs for unshipped features.
 
-| Document                                                                                                 | Description                                           |
-| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [specs/2026-05-26-carbon-defi-fx-strategy-design.md](specs/2026-05-26-carbon-defi-fx-strategy-design.md) | Carbon DeFi "Invierte en Dolares" FX strategy feature |
+| Document                                                                                 | Description                                                                                  |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [specs/2026-05-26-carbon-defi-initiative.md](specs/2026-05-26-carbon-defi-initiative.md) | Carbon DeFi initiative (unified): FX Strategy "Invierte en Dolares" + Swap Executor Refactor |
 
 ## Backend services
 
