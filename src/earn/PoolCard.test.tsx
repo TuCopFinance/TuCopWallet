@@ -50,24 +50,35 @@ describe('PoolCard', () => {
   })
 
   describe('card title display', () => {
-    it('renders Neeru pool with displayProps.title (tranche label) instead of token symbol', () => {
+    it('renders Neeru pool title as the token display name with tranche subtitle below', () => {
       const neeruPool = {
         ...mockEarnPositions[0],
         appId: 'neeru-vaults',
-        displayProps: {
-          ...mockEarnPositions[0].displayProps,
-          title: '30 dias',
-        },
+        positionId: 'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:category-1',
       }
       const { getByText, queryByText } = render(
         <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
           <PoolCard pool={neeruPool} testID="PoolCard.neeru-30d" />
         </Provider>
       )
-      expect(getByText('30 dias')).toBeTruthy()
-      // Should NOT show raw token symbol when Neeru
+      // Title is the token display name (USDC -> Dólares from getTokenDisplayName)
+      expect(getByText('Dólares')).toBeTruthy()
+      // Subtitle is the tranche-specific i18n key (mock returns key)
+      expect(getByText('neeruVaults.cardSubtitle.thirtyDays')).toBeTruthy()
+      // Raw token symbols never shown
       expect(queryByText('USDC')).toBeNull()
       expect(queryByText('cCOP')).toBeNull()
+    })
+
+    it('does not render a subtitle for non-Neeru pools', () => {
+      const allbridgePool = { ...mockEarnPositions[0], appId: 'allbridge' }
+      const { queryByText } = render(
+        <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
+          <PoolCard pool={allbridgePool} testID="PoolCard.allbridge" />
+        </Provider>
+      )
+      expect(queryByText('neeruVaults.cardSubtitle.thirtyDays')).toBeNull()
+      expect(queryByText('neeruVaults.cardSubtitle.flexible')).toBeNull()
     })
 
     it('maps token symbol via getTokenDisplayName for non-Neeru pools (cCOP -> Pesos)', () => {
