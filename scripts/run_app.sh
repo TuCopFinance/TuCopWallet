@@ -55,7 +55,7 @@ echo "**************************"
 echo "Current directory: $(pwd)"
 echo "Machine type: $MACHINE"
 echo "Environment: $ENV_FILENAME"
-echo "Network: $DEFAULT_TESTNET"
+echo "Network: Celo mainnet (chain 42220)"
 echo "Platform: $PLATFORM"
 echo "**************************"
 
@@ -69,7 +69,7 @@ startPackager() {
       fi
       echo "Packager server already running"
     else
-      terminal="${RCT_TERMINAL-${REACT_TERMINAL-$TERM_PROGRAM}}"
+      terminal="${RCT_TERMINAL:-${REACT_TERMINAL:-${TERM_PROGRAM:-Terminal}}}"
       echo "Starting packager in new terminal..."
 
       if [ "$MACHINE" = "Mac" ]; then
