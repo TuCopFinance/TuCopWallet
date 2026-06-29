@@ -15,7 +15,6 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { EarnPosition } from 'src/positions/types'
 import { useSelector } from 'src/redux/hooks'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -129,9 +128,6 @@ export default function PoolCard({
             ))}
             <View style={styles.titleTextContainer}>
               <Text style={styles.titleTokens}>{cardTitle}</Text>
-              <Text style={styles.titleNetwork}>
-                {t('earnFlow.poolCard.onNetwork', { networkName: NETWORK_NAMES[networkId] })}
-              </Text>
             </View>
           </View>
           <View style={styles.keyValueContainer}>
@@ -157,7 +153,9 @@ export default function PoolCard({
             </View>
           )}
           <Text style={styles.poweredByText}>
-            {t('earnFlow.poolCard.poweredBy', { providerName: appName })}
+            {pool.appId === 'neeru-vaults'
+              ? 'By: Neeru Finance'
+              : t('earnFlow.poolCard.poweredBy', { providerName: appName })}
           </Text>
         </View>
       </Touchable>
@@ -187,10 +185,6 @@ const styles = StyleSheet.create({
   titleTokens: {
     color: Colors.black,
     ...typeScale.labelSemiBoldSmall,
-  },
-  titleNetwork: {
-    color: Colors.black,
-    ...typeScale.bodyXSmall,
   },
   keyValueContainer: {
     gap: Spacing.Smallest8,
