@@ -45,6 +45,7 @@ import GoldSellConfirmation from 'src/gold/GoldSellConfirmation'
 import GoldSellEnterAmount from 'src/gold/GoldSellEnterAmount'
 import MarranitoStaking from 'src/earn/marranitos/MarranitoStaking'
 import EarnPoolInfoScreen from 'src/earn/poolInfoScreen/EarnPoolInfoScreen'
+import NeeruVaultDetailScreen from 'src/earn/neeru/NeeruVaultDetailScreen'
 import BidaliScreen from 'src/fiatExchanges/BidaliScreen'
 import CashInSuccess from 'src/fiatExchanges/CashInSuccess'
 import CoinbasePayScreen from 'src/fiatExchanges/CoinbasePayScreen'
@@ -589,6 +590,11 @@ const earnScreens = (Navigator: typeof Stack) => (
     <Navigator.Screen
       name={Screens.EarnPoolInfoScreen}
       component={EarnPoolInfoScreen}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.NeeruVaultDetail}
+      component={NeeruVaultDetailScreen}
       options={headerWithBackButton}
     />
   </>
