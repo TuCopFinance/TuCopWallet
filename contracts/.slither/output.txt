@@ -25,4 +25,4 @@ Severity classification (per Slither default impact levels):
 - calls-loop: INFORMATIONAL (low severity, intended behavior for batch executors)
 - low-level-calls: INFORMATIONAL (low severity, .call is required for arbitrary inner calls)
 
-ZERO high or medium severity issues expected (confirmed in spike at contracts-spike/.slither/s4-slither-output.txt).
+ZERO high or medium severity issues expected (confirmed in spike at contracts-research/.slither/s4-slither-output.txt).
