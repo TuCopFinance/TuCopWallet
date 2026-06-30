@@ -353,6 +353,7 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [QrScreenEvents.qr_scanned]: `When a QR code has been successfully scanned`,
   [FeeEvents.estimate_fee_failed]: ``,
   [FeeEvents.estimate_fee_success]: ``,
+  [FeeEvents.fee_currency_picked]: `Fee currency resolution for a user flow (dollarsSpend atomic / dollarsSpend legacy / swap / send). reason=preferred-stable means Bug E was avoided (a visible stable was picked over hidden CELO); reason=celo-fallback means no stable qualified and CELO was used. declinedCount + alternativesCount give the size of the candidate space.`,
   [TransactionEvents.transaction_start]: `when a transaction is about to be submitted to the blockchain`,
   [TransactionEvents.transaction_gas_estimated]: `when gas is estimated for a transaction or an already estimated gas is used in a transaction about to be submitted (only for contract-kit)`,
   [TransactionEvents.transaction_hash_received]: `when a hash is received for a transaction`,

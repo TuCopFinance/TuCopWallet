@@ -1,6 +1,8 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
 import { call, delay, put, race, select, take, takeEvery } from 'typed-redux-saga'
+import AppAnalytics from 'src/analytics/AppAnalytics'
+import { FeeEvents } from 'src/analytics/Events'
 import { executeDollarsSpend7702Saga } from 'src/dollarsSpend/saga7702'
 import {
   multiSwapCompleted,
@@ -307,6 +309,14 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         TAG,
         `step ${index} (${step.symbol}): fee currency ${choice.chosen.symbol} (reason=${choice.reason}, declined=${choice.declined.length})`
       )
+      AppAnalytics.track(FeeEvents.fee_currency_picked, {
+        context: 'dollarsSpend_legacy',
+        chosenSymbol: choice.chosen.symbol,
+        reason: choice.reason,
+        declinedCount: choice.declined.length,
+        alternativesCount: choice.alternatives.length,
+        networkId: fromToken.networkId as NetworkId,
+      })
     }
 
     let freshQuote: Awaited<ReturnType<typeof fetchSwapQuoteForExecution>>
