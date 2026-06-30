@@ -18,6 +18,8 @@ import { addStandbyTransaction } from 'src/transactions/slice'
 import { newTransactionContext, TokenTransactionTypeV2 } from 'src/transactions/types'
 import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
+import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
+import type { TokenBalance } from 'src/tokens/slice'
 import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
@@ -251,93 +253,111 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       args: [innerCalls],
     })
 
-    // Pick a fee currency.
+    // Pick a fee currency via the Bug-E-aware central picker.
     //
-    // CELO is the priority-0 choice per FEE_CURRENCY_PRIORITY in
-    // src/tokens/selectors.ts. The wallet hides CELO from the UI token list
-    // (via ALLOWED_TOKEN_IDS in src/tokens/constants.ts), but that's a UI
-    // decision; if the user happens to have CELO on-chain, we should still
-    // use it for gas (it doesn't require any CIP-64 fee-adapter approval and
-    // is the simplest path). So we read CELO native balance directly here
-    // rather than relying on the wallet's Redux token registry.
+    // Stables-first: paying gas in CELO silently shrinks a balance the user
+    // can't see in the app (CELO is excluded from ALLOWED_TOKEN_IDS). We
+    // route through `pickFeeCurrency` which deprioritizes CELO so any visible
+    // stable wins. CELO remains as the last-resort fallback when no stable
+    // qualifies.
     //
-    // Fallback: when CELO balance is zero, iterate the wallet's stable fee
-    // currency candidates in priority order (COPm > USDm > USDC > USDT) and
-    // skip any token that is in the spending set — paying gas in a token
-    // that's capped-to-balance leaves zero CIP-64 reserve and the outer tx
-    // reverts.
+    // Two kinds of CIP-64 fee currency:
+    //   - Native (isFeeCurrency=true): Mento stables registered with the
+    //     protocol. Gas debited natively, no allowance required.
+    //   - Adapter-based (feeCurrencyAdapterAddress set): protocol pulls the
+    //     underlying token via transferFrom on the adapter, requiring a prior
+    //     approve(adapter, allowance). The pre-tx gas debit happens BEFORE
+    //     the batch executes, so we can't bootstrap allowance inside this
+    //     same tx; we pre-flight allowance here and pass under-approved
+    //     adapters into `adapterAllowanceMissing` so the picker skips them.
+    //
+    // We never pay gas in a token that's in the spending set: gas would race
+    // the capped-to-balance swap input and the outer tx would revert.
+    const feeCurrencyCandidates = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
+
+    // 1e30 wei: ~1T units of an 18-decimal token, far above any single tx's
+    // gas cost. Built via repeated multiplication because the current
+    // tsconfig target rejects BigInt exponentiation.
+    let ALLOWANCE_THRESHOLD = BigInt(1)
+    for (let _i = 0; _i < 30; _i++) ALLOWANCE_THRESHOLD = ALLOWANCE_THRESHOLD * BigInt(10)
+
+    const adapterAllowanceMissing: string[] = []
+    for (const candidate of feeCurrencyCandidates) {
+      if (!candidate.address) continue
+      if (!candidate.feeCurrencyAdapterAddress) continue
+      if (candidate.isFeeCurrency) continue // native Mento, no allowance needed
+      if (!candidate.balance.gt(0)) continue // balance check handled by picker
+      const allowance = yield* call(() =>
+        publicClient[Network.Celo].readContract({
+          address: candidate.address as Address,
+          abi: erc20Abi,
+          functionName: 'allowance',
+          args: [walletAddress as Address, candidate.feeCurrencyAdapterAddress as Address],
+        })
+      )
+      if (allowance < ALLOWANCE_THRESHOLD) {
+        adapterAllowanceMissing.push(candidate.address)
+        Logger.info(
+          TAG,
+          `skipping ${candidate.symbol} as fee currency: adapter allowance insufficient (${allowance.toString()})`
+        )
+      }
+    }
+
+    // CELO is excluded from ALLOWED_TOKEN_IDS so the Redux fee-currency list
+    // never contains it. Read native balance from chain and synthesize a
+    // minimal TokenBalance so the picker can rank CELO as a last-resort
+    // fallback alongside the stables.
     const celoNativeBalance = yield* call(() =>
       publicClient[Network.Celo].getBalance({ address: walletAddress as Address })
     )
-    const spendingTokenAddresses = new Set(steps.map((s) => s.tokenId.split(':')[1].toLowerCase()))
+    const syntheticCelo: TokenBalance | null =
+      celoNativeBalance > BigInt(0)
+        ? ({
+            tokenId: 'celo-mainnet:native',
+            address: null,
+            networkId: NetworkId['celo-mainnet'],
+            symbol: 'CELO',
+            name: 'Celo',
+            decimals: 18,
+            balance: new BigNumber(celoNativeBalance.toString()).shiftedBy(-18),
+            priceUsd: null,
+            lastKnownPriceUsd: null,
+            priceFetchedAt: Date.now(),
+            isNative: true,
+          } as unknown as TokenBalance)
+        : null
 
-    let feeCurrencyArg: Hex | undefined
-    let pickedSymbol: string
-    if (celoNativeBalance > BigInt(0)) {
-      // CELO native: use type 0x02 (eip1559), no feeCurrency field.
-      feeCurrencyArg = undefined
-      pickedSymbol = 'CELO'
-    } else {
-      const feeCurrencyCandidates = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
+    const spendingTokenAddresses = steps.map((s) => s.tokenId.split(':')[1])
 
-      // Two kinds of CIP-64 fee currency:
-      //   - Native (isFeeCurrency=true): Mento stables registered with the
-      //     protocol. Gas is debited natively, no allowance required.
-      //   - Adapter-based (feeCurrencyAdapterAddress set): the protocol pulls
-      //     the underlying token via transferFrom on the adapter, which
-      //     requires a prior approve(adapter, allowance) from the user.
-      //
-      // We prefer native fee currencies first because they always work. For
-      // adapter-based ones we verify on-chain allowance before committing,
-      // since the protocol's pre-tx gas debit happens BEFORE the batch
-      // executes, so we can't bootstrap allowance inside this same tx.
-      // 1e30 wei: ~1T units of an 18-decimal token, far above any single tx's
-      // gas cost. We treat allowance above this as "infinite" so we don't
-      // bother re-approving. Built via repeated multiplication because the
-      // current tsconfig target rejects BigInt exponentiation.
-      let ALLOWANCE_THRESHOLD = BigInt(1)
-      for (let _i = 0; _i < 30; _i++) ALLOWANCE_THRESHOLD = ALLOWANCE_THRESHOLD * BigInt(10)
-      let chosen: { token: (typeof feeCurrencyCandidates)[number]; txAddress: Address } | undefined
+    const choice = pickFeeCurrency({
+      available: syntheticCelo ? [...feeCurrencyCandidates, syntheticCelo] : feeCurrencyCandidates,
+      excludeTokenIds: spendingTokenAddresses,
+      adapterAllowanceMissing,
+    })
 
-      for (const candidate of feeCurrencyCandidates) {
-        if (!candidate.balance.gt(0)) continue
-        if (!candidate.address) continue
-        if (spendingTokenAddresses.has(candidate.address.toLowerCase())) continue
-
-        if (candidate.isFeeCurrency) {
-          chosen = { token: candidate, txAddress: candidate.address as Address }
-          break
-        }
-
-        if (candidate.feeCurrencyAdapterAddress) {
-          const allowance = yield* call(() =>
-            publicClient[Network.Celo].readContract({
-              address: candidate.address as Address,
-              abi: erc20Abi,
-              functionName: 'allowance',
-              args: [walletAddress as Address, candidate.feeCurrencyAdapterAddress as Address],
-            })
-          )
-          if (allowance >= ALLOWANCE_THRESHOLD) {
-            chosen = { token: candidate, txAddress: candidate.feeCurrencyAdapterAddress }
-            break
-          }
-          Logger.info(
-            TAG,
-            `skipping ${candidate.symbol} as fee currency: adapter allowance insufficient (${allowance.toString()})`
-          )
-        }
-      }
-
-      if (!chosen) {
-        throw new Error(
-          'No usable fee currency: need CELO native, a native Mento fee currency, or a pre-approved adapter outside the spending set'
-        )
-      }
-      feeCurrencyArg = chosen.txAddress as Hex
-      pickedSymbol = chosen.token.symbol
+    if (!choice) {
+      throw new Error(
+        'No usable fee currency: need CELO native, a native Mento fee currency, or a pre-approved adapter outside the spending set'
+      )
     }
-    Logger.info(TAG, `picked fee currency: ${pickedSymbol} (${feeCurrencyArg ?? 'native CELO'})`)
+
+    // Map chosen TokenBalance to the actual on-chain fee-currency arg:
+    //   - CELO native -> undefined (type 0x02 eip1559, no feeCurrency field)
+    //   - adapter-based -> adapter address (protocol pulls via transferFrom)
+    //   - native Mento -> token address
+    let feeCurrencyArg: Hex | undefined
+    if (choice.chosen.symbol === 'CELO') {
+      feeCurrencyArg = undefined
+    } else if (choice.chosen.feeCurrencyAdapterAddress) {
+      feeCurrencyArg = choice.chosen.feeCurrencyAdapterAddress as Hex
+    } else {
+      feeCurrencyArg = choice.chosen.address as Hex
+    }
+    Logger.info(
+      TAG,
+      `picked fee currency: ${choice.chosen.symbol} (reason=${choice.reason}, declined=${choice.declined.length}, alternatives=${choice.alternatives.length})`
+    )
 
     const sendArgs = {
       account,
