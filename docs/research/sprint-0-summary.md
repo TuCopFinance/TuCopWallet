@@ -4,7 +4,7 @@
 
 **Date:** 2026-06-16
 **Spec:** [`docs/specs/2026-06-15-wallet-robustness-initiative-design.md`](../specs/2026-06-15-wallet-robustness-initiative-design.md)
-**Plan:** [`docs/plans/2026-06-15-wri-plan-00-sprint-0-spikes.md`](../plans/2026-06-15-wri-plan-00-sprint-0-spikes.md)
+**Plan:** [`docs/archive/wri/plan-00-sprint-0-spikes.md`](../archive/wri/plan-00-sprint-0-spikes.md)
 
 ## Verdict matrix
 

@@ -362,6 +362,5 @@ function* pollTransferStatus(transferId: string) {
 
 ## Related Documentation
 
-- [BucksPay Module](../../../src/buckspay/README.md)
-- [BucksPay API](../../buckspay-api.md)
+- [BucksPay archived docs](../../archive/2026-06-buckspay/) (feature deprecated since June 2026)
 - [ADR-0005: BucksPay Offramp](../../adr/0005-buckspay-offramp.md)
