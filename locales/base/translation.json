@@ -2961,7 +2961,9 @@
       "penaltyLabel": "Early withdrawal fee ({{percentage}}%)",
       "totalLabel": "Total",
       "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your principal.",
-      "confirmCta": "Confirm withdrawal"
+      "confirmCta": "Confirm withdrawal",
+      "amountOnlyCta": "Exit with principal only",
+      "amountOnlyHelp": "If the normal withdrawal fails, you can recover your principal without interest."
     },
     "emergencyCloseSheet": {
       "title": "Emergency withdrawal",

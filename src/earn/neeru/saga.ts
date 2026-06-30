@@ -50,8 +50,28 @@ const CATEGORY_DURATION_SECONDS: Record<NeeruCategoryId, number> = {
   3: 90 * 86_400,
 }
 
-function isLowPoolError(error: Error): boolean {
-  return error.message.includes('InterestPoolLow')
+// 4-byte selector for the custom error InterestPoolLow(). Matched here because
+// the fondo ABI is intentionally not loaded into the wallet (zero-exposure),
+// so viem surfaces reverts with the raw selector instead of the decoded name.
+const INTEREST_POOL_LOW_SELECTOR = '0x2648b779'
+
+export function isLowPoolError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+
+  const msg = error.message ?? ''
+  if (msg.toLowerCase().includes('interestpoollow')) return true
+
+  const cause = (error as { cause?: { data?: unknown; details?: unknown } }).cause
+  const candidates: unknown[] = [cause?.data, cause?.details, msg]
+  for (const c of candidates) {
+    if (
+      typeof c === 'string' &&
+      c.toLowerCase().includes(INTEREST_POOL_LOW_SELECTOR.toLowerCase())
+    ) {
+      return true
+    }
+  }
+  return false
 }
 
 export function* fetchNeeruPositionsSaga(_action: ReturnType<typeof fetchPositionsStart>) {
