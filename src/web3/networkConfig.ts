@@ -96,6 +96,13 @@ interface NetworkConfig {
   getXautPriceUrl: string
   blockscoutProxyBase: string
   wriDelegateRelayUrl: string
+  wriTxFeedUrl: string
+  wriTxWatchUrl: string
+  wriFeeAdapterBootstrapUrl: string
+  wriFeeAdapterAddresses: {
+    USDC: Address
+    USDT: Address
+  }
   tucopBackendApiUrl: string
 }
 
@@ -301,6 +308,25 @@ const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 const TUCOP_BACKEND_BASE = 'https://tucop-backend-production.up.railway.app'
 const GET_XAUT_PRICE_URL = `${TUCOP_BACKEND_BASE}/api/prices/xaut?vs=usd`
 const WRI_DELEGATE_RELAY_URL = `${TUCOP_BACKEND_BASE}/api/wri/delegate-relay`
+// WRI Track C feed migration (gated by StatsigFeatureGates.WRI_TX_FEED_TUCOP_V1):
+// indexer-backed feed that classifies EIP-7702 atomic batches Valora ignores.
+// Same response shape as getWalletTransactions, so the swap is just a baseUrl
+// flip inside transactions/api.ts. /watch registers wallets so the indexer
+// tracks them going forward.
+const WRI_TX_FEED_URL = `${TUCOP_BACKEND_BASE}/api/transactions/feed`
+const WRI_TX_WATCH_URL = `${TUCOP_BACKEND_BASE}/api/transactions/watch`
+// Pre-authorization endpoint for the CIP-64 fee adapters (gated by
+// WRI_COPM_FEE_BOOTSTRAP_V1). Mints one-time MAX_UINT256 approvals on the
+// underlying USDC/USDT so users without CELO or Mento stables can still pay
+// gas. Adapter addresses are sourced from celopedia (canonical Mento list).
+const WRI_FEE_ADAPTER_BOOTSTRAP_URL = `${TUCOP_BACKEND_BASE}/api/wri/fee-adapter-bootstrap`
+// Canonical CIP-64 fee adapter addresses on Celo mainnet, verified via the
+// celopedia-skill builder guide (Allowed Fee Currencies table). Used by the
+// fee-bootstrap flow to grant infinite approval on the underlying token. The
+// adapter ABI is non-standard (no token()/owner() getters) so we don't read
+// the underlying on-chain — celopedia is the source of truth.
+const WRI_FEE_ADAPTER_USDC = '0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B'
+const WRI_FEE_ADAPTER_USDT = '0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72'
 const BLOCKSCOUT_PROXY_BASE = `${TUCOP_BACKEND_BASE}/api/v2`
 
 const networkConfig: NetworkConfig = {
@@ -422,6 +448,13 @@ const networkConfig: NetworkConfig = {
   getXautPriceUrl: GET_XAUT_PRICE_URL,
   blockscoutProxyBase: BLOCKSCOUT_PROXY_BASE,
   wriDelegateRelayUrl: WRI_DELEGATE_RELAY_URL,
+  wriTxFeedUrl: WRI_TX_FEED_URL,
+  wriTxWatchUrl: WRI_TX_WATCH_URL,
+  wriFeeAdapterBootstrapUrl: WRI_FEE_ADAPTER_BOOTSTRAP_URL,
+  wriFeeAdapterAddresses: {
+    USDC: WRI_FEE_ADAPTER_USDC,
+    USDT: WRI_FEE_ADAPTER_USDT,
+  },
   tucopBackendApiUrl: TUCOP_BACKEND_BASE,
 }
 
