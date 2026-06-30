@@ -344,39 +344,90 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       )
     }
 
-    // Map chosen TokenBalance to the actual on-chain fee-currency arg:
+    // Map a TokenBalance candidate to the actual on-chain fee-currency arg:
     //   - CELO native -> undefined (type 0x02 eip1559, no feeCurrency field)
     //   - adapter-based -> adapter address (protocol pulls via transferFrom)
     //   - native Mento -> token address
-    let feeCurrencyArg: Hex | undefined
-    if (choice.chosen.symbol === 'CELO') {
-      feeCurrencyArg = undefined
-    } else if (choice.chosen.feeCurrencyAdapterAddress) {
-      feeCurrencyArg = choice.chosen.feeCurrencyAdapterAddress as Hex
-    } else {
-      feeCurrencyArg = choice.chosen.address as Hex
+    function toFeeCurrencyArg(candidate: TokenBalance): Hex | undefined {
+      if (candidate.symbol === 'CELO') return undefined
+      if (candidate.feeCurrencyAdapterAddress) {
+        return candidate.feeCurrencyAdapterAddress as Hex
+      }
+      return candidate.address as Hex
     }
+
+    // Cascade-on-revert: try the picker's chosen currency first; if
+    // sendTransaction reverts with a fee-currency-related error (insufficient
+    // funds, fee currency not supported, gas issues), fall through to
+    // alternatives[0], [1], ... until one succeeds or the list is exhausted.
+    // Non-fee-currency errors (user rejected, slippage, RPC timeout) bubble
+    // immediately so the cascade doesn't mask unrelated failures.
+    const cascadeCandidates: TokenBalance[] = [choice.chosen, ...choice.alternatives]
+    let hash: Hex | undefined
+    let finalCandidate: TokenBalance = choice.chosen
+    let cascadeAttempts = 0
+    let lastError: unknown
+    for (let attempt = 0; attempt < cascadeCandidates.length; attempt++) {
+      const candidate = cascadeCandidates[attempt]
+      const feeCurrencyArg = toFeeCurrencyArg(candidate)
+      Logger.info(
+        TAG,
+        `sendTransaction attempt ${attempt + 1}/${cascadeCandidates.length} with feeCurrency=${candidate.symbol} (${feeCurrencyArg ?? 'native CELO'})`
+      )
+      const sendArgs = {
+        account,
+        to: walletAddress as Address,
+        data: calldata,
+        ...(feeCurrencyArg && { feeCurrency: feeCurrencyArg }),
+      } as unknown as Parameters<typeof wallet.sendTransaction>[0]
+      try {
+        hash = yield* call(() => wallet.sendTransaction(sendArgs))
+        finalCandidate = candidate
+        cascadeAttempts = attempt
+        break
+      } catch (err) {
+        lastError = err
+        const message = err instanceof Error ? err.message : String(err)
+        // Only cascade on errors that suggest a different currency might help.
+        // Treat everything else (user-rejected, slippage, RPC) as terminal.
+        const looksLikeFeeCurrencyIssue =
+          /insufficient funds|fee currency|gas.{0,30}(too low|insufficient)|cip.?64/i.test(message)
+        const hasMoreAlternatives = attempt < cascadeCandidates.length - 1
+        if (!looksLikeFeeCurrencyIssue || !hasMoreAlternatives) {
+          throw err
+        }
+        Logger.warn(
+          TAG,
+          `feeCurrency=${candidate.symbol} attempt failed (${message}); cascading to next alternative`
+        )
+      }
+    }
+    if (hash === undefined) {
+      // Defensive: the loop above either breaks with a hash or throws. This
+      // branch is only reachable if the candidate list was empty, which
+      // pickFeeCurrency already guards against (returns null instead).
+      throw lastError ?? new Error('No fee currency succeeded')
+    }
+
+    // Reason reflects the FINAL choice after any cascade fallback: a cascade
+    // that landed on a stable still counts as preferred-stable; one that
+    // landed on CELO is celo-fallback. cascadeAttempts tells the team whether
+    // the first try worked (0) or how many alternatives were burned through.
+    const finalReason: 'preferred-stable' | 'celo-fallback' =
+      finalCandidate.symbol === 'CELO' ? 'celo-fallback' : 'preferred-stable'
     Logger.info(
       TAG,
-      `picked fee currency: ${choice.chosen.symbol} (reason=${choice.reason}, declined=${choice.declined.length}, alternatives=${choice.alternatives.length})`
+      `picked fee currency: ${finalCandidate.symbol} (reason=${finalReason}, declined=${choice.declined.length}, alternatives=${choice.alternatives.length}, cascadeAttempts=${cascadeAttempts})`
     )
     AppAnalytics.track(FeeEvents.fee_currency_picked, {
       context: 'dollarsSpend_7702',
-      chosenSymbol: choice.chosen.symbol,
-      reason: choice.reason,
+      chosenSymbol: finalCandidate.symbol,
+      reason: finalReason,
       declinedCount: choice.declined.length,
       alternativesCount: choice.alternatives.length,
+      cascadeAttempts,
       networkId: NetworkId['celo-mainnet'],
     })
-
-    const sendArgs = {
-      account,
-      to: walletAddress as Address,
-      data: calldata,
-      ...(feeCurrencyArg && { feeCurrency: feeCurrencyArg }),
-    } as unknown as Parameters<typeof wallet.sendTransaction>[0]
-
-    const hash = yield* call(() => wallet.sendTransaction(sendArgs))
 
     Logger.info(TAG, `Submitted 7702 dollarsSpend batch: ${hash}`)
 
@@ -405,9 +456,12 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       // make handleTransactionReceiptReceived log a noisy "No information found
       // for fee currency" error when the receipt enriches the standby. For
       // adapter / non-CELO fee currencies, pass the tokenId so the UI can show
-      // the fee in the correct token.
-      const feeCurrencyId = feeCurrencyArg
-        ? `celo-mainnet:${feeCurrencyArg.toLowerCase()}`
+      // the fee in the correct token. Uses the cascade winner (finalCandidate)
+      // so the standby reflects whichever currency actually paid for gas, not
+      // the initially-chosen one if a cascade fallback fired.
+      const finalFeeCurrencyArg = toFeeCurrencyArg(finalCandidate)
+      const feeCurrencyId = finalFeeCurrencyArg
+        ? `celo-mainnet:${finalFeeCurrencyArg.toLowerCase()}`
         : undefined
       // Value convention: whole tokens with decimal (Valora-compatible). The
       // wallet's UI assumes whole-token strings; emitting wei here would

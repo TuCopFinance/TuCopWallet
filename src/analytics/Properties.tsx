@@ -664,6 +664,11 @@ interface FeeEventsProperties {
     reason: 'preferred-stable' | 'celo-fallback'
     declinedCount: number
     alternativesCount: number
+    // 0 when the initial pick succeeded on first sendTransaction. >0 when the
+    // initial pick reverted and the saga cascaded through alternatives. Only
+    // saga7702 emits cascadeAttempts > 0 today (legacy multi-step lets
+    // prepareTransactions do its own iteration upstream).
+    cascadeAttempts?: number
     networkId: NetworkId
   }
 }

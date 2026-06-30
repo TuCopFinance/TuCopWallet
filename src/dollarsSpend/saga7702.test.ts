@@ -258,6 +258,85 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
     expect(sendArg.feeCurrency).toBe(mockCopm.address)
   })
 
+  it('cascades to the next alternative when sendTransaction reverts with a fee-currency error', async () => {
+    // First attempt (USDm) reverts with "insufficient funds for gas" — a
+    // fee-currency-shaped failure. The cascade re-tries with the next
+    // alternative (CELO native). Second attempt succeeds.
+    jest.mocked(getFeatureGate).mockReturnValue(true)
+    jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+    const sendTx = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('insufficient funds for gas in feeCurrency'))
+      .mockResolvedValueOnce(MOCK_TX_HASH)
+    const wallet = mockWallet({ sendTx })
+    jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+    const mockUsdm = {
+      tokenId: 'celo-mainnet:usdm',
+      networkId: 'celo-mainnet',
+      symbol: 'USDm',
+      decimals: 18,
+      balance: new BigNumber(5),
+      priceUsd: new BigNumber(1),
+      address: '0x765de816845861e75a25fca122bb6898b8b1282a',
+      isFeeCurrency: true,
+    } as any
+
+    await expectSaga(
+      executeDollarsSpend7702Saga,
+      executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+    )
+      .provide([
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.select.selector(tokensByIdSelector), mockTokensById],
+        [matchers.select.selector(feeCurrenciesSelector), [mockUsdm]],
+        [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
+        [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+        [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
+      ])
+      .put(multiSwapCompleted())
+      .silentRun()
+
+    // sendTransaction called twice: once with USDm, once with CELO native.
+    expect(sendTx).toHaveBeenCalledTimes(2)
+    expect(sendTx.mock.calls[0][0].feeCurrency).toBe(mockUsdm.address)
+    expect(sendTx.mock.calls[1][0].feeCurrency).toBeUndefined()
+  })
+
+  it('does not cascade on non-fee-currency errors (user-rejected, slippage, RPC)', async () => {
+    jest.useRealTimers()
+    jest.mocked(getFeatureGate).mockReturnValue(true)
+    jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+    // user-rejected error: cascade must NOT mask this with a retry.
+    const sendTx = jest.fn().mockRejectedValue(new Error('user rejected the request'))
+    const wallet = mockWallet({ sendTx })
+    jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+    try {
+      await expectSaga(
+        executeDollarsSpend7702Saga,
+        executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+      )
+        .provide([
+          [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+          [matchers.select.selector(tokensByIdSelector), mockTokensById],
+          [matchers.select.selector(feeCurrenciesSelector), []],
+          [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
+          [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+          [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
+        ])
+        .put.actionType(multiSwapStepFailed.type)
+        .not.put.actionType(multiSwapCompleted.type)
+        .silentRun(500)
+    } finally {
+      jest.useFakeTimers()
+    }
+    // Cascade only fires on fee-currency-looking failures. user-rejected is
+    // terminal — sendTransaction must be called exactly once even though CELO
+    // is available as an alternative.
+    expect(sendTx).toHaveBeenCalledTimes(1)
+  })
+
   it('dispatches multiSwapStepFailed when a quote refetch throws (flag on)', async () => {
     jest.useRealTimers()
     jest.mocked(getFeatureGate).mockReturnValue(true)
