@@ -205,4 +205,61 @@ describe('SwapTransactionDetails', () => {
       }
     )
   })
+
+  describe('feePaidIn (Bug E surface)', () => {
+    const mockNetworkFee: SwapFeeAmount = {
+      amount: new BigNumber(0.01),
+      token: mockCusdTokenBalance,
+    }
+
+    it('renders user-facing display name for the chosen fee currency', () => {
+      const { getByTestId } = render(
+        <Provider store={createMockStore()}>
+          <SwapTransactionDetails {...defaultProps} networkFee={mockNetworkFee} />
+        </Provider>
+      )
+      // cUSD belongs to the "Dólares" UX group per getTokenDisplayName.
+      expect(getByTestId('SwapTransactionDetails/FeePaidIn')).toHaveTextContent(
+        'swapScreen.transactionDetails.feePaidIn'
+      )
+      expect(getByTestId('SwapTransactionDetails/FeePaidIn')).toHaveTextContent('Dólares')
+    })
+
+    it('keeps raw symbol when no friendly mapping exists (e.g. CELO fallback)', () => {
+      const { getByTestId } = render(
+        <Provider store={createMockStore()}>
+          <SwapTransactionDetails
+            {...defaultProps}
+            networkFee={{ ...mockNetworkFee, token: mockCeloTokenBalance }}
+          />
+        </Provider>
+      )
+      // CELO is not in the Pesos / Dólares / Oro mapping; raw symbol survives
+      // so the user can tell when the last-resort CELO fallback fired.
+      expect(getByTestId('SwapTransactionDetails/FeePaidIn')).toHaveTextContent('CELO')
+    })
+
+    it('is hidden while the quote is loading', () => {
+      const { queryByTestId } = render(
+        <Provider store={createMockStore()}>
+          <SwapTransactionDetails
+            {...defaultProps}
+            networkFee={mockNetworkFee}
+            fetchingSwapQuote={true}
+          />
+        </Provider>
+      )
+      // No flash of "Paid in ???" while the quote is still resolving.
+      expect(queryByTestId('SwapTransactionDetails/FeePaidIn')).toBeNull()
+    })
+
+    it('is hidden when there is no network fee token (rare error path)', () => {
+      const { queryByTestId } = render(
+        <Provider store={createMockStore()}>
+          <SwapTransactionDetails {...defaultProps} networkFee={undefined} />
+        </Provider>
+      )
+      expect(queryByTestId('SwapTransactionDetails/FeePaidIn')).toBeNull()
+    })
+  })
 })
