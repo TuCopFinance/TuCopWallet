@@ -49,6 +49,17 @@ export interface PickFeeCurrencyInput {
 const isCelo = (t: TokenBalance) => t.symbol === 'CELO'
 const isNotCelo = (t: TokenBalance) => t.symbol !== 'CELO'
 
+/**
+ * Lightweight Bug-E reorder for downstream consumers that iterate the array
+ * themselves (e.g. prepareTransactions). Stable + non-filtering: every entry
+ * from the input survives; CELO just moves to the end. Use this when the
+ * caller wants the full candidate list with the preferred order baked in.
+ * For the "pick one with reasoning" use case use pickFeeCurrency instead.
+ */
+export function reorderForBugE(available: TokenBalance[]): TokenBalance[] {
+  return [...available.filter(isNotCelo), ...available.filter(isCelo)]
+}
+
 function normalizeLower(values: string[] | undefined): Set<string> {
   return new Set((values ?? []).map((v) => v.toLowerCase()))
 }

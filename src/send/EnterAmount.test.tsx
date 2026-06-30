@@ -103,12 +103,13 @@ const mockStoreBalancesToTokenBalances = (storeBalances: StoredTokenBalance[]): 
   )
 }
 const mockFeeCurrencies = mockStoreBalancesToTokenBalances([
-  // matches mockStore - order follows feeCurrenciesSelector priority:
-  // CELO (0) > cUSD (2) > cEUR (99) > cREAL (99)
-  mockStoreTokenBalances[mockCeloTokenId],
+  // Post Bug E fix: EnterAmount applies reorderForBugE to the selector output
+  // so CELO slides to the end. Inside each group the selector priority is
+  // preserved: cUSD (2) > cEUR (99) > cREAL (99) > CELO (was 0, now last).
   mockStoreTokenBalances[mockCusdTokenId],
   mockStoreTokenBalances[mockCeurTokenId],
   mockStoreTokenBalances[mockCrealTokenId],
+  mockStoreTokenBalances[mockCeloTokenId],
 ])
 const onClearPreparedTransactionsSpy = jest.fn()
 const onRefreshPreparedTransactionsSpy = jest.fn()

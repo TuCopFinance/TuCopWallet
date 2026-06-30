@@ -9,7 +9,7 @@ import {
   SwapTransaction,
   SwapType,
 } from 'src/swap/types'
-import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
+import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -379,13 +379,10 @@ function useSwapQuote({
   const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
   // Bug E: the shared selector returns CELO at index 0, and prepareTransactions
   // (called inside prepareSwapTransactions below) locks in the first viable
-  // entry. Reorder via the picker so any visible stable is preferred over
-  // CELO. CELO stays as the last alternative for the rare case where every
-  // stable fails the gas check.
-  const feeCurrencies = useMemo(() => {
-    const choice = pickFeeCurrency({ available: rawFeeCurrencies })
-    return choice ? [choice.chosen, ...choice.alternatives] : rawFeeCurrencies
-  }, [rawFeeCurrencies])
+  // entry. Demote CELO to the end of the array so any visible stable is
+  // preferred. CELO remains in the list as a last-resort fallback for the
+  // rare case where every stable fails the gas check.
+  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
 
   const refreshQuote = useAsyncCallback(
     async (

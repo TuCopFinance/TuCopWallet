@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
+import { pickFeeCurrency, reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import type { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 
@@ -137,11 +137,43 @@ describe('pickFeeCurrency', () => {
     expect(result).toBeNull()
   })
 
+  it('keeps every input in alternatives when none are excluded', () => {
+    const result = pickFeeCurrency({ available: [CELO, USDM, COPM, USDT] })
+    expect([result?.chosen.symbol, ...(result?.alternatives.map((t) => t.symbol) ?? [])]).toEqual([
+      'USDm',
+      'COPm',
+      'USDT',
+      'CELO',
+    ])
+  })
+
   it('lists alternatives in stable-then-CELO order for cascade fallback', () => {
     // Three stables + CELO all pass; alternatives let the saga retry on
     // insufficient-gas without re-running the picker.
     const result = pickFeeCurrency({ available: [CELO, USDM, COPM, USDT] })
     expect(result?.chosen.symbol).toBe('USDm')
     expect(result?.alternatives.map((t) => t.symbol)).toEqual(['COPm', 'USDT', 'CELO'])
+  })
+})
+
+describe('reorderForBugE', () => {
+  it('moves CELO to the end and keeps every other token in place', () => {
+    const usdmZero = tok({
+      symbol: 'USDm',
+      balance: new BigNumber(0),
+      priceUsd: new BigNumber(1),
+    })
+    const result = reorderForBugE([CELO, USDM, usdmZero, COPM])
+    expect(result.map((t) => t.symbol)).toEqual(['USDm', 'USDm', 'COPm', 'CELO'])
+    // Same length: nothing is filtered out by balance gates.
+    expect(result.length).toBe(4)
+  })
+
+  it('is a no-op when CELO is not present', () => {
+    expect(reorderForBugE([USDM, COPM])).toEqual([USDM, COPM])
+  })
+
+  it('returns an empty array for empty input', () => {
+    expect(reorderForBugE([])).toEqual([])
   })
 })

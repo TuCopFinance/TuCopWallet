@@ -235,7 +235,7 @@ const defaultQuoteResponse = JSON.stringify(defaultQuote)
 const preparedTransactions: SerializableTransactionRequest[] = [
   {
     data: '0x095ea7b3000000000000000000000000000000000000000000000000000000000000012300000000000000000000000000000000000000000000000011200c7644d50000',
-    feeCurrency: mockCusdAddress,
+    feeCurrency: mockCusdAddress as `0x${string}`,
     from: '0x0000000000000000000000000000000000007E57',
     gas: '21000',
     // 21000 * 60 / 100 = 12600 (matches the calibration added in
@@ -249,7 +249,7 @@ const preparedTransactions: SerializableTransactionRequest[] = [
   },
   {
     data: '0x0',
-    feeCurrency: mockCusdAddress,
+    feeCurrency: mockCusdAddress as `0x${string}`,
     from: '0x0000000000000000000000000000000000007E57',
     gas: '1850000',
     // The swap (second) tx has no fresh estimateGas call in this fixture so
@@ -1578,7 +1578,7 @@ describe('SwapScreen', () => {
 
     expect(
       getByText(
-        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"}'
+        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, cEUR, CELO"}'
       )
     ).toBeTruthy()
   })
@@ -1600,12 +1600,14 @@ describe('SwapScreen', () => {
 
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
 
-    // Per Bug E fix, useSwapQuote routes the selector output through
-    // pickFeeCurrency, which (1) drops cEUR because its balance is 0 and
-    // (2) promotes cUSD ahead of CELO. The warning lists the candidates the
-    // user actually had to work with, in the order pickFeeCurrency tried them.
+    // Per Bug E fix, useSwapQuote calls reorderForBugE which only pushes
+    // CELO to the end (no filtering). cEUR stays in the warning even with 0
+    // balance because the warning enumerates every currency the user could
+    // top up. Order: stables (selector priority) first, CELO last.
     expect(
-      getByText('swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, CELO"}')
+      getByText(
+        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, cEUR, CELO"}'
+      )
     ).toBeTruthy()
   })
 
