@@ -11,6 +11,7 @@ import {
   emergencyCloseNeeruPositionSaga,
   fetchNeeruPositionsSaga,
   handleNeeruDepositOptimistic,
+  isInterestPoolLow,
   pollUntilBackendCatchesUp,
 } from 'src/earn/neeru/saga'
 import {
@@ -383,5 +384,50 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(observed.baseUrl).toBe(networkConfig.tucopBackendApiUrl)
     expect(observed.walletAddress).toBe(WALLET)
     expect(observed.txHash).toBe(TX.toLowerCase())
+  })
+})
+
+describe('isInterestPoolLow', () => {
+  it('detects dev-style error.message', () => {
+    expect(isInterestPoolLow(new Error('Reverted: InterestPoolLow'))).toBe(true)
+  })
+  it('detects viem prod-style selector in error.cause.data', () => {
+    const err = Object.assign(new Error('Execution reverted'), {
+      cause: { data: '0x2648b779' },
+    })
+    expect(isInterestPoolLow(err)).toBe(true)
+  })
+  it('detects selector inside a longer hex blob (cause.details)', () => {
+    const err = Object.assign(new Error('estimateGas failed'), {
+      cause: { details: 'execution reverted: 0x2648b779000000000000' },
+    })
+    expect(isInterestPoolLow(err)).toBe(true)
+  })
+  it('returns false for unrelated errors', () => {
+    expect(isInterestPoolLow(new Error('insufficient funds'))).toBe(false)
+    expect(isInterestPoolLow('not an error')).toBe(false)
+    expect(isInterestPoolLow(null)).toBe(false)
+  })
+})
+
+describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
+  const WALLET = '0x' + 'a'.repeat(40)
+  const POSITION_ID = '4242'
+
+  it('detects InterestPoolLow when viem revert surfaces as selector in cause.data', async () => {
+    const prodShapeError = Object.assign(new Error('Execution reverted'), {
+      cause: { data: '0x2648b779' },
+    })
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), { transactions: [] }],
+        [matchers.call.fn(prepareTransactions), Promise.reject(prodShapeError)],
+      ])
+      .put({ type: NEERU_INTEREST_POOL_LOW_ACTION, payload: { positionId: POSITION_ID } })
+      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .run()
   })
 })
