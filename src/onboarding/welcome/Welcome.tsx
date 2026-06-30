@@ -9,7 +9,6 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { OnboardingEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes, TextSizes } from 'src/components/Button'
 import CheckBox from 'src/icons/ui/CheckBox'
-import MSLogoFull from 'src/images/MSLogoFull'
 import WelcomeLogo from 'src/images/WelcomeLogo'
 import { nuxNavigationOptions } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
@@ -140,9 +139,6 @@ export default function Welcome() {
               textSize={TextSizes.SMALL}
             />
           </View>
-          <View style={styles.msLogoContainer}>
-            <MSLogoFull />
-          </View>
         </View>
       </SafeAreaView>
     </View> // Close main container View
@@ -198,10 +194,5 @@ const styles = StyleSheet.create({
   buttonView: {
     paddingHorizontal: Spacing.Thick24,
     marginBottom: Spacing.Regular16,
-  },
-  msLogoContainer: {
-    width: '100%',
-    alignItems: 'center',
-    paddingBottom: Spacing.Regular16,
   },
 })
