@@ -2,10 +2,9 @@ import { NetworkId } from 'src/transactions/types'
 
 export const NEERU_APP_ID = 'neeru-vaults'
 
-export const FONDO_COPM_MVP_ADDRESS = '0xd05cdf2dc56d97333c547519df58d56145766294' as const
+export const FONDO_COPM_MVP_ADDRESS = '0x988af5977201a0e988f2c75ea952532f6beb5082' as const
 export const COPM_TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as const
 export const COPM_TOKEN_ID = `${NetworkId['celo-mainnet']}:${COPM_TOKEN_ADDRESS}` as const
-export const FONDO_DEPLOY_BLOCK = BigInt(70594026)
 
 export type NeeruTrancheId = 0 | 1 | 2 | 3
 
