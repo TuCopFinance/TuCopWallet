@@ -2563,6 +2563,13 @@
       "dismiss": "Entendido"
     }
   },
+  "feeAdapterBootstrap": {
+    "title": "Activar Dólares para pagar tarifas",
+    "body": "Para enviar y hacer cambios usando tus Dólares (USDC, USDT), hacemos una activación rápida.",
+    "reassure": "Una sola vez. Después podés hacer todas las operaciones que quieras sin volver a aparecer esta pantalla. Solo se descuenta lo justo de tarifa en cada operación. Nunca más de eso.",
+    "activate": "Activar Dólares",
+    "later": "Ahora no"
+  },
   "earnFlow": {
     "gasSubsidized": "Las tarifas de transacción están cubiertas por un tiempo limitado",
     "addCryptoBottomSheet": {
