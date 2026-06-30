@@ -13,6 +13,7 @@ function freshState(overrides?: Partial<BootstrapState['byAdapter']>): Bootstrap
       USDT: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
       ...overrides,
     },
+    pending: null,
   }
 }
 

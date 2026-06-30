@@ -3783,6 +3783,7 @@ export const v251SchemaWithWriFeeAdapterBootstrap = {
       USDC: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
       USDT: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
     },
+    pending: null,
   },
 }
 
