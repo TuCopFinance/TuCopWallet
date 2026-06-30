@@ -124,7 +124,14 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
         />
       </ScrollView>
       {selectedPosition && (
-        <NeeruCloseSheet position={selectedPosition} onClose={() => setSelectedPosition(null)} />
+        <NeeruCloseSheet
+          position={selectedPosition}
+          onClose={() => setSelectedPosition(null)}
+          onAmountOnlyRequested={(pos) => {
+            setSelectedPosition(null)
+            setEmergencyTarget(pos)
+          }}
+        />
       )}
       {emergencyTarget && (
         <NeeruEmergencyCloseSheet
