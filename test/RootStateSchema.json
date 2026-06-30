@@ -49,6 +49,39 @@
             ],
             "type": "object"
         },
+        "AdapterState": {
+            "additionalProperties": false,
+            "properties": {
+                "bootstrapped": {
+                    "type": "boolean"
+                },
+                "lastAttemptAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "lastError": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "lastSuccessAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                }
+            },
+            "required": [
+                "bootstrapped",
+                "lastAttemptAt",
+                "lastError",
+                "lastSuccessAt"
+            ],
+            "type": "object"
+        },
         "AddressInfoToDisplay": {
             "additionalProperties": false,
             "properties": {
@@ -4053,6 +4086,22 @@
             ],
             "type": "string"
         },
+        "Record<AdapterSymbol,AdapterState>": {
+            "additionalProperties": false,
+            "properties": {
+                "USDC": {
+                    "$ref": "#/definitions/AdapterState"
+                },
+                "USDT": {
+                    "$ref": "#/definitions/AdapterState"
+                }
+            },
+            "required": [
+                "USDC",
+                "USDT"
+            ],
+            "type": "object"
+        },
         "Record<string,InFlightDescriptor>": {
             "additionalProperties": false,
             "type": "object"
@@ -6384,6 +6433,18 @@
             ],
             "type": "object"
         },
+        "State_31": {
+            "additionalProperties": false,
+            "properties": {
+                "byAdapter": {
+                    "$ref": "#/definitions/Record<AdapterSymbol,AdapterState>"
+                }
+            },
+            "required": [
+                "byAdapter"
+            ],
+            "type": "object"
+        },
         "State_4": {
             "additionalProperties": false,
             "properties": {
@@ -8319,6 +8380,9 @@
         },
         "web3": {
             "$ref": "#/definitions/State_7"
+        },
+        "wriFeeAdapterBootstrap": {
+            "$ref": "#/definitions/State_31"
         }
     },
     "required": [
@@ -8354,7 +8418,8 @@
         "transactionInFlight",
         "transactions",
         "walletConnect",
-        "web3"
+        "web3",
+        "wriFeeAdapterBootstrap"
     ],
     "type": "object"
 }
