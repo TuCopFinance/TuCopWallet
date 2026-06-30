@@ -443,6 +443,7 @@ describe('store state', () => {
               "lastSuccessAt": null,
             },
           },
+          "pending": null,
         },
       }
     `)
