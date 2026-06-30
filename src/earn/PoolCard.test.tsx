@@ -54,7 +54,7 @@ describe('PoolCard', () => {
       const neeruPool = {
         ...mockEarnPositions[0],
         appId: 'neeru-vaults',
-        positionId: 'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:category-1',
+        positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:category-1',
       }
       const { getByText, queryByText } = render(
         <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
