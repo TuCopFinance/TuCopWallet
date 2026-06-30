@@ -348,7 +348,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     //   - CELO native -> undefined (type 0x02 eip1559, no feeCurrency field)
     //   - adapter-based -> adapter address (protocol pulls via transferFrom)
     //   - native Mento -> token address
-    function toFeeCurrencyArg(candidate: TokenBalance): Hex | undefined {
+    const toFeeCurrencyArg = (candidate: TokenBalance): Hex | undefined => {
       if (candidate.symbol === 'CELO') return undefined
       if (candidate.feeCurrencyAdapterAddress) {
         return candidate.feeCurrencyAdapterAddress as Hex

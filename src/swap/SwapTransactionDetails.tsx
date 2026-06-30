@@ -266,7 +266,7 @@ export function SwapTransactionDetails({
           value={estimatedFeesString ?? placeholder}
         />
       </View>
-      {networkFee?.token?.symbol && !fetchingSwapQuote && (
+      {!!networkFee?.token?.symbol && !fetchingSwapQuote && (
         // Bug E UX surface: the user can see which of their visible balances
         // covers the network fee. Was added so a tx paid in Pesos / Dólares no
         // longer looks like an unexplained CELO debit. Uses getTokenDisplayName
