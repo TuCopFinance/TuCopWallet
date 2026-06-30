@@ -36,6 +36,13 @@ function SwapFeedItem({ transaction }: Props) {
   }
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
+  // EIP-7702 atomic batches from the TuCop indexer feed populate
+  // fromTokenAmounts with every leg of the batch. When >1, the subtitle
+  // collapses to a count ("3 monedas a Pesos") so the user understands the
+  // tx moved multiple inputs at once. The outgoing amount row keeps showing
+  // the largest leg (which is what outAmount already holds for these txs).
+  const fromLegCount = transaction.fromTokenAmounts?.length ?? 0
+  const isMultiLegSwap = fromLegCount > 1
 
   // Get friendly token name - also accepts tokenId for when token info isn't available.
   // Per .claude/rules/tokens.md the entire USAT/USDm/USDC/USDT group is shown as
@@ -125,10 +132,15 @@ function SwapFeedItem({ transaction }: Props) {
             <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
               {isCrossChainSwap
                 ? t('transactionFeed.crossChainSwapTransactionLabel')
-                : t('feedItemSwapPath', {
-                    token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                    token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                  })}
+                : isMultiLegSwap
+                  ? t('feedItemSwapPathMulti', {
+                      count: fromLegCount,
+                      token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                    })
+                  : t('feedItemSwapPath', {
+                      token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                      token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                    })}
             </Text>
             <TokenDisplay
               amount={-transaction.outAmount.value}
