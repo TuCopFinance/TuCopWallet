@@ -223,7 +223,8 @@ export function isFeeCurrency(token: TokenBalance | undefined): token is TokenBa
  * Returns user-friendly display name for tokens.
  * UI Rules:
  * - COPm, cCOP → "Pesos"
- * - USDT, USDC, USDm, USD₮ → "Dólares"
+ * - USDT, USDC, USDm, cUSD, USD₮ → "Dólares"
+ * - cEUR → "Euros"
  * - XAUt0 → "Oro"
  * - Others → symbol as-is
  */
@@ -235,9 +236,15 @@ export function getTokenDisplayName(symbol: string): string {
     return 'Pesos'
   }
 
-  // US Dollar stablecoins
-  if (['USDT', 'USDC', 'USDM', 'USD₮'].includes(normalizedSymbol) || symbol === 'USD₮') {
+  // US Dollar stablecoins (cUSD = legacy Mento name for USDm, kept here so
+  // older balances + tests resolve to the same Spanish label).
+  if (['USDT', 'USDC', 'USDM', 'CUSD', 'USD₮'].includes(normalizedSymbol) || symbol === 'USD₮') {
     return 'Dólares'
+  }
+
+  // Euro stable (cEUR = legacy Mento name for EURm).
+  if (normalizedSymbol === 'CEUR' || normalizedSymbol === 'EURM') {
+    return 'Euros'
   }
 
   // Digital Gold

@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useAsync } from 'react-async-hook'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
@@ -32,6 +32,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Shadow, Spacing, getShadowStyle } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useTokenInfo } from 'src/tokens/hooks'
+import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import TransactionDetails from 'src/transactions/feed/TransactionDetails'
 import FeeRowItem from 'src/transactions/feed/detailContent/FeeRowItem'
@@ -60,7 +61,10 @@ function JumpstartTransactionDetailsScreen({ route }: Props) {
   const token = useTokenInfo(transaction.amount.tokenId)
 
   const walletAddress = useSelector(walletAddressSelector)
-  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
+  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
+  // Bug E: keep visible stables ahead of CELO so a jumpstart reclaim doesn't
+  // silently spend the user's hidden CELO balance on gas.
+  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
   const reclaimStatus = useSelector(jumpstartReclaimStatusSelector)
 
   const bottomSheetRef = useRef<BottomSheetModalRefType>(null)
