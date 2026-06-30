@@ -2557,6 +2557,13 @@
       "dismiss": "Got it"
     }
   },
+  "feeAdapterBootstrap": {
+    "title": "Activate Dollars for fees",
+    "body": "To send and swap using your dollars (USDC, USDT) we run a quick activation.",
+    "reassure": "Only once. After this you can do every operation without seeing this screen again. Only the actual fee is charged each time. Never more than that.",
+    "activate": "Activate Dollars",
+    "later": "Not now"
+  },
   "earnFlow": {
     "gasSubsidized": "Transaction fees are covered for a limited time",
     "addCryptoBottomSheet": {

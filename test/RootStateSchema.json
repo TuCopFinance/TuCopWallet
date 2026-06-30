@@ -82,6 +82,13 @@
             ],
             "type": "object"
         },
+        "AdapterSymbol": {
+            "enum": [
+                "USDC",
+                "USDT"
+            ],
+            "type": "string"
+        },
         "AddressInfoToDisplay": {
             "additionalProperties": false,
             "properties": {
@@ -3578,6 +3585,25 @@
             ],
             "type": "object"
         },
+        "PendingState": {
+            "additionalProperties": false,
+            "properties": {
+                "candidates": {
+                    "items": {
+                        "$ref": "#/definitions/AdapterSymbol"
+                    },
+                    "type": "array"
+                },
+                "visible": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "candidates",
+                "visible"
+            ],
+            "type": "object"
+        },
         "PersistState": {
             "additionalProperties": false,
             "properties": {
@@ -6438,10 +6464,21 @@
             "properties": {
                 "byAdapter": {
                     "$ref": "#/definitions/Record<AdapterSymbol,AdapterState>"
+                },
+                "pending": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/PendingState"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
                 }
             },
             "required": [
-                "byAdapter"
+                "byAdapter",
+                "pending"
             ],
             "type": "object"
         },
