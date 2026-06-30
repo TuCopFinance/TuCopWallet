@@ -436,8 +436,7 @@ function* watchAppReview() {
   yield* takeLatest([SendActions.SEND_PAYMENT_SUCCESS, swapSuccess], safely(requestInAppReview))
 }
 
-// This function initializes the public configuration for the app,
-// including all third-party integrations like Divvi
+// Initializes the public configuration for the app.
 export function* initializePublicConfig() {
   Logger.debug(TAG, 'Initializing public configuration')
 
