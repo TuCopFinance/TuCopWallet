@@ -18,6 +18,7 @@ import i18n from 'src/i18n'
 import NavigatorWrapper from 'src/navigator/NavigatorWrapper'
 import { persistor, store } from 'src/redux/store'
 import Logger from 'src/utils/Logger'
+import BootstrapSheetHost from 'src/wri/feeAdapterBootstrap/BootstrapSheetHost'
 
 Logger.debug('App/init', 'Current Language: ' + i18n.language)
 
@@ -86,6 +87,7 @@ export class App extends React.Component<Props> {
                     <BottomSheetModalProvider>
                       <NavigatorWrapper />
                       <ErrorSheetHost />
+                      <BootstrapSheetHost />
                       <ToastHost />
                     </BottomSheetModalProvider>
                   </GestureHandlerRootView>
