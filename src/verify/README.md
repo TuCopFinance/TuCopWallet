@@ -267,4 +267,4 @@ if (response.exists) {
 
 - [Identity Module](../identity/README.md)
 - [Onboarding Flow](../../docs/architecture/diagrams/flow-onboarding.md)
-- [Phone Verification Service](../../docs/architecture/modules/integrations.md)
+- [External integrations reference](../../docs/reference/integrations.md)
