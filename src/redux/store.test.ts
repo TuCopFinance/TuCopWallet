@@ -428,6 +428,22 @@ describe('store state', () => {
         "web3": {
           "account": "0x0000000000000000000000000000000000007E57",
         },
+        "wriFeeAdapterBootstrap": {
+          "byAdapter": {
+            "USDC": {
+              "bootstrapped": false,
+              "lastAttemptAt": null,
+              "lastError": null,
+              "lastSuccessAt": null,
+            },
+            "USDT": {
+              "bootstrapped": false,
+              "lastAttemptAt": null,
+              "lastError": null,
+              "lastSuccessAt": null,
+            },
+          },
+        },
       }
     `)
   })
