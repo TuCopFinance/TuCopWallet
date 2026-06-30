@@ -1,4 +1,5 @@
 import { call, delay, select, spawn, take, takeEvery } from 'typed-redux-saga'
+import { accountCreationTimeSelector } from 'src/account/selectors'
 import { Actions as Web3Actions } from 'src/web3/actions'
 import { walletAddressSelector } from 'src/web3/selectors'
 import networkConfig from 'src/web3/networkConfig'
@@ -42,6 +43,21 @@ export function* registerWalletForFeedWatch(walletAddress: string) {
     return
   }
 
+  // walletCreatedAt lets the backend extend its 10k-block default backfill all
+  // the way back to the wallet's first day, so the user does not see "lost
+  // history" when the gate flips. The reducer default is 99999999999999 (a
+  // sentinel meaning "not set yet" -- import flows briefly hit this state
+  // before SET_ACCOUNT fills in the real time). Drop the field when we have
+  // anything that is not a plausible past epoch ms so the backend backfill
+  // falls through to its default. Backend tolerates the field being absent OR
+  // present-but-unknown (extra body fields are ignored today; real support
+  // ships shortly after this code lands).
+  const accountCreationTime: number = yield* select(accountCreationTimeSelector)
+  const isPlausibleEpochMs = accountCreationTime > 0 && accountCreationTime < Date.now()
+  const walletCreatedAt = isPlausibleEpochMs
+    ? new Date(accountCreationTime).toISOString()
+    : undefined
+
   try {
     const response: Response = yield* call(
       fetchWithTimeout,
@@ -49,7 +65,10 @@ export function* registerWalletForFeedWatch(walletAddress: string) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: walletAddress }),
+        body: JSON.stringify({
+          address: walletAddress,
+          ...(walletCreatedAt && { walletCreatedAt }),
+        }),
       },
       WATCH_TIMEOUT_MS
     )
