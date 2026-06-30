@@ -3770,6 +3770,22 @@ export const v251Schema = {
   },
 }
 
+// WRI fee-adapter bootstrap: per-token pre-authorization state for the CIP-64
+// USDC/USDT adapters. Slice is added to the store unconditionally but NO
+// persist version bump (no store release at v251 has been published; bumping
+// before publishing breaks existing dogfood users by triggering an unnecessary
+// migration). autoMergeLevel2 will fold the new slice's initialState into
+// rehydrated state automatically.
+export const v251SchemaWithWriFeeAdapterBootstrap = {
+  ...v251Schema,
+  wriFeeAdapterBootstrap: {
+    byAdapter: {
+      USDC: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
+      USDT: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
+    },
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v251Schema as Partial<RootState>
+  return v251SchemaWithWriFeeAdapterBootstrap as Partial<RootState>
 }
