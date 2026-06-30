@@ -4,15 +4,21 @@ import { REHYDRATE, type RehydrateAction } from 'src/redux/persist-helper'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { feeCurrenciesWithPositiveBalancesSelector } from 'src/tokens/selectors'
-import { NetworkId } from 'src/transactions/types'
+import { Network, NetworkId } from 'src/transactions/types'
+import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
+import { publicClient } from 'src/viem'
 import { Actions as Web3Actions } from 'src/web3/actions'
+import { getViemWallet } from 'src/web3/contracts'
+import networkConfig from 'src/web3/networkConfig'
+import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { walletAddressSelector } from 'src/web3/selectors'
 import {
   BootstrapApiError,
   postFeeAdapterBootstrap,
   type AdapterResult,
   type AdapterStatus,
+  type BootstrapResponse,
 } from 'src/wri/feeAdapterBootstrap/api'
 import { detectShouldOfferBootstrap } from 'src/wri/feeAdapterBootstrap/detect'
 import {
@@ -26,6 +32,7 @@ import {
   type AdapterSymbol,
   type State as BootstrapState,
 } from 'src/wri/feeAdapterBootstrap/slice'
+import type { Address } from 'viem'
 
 const TAG = 'wri/feeAdapterBootstrap/saga'
 
@@ -123,6 +130,94 @@ function* applyBootstrapResults(results: AdapterResult[]) {
   }
 }
 
+// 20s covers the relay's worst-case mining + verification (backend recommends
+// 20s in its delegate-relay spec). Failure here means the user stays
+// non-delegated for this attempt -- the 24h debounce in the slice prevents the
+// sheet from re-nagging on the next boot.
+const DELEGATE_RELAY_TIMEOUT_MS = 20_000
+
+// Sign an EIP-7702 authorization for the BatchExecutor and ask the backend's
+// sponsored relay to submit it. Returns true when the relay confirms the EOA
+// is delegated. Kept lean (single attempt, no Retry-After or 502 re-check)
+// because the bootstrap sheet already has a 24h debounce -- the user is not
+// repeatedly nagged on partial failure. The dollarsSpend saga keeps a richer
+// retry loop because the swap flow has no such backstop.
+//
+// Exported so tests can shadow it via matchers.call.fn rather than mocking
+// every saga effect inside (viem wallet, account unlock, fetch).
+export function* signAndRelayDelegation(walletAddress: string) {
+  try {
+    const wallet = yield* call(getViemWallet, networkConfig.viemChain[Network.Celo])
+    if (!wallet.account) {
+      Logger.warn(TAG, 'delegate-relay: viem wallet has no account; cannot sign')
+      return false
+    }
+    // Prompts the PIN if cache is cold. Same flow the dollarsSpend saga uses
+    // before signing the authorization.
+    yield* call(getConnectedUnlockedAccount)
+
+    const auth = yield* call(() =>
+      wallet.signAuthorization({
+        account: wallet.account!,
+        contractAddress: networkConfig.batchExecutorAddressCelo,
+      })
+    )
+
+    // viem returns bigint chainId/nonce; backend wants hex strings (matches
+    // the relay body format used by dollarsSpend/saga.ts).
+    const relayBody = {
+      userAddress: walletAddress,
+      signedAuthorization: {
+        chainId: `0x${auth.chainId.toString(16)}`,
+        address: networkConfig.batchExecutorAddressCelo,
+        nonce: `0x${auth.nonce.toString(16)}`,
+        yParity: auth.yParity === 0 ? '0x0' : '0x1',
+        r: auth.r,
+        s: auth.s,
+      },
+    }
+
+    const res: Response = yield* call(
+      fetchWithTimeout,
+      networkConfig.wriDelegateRelayUrl,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(relayBody),
+      },
+      DELEGATE_RELAY_TIMEOUT_MS
+    )
+
+    if (!res.ok) {
+      Logger.warn(TAG, `delegate-relay returned ${res.status}; bootstrap stays blocked`)
+      return false
+    }
+
+    const body = (yield* call(() => res.json())) as { status?: string }
+    if (body.status === 'delegated' || body.status === 'already_delegated') {
+      // Backend's delegate-relay does an internal post-mining getCode poll, so
+      // when it returns "delegated" the effect is already visible on-chain.
+      // No extra wait needed before the bootstrap retry.
+      Logger.info(TAG, `delegate-relay confirmed ${body.status} for ${walletAddress}`)
+      return true
+    }
+    Logger.warn(TAG, `delegate-relay returned unexpected status="${body.status ?? '<none>'}"`)
+
+    // Defensive belt-and-suspenders: re-check on-chain in case the relay
+    // gave a non-standard 200 body but the tx actually mined.
+    const expectedDesignator = `0xef0100${networkConfig.batchExecutorAddressCelo
+      .slice(2)
+      .toLowerCase()}`
+    const code = yield* call(() =>
+      publicClient[Network.Celo].getCode({ address: walletAddress as Address })
+    )
+    return (code ?? '').toLowerCase() === expectedDesignator
+  } catch (err) {
+    Logger.warn(TAG, `delegate-relay threw: ${err instanceof Error ? err.message : String(err)}`)
+    return false
+  }
+}
+
 export function* handleAccept(action: PayloadAction<{ candidates: AdapterSymbol[] }>) {
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {
@@ -138,7 +233,31 @@ export function* handleAccept(action: PayloadAction<{ candidates: AdapterSymbol[
   }
 
   try {
-    const response = yield* call(postFeeAdapterBootstrap, walletAddress)
+    // First attempt of the bootstrap. The most common failure here is 412
+    // (user not 7702-delegated yet); we auto-chain through delegate-relay
+    // and retry once before surfacing failure to the user. Backend keeps
+    // the 412 contract stable (status code + body substring "precondition
+    // failed", confirmed 2026-06-30), so keying on err.kind is safe.
+    let response: BootstrapResponse
+    try {
+      response = yield* call(postFeeAdapterBootstrap, walletAddress)
+    } catch (firstErr) {
+      if (firstErr instanceof BootstrapApiError && firstErr.kind === 'not-delegated') {
+        Logger.info(TAG, '412 not-delegated; auto-chaining through delegate-relay')
+        const delegated: boolean = yield* call(signAndRelayDelegation, walletAddress)
+        if (!delegated) {
+          // Surface as a non-BootstrapApiError so the outer catch dispatches
+          // a plain failure message instead of treating it like another 412.
+          throw new Error('delegation-failed: delegate-relay did not delegate')
+        }
+        // Single retry. If this also throws (super rare; e.g. relay confirmed
+        // delegated but the wallet's view of state is stale), the outer catch
+        // marks failed and the 24h debounce takes over.
+        response = yield* call(postFeeAdapterBootstrap, walletAddress)
+      } else {
+        throw firstErr
+      }
+    }
     yield* call(applyBootstrapResults, response.results)
   } catch (err) {
     if (err instanceof BootstrapApiError) {
@@ -147,16 +266,6 @@ export function* handleAccept(action: PayloadAction<{ candidates: AdapterSymbol[
       Logger.warn(TAG, `bootstrap api error (${err.kind}): ${err.message}`)
       for (const adapter of action.payload.candidates) {
         yield* put(bootstrapFailed({ adapter, errorMessage: `${err.kind}: ${err.message}` }))
-      }
-      // 412: user not delegated to BatchExecutor yet. The natural next step is
-      // a swap (which goes through delegate-relay and mints the delegation).
-      // For this iteration we just log the gap. A follow-up can chain through
-      // /delegate-relay before retrying the bootstrap automatically.
-      if (err.kind === 'not-delegated') {
-        Logger.info(
-          TAG,
-          `not-delegated: user must swap once before bootstrap can work; offering will retry after debounce`
-        )
       }
     } else {
       const message = err instanceof Error ? err.message : String(err)
