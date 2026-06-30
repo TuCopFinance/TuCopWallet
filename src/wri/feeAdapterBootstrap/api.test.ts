@@ -1,10 +1,4 @@
-import {
-  BootstrapBadAddressError,
-  BootstrapDisabledError,
-  BootstrapNotDelegatedError,
-  BootstrapRelayError,
-  postFeeAdapterBootstrap,
-} from 'src/wri/feeAdapterBootstrap/api'
+import { BootstrapApiError, postFeeAdapterBootstrap } from 'src/wri/feeAdapterBootstrap/api'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -69,65 +63,67 @@ describe('postFeeAdapterBootstrap', () => {
     expect(result).toEqual(responseBody)
   })
 
-  it('throws BootstrapBadAddressError on 400', async () => {
+  it('throws bad-address kind on 400', async () => {
     jest
       .mocked(fetchWithTimeout)
       .mockResolvedValue(new Response('{"error":"invalid address"}', { status: 400 }))
-    await expect(postFeeAdapterBootstrap('not-an-address')).rejects.toBeInstanceOf(
-      BootstrapBadAddressError
-    )
+    await expect(postFeeAdapterBootstrap('not-an-address')).rejects.toMatchObject({
+      name: 'BootstrapApiError',
+      kind: 'bad-address',
+    })
   })
 
-  it('throws BootstrapNotDelegatedError on 412', async () => {
+  it('throws not-delegated kind on 412', async () => {
     jest.mocked(fetchWithTimeout).mockResolvedValue(
       new Response('{"error":"precondition failed: user not delegated to BatchExecutor"}', {
         status: 412,
       })
     )
-    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toBeInstanceOf(
-      BootstrapNotDelegatedError
-    )
+    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toMatchObject({
+      kind: 'not-delegated',
+    })
   })
 
-  it('throws BootstrapDisabledError on 503 kill-switch', async () => {
+  it('throws disabled kind on 503 kill-switch', async () => {
     jest
       .mocked(fetchWithTimeout)
       .mockResolvedValue(new Response('{"error":"fee bootstrap disabled"}', { status: 503 }))
-    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toBeInstanceOf(
-      BootstrapDisabledError
-    )
+    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toMatchObject({
+      kind: 'disabled',
+    })
   })
 
-  it('throws BootstrapRelayError on 503 relay unavailable with 5min retry hint', async () => {
+  it('throws relay kind on 503 relay unavailable with 5min retry hint', async () => {
     jest
       .mocked(fetchWithTimeout)
       .mockResolvedValue(new Response('{"error":"relay temporarily unavailable"}', { status: 503 }))
-    try {
-      await postFeeAdapterBootstrap(MOCK_ADDRESS)
-      fail('expected throw')
-    } catch (err) {
-      expect(err).toBeInstanceOf(BootstrapRelayError)
-      expect((err as BootstrapRelayError).retryAfterMs).toBe(5 * 60 * 1000)
-    }
+    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toMatchObject({
+      kind: 'relay',
+      retryAfterMs: 5 * 60 * 1000,
+    })
   })
 
-  it('throws BootstrapRelayError on 500 with default backoff hint of 0', async () => {
+  it('throws relay kind on 500 with default backoff hint of 0', async () => {
     jest
       .mocked(fetchWithTimeout)
       .mockResolvedValue(new Response('{"error":"internal"}', { status: 500 }))
-    try {
-      await postFeeAdapterBootstrap(MOCK_ADDRESS)
-      fail('expected throw')
-    } catch (err) {
-      expect(err).toBeInstanceOf(BootstrapRelayError)
-      expect((err as BootstrapRelayError).retryAfterMs).toBe(0)
-    }
+    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toMatchObject({
+      kind: 'relay',
+      retryAfterMs: 0,
+    })
   })
 
-  it('throws BootstrapRelayError when fetchWithTimeout itself throws (network down)', async () => {
+  it('throws relay kind when fetchWithTimeout itself throws (network down)', async () => {
     jest.mocked(fetchWithTimeout).mockRejectedValue(new Error('network unreachable'))
     // The api module re-throws the original error if fetch fails. The saga
     // catches at its boundary, so we just confirm the error bubbles.
     await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toThrow('network unreachable')
+  })
+
+  it('exports a BootstrapApiError instance so the saga can type-narrow with instanceof', async () => {
+    jest
+      .mocked(fetchWithTimeout)
+      .mockResolvedValue(new Response('{"error":"invalid"}', { status: 400 }))
+    await expect(postFeeAdapterBootstrap(MOCK_ADDRESS)).rejects.toBeInstanceOf(BootstrapApiError)
   })
 })

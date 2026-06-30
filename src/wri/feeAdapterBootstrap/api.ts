@@ -38,33 +38,30 @@ export interface BootstrapResponse {
   results: AdapterResult[]
 }
 
-// 4xx errors from the endpoint surface as typed errors so the saga can branch
-// on them without parsing error messages. 5xx + network errors throw
-// BootstrapRelayError so the saga can retry with backoff.
-export class BootstrapBadAddressError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'BootstrapBadAddressError'
-  }
-}
-export class BootstrapNotDelegatedError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'BootstrapNotDelegatedError'
-  }
-}
-export class BootstrapRelayError extends Error {
+// Typed error categories the saga branches on. Bundled into one class with a
+// discriminated `kind` field (instead of four subclasses) to satisfy the
+// max-classes-per-file lint rule while keeping the branch logic clean.
+export type BootstrapErrorKind =
+  // 400: regex on address failed, client bug, do not retry.
+  | 'bad-address'
+  // 412: user not delegated to BatchExecutor. Saga should route through
+  // delegate-relay first and then retry the bootstrap.
+  | 'not-delegated'
+  // 503 + "fee bootstrap disabled" body: kill switch off. Do not retry until
+  // backend comms.
+  | 'disabled'
+  // Everything else: 500, 503-relay-unavailable, network errors. Retry with
+  // backoff (retryAfterMs may carry a backend hint).
+  | 'relay'
+
+export class BootstrapApiError extends Error {
+  readonly kind: BootstrapErrorKind
   readonly retryAfterMs: number
-  constructor(message: string, retryAfterMs = 0) {
+  constructor(kind: BootstrapErrorKind, message: string, retryAfterMs = 0) {
     super(message)
-    this.name = 'BootstrapRelayError'
+    this.name = 'BootstrapApiError'
+    this.kind = kind
     this.retryAfterMs = retryAfterMs
-  }
-}
-export class BootstrapDisabledError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'BootstrapDisabledError'
   }
 }
 
@@ -103,21 +100,25 @@ export async function postFeeAdapterBootstrap(address: string): Promise<Bootstra
   }
 
   if (response.status === 400) {
-    throw new BootstrapBadAddressError(errorText || 'invalid address')
+    throw new BootstrapApiError('bad-address', errorText || 'invalid address')
   }
   if (response.status === 412) {
-    throw new BootstrapNotDelegatedError(errorText || 'user not delegated to BatchExecutor')
+    throw new BootstrapApiError('not-delegated', errorText || 'user not delegated to BatchExecutor')
   }
   if (response.status === 503) {
     // Backend uses 503 for both kill-switch off and "relay temporarily
     // unavailable". The saga decides retry policy based on the body text.
     const isKillSwitch = /fee bootstrap disabled/i.test(errorText)
     if (isKillSwitch) {
-      throw new BootstrapDisabledError(errorText)
+      throw new BootstrapApiError('disabled', errorText)
     }
     // Recommended retry window for relay unavailable: 5 min minimum.
-    throw new BootstrapRelayError(errorText || 'relay temporarily unavailable', 5 * 60 * 1000)
+    throw new BootstrapApiError(
+      'relay',
+      errorText || 'relay temporarily unavailable',
+      5 * 60 * 1000
+    )
   }
   // 500 + anything else: generic relay error with default backoff.
-  throw new BootstrapRelayError(errorText || `bootstrap returned ${response.status}`)
+  throw new BootstrapApiError('relay', errorText || `bootstrap returned ${response.status}`)
 }
