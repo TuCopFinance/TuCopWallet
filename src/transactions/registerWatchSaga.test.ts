@@ -1,6 +1,4 @@
 import { expectSaga } from 'redux-saga-test-plan'
-import * as matchers from 'redux-saga-test-plan/matchers'
-import { throwError } from 'redux-saga-test-plan/providers'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { registerWalletForFeedWatch } from 'src/transactions/registerWatchSaga'
