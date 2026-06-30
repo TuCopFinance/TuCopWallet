@@ -535,6 +535,14 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
     // Priority order for TuCop fee currencies: CELO > COPm > USDm > USDC > USDT
     // Current names (Mento rebranding): COPm, USDm
     // Fallback old names (Valora API): cCOP, cUSD
+    //
+    // NOTE: this preserves the historical CELO-first priority for the 10
+    // legacy callers (swap, send, earn, dapps, jumpstart, gold, walletConnect,
+    // buckspay, subsidies, neeru). The Bug-E stables-first preference is
+    // applied inside `pickFeeCurrency` (src/tokens/feeCurrencyPicker.ts), used
+    // only by the migrated flows (dollarsSpend legacy + 7702). Migrating the
+    // remaining callers to `pickFeeCurrency` removes their dependency on this
+    // ordering and lets us flip CELO to last-resort globally in a future PR.
     const FEE_CURRENCY_PRIORITY: Record<string, number> = {
       CELO: 0,
       COPm: 1, // Colombian Peso (current)
