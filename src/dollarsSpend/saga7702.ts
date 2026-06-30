@@ -2,6 +2,8 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
 import { call, delay, put, select } from 'typed-redux-saga'
 import { Address, encodeFunctionData, erc20Abi, Hex } from 'viem'
+import AppAnalytics from 'src/analytics/AppAnalytics'
+import { FeeEvents } from 'src/analytics/Events'
 import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
 import { ExecuteMultiSwapPayload } from 'src/dollarsSpend/saga'
 import {
@@ -358,6 +360,14 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       TAG,
       `picked fee currency: ${choice.chosen.symbol} (reason=${choice.reason}, declined=${choice.declined.length}, alternatives=${choice.alternatives.length})`
     )
+    AppAnalytics.track(FeeEvents.fee_currency_picked, {
+      context: 'dollarsSpend_7702',
+      chosenSymbol: choice.chosen.symbol,
+      reason: choice.reason,
+      declinedCount: choice.declined.length,
+      alternativesCount: choice.alternatives.length,
+      networkId: NetworkId['celo-mainnet'],
+    })
 
     const sendArgs = {
       account,

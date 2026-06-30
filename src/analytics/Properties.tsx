@@ -652,6 +652,20 @@ interface FeeEventsProperties {
     tokenAddress: string
     usdFee: string
   }
+  // Fired by every flow that resolves a fee currency through pickFeeCurrency.
+  // Used to measure how often the Bug E fix saves the user from a silent CELO
+  // debit ('preferred-stable') vs how often the wallet still falls back to
+  // CELO because no stable qualified ('celo-fallback'). declined count helps
+  // diagnose UX issues (e.g. many in-spending-set declines suggest the user
+  // is trying to swap most of their balance).
+  [FeeEvents.fee_currency_picked]: {
+    context: 'dollarsSpend_7702' | 'dollarsSpend_legacy' | 'swap' | 'send'
+    chosenSymbol: string
+    reason: 'preferred-stable' | 'celo-fallback'
+    declinedCount: number
+    alternativesCount: number
+    networkId: NetworkId
+  }
 }
 
 interface TransactionEventsProperties {
