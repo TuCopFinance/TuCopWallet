@@ -95,7 +95,9 @@ describe('DappShortcutTransactionRequest', () => {
     )
     expect(
       getByText(
-        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"}'
+        // Per Bug E migration: reorderForBugE pushes CELO to the end so the
+        // warning lists visible stables first; CELO is the last-resort fallback.
+        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, cEUR, CELO"}'
       )
     ).toBeTruthy()
     expect(queryByText('allow')).toBeFalsy()

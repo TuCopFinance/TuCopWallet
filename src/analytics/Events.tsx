@@ -339,6 +339,7 @@ export enum QrScreenEvents {
 export enum FeeEvents {
   estimate_fee_failed = 'estimate_fee_failed',
   estimate_fee_success = 'estimate_fee_success',
+  fee_currency_picked = 'fee_currency_picked',
 }
 
 export enum TransactionEvents {

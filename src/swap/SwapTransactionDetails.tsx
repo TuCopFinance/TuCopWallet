@@ -9,6 +9,7 @@ import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getTokenDisplayName } from 'src/tokens/utils'
 import Touchable from 'src/components/Touchable'
 import InfoIcon from 'src/icons/status/InfoIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
@@ -265,6 +266,18 @@ export function SwapTransactionDetails({
           value={estimatedFeesString ?? placeholder}
         />
       </View>
+      {!!networkFee?.token?.symbol && !fetchingSwapQuote && (
+        // Bug E UX surface: the user can see which of their visible balances
+        // covers the network fee. Was added so a tx paid in Pesos / Dólares no
+        // longer looks like an unexplained CELO debit. Uses getTokenDisplayName
+        // so the user reads "Pesos" / "Dólares" / "Oro" instead of the chain
+        // symbols (COPm, USDm, XAUt0). CELO falls through to its raw symbol so
+        // the user still sees something if the last-resort fallback fires.
+        <View style={styles.row} testID="SwapTransactionDetails/FeePaidIn">
+          <Text style={styles.label}>{t('swapScreen.transactionDetails.feePaidIn')}</Text>
+          <Text style={styles.value}>{getTokenDisplayName(networkFee.token.symbol)}</Text>
+        </View>
+      )}
       {!!estimatedDurationInSeconds && (
         <View style={styles.row} testID="SwapTransactionDetails/EstimatedDuration">
           <LabelWithInfo
