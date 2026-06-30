@@ -2040,8 +2040,8 @@ export const migrations = {
     },
   }),
   245: (state: any) => {
-    // Remove deprecated divviProtocol slice from persisted state
-    const { divviProtocol, ...rest } = state
+    // Drop a deprecated slice from persisted state.
+    const { divviProtocol: _divviProtocol, ...rest } = state
     return rest
   },
   246: (state: any) => {
