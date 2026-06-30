@@ -207,6 +207,12 @@ export interface TokenExchange {
   block: string
   inAmount: TokenAmount
   outAmount: TokenAmount
+  // Populated by the TuCop indexer feed for EIP-7702 atomic batches that
+  // spend N tokens in one tx (WRI dollars-spend). When present and length>1,
+  // outAmount holds the largest-value leg for backwards compatibility and
+  // this array carries every leg. Absent for single-leg swaps and for the
+  // Valora feed shape.
+  fromTokenAmounts?: TokenAmount[]
   metadata?: TokenExchangeMetadata
   fees: Fee[]
   status: TransactionStatus

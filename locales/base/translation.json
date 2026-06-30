@@ -1345,6 +1345,7 @@
   "feedItemGoldReceived": "Received from {{displayName}}",
   "feedItemSwapTitle": "Swapped",
   "feedItemSwapPath": "{{token1}} to {{token2}}",
+  "feedItemSwapPathMulti": "{{count}} tokens to {{token2}}",
   "feedItemJumpstartTitle": "Live Link",
   "feedItemJumpstartSentSubtitle": "Invitation",
   "feedItemJumpstartReceivedSubtitle": "Funds received",

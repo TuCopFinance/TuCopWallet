@@ -1350,6 +1350,7 @@
   "feedItemGoldReceived": "Recibidos de {{displayName}}",
   "feedItemSwapTitle": "Intercambio",
   "feedItemSwapPath": "{{token1}} > {{token2}}",
+  "feedItemSwapPathMulti": "{{count}} monedas a {{token2}}",
   "feedItemJumpstartTitle": "Enlace activo",
   "feedItemJumpstartSentSubtitle": "Invitación",
   "feedItemJumpstartReceivedSubtitle": "Fondos recibidos",
