@@ -253,4 +253,4 @@ function startSmsRetriever() {
 
 - [Verify Module](../verify/README.md)
 - [Send Module](../send/README.md)
-- [Phone Verification Service](../../docs/architecture/modules/integrations.md)
+- [External integrations reference](../../docs/reference/integrations.md)
