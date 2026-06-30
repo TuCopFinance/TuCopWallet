@@ -20,8 +20,24 @@ export interface AdapterState {
   lastError: string | null
 }
 
+// Ephemeral handoff between the orchestration saga and the BootstrapSheetHost
+// component. The saga sets `pending` to non-null when the detector decides to
+// offer the bootstrap; the Host subscribes via useSelector and present()s the
+// BottomSheetModal. User taps on the sheet dispatch bootstrapAccepted or
+// bootstrapDismissed, which the saga listens to and resolves the flow.
+//
+// Persisted (along with byAdapter) but always wiped to null on REHYDRATE by
+// the saga, so a kill-9 in the middle of the sheet flow does not resurrect
+// the sheet next boot. Treating it as non-persisted in spirit, persisted in
+// shape only so autoMergeLevel2 keeps the key visible to TypeScript.
+export interface PendingState {
+  visible: boolean
+  candidates: AdapterSymbol[]
+}
+
 export interface State {
   byAdapter: Record<AdapterSymbol, AdapterState>
+  pending: PendingState | null
 }
 
 const initialAdapterState: AdapterState = {
@@ -36,6 +52,7 @@ const initialState: State = {
     USDC: { ...initialAdapterState },
     USDT: { ...initialAdapterState },
   },
+  pending: null,
 }
 
 const slice = createSlice({
@@ -61,15 +78,44 @@ const slice = createSlice({
       a.lastError = action.payload.errorMessage
     },
     // Escape hatch used by tests / dev tools. Production code should not call
-    // this — the bootstrapped flag matches the on-chain allowance state and
+    // this. The bootstrapped flag matches the on-chain allowance state and
     // resetting it locally without revoking on-chain leaves a stale UX.
     bootstrapReset(state, action: PayloadAction<{ adapter: AdapterSymbol }>) {
       state.byAdapter[action.payload.adapter] = { ...initialAdapterState }
     },
+    // Saga calls this when the detector says yes. The Host component watches
+    // pending.visible and present()s the sheet.
+    bootstrapSheetShown(state, action: PayloadAction<{ candidates: AdapterSymbol[] }>) {
+      state.pending = { visible: true, candidates: action.payload.candidates }
+    },
+    // Closes the sheet. Called by both the saga (after the call resolves) and
+    // by the Host's onDismiss (pan-down-to-close gesture).
+    bootstrapSheetHidden(state) {
+      state.pending = null
+    },
+    // Signal action with no state change. The saga listens on this action's
+    // type to kick off the actual API call. The reducer being a no-op keeps
+    // the dispatched payload available to the saga via take().
+    bootstrapAccepted(_state, _action: PayloadAction<{ candidates: AdapterSymbol[] }>) {
+      // intentionally empty: saga consumes via take()
+    },
+    // Signal action. Saga listens and marks lastAttemptAt for every candidate
+    // so the 24h debounce kicks in and we do not re-prompt on the next boot.
+    bootstrapDismissed(_state, _action: PayloadAction<{ candidates: AdapterSymbol[] }>) {
+      // intentionally empty: saga consumes via take()
+    },
   },
 })
 
-export const { bootstrapStarted, bootstrapSucceeded, bootstrapFailed, bootstrapReset } =
-  slice.actions
+export const {
+  bootstrapStarted,
+  bootstrapSucceeded,
+  bootstrapFailed,
+  bootstrapReset,
+  bootstrapSheetShown,
+  bootstrapSheetHidden,
+  bootstrapAccepted,
+  bootstrapDismissed,
+} = slice.actions
 
 export default slice.reducer
