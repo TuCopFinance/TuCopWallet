@@ -58,6 +58,6 @@ Flow:
 
 ## References
 
-- [BucksPay API Docs](../reference/buckspay-api.md)
-- `src/buckspay/` - Implementation
-- [`docs/reference/buckspay-implementation.md`](../reference/buckspay-implementation.md) - Detailed architecture
+- [BucksPay API Docs (archived)](../archive/2026-06-buckspay/api.md)
+- `src/buckspay/` - Implementation (deprecated)
+- [`docs/archive/2026-06-buckspay/implementation.md`](../archive/2026-06-buckspay/implementation.md) - Detailed architecture (archived)
