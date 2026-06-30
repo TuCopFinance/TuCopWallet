@@ -12,7 +12,7 @@ locked decisions under [`../adr/`](../adr/).
 ## Sprint 0 — WRI
 
 Spec: [`../specs/2026-06-15-wallet-robustness-initiative-design.md`](../specs/2026-06-15-wallet-robustness-initiative-design.md)
-Plan: [`../plans/2026-06-15-wri-plan-00-sprint-0-spikes.md`](../plans/2026-06-15-wri-plan-00-sprint-0-spikes.md)
+Plan: [`../archive/wri/plan-00-sprint-0-spikes.md`](../archive/wri/plan-00-sprint-0-spikes.md)
 Summary: [`sprint-0-summary.md`](sprint-0-summary.md)
 
 | Spike | Question                                  | File                                                     | Verdict                                     |

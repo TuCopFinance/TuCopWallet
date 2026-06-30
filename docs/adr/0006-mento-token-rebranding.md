@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (shipped 2026-06-29 via PR #222)
 
 ## Date
 
