@@ -226,9 +226,16 @@ const defaultQuote: FetchQuoteResponse = {
 }
 const defaultQuoteResponse = JSON.stringify(defaultQuote)
 
+// Per Bug E fix (pickFeeCurrency in useSwapQuote): when the user swaps CELO,
+// the picker promotes any visible stable above CELO. In these fixtures cUSD is
+// available with a non-zero balance, so the prepared swap tx is built with
+// feeCurrency = cUSD address (CIP-64 type 0x7b) instead of native CELO. Gas is
+// 50000 higher than the eip1559-native path because CIP-64 adds a small
+// pre-tx-fee debit overhead.
 const preparedTransactions: SerializableTransactionRequest[] = [
   {
     data: '0x095ea7b3000000000000000000000000000000000000000000000000000000000000012300000000000000000000000000000000000000000000000011200c7644d50000',
+    feeCurrency: mockCusdAddress,
     from: '0x0000000000000000000000000000000000007E57',
     gas: '21000',
     // 21000 * 60 / 100 = 12600 (matches the calibration added in
@@ -242,8 +249,9 @@ const preparedTransactions: SerializableTransactionRequest[] = [
   },
   {
     data: '0x0',
+    feeCurrency: mockCusdAddress,
     from: '0x0000000000000000000000000000000000007E57',
-    gas: '1800000',
+    gas: '1850000',
     // The swap (second) tx has no fresh estimateGas call in this fixture so
     // _estimatedGasUse stays undefined, matching the actual saga output.
     _estimatedGasUse: undefined,
@@ -1283,19 +1291,21 @@ describe('SwapScreen', () => {
       price: defaultQuote.unvalidatedSwapTransaction.price,
       provider: defaultQuote.details.swapProvider,
       web3Library: 'viem',
-      gas: 1821000,
-      maxGasFee: 0.021852,
-      maxGasFeeUsd: 0.28529642665785426,
-      // _estimatedGasUse calibration: approval tx has 21000 * 0.6 = 12600,
-      // swap tx falls back to its 1.8M gas limit (no fresh estimateGas in
-      // the fixture). Total estimated gas = 12600 + 1800000 = 1812600.
-      // estimatedGasFee = 1812600 * (6 + 2) Gwei = 14_500_800_000_000_000 wei
-      //                 = 0.0145008 CELO (vs 0.014568 pre-calibration)
-      estimatedGasFee: 0.0145008,
-      estimatedGasFeeUsd: 0.1893202646750967,
+      // Per Bug E fix: pickFeeCurrency promotes cUSD ahead of CELO whenever
+      // the user has any cUSD balance. The fixture token mock has cUSD
+      // priceUsd = 1 and uses 18 decimals (same as CELO), so the gas math is:
+      //   gas: 21000 (approval) + 1850000 (swap, CIP-64 adds 50k overhead) = 1871000
+      //   maxGasFee:        1871000 * 12 Gwei = 0.022452 cUSD
+      //   estimatedGasFee:  (12600 calibrated approval + 1850000 swap) * 8 Gwei = 0.0149008 cUSD
+      //   ...USD = same numeric value since cUSD priceUsd = 1.
+      gas: 1871000,
+      maxGasFee: 0.022452,
+      maxGasFeeUsd: 0.022452,
+      estimatedGasFee: 0.0149008,
+      estimatedGasFeeUsd: 0.0149008,
       appFeePercentageIncludedInPrice: undefined,
-      feeCurrency: undefined,
-      feeCurrencySymbol: 'CELO',
+      feeCurrency: mockCusdAddress,
+      feeCurrencySymbol: 'cUSD',
       txCount: 2,
       swapType: 'same-chain',
     })
@@ -1371,8 +1381,11 @@ describe('SwapScreen', () => {
 
     const transactionDetails = getByTestId('SwapTransactionDetails')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.fee')
-    // matches mocked value (0.015 CELO) provided to estimateFeesPerGas, estimateGas, and gas in defaultQuoteResponse
-    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.25')
+    // Per Bug E fix, useSwapQuote now picks cUSD over CELO when both have
+    // balance, so the displayed fee is 0.0149 cUSD ≈ COP$0.02 (cUSD priceUsd=1
+    // and mock COP rate is 1.3x) instead of 0.0145 CELO ≈ COP$0.25 (CELO
+    // priceUsd ≈ 13).
+    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.02')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.slippagePercentage')
     expect(getByTestId('SwapTransactionDetails/Slippage')).toHaveTextContent('0.3%')
   })
@@ -1587,10 +1600,12 @@ describe('SwapScreen', () => {
 
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
 
+    // Per Bug E fix, useSwapQuote routes the selector output through
+    // pickFeeCurrency, which (1) drops cEUR because its balance is 0 and
+    // (2) promotes cUSD ahead of CELO. The warning lists the candidates the
+    // user actually had to work with, in the order pickFeeCurrency tried them.
     expect(
-      getByText(
-        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"} '
-      )
+      getByText('swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, CELO"}')
     ).toBeTruthy()
   })
 
