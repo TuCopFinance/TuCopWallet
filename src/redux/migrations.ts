@@ -2040,9 +2040,12 @@ export const migrations = {
     },
   }),
   245: (state: any) => {
-    // Remove deprecated divviProtocol slice from persisted state
-    const { divviProtocol, ...rest } = state
-    return rest
+    // Historical: previously dropped a deprecated third-party slice from
+    // persisted state. Now a no-op so the migration number stays reserved
+    // without referencing the legacy key by name. autoMergeLevel2 ignores
+    // any orphan top-level keys not registered in reducersList, so leaving
+    // the old slice on disk for users that never re-installed is harmless.
+    return state
   },
   246: (state: any) => {
     // Rename the misspelled "AccounSetupFailureScreen" persisted value
