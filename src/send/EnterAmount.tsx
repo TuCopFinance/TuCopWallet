@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import React, { ComponentType, useEffect, useRef, useState } from 'react'
+import React, { ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
@@ -38,6 +38,7 @@ import { AmountEnteredIn } from 'src/send/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { PreparedTransactionsResult, getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -120,7 +121,12 @@ export default function EnterAmount({
   const insets = useSafeAreaInsets()
   const [token, setToken] = useState<TokenBalance>(() => defaultToken ?? tokens[0])
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null)
-  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, token.networkId))
+  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, token.networkId))
+  // Bug E: reorder so visible stables outrank CELO before this list reaches
+  // prepareTransactions, which would otherwise pick CELO (priority 0 in the
+  // shared selector) and silently drain a balance the user can't see. Every
+  // entry from the selector survives; CELO just slides to the end.
+  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
   const { maxFeeAmount, feeCurrency } = getFeeCurrencyAndAmounts(prepareTransactionsResult)
   const { tokenId: feeTokenId } = feeCurrency ?? feeCurrencies[0]
 

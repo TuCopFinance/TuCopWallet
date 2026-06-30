@@ -217,6 +217,47 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
     }
   })
 
+  it('prefers a stable fee currency over CELO when both are available (Bug E)', async () => {
+    // Both CELO (synthetic from chain getBalance) AND a stable Mento fee
+    // currency are usable. The Bug-E-aware picker must pick the stable so the
+    // user's hidden CELO balance is not silently drained.
+    jest.mocked(getFeatureGate).mockReturnValue(true)
+    jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+    const wallet = mockWallet()
+    jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+    const mockCopm = {
+      tokenId: 'celo-mainnet:copm',
+      networkId: 'celo-mainnet',
+      symbol: 'COPm',
+      decimals: 18,
+      balance: new BigNumber(100_000),
+      priceUsd: new BigNumber(0.00025),
+      address: '0x8a567e2ae79ca692bd748ab832081c45de4041ea',
+      isFeeCurrency: true,
+    } as any
+
+    await expectSaga(
+      executeDollarsSpend7702Saga,
+      executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+    )
+      .provide([
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.select.selector(tokensByIdSelector), mockTokensById],
+        [matchers.select.selector(feeCurrenciesSelector), [mockCopm]],
+        [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
+        [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+        [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
+      ])
+      .put(multiSwapCompleted())
+      .silentRun()
+
+    expect(wallet.sendTransaction).toHaveBeenCalledTimes(1)
+    const sendArg = wallet.sendTransaction.mock.calls[0][0]
+    // Stable preferred over CELO -> feeCurrency is the COPm address, not undefined.
+    expect(sendArg.feeCurrency).toBe(mockCopm.address)
+  })
+
   it('dispatches multiSwapStepFailed when a quote refetch throws (flag on)', async () => {
     jest.useRealTimers()
     jest.mocked(getFeatureGate).mockReturnValue(true)
