@@ -127,8 +127,8 @@ describe('EarnHome', () => {
   describe('Neeru Vaults gate', () => {
     const neeruPool = {
       ...mockEarnPositions[0],
-      positionId: 'celo-mainnet:0xd05cdf2dc56d97333c547519df58d56145766294:tranche-1',
-      address: '0xd05cdf2dc56d97333c547519df58d56145766294',
+      positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:tranche-1',
+      address: '0x988af5977201a0e988f2c75ea952532f6beb5082',
       networkId: NetworkId['celo-mainnet'],
       appId: 'neeru-vaults',
       appName: 'Neeru Vaults',
