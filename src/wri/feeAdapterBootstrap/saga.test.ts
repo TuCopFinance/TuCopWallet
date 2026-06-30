@@ -15,7 +15,12 @@ import {
   bootstrapStarted,
   bootstrapSucceeded,
 } from 'src/wri/feeAdapterBootstrap/slice'
-import { handleAccept, handleDismiss, maybeOfferBootstrap } from 'src/wri/feeAdapterBootstrap/saga'
+import {
+  handleAccept,
+  handleDismiss,
+  maybeOfferBootstrap,
+  signAndRelayDelegation,
+} from 'src/wri/feeAdapterBootstrap/saga'
 
 jest.mock('src/statsig', () => ({
   getFeatureGate: jest.fn(),
@@ -98,10 +103,10 @@ describe('handleAccept', () => {
       .run()
   })
 
-  it('marks every candidate failed when the api throws BootstrapApiError', async () => {
+  it('marks failed for non-412 BootstrapApiError without invoking delegate-relay', async () => {
     jest
       .mocked(postFeeAdapterBootstrap)
-      .mockRejectedValue(new BootstrapApiError('not-delegated', 'user not delegated'))
+      .mockRejectedValue(new BootstrapApiError('bad-address', 'malformed address'))
 
     await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC', 'USDT'] }))
       .provide([[matchers.select.selector(walletAddressSelector), MOCK_WALLET]])
@@ -110,6 +115,87 @@ describe('handleAccept', () => {
       .put.actionType(bootstrapFailed.type)
       .put(bootstrapSheetHidden())
       .run()
+    // The auto-chain only triggers for the 'not-delegated' kind.
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(1)
+  })
+
+  it('auto-chains through delegate-relay and retries bootstrap on 412', async () => {
+    // First bootstrap call fires 412 -> auto-chain to delegate-relay -> retry.
+    const succeededResponse = {
+      ok: true as const,
+      relayAddress: '0xrelay',
+      results: [
+        {
+          tokenSymbol: 'USDC' as const,
+          tokenAddress: '0xceba9300f2b948710d2653dd7b07f33a8b32118c',
+          adapterAddress: '0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B',
+          status: 'approved' as const,
+          txHash: '0xtx-retry',
+          alreadyApproved: false,
+        },
+      ],
+    }
+    jest
+      .mocked(postFeeAdapterBootstrap)
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'user not delegated'))
+      .mockResolvedValueOnce(succeededResponse)
+
+    await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
+      .provide([
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.call.fn(signAndRelayDelegation), true],
+      ])
+      .put(bootstrapStarted({ adapter: 'USDC' }))
+      .put(bootstrapSucceeded({ adapter: 'USDC' }))
+      .put(bootstrapSheetHidden())
+      .run()
+
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(2)
+  })
+
+  it('marks failed when delegate-relay succeeds but the bootstrap retry still throws 412', async () => {
+    // Edge case: relay says delegated but a stale state read makes the retry
+    // also throw not-delegated. Should mark failed, hide sheet, debounce.
+    jest
+      .mocked(postFeeAdapterBootstrap)
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'first 412'))
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'retry still 412'))
+
+    await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
+      .provide([
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.call.fn(signAndRelayDelegation), true],
+      ])
+      .put(bootstrapStarted({ adapter: 'USDC' }))
+      .put.actionType(bootstrapFailed.type)
+      .put(bootstrapSheetHidden())
+      .run()
+
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(2)
+  })
+
+  it('marks failed when delegate-relay returns false (delegation never happens)', async () => {
+    jest
+      .mocked(postFeeAdapterBootstrap)
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'user not delegated'))
+
+    await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
+      .provide([
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.call.fn(signAndRelayDelegation), false],
+      ])
+      .put(bootstrapStarted({ adapter: 'USDC' }))
+      .put(
+        bootstrapFailed({
+          adapter: 'USDC',
+          errorMessage: 'delegation-failed: delegate-relay did not delegate',
+        })
+      )
+      .put(bootstrapSheetHidden())
+      .run()
+
+    // No retry should happen when delegation fails.
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(1)
   })
 
   it('hides the sheet and skips the api call when wallet address is unset', async () => {
