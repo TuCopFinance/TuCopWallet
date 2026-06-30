@@ -122,6 +122,26 @@ describe('NeeruVaultDetailScreen', () => {
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
   })
 
+  it('opens NeeruEmergencyCloseSheet proactively when principal-only option is tapped', () => {
+    const store = createMockStore({
+      neeru: {
+        ...initialNeeruState,
+        positions: [positionFor('321')],
+        fetchStatus: 'success',
+      },
+    } as any)
+    const { getByTestId, queryByTestId } = render(
+      <Provider store={store}>
+        <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
+      </Provider>
+    )
+    fireEvent.press(getByTestId('NeeruPositionRow.Manage.321'))
+    expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
+    fireEvent.press(getByTestId('NeeruCloseSheet.AmountOnly'))
+    expect(queryByTestId('NeeruCloseSheet')).toBeNull()
+    expect(getByTestId('NeeruEmergencyCloseSheet')).toBeTruthy()
+  })
+
   it('opens NeeruEmergencyCloseSheet when close fails with InterestPoolLow', () => {
     // Start with idle state so user can tap Manage to seed lastSelectedRef
     const store = createMockStore({

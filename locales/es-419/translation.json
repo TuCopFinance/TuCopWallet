@@ -2968,7 +2968,9 @@
       "penaltyLabel": "Comision por retiro temprano ({{percentage}}%)",
       "totalLabel": "Total",
       "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al capital.",
-      "confirmCta": "Confirmar retiro"
+      "confirmCta": "Confirmar retiro",
+      "amountOnlyCta": "Salir solo con mi capital",
+      "amountOnlyHelp": "Si el retiro normal falla, puedes recuperar tu capital sin intereses."
     },
     "emergencyCloseSheet": {
       "title": "Retiro de emergencia",

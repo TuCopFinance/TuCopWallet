@@ -16,9 +16,10 @@ import { Spacing } from 'src/styles/styles'
 interface Props {
   position: NeeruIndividualPosition
   onClose: () => void
+  onAmountOnlyRequested?: (position: NeeruIndividualPosition) => void
 }
 
-export default function NeeruCloseSheet({ position, onClose }: Props) {
+export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequested }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const closeStatus = useSelector(neeruCloseStatusSelector)
@@ -67,6 +68,22 @@ export default function NeeruCloseSheet({ position, onClose }: Props) {
           onPress={() => dispatch(closePositionStart({ positionId: position.positionId }))}
           style={styles.cta}
         />
+        {onAmountOnlyRequested && (
+          <>
+            <Button
+              testID="NeeruCloseSheet.AmountOnly"
+              size={BtnSizes.FULL}
+              type={BtnTypes.SECONDARY}
+              text={t('neeruVaults.closeSheet.amountOnlyCta')}
+              disabled={closeStatus === 'loading'}
+              onPress={() => onAmountOnlyRequested(position)}
+              style={styles.secondaryCta}
+            />
+            <Text style={styles.amountOnlyHelp}>
+              {t('neeruVaults.closeSheet.amountOnlyHelp')}
+            </Text>
+          </>
+        )}
       </View>
     </BottomSheet>
   )
@@ -111,4 +128,11 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Smallest8,
   },
   cta: { marginTop: Spacing.Regular16 },
+  secondaryCta: { marginTop: Spacing.Smallest8 },
+  amountOnlyHelp: {
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
+    marginTop: Spacing.Smallest8,
+    textAlign: 'center',
+  },
 })

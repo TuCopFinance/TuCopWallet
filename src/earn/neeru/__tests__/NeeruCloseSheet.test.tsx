@@ -54,4 +54,30 @@ describe('NeeruCloseSheet', () => {
     fireEvent.press(getByTestId('NeeruCloseSheet.Confirm'))
     expect(spy).toHaveBeenCalledWith(closePositionStart({ positionId: '1234' }))
   })
+
+  it('hides the principal-only option when no callback is provided', () => {
+    const store = createMockStore({ neeru: initialNeeruState } as any)
+    const { queryByTestId } = render(
+      <Provider store={store}>
+        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
+      </Provider>
+    )
+    expect(queryByTestId('NeeruCloseSheet.AmountOnly')).toBeNull()
+  })
+
+  it('exposes principal-only option that invokes the callback with the position', () => {
+    const store = createMockStore({ neeru: initialNeeruState } as any)
+    const onAmountOnlyRequested = jest.fn()
+    const { getByTestId } = render(
+      <Provider store={store}>
+        <NeeruCloseSheet
+          position={pos}
+          onClose={jest.fn()}
+          onAmountOnlyRequested={onAmountOnlyRequested}
+        />
+      </Provider>
+    )
+    fireEvent.press(getByTestId('NeeruCloseSheet.AmountOnly'))
+    expect(onAmountOnlyRequested).toHaveBeenCalledWith(pos)
+  })
 })
