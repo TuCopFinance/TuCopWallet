@@ -18,6 +18,7 @@ import { ActiveDapp } from 'src/dapps/types'
 import i18n from 'src/i18n'
 import { isBottomSheetVisible, navigate, navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForWalletConnect } from 'src/tokens/utils'
 import { Network } from 'src/transactions/types'
@@ -460,7 +461,11 @@ function* showActionRequest(request: WalletKitTypes.EventArguments['session_requ
   const supportedChains = yield* call(getSupportedChains)
 
   const networkId = walletConnectChainIdToNetworkId[request.params.chainId]
-  const feeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
+  // Bug E: keep stables ahead of CELO so WalletConnect dapp txs don't pay gas
+  // in a balance the user can't see.
+  const feeCurrencies = reorderForBugE(
+    yield* select((state) => feeCurrenciesSelector(state, networkId))
+  )
   let preparedTransactionsResult: PreparedTransactionsResult | undefined = undefined
   let prepareTransactionErrorMessage: string | undefined = undefined
   if (
