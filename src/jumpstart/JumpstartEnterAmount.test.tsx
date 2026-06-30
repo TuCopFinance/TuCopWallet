@@ -53,10 +53,13 @@ const tokenBalances = {
   [mockPoofTokenId]: { ...mockTokenBalances[mockPoofTokenId], balance: '0' }, // filtered out for no balance
   [mockCeurTokenId]: { ...mockTokenBalances[mockCeurTokenId], balance: '100' },
 }
+// Post Bug E migration: EnterAmount runs reorderForBugE on its fee-currency
+// list, so CELO trails the visible stables (cUSD, cEUR keep their selector
+// priority order).
 const feeCurrencies = [
-  tokenBalances[mockCeloTokenId],
   tokenBalances[mockCusdTokenId],
   tokenBalances[mockCeurTokenId],
+  tokenBalances[mockCeloTokenId],
 ]
 const store = createMockStore({
   tokens: {

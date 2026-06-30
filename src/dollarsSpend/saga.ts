@@ -21,6 +21,7 @@ import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
 import { Field, SwapInfo } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
+import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { Network, NetworkId } from 'src/transactions/types'
@@ -290,7 +291,23 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       return
     }
 
-    const feeCurrencies = yield* select(feeCurrenciesSelector, fromToken.networkId as NetworkId)
+    const rawFeeCurrencies = yield* select(feeCurrenciesSelector, fromToken.networkId as NetworkId)
+
+    // Bug E: the shared selector returns CELO at index 0, so
+    // prepareTransactions silently uses it whenever the user has any CELO.
+    // Reorder via the picker so stables win; CELO drops to last alternative
+    // and only gets used if every stable fails its gas check.
+    const choice = pickFeeCurrency({
+      available: rawFeeCurrencies,
+      excludeTokenIds: [step.tokenId],
+    })
+    const feeCurrencies = choice ? [choice.chosen, ...choice.alternatives] : rawFeeCurrencies
+    if (choice) {
+      Logger.info(
+        TAG,
+        `step ${index} (${step.symbol}): fee currency ${choice.chosen.symbol} (reason=${choice.reason}, declined=${choice.declined.length})`
+      )
+    }
 
     let freshQuote: Awaited<ReturnType<typeof fetchSwapQuoteForExecution>>
     try {
