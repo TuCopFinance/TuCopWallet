@@ -3450,6 +3450,12 @@
                 "feeCurrencyId": {
                     "type": "string"
                 },
+                "fromTokenAmounts": {
+                    "items": {
+                        "$ref": "#/definitions/TokenAmount"
+                    },
+                    "type": "array"
+                },
                 "inAmount": {
                     "$ref": "#/definitions/TokenAmount"
                 },
@@ -4631,6 +4637,12 @@
                         "fees": {
                             "items": {
                                 "$ref": "#/definitions/Fee"
+                            },
+                            "type": "array"
+                        },
+                        "fromTokenAmounts": {
+                            "items": {
+                                "$ref": "#/definitions/TokenAmount"
                             },
                             "type": "array"
                         },
@@ -7198,6 +7210,12 @@
                 "fees": {
                     "items": {
                         "$ref": "#/definitions/Fee"
+                    },
+                    "type": "array"
+                },
+                "fromTokenAmounts": {
+                    "items": {
+                        "$ref": "#/definitions/TokenAmount"
                     },
                     "type": "array"
                 },
