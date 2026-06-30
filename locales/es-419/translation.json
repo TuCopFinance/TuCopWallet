@@ -1916,6 +1916,7 @@
       "estimatedTransactionTimeInfo": "El tiempo para completar la transacción lo determina el proveedor.\n\nSi estás intercambiando entre diferentes cadenas, la transacción podría tardar un poco más en completarse.",
       "infoDismissButton": "Entendido",
       "fees": "Tarifas",
+      "feePaidIn": "Pagada en",
       "feesCalculationError": "No es posible calcular las tarifas",
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",
