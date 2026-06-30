@@ -95,6 +95,48 @@ describe('SwapFeedItem', () => {
     })
   })
 
+  it('falls back to single-leg path when fromTokenAmounts has length 1', () => {
+    const { getByTestId } = render(
+      <Provider store={createMockStore()}>
+        <SwapFeedItem
+          transaction={{
+            ...swapTransaction,
+            fromTokenAmounts: [{ tokenId: mockCusdTokenId, value: '2.87' }],
+          }}
+        />
+      </Provider>
+    )
+
+    expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
+      'feedItemSwapPath, {"token1":"assets.dollars","token2":"Celo Euros"}'
+    )
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+  })
+
+  it('renders multi-leg subtitle when fromTokenAmounts has length > 1 (atomic 7702 batch)', () => {
+    const { getByTestId } = render(
+      <Provider store={createMockStore()}>
+        <SwapFeedItem
+          transaction={{
+            ...swapTransaction,
+            fromTokenAmounts: [
+              { tokenId: mockCusdTokenId, value: '1.005987' },
+              { tokenId: mockCusdTokenId, value: '1.006823' },
+              { tokenId: mockCusdTokenId, value: '0.988972' },
+            ],
+          }}
+        />
+      </Provider>
+    )
+
+    // Subtitle collapses to the multi-token count + destination
+    expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
+      'feedItemSwapPathMulti, {"count":3,"token2":"Celo Euros"}'
+    )
+    // Outgoing amount still shows the largest-value leg (outAmount unchanged)
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+  })
+
   it('renders correctly for pending cross-chain swap with no inAmount value', async () => {
     const { getByTestId, queryByTestId } = render(
       <Provider store={createMockStore()}>
