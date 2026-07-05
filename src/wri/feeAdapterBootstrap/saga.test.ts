@@ -45,6 +45,12 @@ describe('handleAccept', () => {
     jest.clearAllMocks()
   })
 
+  // Redux-saga's `delay` effect resolves via the internal `delayP` function.
+  // expectSaga executes real timers by default, so a 1s sleep would blow past
+  // the 5s test timeout. This provider intercepts every `delayP` call and
+  // resolves instantly, keeping the retry-with-sleep path fast under test.
+  const provideDelay = ({ fn }: { fn: any }, next: any) => (fn.name === 'delayP' ? null : next())
+
   it('marks every candidate started then succeeded for approved + already_approved tokens', async () => {
     jest.mocked(postFeeAdapterBootstrap).mockResolvedValue({
       ok: true,
@@ -153,13 +159,77 @@ describe('handleAccept', () => {
     expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(2)
   })
 
-  it('marks failed when delegate-relay succeeds but the bootstrap retry still throws 412', async () => {
-    // Edge case: relay says delegated but a stale state read makes the retry
-    // also throw not-delegated. Should mark failed, hide sheet, debounce.
+  it('marks failed when delegate-relay succeeds but both post-delegate retries still throw 412', async () => {
+    // Edge case: relay says delegated but a stale state read makes both
+    // retries also throw not-delegated. After delegate-relay + 1st retry
+    // (412) + 1s sleep + 2nd retry (still 412), give up: mark failed,
+    // hide sheet, debounce.
     jest
       .mocked(postFeeAdapterBootstrap)
       .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'first 412'))
       .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'retry still 412'))
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'second retry still 412'))
+
+    await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
+      .provide([
+        { call: provideDelay },
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.call.fn(signAndRelayDelegation), true],
+      ])
+      .put(bootstrapStarted({ adapter: 'USDC' }))
+      .put.actionType(bootstrapFailed.type)
+      .put(bootstrapSheetHidden())
+      .run()
+
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(3)
+  })
+
+  it('recovers when the first post-delegate retry is 412 but the second one succeeds', async () => {
+    // Forno LB rotation edge case: delegate-relay confirms on-chain, first
+    // bootstrap retry is served by a stale follower and returns 412, then
+    // after a 1s wait the follower has caught up and the second retry
+    // succeeds. Wallet should end in bootstrapSucceeded, not failed.
+    const succeededResponse = {
+      ok: true as const,
+      relayAddress: '0xrelay',
+      results: [
+        {
+          tokenSymbol: 'USDC' as const,
+          tokenAddress: '0xceba9300f2b948710d2653dd7b07f33a8b32118c',
+          adapterAddress: '0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B',
+          status: 'approved' as const,
+          txHash: '0xtx-second-retry',
+          alreadyApproved: false,
+        },
+      ],
+    }
+    jest
+      .mocked(postFeeAdapterBootstrap)
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'first 412'))
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'stale follower 412'))
+      .mockResolvedValueOnce(succeededResponse)
+
+    await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
+      .provide([
+        { call: provideDelay },
+        [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+        [matchers.call.fn(signAndRelayDelegation), true],
+      ])
+      .put(bootstrapStarted({ adapter: 'USDC' }))
+      .put(bootstrapSucceeded({ adapter: 'USDC' }))
+      .put(bootstrapSheetHidden())
+      .run()
+
+    expect(postFeeAdapterBootstrap).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not do the extra Forno retry when the first retry throws a non-412 error', async () => {
+    // Guard: the extra 1s-sleep retry only kicks in for 'not-delegated'.
+    // If the first retry throws e.g. 500 relay-error, fail immediately.
+    jest
+      .mocked(postFeeAdapterBootstrap)
+      .mockRejectedValueOnce(new BootstrapApiError('not-delegated', 'first 412'))
+      .mockRejectedValueOnce(new BootstrapApiError('relay', 'backend 500'))
 
     await expectSaga(handleAccept, bootstrapAccepted({ candidates: ['USDC'] }))
       .provide([
