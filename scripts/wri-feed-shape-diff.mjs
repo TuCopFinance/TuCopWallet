@@ -229,11 +229,15 @@ async function main() {
   }
 
   if (allDiffs.length === 0) {
-    stdout.write('== Field-level diff ==\n  No deltas on common transactions after normalization.\n')
+    stdout.write(
+      '== Field-level diff ==\n  No deltas on common transactions after normalization.\n'
+    )
     return
   }
 
-  stdout.write(`== Field-level diff (${allDiffs.length} total, showing first ${args.maxDeltas}) ==\n`)
+  stdout.write(
+    `== Field-level diff (${allDiffs.length} total, showing first ${args.maxDeltas}) ==\n`
+  )
   for (const d of allDiffs.slice(0, args.maxDeltas)) {
     stdout.write(`  ${d.path}\n`)
     stdout.write(`    valora: ${preview(d.valora)}\n`)
