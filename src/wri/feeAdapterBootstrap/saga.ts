@@ -136,6 +136,12 @@ function* applyBootstrapResults(results: AdapterResult[]) {
 // sheet from re-nagging on the next boot.
 const DELEGATE_RELAY_TIMEOUT_MS = 20_000
 
+// If the first bootstrap retry (post delegate-relay) still returns 412, wait
+// this long before trying one more time. Absorbs the rare case where Forno
+// load-balances the wallet's getCode read to a follower that has not yet
+// caught up with the delegate mined a few hundred ms ago.
+const FORNO_PROPAGATION_RETRY_MS = 1_000
+
 // Sign an EIP-7702 authorization for the BatchExecutor and ask the backend's
 // sponsored relay to submit it. Returns true when the relay confirms the EOA
 // is delegated. Kept lean (single attempt, no Retry-After or 502 re-check)
@@ -250,10 +256,25 @@ export function* handleAccept(action: PayloadAction<{ candidates: AdapterSymbol[
           // a plain failure message instead of treating it like another 412.
           throw new Error('delegation-failed: delegate-relay did not delegate')
         }
-        // Single retry. If this also throws (super rare; e.g. relay confirmed
-        // delegated but the wallet's view of state is stale), the outer catch
-        // marks failed and the 24h debounce takes over.
-        response = yield* call(postFeeAdapterBootstrap, walletAddress)
+        // First retry. If this throws 412 too, the most likely cause is a
+        // Forno LB rotation serving a follower slightly behind: the same
+        // getCode singleton the backend used to confirm the delegate can
+        // return stale code for a brief window. Wait 1s and try once more
+        // before giving up. Expected activation: <0.1% of prod attempts.
+        try {
+          response = yield* call(postFeeAdapterBootstrap, walletAddress)
+        } catch (retryErr) {
+          if (retryErr instanceof BootstrapApiError && retryErr.kind === 'not-delegated') {
+            Logger.info(
+              TAG,
+              '412 on first post-delegate retry; waiting 1s for Forno propagation and retrying once more'
+            )
+            yield* delay(FORNO_PROPAGATION_RETRY_MS)
+            response = yield* call(postFeeAdapterBootstrap, walletAddress)
+          } else {
+            throw retryErr
+          }
+        }
       } else {
         throw firstErr
       }
