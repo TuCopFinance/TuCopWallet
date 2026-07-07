@@ -350,6 +350,13 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         ? getSerializablePreparedTransactions(freshQuote.preparedTransactions.transactions)
         : []
 
+    // freshQuote.swapAmount.TO is Squid's buyAmount in wei (BigNumber shifted
+    // by the destination token's decimals). Shift back to whole units before
+    // it enters SwapInfo, so the standby-tx renderer downstream (TokenDisplay
+    // consumes .value directly with `new BigNumber(value)` and no shift)
+    // doesn't display 3,321,865,235,381,619,257,571 Pesos for a 3,321 tx.
+    const toToken = tokensById[toTokenId]
+    const toTokenDecimals = toToken?.decimals ?? 18
     const swapInfo: SwapInfo = {
       swapId,
       userInput: {
@@ -357,7 +364,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         toTokenId,
         swapAmount: {
           [Field.FROM]: step.amountTokenWhole.toString(),
-          [Field.TO]: freshQuote.swapAmount.TO.toString(),
+          [Field.TO]: freshQuote.swapAmount.TO.shiftedBy(-toTokenDecimals).toString(),
         },
         updatedField: Field.FROM,
       },
