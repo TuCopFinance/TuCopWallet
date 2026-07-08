@@ -36,13 +36,32 @@ function SwapFeedItem({ transaction }: Props) {
   }
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
-  // EIP-7702 atomic batches from the TuCop indexer feed populate
-  // fromTokenAmounts with every leg of the batch. When >1, the subtitle
-  // collapses to a count ("3 monedas a Pesos") so the user understands the
-  // tx moved multiple inputs at once. The outgoing amount row keeps showing
-  // the largest leg (which is what outAmount already holds for these txs).
+  // EIP-7702 atomic batches from the TuCop indexer feed (and from the
+  // fetch-Blockscout classifier for the same batches) populate
+  // fromTokenAmounts with every leg of the batch. When every leg is a
+  // dollar-family token (USDT/USDC/USDm/USAT), the user's mental model
+  // treats the whole thing as one "Dolares -> Pesos" swap of the total,
+  // matching the swap flow UI where the aggregate is picked as "Dolares".
+  // We collapse the subtitle to "Dolares > Pesos" and show the summed
+  // outgoing amount as "Dolares", ignoring the per-leg tokenIds.
   const fromLegCount = transaction.fromTokenAmounts?.length ?? 0
   const isMultiLegSwap = fromLegCount > 1
+  const DOLLAR_FAMILY_TOKEN_IDS = new Set(
+    [
+      networkConfig.usdtTokenId,
+      networkConfig.usdcTokenId,
+      networkConfig.usdmTokenId,
+      networkConfig.usatTokenId,
+    ].filter(Boolean)
+  )
+  const isMultiDollarSwap =
+    isMultiLegSwap &&
+    (transaction.fromTokenAmounts ?? []).every((leg) => DOLLAR_FAMILY_TOKEN_IDS.has(leg.tokenId))
+  const multiDollarOutgoingTotal = isMultiDollarSwap
+    ? (transaction.fromTokenAmounts ?? [])
+        .reduce((sum, leg) => sum.plus(new BigNumber(leg.value)), new BigNumber(0))
+        .toFixed()
+    : null
 
   // Get friendly token name - also accepts tokenId for when token info isn't available.
   // Per .claude/rules/tokens.md the entire USAT/USDm/USDC/USDT group is shown as
@@ -155,25 +174,36 @@ function SwapFeedItem({ transaction }: Props) {
             >
               {isCrossChainSwap
                 ? t('transactionFeed.crossChainSwapTransactionLabel')
-                : isMultiLegSwap
-                  ? t('feedItemSwapPathMulti', {
-                      count: fromLegCount,
+                : isMultiDollarSwap
+                  ? t('feedItemSwapPath', {
+                      token1: t('assets.dollars'),
                       token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
                     })
-                  : t('feedItemSwapPath', {
-                      token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                      token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                    })}
+                  : isMultiLegSwap
+                    ? t('feedItemSwapPathMulti', {
+                        count: fromLegCount,
+                        token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                      })
+                    : t('feedItemSwapPath', {
+                        token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                        token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                      })}
             </Text>
-            <TokenDisplay
-              amount={-transaction.outAmount.value}
-              tokenId={transaction.outAmount.tokenId}
-              showLocalAmount={false}
-              showSymbol={true}
-              hideSign={false}
-              style={styles.tokenAmount}
-              testID={'SwapFeedItem/outgoingAmount'}
-            />
+            {isMultiDollarSwap && multiDollarOutgoingTotal ? (
+              <Text style={styles.tokenAmount} testID={'SwapFeedItem/outgoingAmount'}>
+                {`-${new BigNumber(multiDollarOutgoingTotal).toFixed(2)} ${t('assets.dollars')}`}
+              </Text>
+            ) : (
+              <TokenDisplay
+                amount={-transaction.outAmount.value}
+                tokenId={transaction.outAmount.tokenId}
+                showLocalAmount={false}
+                showSymbol={true}
+                hideSign={false}
+                style={styles.tokenAmount}
+                testID={'SwapFeedItem/outgoingAmount'}
+              />
+            )}
           </View>
           {/* Row 3: Timestamp */}
           <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>
