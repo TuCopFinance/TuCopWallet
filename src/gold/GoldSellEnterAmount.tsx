@@ -10,7 +10,7 @@ import { GoldEvents } from 'src/analytics/Events'
 import { buildDolaresVirtualToken } from 'src/dollarsSpend/dolaresVirtualToken'
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 import { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import BackButton from 'src/components/BackButton'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -53,19 +53,19 @@ export default function GoldSellEnterAmount(_props: Props) {
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
 
-  // Get user-friendly display name for tokens. The brand label wins for the
-  // four concrete dollar tokens (Tether USD / USD Coin / Dolar Mento /
-  // Tether America USD) so the chip stays consistent with the picker rows
-  // and the success screen. Falls back to "Dolares" for the synthetic
-  // virtual aggregator (no brand label), and to the token name otherwise.
+  // Get user-friendly display name for tokens. The ticker wins for the four
+  // concrete dollar tokens (USDT / USDC / USDm / USAT) so the chip stays
+  // consistent with the picker rows, the success screen, and the tx feed.
+  // Falls back to "Dolares" for the synthetic virtual aggregator, and to
+  // the token name otherwise.
   const getTokenName = (token: TokenBalance | null) => {
     if (!token) return ''
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    const brandLabelKey = getDollarTokenLabelKey(token.tokenId)
-    if (brandLabelKey) {
-      return t(brandLabelKey)
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'ccop' || symbol === 'copm') {
@@ -353,10 +353,10 @@ export default function GoldSellEnterAmount(_props: Props) {
                 <TokenIcon token={settlementTokenForVirtual} size={IconSize.XSMALL} />
                 <Text style={styles.settlementHintBrandText}>
                   {(() => {
-                    const key = getDollarTokenLabelKey(settlementTokenForVirtual.tokenId)
-                    return key
-                      ? t(key)
-                      : (settlementTokenForVirtual.name ?? settlementTokenForVirtual.symbol)
+                    const ticker = getDollarTokenTicker(settlementTokenForVirtual.tokenId)
+                    return (
+                      ticker ?? settlementTokenForVirtual.name ?? settlementTokenForVirtual.symbol
+                    )
                   })()}
                 </Text>
               </View>
