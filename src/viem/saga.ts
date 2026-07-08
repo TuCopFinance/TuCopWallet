@@ -41,7 +41,7 @@ const MEMPOOL_POLL_MAX_ATTEMPTS = 20
  * MEMPOOL_POLL_MAX_ATTEMPTS to avoid hanging on Forno flakiness — if we hit
  * the cap we log a warn and fall through, matching the pre-guard behavior.
  */
-function* waitForMempoolCommit(wallet: any, address: `0x${string}`, submittedNonce: number) {
+export function* waitForMempoolCommit(wallet: any, address: `0x${string}`, submittedNonce: number) {
   const expected = submittedNonce + 1
   Logger.info(
     `${TAG}/waitForMempoolCommit`,
