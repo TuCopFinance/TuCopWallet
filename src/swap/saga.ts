@@ -87,7 +87,8 @@ function getSwapTxsReceiptAnalyticsProperties(
 
 export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
   const swapSubmittedAt = Date.now()
-  const { swapId, userInput, quote, areSwapTokensShuffled } = action.payload
+  const { swapId, userInput, quote, areSwapTokensShuffled, suppressSuccessNavigation } =
+    action.payload
   const { fromTokenId, toTokenId, updatedField, swapAmount } = userInput
   const {
     provider,
@@ -359,16 +360,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     )
     yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
-    // Navigate to success screen
-    navigate(Screens.TransactionSuccessScreen, {
-      fromTokenId,
-      toTokenId,
-      fromAmount: swapAmount[Field.FROM],
-      toAmount: swapAmount[Field.TO],
-      transactionHash: swapTxReceipt.transactionHash,
-      networkId,
-      type: 'swap' as const,
-    })
+    // Navigate to success screen unless the parent multi-swap flow told us
+    // not to (see SwapInfo.suppressSuccessNavigation). The orchestrator will
+    // navigate once at the end with the aggregated leg breakdown so the user
+    // does not see the sheet flash for each step.
+    if (!suppressSuccessNavigation) {
+      navigate(Screens.TransactionSuccessScreen, {
+        fromTokenId,
+        toTokenId,
+        fromAmount: swapAmount[Field.FROM],
+        toAmount: swapAmount[Field.TO],
+        transactionHash: swapTxReceipt.transactionHash,
+        networkId,
+        type: 'swap' as const,
+      })
+    }
 
     // Success is tracked only for same-chain swaps. Cross-chain swap success is tracked in the query helper
     // because for the cross-chain swaps, we have to wait for the transaction to be included in the

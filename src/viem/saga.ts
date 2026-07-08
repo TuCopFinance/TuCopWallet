@@ -19,11 +19,50 @@ import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
 import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
-import { call, put, select } from 'typed-redux-saga'
+import { call, delay, put, select } from 'typed-redux-saga'
 import { Hash } from 'viem'
 import { getTransactionCount } from 'viem/actions'
 
 const TAG = 'viem/saga'
+
+// Mempool-commit polling knobs. 100ms is faster than a Celo block (~1s) and
+// well within the observed propagation window (typically < 400ms in prod).
+// The 2s cap bounds worst-case latency added to a multi-tx flow: after 20
+// polls we accept the risk and proceed. If mempool truly didn't commit in
+// 2s the next submission may still race, but that's the same failure mode
+// we had before this guard.
+const MEMPOOL_POLL_MS = 100
+const MEMPOOL_POLL_MAX_ATTEMPTS = 20
+
+/**
+ * Poll `getTransactionCount('pending')` until it reaches (submittedNonce + 1),
+ * meaning Forno has committed the just-submitted tx to its mempool state and
+ * is ready to accept the next sequential nonce. Bounded by
+ * MEMPOOL_POLL_MAX_ATTEMPTS to avoid hanging on Forno flakiness — if we hit
+ * the cap we log a warn and fall through, matching the pre-guard behavior.
+ */
+export function* waitForMempoolCommit(wallet: any, address: `0x${string}`, submittedNonce: number) {
+  const expected = submittedNonce + 1
+  Logger.info(
+    `${TAG}/waitForMempoolCommit`,
+    `MEMPOOL_WAIT start submittedNonce=${submittedNonce} expecting_pending_nonce>=${expected} address=${address}`
+  )
+  for (let attempt = 0; attempt < MEMPOOL_POLL_MAX_ATTEMPTS; attempt++) {
+    // @ts-ignore typed-redux-saga erases parameterized types
+    const pendingNonce: number = yield* call(getTransactionCount, wallet, {
+      address,
+      blockTag: 'pending',
+    })
+    if (pendingNonce >= expected) {
+      return
+    }
+    yield* delay(MEMPOOL_POLL_MS)
+  }
+  Logger.warn(
+    `${TAG}/waitForMempoolCommit`,
+    `pending nonce never reached ${expected} after ${MEMPOOL_POLL_MAX_ATTEMPTS} polls; proceeding anyway`
+  )
+}
 
 /**
  * Sends prepared transactions and adds standby transactions to the store.
@@ -80,6 +119,11 @@ export function* sendPreparedTransactions(
 
   // Unlock account before executing tx
   yield* call(getConnectedUnlockedAccount)
+
+  Logger.info(
+    `${TAG}/sendTransactionsSaga`,
+    `SEND_SAGA_START flowId=${flowId} preparedTxCount=${serializablePreparedTransactions.length} networkId=${networkId}`
+  )
 
   // Hold the PIN cache for the duration of this multi-step transactional saga
   // so the inactivity TTL cannot expire between signing iterations and force
@@ -155,6 +199,17 @@ export function* sendPreparedTransactions(
         'Successfully sent transaction to the network',
         hash
       )
+
+      // Mempool commit race: `sendRawTransaction` returns as soon as Forno
+      // acknowledges the tx, but Forno's global pending-nonce view may not
+      // reflect the new tx for another few hundred ms while the mempool
+      // propagates. If the NEXT tx we sign (either within this call or in a
+      // follow-up caller like the multi-swap saga chaining steps) uses a
+      // fresh `getTransactionCount('pending')` before that propagation
+      // completes, Forno rejects it with a generic `-32602 Missing or invalid
+      // parameters` (misleadingly, since our nonce is correct). Always poll
+      // until the pending nonce catches up before letting the caller move on.
+      yield* call(waitForMempoolCommit, wallet, wallet.account.address, txNonce)
 
       const tokensById = yield* select((state) => tokensByIdSelector(state, [networkId]))
       const feeCurrencyId = getFeeCurrencyToken(

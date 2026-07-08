@@ -6,10 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
-import TokenDisplay from 'src/components/TokenDisplay'
+import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
+import DollarsIcon from 'src/icons/tokens/DollarsIcon'
+import BigNumber from 'bignumber.js'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
@@ -37,7 +40,9 @@ function TransactionSuccessScreen({ route }: Props) {
     recipientAddress,
     recipientName,
     poolName,
+    legs,
   } = route.params
+  const hasLegs = Array.isArray(legs) && legs.length > 0
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -118,6 +123,34 @@ function TransactionSuccessScreen({ route }: Props) {
                         textStyle={styles.tokenDisplay}
                       />
                     </View>
+                    {hasLegs && (
+                      <View style={styles.breakdownContainer}>
+                        <Text style={styles.breakdownHeader}>
+                          {t('transactionSuccess.breakdownHeader')}
+                        </Text>
+                        {legs!.map((leg, idx) => (
+                          <View
+                            style={styles.breakdownRow}
+                            key={`${leg.transactionHash}-${idx}`}
+                            testID={`TransactionSuccess/Leg${idx}`}
+                          >
+                            <TokenAmountWithBrand
+                              amount={leg.fromAmount}
+                              tokenId={leg.fromTokenId}
+                              testID={`TransactionSuccess/Leg${idx}/From`}
+                              textStyle={styles.breakdownAmount}
+                            />
+                            <ArrowRightThick size={12} color={Colors.gray4} />
+                            <TokenAmountWithBrand
+                              amount={leg.toAmount}
+                              tokenId={toTokenId}
+                              testID={`TransactionSuccess/Leg${idx}/To`}
+                              textStyle={styles.breakdownAmount}
+                            />
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </>
                 )}
               </>
@@ -173,6 +206,22 @@ function TokenAmountWithBrand({
   const { t } = useTranslation()
   const tokenInfo = useTokenInfo(tokenId)
   const brandLabelKey = getDollarTokenLabelKey(tokenId)
+  // Multi-swap aggregates arrive with the virtual "Dolares" tokenId so the
+  // header row renders as "3.00 Dolares" instead of picking one specific
+  // stablecoin brand. There is no on-chain token registered for the virtual
+  // id (useTokenInfo returns undefined), so we short-circuit here with a
+  // plain amount + "Dolares" label. The per-leg breakdown further down uses
+  // the concrete tokenIds and still routes through the normal brand path.
+  if (tokenId === DOLARES_VIRTUAL_TOKEN_ID) {
+    return (
+      <View style={styles.brandRow}>
+        <DollarsIcon size={24} testID={`${testID}/Icon`} />
+        <Text style={textStyle} testID={testID}>
+          {`${formatValueToDisplay(new BigNumber(amount))} ${t('assets.dollars')}`}
+        </Text>
+      </View>
+    )
+  }
   return (
     <View style={styles.brandRow}>
       {tokenInfo && <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />}
@@ -228,6 +277,28 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'column',
     gap: Spacing.Smallest8,
+  },
+  breakdownContainer: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+    paddingTop: Spacing.Regular16,
+    gap: Spacing.Smallest8,
+  },
+  breakdownHeader: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.Smallest8,
+  },
+  breakdownAmount: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
   },
   detailLabel: {
     ...typeScale.bodySmall,

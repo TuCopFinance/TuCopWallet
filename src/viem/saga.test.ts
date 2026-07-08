@@ -92,11 +92,32 @@ describe('sendPreparedTransactions', () => {
     }),
   } as any as ViemWallet
 
+  // Stateful nonce counter for the getTransactionCount call effect. First call
+  // (the initial nonce fetch at the top of the saga) returns 10. Every
+  // subsequent call (from the mempool-commit polling loop between submissions)
+  // returns a value large enough to satisfy the pending-nonce check on the
+  // first poll, so the loop exits without a real wait.
+  let getTxCountCallCount = 0
+
+  // Unified `call` provider: intercepts delayP (redux-saga's internal delay
+  // primitive) so the mempool-commit polling loop doesn't burn real timers,
+  // and swaps `getTransactionCount` returns for the stateful counter above.
+  // Falls through to `next()` for any other call so unrelated effects run
+  // through the normal expectSaga plumbing.
+  const provideCallEffect = ({ fn }: { fn: any }, next: any) => {
+    if (fn.name === 'delayP') return null
+    if (fn === getTransactionCount) {
+      getTxCountCallCount += 1
+      return getTxCountCallCount === 1 ? 10 : 1_000_000
+    }
+    return next()
+  }
+
   function createDefaultProviders() {
     const defaultProviders: (EffectProviders | StaticProvider)[] = [
+      { call: provideCallEffect },
       [call(getConnectedUnlockedAccount), mockAccount],
       [matchers.call.fn(getViemWallet), mockViemWallet],
-      [matchers.call.fn(getTransactionCount), 10],
     ]
     return defaultProviders
   }
@@ -104,6 +125,7 @@ describe('sendPreparedTransactions', () => {
   beforeEach(() => {
     sendCallCount = 0
     signCallCount = 0
+    getTxCountCallCount = 0
     jest.clearAllMocks()
   })
 

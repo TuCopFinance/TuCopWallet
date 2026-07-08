@@ -2984,7 +2984,8 @@
     "amount": "Amount",
     "recipient": "Recipient",
     "pool": "Pool",
-    "viewOnExplorer": "View on explorer"
+    "viewOnExplorer": "View on explorer",
+    "breakdownHeader": "Breakdown by token"
   },
   "errors": {
     "public": {
