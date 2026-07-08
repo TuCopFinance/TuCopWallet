@@ -301,9 +301,24 @@ describe(swapSubmitSaga, () => {
 
   function createDefaultProviders(network: Network) {
     let callCount = 0
+    // `sendPreparedTransactions` polls `getTransactionCount('pending')`
+    // between submissions to guard against a Forno mempool-commit race. In
+    // tests, the initial call must still return the starting nonce so the
+    // saga signs with the expected value, but subsequent polls must return
+    // a high value so the loop exits without a real wait. Same pattern as
+    // src/viem/saga.test.ts.
+    let getTxCountCallCount = 0
+    const provideCallEffect = ({ fn }: { fn: any }, next: any) => {
+      if (fn.name === 'delayP') return null
+      if (fn === getTransactionCount) {
+        getTxCountCallCount += 1
+        return getTxCountCallCount === 1 ? 10 : 1_000_000
+      }
+      return next()
+    }
     const defaultProviders: (EffectProviders | StaticProvider)[] = [
+      { call: provideCallEffect },
       [matchers.call(getViemWallet, networkConfig.viemChain[network], false), mockViemWallet],
-      [matchers.call.fn(getTransactionCount), 10],
       [matchers.call.fn(getConnectedUnlockedAccount), mockAccount],
       [
         matchers.call.fn(publicClient[network].waitForTransactionReceipt),
