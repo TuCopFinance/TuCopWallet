@@ -73,19 +73,37 @@ function parseArgs(rawArgs) {
   return { address, ...flags }
 }
 
+// Both /getWalletTransactions (Valora) and /api/transactions/feed (TuCop) return
+// pageInfo.endCursor + hasNextPage; a single call caps at ~20 (TuCop) or ~48
+// (Valora). Without pagination, the diff over any wallet with real history
+// silently compares only the most-recent page and reports every older tx as
+// "missing" on whichever side has the shorter first page. Follow the cursor
+// until hasNextPage is false, hard-stopping at 20 pages so a broken cursor
+// cannot loop forever.
 async function fetchFeed(url, { address, currency }) {
-  const params = new URLSearchParams({
+  const baseParams = {
     address,
     networkIds: NETWORK_IDS,
     includeTypes: INCLUDE_TYPES,
     localCurrencyCode: currency,
-  })
-  const full = `${url}?${params.toString()}`
-  const res = await fetch(full, { headers: { Accept: 'application/json' } })
-  if (!res.ok) {
-    throw new Error(`${url} returned ${res.status}: ${await res.text()}`)
   }
-  return res.json()
+  const allTransactions = []
+  let cursor
+  for (let page = 0; page < 20; page += 1) {
+    const params = new URLSearchParams(baseParams)
+    if (cursor) params.set('afterCursor', cursor)
+    const full = `${url}?${params.toString()}`
+    const res = await fetch(full, { headers: { Accept: 'application/json' } })
+    if (!res.ok) {
+      throw new Error(`${url} returned ${res.status}: ${await res.text()}`)
+    }
+    const body = await res.json()
+    allTransactions.push(...(body.transactions ?? []))
+    const pageInfo = body.pageInfo ?? {}
+    if (!pageInfo.hasNextPage || !pageInfo.endCursor) break
+    cursor = pageInfo.endCursor
+  }
+  return { transactions: allTransactions }
 }
 
 // Recursively lowercase every string that looks like a hex identifier.

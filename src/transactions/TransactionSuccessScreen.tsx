@@ -6,15 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
-import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
-import TokenIcon, { IconSize } from 'src/components/TokenIcon'
+import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
+import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
-import DollarsIcon from 'src/icons/tokens/DollarsIcon'
-import BigNumber from 'bignumber.js'
-import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
-import { useTokenInfo } from 'src/tokens/hooks'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -186,72 +181,6 @@ function TransactionSuccessScreen({ route }: Props) {
   )
 }
 
-// Renders the on-chain amount (via TokenDisplay, which already caps decimals
-// and routes through `getTokenSymbol`) and appends the brand-specific dollar
-// label when the token is one of the four dollar stablecoins (USDT / USDC /
-// USDm / USAT). This way the success screen reads e.g. "0.04 Tether USD"
-// instead of the generic "0.04 Dolares" - the user can tell which concrete
-// brand actually landed in their wallet.
-function TokenAmountWithBrand({
-  amount,
-  tokenId,
-  testID,
-  textStyle,
-}: {
-  amount: string
-  tokenId: string
-  testID: string
-  textStyle: object
-}) {
-  const { t } = useTranslation()
-  const tokenInfo = useTokenInfo(tokenId)
-  const brandLabelKey = getDollarTokenLabelKey(tokenId)
-  // Multi-swap aggregates arrive with the virtual "Dolares" tokenId so the
-  // header row renders as "3.00 Dolares" instead of picking one specific
-  // stablecoin brand. There is no on-chain token registered for the virtual
-  // id (useTokenInfo returns undefined), so we short-circuit here with a
-  // plain amount + "Dolares" label. The per-leg breakdown further down uses
-  // the concrete tokenIds and still routes through the normal brand path.
-  if (tokenId === DOLARES_VIRTUAL_TOKEN_ID) {
-    return (
-      <View style={styles.brandRow}>
-        <DollarsIcon size={24} testID={`${testID}/Icon`} />
-        <Text style={textStyle} testID={testID}>
-          {`${formatValueToDisplay(new BigNumber(amount))} ${t('assets.dollars')}`}
-        </Text>
-      </View>
-    )
-  }
-  return (
-    <View style={styles.brandRow}>
-      {tokenInfo && <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />}
-      {brandLabelKey ? (
-        <>
-          <TokenDisplay
-            amount={amount}
-            tokenId={tokenId}
-            showLocalAmount={false}
-            showSymbol={false}
-            hideSign={true}
-            style={textStyle}
-            testID={testID}
-          />
-          <Text style={textStyle}>{` ${t(brandLabelKey)}`}</Text>
-        </>
-      ) : (
-        <TokenDisplay
-          amount={amount}
-          tokenId={tokenId}
-          showLocalAmount={false}
-          hideSign={true}
-          style={textStyle}
-          testID={testID}
-        />
-      )}
-    </View>
-  )
-}
-
 TransactionSuccessScreen.navigationOptions = () => ({
   ...noHeaderGestureDisabled,
 })
@@ -330,11 +259,6 @@ const styles = StyleSheet.create({
   explorerLinkText: {
     ...typeScale.labelSmall,
     color: Colors.primary,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.Smallest8,
   },
 })
 
