@@ -21,8 +21,25 @@ const SYSTEM_CONTRACTS = new Set([
   '0x0000000000000000000000000000000000000000', // Null address (mints/burns)
 ])
 
-// Tokens we care about
-const MAIN_TOKENS = new Set(['COPm', 'USDT', 'XAUt0', 'USDC', 'USDm', 'CELO'])
+// Tokens we care about, keyed by canonical contract address (lowercase). Symbol
+// matching was fragile: Blockscout mirrors on-chain ERC20 `symbol()` output
+// verbatim, so USDm arrives as `CUSD` (all caps, its Mento contract symbol),
+// USDT sometimes as `USD₮`, and any future rebrand can silently drop a leg
+// from the atomic 7702 batch classifier. Address is the canonical identity.
+const MAIN_TOKEN_ADDRESSES = new Set(
+  [
+    networkConfig.copmTokenId,
+    networkConfig.usdtTokenId,
+    networkConfig.usdcTokenId,
+    networkConfig.usdmTokenId,
+    networkConfig.usatTokenId,
+    networkConfig.xaut0TokenId,
+    networkConfig.celoTokenId,
+  ]
+    .filter(Boolean)
+    .map((tokenId) => tokenId.split(':')[1]?.toLowerCase())
+    .filter(Boolean)
+)
 
 interface BlockscoutTransfer {
   transaction_hash: string
@@ -180,32 +197,35 @@ function processBlockscoutTransaction(
 
   if (meaningfulTransfers.length === 0) return null
 
-  // Calculate net amounts per token
+  // Calculate net amounts per token, keyed by contract address (canonical).
+  // Using symbol as the key silently merges tokens with the same symbol from
+  // different contracts (or, worse, silently drops a leg when the symbol has
+  // an aliased casing like USDm-contract returning `CUSD`).
   const outAmounts: Record<string, { value: number; tokenId: string; symbol: string }> = {}
   const inAmounts: Record<string, { value: number; tokenId: string; symbol: string }> = {}
 
   for (const transfer of meaningfulTransfers) {
-    const symbol = transfer.token.symbol
-    if (!MAIN_TOKENS.has(symbol)) continue
+    const tokenAddress = transfer.token.address_hash.toLowerCase()
+    if (!MAIN_TOKEN_ADDRESSES.has(tokenAddress)) continue
 
+    const symbol = transfer.token.symbol
     const decimals = parseInt(transfer.token.decimals, 10)
     const value = parseFloat(transfer.total.value) / Math.pow(10, decimals)
-    const tokenAddress = transfer.token.address_hash.toLowerCase()
     const tokenId = `${networkConfig.defaultNetworkId}:${tokenAddress}`
 
     const from = transfer.from.hash.toLowerCase()
     const to = transfer.to.hash.toLowerCase()
 
     if (from === userAddress) {
-      if (!outAmounts[symbol]) {
-        outAmounts[symbol] = { value: 0, tokenId, symbol }
+      if (!outAmounts[tokenAddress]) {
+        outAmounts[tokenAddress] = { value: 0, tokenId, symbol }
       }
-      outAmounts[symbol].value += value
+      outAmounts[tokenAddress].value += value
     } else if (to === userAddress) {
-      if (!inAmounts[symbol]) {
-        inAmounts[symbol] = { value: 0, tokenId, symbol }
+      if (!inAmounts[tokenAddress]) {
+        inAmounts[tokenAddress] = { value: 0, tokenId, symbol }
       }
-      inAmounts[symbol].value += value
+      inAmounts[tokenAddress].value += value
     }
   }
 
