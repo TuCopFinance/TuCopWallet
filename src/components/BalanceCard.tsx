@@ -18,7 +18,7 @@ import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useCOPm, useDollarTokensWithBalance, useDollarUsdBalance } from 'src/tokens/hooks'
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -252,8 +252,8 @@ export default function BalanceCard({ testID }: Props) {
       return (
         <>
           {dollarTokensWithBalance.map(({ tokenInfo, usdValue }) => {
-            const labelKey = getDollarTokenLabelKey(tokenInfo.tokenId)
-            const label = labelKey ? t(labelKey) : tokenInfo.symbol
+            const ticker = getDollarTokenTicker(tokenInfo.tokenId)
+            const label = ticker ?? tokenInfo.symbol
             return (
               <View key={tokenInfo.tokenId} style={styles.breakdownRow}>
                 <Text style={rowLabelStyle} numberOfLines={1}>
