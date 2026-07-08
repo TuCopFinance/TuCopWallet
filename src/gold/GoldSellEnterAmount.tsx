@@ -53,11 +53,11 @@ export default function GoldSellEnterAmount(_props: Props) {
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
 
-  // Get user-friendly display name for tokens. The brand label wins for the
-  // four concrete dollar tokens (Tether USD / USD Coin / Dolar Mento /
-  // Tether America USD) so the chip stays consistent with the picker rows
-  // and the success screen. Falls back to "Dolares" for the synthetic
-  // virtual aggregator (no brand label), and to the token name otherwise.
+  // Get user-friendly display name for tokens. The ticker wins for the four
+  // concrete dollar tokens (USDT / USDC / USDm / USAT) so the chip stays
+  // consistent with the picker rows, the success screen, and the tx feed.
+  // Falls back to "Dolares" for the synthetic virtual aggregator, and to
+  // the token name otherwise.
   const getTokenName = (token: TokenBalance | null) => {
     if (!token) return ''
     if (token.tokenId === networkConfig.copmTokenId) {
