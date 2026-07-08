@@ -8,7 +8,7 @@ import { SwapEvents } from 'src/analytics/Events'
 import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import Touchable from 'src/components/Touchable'
 import InfoIcon from 'src/icons/status/InfoIcon'
@@ -215,8 +215,8 @@ export function SwapTransactionDetails({
           <Text style={styles.label}>{t('swapScreen.transactionDetails.receivingIn')}</Text>
           <Text style={styles.value} testID="SwapTransactionDetails/SettlementToken/Value">
             {(() => {
-              const labelKey = getDollarTokenLabelKey(settlementToken.tokenId)
-              return labelKey ? t(labelKey) : (settlementToken.name ?? settlementToken.symbol)
+              const ticker = getDollarTokenTicker(settlementToken.tokenId)
+              return ticker ?? settlementToken.name ?? settlementToken.symbol
             })()}
           </Text>
         </View>
