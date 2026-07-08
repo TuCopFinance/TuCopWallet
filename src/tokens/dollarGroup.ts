@@ -36,6 +36,21 @@ export function getDollarTokenLabelKey(tokenId: string): string | null {
   return null
 }
 
+// Concrete ticker for a dollar-family tokenId (USDT / USDC / USDm / USAT).
+// Used in the tx feed detail breakdown so the user sees "0.91 USDT" instead
+// of the localized brand name "0.91 Tether USD". Tickers are locale-neutral
+// and match the canonical asset names in .claude/rules/tokens.md; keep them
+// as literal strings, not i18n keys.
+export function getDollarTokenTicker(tokenId: string): string | null {
+  if (tokenId === networkConfig.usdtTokenId) return 'USDT'
+  if (tokenId === networkConfig.usdcTokenId) return 'USDC'
+  if (tokenId === networkConfig.usdmTokenId) return 'USDm'
+  if (networkConfig.usatTokenId && tokenId === networkConfig.usatTokenId) {
+    return 'USAT'
+  }
+  return null
+}
+
 // Fixed display order for dollar tokens inside any picker that surfaces them.
 // USDT first (most liquid / default settlement), then USDC, USAT, USDm. The
 // order is independent of SPEND_ORDER (which controls spending priority) -
