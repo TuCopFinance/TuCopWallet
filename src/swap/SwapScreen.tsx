@@ -309,9 +309,14 @@ export function SwapScreen({ route }: Props) {
     [dollarSnapshots]
   )
 
-  const fromTokensWithDolares = useMemo(() => {
-    const filtered = swappableFromTokens.filter((t) => !DOLLAR_TOKEN_IDS.has(t.tokenId))
-    return dolaresVirtualToken ? [dolaresVirtualToken, ...filtered] : filtered
+  // Resolver-only list: keeps the virtual "Dolares" token so navigation
+  // that pre-selects FROM=virtual (from home CTAs, etc) can still find it
+  // when computing the `fromToken` object. The picker itself uses the raw
+  // `swappableFromTokens` and never surfaces the virtual token, because
+  // "Dolares" is the closed-state aggregate — inside the picker the user
+  // is choosing between concrete tokens (USDT, USDC, USDm, Pesos, ...).
+  const fromTokensForResolution = useMemo(() => {
+    return dolaresVirtualToken ? [dolaresVirtualToken, ...swappableFromTokens] : swappableFromTokens
   }, [swappableFromTokens, dolaresVirtualToken])
 
   const priceImpactWarningThreshold = useSelector(priceImpactWarningThresholdSelector)
@@ -343,10 +348,10 @@ export function SwapScreen({ route }: Props) {
   const filterChipsTo = useFilterChips(Field.TO, initialToTokenNetworkId)
 
   const { fromToken, toToken } = useMemo(() => {
-    // Also search fromTokensWithDolares so the virtual Dolares token resolves correctly.
+    // Also search fromTokensForResolution so the virtual Dolares token resolves correctly.
     const fromToken =
       swappableFromTokens.find((token) => token.tokenId === fromTokenId) ??
-      fromTokensWithDolares.find((token) => token.tokenId === fromTokenId)
+      fromTokensForResolution.find((token) => token.tokenId === fromTokenId)
     // Virtual "Dolares" is not a real ERC-20 and never lives in the
     // swappable list; resolve it explicitly from the synthetic builder so
     // the swap card can render the aggregated balance when callers (home
@@ -361,7 +366,7 @@ export function SwapScreen({ route }: Props) {
     toTokenId,
     swappableFromTokens,
     swappableToTokens,
-    fromTokensWithDolares,
+    fromTokensForResolution,
     dolaresVirtualToken,
   ])
 
@@ -1010,7 +1015,9 @@ export function SwapScreen({ route }: Props) {
   const tokenBottomSheetsConfig = [
     {
       fieldType: Field.FROM,
-      tokens: fromTokensWithDolares,
+      // Picker shows real tokens only — the virtual "Dolares" aggregate is
+      // the closed-state display, never a picker row. Symmetric with TO.
+      tokens: swappableFromTokens,
       filterChips: filterChipsFrom,
       origin: TokenPickerOrigin.SwapFrom,
     },
