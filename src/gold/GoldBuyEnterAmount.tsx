@@ -43,7 +43,7 @@ import {
   DOLARES_VIRTUAL_TOKEN_ID,
   useDollarBalanceSnapshots,
 } from 'src/dollarsSpend'
-import { DOLLAR_TOKEN_IDS, getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { DOLLAR_TOKEN_IDS, getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -99,9 +99,9 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    const brandLabelKey = getDollarTokenLabelKey(token.tokenId)
-    if (brandLabelKey) {
-      return t(brandLabelKey)
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     if (token.tokenId === networkConfig.xaut0TokenId) {
       return t('goldFlow.gold')

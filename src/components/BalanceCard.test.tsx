@@ -143,10 +143,10 @@ describe('BalanceCard', () => {
       fireEvent.press(getByTestId('BalanceCard/dolares/Behind'))
       fireEvent.press(getByTestId('BalanceCard/Toggle'))
       expect(getByTestId('BalanceCard/Breakdown')).toBeTruthy()
-      // USDT row present (balance=10) - i18n mock returns the key
-      expect(queryByText('assets.tetherUsd')).toBeTruthy()
-      // USDm row present (balance=5) - i18n mock returns the key
-      expect(queryByText('assets.mentoDollar')).toBeTruthy()
+      // USDT row present (balance=10) - concrete ticker used as label
+      expect(queryByText('USDT')).toBeTruthy()
+      // USDm row present (balance=5) - concrete ticker used as label
+      expect(queryByText('USDm')).toBeTruthy()
     })
 
     it('does not show USDC row in breakdown when USDC balance is 0', () => {
