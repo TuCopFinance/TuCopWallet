@@ -466,6 +466,20 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       // Value convention: whole tokens with decimal (Valora-compatible). The
       // wallet's UI assumes whole-token strings; emitting wei here would
       // display amounts 10^decimals too large.
+      //
+      // fromTokenAmounts mirrors the TuCop indexer shape for atomic 7702
+      // batches: one entry per leg with its concrete tokenId + whole-token
+      // amount. SwapFeedItem uses .length > 1 to switch the subtitle to the
+      // aggregate multi-token copy ("3 monedas a Pesos") instead of naming a
+      // single dollar-family stablecoin. Without this, the standby shows
+      // "Dolares (USDm) > Pesos" for a batch that actually pulled USDm +
+      // USDC + USDT, misrepresenting the swap until the indexer catches up.
+      // outAmount stays pinned to USDm+total for backwards compatibility
+      // (matches the "largest leg" convention on the indexer side).
+      const fromTokenAmounts = stepOutcomes.map((o) => ({
+        tokenId: o.tokenId,
+        value: o.outAmountTokenWhole.toFixed(),
+      }))
       yield* put(
         addStandbyTransaction({
           context: newTransactionContext(TAG, 'Dolares -> Pesos atomic batch'),
@@ -480,6 +494,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
             tokenId: networkConfig.usdmTokenId,
             value: totalOutUsd.toFixed(),
           },
+          fromTokenAmounts,
           ...(feeCurrencyId && { feeCurrencyId }),
         })
       )
