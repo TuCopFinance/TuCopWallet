@@ -28,6 +28,7 @@ import {
   getConnectedUnlockedAccount,
   unlockAccount,
 } from 'src/web3/saga'
+import { waitForMempoolCommit } from 'src/viem/saga'
 import { createMockStore } from 'test/utils'
 import {
   mockAccount,
@@ -103,6 +104,7 @@ describe(sendPaymentSaga, () => {
       [call(getConnectedUnlockedAccount), mockAccount],
       [matchers.call.fn(getViemWallet), mockViemWallet],
       [matchers.call.fn(getTransactionCount), 10],
+      [matchers.call.fn(waitForMempoolCommit), undefined],
       [matchers.call.fn(mockViemWallet.signTransaction), '0xsomeSerialisedTransaction'],
       [matchers.call.fn(mockViemWallet.sendRawTransaction), mockTxHash],
       [matchers.call.fn(publicClient.celo.waitForTransactionReceipt), mockTxReceipt],
