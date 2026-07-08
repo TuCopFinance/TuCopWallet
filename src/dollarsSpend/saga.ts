@@ -11,8 +11,10 @@ import {
   multiSwapStepSucceeded,
   multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
-import { SpendStep } from 'src/dollarsSpend/types'
+import { DOLARES_VIRTUAL_TOKEN_ID, SpendStep } from 'src/dollarsSpend/types'
 import { classifyError } from 'src/lib/errors'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import {
   inFlightAdvance,
   inFlightFail,
@@ -38,6 +40,11 @@ import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
 
 const TAG = 'dollarsSpend/saga'
+
+// Slippage tolerance used for the per-step swap quote inside the multi-swap
+// legacy flow. See the call site comment for why this is higher than the
+// wallet's regular-swap default (0.5%). 7702 atomic path is separate.
+const MULTI_SWAP_SLIPPAGE_PERCENTAGE = '1.5'
 
 export interface ExecuteMultiSwapPayload {
   steps: SpendStep[]
@@ -231,6 +238,16 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
   yield* put(multiSwapStarted({ steps }))
 
+  // Per-step leg record we'll pass to TransactionSuccessScreen at the end
+  // so the user sees a single success screen for the whole Dolares -> Pesos
+  // intent with a breakdown of each concrete token that got converted.
+  const legs: Array<{
+    fromTokenId: string
+    fromAmount: string
+    toAmount: string
+    transactionHash: string
+  }> = []
+
   const flowId = `dollarsSpend-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
   // Derive networkId from the first step's tokenId (format: "celo-mainnet:0x...")
   const networkId = (steps[0]?.tokenId.split(':')[0] ?? 'celo-mainnet') as NetworkId
@@ -334,6 +351,14 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         walletAddress,
         fromToken,
         feeCurrencies,
+        // Multi-swap steps are typically small ($1-$3 per leg) and Mento's
+        // fixed swap fee + Squid's routing fee eat proportionally more of
+        // the amount. The 0.5% default that the regular swap uses is too
+        // tight for these micro-legs and Squid reverts with a slippage
+        // check failure. Bump to 1.5% here so the multi-swap flow completes
+        // reliably; the user still sees the actual received amount in the
+        // success screen breakdown.
+        slippagePercentage: MULTI_SWAP_SLIPPAGE_PERCENTAGE,
       })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
@@ -379,6 +404,11 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         swapType: freshQuote.swapType,
       },
       areSwapTokensShuffled: false,
+      // Multi-swap orchestrates the success screen itself once all legs
+      // finish; individual swap sagas must not navigate mid-flight or the
+      // user sees the sheet flash for each leg (see PR that introduced
+      // consolidated success). See src/swap/saga.ts navigate() guard.
+      suppressSuccessNavigation: true,
     }
 
     yield* put(swapStart(swapInfo))
@@ -391,6 +421,19 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     })
 
     if (success) {
+      // Record the leg so the final aggregated success screen can render a
+      // per-token breakdown. success.payload is a SwapResult with the
+      // transactionHash of the mined swap tx (the last tx of the pair).
+      // Cast via `unknown` because typed-redux-saga's race result widens to
+      // the untyped `Action`; we know the shape by construction (we only
+      // take swapSuccess in this branch).
+      const successAction = success as unknown as { payload: { transactionHash: string } }
+      legs.push({
+        fromTokenId: step.tokenId,
+        fromAmount: step.amountTokenWhole.toString(),
+        toAmount: freshQuote.swapAmount.TO.shiftedBy(-toTokenDecimals).toString(),
+        transactionHash: successAction.payload.transactionHash,
+      })
       yield* put(multiSwapStepSucceeded({ index }))
       yield* put(
         inFlightAdvance({ flowId, toStatus: 'progress', patch: { currentStep: index + 1 } })
@@ -417,6 +460,36 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
   yield* put(multiSwapCompleted())
   yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
+
+  // Aggregate the legs into a single success screen. fromAmount is the sum of
+  // the whole-unit dollar amounts spent (USD-equivalent since each leg's
+  // amountTokenWhole is already in USD-pegged units, subject to <1% peg
+  // variance we accept). toAmount is the sum of Pesos received across legs.
+  // Last leg's txHash is used for the top-level explorer link; per-leg hashes
+  // are attached to each row in the breakdown.
+  if (legs.length > 0) {
+    const fromAmountTotal = legs
+      .reduce((sum, l) => sum.plus(new BigNumber(l.fromAmount)), new BigNumber(0))
+      .toString()
+    const toAmountTotal = legs
+      .reduce((sum, l) => sum.plus(new BigNumber(l.toAmount)), new BigNumber(0))
+      .toString()
+    navigate(Screens.TransactionSuccessScreen, {
+      // Use the virtual Dolares tokenId so the aggregate row renders as
+      // "3.00 Dolares" (the sum across USDm + USDC + USDT legs) instead of
+      // labelling with one specific stablecoin brand. The per-leg breakdown
+      // still uses the concrete tokenIds below, so the user can see which
+      // brand each portion came from.
+      fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+      toTokenId,
+      fromAmount: fromAmountTotal,
+      toAmount: toAmountTotal,
+      transactionHash: legs[legs.length - 1].transactionHash,
+      networkId,
+      type: 'swap' as const,
+      legs,
+    })
+  }
 }
 
 export function* dollarsSpendSaga() {
