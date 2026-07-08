@@ -214,9 +214,27 @@ function processBlockscoutTransaction(
 
   // Determine transaction type
   if (outTokens.length > 0 && inTokens.length > 0) {
-    // SWAP: tokens going out and coming in
-    const outToken = outAmounts[outTokens[0]]
+    // SWAP: tokens going out and coming in.
+    //
+    // EIP-7702 atomic batches from the WRI dollarsSpend flow move multiple
+    // dollar-family stablecoins (USDm + USDC + USDT) out of the user's EOA in
+    // one tx. Blockscout's Transfer log surfaces every leg, but naively
+    // picking outTokens[0] shows a single-leg swap of one of the three legs
+    // (whichever came back first from Blockscout, non-deterministic) and hides
+    // the other two. That misrepresents the amount ("-0.91 Dolares" for what
+    // was actually a $3 swap) and stops SwapFeedItem from switching to the
+    // multi-leg "N monedas a Pesos" subtitle.
+    //
+    // When there is more than one outgoing token, mirror the TuCop indexer
+    // shape: keep outAmount as the largest USD leg for backwards compatibility
+    // and populate fromTokenAmounts with every leg. SwapFeedItem uses
+    // fromTokenAmounts.length > 1 to render the aggregate copy.
+    const outTokenList = outTokens.map((symbol) => outAmounts[symbol])
     const inToken = inAmounts[inTokens[0]]
+    const primaryOut =
+      outTokenList.length > 1
+        ? outTokenList.reduce((a, b) => (b.value > a.value ? b : a))
+        : outTokenList[0]
 
     const exchange: TokenExchange = {
       networkId: NetworkId['celo-mainnet'],
@@ -225,13 +243,19 @@ function processBlockscoutTransaction(
       timestamp,
       block,
       outAmount: {
-        value: outToken.value.toString(),
-        tokenId: outToken.tokenId,
+        value: primaryOut.value.toString(),
+        tokenId: primaryOut.tokenId,
       },
       inAmount: {
         value: inToken.value.toString(),
         tokenId: inToken.tokenId,
       },
+      ...(outTokenList.length > 1 && {
+        fromTokenAmounts: outTokenList.map((o) => ({
+          value: o.value.toString(),
+          tokenId: o.tokenId,
+        })),
+      }),
       fees: [],
       status: TransactionStatus.Complete,
     }
