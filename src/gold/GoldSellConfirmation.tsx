@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { getInputDecimalsForToken } from 'src/utils/formatting'
@@ -56,9 +56,9 @@ export default function GoldSellConfirmation({ route }: Props) {
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    const brandLabelKey = getDollarTokenLabelKey(token.tokenId)
-    if (brandLabelKey) {
-      return t(brandLabelKey)
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'ccop' || symbol === 'copm') {

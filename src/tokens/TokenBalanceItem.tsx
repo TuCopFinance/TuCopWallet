@@ -8,7 +8,7 @@ import Warning from 'src/icons/status/Warning'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { getDollarTokenLabelKey } from 'src/tokens/dollarGroup'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { TokenBalance } from 'src/tokens/slice'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -37,13 +37,13 @@ export const TokenBalanceItem = ({
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    // Concrete dollar tokens (USDT/USDC/USDm/USAT) render with their specific
-    // brand name so the swap picker can distinguish them from the aggregated
-    // "Dolares" virtual row (tokenId='virtual:dolares', falls through to
+    // Concrete dollar tokens (USDT/USDC/USDm/USAT) render with their ticker
+    // so the swap picker can distinguish them from the aggregated "Dolares"
+    // virtual row (tokenId='virtual:dolares', falls through to
     // token.name = 'Dolares') that appears alongside them.
-    const dollarLabelKey = getDollarTokenLabelKey(token.tokenId)
-    if (dollarLabelKey) {
-      return t(dollarLabelKey)
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     return token.name
   }
