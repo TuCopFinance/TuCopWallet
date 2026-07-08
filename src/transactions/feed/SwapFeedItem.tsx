@@ -47,6 +47,12 @@ function SwapFeedItem({ transaction }: Props) {
   // Get friendly token name - also accepts tokenId for when token info isn't available.
   // Per .claude/rules/tokens.md the entire USAT/USDm/USDC/USDT group is shown as
   // "Dolares" in the UI; only XAUt0 is "Oro" and COPm is "Pesos".
+  //
+  // For the swap feed we go one step further: when the concrete dollar-family
+  // token is known (USDT / USDC / USDm / USAT), we append the underlying symbol
+  // in parens so the user can distinguish "Dolares (USDT)" vs "Dolares (USDC)"
+  // when they scroll through a Pesos -> Dolares history full of legs. Multi-leg
+  // swaps skip this suffix because the subtitle is a count ("3 monedas a Pesos").
   const getTokenName = (token: any, tokenId?: string) => {
     // First check by tokenId (works even when token info not loaded)
     const idToCheck = tokenId || token?.tokenId
@@ -54,13 +60,17 @@ function SwapFeedItem({ transaction }: Props) {
       if (idToCheck === networkConfig.copmTokenId) {
         return t('assets.pesos')
       }
-      if (
-        idToCheck === networkConfig.usdtTokenId ||
-        idToCheck === networkConfig.usdcTokenId ||
-        idToCheck === networkConfig.usdmTokenId ||
-        idToCheck === networkConfig.usatTokenId
-      ) {
-        return t('assets.dollars')
+      if (idToCheck === networkConfig.usdtTokenId) {
+        return `${t('assets.dollars')} (USDT)`
+      }
+      if (idToCheck === networkConfig.usdcTokenId) {
+        return `${t('assets.dollars')} (USDC)`
+      }
+      if (idToCheck === networkConfig.usdmTokenId) {
+        return `${t('assets.dollars')} (USDm)`
+      }
+      if (idToCheck === networkConfig.usatTokenId) {
+        return `${t('assets.dollars')} (USAT)`
       }
       if (idToCheck === networkConfig.xaut0TokenId) {
         return t('assets.gold')
@@ -81,16 +91,20 @@ function SwapFeedItem({ transaction }: Props) {
     if (symbol === 'copm' || symbol === 'ccop') {
       return t('assets.pesos')
     }
-    if (
-      symbol === 'usdt' ||
-      symbol === 'usd₮' ||
-      symbol === 'usdt0' ||
-      symbol === 'usdc' ||
-      symbol === 'usdm' ||
-      symbol === 'cusd' ||
-      symbol === 'usat'
-    ) {
-      return t('assets.dollars')
+    // Symbol-fallback path: same "Dolares (X)" convention as the tokenId
+    // branch above, so a swap row without token registry hydration still
+    // disambiguates between the concrete dollar-family assets.
+    if (symbol === 'usdt' || symbol === 'usd₮' || symbol === 'usdt0') {
+      return `${t('assets.dollars')} (USDT)`
+    }
+    if (symbol === 'usdc') {
+      return `${t('assets.dollars')} (USDC)`
+    }
+    if (symbol === 'usdm' || symbol === 'cusd') {
+      return `${t('assets.dollars')} (USDm)`
+    }
+    if (symbol === 'usat') {
+      return `${t('assets.dollars')} (USAT)`
     }
     if (symbol === 'xaut0' || symbol === 'xaut') {
       return t('assets.gold')
@@ -109,7 +123,7 @@ function SwapFeedItem({ transaction }: Props) {
           hideNetworkIcon={isCrossChainSwap}
         />
         <View style={styles.contentContainer}>
-          {/* Row 1: Title + Incoming Amount */}
+          {/* Row 1: Title + Incoming Amount (same pattern as TransferFeedItem) */}
           <View style={styles.row}>
             <Text style={styles.title} testID={'SwapFeedItem/title'} numberOfLines={1}>
               {t('feedItemSwapTitle')}
@@ -127,9 +141,18 @@ function SwapFeedItem({ transaction }: Props) {
               />
             )}
           </View>
-          {/* Row 2: Subtitle + Outgoing Amount */}
+          {/* Row 2: Subtitle + Outgoing Amount. adjustsFontSizeToFit lets the
+              subtitle scale down when the concrete "(USDT)" / "(USDC)" suffix
+              would otherwise truncate; other feed items don't need this
+              because their subtitles are short. */}
           <View style={styles.row}>
-            <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
+            <Text
+              style={styles.subtitle}
+              testID={'SwapFeedItem/subtitle'}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.8}
+            >
               {isCrossChainSwap
                 ? t('transactionFeed.crossChainSwapTransactionLabel')
                 : isMultiLegSwap
