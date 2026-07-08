@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
-import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
+import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -60,26 +60,20 @@ export default function SwapContent({ transaction }: Props) {
       ) : (
         <View style={styles.row}>
           <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapFrom')}</Text>
-          <TokenDisplay
-            style={styles.currencyAmountPrimaryText}
-            amount={transaction.outAmount.value}
+          <TokenAmountWithBrand
+            amount={transaction.outAmount.value.toString()}
             tokenId={transaction.outAmount.tokenId}
-            showLocalAmount={false}
-            showSymbol={true}
-            hideSign={true}
+            textStyle={styles.currencyAmountPrimaryText}
             testID="SwapContent/swapFrom"
           />
         </View>
       )}
       <View style={styles.row}>
         <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapTo')}</Text>
-        <TokenDisplay
-          style={styles.currencyAmountPrimaryText}
-          amount={transaction.inAmount.value}
+        <TokenAmountWithBrand
+          amount={transaction.inAmount.value.toString()}
           tokenId={transaction.inAmount.tokenId}
-          showLocalAmount={false}
-          showSymbol={true}
-          hideSign={true}
+          textStyle={styles.currencyAmountPrimaryText}
           showApprox={
             !!transaction.inAmount.value && transaction.status === TransactionStatus.Pending
           }

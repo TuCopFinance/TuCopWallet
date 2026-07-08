@@ -9,42 +9,54 @@ import DollarsIcon from 'src/icons/tokens/DollarsIcon'
 import { Spacing } from 'src/styles/styles'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
+import networkConfig from 'src/web3/networkConfig'
 
 interface Props {
   amount: string
   tokenId: string
   testID: string
   textStyle: object
+  showApprox?: boolean
 }
 
-// Renders the on-chain amount (via TokenDisplay, which already caps decimals
-// and routes through `getTokenSymbol`) and appends the correct label:
-// - Virtual "Dolares" tokenId (used for multi-swap aggregates) -> "Dolares".
-// - Concrete dollar-family tokens (USDT / USDC / USDm / USAT) -> their ticker,
+// Renders `amount` `[icon]` `label`, in that order, per the project label
+// convention:
+// - Virtual "Dolares" (multi-swap aggregate) -> DollarsIcon + "Dolares".
+// - Concrete dollar-family (USDT / USDC / USDm / USAT) -> token icon + ticker,
 //   because "Dolares" is reserved for the aggregate view and the specific
 //   ticker is the canonical way to distinguish them elsewhere in the app
 //   (swap picker, tokens.md rule).
-// - Everything else -> TokenDisplay default (uses on-chain symbol).
-export default function TokenAmountWithBrand({ amount, tokenId, testID, textStyle }: Props) {
+// - COPm -> token icon + "Pesos".
+// - Everything else -> token icon + on-chain symbol via TokenDisplay default.
+export default function TokenAmountWithBrand({
+  amount,
+  tokenId,
+  testID,
+  textStyle,
+  showApprox,
+}: Props) {
   const { t } = useTranslation()
   const tokenInfo = useTokenInfo(tokenId)
   const ticker = getDollarTokenTicker(tokenId)
+  const approxPrefix = showApprox ? '≈ ' : ''
 
   if (tokenId === DOLARES_VIRTUAL_TOKEN_ID) {
     return (
       <View style={styles.brandRow}>
-        <DollarsIcon size={24} testID={`${testID}/Icon`} />
         <Text style={textStyle} testID={testID}>
-          {`${formatValueToDisplay(new BigNumber(amount))} ${t('assets.dollars')}`}
+          {`${approxPrefix}${formatValueToDisplay(new BigNumber(amount))}`}
         </Text>
+        <DollarsIcon size={24} testID={`${testID}/Icon`} />
+        <Text style={textStyle}>{t('assets.dollars')}</Text>
       </View>
     )
   }
 
+  const explicitLabel = ticker ?? (tokenId === networkConfig.copmTokenId ? t('assets.pesos') : null)
+
   return (
     <View style={styles.brandRow}>
-      {tokenInfo && <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />}
-      {ticker ? (
+      {explicitLabel ? (
         <>
           <TokenDisplay
             amount={amount}
@@ -52,20 +64,30 @@ export default function TokenAmountWithBrand({ amount, tokenId, testID, textStyl
             showLocalAmount={false}
             showSymbol={false}
             hideSign={true}
+            showApprox={showApprox}
             style={textStyle}
             testID={testID}
           />
-          <Text style={textStyle}>{` ${ticker}`}</Text>
+          {tokenInfo && (
+            <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />
+          )}
+          <Text style={textStyle}>{explicitLabel}</Text>
         </>
       ) : (
-        <TokenDisplay
-          amount={amount}
-          tokenId={tokenId}
-          showLocalAmount={false}
-          hideSign={true}
-          style={textStyle}
-          testID={testID}
-        />
+        <>
+          {tokenInfo && (
+            <TokenIcon token={tokenInfo} size={IconSize.SMALL} testID={`${testID}/Icon`} />
+          )}
+          <TokenDisplay
+            amount={amount}
+            tokenId={tokenId}
+            showLocalAmount={false}
+            hideSign={true}
+            showApprox={showApprox}
+            style={textStyle}
+            testID={testID}
+          />
+        </>
       )}
     </View>
   )
