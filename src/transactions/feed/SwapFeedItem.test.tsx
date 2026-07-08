@@ -56,7 +56,7 @@ describe('SwapFeedItem', () => {
 
     expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('feedItemSwapTitle')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPath, {"token1":"assets.dollars","token2":"Celo Euros"}'
+      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Celo Euros"}'
     )
     expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 cEUR')
     expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
@@ -108,7 +108,7 @@ describe('SwapFeedItem', () => {
     )
 
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPath, {"token1":"assets.dollars","token2":"Celo Euros"}'
+      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Celo Euros"}'
     )
     expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
   })
