@@ -3,6 +3,7 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
+import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
@@ -48,13 +49,10 @@ export default function SwapContent({ transaction }: Props) {
         fromLegs.map((leg, idx) => (
           <View style={styles.row} key={`${leg.tokenId}-${idx}`}>
             <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapFrom')}</Text>
-            <TokenDisplay
-              style={styles.currencyAmountPrimaryText}
-              amount={leg.value}
+            <TokenAmountWithBrand
+              amount={leg.value.toString()}
               tokenId={leg.tokenId}
-              showLocalAmount={false}
-              showSymbol={true}
-              hideSign={true}
+              textStyle={styles.currencyAmountPrimaryText}
               testID={`SwapContent/swapFrom/${idx}`}
             />
           </View>
