@@ -13,6 +13,7 @@ import {
   multiSwapStepSucceeded,
   multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
@@ -517,17 +518,33 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // directly, skipping the success screen entirely and breaking parity
     // with every other transaction flow in the wallet.
     //
-    // Aggregate amounts: fromAmount is total USD spent (1:1 USDm), toAmount
-    // is total COPm received, fromTokenId is pinned to USDm (renders as
-    // "Dolares" via the brand label resolver).
+    // When the batch had more than one leg, use the synthetic virtual
+    // "Dolares" tokenId so the header row renders as "3.00 Dolares" (via
+    // the DOLARES_VIRTUAL_TOKEN_ID branch of TokenAmountWithBrand) instead
+    // of naming one specific stablecoin. The per-leg breakdown is passed
+    // through `legs` so the screen shows the concrete USDT / USDC / USDm
+    // amounts under the aggregate. Single-leg batches keep the concrete
+    // tokenId so the header just shows "1.04 USDm" with no breakdown.
+    const isMultiLeg = stepOutcomes.length > 1
+    const successLegs = isMultiLeg
+      ? stepOutcomes.map((o) => ({
+          fromTokenId: o.tokenId,
+          fromAmount: o.outAmountTokenWhole.toFixed(),
+          toAmount: o.inAmountTokenWhole.toFixed(),
+          transactionHash: hash,
+        }))
+      : undefined
     navigate(Screens.TransactionSuccessScreen, {
-      fromTokenId: networkConfig.usdmTokenId,
+      fromTokenId: isMultiLeg ? DOLARES_VIRTUAL_TOKEN_ID : stepOutcomes[0].tokenId,
       toTokenId,
-      fromAmount: totalOutUsd.toFixed(),
+      fromAmount: isMultiLeg
+        ? totalOutUsd.toFixed()
+        : stepOutcomes[0].outAmountTokenWhole.toFixed(),
       toAmount: totalInAmount.toFixed(),
       transactionHash: hash,
       networkId: NetworkId['celo-mainnet'],
       type: 'swap' as const,
+      ...(successLegs && { legs: successLegs }),
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
