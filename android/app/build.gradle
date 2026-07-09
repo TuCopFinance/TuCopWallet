@@ -159,7 +159,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
-        versionName "1.118.5"
+        versionName "1.118.6"
         multiDexEnabled true
         ndk {
             // Reads from reactNativeArchitectures (gradle.properties or CLI override).
