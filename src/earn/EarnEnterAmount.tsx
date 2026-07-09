@@ -432,6 +432,7 @@ function EarnEnterAmount({ route }: Props) {
                 autoFocus
                 placeholder={new BigNumber(0).toFormat(2)}
                 testID="EarnEnterAmount/TokenAmountInput"
+                hasError={!!tokenAmount && !isAmountLessThanBalance}
               />
               <Touchable
                 borderRadius={TOKEN_SELECTOR_BORDER_RADIUS}
@@ -456,6 +457,7 @@ function EarnEnterAmount({ route }: Props) {
                 placeholder={`${localCurrencySymbol}${new BigNumber(0).toFormat(2)}`}
                 testID="EarnEnterAmount/LocalAmountInput"
                 editable={!!transactionToken.priceUsd}
+                hasError={!!tokenAmount && !isAmountLessThanBalance}
               />
             </View>
           </View>
