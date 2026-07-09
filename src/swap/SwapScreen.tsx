@@ -338,7 +338,6 @@ export function SwapScreen({ route }: Props) {
     inputSwapAmount,
     selectingField,
     selectingNoUsdPriceToken,
-    confirmingSwap,
     switchedToNetworkId,
     startedSwapId,
     selectedPercentage,
@@ -437,8 +436,11 @@ export function SwapScreen({ route }: Props) {
     fromTokenBalance.gt(0) &&
     parsedSwapAmount[Field.FROM].gte(fromTokenBalance)
 
-  const fromSwapAmountError =
-    !isVirtualDolares && confirmingSwap && parsedSwapAmount[Field.FROM].gt(fromTokenBalance)
+  // Predictive: red-highlight the amount the moment it exceeds the wallet
+  // balance, without waiting for the user to press "Swap". Virtual Dolares
+  // rows compare against the aggregate, handled by the SwapScreen validator
+  // path elsewhere, so we skip this check for it.
+  const fromSwapAmountError = !isVirtualDolares && parsedSwapAmount[Field.FROM].gt(fromTokenBalance)
 
   // Compare against quoteToToken because for virtual "Dolares" the quote
   // settles into the concrete fallback (USDT) while toToken stays virtual
