@@ -2752,6 +2752,13 @@
       "network": "Red",
       "fees": "Tarifas"
     },
+    "section": {
+      "neeru": "Neeru",
+      "allbridge": "Allbridge",
+      "aave": "Aave",
+      "marranitos": "Marranitos",
+      "others": "Otros"
+    },
     "home": {
       "title": "Tu dinero crece",
       "learnMore": "<0>Más información</0> sobre las pools de rendimiento.",
@@ -2782,6 +2789,8 @@
       "addToPool": "Depositar",
       "apy": "{{apy}}% de APY",
       "percentage": "{{percentage}}%",
+      "percentageEa": "{{percentage}}% E.A.",
+      "mvEquivalent": "Equivale a {{percentage}}% M.V.",
       "poweredBy": "Con tecnología de {{providerName}}",
       "deposited": "Suministrado",
       "depositAndEarnings": "Depósitos y ganancias",
