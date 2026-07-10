@@ -67,10 +67,10 @@ const MOCK_EARN_POSITIONS_RESPONSE = {
   data: [
     {
       type: 'app-token',
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-      tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-      positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+      tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+      positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       appId: 'aave',
       appName: 'Aave',
       symbol: 'aArbSepUSDC',
@@ -85,17 +85,17 @@ const MOCK_EARN_POSITIONS_RESPONSE = {
           {
             percentage: 1.9194202601763743,
             label: 'Earnings APY',
-            tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+            tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
           },
         ],
         earningItems: [],
-        depositTokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-        withdrawTokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+        depositTokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+        withdrawTokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
       },
       tokens: [
         {
-          tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-          networkId: NetworkId['arbitrum-sepolia'],
+          tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+          networkId: NetworkId['arbitrum-one'],
           address: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
           symbol: 'USDC',
           decimals: 6,
@@ -137,7 +137,7 @@ describe(fetchPositionsSaga, () => {
       showPositions: [NetworkId['celo-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      supportedPools: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+      supportedPools: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
       supportedAppIds: ['aave'],
     })
     await expectSaga(fetchPositionsSaga)
@@ -165,7 +165,7 @@ describe(fetchPositionsSaga, () => {
       showPositions: [NetworkId['celo-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
-      supportedPools: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+      supportedPools: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
       supportedAppIds: ['aave'],
     })
     await expectSaga(fetchPositionsSaga)
@@ -197,6 +197,9 @@ describe(fetchPositionsSaga, () => {
   })
 
   it("dispatches an error if there's an error", async () => {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires, and a larger run() timeout.
+    jest.useRealTimers()
     mockFetch.mockResponse(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
     jest.mocked(getFeatureGate).mockReturnValue(true)
 
@@ -207,7 +210,8 @@ describe(fetchPositionsSaga, () => {
       ])
       .put(fetchPositionsStart())
       .put.actionType(fetchPositionsFailure.type)
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
   })
 })
 
@@ -282,6 +286,9 @@ describe(fetchShortcutsSaga, () => {
   })
 
   it('updates the shortcuts status there is an error', async () => {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires, and a larger run() timeout.
+    jest.useRealTimers()
     mockFetch.mockResponse(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(getMultichainFeatures).mockReturnValue({
@@ -296,7 +303,8 @@ describe(fetchShortcutsSaga, () => {
       ])
       .put.actionType(fetchShortcutsFailure.type)
       .not.put(fetchShortcutsSuccess(expect.anything()))
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
 
     expect(mockFetch).toHaveBeenCalled()
     expect(Logger.warn).toHaveBeenCalled()
@@ -392,15 +400,20 @@ describe(triggerShortcutSaga, () => {
   })
 
   it('should handle shortcut trigger failure', async () => {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires, and a larger run() timeout.
+    jest.useRealTimers()
     mockFetch.mockResponse(JSON.stringify({ message: 'something went wrong' }), { status: 500 })
 
     await expectSaga(triggerShortcutSaga, triggerShortcut(shortcut))
       .provide([[select(hooksApiUrlSelector), networkConfig.hooksApiUrl]])
       .not.put(triggerShortcutSuccess(expect.anything()))
       .put(triggerShortcutFailure('someId'))
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
 
-    expect(mockFetch).toHaveBeenCalledTimes(1)
+    // fetchWithTimeout retries 3 times on 5xx before giving up.
+    expect(mockFetch).toHaveBeenCalledTimes(3)
     expect(mockFetch).toHaveBeenCalledWith(
       `${networkConfig.hooksApiUrl}/triggerShortcut`,
       expect.objectContaining({

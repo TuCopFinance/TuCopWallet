@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
+import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
@@ -34,7 +35,9 @@ function TransactionSuccessScreen({ route }: Props) {
     recipientAddress,
     recipientName,
     poolName,
+    legs,
   } = route.params
+  const hasLegs = Array.isArray(legs) && legs.length > 0
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -99,26 +102,50 @@ function TransactionSuccessScreen({ route }: Props) {
                   <>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
-                      <TokenDisplay
+                      <TokenAmountWithBrand
                         amount={fromAmount}
                         tokenId={fromTokenId}
-                        showLocalAmount={false}
-                        hideSign={true}
-                        style={styles.tokenDisplay}
                         testID="TransactionSuccess/FromAmount"
+                        textStyle={styles.tokenDisplay}
                       />
                     </View>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
-                      <TokenDisplay
+                      <TokenAmountWithBrand
                         amount={toAmount}
                         tokenId={toTokenId}
-                        showLocalAmount={false}
-                        hideSign={true}
-                        style={styles.tokenDisplay}
                         testID="TransactionSuccess/ToAmount"
+                        textStyle={styles.tokenDisplay}
                       />
                     </View>
+                    {hasLegs && (
+                      <View style={styles.breakdownContainer}>
+                        <Text style={styles.breakdownHeader}>
+                          {t('transactionSuccess.breakdownHeader')}
+                        </Text>
+                        {legs!.map((leg, idx) => (
+                          <View
+                            style={styles.breakdownRow}
+                            key={`${leg.transactionHash}-${idx}`}
+                            testID={`TransactionSuccess/Leg${idx}`}
+                          >
+                            <TokenAmountWithBrand
+                              amount={leg.fromAmount}
+                              tokenId={leg.fromTokenId}
+                              testID={`TransactionSuccess/Leg${idx}/From`}
+                              textStyle={styles.breakdownAmount}
+                            />
+                            <ArrowRightThick size={12} color={Colors.gray4} />
+                            <TokenAmountWithBrand
+                              amount={leg.toAmount}
+                              tokenId={toTokenId}
+                              testID={`TransactionSuccess/Leg${idx}/To`}
+                              textStyle={styles.breakdownAmount}
+                            />
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </>
                 )}
               </>
@@ -179,6 +206,28 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'column',
     gap: Spacing.Smallest8,
+  },
+  breakdownContainer: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray2,
+    paddingTop: Spacing.Regular16,
+    gap: Spacing.Smallest8,
+  },
+  breakdownHeader: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.Smallest8,
+  },
+  breakdownAmount: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
   },
   detailLabel: {
     ...typeScale.bodySmall,

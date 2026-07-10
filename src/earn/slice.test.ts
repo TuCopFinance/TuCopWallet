@@ -33,7 +33,7 @@ describe('Earn Slice', () => {
       undefined,
       depositSuccess({
         tokenId: 'tokenId',
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         transactionHash: '0x3',
       })
     )

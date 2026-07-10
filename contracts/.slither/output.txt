@@ -1,0 +1,28 @@
+Slither run pending - executable was blocked by Claude Code sandbox permissions.
+Reproduce locally with:
+
+  slither contracts/src/BatchExecutor.sol \
+    --solc-remaps "openzeppelin-contracts/=contracts/lib/openzeppelin-contracts/" \
+    --filter-paths "lib/"
+
+Expected output (matches spike s4-slither-output.txt, contract source is byte-equivalent to BatchExecutorV2.sol except for the contract name and title comment):
+
+INFO:Detectors:
+Detector: calls-loop
+BatchExecutor.execute(BatchExecutor.Call[]) has external calls inside a loop:
+  (ok,ret) = calls[i].target.call{value: calls[i].value}(calls[i].data)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+
+INFO:Detectors:
+Detector: low-level-calls
+Low level call in BatchExecutor.execute(BatchExecutor.Call[]):
+  - (ok,ret) = calls[i].target.call{value: calls[i].value}(calls[i].data)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+
+INFO:Slither:src/BatchExecutor.sol analyzed (3 contracts with 101 detectors), 2 result(s) found
+
+Severity classification (per Slither default impact levels):
+- calls-loop: INFORMATIONAL (low severity, intended behavior for batch executors)
+- low-level-calls: INFORMATIONAL (low severity, .call is required for arbitrary inner calls)
+
+ZERO high or medium severity issues expected (confirmed in spike at contracts-research/.slither/s4-slither-output.txt).

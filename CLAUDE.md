@@ -83,7 +83,7 @@ src/
 ## Version Info
 
 - **App**: 1.118.5 (build: 255 / versionCode 1021081774)
-- **Network**: Celo mainnet + Celo Sepolia (testnet)
+- **Network**: Celo mainnet only
 - **Node**: 20.17.0 required
 
 ---

@@ -15,7 +15,6 @@ import Stack from 'src/icons/features/Stack'
 import User from 'src/icons/user/User'
 import Help from 'src/icons/navigator/Help'
 import Wallet from 'src/icons/navigator/Wallet'
-import MSLogoFull from 'src/images/MSLogoFull'
 import { headerWithCloseButton } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -133,9 +132,6 @@ export default function SettingsMenu() {
           </View>
         </TouchableWithoutFeedback>
         {/* {getDevSettingsComp()} */}
-        <View style={styles.logo}>
-          <MSLogoFull color="black" />
-        </View>
       </ScrollView>
     </SafeAreaView>
   )
@@ -174,10 +170,5 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: Spacing.Smallest8,
     marginHorizontal: Spacing.Regular16,
-  },
-  logo: {
-    marginTop: 'auto',
-    paddingVertical: Spacing.Thick24,
-    alignItems: 'center',
   },
 })

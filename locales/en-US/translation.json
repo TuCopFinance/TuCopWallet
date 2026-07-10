@@ -1295,10 +1295,6 @@
   "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> and one other won’t be able to claim their invites",
   "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> and others won’t be able to claim their invites",
   "escrowedPaymentReminderSmsNoData": "A friendly reminder that you haven't yet redeemed your {{currency}} with {{appName}}! Download the mobile app to get started!",
-  "testnetAlert": {
-    "0": "{{testnet}}",
-    "1": "A friendly reminder you're using the {{testnet}} network build - the balances are not real"
-  },
   "dollarBalance": "<0></0> $t(celoDollars)",
   "feedItemAddress": "{{address}}",
   "feedItemDepositInfo": "{{comment}}",
@@ -1322,7 +1318,6 @@
   "feedItemFailedTransaction": "Failed Transaction",
   "feedItemFaucetTitle": "Celo",
   "feedItemFaucetInfo": "{{faucet}} Faucet",
-  "feedItemFaucetInfo_noTestnet": "Faucet",
   "feedItemInviteSentTitle": "Celo",
   "feedItemInviteSentInfo": "Invited {{nameOrNumber}}",
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
@@ -1355,6 +1350,7 @@
   "feedItemGoldReceived": "Received from {{displayName}}",
   "feedItemSwapTitle": "Swapped",
   "feedItemSwapPath": "{{token1}} to {{token2}}",
+  "feedItemSwapPathMulti": "{{count}} tokens to {{token2}}",
   "feedItemJumpstartTitle": "Live Link",
   "feedItemJumpstartSentSubtitle": "Invitation",
   "feedItemJumpstartReceivedSubtitle": "Funds received",
@@ -1876,6 +1872,11 @@
       "maxNetworkFee": "Max Network Fee",
       "networkFee": "{{networkName}} Network Fee",
       "networkFeeNoNetwork": "Network Fee",
+      "receivingIn": "Receiving in",
+      "perTokenDetail": "Per-token detail",
+      "perTokenDetailExpand_one": "{{count}} token",
+      "perTokenDetailExpand_other": "{{count}} tokens",
+      "perTokenDetailCollapse": "Hide",
       "swapFee": "{{appName}} Fee",
       "swapFeeWaived": "Free",
       "appFee": "{{appName}} Fee",
@@ -2088,9 +2089,13 @@
     },
     "importToken": "Import",
     "importTokens": "Import Tokens",
+    "mentoDollar": "USDm",
     "pesos": "Pesos",
     "dollars": "Dollars",
     "gold": "Gold",
+    "tetherAmericaUsd": "USAT",
+    "tetherUsd": "USDT",
+    "usdCoin": "USDC",
     "yourMoney": "Your money",
     "yourInvestments": "Your investments"
   },
@@ -2211,7 +2216,6 @@
   "viewOnEthereumBlockExplorer": "View on Etherscan",
   "viewOnArbiscan": "View on Arbiscan",
   "viewOnOPMainnetExplorer": "View on OP Mainnet Explorer",
-  "viewOnOPSepoliaExplorer": "View on OP Sepolia Explorer",
   "viewOnPolygonPoSScan": "View on PolygonScan",
   "viewOnBaseScan": "View on BaseScan",
   "viewOnAxelarScan": "View on AxelarScan",
@@ -2980,7 +2984,8 @@
     "amount": "Amount",
     "recipient": "Recipient",
     "pool": "Pool",
-    "viewOnExplorer": "View on explorer"
+    "viewOnExplorer": "View on explorer",
+    "breakdownHeader": "Breakdown by token"
   },
   "errors": {
     "public": {

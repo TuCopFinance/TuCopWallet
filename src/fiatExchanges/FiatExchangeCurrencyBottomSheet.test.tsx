@@ -33,10 +33,10 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
       spendTokenIds: [
-        'celo-sepolia:0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1'.toLowerCase(),
-        'celo-sepolia:0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F'.toLowerCase(),
+        'celo-mainnet:0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1'.toLowerCase(),
+        'celo-mainnet:0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F'.toLowerCase(),
       ],
     },
   }
@@ -51,7 +51,7 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
     jest.mocked(getFeatureGate).mockReturnValue(false)
     jest.mocked(getMultichainFeatures).mockReturnValue({
       ...DynamicConfigs[StatsigMultiNetworkDynamicConfig.MULTI_CHAIN_FEATURES].defaultValues,
-      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockImplementation(({ configName, defaultValues }) => {
       switch (configName) {

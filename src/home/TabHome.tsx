@@ -1,11 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import _ from 'lodash'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
-import { showMessage } from 'src/alert/actions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
@@ -14,7 +12,6 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
 import Touchable from 'src/components/Touchable'
-import { ALERT_BANNER_DURATION, DEFAULT_TESTNET, SHOW_TESTNET_BANNER } from 'src/config'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
@@ -26,6 +23,7 @@ import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
 import Grow from 'src/icons/tab-home/Grow'
 import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import { importContacts } from 'src/identity/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -64,18 +62,6 @@ function TabHome(_props: Props) {
     setRefreshing(false)
   }, [])
 
-  const showTestnetBanner = () => {
-    dispatch(
-      showMessage(
-        t('testnetAlert.1', { testnet: _.startCase(DEFAULT_TESTNET) }),
-        ALERT_BANNER_DURATION,
-        null,
-        null,
-        t('testnetAlert.0', { testnet: _.startCase(DEFAULT_TESTNET) })
-      )
-    )
-  }
-
   const tryImportContacts = async () => {
     // Skip if contacts have already been imported or the user hasn't verified their phone number.
     if (Object.keys(recipientCache).length || !isNumberVerified) {
@@ -89,12 +75,6 @@ function TabHome(_props: Props) {
   }
 
   useEffect(() => {
-    // TODO find a better home for this, its unrelated to wallet home
-    // Sentry user context removed
-    if (SHOW_TESTNET_BANNER) {
-      showTestnetBanner()
-    }
-
     // Waiting 1/2 sec before triggering to allow
     // rest of feed to load unencumbered
     setTimeout(tryImportContacts, 500)
@@ -143,11 +123,14 @@ function TabHome(_props: Props) {
 
   function onPressHoldUSD() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
+    // Pre-select the aggregated "Dolares" virtual on the TO side so the swap
+    // card shows the user's full dollar balance (4.67 across USDT/USDC/USDm)
+    // instead of just one concrete token. The swap layer translates virtual
+    // back to USDT for the actual settlement (see SwapScreen.quoteToToken).
     !!COPmToken &&
-      !!USDTToken &&
       navigate(Screens.SwapScreenWithBack, {
         fromTokenId: COPmToken.tokenId,
-        toTokenId: USDTToken.tokenId,
+        toTokenId: DOLARES_VIRTUAL_TOKEN_ID,
       })
   }
 
@@ -355,14 +338,16 @@ function AddCOPmBottomSheet({
 }) {
   const { t } = useTranslation()
   const COPmToken = useCOPm()
-  const USDTToken = useUSDT()
 
   function onPressSwapFromCusd() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_swap)
-    !!USDTToken &&
-      !!COPmToken &&
+    // Pre-select the aggregated "Dolares" virtual on the FROM side so the
+    // user can spend their full dollar balance via the multi-step planner
+    // (USAT -> USDm -> USDC -> USDT spend order) instead of being locked to
+    // a single concrete token. TO stays COPm.
+    !!COPmToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: USDTToken.tokenId,
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
         toTokenId: COPmToken.tokenId,
       })
     forwardedRef.current?.dismiss()

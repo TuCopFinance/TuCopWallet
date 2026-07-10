@@ -3,7 +3,8 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
-import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
+import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
+import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -28,8 +29,15 @@ export default function SwapContent({ transaction }: Props) {
   const fromToken = tokensList.find((token) => token.tokenId === transaction.outAmount.tokenId)
   const toToken = tokensList.find((token) => token.tokenId === transaction.inAmount.tokenId)
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
+  // EIP-7702 atomic batches list every leg in fromTokenAmounts. When >1, the
+  // detail screen renders one "swapFrom" row per leg so the user sees the full
+  // breakdown. Exchange rate is suppressed because there is no single rate
+  // when the inputs are heterogeneous.
+  const fromLegs = transaction.fromTokenAmounts ?? []
+  const isMultiLegSwap = fromLegs.length > 1
 
   const showExchangeRate =
+    !isMultiLegSwap &&
     transaction.status === TransactionStatus.Complete &&
     !new BigNumber(transaction.inAmount.value).isNaN() &&
     !!fromToken &&
@@ -37,27 +45,35 @@ export default function SwapContent({ transaction }: Props) {
 
   return (
     <View style={styles.contentContainer}>
-      <View style={styles.row}>
-        <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapFrom')}</Text>
-        <TokenDisplay
-          style={styles.currencyAmountPrimaryText}
-          amount={transaction.outAmount.value}
-          tokenId={transaction.outAmount.tokenId}
-          showLocalAmount={false}
-          showSymbol={true}
-          hideSign={true}
-          testID="SwapContent/swapFrom"
-        />
-      </View>
+      {isMultiLegSwap ? (
+        fromLegs.map((leg, idx) => (
+          <View style={styles.row} key={`${leg.tokenId}-${idx}`}>
+            <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapFrom')}</Text>
+            <TokenAmountWithBrand
+              amount={leg.value.toString()}
+              tokenId={leg.tokenId}
+              textStyle={styles.currencyAmountPrimaryText}
+              testID={`SwapContent/swapFrom/${idx}`}
+            />
+          </View>
+        ))
+      ) : (
+        <View style={styles.row}>
+          <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapFrom')}</Text>
+          <TokenAmountWithBrand
+            amount={transaction.outAmount.value.toString()}
+            tokenId={transaction.outAmount.tokenId}
+            textStyle={styles.currencyAmountPrimaryText}
+            testID="SwapContent/swapFrom"
+          />
+        </View>
+      )}
       <View style={styles.row}>
         <Text style={styles.bodyText}>{t('swapTransactionDetailPage.swapTo')}</Text>
-        <TokenDisplay
-          style={styles.currencyAmountPrimaryText}
-          amount={transaction.inAmount.value}
+        <TokenAmountWithBrand
+          amount={transaction.inAmount.value.toString()}
           tokenId={transaction.inAmount.tokenId}
-          showLocalAmount={false}
-          showSymbol={true}
-          hideSign={true}
+          textStyle={styles.currencyAmountPrimaryText}
           showApprox={
             !!transaction.inAmount.value && transaction.status === TransactionStatus.Pending
           }

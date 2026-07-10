@@ -27,7 +27,7 @@ const mockTransaction = (
   status = TransactionStatus.Complete
 ): TokenTransaction => {
   return {
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     address: '0xd68360cce1f1ff696d898f58f03e0f1252f2ea33',
     amount: {
       tokenId: mockCusdTokenId,
@@ -48,7 +48,7 @@ const STAND_BY_TRANSACTION_SUBTITLE_KEY = 'confirmingTransaction'
 
 const MOCK_STANDBY_TRANSACTION: StandbyTransaction = {
   context: { id: 'test' },
-  networkId: NetworkId['celo-sepolia'],
+  networkId: NetworkId['celo-mainnet'],
   type: TokenTransactionTypeV2.Sent,
   status: TransactionStatus.Pending,
   amount: {
@@ -162,14 +162,14 @@ describe('TransactionFeed', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showCico: [NetworkId['celo-sepolia']],
-      showBalances: [NetworkId['celo-sepolia']],
-      showTransfers: [NetworkId['celo-sepolia']],
-      showApprovalTxsInHomefeed: [NetworkId['celo-sepolia']],
+      showCico: [NetworkId['celo-mainnet']],
+      showBalances: [NetworkId['celo-mainnet']],
+      showTransfers: [NetworkId['celo-mainnet']],
+      showApprovalTxsInHomefeed: [NetworkId['celo-mainnet']],
     })
     jest.mocked(getDynamicConfigParams).mockReturnValue({
       jumpstartContracts: {
-        ['celo-sepolia']: { contractAddress: '0x7bf3fefe9881127553d23a8cd225a2c2442c438c' },
+        ['celo-mainnet']: { contractAddress: '0x7bf3fefe9881127553d23a8cd225a2c2442c438c' },
       },
     })
     mockFetch.resetMocks()
@@ -207,11 +207,11 @@ describe('TransactionFeed', () => {
     const tree = renderScreen({
       transactions: {
         transactionsByNetworkId: {
-          [NetworkId['ethereum-sepolia']]: [mockApprovalTransaction],
-          [NetworkId['celo-sepolia']]: [
+          [NetworkId['ethereum-mainnet']]: [mockApprovalTransaction],
+          [NetworkId['celo-mainnet']]: [
             {
               ...mockApprovalTransaction,
-              networkId: NetworkId['celo-sepolia'],
+              networkId: NetworkId['celo-mainnet'],
               transactionHash: '0xfoo',
             },
           ],

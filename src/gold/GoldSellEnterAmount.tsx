@@ -7,6 +7,10 @@ import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
+import { buildDolaresVirtualToken } from 'src/dollarsSpend/dolaresVirtualToken'
+import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
+import { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import BackButton from 'src/components/BackButton'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -49,20 +53,25 @@ export default function GoldSellEnterAmount(_props: Props) {
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
 
-  // Get user-friendly display name for tokens
+  // Get user-friendly display name for tokens. The ticker wins for the four
+  // concrete dollar tokens (USDT / USDC / USDm / USAT) so the chip stays
+  // consistent with the picker rows, the success screen, and the tx feed.
+  // Falls back to "Dolares" for the synthetic virtual aggregator, and to
+  // the token name otherwise.
   const getTokenName = (token: TokenBalance | null) => {
     if (!token) return ''
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    if (token.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'ccop' || symbol === 'copm') {
       return t('assets.pesos')
     }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+    if (symbol === 'dolares') {
       return t('assets.dollars')
     }
     return token.name
@@ -80,19 +89,50 @@ export default function GoldSellEnterAmount(_props: Props) {
     swappableFromTokensByNetworkIdSelector(state, [NetworkId['celo-mainnet']])
   )
 
-  // Filter out XAUt0 from output options
+  // Filter out XAUt0 from output options. Dollar token ordering is applied
+  // centrally inside TokenBottomSheet so the same canonical order
+  // (USDT / USDC / USAT / USDm) shows up here without an extra sort here.
   const availableOutputTokens = useMemo(
     () => swappableTokens.filter((token) => token.tokenId !== networkConfig.xaut0TokenId),
     [swappableTokens]
   )
 
-  // Prefer USDT as default output token, fall back to first available
+  // Build the synthetic "Dolares" aggregator so the user can target their
+  // dollar bucket as a single concept (mirrors the swap and buy flows).
+  // Picker still surfaces concrete brands only - the virtual is just the
+  // default selection.
+  const dollarSnapshots = useDollarBalanceSnapshots()
+  const dolaresVirtualToken = useMemo(
+    () =>
+      buildDolaresVirtualToken({
+        snapshots: dollarSnapshots,
+        networkId: networkConfig.defaultNetworkId,
+      }),
+    [dollarSnapshots]
+  )
+
+  // Default: virtual Dolares when at least one dollar token has balance,
+  // else fall back to USDT, else first available swappable token.
   const [selectedOutputToken, setSelectedOutputToken] = useState<TokenBalance | null>(() => {
+    if (dolaresVirtualToken) return dolaresVirtualToken
     const usdtToken = availableOutputTokens.find(
       (token) => token.tokenId === networkConfig.usdtTokenId
     )
     return usdtToken ?? availableOutputTokens[0] ?? null
   })
+
+  // Concrete token the swap router will settle into when the user keeps
+  // the virtual "Dolares" default selected. Surfaced below the input box
+  // so the user can see which specific brand they will actually receive
+  // without having to open the picker.
+  const settlementTokenForVirtual = useMemo(() => {
+    if (selectedOutputToken?.tokenId !== DOLARES_VIRTUAL_TOKEN_ID) return null
+    return (
+      availableOutputTokens.find((t) => t.tokenId === networkConfig.usdtTokenId) ??
+      availableOutputTokens[0] ??
+      null
+    )
+  }, [selectedOutputToken, availableOutputTokens])
 
   const tokenBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const goldAmountInputRef = useRef<RNTextInput>(null)
@@ -179,8 +219,20 @@ export default function GoldSellEnterAmount(_props: Props) {
       toAmount: outputAmount.toString(),
     })
 
+    // GoldSellConfirmation's quote/saga path requires a concrete ERC-20.
+    // When the user kept the virtual "Dolares" selected, settle into USDT
+    // (the wallet's default dollar-spending reserve). Picking a brand
+    // explicitly in the picker overrides this back to that brand.
+    const settlementTokenId =
+      selectedOutputToken.tokenId === DOLARES_VIRTUAL_TOKEN_ID
+        ? (availableOutputTokens.find((t) => t.tokenId === networkConfig.usdtTokenId)?.tokenId ??
+          availableOutputTokens[0]?.tokenId)
+        : selectedOutputToken.tokenId
+
+    if (!settlementTokenId) return
+
     navigate(Screens.GoldSellConfirmation, {
-      toTokenId: selectedOutputToken.tokenId,
+      toTokenId: settlementTokenId,
       xautAmount: parsedGoldAmount.toString(),
       toAmount: outputAmount.toString(),
       pricePerOz: goldPriceUsd?.toString() ?? '0',
@@ -288,6 +340,28 @@ export default function GoldSellEnterAmount(_props: Props) {
               )}
             </View>
           </View>
+
+          {/* Settlement-token hint: shown only when the user kept the
+              aggregated "Dolares" default. Makes it explicit which concrete
+              brand actually lands in their wallet. */}
+          {settlementTokenForVirtual && (
+            <View style={styles.settlementHintRow} testID="GoldSellEnterAmount/SettlementHint">
+              <Text style={styles.settlementHintLabel}>
+                {t('swapScreen.transactionDetails.receivingIn')}
+              </Text>
+              <View style={styles.settlementHintBrand}>
+                <TokenIcon token={settlementTokenForVirtual} size={IconSize.XSMALL} />
+                <Text style={styles.settlementHintBrandText}>
+                  {(() => {
+                    const ticker = getDollarTokenTicker(settlementTokenForVirtual.tokenId)
+                    return (
+                      ticker ?? settlementTokenForVirtual.name ?? settlementTokenForVirtual.symbol
+                    )
+                  })()}
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Balance Display */}
           <Text style={styles.balanceText}>
@@ -446,6 +520,25 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
     marginTop: Spacing.Smallest8,
     textAlign: 'right',
+  },
+  settlementHintRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: Spacing.Smallest8,
+  },
+  settlementHintLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+  },
+  settlementHintBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.Tiny4,
+  },
+  settlementHintBrandText: {
+    ...typeScale.labelSmall,
+    color: Colors.black,
   },
   warning: {
     marginTop: Spacing.Regular16,

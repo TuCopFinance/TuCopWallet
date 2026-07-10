@@ -1,0 +1,48 @@
+S3 spike: TuCop's Squid IntegratorId references in repo
+=======================================================
+
+Search executed 2026-06-16 against branch spike/wri-s3-squid-attribution.
+
+1) Wallet integratorId env vars / constants:
+   - grep result: NO matches for "SQUID_INTEGRATOR_ID", "squidIntegratorId",
+     or "x-integrator-id" in src/ outside README files.
+   - .env.mainnet / .env.example: NO Squid integratorId entries.
+
+2) Squid references in TS/TSX code (excluding tests):
+   src/swap/README.md:114:    headers: { 'x-integrator-id': INTEGRATOR_ID },
+   src/gold/README.md:98:      'x-integrator-id': SQUID_INTEGRATOR_ID,
+   src/gold/GoldSellConfirmation.tsx:174:    if (providerLower.includes('squid')) return 'Squid Router'
+   src/gold/types.ts:37:  swapProvider?: string // Provider used for the swap (e.g., 'squid', 'uniswap')
+   src/gold/GoldBuyConfirmation.tsx:252:    if (providerLower.includes('squid')) return 'Squid Router'
+
+   The README references are illustrative only - they describe how a
+   direct integrator would call Squid's HTTP API. They are not active
+   code paths.
+
+3) Conclusion on TuCop's integration shape:
+   The TuCopWallet does NOT call Squid's HTTP API directly.
+   It calls Valora's getSwapQuote cloud function:
+
+   src/web3/networkConfig.ts:263:
+     const GET_SWAP_QUOTE_URL = `${CLOUD_FUNCTIONS_MAINNET}/getSwapQuote`
+
+   Used by:
+     - src/swap/useSwapQuote.ts        (in-app swap)
+     - src/gold/useGoldQuote.ts        (gold buy / sell)
+     - src/dollarsSpend/useMultiSwapQuote.ts  (dollars-spend feature)
+
+   Valora's getSwapQuote is the actual Squid integrator. Valora attaches
+   ITS OWN x-integrator-id when proxying to Squid. The wallet only sees
+   `quote.details.swapProvider === 'squid'` in the response and forwards
+   `unvalidatedSwapTransaction` as a TransactionRequest.
+
+4) Implication for attribution under EIP-7702:
+   Since integratorId attribution is established at the API-call layer
+   (Valora -> Squid HTTP request), it is NOT a function of on-chain
+   `tx.origin` or `msg.sender`. The 7702 BatchExecutor wrapping changes
+   only the on-chain shape of the call to SquidRouter
+   (`0x4c363649D45d93A39Aa2E72cB1bEae5e25C63E88`) and does not affect
+   the off-chain attribution path.
+
+   The actual TuCop "IntegratorId" to fill in for any outreach is held
+   on Valora's side, NOT in this repo. There is no .env entry to expose.

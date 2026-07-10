@@ -15,17 +15,11 @@ export enum Network {
 
 export enum NetworkId {
   'celo-mainnet' = 'celo-mainnet',
-  'celo-sepolia' = 'celo-sepolia',
   'ethereum-mainnet' = 'ethereum-mainnet',
-  'ethereum-sepolia' = 'ethereum-sepolia',
   'arbitrum-one' = 'arbitrum-one',
-  'arbitrum-sepolia' = 'arbitrum-sepolia',
   'op-mainnet' = 'op-mainnet',
-  'op-sepolia' = 'op-sepolia',
   'polygon-pos-mainnet' = 'polygon-pos-mainnet',
-  'polygon-pos-amoy' = 'polygon-pos-amoy',
   'base-mainnet' = 'base-mainnet',
-  'base-sepolia' = 'base-sepolia',
 }
 
 export type PendingStandbyTransaction<T> = {
@@ -213,6 +207,12 @@ export interface TokenExchange {
   block: string
   inAmount: TokenAmount
   outAmount: TokenAmount
+  // Populated by the TuCop indexer feed for EIP-7702 atomic batches that
+  // spend N tokens in one tx (WRI dollars-spend). When present and length>1,
+  // outAmount holds the largest-value leg for backwards compatibility and
+  // this array carries every leg. Absent for single-leg swaps and for the
+  // Valora feed shape.
+  fromTokenAmounts?: TokenAmount[]
   metadata?: TokenExchangeMetadata
   fees: Fee[]
   status: TransactionStatus

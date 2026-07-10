@@ -62,10 +62,13 @@ const tokenBalances = {
   [mockPoofTokenId]: { ...mockTokenBalances[mockPoofTokenId], balance: '0' }, // filtered out for no balance
   [mockCeurTokenId]: { ...mockTokenBalances[mockCeurTokenId], balance: '100' },
 }
+// Post Bug E fix: EnterAmount applies reorderForBugE so CELO slides to the
+// end of the list passed to refreshPreparedTransactions. Stables keep their
+// selector priority order (cUSD < cEUR), CELO trails.
 const feeCurrencies = [
-  tokenBalances[mockCeloTokenId],
   tokenBalances[mockCusdTokenId],
   tokenBalances[mockCeurTokenId],
+  tokenBalances[mockCeloTokenId],
 ]
 const store = createMockStore({
   tokens: {
@@ -95,7 +98,7 @@ describe('SendEnterAmount', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSend: [NetworkId['celo-sepolia']],
+      showSend: [NetworkId['celo-mainnet']],
     })
   })
 
@@ -160,7 +163,7 @@ describe('SendEnterAmount', () => {
       localCurrency: 'COP',
       localCurrencyAmount: '140.99',
       localCurrencyExchangeRate: '1.33',
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       origin: 'app_send_flow',
       recipientType: 'Address',
       tokenId: mockCeloTokenId,

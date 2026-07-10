@@ -18,7 +18,7 @@ function getStore({ hasSuppliedPools = false }: { hasSuppliedPools?: boolean } =
   return createMockStore({
     positions: {
       positions: [{ ...mockEarnPositions[0], balance: hasSuppliedPools ? '10' : '0' }],
-      earnPositionIds: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+      earnPositionIds: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
     },
   })
 }
