@@ -31,7 +31,7 @@ const _baseFeePerGas = parseGwei('1')
 const transactions = [
   {
     from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     data: '0x3d18b912',
     to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
   } as const,
@@ -80,7 +80,7 @@ const mockResponseBody = {
   data: {
     transactions: [
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',
@@ -94,13 +94,13 @@ const mockSwapDepositResponseBody = {
   data: {
     transactions: [
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',
       },
       {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         from: '0xfrom',
         to: '0xto',
         data: '0xdata',
@@ -111,7 +111,7 @@ const mockSwapDepositResponseBody = {
     ],
     dataProps: {
       swapTransaction: {
-        chainId: 11142220,
+        chainId: 42220,
         buyAmount: '994820',
         sellAmount: '1785876928077378476',
         buyTokenAddress: mockArbArbAddress,
@@ -184,7 +184,7 @@ const expectedSwapDepositPrepareTransactionsResult = {
     appFeePercentageIncludedInPrice: '0.6',
     buyAmount: '994820',
     buyTokenAddress: mockArbArbAddress,
-    chainId: 11142220,
+    chainId: 42220,
     data: '0x0',
     estimatedGasUse: '971972',
     estimatedPriceImpact: '0.0',
@@ -291,6 +291,9 @@ describe('usePrepareEnterAmountTransactionsCallback', () => {
       ),
     })
 
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
     mockFetch.mockResponse(JSON.stringify({}), {
       status: 500,
     })
@@ -298,5 +301,6 @@ describe('usePrepareEnterAmountTransactionsCallback', () => {
     await expect(result.current.refreshPreparedTransactions(mockRefreshArgs)).rejects.toEqual(
       new Error('Unable to trigger shortcut: 500 Internal Server Error')
     )
+    jest.useFakeTimers()
   })
 })

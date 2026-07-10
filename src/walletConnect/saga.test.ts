@@ -57,7 +57,7 @@ function createSessionProposal(
       requiredNamespaces: {
         eip155: {
           events: ['chainChanged', 'accountsChanged'],
-          chains: ['eip155:11142220'],
+          chains: ['eip155:42220'],
           methods: ['eth_sendTransaction', 'eth_signTypedData'],
         },
       },
@@ -101,7 +101,7 @@ function createSession(proposerMetadata: CoreTypes.Metadata): SessionTypes.Struc
     },
     namespaces: {
       eip155: {
-        accounts: ['eip155:11142220:0x6131a6d616a4be3737b38988847270a64bc10caa'],
+        accounts: ['eip155:42220:0x6131a6d616a4be3737b38988847270a64bc10caa'],
         events: ['chainChanged', 'accountsChanged'],
         methods: ['eth_sendTransaction', 'eth_signTypedData'],
       },
@@ -112,7 +112,7 @@ function createSession(proposerMetadata: CoreTypes.Metadata): SessionTypes.Struc
     requiredNamespaces: {
       eip155: {
         events: ['chainChanged', 'accountsChanged'],
-        chains: ['eip155:11142220'],
+        chains: ['eip155:42220'],
         methods: ['eth_sendTransaction', 'eth_signTypedData'],
       },
     },
@@ -123,7 +123,7 @@ function createSession(proposerMetadata: CoreTypes.Metadata): SessionTypes.Struc
 beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(getMultichainFeatures).mockReturnValue({
-    showWalletConnect: [NetworkId['celo-sepolia']],
+    showWalletConnect: [NetworkId['celo-mainnet']],
   })
 })
 
@@ -153,7 +153,7 @@ describe('getDefaultSessionTrackedProperties', () => {
         dappIcon: 'someIcon',
         relayProtocol: 'irn',
         eip155Events: ['chainChanged', 'accountsChanged'],
-        eip155Chains: ['eip155:11142220'],
+        eip155Chains: ['eip155:42220'],
         eip155Methods: ['eth_sendTransaction', 'eth_signTypedData'],
       })
       .run()
@@ -231,7 +231,7 @@ describe(walletConnectSaga, () => {
       type: WalletConnectRequestType.Session,
       pendingSession: sessionProposal,
       namespacesToApprove: expect.anything(),
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
     })
   })
@@ -257,7 +257,7 @@ describe('showSessionRequest', () => {
       type: WalletConnectRequestType.Session,
       pendingSession: sessionProposal,
       namespacesToApprove: expect.anything(),
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
     })
 
@@ -266,10 +266,10 @@ describe('showSessionRequest', () => {
       {
         "eip155": {
           "accounts": [
-            "eip155:11142220:0x0000000000000000000000000000000000007e57",
+            "eip155:42220:0x0000000000000000000000000000000000007e57",
           ],
           "chains": [
-            "eip155:11142220",
+            "eip155:42220",
           ],
           "events": [
             "accountsChanged",
@@ -286,7 +286,7 @@ describe('showSessionRequest', () => {
 
   it('includes all supported chains for session approval', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showWalletConnect: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showWalletConnect: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     const state = createMockStore({}).getState()
     await expectSaga(_showSessionRequest, sessionProposal)
@@ -301,11 +301,11 @@ describe('showSessionRequest', () => {
       namespacesToApprove: expect.objectContaining({
         eip155: expect.objectContaining({
           // matches the chains requested by the dapp
-          chains: ['eip155:11142220'],
-          accounts: ['eip155:11142220:0x0000000000000000000000000000000000007e57'],
+          chains: ['eip155:42220'],
+          accounts: ['eip155:42220:0x0000000000000000000000000000000000007e57'],
         }),
       }),
-      supportedChains: ['eip155:11142220', 'eip155:11155111'], // matches the chains supported by the wallet
+      supportedChains: ['eip155:42220', 'eip155:1'], // matches the chains supported by the wallet
       version: 2,
     })
   })
@@ -327,7 +327,7 @@ describe('showSessionRequest', () => {
         },
         optionalNamespaces: {
           eip155: {
-            chains: ['eip155:11142220'], // this optional chain is supported and will be added to the approved namespaces
+            chains: ['eip155:42220'], // this optional chain is supported and will be added to the approved namespaces
             methods: ['eth_signTransaction', 'some_optional_unsupported_method'],
             events: ['accountsChanged', 'some_optional_unsupported_event'],
           },
@@ -344,7 +344,7 @@ describe('showSessionRequest', () => {
       type: WalletConnectRequestType.Session,
       pendingSession: session,
       namespacesToApprove: expect.anything(),
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
     })
 
@@ -356,11 +356,11 @@ describe('showSessionRequest', () => {
         "eip155": {
           "accounts": [
             "eip155:1:0x0000000000000000000000000000000000007e57",
-            "eip155:11142220:0x0000000000000000000000000000000000007e57",
+            "eip155:42220:0x0000000000000000000000000000000000007e57",
           ],
           "chains": [
             "eip155:1",
-            "eip155:11142220",
+            "eip155:42220",
           ],
           "events": [
             "accountsChanged",
@@ -400,7 +400,7 @@ describe('showSessionRequest', () => {
       type: WalletConnectRequestType.Session,
       pendingSession: session,
       namespacesToApprove: null,
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
     })
   })
@@ -436,10 +436,10 @@ describe('acceptSession', () => {
       proposal: sessionProposal.params,
       supportedNamespaces: {
         eip155: {
-          chains: ['eip155:11142220'],
+          chains: ['eip155:42220'],
           methods: Object.values(SupportedActions) as string[],
           events: Object.values(SupportedEvents) as string[],
-          accounts: [`eip155:11142220:${mockAccount}`],
+          accounts: [`eip155:42220:${mockAccount}`],
         },
       },
     })
@@ -459,10 +459,10 @@ describe('acceptSession', () => {
           "namespaces": {
             "eip155": {
               "accounts": [
-                "eip155:11142220:0x0000000000000000000000000000000000007E57",
+                "eip155:42220:0x0000000000000000000000000000000000007E57",
               ],
               "chains": [
-                "eip155:11142220",
+                "eip155:42220",
               ],
               "events": [
                 "accountsChanged",
@@ -563,10 +563,10 @@ describe('showActionRequest', () => {
     expect(navigate).toHaveBeenNthCalledWith(2, Screens.WalletConnectRequest, {
       type: WalletConnectRequestType.Action,
       pendingAction: actionRequest,
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: [],
+      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
       preparedTransaction: mockPreparedTransactions.transactions[0],
       prepareTransactionErrorMessage: undefined,
     })
@@ -598,10 +598,10 @@ describe('showActionRequest', () => {
     expect(navigate).toHaveBeenNthCalledWith(2, Screens.WalletConnectRequest, {
       type: WalletConnectRequestType.Action,
       pendingAction: actionRequest,
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: [],
+      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
       preparedTransaction: undefined,
       prepareTransactionErrorMessage: 'Some error',
     })
@@ -633,10 +633,10 @@ describe('showActionRequest', () => {
     expect(navigate).toHaveBeenNthCalledWith(2, Screens.WalletConnectRequest, {
       type: WalletConnectRequestType.Action,
       pendingAction: actionRequest,
-      supportedChains: ['eip155:11142220'],
+      supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: [],
+      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
       preparedTransaction: undefined,
       prepareTransactionErrorMessage: 'viem short message',
     })

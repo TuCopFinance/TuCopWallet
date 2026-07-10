@@ -15,18 +15,18 @@ describe('NetworkMultiSelectBottomSheet', () => {
     const forwardedRef = { current: null }
     const onSelect = jest.fn()
     const onOpen = jest.fn()
-    const allNetworkIds = [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']]
-    const selectedNetworkIds = [NetworkId['celo-sepolia']]
+    const allNetworkIds = [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']]
+    const selectedNetworkIds = [NetworkId['celo-mainnet']]
     const expectedOptions = [
       {
-        text: 'Celo Sepolia',
+        text: 'Celo',
         iconUrl: 'url-for-cusd-icon',
-        id: NetworkId['celo-sepolia'],
+        id: NetworkId['celo-mainnet'],
       },
       {
-        text: 'Ethereum Sepolia',
+        text: 'Ethereum',
         iconUrl: 'url-for-eth-icon',
-        id: NetworkId['ethereum-sepolia'],
+        id: NetworkId['ethereum-mainnet'],
       },
     ]
 
@@ -64,7 +64,7 @@ describe('NetworkMultiSelectBottomSheet', () => {
         forwardedRef,
         onSelect,
         onOpen,
-        selectedOptions: [NetworkId['celo-sepolia']],
+        selectedOptions: [NetworkId['celo-mainnet']],
         setSelectedOptions: expect.any(Function),
         options: expectedOptions,
         selectAllText: 'multiSelect.allNetworks',

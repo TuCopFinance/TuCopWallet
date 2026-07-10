@@ -15,12 +15,20 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { EarnPosition } from 'src/positions/types'
 import { useSelector } from 'src/redux/hooks'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getTokenDisplayName } from 'src/tokens/utils'
+import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+
+const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
+  0: 'neeruVaults.cardSubtitle.flexible',
+  1: 'neeruVaults.cardSubtitle.thirtyDays',
+  2: 'neeruVaults.cardSubtitle.sixtyDays',
+  3: 'neeruVaults.cardSubtitle.ninetyDays',
+}
 
 export default function PoolCard({
   pool,
@@ -84,6 +92,22 @@ export default function PoolCard({
 
   const totalYieldRate = getTotalYieldRate(pool).toFixed(2)
 
+  // Card title is always the user-friendly token display name per the wallet manual
+  // (cCOP -> Pesos, USDT/USDC/USDm -> Dolares, etc).
+  const cardTitle = useMemo(
+    () => tokensInfo.map((token) => getTokenDisplayName(token.symbol)).join(' / '),
+    [tokensInfo]
+  )
+
+  // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
+  const cardSubtitle = useMemo(() => {
+    if (pool.appId !== 'neeru-vaults') return null
+    const trancheId = categoryIdFromPositionId(pool.positionId)
+    if (trancheId === null) return null
+    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[trancheId]
+    return t(key)
+  }, [pool, t])
+
   const onPress = () => {
     AppAnalytics.track(EarnEvents.earn_pool_card_press, {
       poolId: positionId,
@@ -92,6 +116,10 @@ export default function PoolCard({
       poolAmount: balance,
       providerId: appId,
     })
+    if (pool.appId === 'neeru-vaults') {
+      navigate(Screens.NeeruVaultDetail, { pool })
+      return
+    }
     navigate(Screens.EarnPoolInfoScreen, { pool })
   }
 
@@ -113,12 +141,8 @@ export default function PoolCard({
               />
             ))}
             <View style={styles.titleTextContainer}>
-              <Text style={styles.titleTokens}>
-                {tokensInfo.map((token) => token.symbol).join(' / ')}
-              </Text>
-              <Text style={styles.titleNetwork}>
-                {t('earnFlow.poolCard.onNetwork', { networkName: NETWORK_NAMES[networkId] })}
-              </Text>
+              <Text style={styles.titleTokens}>{cardTitle}</Text>
+              {cardSubtitle ? <Text style={styles.cardSubtitle}>{cardSubtitle}</Text> : null}
             </View>
           </View>
           <View style={styles.keyValueContainer}>
@@ -144,7 +168,9 @@ export default function PoolCard({
             </View>
           )}
           <Text style={styles.poweredByText}>
-            {t('earnFlow.poolCard.poweredBy', { providerName: appName })}
+            {pool.appId === 'neeru-vaults'
+              ? 'By: Neeru Finance'
+              : t('earnFlow.poolCard.poweredBy', { providerName: appName })}
           </Text>
         </View>
       </Touchable>
@@ -175,8 +201,8 @@ const styles = StyleSheet.create({
     color: Colors.black,
     ...typeScale.labelSemiBoldSmall,
   },
-  titleNetwork: {
-    color: Colors.black,
+  cardSubtitle: {
+    color: Colors.gray3,
     ...typeScale.bodyXSmall,
   },
   keyValueContainer: {

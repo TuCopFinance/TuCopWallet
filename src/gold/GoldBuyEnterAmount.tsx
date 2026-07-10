@@ -38,6 +38,12 @@ import EnterAmountOptions from 'src/send/EnterAmountOptions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import {
+  buildDolaresVirtualToken,
+  DOLARES_VIRTUAL_TOKEN_ID,
+  useDollarBalanceSnapshots,
+} from 'src/dollarsSpend'
+import { DOLLAR_TOKEN_IDS, getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -84,15 +90,18 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   const { getQuote, loading: isGettingQuote, error: quoteError } = useGoldQuote()
 
-  // Get user-friendly display name for tokens (same pattern as TokenBalanceItem)
-  // Uses tokenId first, then symbol as fallback for different USDT variants
+  // Get user-friendly display name for tokens. For the four concrete dollar
+  // tokens the brand-specific label (USDT / USDC / USDm / USAT short symbols)
+  // wins so the chip stays consistent with the picker rows and the success
+  // screen. Falls back to "Dolares" for the synthetic virtual aggregator.
   const getTokenName = (token: TokenBalance) => {
     // Check by tokenId first (most reliable)
     if (token.tokenId === networkConfig.copmTokenId) {
       return t('assets.pesos')
     }
-    if (token.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
+    const ticker = getDollarTokenTicker(token.tokenId)
+    if (ticker) {
+      return ticker
     }
     if (token.tokenId === networkConfig.xaut0TokenId) {
       return t('goldFlow.gold')
@@ -102,7 +111,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     if (symbol === 'ccop' || symbol === 'copm') {
       return t('assets.pesos')
     }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
+    if (symbol === 'dolares') {
       return t('assets.dollars')
     }
     if (symbol === 'xaut0' || symbol === 'xaut') {
@@ -118,7 +127,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   // Filter to USDT and COPm (supported by Squid Router for XAUt0 swaps)
   // Note: USDT on Celo uses symbol "USD₮" (with special ₮ character)
-  const availableTokens = useMemo(() => {
+  const originalAvailableTokens = useMemo(() => {
     const filtered = swappableTokens.filter((token) => {
       if (token.balance.lte(0)) return false
 
@@ -151,6 +160,21 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     )
     return filtered
   }, [swappableTokens])
+
+  const dollarSnapshots = useDollarBalanceSnapshots()
+  const dolaresVirtualToken = useMemo(
+    () =>
+      buildDolaresVirtualToken({
+        snapshots: dollarSnapshots,
+        networkId: networkConfig.defaultNetworkId,
+      }),
+    [dollarSnapshots]
+  )
+
+  const availableTokens = useMemo(() => {
+    const filtered = originalAvailableTokens.filter((t) => !DOLLAR_TOKEN_IDS.has(t.tokenId))
+    return dolaresVirtualToken ? [dolaresVirtualToken, ...filtered] : filtered
+  }, [originalAvailableTokens, dolaresVirtualToken])
 
   // Default to first available token or from route params
   const defaultToken = route.params?.fromTokenId
@@ -286,6 +310,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
   const insufficientBalance =
     parsedTokenAmount && selectedToken && parsedTokenAmount.gt(selectedToken.balance)
 
+  const isVirtualDolares = selectedToken?.tokenId === DOLARES_VIRTUAL_TOKEN_ID
+
   const onPressContinue = async () => {
     Logger.debug('GoldBuyEnterAmount', 'onPressContinue called', {
       isAmountValid,
@@ -307,6 +333,19 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       fromAmount: parsedTokenAmount.toString(),
       toAmount: goldAmount.toString(),
     })
+
+    // Virtual Dolares: skip single-quote fetch, navigate directly to confirmation
+    // The confirmation screen handles multi-step planning and execution
+    if (isVirtualDolares) {
+      navigate(Screens.GoldBuyConfirmation, {
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        fromAmount: parsedTokenAmount.toString(),
+        xautAmount: goldAmount.toString(),
+        pricePerOz: goldPriceUsd.toString(),
+        toTokenId: xaut0Token.tokenId,
+      })
+      return
+    }
 
     // Get swap quote from Squid Router
     const quoteResult = await getQuote({

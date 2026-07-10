@@ -11,7 +11,7 @@ describe('SafetyCard', () => {
     commonAnalyticsProps: {
       poolId: 'poolId',
       providerId: 'providerId',
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       depositTokenId: 'depositTokenId',
     },
     safety: {

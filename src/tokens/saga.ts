@@ -74,12 +74,28 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     )
   }
   const rawTokens = await response.json()
-  return Object.keys(rawTokens)
+  const filtered = Object.keys(rawTokens)
     .filter((tokenId) => ALLOWED_TOKEN_IDS.has(tokenId))
     .reduce((acc, tokenId) => {
       acc[tokenId] = rawTokens[tokenId]
       return acc
     }, {} as StoredTokenBalances)
+
+  // USAT priceUsd override: the upstream Valora backend has USAT metadata but
+  // returns priceUsd as "NaN" (no oracle hooked up). USAT is 1:1 USD pegged
+  // by design (Anchorage Digital, GENIUS Act, 100% T-bills + cash). Real spot
+  // ~$0.998, rounding error <0.2% for a wallet display.
+  // TODO: remove this block once api.mainnet.valora.xyz publishes a real priceUsd.
+  const usatTokenId = networkConfig.usatTokenId
+  if (usatTokenId && filtered[usatTokenId]) {
+    const usat = filtered[usatTokenId]!
+    const priceUsdNum = Number(usat.priceUsd)
+    if (!Number.isFinite(priceUsdNum)) {
+      filtered[usatTokenId] = { ...usat, priceUsd: '1' }
+    }
+  }
+
+  return filtered
 }
 
 export function* fetchTokenBalancesSaga() {

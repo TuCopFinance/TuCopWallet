@@ -1290,10 +1290,6 @@
   "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> and one other won't be able to claim their invites",
   "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> and others won't be able to claim their invites",
   "escrowedPaymentReminderSmsNoData": "A friendly reminder that you haven't yet redeemed your {{currency}} with {{appName}}! Download the mobile app to get started!",
-  "testnetAlert": {
-    "0": "{{testnet}}",
-    "1": "A friendly reminder you're using the {{testnet}} network build - the balances are not real"
-  },
   "dollarBalance": "<0></0> $t(celoDollars)",
   "feedItemAddress": "{{address}}",
   "feedItemDepositInfo": "{{comment}}",
@@ -1317,7 +1313,6 @@
   "feedItemFailedTransaction": "Failed Transaction",
   "feedItemFaucetTitle": "Celo",
   "feedItemFaucetInfo": "{{faucet}} Faucet",
-  "feedItemFaucetInfo_noTestnet": "Faucet",
   "feedItemInviteSentTitle": "Celo",
   "feedItemInviteSentInfo": "Invited {{nameOrNumber}}",
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
@@ -1350,6 +1345,7 @@
   "feedItemGoldReceived": "Received from {{displayName}}",
   "feedItemSwapTitle": "Swapped",
   "feedItemSwapPath": "{{token1}} to {{token2}}",
+  "feedItemSwapPathMulti": "{{count}} tokens to {{token2}}",
   "feedItemJumpstartTitle": "Live Link",
   "feedItemJumpstartSentSubtitle": "Invitation",
   "feedItemJumpstartReceivedSubtitle": "Funds received",
@@ -1855,6 +1851,14 @@
       "title": "Before you swap",
       "body": "We can't estimate the value of this swap. {{appName}} is not responsible if you choose to proceed."
     },
+    "belowMinSwapWarning": {
+      "title": "Amount too small",
+      "body": "The minimum swap amount is approximately ${{minSwapUsd}} USD. Increase the amount to continue."
+    },
+    "upstreamUnavailableWarning": {
+      "title": "Service temporarily unavailable",
+      "body": "We couldn't get a quote. Please try again in a few seconds."
+    },
     "confirmSwapFailedWarning": {
       "title": "Something went wrong",
       "body": "The network speed is slow or there is an unknown error. Please try again later"
@@ -1903,6 +1907,7 @@
       "estimatedTransactionTimeInfo": "The time to complete the transaction is determined by the provider.\n\nIf you are swapping between different chains, the transaction could take a bit longer to complete.",
       "infoDismissButton": "Got it",
       "fees": "Fees",
+      "feePaidIn": "Paid in",
       "feesCalculationError": "Unable to calculate fees",
       "estimatedCrossChainFee": "Estimated cross-chain fees",
       "maxCrossChainFee": "Max cross-chain fees",
@@ -2088,9 +2093,13 @@
     "importToken": "Import",
     "importTokens": "Import Tokens",
     "balanceInLocalAmount": "Balance in local amount",
+    "mentoDollar": "Mento Dollar",
     "pesos": "Colombian Pesos",
     "dollars": "Dollars",
     "gold": "Gold",
+    "tetherAmericaUsd": "Tether America USD",
+    "tetherUsd": "Tether USD",
+    "usdCoin": "USD Coin",
     "yourMoney": "Your money",
     "yourInvestments": "Your investments"
   },
@@ -2211,7 +2220,6 @@
   "viewOnEthereumBlockExplorer": "View on Etherscan",
   "viewOnArbiscan": "View on Arbiscan",
   "viewOnOPMainnetExplorer": "View on OP Mainnet Explorer",
-  "viewOnOPSepoliaExplorer": "View on OP Sepolia Explorer",
   "viewOnPolygonPoSScan": "View on PolygonScan",
   "viewOnBaseScan": "View on BaseScan",
   "viewOnAxelarScan": "View on AxelarScan",
@@ -2549,6 +2557,13 @@
       "body": "Points are {{appName}}'s loyalty program. They're awarded for using the app. Points can't be spent, traded, or transferred.",
       "dismiss": "Got it"
     }
+  },
+  "feeAdapterBootstrap": {
+    "title": "Activate Dollars for fees",
+    "body": "To send and swap using your dollars (USDC, USDT) we run a quick activation.",
+    "reassure": "Only once. After this you can do every operation without seeing this screen again. Only the actual fee is charged each time. Never more than that.",
+    "activate": "Activate Dollars",
+    "later": "Not now"
   },
   "earnFlow": {
     "gasSubsidized": "Transaction fees are covered for a limited time",
@@ -2909,6 +2924,81 @@
       "noStakes": "You don't have any active stakes"
     }
   },
+  "neeruVaults": {
+    "tranches": {
+      "flexible": "Flexible",
+      "thirtyDays": "30 days",
+      "sixtyDays": "60 days",
+      "ninetyDays": "90 days"
+    },
+    "cardSubtitle": {
+      "flexible": "Flexible",
+      "thirtyDays": "30-day deposit",
+      "sixtyDays": "60-day deposit",
+      "ninetyDays": "90-day deposit"
+    },
+    "detail": {
+      "header": "Your {{categoryLabel}} positions",
+      "aggregateBalance": "Total in {{categoryLabel}}: {{amount}} Pesos",
+      "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% monthly",
+      "depositCta": "Deposit",
+      "noPositions": "You don't have positions in this option yet",
+      "descriptionByCategory": {
+        "flexible": "Withdraw anytime with no minimum lock",
+        "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
+        "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
+        "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
+      }
+    },
+    "positionRow": {
+      "principal": "Principal: {{amount}} Pesos",
+      "interest": "Earned: {{amount}} Pesos",
+      "maturity": "Available {{date}}",
+      "flexible": "No minimum time",
+      "depositedAt": "Deposited on {{date}}",
+      "manageCta": "Manage",
+      "processingBadge": "Processing",
+      "optimisticTakingLong": "This is taking a couple of minutes. Try again.",
+      "refreshCta": "Refresh",
+      "viewOnCeloscanCta": "View on Celoscan"
+    },
+    "closeSheet": {
+      "title": "Withdraw your deposit",
+      "currentPayout": "You will receive",
+      "principalLabel": "Principal",
+      "interestLabel": "Interest earned",
+      "penaltyLabel": "Early withdrawal fee ({{percentage}}%)",
+      "totalLabel": "Total",
+      "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your principal.",
+      "confirmCta": "Confirm withdrawal",
+      "amountOnlyCta": "Exit with principal only",
+      "amountOnlyHelp": "If the normal withdrawal fails, you can recover your principal without interest."
+    },
+    "emergencyCloseSheet": {
+      "title": "Emergency withdrawal",
+      "subtitle": "The fund cannot pay interest right now",
+      "explanation": "You can recover your principal of {{principal}} Pesos now, but you will forfeit the {{interest}} Pesos of interest you earned. This is irreversible.",
+      "alternative": "If you can wait, the fund usually recovers within a few hours.",
+      "primaryCta": "Wait and try again later",
+      "secondaryCta": "Withdraw principal only",
+      "confirmAgain": "Tap again to confirm"
+    },
+    "errors": {
+      "fetchPositionsFailed": "We couldn't load your positions. Pull down to retry.",
+      "closeFailed": "We couldn't process the withdrawal. Try again.",
+      "unknown": "Something went wrong. Try again.",
+      "invalidCategory": "Invalid tranche selected.",
+      "invalidAmount": "Invalid amount.",
+      "amountBelowMin": "Minimum deposit: {{minAmount}} Pesos.",
+      "depositsPaused": "Deposits are temporarily paused.",
+      "globalCapExceeded": "The fund is full. Try later.",
+      "categoryCapExceeded": "This option is full. Try another or come back later.",
+      "rateNotSet": "This option is not available right now.",
+      "positionStale": "Refresh your positions and try again.",
+      "positionAlreadyClosed": "This position is already closed.",
+      "serviceUnavailable": "The service is temporarily unavailable. Try later."
+    }
+  },
   "global": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -3048,6 +3138,25 @@
     "status_PAYED": "Payment Sent",
     "status_FINISHED": "Completed"
   },
+  "dollarsSpend": {
+    "tokenLabel": "Dolares",
+    "confirmAggregate": "Vas a cambiar {{usdAmount}} en Dolares a {{toLabel}}",
+    "expandedDetailHeader": "Detalle por token",
+    "stepCount": "{{steps}} pasos",
+    "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "transitioning": "Finishing your operation...",
+    "partialSuccess": {
+      "title": "Completaste {{completed}} de {{total}} pasos",
+      "remaining": "Te quedan {{remainingUsd}} por convertir",
+      "retry": "Reintentar restante",
+      "cancel": "Dejar pendiente"
+    },
+    "shortfall": {
+      "title": "Saldo en Dolares insuficiente",
+      "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    }
+  },
   "goldFlow": {
     "gold": "Gold",
     "entrypoint": {
@@ -3149,5 +3258,31 @@
       "priceBelow": "Notify when price is below",
       "delete": "Delete"
     }
+  },
+  "preflight": {
+    "advisory": "We're about to start your {{noun}}. Don't close the app and make sure you have good connection."
+  },
+  "result": {
+    "succeeded": "Your {{noun}} completed successfully.",
+    "connectivity": "You lost connection in the middle of your {{noun}}, so it did not go through. Try again?",
+    "appBackgrounded": "You closed the app while your {{noun}} was in progress. Want to resume it?",
+    "gasInsufficient": "Your balance was not enough to cover the network fee. Top up a little and we will try again.",
+    "slippage": "The price moved more than allowed, so we canceled your {{noun}} to protect you. Try again?",
+    "revert": "The network rejected your {{noun}}. Nothing was charged. Try again?",
+    "rpcTimeout": "The blockchain network did not respond in time. Try again?",
+    "unknown": "Something did not go as expected. Want to try again or contact us?"
+  },
+  "progress": {
+    "preparing": "Preparing your {{noun}}...",
+    "awaitingPin": "Confirm your PIN to continue",
+    "submitting": "Sending your {{noun}} to the network...",
+    "pendingConfirmation": "Waiting for network confirmation...",
+    "multiStep": "Step {{currentStep}} of {{total}}",
+    "succeeded": "Done. Your {{noun}} completed.",
+    "connectivityLost": "We lost connection. Your {{noun}} is still in progress; waiting for connection to come back."
+  },
+  "recovery": {
+    "banner": "Your transfer was left in progress. Tap to see details.",
+    "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
   }
 }

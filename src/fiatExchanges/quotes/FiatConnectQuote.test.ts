@@ -1,4 +1,5 @@
 import {
+  CryptoType,
   FiatAccountSchema,
   FiatAccountType,
   FiatType,
@@ -18,7 +19,6 @@ import { CICOFlow, PaymentMethod } from 'src/fiatExchanges/utils'
 import { FiatConnectQuoteSuccess } from 'src/fiatconnect'
 import { selectFiatConnectQuote } from 'src/fiatconnect/slice'
 import { NetworkId } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
 import { createMockStore } from 'test/utils'
 import {
   mockCusdAddress,
@@ -57,7 +57,7 @@ const mockTokenInfo = {
   lastKnownPriceUsd: new BigNumber('1'),
   symbol: 'cUSD',
   tokenId: mockCusdTokenId,
-  networkId: NetworkId['celo-sepolia'],
+  networkId: NetworkId['celo-mainnet'],
   address: mockCusdAddress,
   isFeeCurrency: true,
   canTransferWithComment: true,
@@ -612,7 +612,9 @@ describe('FiatConnectQuote', () => {
         fiatAccountType: FiatAccountType.BankAccount,
         tokenId: mockCusdTokenId,
       })
-      expect(quote.getCryptoType()).toEqual(Currency.Dollar)
+      // FiatConnect external protocol keeps legacy CryptoType.cUSD ('cUSD'),
+      // distinct from our internal Currency.Dollar ('USDm') after the rebrand.
+      expect(quote.getCryptoType()).toEqual(CryptoType.cUSD)
     })
   })
 

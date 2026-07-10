@@ -11,8 +11,8 @@ import networkConfig from 'src/web3/networkConfig'
 
 const TAG = 'transactions/blockscoutApi'
 
-// Blockscout API base URL for Celo mainnet
-const BLOCKSCOUT_API_BASE = 'https://celo.blockscout.com/api/v2'
+// Use TuCop backend Blockscout passthrough so the API key stays on the server.
+const BLOCKSCOUT_API_BASE = networkConfig.blockscoutProxyBase
 
 // System contracts to ignore (internal transfers, fees, etc)
 const SYSTEM_CONTRACTS = new Set([
@@ -21,8 +21,25 @@ const SYSTEM_CONTRACTS = new Set([
   '0x0000000000000000000000000000000000000000', // Null address (mints/burns)
 ])
 
-// Tokens we care about
-const MAIN_TOKENS = new Set(['COPm', 'USDT', 'XAUt0', 'USDC', 'USDm', 'CELO'])
+// Tokens we care about, keyed by canonical contract address (lowercase). Symbol
+// matching was fragile: Blockscout mirrors on-chain ERC20 `symbol()` output
+// verbatim, so USDm arrives as `CUSD` (all caps, its Mento contract symbol),
+// USDT sometimes as `USD₮`, and any future rebrand can silently drop a leg
+// from the atomic 7702 batch classifier. Address is the canonical identity.
+const MAIN_TOKEN_ADDRESSES = new Set(
+  [
+    networkConfig.copmTokenId,
+    networkConfig.usdtTokenId,
+    networkConfig.usdcTokenId,
+    networkConfig.usdmTokenId,
+    networkConfig.usatTokenId,
+    networkConfig.xaut0TokenId,
+    networkConfig.celoTokenId,
+  ]
+    .filter(Boolean)
+    .map((tokenId) => tokenId.split(':')[1]?.toLowerCase())
+    .filter(Boolean)
+)
 
 interface BlockscoutTransfer {
   transaction_hash: string
@@ -180,32 +197,35 @@ function processBlockscoutTransaction(
 
   if (meaningfulTransfers.length === 0) return null
 
-  // Calculate net amounts per token
+  // Calculate net amounts per token, keyed by contract address (canonical).
+  // Using symbol as the key silently merges tokens with the same symbol from
+  // different contracts (or, worse, silently drops a leg when the symbol has
+  // an aliased casing like USDm-contract returning `CUSD`).
   const outAmounts: Record<string, { value: number; tokenId: string; symbol: string }> = {}
   const inAmounts: Record<string, { value: number; tokenId: string; symbol: string }> = {}
 
   for (const transfer of meaningfulTransfers) {
-    const symbol = transfer.token.symbol
-    if (!MAIN_TOKENS.has(symbol)) continue
+    const tokenAddress = transfer.token.address_hash.toLowerCase()
+    if (!MAIN_TOKEN_ADDRESSES.has(tokenAddress)) continue
 
+    const symbol = transfer.token.symbol
     const decimals = parseInt(transfer.token.decimals, 10)
     const value = parseFloat(transfer.total.value) / Math.pow(10, decimals)
-    const tokenAddress = transfer.token.address_hash.toLowerCase()
     const tokenId = `${networkConfig.defaultNetworkId}:${tokenAddress}`
 
     const from = transfer.from.hash.toLowerCase()
     const to = transfer.to.hash.toLowerCase()
 
     if (from === userAddress) {
-      if (!outAmounts[symbol]) {
-        outAmounts[symbol] = { value: 0, tokenId, symbol }
+      if (!outAmounts[tokenAddress]) {
+        outAmounts[tokenAddress] = { value: 0, tokenId, symbol }
       }
-      outAmounts[symbol].value += value
+      outAmounts[tokenAddress].value += value
     } else if (to === userAddress) {
-      if (!inAmounts[symbol]) {
-        inAmounts[symbol] = { value: 0, tokenId, symbol }
+      if (!inAmounts[tokenAddress]) {
+        inAmounts[tokenAddress] = { value: 0, tokenId, symbol }
       }
-      inAmounts[symbol].value += value
+      inAmounts[tokenAddress].value += value
     }
   }
 
@@ -214,9 +234,27 @@ function processBlockscoutTransaction(
 
   // Determine transaction type
   if (outTokens.length > 0 && inTokens.length > 0) {
-    // SWAP: tokens going out and coming in
-    const outToken = outAmounts[outTokens[0]]
+    // SWAP: tokens going out and coming in.
+    //
+    // EIP-7702 atomic batches from the WRI dollarsSpend flow move multiple
+    // dollar-family stablecoins (USDm + USDC + USDT) out of the user's EOA in
+    // one tx. Blockscout's Transfer log surfaces every leg, but naively
+    // picking outTokens[0] shows a single-leg swap of one of the three legs
+    // (whichever came back first from Blockscout, non-deterministic) and hides
+    // the other two. That misrepresents the amount ("-0.91 Dolares" for what
+    // was actually a $3 swap) and stops SwapFeedItem from switching to the
+    // multi-leg "N monedas a Pesos" subtitle.
+    //
+    // When there is more than one outgoing token, mirror the TuCop indexer
+    // shape: keep outAmount as the largest USD leg for backwards compatibility
+    // and populate fromTokenAmounts with every leg. SwapFeedItem uses
+    // fromTokenAmounts.length > 1 to render the aggregate copy.
+    const outTokenList = outTokens.map((symbol) => outAmounts[symbol])
     const inToken = inAmounts[inTokens[0]]
+    const primaryOut =
+      outTokenList.length > 1
+        ? outTokenList.reduce((a, b) => (b.value > a.value ? b : a))
+        : outTokenList[0]
 
     const exchange: TokenExchange = {
       networkId: NetworkId['celo-mainnet'],
@@ -225,13 +263,19 @@ function processBlockscoutTransaction(
       timestamp,
       block,
       outAmount: {
-        value: outToken.value.toString(),
-        tokenId: outToken.tokenId,
+        value: primaryOut.value.toString(),
+        tokenId: primaryOut.tokenId,
       },
       inAmount: {
         value: inToken.value.toString(),
         tokenId: inToken.tokenId,
       },
+      ...(outTokenList.length > 1 && {
+        fromTokenAmounts: outTokenList.map((o) => ({
+          value: o.value.toString(),
+          tokenId: o.tokenId,
+        })),
+      }),
       fees: [],
       status: TransactionStatus.Complete,
     }

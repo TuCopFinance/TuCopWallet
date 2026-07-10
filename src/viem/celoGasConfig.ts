@@ -1,8 +1,7 @@
 import { Address } from 'viem'
 
-// Celo network IDs (L2)
+// Celo network ID (L2)
 export const CELO_MAINNET_ID = 42220
-export const CELO_SEPOLIA_ID = 11142220
 
 // Gas estimation multipliers for Celo L2 (optimized for low-cost L2)
 export const CELO_GAS_MULTIPLIERS = {
@@ -31,34 +30,21 @@ export const CELO_FEE_CURRENCIES = {
   USDT: '0x0e2a3e05bc9a16f5292a6170456a710cb89c6f72' as Address, // USDT Adapter
 } as const
 
-// Fee currency addresses on Celo Sepolia Testnet
-// From https://docs.celo.org/token-addresses
-export const CELO_SEPOLIA_FEE_CURRENCIES = {
-  CELO: '0x471EcE3750Da237f93B8E339c536989b8978a438' as Address,
-  COPm: '0x5f8d55c3627d2dc0a2b4afa798f877242f382f67' as Address, // Colombian Peso testnet
-  USDm: '0xEF4d55D6dE8e8d73232827Cd1e9b2F2dBb45bC80' as Address, // US Dollar testnet
-  USDC: '0x4822e58de6f5e485eF90df51C41CE01721331dC0' as Address, // USDC Adapter
-} as const
-
 /**
  * Get fee currency addresses for the given chain ID
  */
 export function getFeeCurrencies(chainId: number) {
-  switch (chainId) {
-    case CELO_MAINNET_ID:
-      return CELO_FEE_CURRENCIES
-    case CELO_SEPOLIA_ID:
-      return CELO_SEPOLIA_FEE_CURRENCIES
-    default:
-      throw new Error(`Unsupported Celo chain ID: ${chainId}`)
+  if (chainId === CELO_MAINNET_ID) {
+    return CELO_FEE_CURRENCIES
   }
+  throw new Error(`Unsupported Celo chain ID: ${chainId}`)
 }
 
 /**
  * Check if a chain ID is a Celo network (L2)
  */
 export function isCeloNetwork(chainId?: number): boolean {
-  return chainId === CELO_MAINNET_ID || chainId === CELO_SEPOLIA_ID
+  return chainId === CELO_MAINNET_ID
 }
 
 /**

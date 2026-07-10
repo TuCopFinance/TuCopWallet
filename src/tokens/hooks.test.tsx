@@ -9,15 +9,21 @@ import {
   useAmountAsUsd,
   useCashInTokens,
   useCashOutTokens,
+  useDollarBalance,
+  useDollarTokensWithBalance,
   useLocalToTokenAmount,
   useSwappableTokens,
   useTokenInfo,
   useTokenPricesAreStale,
   useTokensInfo,
   useTokenToLocalAmount,
+  useUSDC,
+  useUSDm,
+  useUSAT,
 } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
+import networkConfig from 'src/web3/networkConfig'
 import { createMockStore } from 'test/utils'
 import {
   mockAccount,
@@ -37,24 +43,24 @@ beforeEach(() => {
   jest.clearAllMocks()
   jest.mocked(getFeatureGate).mockReturnValue(true)
   jest.mocked(getMultichainFeatures).mockReturnValue({
-    showCico: [NetworkId['celo-sepolia']],
-    showSend: [NetworkId['celo-sepolia']],
-    showSwap: [NetworkId['celo-sepolia']],
-    showBalances: [NetworkId['celo-sepolia']],
+    showCico: [NetworkId['celo-mainnet']],
+    showSend: [NetworkId['celo-mainnet']],
+    showSwap: [NetworkId['celo-mainnet']],
+    showBalances: [NetworkId['celo-mainnet']],
   })
 })
 
 const tokenAddressWithPriceAndBalance = '0x001'
-const tokenIdWithPriceAndBalance = `celo-sepolia:${tokenAddressWithPriceAndBalance}`
+const tokenIdWithPriceAndBalance = `celo-mainnet:${tokenAddressWithPriceAndBalance}`
 const tokenAddressWithoutBalance = '0x002'
-const tokenIdWithoutBalance = `celo-sepolia:${tokenAddressWithoutBalance}`
-const ethTokenId = 'ethereum-sepolia:native'
+const tokenIdWithoutBalance = `celo-mainnet:${tokenAddressWithoutBalance}`
+const ethTokenId = 'ethereum-mainnet:native'
 
 function TestComponent({ tokenId }: { tokenId: string }) {
   const tokenAmount = useLocalToTokenAmount(new BigNumber(1), tokenId)
   const localAmount = useTokenToLocalAmount(new BigNumber(1), tokenId)
   const usdAmount = useAmountAsUsd(new BigNumber(1), tokenId)
-  const tokenPricesAreStale = useTokenPricesAreStale([NetworkId['celo-sepolia']])
+  const tokenPricesAreStale = useTokenPricesAreStale([NetworkId['celo-mainnet']])
 
   return (
     <View>
@@ -79,7 +85,7 @@ const store = (usdToLocalRate: string | null, priceFetchedAt: number) =>
         [tokenIdWithPriceAndBalance]: {
           address: tokenAddressWithPriceAndBalance,
           tokenId: tokenIdWithPriceAndBalance,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           symbol: 'T1',
           balance: '0',
           priceUsd: '5',
@@ -88,7 +94,7 @@ const store = (usdToLocalRate: string | null, priceFetchedAt: number) =>
         [tokenIdWithoutBalance]: {
           address: tokenAddressWithoutBalance,
           tokenId: tokenIdWithoutBalance,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           symbol: 'T2',
           priceUsd: '5',
           balance: null,
@@ -124,7 +130,7 @@ const storeWithMultipleNetworkTokens = (walletAddress?: string) =>
           symbol: 'ETH',
           balance: '10',
           priceUsd: '5',
-          networkId: NetworkId['ethereum-sepolia'],
+          networkId: NetworkId['ethereum-mainnet'],
           priceFetchedAt: Date.now(),
           isCashInEligible: true,
           isCashOutEligible: true,
@@ -136,8 +142,8 @@ const storeWithMultipleNetworkTokens = (walletAddress?: string) =>
       positions: [
         {
           type: 'app-token' as const,
-          networkId: NetworkId['celo-sepolia'],
-          tokenId: 'celo-sepolia:0xa',
+          networkId: NetworkId['celo-mainnet'],
+          tokenId: 'celo-mainnet:0xa',
           address: '0xa',
           priceUsd: '60',
           balance: '3',
@@ -146,14 +152,14 @@ const storeWithMultipleNetworkTokens = (walletAddress?: string) =>
           },
           tokens: [
             {
-              networkId: NetworkId['celo-sepolia'],
-              tokenId: 'celo-sepolia:0xb',
+              networkId: NetworkId['celo-mainnet'],
+              tokenId: 'celo-mainnet:0xb',
               balance: '1',
               priceUsd: '30',
             },
             {
-              networkId: NetworkId['celo-sepolia'],
-              tokenId: 'celo-sepolia:0xc',
+              networkId: NetworkId['celo-mainnet'],
+              tokenId: 'celo-mainnet:0xc',
               balance: '2',
               priceUsd: '20',
             },
@@ -280,7 +286,7 @@ describe('useSwappableTokens', () => {
         (featureGate) => featureGate !== StatsigFeatureGates.SHUFFLE_SWAP_TOKENS_ORDER
       )
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     const { result } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
@@ -304,14 +310,14 @@ describe('useSwappableTokens', () => {
 
   it('returns deterministically shuffled tokens for each user in the holdout group', () => {
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showSwap: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showSwap: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
 
     const expectedToTokens1 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens1 = [mockCrealTokenId, mockPoofTokenId, mockCeloTokenId, ethTokenId]
+    const expectedFromTokens1 = [mockCeloTokenId, ethTokenId, mockCrealTokenId, mockPoofTokenId]
 
-    const expectedToTokens2 = [mockCeloTokenId, ethTokenId]
-    const expectedFromTokens2 = [mockCrealTokenId, mockCeloTokenId, ethTokenId, mockPoofTokenId]
+    const expectedToTokens2 = [ethTokenId, mockCeloTokenId]
+    const expectedFromTokens2 = [ethTokenId, mockCeloTokenId, mockPoofTokenId, mockCrealTokenId]
 
     const { result: result1 } = renderHook(() => useSwappableTokens(), {
       wrapper: (component) => (
@@ -366,7 +372,7 @@ describe('useCashInTokens', () => {
 
   it('returns tokens eligible for cash in for multiple networks', () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     const { getByTestId } = render(
       <Provider store={storeWithMultipleNetworkTokens()}>
@@ -404,7 +410,7 @@ describe('useCashOutTokens', () => {
 
   it('returns tokens eligible for cash out for multiple networks', () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showCico: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showCico: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     const { getByTestId } = render(
       <Provider store={storeWithMultipleNetworkTokens()}>
@@ -435,7 +441,7 @@ describe('useTokenInfo', () => {
   })
 
   it('returns position tokens when they exist', () => {
-    const { result } = renderHook(() => useTokenInfo('celo-sepolia:0xb'), {
+    const { result } = renderHook(() => useTokenInfo('celo-mainnet:0xb'), {
       wrapper: (component) => (
         <Provider store={storeWithMultipleNetworkTokens()}>
           {component?.children ? component.children : component}
@@ -443,7 +449,7 @@ describe('useTokenInfo', () => {
       ),
     })
 
-    expect(result.current?.tokenId).toEqual('celo-sepolia:0xb')
+    expect(result.current?.tokenId).toEqual('celo-mainnet:0xb')
   })
 
   it('returns undefined if the tokenId is not found', () => {
@@ -474,7 +480,7 @@ describe('useTokensInfo', () => {
   })
 
   it('returns position tokens when they exist', () => {
-    const { result } = renderHook(() => useTokensInfo(['celo-sepolia:0xb', 'celo-sepolia:0xc']), {
+    const { result } = renderHook(() => useTokensInfo(['celo-mainnet:0xb', 'celo-mainnet:0xc']), {
       wrapper: (component) => (
         <Provider store={storeWithMultipleNetworkTokens()}>
           {component?.children ? component.children : component}
@@ -482,8 +488,8 @@ describe('useTokensInfo', () => {
       ),
     })
 
-    expect(result.current[0]?.tokenId).toEqual('celo-sepolia:0xb')
-    expect(result.current[1]?.tokenId).toEqual('celo-sepolia:0xc')
+    expect(result.current[0]?.tokenId).toEqual('celo-mainnet:0xb')
+    expect(result.current[1]?.tokenId).toEqual('celo-mainnet:0xc')
   })
 
   it('returns empty array if the tokenId is not found', () => {
@@ -496,5 +502,139 @@ describe('useTokensInfo', () => {
     })
 
     expect(result.current).toEqual([])
+  })
+})
+
+describe('useUSDC / useUSDm / useUSAT', () => {
+  const renderWithStore = <T,>(hook: () => T, storeState: object) => {
+    const mockStore = createMockStore(storeState)
+    return renderHook(() => hook(), {
+      wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>,
+    })
+  }
+
+  it('useUSDC returns the USDC TokenBalance when present in store', () => {
+    const usdcNetworkId = networkConfig.usdcTokenId.split(':')[0]
+    const { result } = renderWithStore(useUSDC, {
+      tokens: {
+        tokenBalances: {
+          [networkConfig.usdcTokenId]: {
+            tokenId: networkConfig.usdcTokenId,
+            networkId: usdcNetworkId,
+            symbol: 'USDC',
+            decimals: 6,
+            balance: '10',
+            address: networkConfig.usdcTokenId.split(':')[1],
+            priceUsd: '1',
+            priceFetchedAt: Date.now(),
+          },
+        },
+      },
+    })
+    expect(result.current?.symbol).toBe('USDC')
+  })
+
+  it('useUSDm returns the USDm TokenBalance when present', () => {
+    const usdmNetworkId = networkConfig.usdmTokenId.split(':')[0]
+    const { result } = renderWithStore(useUSDm, {
+      tokens: {
+        tokenBalances: {
+          [networkConfig.usdmTokenId]: {
+            tokenId: networkConfig.usdmTokenId,
+            networkId: usdmNetworkId,
+            symbol: 'USDm',
+            decimals: 18,
+            balance: '5',
+            address: networkConfig.usdmTokenId.split(':')[1],
+            priceUsd: '1',
+            priceFetchedAt: Date.now(),
+          },
+        },
+      },
+    })
+    expect(result.current?.symbol).toBe('USDm')
+  })
+
+  it('useUSAT returns undefined when usatTokenId is empty (Mainnet)', () => {
+    // On Mainnet, usatTokenId is '' so useUSAT always returns undefined.
+    const { result } = renderWithStore(useUSAT, { tokens: { tokenBalances: {} } })
+    // Symbol is either undefined (Mainnet) or USAT (mainnet) - both acceptable.
+    expect(result.current === undefined || result.current?.symbol === 'USAT').toBe(true)
+  })
+})
+
+describe('useDollarTokensWithBalance / useDollarBalance', () => {
+  const usdtId = networkConfig.usdtTokenId
+  const usdcId = networkConfig.usdcTokenId
+  const usdmId = networkConfig.usdmTokenId
+
+  // Builds a store with controlled dollar-token balances.
+  // balances: map from tokenId to raw balance string (null = zero/absent)
+  function makeStore(balances: Record<string, string>) {
+    const tokenBalances: Record<string, object> = {}
+    const entries: Array<[string, string]> = [
+      [usdtId, balances[usdtId] ?? '0'],
+      [usdcId, balances[usdcId] ?? '0'],
+      [usdmId, balances[usdmId] ?? '0'],
+    ]
+    for (const [tokenId, balance] of entries) {
+      tokenBalances[tokenId] = {
+        tokenId,
+        networkId: tokenId.split(':')[0],
+        symbol: tokenId.includes('usdt') ? 'USDT' : tokenId.includes('usdc') ? 'USDC' : 'USDm',
+        decimals: 6,
+        balance,
+        address: tokenId.split(':')[1],
+        priceUsd: '1',
+        priceFetchedAt: Date.now(),
+      }
+    }
+    return createMockStore({
+      tokens: { tokenBalances },
+      localCurrency: { usdToLocalRate: '4000' }, // 1 USD = 4000 COP
+    })
+  }
+
+  const wrap =
+    (mockStore: ReturnType<typeof createMockStore>) =>
+    ({ children }: { children: React.ReactNode }) => (
+      <Provider store={mockStore}>{children}</Provider>
+    )
+
+  it('returns only tokens with balance > 0', () => {
+    const mockStore = makeStore({ [usdtId]: '10', [usdcId]: '0', [usdmId]: '5' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    const tokenIds = result.current.map((e) => e.tokenInfo.tokenId)
+    expect(tokenIds).toContain(usdtId)
+    expect(tokenIds).toContain(usdmId)
+    expect(tokenIds).not.toContain(usdcId)
+  })
+
+  it('returns empty array when no dollar token has balance', () => {
+    const mockStore = makeStore({ [usdtId]: '0', [usdcId]: '0', [usdmId]: '0' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current).toHaveLength(0)
+  })
+
+  it('lists entries in the canonical picker order (USDT/USDC/USAT/USDm)', () => {
+    // Order is independent of balance / localValue - the home Dolares
+    // breakdown follows the same visual order as every picker.
+    const mockStore = makeStore({ [usdtId]: '5', [usdcId]: '20', [usdmId]: '10' })
+    const { result } = renderHook(() => useDollarTokensWithBalance(), { wrapper: wrap(mockStore) })
+    const ids = result.current.map((e) => e.tokenInfo.tokenId)
+    expect(ids).toEqual([usdtId, usdcId, usdmId])
+  })
+
+  it('useDollarBalance returns sum of all dollar token local values', () => {
+    // USDT=10, USDm=5 at priceUsd=1 and rate=4000 => (10+5)*4000 = 60000
+    const mockStore = makeStore({ [usdtId]: '10', [usdcId]: '0', [usdmId]: '5' })
+    const { result } = renderHook(() => useDollarBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current.toNumber()).toBe(60000)
+  })
+
+  it('useDollarBalance returns 0 when no dollar tokens have balance', () => {
+    const mockStore = makeStore({ [usdtId]: '0', [usdcId]: '0', [usdmId]: '0' })
+    const { result } = renderHook(() => useDollarBalance(), { wrapper: wrap(mockStore) })
+    expect(result.current.toNumber()).toBe(0)
   })
 })

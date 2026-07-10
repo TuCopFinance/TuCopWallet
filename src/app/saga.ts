@@ -125,8 +125,13 @@ export function* appInit() {
   const supportedBiometryType = yield* call(Keychain.getSupportedBiometryType)
   yield* put(setSupportedBiometryType(supportedBiometryType))
 
-  // setup statsig overrides for E2E tests
-  if (isE2EEnv) {
+  // setup statsig overrides from launch args. Originally added for Detox E2E
+  // tests; also enabled in any debug build so internal dogfooders / WRI
+  // smoke-testers can flip specific gates per simulator launch via:
+  //   xcrun simctl launch <device> <bundle> -statsigGateOverrides 'gate=true'
+  // Release builds intentionally ignore launch-arg overrides so a real user
+  // can never coerce the app into a different feature surface.
+  if (isE2EEnv || __DEV__) {
     setupOverridesFromLaunchArgs()
   }
 }
@@ -431,8 +436,7 @@ function* watchAppReview() {
   yield* takeLatest([SendActions.SEND_PAYMENT_SUCCESS, swapSuccess], safely(requestInAppReview))
 }
 
-// This function initializes the public configuration for the app,
-// including all third-party integrations like Divvi
+// Initializes the public configuration for the app.
 export function* initializePublicConfig() {
   Logger.debug(TAG, 'Initializing public configuration')
 

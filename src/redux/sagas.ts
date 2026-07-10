@@ -17,6 +17,7 @@ import {
 import { dappsSaga } from 'src/dapps/saga'
 import { fetchDappsListCompleted } from 'src/dapps/slice'
 import { earnSaga } from 'src/earn/saga'
+import { neeruSaga } from 'src/earn/neeru/saga'
 import { goldSaga } from 'src/gold/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
@@ -45,6 +46,7 @@ import {
 import { recipientsSaga } from 'src/recipients/saga'
 import { sendSaga } from 'src/send/saga'
 // import { sentrySaga } from 'src/sentry/saga' // Commented out - Sentry disabled
+import { dollarsSpendSaga } from 'src/dollarsSpend/saga'
 import { swapSaga } from 'src/swap/saga'
 import { tokensSaga } from 'src/tokens/saga'
 import { setTokenBalances } from 'src/tokens/slice'
@@ -144,11 +146,13 @@ export function* rootSaga() {
     yield* spawn(dappsSaga)
     yield* spawn(fiatConnectSaga)
     yield* spawn(swapSaga)
+    yield* spawn(dollarsSpendSaga)
     yield* spawn(keylessBackupSaga)
     yield* spawn(nftsSaga)
     yield* spawn(priceHistorySaga)
     yield* spawn(pointsSaga)
     yield* spawn(earnSaga)
+    yield* spawn(neeruSaga)
     yield* spawn(bucksPaySaga)
     yield* spawn(goldSaga)
   } catch (error) {

@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { type LocalCurrencyCode } from 'src/localCurrency/consts'
-import { getMultichainFeatures } from 'src/statsig'
+import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { FEED_V2_INCLUDE_TYPES, type PageInfo, type TokenTransaction } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -9,8 +10,12 @@ type TransactionFeedV2Response = {
   pageInfo: PageInfo
 }
 
+// baseUrl is intentionally empty: each query resolves the absolute URL at call
+// time so the gate flip (WRI_TX_FEED_TUCOP_V1) takes effect without a wallet
+// restart. fetchBaseQuery treats an absolute URL on the request as overriding
+// baseUrl, so an empty baseUrl is safe.
 const baseQuery = fetchBaseQuery({
-  baseUrl: networkConfig.getWalletTransactionsUrl,
+  baseUrl: '',
   headers: { Accept: 'application/json' },
 })
 
@@ -27,8 +32,17 @@ export const transactionFeedV2Api = createApi({
       }
     >({
       query: ({ address, localCurrencyCode, endCursor: afterCursor }) => {
+        // WRI Track C feed migration: when the gate is on, route through
+        // TuCop's own indexer which classifies EIP-7702 atomic batches that
+        // Valora ignores (tx.from == tx.to == userEOA calling execute()).
+        // Both endpoints accept the same query params and return the same
+        // shape, so this is a drop-in flip — no caller changes required.
+        const useTucopFeed = getFeatureGate(StatsigFeatureGates.WRI_TX_FEED_TUCOP_V1)
+        const url = useTucopFeed
+          ? networkConfig.wriTxFeedUrl
+          : networkConfig.getWalletTransactionsUrl
         return {
-          url: '',
+          url,
           params: {
             address,
             networkIds: getMultichainFeatures().showTransfers.join(','),

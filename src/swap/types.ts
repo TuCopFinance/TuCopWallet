@@ -78,6 +78,12 @@ export interface SwapInfo {
     swapType: SwapType
   }
   areSwapTokensShuffled: boolean
+  // Set to true when this swap is a single step inside a larger multi-swap
+  // flow (Dolares -> Pesos with N tokens). The regular swap saga skips its
+  // per-step success-screen navigation so the user does not see the success
+  // sheet flash N times. The multi-swap orchestrator navigates once at the
+  // end with the aggregated leg breakdown.
+  suppressSuccessNavigation?: boolean
 }
 
 export interface FetchQuoteResponse {

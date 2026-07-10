@@ -250,7 +250,7 @@ describe('EarnEnterAmount', () => {
       await waitFor(() => expect(getByText('earnFlow.enterAmount.continue')).not.toBeDisabled())
 
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('8.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('8.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$10.64')
@@ -264,7 +264,7 @@ describe('EarnEnterAmount', () => {
       expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_enter_amount_continue_press, {
         amountEnteredIn: 'token',
         amountInUsd: '8.00',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         depositTokenId: mockArbUsdcTokenId,
         providerId: mockEarnPositions[0].appId,
         poolId: mockEarnPositions[0].positionId,
@@ -382,10 +382,10 @@ describe('EarnEnterAmount', () => {
       expect(getByTestId('EarnEnterAmount/Swap/From')).toHaveTextContent('0.00041 ETH')
 
       expect(getByTestId('EarnEnterAmount/Swap/To')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Swap/To')).toHaveTextContent('1.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Swap/To')).toHaveTextContent('1.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('1.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Deposit/Crypto')).toHaveTextContent('1.00 assets.dollars')
 
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Deposit/Fiat')).toHaveTextContent('COP$1.33')
@@ -399,7 +399,7 @@ describe('EarnEnterAmount', () => {
       expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_enter_amount_continue_press, {
         amountEnteredIn: 'token',
         amountInUsd: '0.62',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         fromTokenAmount: '0.00041',
         depositTokenId: mockArbUsdcTokenId,
         providerId: mockEarnPositions[0].appId,
@@ -494,7 +494,9 @@ describe('EarnEnterAmount', () => {
       await waitFor(() => expect(getByText('earnFlow.enterAmount.continue')).not.toBeDisabled())
 
       expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toHaveTextContent('11.00 USDC')
+      expect(getByTestId('EarnEnterAmount/Withdraw/Crypto')).toHaveTextContent(
+        '11.00 assets.dollars'
+      )
 
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
       expect(getByTestId('EarnEnterAmount/Withdraw/Fiat')).toBeTruthy()
@@ -509,11 +511,11 @@ describe('EarnEnterAmount', () => {
       expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_enter_amount_continue_press, {
         amountEnteredIn: 'token',
         amountInUsd: '8.00',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         depositTokenId: mockArbUsdcTokenId,
         providerId: mockEarnPositions[0].appId,
         poolId: mockEarnPositions[0].positionId,
-        fromTokenId: 'arbitrum-sepolia:0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8',
+        fromTokenId: 'arbitrum-one:0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8',
         fromTokenAmount: '8',
         mode: 'withdraw',
       })
@@ -729,12 +731,12 @@ describe('EarnEnterAmount', () => {
     await waitFor(() => expect(getByTestId('EarnEnterAmount/NotEnoughForGasWarning')).toBeTruthy())
     fireEvent.press(
       getByText(
-        'earnFlow.enterAmount.notEnoughBalanceForGasWarning.noGasCta, {"feeTokenSymbol":"ETH","network":"Arbitrum Sepolia"}'
+        'earnFlow.enterAmount.notEnoughBalanceForGasWarning.noGasCta, {"feeTokenSymbol":"ETH","network":"Arbitrum One"}'
       )
     )
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_deposit_add_gas_press, {
       gasTokenId: mockArbEthTokenId,
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       poolId: mockEarnPositions[0].positionId,
       providerId: mockEarnPositions[0].appId,
       depositTokenId: mockArbUsdcTokenId,

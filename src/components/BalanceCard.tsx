@@ -9,6 +9,7 @@ import { HideBalanceButton } from 'src/components/TokenBalance'
 import Touchable from 'src/components/Touchable'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
+import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
 import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
@@ -17,13 +18,14 @@ import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { useCOPm, useTotalTokenBalance } from 'src/tokens/hooks'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
+import { useCOPm, useDollarTokensWithBalance, useDollarUsdBalance } from 'src/tokens/hooks'
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
 }
 
-type CardId = 'available' | 'gold' | 'investments'
+type CardId = 'pesos' | 'dolares' | 'gold' | 'investments'
 
 interface Props {
   testID?: string
@@ -70,7 +72,7 @@ function splitDepositRewards(p: Position): { depositUsd: BigNumber; rewardsUsd: 
 
 export default function BalanceCard({ testID }: Props) {
   const { t } = useTranslation()
-  const [activeCard, setActiveCard] = useState<CardId>('available')
+  const [activeCard, setActiveCard] = useState<CardId>('pesos')
   const [expanded, setExpanded] = useState(false)
 
   const hideBalances = useSelector(hideWalletBalancesSelector)
@@ -88,15 +90,13 @@ export default function BalanceCard({ testID }: Props) {
   )
 
   const copmToken = useCOPm()
-  const totalTokenBalance = useTotalTokenBalance()
+  const dollarTokensWithBalance = useDollarTokensWithBalance()
+  const dolaresUsdBalance = useDollarUsdBalance()
 
   const pesosBalance =
     copmToken && copmToken.priceUsd && usdToLocalRate
       ? copmToken.balance.multipliedBy(copmToken.priceUsd).multipliedBy(usdToLocalRate)
       : new BigNumber(0)
-
-  const availableBalance = totalTokenBalance ?? new BigNumber(0)
-  const dolaresBalance = BigNumber.max(availableBalance.minus(pesosBalance), 0)
 
   const goldLocalValue =
     goldPriceUsd && usdToLocalRate && !goldBalance.isZero()
@@ -114,20 +114,24 @@ export default function BalanceCard({ testID }: Props) {
   const format = (value: BigNumber) =>
     hideBalances ? `XX${decimalSeparator}XX` : value.toFormat(2)
 
-  const renderAmount = (value: BigNumber) => (
+  const renderAmount = (value: BigNumber, symbol: string | null = localCurrencySymbol) => (
     <>
-      {!hideBalances && localCurrencySymbol}
+      {!hideBalances && symbol}
       {format(value)}
     </>
   )
 
+  // Card metadata: expandable controls whether the toggle arrow is shown
+  // and whether renderBreakdownRows is called for that card.
   const cards: Record<
     CardId,
     {
       visible: boolean
       label: string
       amount: BigNumber
+      symbol?: string
       textColor: string
+      expandable: boolean
       gradient?: { colors: string[]; locations?: number[] }
       solidBg?: string
     }
@@ -137,6 +141,7 @@ export default function BalanceCard({ testID }: Props) {
       label: t('tabHome.investmentsBalance'),
       amount: positionsLocalValue,
       textColor: Colors.white,
+      expandable: true,
       gradient: {
         colors: ['#1B3DB2', '#0A1840', '#000D2E'],
       },
@@ -146,23 +151,36 @@ export default function BalanceCard({ testID }: Props) {
       label: t('tabHome.goldBalance'),
       amount: goldLocalValue,
       textColor: '#3A2A05',
+      expandable: true,
       gradient: {
         colors: ['#FFE17A', '#D4A017', '#8B6914'],
         locations: [0, 0.55, 1],
       },
     },
-    available: {
+    dolares: {
+      visible: dolaresUsdBalance.gt(0),
+      label: t('tabHome.dolaresBalance'),
+      amount: dolaresUsdBalance,
+      symbol: LocalCurrencySymbol.USD,
+      textColor: Colors.white,
+      expandable: true,
+      gradient: {
+        colors: ['#26A17B', '#1A6F55', '#0F4733'],
+      },
+    },
+    pesos: {
       visible: true,
-      label: t('tabHome.availableBalance'),
-      amount: availableBalance,
+      label: t('tabHome.pesosBalance'),
+      amount: pesosBalance,
       textColor: Colors.primary,
+      expandable: false,
       solidBg: Colors.white,
     },
   }
 
   // Fixed render order; active card moves to the end so it paints last
   // (on top) and its position in the stack is "front".
-  const baseOrder: CardId[] = ['investments', 'gold', 'available']
+  const baseOrder: CardId[] = ['investments', 'gold', 'dolares', 'pesos']
   const behindOrder = baseOrder.filter((id) => id !== activeCard && cards[id].visible)
   const activeMeta = cards[activeCard]
 
@@ -185,7 +203,7 @@ export default function BalanceCard({ testID }: Props) {
           {meta.label}
         </Text>
         <Text style={[styles.behindAmount, { color: meta.textColor }]} numberOfLines={1}>
-          {renderAmount(meta.amount)}
+          {renderAmount(meta.amount, meta.symbol ?? localCurrencySymbol)}
         </Text>
       </View>
     )
@@ -230,17 +248,23 @@ export default function BalanceCard({ testID }: Props) {
     const rowLabelStyle = [styles.breakdownLabel, { color: textColor, opacity: 0.7 }]
     const rowAmountStyle = [styles.breakdownAmount, { color: textColor }]
 
-    if (activeCard === 'available') {
+    if (activeCard === 'dolares') {
       return (
         <>
-          <View style={styles.breakdownRow}>
-            <Text style={rowLabelStyle}>{t('tabHome.pesosBalance')}</Text>
-            <Text style={rowAmountStyle}>{renderAmount(pesosBalance)}</Text>
-          </View>
-          <View style={styles.breakdownRow}>
-            <Text style={rowLabelStyle}>{t('tabHome.dolaresBalance')}</Text>
-            <Text style={rowAmountStyle}>{renderAmount(dolaresBalance)}</Text>
-          </View>
+          {dollarTokensWithBalance.map(({ tokenInfo, usdValue }) => {
+            const ticker = getDollarTokenTicker(tokenInfo.tokenId)
+            const label = ticker ?? tokenInfo.symbol
+            return (
+              <View key={tokenInfo.tokenId} style={styles.breakdownRow}>
+                <Text style={rowLabelStyle} numberOfLines={1}>
+                  {label}
+                </Text>
+                <Text style={rowAmountStyle}>
+                  {renderAmount(usdValue, LocalCurrencySymbol.USD)}
+                </Text>
+              </View>
+            )
+          })}
         </>
       )
     }
@@ -316,9 +340,10 @@ export default function BalanceCard({ testID }: Props) {
 
   const renderFrontCard = (): ReactNode => {
     const meta = activeMeta
-    const dividerColor = activeCard === 'available' ? Colors.gray2 : `${meta.textColor}33` // ~20% alpha
-    const toggleBg = activeCard === 'available' ? Colors.gray1 : `${meta.textColor}1F`
-    const toggleArrowColor = activeCard === 'available' ? Colors.gray4 : meta.textColor
+    const isPesos = activeCard === 'pesos'
+    const dividerColor = isPesos ? Colors.gray2 : `${meta.textColor}33` // ~20% alpha
+    const toggleBg = isPesos ? Colors.gray1 : `${meta.textColor}1F`
+    const toggleArrowColor = isPesos ? Colors.gray4 : meta.textColor
 
     const body = (
       <>
@@ -330,32 +355,34 @@ export default function BalanceCard({ testID }: Props) {
           style={[styles.frontAmount, { color: meta.textColor }]}
           testID={`BalanceCard/${activeCard}/Front`}
         >
-          {renderAmount(meta.amount)}
+          {renderAmount(meta.amount, meta.symbol ?? localCurrencySymbol)}
         </Text>
 
-        {expanded && (
+        {expanded && meta.expandable && (
           <View style={styles.breakdown} testID="BalanceCard/Breakdown">
             <View style={[styles.divider, { backgroundColor: dividerColor }]} />
             {renderBreakdownRows(meta.textColor)}
           </View>
         )}
 
-        <Touchable
-          onPress={onToggleExpand}
-          style={styles.toggle}
-          testID="BalanceCard/Toggle"
-          borderRadius={Spacing.Large32}
-        >
-          <View
-            style={[
-              styles.toggleInner,
-              { backgroundColor: toggleBg },
-              expanded && styles.toggleInnerExpanded,
-            ]}
+        {meta.expandable && (
+          <Touchable
+            onPress={onToggleExpand}
+            style={styles.toggle}
+            testID="BalanceCard/Toggle"
+            borderRadius={Spacing.Large32}
           >
-            <DownArrowIcon color={toggleArrowColor} />
-          </View>
-        </Touchable>
+            <View
+              style={[
+                styles.toggleInner,
+                { backgroundColor: toggleBg },
+                expanded && styles.toggleInnerExpanded,
+              ]}
+            >
+              <DownArrowIcon color={toggleArrowColor} />
+            </View>
+          </Touchable>
+        )}
       </>
     )
 

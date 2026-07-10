@@ -26,17 +26,17 @@ describe('positionsWithBalanceSelector', () => {
         positions: [
           {
             type: 'contract-position' as const,
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             address: '0xa',
-            positionId: 'celo-sepolia:0xa',
+            positionId: 'celo-mainnet:0xa',
             appId: 'a',
             displayProps: {
               title: 'Title A',
             },
             tokens: [
               {
-                tokenId: 'celo-sepolia:0xb',
-                networkId: NetworkId['celo-sepolia'],
+                tokenId: 'celo-mainnet:0xb',
+                networkId: NetworkId['celo-mainnet'],
                 balance: '0',
                 priceUsd: '10',
               },
@@ -46,9 +46,9 @@ describe('positionsWithBalanceSelector', () => {
           },
           {
             type: 'app-token' as const,
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             address: '0xb',
-            positionId: 'celo-sepolia:0xb',
+            positionId: 'celo-mainnet:0xb',
             appId: 'b',
             displayProps: {
               title: 'Title B',
@@ -61,7 +61,7 @@ describe('positionsWithBalanceSelector', () => {
       },
     }
     const positions = positionsWithBalanceSelector(state)
-    expect(positions.map((position) => position.positionId)).toStrictEqual(['celo-sepolia:0xb'])
+    expect(positions.map((position) => position.positionId)).toStrictEqual(['celo-mainnet:0xb'])
   })
 })
 
@@ -72,9 +72,9 @@ describe('earnPositionsSelector', () => {
         positions: [
           {
             type: 'app-token' as const,
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             address: '0xa',
-            positionId: 'celo-sepolia:0xa',
+            positionId: 'celo-mainnet:0xa',
             appId: 'a',
             displayProps: {
               title: 'Title A',
@@ -89,9 +89,9 @@ describe('earnPositionsSelector', () => {
           },
           {
             type: 'app-token' as const,
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             address: '0xb',
-            positionId: 'celo-sepolia:0xb',
+            positionId: 'celo-mainnet:0xb',
             appId: 'b',
             displayProps: {
               title: 'Title B',
@@ -105,11 +105,11 @@ describe('earnPositionsSelector', () => {
             },
           },
         ],
-        earnPositionIds: ['celo-sepolia:0xb'],
+        earnPositionIds: ['celo-mainnet:0xb'],
       },
     }
     const positions = earnPositionsSelector(state)
-    expect(positions.map((position) => position.positionId)).toStrictEqual(['celo-sepolia:0xb'])
+    expect(positions.map((position) => position.positionId)).toStrictEqual(['celo-mainnet:0xb'])
   })
 })
 

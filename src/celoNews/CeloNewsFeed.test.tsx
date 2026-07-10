@@ -122,6 +122,9 @@ describe('CeloNewsFeed', () => {
   })
 
   it('shows an error view with a retry button when the data fails to load', async () => {
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires and waitFor can progress.
+    jest.useRealTimers()
     mockFetch.mockResponse('', { status: 500 })
 
     const store = createMockStore({})
@@ -139,7 +142,8 @@ describe('CeloNewsFeed', () => {
     // Check we cannot see the read more button
     expect(tree.queryByText('celoNews.readMoreButtonText')).toBeFalsy()
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
+    // fetchWithTimeout retries 3 times on 5xx before giving up.
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
 
     // Check we cannot see the Celo news header
     expect(tree.queryByText('celoNews.headerTitle')).toBeFalsy()
@@ -150,9 +154,10 @@ describe('CeloNewsFeed', () => {
     // Check we cannot see the read more button
     expect(tree.queryByText('celoNews.readMoreButtonText')).toBeFalsy()
 
-    // Check we can retry
+    // Check we can retry; second attempt also retries 3 times -> 6 total.
     fireEvent.press(tree.getByText('celoNews.retryButtonText'))
     expect(AppAnalytics.track).toHaveBeenCalledWith(CeloNewsEvents.celo_news_retry_tap)
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(6))
+    jest.useFakeTimers()
   })
 })

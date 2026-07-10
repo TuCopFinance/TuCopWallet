@@ -15,7 +15,7 @@ import {
 } from 'src/transactions/types'
 import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
 import { ToggleableOnboardingFeatures } from 'src/onboarding/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import { Screens } from 'src/navigator/Screens'
 import {
   DEFAULT_DAILY_PAYMENT_LIMIT_CUSD_LEGACY,
@@ -450,11 +450,13 @@ describe('Redux persist migrations', () => {
       },
     })
     expect(migratedSchema.localCurrency.exchangeRates).toBeDefined()
-    expect(migratedSchema.localCurrency.exchangeRates[Currency.Dollar]).toEqual(
+    // v16 wrote exchangeRates['cUSD'] and balances['cUSD'] using the legacy
+    // literal that Currency.Dollar held at the time.
+    expect(migratedSchema.localCurrency.exchangeRates.cUSD).toEqual(
       v15Schema.localCurrency.exchangeRate
     )
     expect(migratedSchema.stableToken.balance).toBeUndefined()
-    expect(migratedSchema.stableToken.balances[Currency.Dollar]).toEqual('150')
+    expect(migratedSchema.stableToken.balances.cUSD).toEqual('150')
     expect(migratedSchema.escrow.isReclaiming).toBeFalsy()
     expect(migratedSchema.escrow.sentEscrowedPayments.length).toEqual(0)
   })
@@ -855,6 +857,10 @@ describe('Redux persist migrations', () => {
   })
 
   it('works from v106 to v107', () => {
+    // Historical fixture: at v106, persisted state used legacy on-chain symbols
+    // ('cUSD', 'cGLD'). The migration only transforms Currency.Celo -> CELO.
+    // We use literal strings to reflect what real wallets had on disk at v106
+    // (the Currency enum was later rebranded internally to USDm/EURm/CELO).
     const oldSchema = {
       ...v106Schema,
       fiatConnect: {
@@ -862,11 +868,11 @@ describe('Redux persist migrations', () => {
         cachedFiatAccountUses: [
           {
             providerId: 'provider-two',
-            cryptoType: Currency.Dollar,
+            cryptoType: 'cUSD',
           },
           {
             providerId: 'provider-one',
-            cryptoType: Currency.Celo,
+            cryptoType: 'cGLD',
           },
         ],
         cachedQuoteParams: {
@@ -874,14 +880,14 @@ describe('Redux persist migrations', () => {
             ['some-schema']: {
               cryptoAmount: '10',
               fiatAmount: '10',
-              cryptoType: Currency.Dollar,
+              cryptoType: 'cUSD',
             },
           },
           'some-other-provider': {
             ['some-schema']: {
               cryptoAmount: '10',
               fiatAmount: '10',
-              cryptoType: Currency.Celo,
+              cryptoType: 'cGLD',
             },
           },
         },
@@ -1219,8 +1225,9 @@ describe('Redux persist migrations', () => {
     const oldSchema = v145Schema
     const migratedSchema = migrations[146](oldSchema)
     const expectedSchema: any = _.cloneDeep(oldSchema)
-    expectedSchema.localCurrency.usdToLocalRate =
-      oldSchema.localCurrency.exchangeRates[Currency.Dollar]
+    // v16 wrote exchangeRates['cUSD'] (legacy Currency.Dollar literal); v146
+    // reads it under that same key when promoting to usdToLocalRate.
+    expectedSchema.localCurrency.usdToLocalRate = oldSchema.localCurrency.exchangeRates.cUSD
     delete expectedSchema.localCurrency.exchangeRates
     expect(migratedSchema).toStrictEqual(expectedSchema)
   })
@@ -1284,7 +1291,7 @@ describe('Redux persist migrations', () => {
         standbyTransactions: [
           {
             context: { id: 'test' },
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             type: TokenTransactionTypeV2.Sent,
             status: TransactionStatus.Pending,
             value: '0.5',
@@ -1297,7 +1304,7 @@ describe('Redux persist migrations', () => {
         transactions: [
           {
             __typename: 'TokenTransferV3',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             type: TokenTransactionTypeV2.Sent,
             transactionHash: '123',
             timestamp: 456,
@@ -1317,7 +1324,7 @@ describe('Redux persist migrations', () => {
           },
           {
             __typename: 'NftTransferV3',
-            networkId: NetworkId['ethereum-sepolia'],
+            networkId: NetworkId['ethereum-mainnet'],
             type: TokenTransactionTypeV2.NftReceived,
             transactionHash: '123',
             timestamp: 456,
@@ -1374,7 +1381,7 @@ describe('Redux persist migrations', () => {
     preMigrationSchema.transactions.standbyTransactions = [
       {
         context: { id: 'someId' },
-        networkId: 'celo-sepolia',
+        networkId: 'celo-mainnet',
         type: 'SENT',
         status: TransactionStatus.Pending,
         value: '123',
@@ -1393,7 +1400,7 @@ describe('Redux persist migrations', () => {
         __typename: 'TokenTransferV3',
         type: TokenTransactionTypeV2.Sent,
         context: { id: 'someId' },
-        networkId: 'celo-sepolia',
+        networkId: 'celo-mainnet',
         amount: {
           value: '123',
           tokenId: 'someTokenId',
@@ -1417,7 +1424,7 @@ describe('Redux persist migrations', () => {
     const celoSwap = {
       __typename: 'TokenExchangeV3',
       type: 'SWAP_TRANSACTION',
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       block: '22127052',
       transactionHash: '0x28fc7261a01bbbe97d5cc1f4c41ccf278bb9980ab12b4cd4bf62b76f137a6691',
     }
@@ -1433,14 +1440,14 @@ describe('Redux persist migrations', () => {
       block: '22115737',
       transactionHash: '0x8f3cb9816418ec3df206b914d88285f3eb251b6a07a8b89b11379eed57fec22e',
       type: 'SENT',
-      networkId: 'ethereum-sepolia',
+      networkId: 'ethereum-mainnet',
     }
     preMigrationSchema.transactions.transactions = [celoSwap, ethereumTransfer, celoTransfer]
     const migratedSchema = migrations[165](preMigrationSchema)
 
     expect(migratedSchema.transactions.transactionsByNetworkId).toEqual({
-      [NetworkId['celo-sepolia']]: [celoSwap, celoTransfer],
-      [NetworkId['ethereum-sepolia']]: [ethereumTransfer],
+      [NetworkId['celo-mainnet']]: [celoSwap, celoTransfer],
+      [NetworkId['ethereum-mainnet']]: [ethereumTransfer],
     })
     expect('transactions' in migratedSchema.transactions).toBe(false)
   })
@@ -1482,35 +1489,35 @@ describe('Redux persist migrations', () => {
     const migratedSchema = migrations[175](oldSchema)
 
     // CELO
-    const celoToken = migratedSchema.tokens.tokenBalances['celo-sepolia:native']
+    const celoToken = migratedSchema.tokens.tokenBalances['celo-mainnet:native']
     expect(celoToken).not.toHaveProperty('isCoreToken')
     expect(celoToken).toHaveProperty('isFeeCurrency', true)
     expect(celoToken).toHaveProperty('canTransferWithComment', true)
 
     // cUSD
     const cUSDToken =
-      migratedSchema.tokens.tokenBalances['celo-sepolia:0x874069fa1eb16d44d622f2e0ca25eea172369bc1']
+      migratedSchema.tokens.tokenBalances['celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1']
     expect(cUSDToken).not.toHaveProperty('isCoreToken')
     expect(cUSDToken).toHaveProperty('isFeeCurrency', true)
     expect(cUSDToken).toHaveProperty('canTransferWithComment', true)
 
     // cEUR
     const cEURToken =
-      migratedSchema.tokens.tokenBalances['celo-sepolia:0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f']
+      migratedSchema.tokens.tokenBalances['celo-mainnet:0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f']
     expect(cEURToken).not.toHaveProperty('isCoreToken')
     expect(cEURToken).toHaveProperty('isFeeCurrency', true)
     expect(cEURToken).toHaveProperty('canTransferWithComment', true)
 
     // Test Token
     const testToken =
-      migratedSchema.tokens.tokenBalances['celo-sepolia:0x048f47d358ec521a6cf384461d674750a3cb58c8']
+      migratedSchema.tokens.tokenBalances['celo-mainnet:0x048f47d358ec521a6cf384461d674750a3cb58c8']
     expect(testToken).not.toHaveProperty('isCoreToken')
     expect(testToken).not.toHaveProperty('isFeeCurrency')
     expect(testToken).not.toHaveProperty('canTransferWithComment')
 
     // Moola
     const moolaToken =
-      migratedSchema.tokens.tokenBalances['celo-sepolia:0x17700282592D6917F6A73D0bF8AcCf4D578c131e']
+      migratedSchema.tokens.tokenBalances['celo-mainnet:0x17700282592D6917F6A73D0bF8AcCf4D578c131e']
     expect(moolaToken).not.toHaveProperty('isCoreToken')
     expect(moolaToken).not.toHaveProperty('isFeeCurrency')
     expect(moolaToken).not.toHaveProperty('canTransferWithComment')
@@ -1566,7 +1573,7 @@ describe('Redux persist migrations', () => {
       home: {
         ...v197Schema.home,
         nftCelebration: {
-          networkId: 'celo-sepolia',
+          networkId: 'celo-mainnet',
           contractAddress: '0xTEST',
           displayed: true,
         },
@@ -1687,9 +1694,7 @@ describe('Redux persist migrations', () => {
         ...v228Schema.transactions,
         transactionsByNetworkId: {
           ...v228Schema.transactions.transactionsByNetworkId,
-          [NetworkId['arbitrum-sepolia']]: [
-            { ...mockEarnDepositTransaction, providerId: 'aave-v3' },
-          ],
+          [NetworkId['arbitrum-one']]: [{ ...mockEarnDepositTransaction, providerId: 'aave-v3' }],
         },
         standbyTransactions: [
           {
@@ -1703,9 +1708,8 @@ describe('Redux persist migrations', () => {
     }
     const migratedSchema = migrations[229](oldSchema)
     const expectedSchema: any = _.cloneDeep(oldSchema)
-    expectedSchema.transactions.transactionsByNetworkId[
-      NetworkId['arbitrum-sepolia']
-    ][0].providerId = 'aave'
+    expectedSchema.transactions.transactionsByNetworkId[NetworkId['arbitrum-one']][0].providerId =
+      'aave'
     expectedSchema.transactions.standbyTransactions[0].providerId = 'aave'
     expect(migratedSchema).toStrictEqual(expectedSchema)
   })

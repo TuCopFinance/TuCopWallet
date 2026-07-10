@@ -4,7 +4,9 @@ import bucksPayReducer from 'src/buckspay/slice'
 import goldReducer from 'src/gold/slice'
 import { appReducer as app } from 'src/app/reducers'
 import dappsReducer from 'src/dapps/slice'
+import dollarsSpendReducer from 'src/dollarsSpend/slice'
 import earnReducer from 'src/earn/slice'
+import neeruReducer from 'src/earn/neeru/slice'
 import { reducer as fiatExchanges } from 'src/fiatExchanges/reducer'
 import fiatConnectReducer from 'src/fiatconnect/slice'
 import { homeReducer as home } from 'src/home/reducers'
@@ -23,9 +25,12 @@ import { recipientsReducer as recipients } from 'src/recipients/reducer'
 import { sendReducer as send } from 'src/send/reducers'
 import swapReducer from 'src/swap/slice'
 import tokenReducer from 'src/tokens/slice'
+import { transactionInFlightReducer } from 'src/lib/useTransactionInFlight'
 import transactionsReducer from 'src/transactions/slice'
+import { sentTransactionLogReducer } from 'src/viem/sentTransactionLog'
 import { reducer as walletConnect } from 'src/walletConnect/reducer'
 import { reducer as web3 } from 'src/web3/reducer'
+import wriFeeAdapterBootstrapReducer from 'src/wri/feeAdapterBootstrap/slice'
 
 export const reducersList = {
   app,
@@ -45,6 +50,7 @@ export const reducersList = {
   walletConnect,
   tokens: tokenReducer,
   dapps: dappsReducer,
+  dollarsSpend: dollarsSpendReducer,
   fiatConnect: fiatConnectReducer,
   swap: swapReducer,
   positions: positionsReducer,
@@ -54,6 +60,10 @@ export const reducersList = {
   jumpstart: jumpstartReducer,
   points: pointsReducer,
   earn: earnReducer,
+  neeru: neeruReducer,
   buckspay: bucksPayReducer,
   gold: goldReducer,
+  transactionInFlight: transactionInFlightReducer,
+  sentTransactionLog: sentTransactionLogReducer,
+  wriFeeAdapterBootstrap: wriFeeAdapterBootstrapReducer,
 } as const

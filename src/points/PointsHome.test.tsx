@@ -42,10 +42,10 @@ const renderPointsHome = (storeOverrides?: RecursivePartial<RootState>) => {
       },
       tokens: {
         tokenBalances: {
-          ['celo-sepolia:0xusd']: {
-            tokenId: 'celo-sepolia:0xabcd',
+          ['celo-mainnet:0xusd']: {
+            tokenId: 'celo-mainnet:0xabcd',
             address: '0xabcd',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             balance: '10',
           },
         },
@@ -74,7 +74,7 @@ describe(PointsHome, () => {
     jest.mocked(getFeatureGate).mockReturnValue(false)
     jest
       .mocked(getDynamicConfigParams)
-      .mockReturnValue({ jumpstartContracts: { 'celo-sepolia': '0x1234' } })
+      .mockReturnValue({ jumpstartContracts: { 'celo-mainnet': '0x1234' } })
   })
 
   it('renders a loading state while loading config', async () => {

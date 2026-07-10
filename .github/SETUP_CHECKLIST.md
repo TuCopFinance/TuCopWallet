@@ -33,7 +33,6 @@
 - [ ] `android/app/debug.keystore` - Debug keystore
 - [ ] `android/gradle.properties` - With VERSION_CODE configured
 - [ ] `.env.mainnet` - Environment variables for production
-- [ ] `.env.testnet` - Environment variables for testnet
 
 ### iOS
 

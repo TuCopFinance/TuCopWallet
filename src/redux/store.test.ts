@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 246,
+          "version": 251,
         },
         "account": {
           "acceptedTerms": false,
@@ -236,6 +236,10 @@ describe('store state', () => {
           "maxNumRecentDapps": 0,
           "mostPopularDappIds": [],
           "recentDappIds": [],
+        },
+        "dollarsSpend": {
+          "inFlight": null,
+          "transitioning": false,
         },
         "earn": {
           "depositStatus": "idle",
@@ -330,6 +334,16 @@ describe('store state', () => {
           "preferredCurrencyCode": "COP",
           "usdToLocalRate": "1.33",
         },
+        "neeru": {
+          "closeStatus": "idle",
+          "closingPositionId": null,
+          "fetchStatus": "idle",
+          "lastError": null,
+          "lastSyncedAt": null,
+          "lastSyncedBlock": null,
+          "optimisticPositions": [],
+          "positions": [],
+        },
         "networkInfo": {
           "connected": false,
           "rehydrated": true,
@@ -382,8 +396,12 @@ describe('store state', () => {
           "inviteRewardsVersion": "none",
           "isEncryptingComment": false,
           "isSending": false,
+          "lastUsedTokenId": undefined,
           "recentPayments": [],
           "recentRecipients": [],
+        },
+        "sentTransactionLog": {
+          "byFlow": {},
         },
         "swap": {
           "currentSwap": null,
@@ -393,6 +411,9 @@ describe('store state', () => {
         "tokens": {
           "error": false,
           "tokenBalances": {},
+        },
+        "transactionInFlight": {
+          "byFlow": {},
         },
         "transactions": {
           "feedFirstPage": [],
@@ -406,6 +427,23 @@ describe('store state', () => {
         },
         "web3": {
           "account": "0x0000000000000000000000000000000000007E57",
+        },
+        "wriFeeAdapterBootstrap": {
+          "byAdapter": {
+            "USDC": {
+              "bootstrapped": false,
+              "lastAttemptAt": null,
+              "lastError": null,
+              "lastSuccessAt": null,
+            },
+            "USDT": {
+              "bootstrapped": false,
+              "lastAttemptAt": null,
+              "lastError": null,
+              "lastSuccessAt": null,
+            },
+          },
+          "pending": null,
         },
       }
     `)

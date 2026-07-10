@@ -17,8 +17,7 @@ import {
   signTypedData,
   writeContract,
 } from 'viem/actions'
-import { goerli as ethereumGoerli, sepolia as ethereumSepolia } from 'viem/chains'
-import { celoSepolia } from 'src/viem/celoSepolia'
+import { celo, goerli as ethereumGoerli, mainnet as ethereumMainnet } from 'viem/chains'
 
 jest.mock('src/viem', () => {
   return {
@@ -34,9 +33,9 @@ jest.mock('src/viem', () => {
 
 describe('getTransport', () => {
   it.each([
-    [celoSepolia, false, 'celoTransport'],
-    [celoSepolia, true, 'celoAppTransport'],
-    [ethereumSepolia, false, 'ethereumTransport'],
+    [celo, false, 'celoTransport'],
+    [celo, true, 'celoAppTransport'],
+    [ethereumMainnet, false, 'ethereumTransport'],
   ])('returns correct transport for $s', (chain, useApp, expectedTransport) => {
     expect(getTransport({ chain, useApp })).toEqual(expectedTransport)
   })
@@ -44,7 +43,7 @@ describe('getTransport', () => {
     expect(() => getTransport({ chain: ethereumGoerli })).toThrow()
   })
   it('throws if app transport not found', () => {
-    expect(() => getTransport({ chain: ethereumSepolia, useApp: true })).toThrow()
+    expect(() => getTransport({ chain: ethereumMainnet, useApp: true })).toThrow()
   })
 })
 
@@ -79,7 +78,7 @@ describe('getLockableWallet', () => {
     const mockRequest = jest.fn(async ({ method }) => {
       switch (method) {
         case 'eth_chainId':
-          return toHex(BigInt(11142220))
+          return toHex(BigInt(42220))
         case 'eth_getTransactionCount':
           return toHex(BigInt(1))
         case 'eth_getBlockByNumber':
@@ -99,7 +98,7 @@ describe('getLockableWallet', () => {
     viemTransports[Network.Ethereum] = mockTransport
     accounts = new KeychainAccounts()
     await accounts.addAccount(mockPrivateKey, 'password')
-    wallet = getLockableViemWallet(accounts, celoSepolia, mockAddress)
+    wallet = getLockableViemWallet(accounts, celo, mockAddress)
   })
 
   it.each([
@@ -127,7 +126,7 @@ describe('getLockableWallet', () => {
   })
 
   it("throws if account doesn't exist in the keychain", () => {
-    expect(() => getLockableViemWallet(accounts, celoSepolia, mockAccount2)).toThrow(
+    expect(() => getLockableViemWallet(accounts, celo, mockAccount2)).toThrow(
       `Account ${mockAccount2} not found in KeychainAccounts`
     )
   })

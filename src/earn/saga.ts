@@ -3,6 +3,8 @@ import BigNumber from 'bignumber.js'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import { EarnDepositTxsReceiptProperties } from 'src/analytics/Properties'
+import { NEERU_APP_ID } from 'src/earn/neeru/constants'
+import { handleNeeruDepositOptimistic } from 'src/earn/neeru/saga'
 import {
   depositCancel,
   depositError,
@@ -15,6 +17,13 @@ import {
 } from 'src/earn/slice'
 import { DepositInfo, WithdrawInfo } from 'src/earn/types'
 import { isGasSubsidizedForNetwork } from 'src/earn/utils'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAbort,
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
@@ -40,7 +49,7 @@ import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { networkIdToNetwork } from 'src/web3/networkConfig'
-import { all, call, put, select, takeLeading } from 'typed-redux-saga'
+import { all, call, fork, put, select, takeLeading } from 'typed-redux-saga'
 import { decodeFunctionData, erc20Abi } from 'viem'
 
 const TAG = 'earn/saga'
@@ -80,6 +89,21 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
     fromTokenId,
   } = action.payload
   const depositTokenId = pool.dataProps.depositTokenId
+  const flowId = `earn-deposit-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'earn',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId: pool.networkId,
+      retryCount: 0,
+      startedAt: Date.now(),
+    })
+  )
 
   const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
 
@@ -91,6 +115,14 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
       `Token info not found for token ids ${depositTokenId} and/or ${fromTokenId}`
     )
     yield* put(depositError())
+    yield* put(
+      inFlightFail({
+        flowId,
+        errorClass: classifyError(
+          new Error(`Token info missing: ${depositTokenId}/${fromTokenId}`)
+        ),
+      })
+    )
     return
   }
 
@@ -276,6 +308,15 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
         transactionHash: txHashes[txHashes.length - 1],
       })
     )
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
+
+    if (pool.appId === NEERU_APP_ID) {
+      // Detached so navigation to TransactionSuccessScreen proceeds while
+      // the polling loop runs in the background. The Neeru position card
+      // renders an optimistic placeholder until the backend indexer
+      // surfaces the real entry.
+      yield* fork(handleNeeruDepositOptimistic, depositTxReceipt)
+    }
 
     // Show success vibration and navigate to success screen
     vibrateSuccess()
@@ -293,6 +334,7 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(`${TAG}/depositSubmitSaga`, 'Transaction cancelled by user')
       yield* put(depositCancel())
+      yield* put(inFlightAbort({ flowId }))
       AppAnalytics.track(EarnEvents.earn_deposit_submit_cancel, commonAnalyticsProps)
       return
     }
@@ -300,6 +342,7 @@ export function* depositSubmitSaga(action: PayloadAction<DepositInfo>) {
     const error = ensureError(err)
     Logger.error(`${TAG}/depositSubmitSaga`, 'Error sending deposit transaction', error)
     yield* put(depositError())
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
     AppAnalytics.track(EarnEvents.earn_deposit_submit_error, {
       ...commonAnalyticsProps,
       error: error.message,
@@ -325,10 +368,31 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
   const tokenId = pool.dataProps.depositTokenId
   const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
   const tokenInfo = yield* call(getTokenInfo, tokenId)
+  const flowId = `earn-withdraw-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'earn',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId: pool.networkId,
+      retryCount: 0,
+      startedAt: Date.now(),
+    })
+  )
 
   if (!tokenInfo) {
     Logger.error(`${TAG}/withdrawSubmitSaga/${mode}`, 'Token info not found for token id', tokenId)
     yield* put(withdrawError())
+    yield* put(
+      inFlightFail({
+        flowId,
+        errorClass: classifyError(new Error(`Token info missing: ${tokenId}`)),
+      })
+    )
     return
   }
 
@@ -437,6 +501,7 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
     })
 
     yield* put(withdrawSuccess())
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
     AppAnalytics.track(EarnEvents.earn_withdraw_submit_success, commonAnalyticsProps)
 
     // Show success vibration and navigate to success screen
@@ -464,6 +529,7 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(`${TAG}/withdrawSubmitSaga/${mode}`, 'Transaction(s) cancelled by user')
       yield* put(withdrawCancel())
+      yield* put(inFlightAbort({ flowId }))
       AppAnalytics.track(EarnEvents.earn_withdraw_submit_cancel, commonAnalyticsProps)
       return
     }
@@ -471,6 +537,7 @@ export function* withdrawSubmitSaga(action: PayloadAction<WithdrawInfo>) {
     const error = ensureError(err)
     Logger.error(`${TAG}/withdrawSubmitSaga/${mode}`, `Error sending ${mode} transaction(s)`, error)
     yield* put(withdrawError())
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
     AppAnalytics.track(EarnEvents.earn_withdraw_submit_error, {
       ...commonAnalyticsProps,
       error: error.message,

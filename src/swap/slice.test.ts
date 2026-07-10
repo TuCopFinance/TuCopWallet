@@ -95,7 +95,7 @@ describe('reducer', () => {
       fromTokenId: mockCeurTokenId,
       toTokenId: mockCeloTokenId,
       transactionHash: '0x2',
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
     })
 
     const resultState = reducer(initialState, action) as State

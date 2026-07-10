@@ -168,9 +168,24 @@ export async function tryEstimateTransaction({
       account: tx.from,
     })
     tx._baseFeePerGas = baseFeePerGas
+    // Celo's eth_estimateGas returns a conservative gas LIMIT (the maximum the
+    // tx could consume), produced via a binary search. In practice the gas
+    // USED on-chain for swaps + CIP-64 txs is ~55-65% of that limit (verified
+    // via tx 0xd29dc1d8... and 0xb7aa617c... receipts). Without an explicit
+    // _estimatedGasUse, the wallet's getEstimatedGasFee() falls back to
+    // `tx.gas` (the LIMIT), which makes the displayed "Tarifa de red estimada"
+    // basically equal to "Tarifa máxima de red" — both 2x the real cost.
+    //
+    // Setting _estimatedGasUse to ~60% of the limit aligns the displayed
+    // estimate with the real on-chain cost while keeping getMaxGasFee()
+    // (which uses tx.gas) as a true upper bound. The user is never charged
+    // more than the max, so this is a UI-only improvement.
+    const REALISTIC_GAS_USED_RATIO = BigInt(60) // 60% of limit
+    tx._estimatedGasUse = (tx.gas * REALISTIC_GAS_USED_RATIO) / BigInt(100)
     Logger.info(TAG, `estimateGas results`, {
       feeCurrency: tx.feeCurrency,
       gas: tx.gas,
+      _estimatedGasUse: tx._estimatedGasUse,
       maxFeePerGas,
       maxPriorityFeePerGas,
       baseFeePerGas,

@@ -42,6 +42,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { SwapTransaction } from 'src/swap/types'
 import { useLocalToTokenAmount, useTokenInfo, useTokenToLocalAmount } from 'src/tokens/hooks'
+import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getInputDecimalsForToken } from 'src/utils/formatting'
@@ -250,9 +251,11 @@ function EarnEnterAmount({ route }: Props) {
     [transactionToken, isWithdrawal, pool]
   )
 
-  const feeCurrencies = useSelector((state) =>
+  const rawFeeCurrencies = useSelector((state) =>
     feeCurrenciesSelector(state, transactionToken.networkId)
   )
+  // Bug E: stables ahead of CELO for the earn deposit/withdraw flow.
+  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
 
   useEffect(() => {
     clearPreparedTransactions()

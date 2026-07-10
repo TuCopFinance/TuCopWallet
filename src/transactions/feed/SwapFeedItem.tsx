@@ -36,8 +36,42 @@ function SwapFeedItem({ transaction }: Props) {
   }
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
+  // EIP-7702 atomic batches from the TuCop indexer feed (and from the
+  // fetch-Blockscout classifier for the same batches) populate
+  // fromTokenAmounts with every leg of the batch. When every leg is a
+  // dollar-family token (USDT/USDC/USDm/USAT), the user's mental model
+  // treats the whole thing as one "Dolares -> Pesos" swap of the total,
+  // matching the swap flow UI where the aggregate is picked as "Dolares".
+  // We collapse the subtitle to "Dolares > Pesos" and show the summed
+  // outgoing amount as "Dolares", ignoring the per-leg tokenIds.
+  const fromLegCount = transaction.fromTokenAmounts?.length ?? 0
+  const isMultiLegSwap = fromLegCount > 1
+  const DOLLAR_FAMILY_TOKEN_IDS = new Set(
+    [
+      networkConfig.usdtTokenId,
+      networkConfig.usdcTokenId,
+      networkConfig.usdmTokenId,
+      networkConfig.usatTokenId,
+    ].filter(Boolean)
+  )
+  const isMultiDollarSwap =
+    isMultiLegSwap &&
+    (transaction.fromTokenAmounts ?? []).every((leg) => DOLLAR_FAMILY_TOKEN_IDS.has(leg.tokenId))
+  const multiDollarOutgoingTotal = isMultiDollarSwap
+    ? (transaction.fromTokenAmounts ?? [])
+        .reduce((sum, leg) => sum.plus(new BigNumber(leg.value)), new BigNumber(0))
+        .toFixed()
+    : null
 
-  // Get friendly token name - also accepts tokenId for when token info isn't available
+  // Get friendly token name - also accepts tokenId for when token info isn't available.
+  // Per .claude/rules/tokens.md the entire USAT/USDm/USDC/USDT group is shown as
+  // "Dolares" in the UI; only XAUt0 is "Oro" and COPm is "Pesos".
+  //
+  // For the swap feed we go one step further: when the concrete dollar-family
+  // token is known (USDT / USDC / USDm / USAT), we append the underlying symbol
+  // in parens so the user can distinguish "Dolares (USDT)" vs "Dolares (USDC)"
+  // when they scroll through a Pesos -> Dolares history full of legs. Multi-leg
+  // swaps skip this suffix because the subtitle is a count ("3 monedas a Pesos").
   const getTokenName = (token: any, tokenId?: string) => {
     // First check by tokenId (works even when token info not loaded)
     const idToCheck = tokenId || token?.tokenId
@@ -46,7 +80,16 @@ function SwapFeedItem({ transaction }: Props) {
         return t('assets.pesos')
       }
       if (idToCheck === networkConfig.usdtTokenId) {
-        return t('assets.dollars')
+        return `${t('assets.dollars')} (USDT)`
+      }
+      if (idToCheck === networkConfig.usdcTokenId) {
+        return `${t('assets.dollars')} (USDC)`
+      }
+      if (idToCheck === networkConfig.usdmTokenId) {
+        return `${t('assets.dollars')} (USDm)`
+      }
+      if (idToCheck === networkConfig.usatTokenId) {
+        return `${t('assets.dollars')} (USAT)`
       }
       if (idToCheck === networkConfig.xaut0TokenId) {
         return t('assets.gold')
@@ -61,13 +104,26 @@ function SwapFeedItem({ transaction }: Props) {
       return '...'
     }
 
-    // Check by symbol as fallback
+    // Check by symbol as fallback. Note 'cusd' is the legacy on-chain symbol for
+    // USDm and 'usat' is sometimes shown lowercased; both must collapse to Dolares.
     const symbol = token.symbol?.toLowerCase() || ''
     if (symbol === 'copm' || symbol === 'ccop') {
       return t('assets.pesos')
     }
+    // Symbol-fallback path: same "Dolares (X)" convention as the tokenId
+    // branch above, so a swap row without token registry hydration still
+    // disambiguates between the concrete dollar-family assets.
     if (symbol === 'usdt' || symbol === 'usd₮' || symbol === 'usdt0') {
-      return t('assets.dollars')
+      return `${t('assets.dollars')} (USDT)`
+    }
+    if (symbol === 'usdc') {
+      return `${t('assets.dollars')} (USDC)`
+    }
+    if (symbol === 'usdm' || symbol === 'cusd') {
+      return `${t('assets.dollars')} (USDm)`
+    }
+    if (symbol === 'usat') {
+      return `${t('assets.dollars')} (USAT)`
     }
     if (symbol === 'xaut0' || symbol === 'xaut') {
       return t('assets.gold')
@@ -86,7 +142,7 @@ function SwapFeedItem({ transaction }: Props) {
           hideNetworkIcon={isCrossChainSwap}
         />
         <View style={styles.contentContainer}>
-          {/* Row 1: Title + Incoming Amount */}
+          {/* Row 1: Title + Incoming Amount (same pattern as TransferFeedItem) */}
           <View style={styles.row}>
             <Text style={styles.title} testID={'SwapFeedItem/title'} numberOfLines={1}>
               {t('feedItemSwapTitle')}
@@ -104,25 +160,50 @@ function SwapFeedItem({ transaction }: Props) {
               />
             )}
           </View>
-          {/* Row 2: Subtitle + Outgoing Amount */}
+          {/* Row 2: Subtitle + Outgoing Amount. adjustsFontSizeToFit lets the
+              subtitle scale down when the concrete "(USDT)" / "(USDC)" suffix
+              would otherwise truncate; other feed items don't need this
+              because their subtitles are short. */}
           <View style={styles.row}>
-            <Text style={styles.subtitle} testID={'SwapFeedItem/subtitle'} numberOfLines={1}>
+            <Text
+              style={styles.subtitle}
+              testID={'SwapFeedItem/subtitle'}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.8}
+            >
               {isCrossChainSwap
                 ? t('transactionFeed.crossChainSwapTransactionLabel')
-                : t('feedItemSwapPath', {
-                    token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                    token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                  })}
+                : isMultiDollarSwap
+                  ? t('feedItemSwapPath', {
+                      token1: t('assets.dollars'),
+                      token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                    })
+                  : isMultiLegSwap
+                    ? t('feedItemSwapPathMulti', {
+                        count: fromLegCount,
+                        token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                      })
+                    : t('feedItemSwapPath', {
+                        token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                        token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                      })}
             </Text>
-            <TokenDisplay
-              amount={-transaction.outAmount.value}
-              tokenId={transaction.outAmount.tokenId}
-              showLocalAmount={false}
-              showSymbol={true}
-              hideSign={false}
-              style={styles.tokenAmount}
-              testID={'SwapFeedItem/outgoingAmount'}
-            />
+            {isMultiDollarSwap && multiDollarOutgoingTotal ? (
+              <Text style={styles.tokenAmount} testID={'SwapFeedItem/outgoingAmount'}>
+                {`-${new BigNumber(multiDollarOutgoingTotal).toFixed(2)} ${t('assets.dollars')}`}
+              </Text>
+            ) : (
+              <TokenDisplay
+                amount={-transaction.outAmount.value}
+                tokenId={transaction.outAmount.tokenId}
+                showLocalAmount={false}
+                showSymbol={true}
+                hideSign={false}
+                style={styles.tokenAmount}
+                testID={'SwapFeedItem/outgoingAmount'}
+              />
+            )}
           </View>
           {/* Row 3: Timestamp */}
           <Text style={styles.timestamp} testID={'SwapFeedItem/timestamp'}>

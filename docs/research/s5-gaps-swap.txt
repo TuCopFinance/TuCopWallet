@@ -1,0 +1,59 @@
+S5 Spike — Gaps captured during Swap prototype (integration A)
+
+Target file: src/swap/SwapScreen.tsx (handleConfirmSwap, lines ~479-579)
+Target saga: src/swap/saga.ts (swapSubmitSaga, 335 lines total)
+
+GAP A1: Slippage retry needs descriptor extension.
+  swap.tsx tracks `maxSlippagePercentage` outside the hook. When status enters
+  'failed' with ErrorClass.kind='slippage', retry must re-quote with a fresh
+  slippage. v1 hook has no slot for slippage in InFlightDescriptor.
+  -> v2 fix: add `featureMetadata?: Record<string, unknown>` slot, OR pass
+     slippage via the retry callback.
+
+GAP A2: Quote refresh on retry needs a callback hook.
+  v1 `retry(flowId)` is parameterless. Swap retry MUST re-fetch the quote
+  (price moves), then replay with new preparedTransactions. v1 has no way
+  to inject the new prepared txs into the descriptor for the retry path.
+  -> v2 fix: `retry(flowId, opts?: { freshPreparedTransactions?: SerializableTransactionRequest[] })`.
+
+GAP A3: Component-side state mirror.
+  SwapScreen has localDispatch(startSwap({ swapId })) and reads
+  startedSwapId === currentSwap?.id to derive confirmSwapIsLoading.
+  The hook owns flowId, but SwapScreen still needs a stable swapId for
+  the swap saga's identity. v1 returns flowId from start() — verify call
+  sites can use that directly.
+  -> v2 fix: confirm flowId is the swapId. No change needed if the
+     swap saga is rewired to use descriptor.flowId.
+
+GAP A4: Analytics on confirm.
+  SwapScreen emits SwapEvents.swap_review_submit at the moment of
+  dispatch. v1 hook has no analytics hook. We can leave analytics
+  at the call site (before start()) so no API change is needed.
+  -> RESOLVED: no API change. Analytics stays in feature code.
+
+GAP A5: Error classification.
+  swap saga dispatches swapError(swapId) with no error class. The hook
+  needs to know whether the failure was slippage, gas, RPC, or user
+  rejection to decide if retry is offered. v1 has no classification.
+  -> v2 fix: hook reads ErrorClass from descriptor.lastErrorClass.
+  -> v4 fix: hook accepts `retryClassifier(error) => ErrorClass`
+     (pre-agreed extension point #2). Feature-specific saga emits the
+     raw error, classifier maps to ErrorClass.
+
+GAP A6: Multi-step branch (executeMultiSwap dispatch from same screen).
+  handleConfirmSwap also dispatches `executeMultiSwap` when isVirtualDolares.
+  This is the DollarsSpend flow triggered from SwapScreen. The hook
+  must handle this branch via flowKind='dollarsSpend' from the same
+  screen. v1 fixes flowKind via useTransactionInFlight args — caller
+  needs TWO hook instances on the same screen, OR start() accepts
+  flowKind override.
+  -> v2 fix: pass flowKind dynamically to start() rather than to the
+     hook constructor. Hook lives at a higher scope and the kind is
+     determined at start time.
+
+Net v2 changes:
+  - InFlightDescriptor gains `featureMetadata?: Record<string, unknown>`.
+  - start() accepts the full descriptor including flowKind.
+  - retry() accepts optional `freshPreparedTransactions`.
+  - useTransactionInFlight() no longer needs flowKind upfront — drop
+    from args or make it optional (hook scope = global tx-in-flight).

@@ -37,7 +37,6 @@ const config: KnipConfig = {
     '@sentry/types', // type definitions for sentry
     'react-native-svg-mock', // test mocking
     '@types/jest',
-    'husky',
   ],
   ignore: [
     'src/redux/reducersForSchemaGeneration.ts', // used for root state schema generation
