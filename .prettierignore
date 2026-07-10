@@ -24,3 +24,9 @@ e2e/test-results/*
 # Ignore generated fastlane files
 fastlane/README.md
 
+# Research / experimental contracts workspace (forge/Solidity not on prettier path)
+contracts-research/
+
+# Production contracts (forge / Solidity not on prettier path)
+contracts/
+

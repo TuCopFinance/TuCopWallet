@@ -22,7 +22,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -52,7 +52,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields, mockNftMinimumFields],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -106,7 +106,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -122,7 +122,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftNullMetadata],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -136,7 +136,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftAllFields, mockNftNullMetadata],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -162,7 +162,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [mockNftMinimumFields],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>
@@ -170,7 +170,7 @@ describe('NftsInfoCarousel', () => {
 
     fireEvent.press(getByTestId('ViewOnExplorer'))
     expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
-      uri: `https://sepolia.celoscan.io/token/${mockNftMinimumFields.contractAddress}/instance/${mockNftMinimumFields.tokenId}/metadata`,
+      uri: `https://explorer.celo.org/mainnet/token/${mockNftMinimumFields.contractAddress}/instance/${mockNftMinimumFields.tokenId}/metadata`,
     })
   })
 
@@ -190,7 +190,7 @@ describe('NftsInfoCarousel', () => {
           <NftsInfoCarousel
             {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
               nfts: [{ ...mockNftMinimumFields, tokenId: tokenIdInNft }],
-              networkId: NetworkId['ethereum-sepolia'],
+              networkId: NetworkId['ethereum-mainnet'],
             })}
           />
         </Provider>
@@ -198,7 +198,7 @@ describe('NftsInfoCarousel', () => {
 
       fireEvent.press(getByTestId('ViewOnExplorer'))
       expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
-        uri: `https://sepolia.etherscan.io/nft/${mockNftMinimumFields.contractAddress}/${tokenIdInUri}`,
+        uri: `https://etherscan.io/nft/${mockNftMinimumFields.contractAddress}/${tokenIdInUri}`,
       })
     }
   )
@@ -211,7 +211,7 @@ describe('NftsInfoCarousel', () => {
         <NftsInfoCarousel
           {...getMockStackScreenProps(Screens.NftsInfoCarousel, {
             nfts: [noTokenId],
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
           })}
         />
       </Provider>

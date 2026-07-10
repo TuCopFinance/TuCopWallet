@@ -41,6 +41,20 @@ export enum StatsigFeatureGates {
   ALLOW_EARN_PARTIAL_WITHDRAWAL = 'allow_earn_partial_withdrawal',
   SHOW_ZERION_TRANSACTION_FEED = 'show_zerion_transaction_feed',
   SHOW_DIGITAL_GOLD = 'show_digital_gold',
+  SHOW_NEERU_VAULTS = 'show_neeru_vaults',
+  WRI_PREFLIGHT_SWAP_SIMULATION = 'wri_preflight_swap_simulation',
+  WRI_DOLLARS_SPEND_7702_V1 = 'wri_dollars_spend_7702_v1',
+  // Flip the transaction feed source from Valora's getWalletTransactions to
+  // TuCop's own indexer (which classifies EIP-7702 atomic batches that Valora
+  // ignores). Coordinated with backend's INDEXER_ENABLED=true; do not roll
+  // out the wallet flag until the backend indexer is live AND has caught up
+  // to the latest block. See tasks/plans/wri-tx-feed-tucop.md.
+  WRI_TX_FEED_TUCOP_V1 = 'wri_tx_feed_tucop_v1',
+  // Pre-approve the CIP-64 fee adapters for USDC/USDT (one-time MAX_UINT256
+  // grants) so users without CELO or Mento stables can still pay gas with
+  // their dollar balances. Decoupled from the feed flag — bootstrap is a
+  // wallet-only action with no feed dependency.
+  WRI_COPM_FEE_BOOTSTRAP_V1 = 'wri_copm_fee_bootstrap_v1',
 }
 
 export enum StatsigExperiments {

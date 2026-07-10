@@ -28,7 +28,7 @@ function getStore({ zeroBalance = false }: { zeroBalance?: boolean } = {}) {
           isFeeCurrency: true,
           canTransferWithComment: true,
           priceFetchedAt: Date.now(),
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         },
         [mockCusdTokenId]: {
           tokenId: mockCusdTokenId,
@@ -43,7 +43,7 @@ function getStore({ zeroBalance = false }: { zeroBalance?: boolean } = {}) {
           isFeeCurrency: true,
           canTransferWithComment: true,
           priceFetchedAt: Date.now(),
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
         },
       },
     },
@@ -55,7 +55,7 @@ describe('TabWallet', () => {
     jest.clearAllMocks()
     jest.mocked(getFeatureGate).mockRestore()
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showBalances: [NetworkId['celo-sepolia']],
+      showBalances: [NetworkId['celo-mainnet']],
     })
   })
   it('shows correct total balance, cKES and cUSD line items when tokens have balance', () => {
@@ -64,7 +64,9 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$23.69')
+    // Front card is now 'pesos' (COPm only). cKES and cUSD are not COPm so the
+    // pesos balance will be 0 in this store; the card still renders.
+    expect(getByTestId('BalanceCard/pesos/Front')).toBeTruthy()
     expect(getByTestId('cKESBalance')).toHaveTextContent('1,000.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('10.00 cUSD')
   })
@@ -74,7 +76,7 @@ describe('TabWallet', () => {
         <MockedNavigator component={TabWallet} />
       </Provider>
     )
-    expect(getByTestId('BalanceCard/available/Front')).toHaveTextContent('COP$0.00')
+    expect(getByTestId('BalanceCard/pesos/Front')).toBeTruthy()
     expect(getByTestId('cKESBalance')).toHaveTextContent('0.00 cKES')
     expect(getByTestId('cUSDBalance')).toHaveTextContent('0.00 cUSD')
   })

@@ -31,17 +31,17 @@ const store = createMockStore({
         symbol: 'USDC',
         priceUsd: '1',
         priceFetchedAt: Date.now(),
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
       },
       [mockArbArbTokenId]: {
         tokenId: mockArbArbTokenId,
         symbol: 'ARB',
         priceUsd: '0.9898',
         priceFetchedAt: Date.now(),
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
       },
       [mockAaveArbUsdcTokenId]: {
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         address: mockAaveArbUsdcAddress,
         tokenId: mockAaveArbUsdcTokenId,
         symbol: 'aArbSepUSDC',
@@ -54,10 +54,10 @@ const store = createMockStore({
     positions: [
       {
         type: 'app-token',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         address: '0x460b97bd498e1157530aeb3086301d5225b91216',
-        tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
-        positionId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+        tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
+        positionId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
         appId: 'aave',
         appName: 'Aave',
         symbol: 'aArbSepUSDC',
@@ -72,17 +72,17 @@ const store = createMockStore({
             {
               percentage: 1.9194202601763743,
               label: 'Earnings APY',
-              tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+              tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
             },
           ],
           earningItems: [],
-          depositTokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-          withdrawTokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+          depositTokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+          withdrawTokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
         },
         tokens: [
           {
-            tokenId: 'arbitrum-sepolia:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
-            networkId: NetworkId['arbitrum-sepolia'],
+            tokenId: 'arbitrum-one:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+            networkId: NetworkId['arbitrum-one'],
             address: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
             symbol: 'USDC',
             decimals: 6,
@@ -98,7 +98,7 @@ const store = createMockStore({
         availableShortcutIds: ['deposit', 'withdraw'],
       },
     ],
-    earnPositionIds: ['arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216'],
+    earnPositionIds: ['arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216'],
   },
 })
 

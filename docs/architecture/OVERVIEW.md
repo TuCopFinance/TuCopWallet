@@ -79,7 +79,7 @@ src/
 ├── redux/                  # State management
 │   ├── store.ts            # Store configuration
 │   ├── reducers.ts         # Combined reducers
-│   ├── reducersList.ts     # All 26 slices
+│   ├── reducersList.ts     # All 32 slices
 │   ├── sagas.ts            # Root saga
 │   └── migrations.ts       # State migrations (v244)
 │

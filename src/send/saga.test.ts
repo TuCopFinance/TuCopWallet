@@ -28,6 +28,7 @@ import {
   getConnectedUnlockedAccount,
   unlockAccount,
 } from 'src/web3/saga'
+import { waitForMempoolCommit } from 'src/viem/saga'
 import { createMockStore } from 'test/utils'
 import {
   mockAccount,
@@ -59,10 +60,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereuim-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -103,6 +104,7 @@ describe(sendPaymentSaga, () => {
       [call(getConnectedUnlockedAccount), mockAccount],
       [matchers.call.fn(getViemWallet), mockViemWallet],
       [matchers.call.fn(getTransactionCount), 10],
+      [matchers.call.fn(waitForMempoolCommit), undefined],
       [matchers.call.fn(mockViemWallet.signTransaction), '0xsomeSerialisedTransaction'],
       [matchers.call.fn(mockViemWallet.sendRawTransaction), mockTxHash],
       [matchers.call.fn(publicClient.celo.waitForTransactionReceipt), mockTxReceipt],
@@ -134,7 +136,7 @@ describe(sendPaymentSaga, () => {
         addStandbyTransaction({
           context: { id: 'mock' },
           type: TokenTransactionTypeV2.Sent,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           amount: {
             value: BigNumber(10).negated().toString(),
             tokenAddress: mockCusdAddress,
@@ -162,7 +164,7 @@ describe(sendPaymentSaga, () => {
       usdAmount: '10',
       tokenAddress: mockCusdAddress,
       tokenId: mockCusdTokenId,
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       isTokenManuallyImported: false,
     })
   })
@@ -176,7 +178,7 @@ describe(sendPaymentSaga, () => {
         addStandbyTransaction({
           context: { id: 'mock' },
           type: TokenTransactionTypeV2.Sent,
-          networkId: NetworkId['celo-sepolia'],
+          networkId: NetworkId['celo-mainnet'],
           amount: {
             value: BigNumber(10).negated().toString(),
             tokenAddress: mockCeloAddress,
@@ -200,7 +202,7 @@ describe(sendPaymentSaga, () => {
       usdAmount: '10',
       tokenAddress: mockCeloAddress,
       tokenId: mockCeloTokenId,
-      networkId: 'celo-sepolia',
+      networkId: 'celo-mainnet',
       isTokenManuallyImported: false,
     })
     expect(AppAnalytics.track).toHaveBeenCalledWith(CeloExchangeEvents.celo_withdraw_completed, {

@@ -1295,10 +1295,6 @@
   "escrowedPaymentReminderSummaryDetails_exactly3Items": "<0></0>, <1></1> y otro no podrán redimir sus invitaciones",
   "escrowedPaymentReminderSummaryDetails_moreThan3Items": "<0></0>, <1></1> y otros no podrán redimir sus invitaciones",
   "escrowedPaymentReminderSmsNoData": "Un recordatorio amigable de que aún no has reclamado tus {{currency}} con {{appName}}. ¡Descarga la aplicación móvil para empezar!",
-  "testnetAlert": {
-    "0": "{{testnet}}",
-    "1": "Te recordamos que estás utilizando la compilación de red {{testnet}} - los saldos que se muestran no son reales."
-  },
   "dollarBalance": "<0></0> $t(celoDollars)",
   "feedItemAddress": "{{address}}",
   "feedItemDepositInfo": "{{comment}}",
@@ -1322,7 +1318,6 @@
   "feedItemFailedTransaction": "Transacción fallida",
   "feedItemFaucetTitle": "Celo",
   "feedItemFaucetInfo": "{{faucet}} Faucet",
-  "feedItemFaucetInfo_noTestnet": "Faucet",
   "feedItemInviteSentTitle": "Celo",
   "feedItemInviteSentInfo": "Invitaste a {{nameOrNumber}}",
   "feedItemInviteSentInfo_noInviteeDetails": "$t(inviteSent)",
@@ -1355,6 +1350,7 @@
   "feedItemGoldReceived": "Recibidos de {{displayName}}",
   "feedItemSwapTitle": "Intercambio",
   "feedItemSwapPath": "{{token1}} > {{token2}}",
+  "feedItemSwapPathMulti": "{{count}} monedas a {{token2}}",
   "feedItemJumpstartTitle": "Enlace activo",
   "feedItemJumpstartSentSubtitle": "Invitación",
   "feedItemJumpstartReceivedSubtitle": "Fondos recibidos",
@@ -1860,6 +1856,14 @@
       "title": "Antes de cambiar",
       "body": "No podemos estimar el valor de este intercambio. {{appName}} no se hace responsable si decides proceder."
     },
+    "belowMinSwapWarning": {
+      "title": "Monto muy pequeño",
+      "body": "El monto mínimo por intercambio es de aproximadamente ${{minSwapUsd}} USD. Aumenta el monto para continuar."
+    },
+    "upstreamUnavailableWarning": {
+      "title": "Servicio temporalmente no disponible",
+      "body": "No pudimos obtener una cotización. Vuelve a intentarlo en unos segundos."
+    },
     "confirmSwapFailedWarning": {
       "title": "Algo salió mal",
       "body": "La velocidad de la red es lenta o hay un error desconocido. Vuelve a intentarlo más tarde"
@@ -1880,6 +1884,11 @@
       "maxNetworkFee": "Tarifa máxima de red",
       "networkFee": "Tarifa de red de {{networkName}}",
       "networkFeeNoNetwork": "Tarifa de red",
+      "receivingIn": "Recibirás en",
+      "perTokenDetail": "Detalle por token",
+      "perTokenDetailExpand_one": "{{count}} token",
+      "perTokenDetailExpand_other": "{{count}} tokens",
+      "perTokenDetailCollapse": "Ocultar",
       "swapFee": "Tarifa de {{appName}}",
       "swapFeeWaived": "Gratis",
       "appFee": "Tarifa de {{appName}}",
@@ -1908,6 +1917,7 @@
       "estimatedTransactionTimeInfo": "El tiempo para completar la transacción lo determina el proveedor.\n\nSi estás intercambiando entre diferentes cadenas, la transacción podría tardar un poco más en completarse.",
       "infoDismissButton": "Entendido",
       "fees": "Tarifas",
+      "feePaidIn": "Pagada en",
       "feesCalculationError": "No es posible calcular las tarifas",
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",
@@ -2093,9 +2103,13 @@
     "importToken": "Importar",
     "importTokens": "Importar tokens",
     "balanceInLocalAmount": "Saldo en moneda local",
+    "mentoDollar": "USDm",
     "pesos": "Pesos",
     "dollars": "Dolares",
     "gold": "Oro",
+    "tetherAmericaUsd": "USAT",
+    "tetherUsd": "USDT",
+    "usdCoin": "USDC",
     "yourMoney": "Tu dinero",
     "yourInvestments": "Tus inversiones"
   },
@@ -2216,7 +2230,6 @@
   "viewOnEthereumBlockExplorer": "Ver en Etherscan",
   "viewOnArbiscan": "Ver en Arbiscan",
   "viewOnOPMainnetExplorer": "Ver en OP Mainnet Explorer",
-  "viewOnOPSepoliaExplorer": "Ver en OP Sepolia Explorer",
   "viewOnPolygonPoSScan": "Ver en PolygonScan",
   "viewOnBaseScan": "Ver en BaseScan",
   "viewOnAxelarScan": "Ver en AxelarScan",
@@ -2550,6 +2563,13 @@
       "body": "Los puntos son el programa de fidelidad de {{appName}}, se ganan solo por utilizar la app. Los puntos son exclusivos y no se pueden transferir ni vender.",
       "dismiss": "Entendido"
     }
+  },
+  "feeAdapterBootstrap": {
+    "title": "Activar Dólares para pagar tarifas",
+    "body": "Para enviar y hacer cambios usando tus Dólares (USDC, USDT), hacemos una activación rápida.",
+    "reassure": "Una sola vez. Después podés hacer todas las operaciones que quieras sin volver a aparecer esta pantalla. Solo se descuenta lo justo de tarifa en cada operación. Nunca más de eso.",
+    "activate": "Activar Dólares",
+    "later": "Ahora no"
   },
   "earnFlow": {
     "gasSubsidized": "Las tarifas de transacción están cubiertas por un tiempo limitado",
@@ -2911,6 +2931,81 @@
       "noStakes": "No tienes ningún stake activo"
     }
   },
+  "neeruVaults": {
+    "tranches": {
+      "flexible": "Flexible",
+      "thirtyDays": "30 dias",
+      "sixtyDays": "60 dias",
+      "ninetyDays": "90 dias"
+    },
+    "cardSubtitle": {
+      "flexible": "Flexible",
+      "thirtyDays": "Deposito a 30 dias",
+      "sixtyDays": "Deposito a 60 dias",
+      "ninetyDays": "Deposito a 90 dias"
+    },
+    "detail": {
+      "header": "Tus depositos {{trancheLabel}}",
+      "aggregateBalance": "Total en {{trancheLabel}}: {{amount}} Pesos",
+      "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% mensual",
+      "depositCta": "Depositar",
+      "noPositions": "Todavia no tienes depositos en esta opcion",
+      "descriptionByTranche": {
+        "flexible": "Retira en cualquier momento, sin tiempo minimo",
+        "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
+        "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
+        "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
+      }
+    },
+    "positionRow": {
+      "principal": "Capital: {{amount}} Pesos",
+      "interest": "Ganado: {{amount}} Pesos",
+      "maturity": "Disponible el {{date}}",
+      "flexible": "Sin tiempo minimo",
+      "depositedAt": "Depositado el {{date}}",
+      "manageCta": "Gestionar",
+      "processingBadge": "Procesando",
+      "optimisticTakingLong": "Esto puede tardar un par de minutos. Vuelve a intentar.",
+      "refreshCta": "Refrescar",
+      "viewOnCeloscanCta": "Ver en Celoscan"
+    },
+    "closeSheet": {
+      "title": "Retira tu deposito",
+      "currentPayout": "Recibiras",
+      "principalLabel": "Capital",
+      "interestLabel": "Intereses ganados",
+      "penaltyLabel": "Comision por retiro temprano ({{percentage}}%)",
+      "totalLabel": "Total",
+      "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al capital.",
+      "confirmCta": "Confirmar retiro",
+      "principalOnlyCta": "Salir solo con mi capital",
+      "principalOnlyHelp": "Si el retiro normal falla, puedes recuperar tu capital sin intereses."
+    },
+    "emergencyCloseSheet": {
+      "title": "Retiro de emergencia",
+      "subtitle": "El fondo no puede pagar intereses en este momento",
+      "explanation": "Puedes recuperar tu capital de {{principal}} Pesos ahora, pero perderas los {{interest}} Pesos de interes que generaste. Esta accion no se puede revertir.",
+      "alternative": "Si puedes esperar, el fondo se recupera generalmente en unas horas.",
+      "primaryCta": "Esperar e intentar despues",
+      "secondaryCta": "Retirar solo el capital",
+      "confirmAgain": "Toca de nuevo para confirmar"
+    },
+    "errors": {
+      "fetchPositionsFailed": "No pudimos cargar tus depositos. Desliza hacia abajo para reintentar.",
+      "closeFailed": "No pudimos procesar el retiro. Intenta de nuevo.",
+      "unknown": "Algo salio mal. Intenta de nuevo.",
+      "invalidTranche": "Opcion invalida.",
+      "invalidAmount": "Monto invalido.",
+      "amountBelowMin": "Deposito minimo: {{minAmount}} Pesos.",
+      "depositsPaused": "Los depositos estan temporalmente pausados.",
+      "globalCapExceeded": "El fondo esta lleno. Intenta mas tarde.",
+      "trancheCapExceeded": "Esta opcion esta llena. Prueba otra o intenta mas tarde.",
+      "rateNotSet": "Esta opcion no esta disponible en este momento.",
+      "positionStale": "Actualiza tus depositos y reintenta.",
+      "positionAlreadyClosed": "Este deposito ya fue cerrado.",
+      "serviceUnavailable": "El servicio no esta disponible en este momento. Intenta mas tarde."
+    }
+  },
   "global": {
     "ok": "Aceptar",
     "cancel": "Cancelar",
@@ -3017,6 +3112,25 @@
   "ubiAlreadyClaimed": "Ya has reclamado tu subsidio esta semana",
   "ubiClaimError": "Error procesando el reclamo del subsidio. Por favor intenta de nuevo",
   "insufficientFundsForGas": "Fondos insuficientes para pagar las tarifas de gas",
+  "dollarsSpend": {
+    "tokenLabel": "Dolares",
+    "confirmAggregate": "Vas a cambiar {{usdAmount}} en Dolares a {{toLabel}}",
+    "expandedDetailHeader": "Detalle por token",
+    "stepCount": "{{steps}} pasos",
+    "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
+    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "transitioning": "Finalizando tu cambio...",
+    "partialSuccess": {
+      "title": "Completaste {{completed}} de {{total}} pasos",
+      "remaining": "Te quedan {{remainingUsd}} por convertir",
+      "retry": "Reintentar restante",
+      "cancel": "Dejar pendiente"
+    },
+    "shortfall": {
+      "title": "Saldo en Dolares insuficiente",
+      "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    }
+  },
   "goldFlow": {
     "gold": "Oro",
     "entrypoint": {
@@ -3209,7 +3323,8 @@
     "amount": "Monto",
     "recipient": "Destinatario",
     "pool": "Pool",
-    "viewOnExplorer": "Ver en el explorador"
+    "viewOnExplorer": "Ver en el explorador",
+    "breakdownHeader": "Detalle por moneda"
   },
   "errors": {
     "public": {
@@ -3237,5 +3352,31 @@
       "shareButton": "Compartir",
       "shareSubject": "Reporte de error TuCop"
     }
+  },
+  "preflight": {
+    "advisory": "Estamos por iniciar tu {{noun}}. No cierres la app y asegurate de tener buena conexion."
+  },
+  "result": {
+    "succeeded": "Tu {{noun}} se completo correctamente.",
+    "connectivity": "Se te fue la conexion a mitad de tu {{noun}} y por eso no se completo. Lo intentamos de nuevo?",
+    "appBackgrounded": "Cerraste la app mientras tu {{noun}} estaba en curso. Quieres retomarlo?",
+    "gasInsufficient": "No alcanzo el saldo para pagar la comision de red. Recarga un poquito mas y volvemos a intentar.",
+    "slippage": "El precio se movio mas de lo permitido y cancelamos tu {{noun}} para protegerte. Lo intentamos de nuevo?",
+    "revert": "La red rechazo tu {{noun}}. No se cobro nada. Lo intentamos de nuevo?",
+    "rpcTimeout": "La red blockchain no respondio a tiempo. Lo intentamos de nuevo?",
+    "unknown": "Algo no salio como esperabamos. Lo intentamos de nuevo o nos contactas?"
+  },
+  "progress": {
+    "preparing": "Preparando tu {{noun}}...",
+    "awaitingPin": "Confirma tu PIN para continuar",
+    "submitting": "Enviando tu {{noun}} a la red...",
+    "pendingConfirmation": "Esperando confirmacion de la red...",
+    "multiStep": "Paso {{currentStep}} de {{total}}",
+    "succeeded": "Listo. Tu {{noun}} se completo.",
+    "connectivityLost": "Perdimos la conexion. Tu {{noun}} sigue en curso; esperando que vuelvas a tener conexion."
+  },
+  "recovery": {
+    "banner": "Tu transferencia se quedo a medias, ver detalles.",
+    "staleBanner": "Tienes una operacion sin completar desde hace mas de un dia. Revisala."
   }
 }

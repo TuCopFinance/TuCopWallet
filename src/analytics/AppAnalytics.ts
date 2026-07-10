@@ -6,13 +6,7 @@ import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import { AppEvents } from 'src/analytics/Events'
 import { AnalyticsPropertiesList } from 'src/analytics/Properties'
 import { getCurrentUserTraits } from 'src/analytics/selectors'
-import {
-  DEFAULT_TESTNET,
-  E2E_TEST_STATSIG_ID,
-  isE2EEnv,
-  STATSIG_API_KEY,
-  STATSIG_ENV,
-} from 'src/config'
+import { E2E_TEST_STATSIG_ID, isE2EEnv, STATSIG_API_KEY, STATSIG_ENV } from 'src/config'
 import { store } from 'src/redux/store'
 import { getDefaultStatsigUser } from 'src/statsig'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
@@ -326,7 +320,7 @@ class AppAnalytics {
       timestamp: Date.now(),
       sessionId: this.sessionId,
       userAddress: traits.walletAddress,
-      celoNetwork: DEFAULT_TESTNET,
+      celoNetwork: 'mainnet',
       // Prefixed super props
       ...prefixedSuperProps,
       // Statsig prop, won't be read properly by Statsig if prefixed

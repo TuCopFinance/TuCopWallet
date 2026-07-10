@@ -16,7 +16,7 @@ import { TransactionDataInput } from 'src/send/types'
 import { tokensListSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { convertLocalToTokenAmount, getSupportedNetworkIdsForSend } from 'src/tokens/utils'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import Logger from 'src/utils/Logger'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -52,7 +52,13 @@ export function* handleSendPaymentData({
   const tokens: TokenBalance[] = yield* select((state) =>
     tokensListSelector(state, supportedNetworkIds)
   )
-  const tokenInfo = tokens.find((token) => token?.symbol === (data.token ?? Currency.Dollar))
+  // Match against the on-chain token symbol. Currency.Dollar value is 'USDm'
+  // (new internal naming) but the cUSD Mento stable still has on-chain symbol
+  // 'cUSD' (contract was rebranded but not redeployed). data.token from a
+  // deeplink may still send the legacy symbol, which is also accepted here.
+  const tokenInfo = tokens.find(
+    (token) => token?.symbol === (data.token ?? CURRENCY_TO_CHAIN_SYMBOL[Currency.Dollar])
+  )
 
   if (!tokenInfo?.priceUsd) {
     navigate(Screens.SendEnterAmount, {

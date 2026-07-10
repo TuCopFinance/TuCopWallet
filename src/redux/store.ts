@@ -1,10 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { configureStore, Middleware } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
-import { getStoredState, PersistConfig, persistReducer, persistStore } from 'redux-persist'
+import {
+  createTransform,
+  getStoredState,
+  PersistConfig,
+  persistReducer,
+  persistStore,
+} from 'redux-persist'
 import FSStorage from 'redux-persist-fs-storage'
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2'
 import createSagaMiddleware from 'redux-saga'
+import type { State as TransactionInFlightState } from 'src/lib/useTransactionInFlight/slice'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { PerformanceEvents } from 'src/analytics/Events'
 import { apiMiddlewares } from 'src/redux/apiReducersList'
@@ -22,14 +29,45 @@ export const timeBetweenStoreSizeEvents = ONE_MINUTE_IN_MILLIS
 // the entire state is serialized in a session
 let lastEventTime = 0
 
+// On rehydrate, the `transactionInFlight` slice may have descriptors whose
+// `lastErrorClass.raw` field holds a non-serializable Error captured at runtime.
+// Strip `raw` from every descriptor's `lastErrorClass` before the state is
+// returned to the store so consumers never see an undecodable blob.
+const transactionInFlightTransform = createTransform<
+  TransactionInFlightState,
+  TransactionInFlightState
+>(
+  // inbound: state -> persisted
+  (inboundState) => inboundState,
+  // outbound: persisted -> state
+  (outboundState) => {
+    if (!outboundState?.byFlow) return outboundState
+    const scrubbedByFlow: TransactionInFlightState['byFlow'] = {}
+    for (const [flowId, descriptor] of Object.entries(outboundState.byFlow)) {
+      if (descriptor?.lastErrorClass) {
+        const { raw: _raw, ...restErrorClass } = descriptor.lastErrorClass
+        scrubbedByFlow[flowId] = {
+          ...descriptor,
+          lastErrorClass: restErrorClass,
+        }
+      } else {
+        scrubbedByFlow[flowId] = descriptor
+      }
+    }
+    return { ...outboundState, byFlow: scrubbedByFlow }
+  },
+  { whitelist: ['transactionInFlight'] }
+)
+
 const persistConfig: PersistConfig<ReducersRootState> = {
   key: 'root',
   // default is -1, increment as we make migrations
   // See https://github.com/valora-inc/wallet/tree/main/WALLET.md#redux-state-migration
-  version: 246,
+  version: 251,
   keyPrefix: `reduxStore-`, // the redux-persist default is `persist:` which doesn't work with some file systems.
   storage: FSStorage(),
   blacklist: ['networkInfo', 'alert', 'imports', 'keylessBackup', transactionFeedV2Api.reducerPath],
+  transforms: [transactionInFlightTransform],
   stateReconciler: autoMergeLevel2,
   migrate: async (...args) => {
     const migrate = createMigrate(migrations)

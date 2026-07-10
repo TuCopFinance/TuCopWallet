@@ -1,0 +1,8 @@
+{
+  "name": "tucop-research-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "s1": "node scripts/s1-submit-7702-with-feecurrency.mjs"
+  }
+}

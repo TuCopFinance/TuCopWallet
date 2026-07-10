@@ -18,6 +18,8 @@ import { publicClient } from 'src/viem'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
 import { call, delay, fork, put, select, spawn } from 'typed-redux-saga'
 import { Hash, TransactionReceipt } from 'viem'
+import { watchRegisterWalletForFeed } from 'src/transactions/registerWatchSaga'
+import { watchFeeAdapterBootstrap } from 'src/wri/feeAdapterBootstrap/saga'
 
 const TAG = 'transactions/saga'
 
@@ -136,6 +138,8 @@ export function* watchPendingTransactions() {
 
 export function* transactionSaga() {
   yield* spawn(watchPendingTransactions)
+  yield* spawn(watchRegisterWalletForFeed)
+  yield* spawn(watchFeeAdapterBootstrap)
 }
 
 function* handleTransactionReceiptReceived({
