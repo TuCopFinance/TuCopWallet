@@ -2950,19 +2950,19 @@
       "close": "Close",
       "flexible": {
         "title": "Flexible deposit",
-        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no fees. Interest is generated every day and is paid out on each withdrawal. Ideal if you want to keep the money available."
+        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no fees. Interest is generated every day and is paid out on each withdrawal. Ideal if you want to keep the money available.\n\nNo maturity and no renewal: the deposit stays active until you decide to withdraw."
       },
       "thirtyDays": {
         "title": "30-day deposit",
-        "body": "Your Pesos are locked for 30 days. At maturity you withdraw principal + interest at no cost.\n\nIf you need to withdraw earlier, a 20% fee applies only to the interest earned. Your capital is never touched. Interest builds up day by day."
+        "body": "Your Pesos are locked for 30 days. At maturity you withdraw principal + interest at no cost. Interest builds up day by day.\n\nAutomatic renewal: if you do not withdraw at maturity, the deposit renews for another 30 days with the interest added to the capital, so it keeps earning.\n\nIf you need to withdraw before maturity, a 20% fee applies only to the interest earned. Your capital is never touched."
       },
       "sixtyDays": {
         "title": "60-day deposit",
-        "body": "Your Pesos are locked for 60 days. At maturity you withdraw principal + interest at no cost. Usually pays more than Flexible and 30 days.\n\nIf you need to withdraw earlier, a 20% fee applies only to the interest earned. Your capital is never touched. Interest builds up day by day."
+        "body": "Your Pesos are locked for 60 days. At maturity you withdraw principal + interest at no cost. Usually pays more than Flexible and 30 days. Interest builds up day by day.\n\nAutomatic renewal: if you do not withdraw at maturity, the deposit renews for another 60 days with the interest added to the capital, so it keeps earning.\n\nIf you need to withdraw before maturity, a 20% fee applies only to the interest earned. Your capital is never touched."
       },
       "ninetyDays": {
         "title": "90-day deposit",
-        "body": "Your Pesos are locked for 90 days. At maturity you withdraw principal + interest at no cost. Usually the best rate.\n\nIf you need to withdraw earlier, a 20% fee applies only to the interest earned. Your capital is never touched. Interest builds up day by day."
+        "body": "Your Pesos are locked for 90 days. At maturity you withdraw principal + interest at no cost. Usually the best rate. Interest builds up day by day.\n\nAutomatic renewal: if you do not withdraw at maturity, the deposit renews for another 90 days with the interest added to the capital, so it keeps earning.\n\nIf you need to withdraw before maturity, a 20% fee applies only to the interest earned. Your capital is never touched."
       }
     },
     "detail": {
