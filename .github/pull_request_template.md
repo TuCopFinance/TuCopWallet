@@ -19,4 +19,4 @@ Example: add any manual testing steps or scenarios (if not obvious), screenshots
 
 ### Celo compatibility
 
-- [ ] Changes are compatible with Celo mainnet and Celo Sepolia testnet
+- [ ] Changes are compatible with Celo mainnet

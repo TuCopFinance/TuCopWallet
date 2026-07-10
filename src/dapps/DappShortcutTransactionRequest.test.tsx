@@ -44,7 +44,7 @@ describe('DappShortcutTransactionRequest', () => {
   const transactions = [
     {
       from: '0x2b8441ef13333ffa955c9ea5ab5b3692da95260d',
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       data: '0x3d18b912',
       to: '0xda7f463c27ec862cfbf2369f3f74c364d050d93f',
     } as const,
@@ -95,7 +95,9 @@ describe('DappShortcutTransactionRequest', () => {
     )
     expect(
       getByText(
-        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, cUSD, cEUR"}'
+        // Per Bug E migration: reorderForBugE pushes CELO to the end so the
+        // warning lists visible stables first; CELO is the last-resort fallback.
+        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"cUSD, cEUR, CELO"}'
       )
     ).toBeTruthy()
     expect(queryByText('allow')).toBeFalsy()

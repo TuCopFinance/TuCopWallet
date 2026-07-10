@@ -65,7 +65,7 @@ const getMockStoreTokenBalances = (): Record<string, StoredTokenBalance> => ({
     ...mockTokenBalances[mockEthTokenId],
     tokenId: mockEthTokenId,
     balance: '10',
-    networkId: NetworkId['ethereum-sepolia'],
+    networkId: NetworkId['ethereum-mainnet'],
     showZeroBalance: true,
     isNative: true,
     symbol: 'ETH',
@@ -76,7 +76,7 @@ const getMockStoreTokenBalances = (): Record<string, StoredTokenBalance> => ({
     // token with no price
     balance: '10',
     tokenId: mockTestTokenTokenId,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     showZeroBalance: false,
     isNative: false,
     symbol: 'TST',
@@ -103,12 +103,13 @@ const mockStoreBalancesToTokenBalances = (storeBalances: StoredTokenBalance[]): 
   )
 }
 const mockFeeCurrencies = mockStoreBalancesToTokenBalances([
-  // matches mockStore - order follows feeCurrenciesSelector priority:
-  // CELO (0) > cUSD (2) > cEUR (99) > cREAL (99)
-  mockStoreTokenBalances[mockCeloTokenId],
+  // Post Bug E fix: EnterAmount applies reorderForBugE to the selector output
+  // so CELO slides to the end. Inside each group the selector priority is
+  // preserved: cUSD (2) > cEUR (99) > cREAL (99) > CELO (was 0, now last).
   mockStoreTokenBalances[mockCusdTokenId],
   mockStoreTokenBalances[mockCeurTokenId],
   mockStoreTokenBalances[mockCrealTokenId],
+  mockStoreTokenBalances[mockCeloTokenId],
 ])
 const onClearPreparedTransactionsSpy = jest.fn()
 const onRefreshPreparedTransactionsSpy = jest.fn()
@@ -416,12 +417,12 @@ describe('EnterAmount', () => {
     expect(getByText('ETH')).toBeTruthy()
     expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
     expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.token_dropdown_opened, {
-      currentNetworkId: NetworkId['celo-sepolia'],
+      currentNetworkId: NetworkId['celo-mainnet'],
       currentTokenAddress: mockPoofAddress,
       currentTokenId: mockPoofTokenId,
     })
     expect(AppAnalytics.track).toHaveBeenCalledWith(TokenBottomSheetEvents.token_selected, {
-      networkId: NetworkId['ethereum-sepolia'],
+      networkId: NetworkId['ethereum-mainnet'],
       tokenAddress: null,
       tokenId: mockEthTokenId,
       origin: 'Send',
@@ -622,7 +623,7 @@ describe('EnterAmount', () => {
       expect(getByTestId('SendEnterAmount/ExchangeAmount')).toHaveTextContent(expectedLocalAmount)
       expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
       expect(AppAnalytics.track).toHaveBeenCalledWith(SendEvents.send_percentage_selected, {
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         tokenAddress: mockPoofAddress,
         tokenId: mockPoofTokenId,
         percentage,

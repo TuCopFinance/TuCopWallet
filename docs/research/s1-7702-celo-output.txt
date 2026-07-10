@@ -1,0 +1,9 @@
+Account:         0x4D0d9e458e8a0D0C2c033B1fc2fE5a182837c3D2
+Delegating to:   0x97b99a4ac0BDA988B4c9C6BA1398deB22a577be4
+Fee currency:   CELO (no feeCurrency override)
+Auth signed: chainId= 42220 nonce= 9
+Tx submitted: 0x4ef8a225cb2fb15c25595b707ccbc290ec343b1c1ad6a9b46bf29089cf2d03fa
+Status: success type: eip7702 gasUsed: 47970
+Wallet code after tx: 0xef010097b99a4ac0bda988b4c9c6ba1398deb22a577be4
+Has 7702 delegation? (prefix ef0100) true
+Tx type: 0x4 authList: 1

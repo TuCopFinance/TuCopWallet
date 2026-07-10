@@ -38,7 +38,7 @@ jest.mock('src/web3/networkConfig', () => {
     __esModule: true,
     default: {
       ...originalModule.default,
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -56,7 +56,7 @@ const state = getMockStoreData({
       [mockCusdTokenId]: {
         address: mockCusdAddress,
         tokenId: mockCusdTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'cUSD',
         priceUsd: '1',
         balance: '10',
@@ -66,7 +66,7 @@ const state = getMockStoreData({
       [mockCeurTokenId]: {
         address: mockCeurAddress,
         tokenId: mockCeurTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'cEUR',
         priceUsd: '1.2',
         balance: '20',
@@ -76,7 +76,7 @@ const state = getMockStoreData({
       [mockCeloTokenId]: {
         address: mockCeloAddress,
         tokenId: mockCeloTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'CELO',
         priceUsd: '5',
         balance: '0',
@@ -86,24 +86,24 @@ const state = getMockStoreData({
       [mockTestTokenTokenId]: {
         address: mockTestTokenAddress,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'TT',
         balance: '10',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xMOO': {
+      'celo-mainnet:0xMOO': {
         address: '0xMOO',
-        tokenId: 'celo-sepolia:0xMOO',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xMOO',
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'MOO',
         priceUsd: '4',
         balance: '0',
         priceFetchedAt: Date.now(),
       },
-      'celo-sepolia:0xUBE': {
+      'celo-mainnet:0xUBE': {
         address: '0xUBE',
-        tokenId: 'celo-sepolia:0xUBE',
-        networkId: NetworkId['celo-sepolia'],
+        tokenId: 'celo-mainnet:0xUBE',
+        networkId: NetworkId['celo-mainnet'],
         symbol: 'UBE',
         priceUsd: '2',
         balance: '1',
@@ -161,7 +161,7 @@ describe('AppAnalytics', () => {
     mockStore.getState.mockImplementation(() => state)
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(getMultichainFeatures).mockReturnValue({
-      showBalances: [NetworkId['celo-sepolia']],
+      showBalances: [NetworkId['celo-mainnet']],
     })
   })
 
@@ -172,7 +172,7 @@ describe('AppAnalytics', () => {
       'statsig-key',
       { userID: 'someUserId' },
       // Segment client is disabled, so overrideStableID uses device uniqueID as fallback
-      { environment: { tier: 'development' }, overrideStableID: mockDeviceId, localMode: false }
+      { environment: { tier: 'production' }, overrideStableID: mockDeviceId, localMode: false }
     )
   })
 

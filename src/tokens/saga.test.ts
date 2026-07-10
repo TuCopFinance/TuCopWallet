@@ -6,6 +6,7 @@ import { call, select } from 'redux-saga/effects'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AppEvents } from 'src/analytics/Events'
 import { getMultichainFeatures } from 'src/statsig'
+import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import {
   fetchImportedTokenBalances,
   fetchTokenBalancesForAddressByTokenId,
@@ -57,10 +58,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereum-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -112,22 +113,26 @@ describe('getTokensInfo', () => {
       JSON.stringify({
         [networkConfig.copmTokenId]: 'COPm token info',
         [networkConfig.usdtTokenId]: 'USDT token info',
-        'celo-sepolia:native': 'CELO token info',
+        'celo-mainnet:native': 'CELO token info',
       })
     )
 
-    const result = await getTokensInfo([NetworkId['celo-sepolia']])
+    const result = await getTokensInfo([NetworkId['celo-mainnet']])
     expect(result).toEqual({
       [networkConfig.copmTokenId]: 'COPm token info',
       [networkConfig.usdtTokenId]: 'USDT token info',
     })
   })
   it('throws if request does not complete within timeout', async () => {
-    mockFetch.mockResponseOnce('error!', { status: 500, statusText: 'some error' })
-    await expect(getTokensInfo([NetworkId['celo-sepolia']])).rejects.toEqual(
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('error!', { status: 500, statusText: 'some error' })
+    await expect(getTokensInfo([NetworkId['celo-mainnet']])).rejects.toEqual(
       new Error('Failure response fetching token info. 500  some error')
     )
     expect(Logger.error).toHaveBeenCalledTimes(1)
+    jest.useFakeTimers()
   })
 })
 describe(fetchTokenBalancesSaga, () => {
@@ -152,7 +157,7 @@ describe(fetchTokenBalancesSaga, () => {
       tokenId: mockTestTokenTokenId,
       balance: new BigNumber(0),
       showZeroBalance: true,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       isManuallyImported: true,
       networkIconUrl: 'oldCeloUrl',
     },
@@ -164,14 +169,14 @@ describe(fetchTokenBalancesSaga, () => {
       tokenId: mockUSDCTokenId,
       balance: new BigNumber(0),
       showZeroBalance: true,
-      networkId: NetworkId['ethereum-sepolia'],
+      networkId: NetworkId['ethereum-mainnet'],
       isManuallyImported: true,
       networkIconUrl: 'oldEthUrl',
     },
   }
 
   it('get token info successfully', async () => {
-    const supportedNetworks = [NetworkId['celo-sepolia']]
+    const supportedNetworks = [NetworkId['celo-mainnet']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -192,7 +197,7 @@ describe(fetchTokenBalancesSaga, () => {
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
         [select(walletAddressSelector), null],
-        [call(getTokensInfo, [NetworkId['celo-sepolia']]), mockBlockchainApiTokenInfo],
+        [call(getTokensInfo, [NetworkId['celo-mainnet']]), mockBlockchainApiTokenInfo],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
       .not.call(getTokensInfo)
@@ -201,7 +206,7 @@ describe(fetchTokenBalancesSaga, () => {
   })
 
   it("fires an event if there's an error", async () => {
-    const supportedNetworks = [NetworkId['celo-sepolia']]
+    const supportedNetworks = [NetworkId['celo-mainnet']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -226,7 +231,7 @@ describe(fetchTokenBalancesSaga, () => {
   })
 
   it('includes imported tokens for multiple networks', async () => {
-    const supportedNetworks = [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']]
+    const supportedNetworks = [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']]
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
       showBalances: supportedNetworks,
     })
@@ -254,8 +259,8 @@ describe(fetchTokenBalancesSaga, () => {
         [
           select(networksIconSelector),
           {
-            [NetworkId['celo-sepolia']]: 'newCeloUrl',
-            [NetworkId['ethereum-sepolia']]: 'newEthUrl',
+            [NetworkId['celo-mainnet']]: 'newCeloUrl',
+            [NetworkId['ethereum-mainnet']]: 'newEthUrl',
           },
         ],
         [select(walletAddressSelector), mockAccount],
@@ -291,7 +296,7 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
 
   it('returns token balances for a single chain', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-sepolia']],
+      showBalances: [NetworkId['celo-mainnet']],
     })
     mockFetch.mockResponseOnce(
       JSON.stringify([
@@ -312,13 +317,13 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
     })
     expect(mockFetch.mock.calls.length).toEqual(1)
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-sepolia'
+      'https://api.mainnet.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-mainnet'
     )
   })
 
   it('returns token balances for multiple chains', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+      showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
     })
     mockFetch.mockResponseOnce(
       JSON.stringify([
@@ -349,18 +354,22 @@ describe(fetchTokenBalancesForAddressByTokenId, () => {
     })
     expect(mockFetch.mock.calls.length).toEqual(1)
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      'https://api.alfajores.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-sepolia%2Cethereum-sepolia'
+      'https://api.mainnet.valora.xyz/getWalletBalances?address=some-address&networkIds=celo-mainnet%2Cethereum-mainnet'
     )
   })
 
   it('throws when received status is other than 200', async () => {
     jest.mocked(getMultichainFeatures).mockReturnValueOnce({
-      showBalances: [NetworkId['celo-sepolia']],
+      showBalances: [NetworkId['celo-mainnet']],
     })
-    mockFetch.mockResponseOnce('error', { status: 500, statusText: 'some error' })
+    // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
+    // so the sleep between retries actually fires.
+    jest.useRealTimers()
+    mockFetch.mockResponse('error', { status: 500, statusText: 'some error' })
 
     const result = fetchTokenBalancesForAddressByTokenId('some-address')
     await expect(result).rejects.toThrow('Failed to fetch token balances: 500 some error')
+    jest.useFakeTimers()
   })
 })
 
@@ -371,7 +380,7 @@ describe(fetchImportedTokenBalances, () => {
         address: mockTestTokenAddress,
         decimals: 18,
         tokenId: mockTestTokenTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         balance: new BigNumber(0),
         name: 'TestToken',
         symbol: 'TT',
@@ -383,7 +392,7 @@ describe(fetchImportedTokenBalances, () => {
         address: mockPoofAddress,
         decimals: 18,
         tokenId: mockPoofTokenId,
-        networkId: NetworkId['celo-sepolia'],
+        networkId: NetworkId['celo-mainnet'],
         balance: new BigNumber(0),
         name: 'PoofToken',
         symbol: 'Poof',
@@ -396,7 +405,7 @@ describe(fetchImportedTokenBalances, () => {
         decimals: 8,
         tokenId: mockUSDCTokenId,
         showZeroBalance: true,
-        networkId: NetworkId['ethereum-sepolia'],
+        networkId: NetworkId['ethereum-mainnet'],
         balance: new BigNumber(0),
         name: 'USD Coin',
         symbol: 'USDC',
@@ -471,11 +480,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('dispatches the account funded event if the account is funded', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]),
           dynamic(balances(new BigNumber(0), new BigNumber(10))),
         ],
       ])
@@ -490,11 +499,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('dispatches the account liquidated event when the account is liquidated', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]),
           dynamic(balances(new BigNumber(10), new BigNumber(0))),
         ],
       ])
@@ -509,11 +518,11 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('does not dispatch the account funded event for an account restore', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValue({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValue({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
         [
-          select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]),
+          select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]),
           dynamic(balances(null, new BigNumber(10))),
         ],
       ])
@@ -527,17 +536,17 @@ describe('watchAccountFundedOrLiquidated', () => {
   it('does not dispatch the account funded event when network ID added', async () => {
     jest
       .mocked(getMultichainFeatures)
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-mainnet']] })
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(0)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]), new BigNumber(0)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-sepolia'],
-            NetworkId['ethereum-sepolia'],
+            NetworkId['celo-mainnet'],
+            NetworkId['ethereum-mainnet'],
           ]),
           new BigNumber(10),
         ],
@@ -553,16 +562,16 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(0)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]), new BigNumber(0)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-sepolia'],
-            NetworkId['ethereum-sepolia'],
+            NetworkId['celo-mainnet'],
+            NetworkId['ethereum-mainnet'],
           ]),
           new BigNumber(10),
         ],
@@ -578,16 +587,16 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValueOnce({
-        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(10)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]), new BigNumber(10)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-sepolia'],
-            NetworkId['ethereum-sepolia'],
+            NetworkId['celo-mainnet'],
+            NetworkId['ethereum-mainnet'],
           ]),
           new BigNumber(0),
         ],
@@ -604,16 +613,16 @@ describe('watchAccountFundedOrLiquidated', () => {
     jest
       .mocked(getMultichainFeatures)
       .mockReturnValue({
-        showBalances: [NetworkId['celo-sepolia'], NetworkId['ethereum-sepolia']],
+        showBalances: [NetworkId['celo-mainnet'], NetworkId['ethereum-mainnet']],
       })
-      .mockReturnValueOnce({ showBalances: [NetworkId['celo-sepolia']] })
+      .mockReturnValueOnce({ showBalances: [NetworkId['celo-mainnet']] })
     await expectSaga(watchAccountFundedOrLiquidated)
       .provide([
-        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-sepolia']]), new BigNumber(10)],
+        [select(lastKnownTokenBalancesSelector, [NetworkId['celo-mainnet']]), new BigNumber(10)],
         [
           select(lastKnownTokenBalancesSelector, [
-            NetworkId['celo-sepolia'],
-            NetworkId['ethereum-sepolia'],
+            NetworkId['celo-mainnet'],
+            NetworkId['ethereum-mainnet'],
           ]),
           new BigNumber(0),
         ],
@@ -624,5 +633,172 @@ describe('watchAccountFundedOrLiquidated', () => {
 
     expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
     expect(AppAnalytics.track).toHaveBeenCalledWith(AppEvents.account_liquidated)
+  })
+})
+
+describe('getTokensInfo USAT priceUsd override', () => {
+  beforeEach(() => {
+    mockFetch.resetMocks()
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns NaN', async () => {
+    if (!networkConfig.usatTokenId) {
+      // USAT not configured: override is a no-op.
+      return
+    }
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: 'NaN',
+        },
+        [networkConfig.usdtTokenId]: {
+          tokenId: networkConfig.usdtTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USDT',
+          name: 'Tether USD',
+          decimals: 6,
+          address: '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e',
+          priceUsd: '1.0',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+    // sanity: other tokens untouched
+    expect(result[networkConfig.usdtTokenId]?.priceUsd).toBe('1.0')
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns undefined', async () => {
+    if (!networkConfig.usatTokenId) return
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          // no priceUsd field
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('leaves USAT priceUsd untouched when backend returns a real number', async () => {
+    if (!networkConfig.usatTokenId) return
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [networkConfig.usatTokenId]: {
+          tokenId: networkConfig.usatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: '0.998',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('0.998')
+  })
+})
+
+describe('getTokensInfo USAT priceUsd override - forced mainnet env', () => {
+  // Uses a fake token ID so the tests exercise the override path even when
+  // networkConfig.usatTokenId is unset.
+  const fakeUsatTokenId = 'celo-mainnet:0xfake000000000000000000000000000000000001'
+
+  let originalUsatTokenId: string
+
+  beforeEach(() => {
+    mockFetch.resetMocks()
+    originalUsatTokenId = networkConfig.usatTokenId
+    Object.defineProperty(networkConfig, 'usatTokenId', {
+      value: fakeUsatTokenId,
+      writable: true,
+      configurable: true,
+    })
+    // ALLOWED_TOKEN_IDS is evaluated at module load time; inject the fake ID
+    // so getTokensInfo's filter does not strip it out.
+    ALLOWED_TOKEN_IDS.add(fakeUsatTokenId)
+  })
+
+  afterEach(() => {
+    ALLOWED_TOKEN_IDS.delete(fakeUsatTokenId)
+    Object.defineProperty(networkConfig, 'usatTokenId', {
+      value: originalUsatTokenId,
+      writable: true,
+      configurable: true,
+    })
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns NaN string', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: 'NaN',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('overrides USAT priceUsd to "1" when backend returns no priceUsd field', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          // no priceUsd field
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+  })
+
+  it('leaves USAT priceUsd untouched when backend returns a real finite number', async () => {
+    mockFetch.mockResponseOnce(
+      JSON.stringify({
+        [fakeUsatTokenId]: {
+          tokenId: fakeUsatTokenId,
+          networkId: 'celo-mainnet',
+          symbol: 'USAT',
+          name: 'Tether America USD',
+          decimals: 6,
+          address: '0xd2ab3c9a02dbbab236bfec45d1d755df4267f771',
+          priceUsd: '0.998',
+        },
+      })
+    )
+
+    const result = await getTokensInfo(['celo-mainnet'] as any)
+    expect(result[fakeUsatTokenId]?.priceUsd).toBe('0.998')
   })
 })

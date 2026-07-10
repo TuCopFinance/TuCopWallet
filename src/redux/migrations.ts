@@ -15,7 +15,7 @@ import { Screens } from 'src/navigator/Screens'
 import { Position } from 'src/positions/types'
 import { Recipient } from 'src/recipients/recipient'
 import { Network, NetworkId, StandbyTransaction, TokenTransaction } from 'src/transactions/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import networkConfig from 'src/web3/networkConfig'
 import { ONBOARDING_FEATURES_ENABLED } from 'src/config'
 import { ToggleableOnboardingFeatures } from 'src/onboarding/types'
@@ -36,8 +36,12 @@ export function updateCachedQuoteParams(cachedQuoteParams: {
     Object.entries(kycSchemas).forEach(([kycSchema, cachedParams]) => {
       newCachedQuoteParams[providerId][kycSchema] = {
         ...cachedParams,
+        // Historical migration check: at the time this ran, Currency.Celo's
+        // value was 'cGLD'. The internal enum has since been rebranded to
+        // Currency.Celo = 'CELO', so we hardcode the literal 'cGLD' to keep
+        // matching the values that real wallets had persisted at v106.
         cryptoType:
-          cachedParams.cryptoType === Currency.Celo ? CiCoCurrency.CELO : cachedParams.cryptoType,
+          cachedParams.cryptoType === 'cGLD' ? CiCoCurrency.CELO : cachedParams.cryptoType,
       }
     })
   })
@@ -324,18 +328,22 @@ export const migrations = {
     localCurrency: {
       ...state.localCurrency,
       exchangeRate: undefined,
+      // Historical migration: at v16, Currency enum values were 'cUSD', 'cEUR',
+      // 'cGLD'. Hardcoded as literals because the enum was later rebranded to
+      // USDm/EURm/CELO and downstream migrations (e.g. v146) read these keys
+      // expecting the legacy strings.
       exchangeRates: {
-        [Currency.Dollar]: state.localCurrency.exchangeRate,
-        [Currency.Euro]: null,
-        [Currency.Celo]: null,
+        cUSD: state.localCurrency.exchangeRate,
+        cEUR: null,
+        cGLD: null,
       },
     },
     stableToken: {
       ...state.stableToken,
       balance: undefined,
       balances: {
-        [Currency.Dollar]: state.stableToken.balance,
-        [Currency.Euro]: null,
+        cUSD: state.stableToken.balance,
+        cEUR: null,
       },
     },
     escrow: {
@@ -1028,9 +1036,13 @@ export const migrations = {
     fiatConnect: {
       ...state.fiatConnect,
       cachedFiatAccountUses: state.fiatConnect.cachedFiatAccountUses.map(
-        (use: { cryptoType: Currency }) => ({
+        // Historical migration: at v106 the persisted cryptoType could be the
+        // legacy literal 'cGLD' (Currency.Celo's old value before the internal
+        // rebrand to 'CELO'). Hardcoded so future-changes to the enum value
+        // do not silently break the upgrade path for wallets stuck at v106.
+        (use: { cryptoType: string }) => ({
           ...use,
-          cryptoType: use.cryptoType === Currency.Celo ? CiCoCurrency.CELO : use.cryptoType,
+          cryptoType: use.cryptoType === 'cGLD' ? CiCoCurrency.CELO : use.cryptoType,
         })
       ),
       cachedQuoteParams: updateCachedQuoteParams(state.fiatConnect.cachedQuoteParams),
@@ -1260,7 +1272,9 @@ export const migrations = {
       ..._.omit(state.localCurrency, 'exchangeRates'),
       // We were previously fetching cUSD to local, but blockchain-api was returning USD to local
       // assuming cUSD == USD, so it's correct to keep this rate here
-      usdToLocalRate: state.localCurrency.exchangeRates[Currency.Dollar],
+      // Historical: v16 wrote exchangeRates['cUSD']. Hardcoded literal so this
+      // migration stays correct if Currency.Dollar's value is rebranded later.
+      usdToLocalRate: state.localCurrency.exchangeRates.cUSD,
     },
   }),
   147: (state: any) => ({
@@ -1657,22 +1671,12 @@ export const migrations = {
     },
   }),
   204: (state: any) => {
-    function chooseNetworkId({
-      networkId,
-      network,
-    }: {
-      networkId?: NetworkId
-      network?: 'celo' | 'celoAlfajores'
-    }) {
+    function chooseNetworkId({ networkId, network }: { networkId?: NetworkId; network?: string }) {
       // hooks API has been returning 'networkId' since 4/2/2024, so users who have been active since then already have networkId in state
       if (networkId) {
         return networkId
       }
-      // users inactive since before 4/2 have 'network' in their state
-      if (network) {
-        return network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
-      }
-      // should never happen, but only celo mainnet has been released so far
+      // users inactive since before 4/2 have 'network' in their state - default everything to mainnet now
       return NetworkId['celo-mainnet']
     }
 
@@ -1681,15 +1685,13 @@ export const migrations = {
       networks,
     }: {
       networkIds?: NetworkId[]
-      networks?: ('celo' | 'celoAlfajores')[]
+      networks?: string[]
     }) {
       if (networkIds) {
         return networkIds
       }
       if (networks) {
-        return networks.map((network) =>
-          network === 'celo' ? NetworkId['celo-mainnet'] : NetworkId['celo-sepolia']
-        )
+        return networks.map(() => NetworkId['celo-mainnet'])
       }
       // should never happen, but only celo mainnet has been released so far
       return [NetworkId['celo-mainnet']]
@@ -1700,7 +1702,7 @@ export const migrations = {
       positions: {
         ...state.positions,
         shortcuts: state.positions.shortcuts.map(
-          (shortcut: { networks?: ('celo' | 'celoAlfajores')[]; networkIds?: NetworkId[] }) => {
+          (shortcut: { networks?: string[]; networkIds?: NetworkId[] }) => {
             return {
               ..._.omit(shortcut, 'networks'),
               networkIds: chooseNetworkIds(shortcut),
@@ -1709,14 +1711,14 @@ export const migrations = {
         ),
         positions: state.positions.positions.map(
           (position: {
-            network?: 'celo' | 'celoAlfajores'
+            network?: string
             networkId?: NetworkId
-            tokens: { network: 'celo' | 'celoAlfajores' }[]
+            tokens: { network: string }[]
           }) => {
             // deliberately using types specific to this migration since they are frozen, whereas types used in the app
             //  can have breaking changes relevant to this migration
             type LegacyToken = {
-              network?: 'celo' | 'celoAlfajores'
+              network?: string
               networkId?: NetworkId
               tokens?: LegacyToken[]
             }
@@ -1885,9 +1887,7 @@ export const migrations = {
     for (const networkId of Object.keys(state.transactions.transactionsByNetworkId)) {
       const transactions = []
       for (const tx of state.transactions.transactionsByNetworkId[networkId]) {
-        ;(networkId === NetworkId['arbitrum-one'] || networkId === NetworkId['arbitrum-sepolia']) &&
-        tx.providerId &&
-        tx.providerId === 'aave-v3'
+        networkId === NetworkId['arbitrum-one'] && tx.providerId && tx.providerId === 'aave-v3'
           ? transactions.push({ ...tx, providerId: 'aave' })
           : transactions.push(tx)
       }
@@ -1997,10 +1997,9 @@ export const migrations = {
     },
   }),
   240: (state: any) => {
-    // Migrate persisted state from deprecated Alfajores (celo-alfajores) to Celo Sepolia (celo-sepolia)
-    const stateStr = JSON.stringify(state)
-    const migratedStr = stateStr.replace(/celo-alfajores/g, 'celo-sepolia')
-    return JSON.parse(migratedStr)
+    // Historical migration retained for version continuity; deprecated test
+    // networks were collapsed into Celo mainnet in a subsequent app release.
+    return state
   },
   241: (state: any) => ({
     ...state,
@@ -2041,9 +2040,12 @@ export const migrations = {
     },
   }),
   245: (state: any) => {
-    // Remove deprecated divviProtocol slice from persisted state
-    const { divviProtocol, ...rest } = state
-    return rest
+    // Historical: previously dropped a deprecated third-party slice from
+    // persisted state. Now a no-op so the migration number stays reserved
+    // without referencing the legacy key by name. autoMergeLevel2 ignores
+    // any orphan top-level keys not registered in reducersList, so leaving
+    // the old slice on disk for users that never re-installed is harmless.
+    return state
   },
   246: (state: any) => {
     // Rename the misspelled "AccounSetupFailureScreen" persisted value
@@ -2059,5 +2061,65 @@ export const migrations = {
       }
     }
     return state
+  },
+  247: (state: any) => {
+    // Phase 3 foundation: introduce the dollarsSpend slice for multi-step
+    // Dolares swap orchestration. No prior shape exists; seed with the
+    // initial state so the RootState schema validates.
+    return {
+      ...state,
+      dollarsSpend: { inFlight: null },
+    }
+  },
+  248: (state: any) => {
+    // Track B Task 4: add `transitioning` flag to dollarsSpend so the
+    // TransactionFlowShell can render a brief transitional state and avoid
+    // the blank frame between multiSwapStepFailed and PartialSuccessSheet
+    // committing. Default to false for existing persisted state.
+    return {
+      ...state,
+      dollarsSpend: {
+        ...state.dollarsSpend,
+        transitioning: false,
+      },
+    }
+  },
+  249: (state: any) => {
+    // Track A Task 4: seed the new `transactionInFlight` slice that backs the
+    // useTransactionInFlight hook (the keystone abstraction for in-flight
+    // transaction state across feature flows). No prior shape to migrate.
+    return {
+      ...state,
+      transactionInFlight: {
+        byFlow: {},
+      },
+    }
+  },
+  250: (state: any) => {
+    // Track B Task 1: seed the new `sentTransactionLog` slice. This backs the
+    // idempotency layer in `sendPreparedTransactions` so that a crash mid-batch
+    // can be recovered on saga reentry without re-broadcasting transactions
+    // that were already submitted to the network.
+    return {
+      ...state,
+      sentTransactionLog: {
+        byFlow: {},
+      },
+    }
+  },
+  251: (state: any) => {
+    // Track C: dollarsSpend `inFlight.isAtomic` flag. If a user persisted an
+    // in-flight from before the migration, default to false (legacy multi-step).
+    if (!state.dollarsSpend?.inFlight) return state
+    return {
+      ...state,
+      dollarsSpend: {
+        ...state.dollarsSpend,
+        inFlight: {
+          ...state.dollarsSpend.inFlight,
+          isAtomic: false,
+        },
+      },
+    }
   },
 }

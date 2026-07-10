@@ -38,7 +38,7 @@ const mockStoreTokens = {
   tokenBalances: {
     ...mockTokenBalances,
     [mockAaveArbUsdcTokenId]: {
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       address: mockAaveArbUsdcAddress,
       tokenId: mockAaveArbUsdcTokenId,
       symbol: 'aArbSepUSDC',
@@ -125,7 +125,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleCollect')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '11.83 USDC'
+      '11.83 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$15.73'
@@ -155,7 +155,7 @@ describe('EarnConfirmationScreen', () => {
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       rewardsPositions: [mockRewardsPositions[1]],
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.alfajores.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: '10.75',
       useMax: true,
     })
@@ -181,7 +181,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleWithdraw')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '5.91 USDC'
+      '5.91 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$7.86'
@@ -201,7 +201,7 @@ describe('EarnConfirmationScreen', () => {
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       rewardsPositions: [mockRewardsPositions[1]],
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.alfajores.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: txAmount,
     })
     expect(queryByText('earnFlow.collect.reward')).toBeFalsy()
@@ -246,7 +246,7 @@ describe('EarnConfirmationScreen', () => {
       feeCurrencies: mockStoreBalancesToTokenBalances([mockTokenBalances[mockArbEthTokenId]]),
       pool: { ...mockEarnPositions[0], balance: '10.75' },
       walletAddress: mockAccount.toLowerCase(),
-      hooksApiUrl: 'https://api.alfajores.valora.xyz/hooks-api',
+      hooksApiUrl: 'https://tucop-backend-production.up.railway.app/hooks-api',
       amount: '10.75',
       useMax: true,
       rewardsPositions: [mockRewardsPositions[1]],
@@ -263,7 +263,7 @@ describe('EarnConfirmationScreen', () => {
             positions: [...mockPositions, ...mockRewardsPositions].filter(
               (position) =>
                 position.positionId !==
-                'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives'
+                'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216:supply-incentives'
             ),
           },
         })}
@@ -282,7 +282,7 @@ describe('EarnConfirmationScreen', () => {
     expect(getByText('earnFlow.collect.titleWithdraw')).toBeTruthy()
     expect(getByText('earnFlow.collect.total')).toBeTruthy()
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/CryptoAmount`)).toHaveTextContent(
-      '11.83 USDC'
+      '11.83 assets.dollars'
     )
     expect(getByTestId(`EarnConfirmation/${mockArbUsdcTokenId}/FiatAmount`)).toHaveTextContent(
       'COP$15.73'
@@ -395,7 +395,7 @@ describe('EarnConfirmationScreen', () => {
     expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_collect_earnings_press, {
       depositTokenId: mockArbUsdcTokenId,
       tokenAmount: '11.825',
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       providerId: mockEarnPositions[0].appId,
       rewards: [{ amount: '0.01', tokenId: mockArbArbTokenId }],
       poolId: mockEarnPositions[0].positionId,
@@ -457,10 +457,10 @@ describe('EarnConfirmationScreen', () => {
     })
 
     expect(
-      getByText('earnFlow.collect.noGasCta, {"symbol":"ETH","network":"Arbitrum Sepolia"}')
+      getByText('earnFlow.collect.noGasCta, {"symbol":"ETH","network":"Arbitrum One"}')
     ).toBeTruthy()
     fireEvent.press(
-      getByText('earnFlow.collect.noGasCta, {"symbol":"ETH","network":"Arbitrum Sepolia"}')
+      getByText('earnFlow.collect.noGasCta, {"symbol":"ETH","network":"Arbitrum One"}')
     )
 
     expect(navigate).toBeCalledWith(Screens.FiatExchangeAmount, {
@@ -470,7 +470,7 @@ describe('EarnConfirmationScreen', () => {
     })
     expect(AppAnalytics.track).toBeCalledWith(EarnEvents.earn_withdraw_add_gas_press, {
       gasTokenId: mockArbEthTokenId,
-      networkId: NetworkId['arbitrum-sepolia'],
+      networkId: NetworkId['arbitrum-one'],
       poolId: mockEarnPositions[0].positionId,
       providerId: mockEarnPositions[0].appId,
       depositTokenId: mockArbUsdcTokenId,

@@ -150,3 +150,8 @@ builds/
 
 # Kotlin compiler caches (Android)
 android/.kotlin/
+
+# Foundry research/spike deployment broadcasts (production deploys live under
+# contracts/broadcast/ and ARE tracked as audit trail; contracts-research/ is
+# scratch work that should not be committed).
+contracts-research/broadcast/

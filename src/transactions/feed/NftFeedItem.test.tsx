@@ -22,10 +22,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereuim-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -50,7 +50,7 @@ describe('NftFeedItem', () => {
       <Provider store={store}>
         <NftFeedItem
           transaction={{
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             type,
             transactionHash: MOCK_TX_HASH,
             timestamp: 1234,
@@ -87,7 +87,7 @@ describe('NftFeedItem', () => {
     fireEvent.press(tree.getByTestId('NftFeedItem'))
     expect(navigate).toHaveBeenCalledWith(Screens.NftsInfoCarousel, {
       nfts: [mockNftAllFields],
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
     })
   })
 })

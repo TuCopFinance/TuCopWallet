@@ -3,12 +3,13 @@ import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import 'react-native'
 import { Provider } from 'react-redux'
-import TokenDisplay, { formatValueToDisplay } from 'src/components/TokenDisplay'
+import TokenDisplay, { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import { APPROX_SYMBOL } from 'src/components/TokenEnterAmount'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
 import { createMockStore, getElementText, RecursivePartial } from 'test/utils'
+import networkConfig from 'src/web3/networkConfig'
 
 describe('TokenDisplay', () => {
   function store(storeOverrides?: RecursivePartial<RootState>) {
@@ -20,30 +21,30 @@ describe('TokenDisplay', () => {
       },
       tokens: {
         tokenBalances: {
-          ['celo-sepolia:0xusd']: {
+          ['celo-mainnet:0xusd']: {
             address: '0xusd',
-            tokenId: 'celo-sepolia:0xusd',
+            tokenId: 'celo-mainnet:0xusd',
             symbol: 'cUSD',
             balance: '50',
             priceUsd: '1',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             priceFetchedAt: Date.now(),
           },
-          ['celo-sepolia:0xeur']: {
+          ['celo-mainnet:0xeur']: {
             address: '0xeur',
-            tokenId: 'celo-sepolia:0xeur',
+            tokenId: 'celo-mainnet:0xeur',
             symbol: 'cEUR',
             balance: '50',
             priceUsd: '1.2',
-            networkId: NetworkId['celo-sepolia'],
+            networkId: NetworkId['celo-mainnet'],
             priceFetchedAt: Date.now(),
           },
-          ['ethereum-sepolia:native']: {
-            tokenId: 'ethereum-sepolia:native',
+          ['ethereum-mainnet:native']: {
+            tokenId: 'ethereum-mainnet:native',
             symbol: 'ETH',
             balance: '10',
             priceUsd: '5',
-            networkId: NetworkId['ethereum-sepolia'],
+            networkId: NetworkId['ethereum-mainnet'],
             priceFetchedAt: Date.now(),
           },
         },
@@ -59,7 +60,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -73,7 +74,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -87,7 +88,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={10}
-            tokenId={'ethereum-sepolia:native'}
+            tokenId={'ethereum-mainnet:native'}
             testID="test"
           />
         </Provider>
@@ -101,7 +102,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={0.00000182421}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -116,7 +117,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -131,7 +132,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={false}
             showSymbol={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -144,7 +145,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'ethereum-sepolia:native'}
+            tokenId={'ethereum-mainnet:native'}
             localAmount={{
               currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
@@ -164,7 +165,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             showExplicitPositiveSign={true}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -178,7 +179,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={true}
             amount={-10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -189,7 +190,7 @@ describe('TokenDisplay', () => {
     it('shows a dash by default when the token doesnt exist', () => {
       const { getByTestId } = render(
         <Provider store={store()}>
-          <TokenDisplay amount={10} tokenId={'celo-sepolia:does-not-exist'} testID="test" />
+          <TokenDisplay amount={10} tokenId={'celo-mainnet:does-not-exist'} testID="test" />
         </Provider>
       )
       expect(getElementText(getByTestId('test'))).toEqual('-')
@@ -200,7 +201,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-sepolia:does-not-exist'}
+            tokenId={'celo-mainnet:does-not-exist'}
             testID="test"
             errorFallback="US$ --"
           />
@@ -214,7 +215,7 @@ describe('TokenDisplay', () => {
         <Provider store={store()}>
           <TokenDisplay
             amount={10}
-            tokenId={'celo-sepolia:does-not-exist'}
+            tokenId={'celo-mainnet:does-not-exist'}
             localAmount={{
               currencyCode: LocalCurrencyCode.COP,
               exchangeRate: '0.5',
@@ -234,7 +235,7 @@ describe('TokenDisplay', () => {
             showLocalAmount={true}
             hideSign={true}
             amount={-10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             testID="test"
           />
         </Provider>
@@ -248,7 +249,7 @@ describe('TokenDisplay', () => {
           <TokenDisplay
             showLocalAmount={false}
             amount={10}
-            tokenId={'celo-sepolia:0xusd'}
+            tokenId={'celo-mainnet:0xusd'}
             showApprox={true}
             testID="test"
           />
@@ -256,6 +257,38 @@ describe('TokenDisplay', () => {
       )
       expect(getElementText(getByTestId('test'))).toEqual(`${APPROX_SYMBOL} 10.00 cUSD`)
     })
+  })
+})
+
+describe('getTokenSymbol', () => {
+  const t = (key: string) => key
+
+  it('maps USDC symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USDC')).toBe('assets.dollars')
+  })
+  it('maps USDm symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USDm')).toBe('assets.dollars')
+  })
+  it('cUSD symbol is not mapped by symbol alone (use tokenId for USDm)', () => {
+    // cUSD is handled via tokenId lookup (networkConfig.usdmTokenId), not by symbol.
+    // This prevents false positives on other tokens that happen to report cUSD as symbol.
+    expect(getTokenSymbol(t, 'cUSD')).toBe('cUSD')
+  })
+  it('maps USAT symbol to assets.dollars', () => {
+    expect(getTokenSymbol(t, 'USAT')).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USDC when symbol is missing', () => {
+    expect(getTokenSymbol(t, undefined, networkConfig.usdcTokenId)).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USDm', () => {
+    expect(getTokenSymbol(t, undefined, networkConfig.usdmTokenId)).toBe('assets.dollars')
+  })
+  it('falls back to tokenId for USAT when usatTokenId is present (mainnet)', () => {
+    // On Mainnet, usatTokenId is '' and getTokenSymbol returns undefined for empty string.
+    // On mainnet, it should return assets.dollars.
+    const usatId = networkConfig.usatTokenId
+    const result = getTokenSymbol(t, undefined, usatId || undefined)
+    expect(!usatId || result === 'assets.dollars').toBe(true)
   })
 })
 

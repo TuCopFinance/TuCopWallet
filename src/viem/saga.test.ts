@@ -4,11 +4,13 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { EffectProviders, StaticProvider, throwError } from 'redux-saga-test-plan/providers'
 import { call } from 'redux-saga/effects'
 import { BaseStandbyTransaction, addStandbyTransaction } from 'src/transactions/slice'
-import { NetworkId, TokenTransactionTypeV2 } from 'src/transactions/types'
+import { Network, NetworkId, TokenTransactionTypeV2 } from 'src/transactions/types'
+import { publicClient } from 'src/viem'
 import { ViemWallet } from 'src/viem/getLockableWallet'
 import { TransactionRequest } from 'src/viem/prepareTransactions'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { markConfirmed, recordSent } from 'src/viem/sentTransactionLog'
 import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
 import { getConnectedUnlockedAccount } from 'src/web3/saga'
@@ -46,7 +48,7 @@ const serializablePreparedTransactions = getSerializablePreparedTransactions(pre
 const mockStandbyTransactions: BaseStandbyTransaction[] = [
   {
     context: { id: 'mockContext1' },
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     type: TokenTransactionTypeV2.Approval,
     tokenId: mockCusdTokenId,
     approvedAmount: '1',
@@ -54,7 +56,7 @@ const mockStandbyTransactions: BaseStandbyTransaction[] = [
   {
     context: { id: 'mockContext2' },
     type: TokenTransactionTypeV2.Sent,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
     amount: {
       value: BigNumber(10).negated().toString(),
       tokenAddress: mockCeloAddress,
@@ -90,11 +92,32 @@ describe('sendPreparedTransactions', () => {
     }),
   } as any as ViemWallet
 
+  // Stateful nonce counter for the getTransactionCount call effect. First call
+  // (the initial nonce fetch at the top of the saga) returns 10. Every
+  // subsequent call (from the mempool-commit polling loop between submissions)
+  // returns a value large enough to satisfy the pending-nonce check on the
+  // first poll, so the loop exits without a real wait.
+  let getTxCountCallCount = 0
+
+  // Unified `call` provider: intercepts delayP (redux-saga's internal delay
+  // primitive) so the mempool-commit polling loop doesn't burn real timers,
+  // and swaps `getTransactionCount` returns for the stateful counter above.
+  // Falls through to `next()` for any other call so unrelated effects run
+  // through the normal expectSaga plumbing.
+  const provideCallEffect = ({ fn }: { fn: any }, next: any) => {
+    if (fn.name === 'delayP') return null
+    if (fn === getTransactionCount) {
+      getTxCountCallCount += 1
+      return getTxCountCallCount === 1 ? 10 : 1_000_000
+    }
+    return next()
+  }
+
   function createDefaultProviders() {
     const defaultProviders: (EffectProviders | StaticProvider)[] = [
+      { call: provideCallEffect },
       [call(getConnectedUnlockedAccount), mockAccount],
       [matchers.call.fn(getViemWallet), mockViemWallet],
-      [matchers.call.fn(getTransactionCount), 10],
     ]
     return defaultProviders
   }
@@ -102,6 +125,7 @@ describe('sendPreparedTransactions', () => {
   beforeEach(() => {
     sendCallCount = 0
     signCallCount = 0
+    getTxCountCallCount = 0
     jest.clearAllMocks()
   })
 
@@ -209,5 +233,119 @@ describe('sendPreparedTransactions', () => {
         .provide([[matchers.call.fn(getViemWallet), {}], ...createDefaultProviders()])
         .run()
     ).rejects.toThrowError('No account found in the wallet')
+  })
+
+  // Idempotency layer (Track B Task 1) tests:
+  //
+  // The saga records each submission to the `sentTransactionLog` slice BEFORE
+  // moving to the next iteration so that a crash mid-batch can be recovered
+  // on reentry with the same flowId.
+
+  it('records each tx submission to the sentTransactionLog on first run', async () => {
+    const flowId = 'test-flow-first-run'
+    await expectSaga(
+      sendPreparedTransactions,
+      serializablePreparedTransactions,
+      networkConfig.defaultNetworkId,
+      mockCreateBaseStandbyTransactions,
+      false,
+      flowId
+    )
+      .withState(createMockStore({}).getState())
+      .provide(createDefaultProviders())
+      .put(recordSent({ flowId, index: 0, nonce: 10, hash: '0xmockTxHash1' }))
+      .put(recordSent({ flowId, index: 1, nonce: 11, hash: '0xmockTxHash2' }))
+      .returns(['0xmockTxHash1', '0xmockTxHash2'])
+      .run()
+
+    expect(mockViemWallet.sendRawTransaction).toHaveBeenCalledTimes(2)
+  })
+
+  it('skips re-sending on reentry when records are already confirmed', async () => {
+    const flowId = 'test-flow-confirmed-reentry'
+    const preloadedState = createMockStore({
+      sentTransactionLog: {
+        byFlow: {
+          [flowId]: [
+            {
+              flowId,
+              index: 0,
+              nonce: 10,
+              hash: '0xpriorHash1',
+              status: 'confirmed' as const,
+            },
+            {
+              flowId,
+              index: 1,
+              nonce: 11,
+              hash: '0xpriorHash2',
+              status: 'confirmed' as const,
+            },
+          ],
+        },
+      },
+    }).getState()
+
+    await expectSaga(
+      sendPreparedTransactions,
+      serializablePreparedTransactions,
+      networkConfig.defaultNetworkId,
+      mockCreateBaseStandbyTransactions,
+      false,
+      flowId
+    )
+      .withState(preloadedState)
+      .provide(createDefaultProviders())
+      .returns(['0xpriorHash1', '0xpriorHash2'])
+      .run()
+
+    // No new submissions should have happened — both indices were already confirmed.
+    expect(mockViemWallet.signTransaction).not.toHaveBeenCalled()
+    expect(mockViemWallet.sendRawTransaction).not.toHaveBeenCalled()
+  })
+
+  it('waits for receipt on reentry when records are pending instead of re-sending', async () => {
+    const flowId = 'test-flow-pending-reentry'
+    const preloadedState = createMockStore({
+      sentTransactionLog: {
+        byFlow: {
+          [flowId]: [
+            {
+              flowId,
+              index: 0,
+              nonce: 10,
+              hash: '0xpendingHash1',
+              status: 'pending' as const,
+            },
+          ],
+        },
+      },
+    }).getState()
+
+    const network = Network.Celo
+    await expectSaga(
+      sendPreparedTransactions,
+      // Only one prepared tx for this test so we exercise the pending path
+      // without then proceeding to a normal-send second iteration.
+      [serializablePreparedTransactions[0]],
+      networkConfig.defaultNetworkId,
+      [mockCreateBaseStandbyTransactions[0]],
+      false,
+      flowId
+    )
+      .withState(preloadedState)
+      .provide([
+        [
+          matchers.call.fn(publicClient[network].waitForTransactionReceipt),
+          { status: 'success', transactionHash: '0xpendingHash1' },
+        ],
+        ...createDefaultProviders(),
+      ])
+      .put(markConfirmed({ flowId, hash: '0xpendingHash1' }))
+      .returns(['0xpendingHash1'])
+      .run()
+
+    expect(mockViemWallet.signTransaction).not.toHaveBeenCalled()
+    expect(mockViemWallet.sendRawTransaction).not.toHaveBeenCalled()
   })
 })

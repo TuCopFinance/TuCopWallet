@@ -36,10 +36,10 @@ jest.mock('src/web3/networkConfig', () => {
     default: {
       ...originalModule.default,
       networkToNetworkId: {
-        celo: 'celo-sepolia',
-        ethereum: 'ethereum-sepolia',
+        celo: 'celo-mainnet',
+        ethereum: 'ethereum-mainnet',
       },
-      defaultNetworkId: 'celo-sepolia',
+      defaultNetworkId: 'celo-mainnet',
     },
   }
 })
@@ -57,7 +57,7 @@ const mockTokens = {
     [mockCusdTokenId]: {
       address: mockCusdAddress,
       tokenId: mockCusdTokenId,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       symbol: 'cUSD',
       balance: '1000',
       priceUsd: '1',
@@ -67,7 +67,7 @@ const mockTokens = {
     [mockCeurTokenId]: {
       address: mockCeurAddress,
       tokenId: mockCeurTokenId,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       symbol: 'cEUR',
       balance: '100',
       priceUsd: '1.2',
@@ -77,7 +77,7 @@ const mockTokens = {
     [mockCeloTokenId]: {
       address: mockCeloAddress,
       tokenId: mockCeloTokenId,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       symbol: 'CELO',
       balance: '200',
       priceUsd: '5',
@@ -87,7 +87,7 @@ const mockTokens = {
     [mockEthTokenId]: {
       address: undefined,
       tokenId: mockEthTokenId,
-      networkId: NetworkId['ethereum-sepolia'],
+      networkId: NetworkId['ethereum-mainnet'],
       symbol: 'ETH',
       balance: '1',
       priceUsd: '1000',
@@ -97,7 +97,7 @@ const mockTokens = {
     [mockUsdtTokenId]: {
       address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
       tokenId: mockUsdtTokenId,
-      networkId: NetworkId['celo-sepolia'],
+      networkId: NetworkId['celo-mainnet'],
       symbol: 'USDT',
       balance: '0',
       priceUsd: '1',

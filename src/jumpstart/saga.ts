@@ -4,6 +4,12 @@ import walletJumpstart from 'src/abis/IWalletJumpstart'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { JumpstartEvents } from 'src/analytics/Events'
 import { jumpstartLinkHandler } from 'src/jumpstart/jumpstartLinkHandler'
+import { classifyError } from 'src/lib/errors'
+import {
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import {
   JumpstarReclaimAction,
   JumpstartTransactionStartedAction,
@@ -358,7 +364,21 @@ export function* sendJumpstartTransactions(
 
 export function* jumpstartReclaim(action: PayloadAction<JumpstarReclaimAction>) {
   const { reclaimTx, networkId, tokenAmount, depositTxHash } = action.payload
+  const flowId = `jumpstart-reclaim-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
   try {
+    yield* put(
+      inFlightStart({
+        flowId,
+        flowKind: 'jumpstart',
+        steps: 1,
+        currentStep: 0,
+        status: 'preparing',
+        preparedTransactions: [reclaimTx],
+        networkId,
+        retryCount: 0,
+        startedAt: Date.now(),
+      })
+    )
     const createStandbyReclaimTransaction = (
       transactionHash: string,
       _feeCurrencyId?: string
@@ -397,6 +417,7 @@ export function* jumpstartReclaim(action: PayloadAction<JumpstarReclaimAction>) 
     }
 
     yield* put(jumpstartReclaimSucceeded())
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
     AppAnalytics.track(JumpstartEvents.jumpstart_reclaim_succeeded, {
       networkId,
       depositTxHash,
@@ -406,6 +427,7 @@ export function* jumpstartReclaim(action: PayloadAction<JumpstarReclaimAction>) 
     Logger.warn(TAG, 'Error reclaiming jumpstart transaction', err)
     AppAnalytics.track(JumpstartEvents.jumpstart_reclaim_failed, { networkId, depositTxHash })
     yield* put(jumpstartReclaimFailed())
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(ensureError(err)) }))
   }
 }
 

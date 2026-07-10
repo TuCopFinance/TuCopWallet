@@ -21,10 +21,10 @@ const mockFeeCurrency: TokenBalance = {
   decimals: 2,
   priceUsd: null,
   lastKnownPriceUsd: null,
-  tokenId: 'arbitrum-sepolia:native',
+  tokenId: 'arbitrum-one:native',
   symbol: 'FEE1',
   name: 'Fee token 1',
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
   isNative: true,
 }
 
@@ -36,10 +36,10 @@ const mockToken: TokenBalance = {
   decimals: 6,
   priceUsd: null,
   lastKnownPriceUsd: null,
-  tokenId: `arbitrum-sepolia:${mockTokenAddress}`,
+  tokenId: `arbitrum-one:${mockTokenAddress}`,
   symbol: 'USDC',
   name: 'USD Coin',
-  networkId: NetworkId['arbitrum-sepolia'],
+  networkId: NetworkId['arbitrum-one'],
 }
 
 jest.mock('src/statsig')
@@ -325,12 +325,12 @@ describe('prepareTransactions', () => {
       expect(triggerShortcutRequest).toHaveBeenNthCalledWith(1, 'https://hooks.api', {
         address: '0x1234',
         appId: 'aave',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         shortcutId: 'withdraw',
         tokenDecimals: 6,
         tokens: [
           {
-            tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+            tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
             amount: '0',
             useMax: true,
           },
@@ -339,7 +339,7 @@ describe('prepareTransactions', () => {
       expect(triggerShortcutRequest).toHaveBeenNthCalledWith(2, 'https://hooks.api', {
         address: '0x1234',
         appId: 'aave',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         shortcutId: 'claim-rewards',
         positionAddress: '0x460b97bd498e1157530aeb3086301d5225b91216',
       })
@@ -381,12 +381,12 @@ describe('prepareTransactions', () => {
       expect(triggerShortcutRequest).toHaveBeenNthCalledWith(1, 'https://hooks.api', {
         address: '0x1234',
         appId: 'aave',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         shortcutId: 'withdraw',
         tokenDecimals: 6,
         tokens: [
           {
-            tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+            tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
             amount: '0',
             useMax: true,
           },
@@ -440,12 +440,12 @@ describe('prepareTransactions', () => {
       expect(triggerShortcutRequest).toHaveBeenNthCalledWith(1, 'https://hooks.api', {
         address: '0x1234',
         appId: 'aave',
-        networkId: NetworkId['arbitrum-sepolia'],
+        networkId: NetworkId['arbitrum-one'],
         shortcutId: 'withdraw',
         tokenDecimals: 6,
         tokens: [
           {
-            tokenId: 'arbitrum-sepolia:0x460b97bd498e1157530aeb3086301d5225b91216',
+            tokenId: 'arbitrum-one:0x460b97bd498e1157530aeb3086301d5225b91216',
             amount: '0',
             useMax: true,
           },

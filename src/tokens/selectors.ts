@@ -21,7 +21,7 @@ import {
   TokenBalancesWithAddress,
 } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import { isVersionBelowMinimum } from 'src/utils/versionCheck'
 import networkConfig from 'src/web3/networkConfig'
 import { isFeeCurrency, sortByUsdBalance, usdBalance } from './utils'
@@ -260,12 +260,30 @@ export const tokensByUsdBalanceSelector = createSelector(
 export const tokensByCurrencySelector = createSelector(
   tokensListWithAddressSelector,
   (tokens): CurrencyTokens => {
-    const cUsdTokenInfo = tokens.find((token) => token?.symbol === Currency.Dollar)
-    const cEurTokenInfo = tokens.find((token) => token?.symbol === Currency.Euro)
-    const copmTokenInfo = tokens.find((token) => token?.symbol === Currency.COP)
-    // Currency.Celo === 'cGLD' for legacy reasons, so we just use a hard-coded string.
-    const celoTokenInfo = tokens.find((token) => token?.symbol === 'CELO')
-    const usdtTokenInfo = tokens.find((token) => token?.symbol === Currency.USDT)
+    // Currency enum values do NOT always match the on-chain token symbol (Mento
+    // stables were rebranded cXXX -> XXXm without redeploying), so resolve via
+    // CURRENCY_TO_CHAIN_SYMBOL when comparing against token.symbol.
+    const cUsdTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Dollar]
+    )
+    const cEurTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Euro]
+    )
+    const copmTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.COP]
+    )
+    const celoTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.Celo]
+    )
+    const usdtTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USDT]
+    )
+    const usdcTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USDC]
+    )
+    const usatTokenInfo = tokens.find(
+      (token) => token?.symbol === CURRENCY_TO_CHAIN_SYMBOL[Currency.USAT]
+    )
 
     return {
       [Currency.Dollar]: cUsdTokenInfo,
@@ -273,6 +291,8 @@ export const tokensByCurrencySelector = createSelector(
       [Currency.Celo]: celoTokenInfo,
       [Currency.COP]: copmTokenInfo,
       [Currency.USDT]: usdtTokenInfo,
+      [Currency.USDC]: usdcTokenInfo,
+      [Currency.USAT]: usatTokenInfo,
     }
   }
 )
@@ -515,6 +535,14 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
     // Priority order for TuCop fee currencies: CELO > COPm > USDm > USDC > USDT
     // Current names (Mento rebranding): COPm, USDm
     // Fallback old names (Valora API): cCOP, cUSD
+    //
+    // NOTE: this preserves the historical CELO-first priority for the 10
+    // legacy callers (swap, send, earn, dapps, jumpstart, gold, walletConnect,
+    // buckspay, subsidies, neeru). The Bug-E stables-first preference is
+    // applied inside `pickFeeCurrency` (src/tokens/feeCurrencyPicker.ts), used
+    // only by the migrated flows (dollarsSpend legacy + 7702). Migrating the
+    // remaining callers to `pickFeeCurrency` removes their dependency on this
+    // ordering and lets us flip CELO to last-resort globally in a future PR.
     const FEE_CURRENCY_PRIORITY: Record<string, number> = {
       CELO: 0,
       COPm: 1, // Colombian Peso (current)

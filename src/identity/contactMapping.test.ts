@@ -216,6 +216,9 @@ describe('Fetch Address Verification Saga', () => {
   })
 
   it('handles errors gracefully', async () => {
+    // fetchWithTimeout now retries 3x on network error with real backoff;
+    // need real timers so the sleep between retries actually fires.
+    jest.useRealTimers()
     mockFetch.mockReject()
     await expectSaga(fetchAddressVerificationSaga, fetchAddressVerification(mockAccount))
       .provide([
@@ -223,7 +226,8 @@ describe('Fetch Address Verification Saga', () => {
         [select(walletAddressSelector), '0xxyz'],
         [call(retrieveSignedMessage), 'some signed message'],
       ])
-      .run()
+      .run(5000)
+    jest.useFakeTimers()
     expect(AppAnalytics.track).toHaveBeenCalledWith(IdentityEvents.address_lookup_error, {
       error: 'Unable to fetch verification status for this address',
     })
@@ -356,6 +360,9 @@ describe('saveContacts', () => {
   )
 
   it('handles errors gracefully and logs a warning', async () => {
+    // fetchWithTimeout now retries 3x on network error with real backoff;
+    // need real timers so the sleep between retries actually fires.
+    jest.useRealTimers()
     mockFetch.mockReject()
     await expectSaga(saveContacts)
       .provide([
@@ -368,8 +375,10 @@ describe('saveContacts', () => {
         [call(retrieveSignedMessage), 'some signed message'],
       ])
       .not.put.actionType(Actions.CONTACTS_SAVED)
-      .run()
-    expect(mockFetch).toHaveBeenCalledTimes(1)
+      .run(5000)
+    jest.useFakeTimers()
+    // fetchWithTimeout retries 3 times on network error before giving up.
+    expect(mockFetch).toHaveBeenCalledTimes(3)
     expect(mockFetch).toHaveBeenCalledWith(networkConfig.saveContactsUrl, {
       method: 'POST',
       headers: {

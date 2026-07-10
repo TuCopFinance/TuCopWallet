@@ -15,7 +15,7 @@ TuCOP Wallet is a React Native mobile application that provides digital wallet s
 
 | Layer          | Technology                           |
 | -------------- | ------------------------------------ |
-| **Frontend**   | React Native 0.72.15 + TypeScript    |
+| **Frontend**   | React Native 0.77.3 + TypeScript     |
 | **State**      | Redux Toolkit + Redux Saga           |
 | **Navigation** | React Navigation 7.x                 |
 | **Blockchain** | Viem (Celo network)                  |
@@ -44,10 +44,10 @@ yarn install
 cp secrets.json.template secrets.json
 # Edit secrets.json with your API keys
 
-# 3. Run on Android (testnet)
+# 3. Run on Android (mainnetdev)
 yarn dev:android
 
-# 4. Run on iOS (testnet)
+# 4. Run on iOS (mainnetdev)
 yarn dev:ios
 ```
 
@@ -77,7 +77,6 @@ TuCopWallet/
 │   │   ├── e2e-pr.yml              #     E2E on pull requests
 │   │   └── ...                     #     Translation checks, semantic PR, faucet balance
 │   ├── CODEOWNERS                  #   Code ownership rules
-│   ├── CONTRIBUTING.md             #   → Redirects to /CONTRIBUTING.md
 │   ├── SETUP_CHECKLIST.md          #   CI/CD secrets & certificates checklist
 │   └── pull_request_template.md    #   PR template
 │
@@ -195,12 +194,11 @@ TuCopWallet/
 │   ├── ci-cd.md                    #   CI/CD pipeline architecture
 │   ├── celo-gas-optimization.md    #   Celo L2 gas fee optimization
 │   ├── phone-verification.md       #   Integrated phone verification design
-│   ├── buckspay-implementation.md  #   BucksPay offramp implementation
-│   ├── buckspay-api.md             #   BucksPay API reference (OpenAPI 3.0)
+│   ├── integrations.md             #   External services the wallet integrates with
 │   ├── connecting-dapps.md         #   WalletConnect v2 DApp guide
 │   ├── deeplinks.md                #   Deep linking specification
 │   ├── releases.md                 #   Release reference
-│   ├── syncing-forks.md            #   Upstream fork sync guide (historical)
+│   ├── navigation-flows.md         #   User-facing navigation flows
 │   └── archive/                    #   Legacy Mobile Stack documentation
 │       ├── runbook.md              #     Original framework setup runbook
 │       ├── wallet.md               #     Original Valora wallet docs
@@ -266,10 +264,8 @@ TuCopWallet/
 ### Development
 
 ```bash
-yarn dev:android              # Run on Android (testnet)
-yarn dev:android:mainnet      # Run on Android (mainnet)
-yarn dev:ios                  # Run on iOS (testnet)
-yarn dev:ios:mainnet          # Run on iOS (mainnet)
+yarn dev:android              # Run on Android (Celo mainnet dev)
+yarn dev:ios                  # Run on iOS (Celo mainnet dev)
 ```
 
 ### Testing & Quality
@@ -291,14 +287,10 @@ yarn version --major          # Bump major (1.0.0 → 2.0.0)
 
 ## iOS Build Schemes
 
-| Scheme                   | Network      | Display Name             | Use For                 |
-| ------------------------ | ------------ | ------------------------ | ----------------------- |
-| `MobileStack-testnetdev` | Celo Sepolia | TuCop (Celo Sepolia dev) | **Primary development** |
-| `MobileStack-testnet`    | Celo Sepolia | TuCop Celo Sepolia       | Testing                 |
-| `MobileStack-mainnet`    | Celo mainnet | TuCop                    | Production              |
-| `MobileStack-mainnetdev` | Celo mainnet | TuCop (dev)              | Advanced testing        |
-
-> **Testnet**: Celo Sepolia (chain ID 11142220). See [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia).
+| Scheme                   | Network      | Display Name | Use For                 |
+| ------------------------ | ------------ | ------------ | ----------------------- |
+| `MobileStack-mainnet`    | Celo mainnet | TuCop        | Production              |
+| `MobileStack-mainnetdev` | Celo mainnet | TuCop (dev)  | **Primary development** |
 
 ## Android Build Configuration
 
@@ -315,12 +307,11 @@ Release build: `cd android && ./gradlew bundleMainnetRelease`
 
 ## Network Configuration
 
-|          | Mainnet                            | Celo Sepolia (testnet)                                  |
-| -------- | ---------------------------------- | ------------------------------------------------------- |
-| Chain ID | 42220                              | 11142220                                                |
-| RPC      | `https://forno.celo.org/`          | `https://forno.celo-sepolia.celo-testnet.org/`          |
-| Explorer | [celoscan.io](https://celoscan.io) | [sepolia.celoscan.io](https://sepolia.celoscan.io/)     |
-| Faucet   | —                                  | [faucet.celo.org](https://faucet.celo.org/celo-sepolia) |
+|          | Celo Mainnet                       |
+| -------- | ---------------------------------- |
+| Chain ID | 42220                              |
+| RPC      | `https://forno.celo.org/`          |
+| Explorer | [celoscan.io](https://celoscan.io) |
 
 ## Backend Services
 
@@ -357,14 +348,14 @@ See [docs/guides/ci-cd.md](docs/guides/ci-cd.md) for the pipeline architecture.
 
 Full documentation index: [docs/README.md](docs/README.md)
 
-| Category         | Documents                                                                                                                                                                                                                                                                        |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Setup**        | [guides/wallet-setup.md](docs/guides/wallet-setup.md), [.github/SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                                                                                                                                  |
-| **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                                          |
-| **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/NAVIGATION_FLOWS.md](docs/reference/NAVIGATION_FLOWS.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md)         |
-| **Integrations** | [reference/buckspay-api.md](docs/reference/buckspay-api.md), [reference/buckspay-implementation.md](docs/reference/buckspay-implementation.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md) |
-| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                                 |
-| **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                                     |
+| Category         | Documents                                                                                                                                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Setup**        | [guides/wallet-setup.md](docs/guides/wallet-setup.md), [.github/SETUP_CHECKLIST.md](.github/SETUP_CHECKLIST.md)                                                                                                                                                  |
+| **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                          |
+| **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md), [reference/integrations.md](docs/reference/integrations.md) |
+| **Integrations** | [reference/integrations.md](docs/reference/integrations.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md), [guides/navigation-flows.md](docs/guides/navigation-flows.md)     |
+| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                 |
+| **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                     |
 
 ## URLs & Links
 
@@ -410,7 +401,7 @@ valora-inc/wallet (original Valora wallet)
 
 > **Note**: The entire [mobilestack-xyz](https://github.com/mobilestack-xyz) organization was **archived in January 2026** (all repos read-only). TuCOP Wallet is now independently maintained. Original framework documentation is preserved in [docs/archive/](docs/archive/).
 
-For historical reference on syncing with the upstream fork, see [docs/guides/syncing-forks.md](docs/guides/syncing-forks.md).
+For historical reference on syncing with the upstream fork, see [docs/archive/2026-01-mobile-stack/syncing-forks.md](docs/archive/2026-01-mobile-stack/syncing-forks.md).
 
 ## License
 

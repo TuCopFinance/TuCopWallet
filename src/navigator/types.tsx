@@ -91,6 +91,7 @@ export type StackParamList = {
   }
   [Screens.EarnHome]: { activeEarnTab?: EarnTabType } | undefined
   [Screens.EarnPoolInfoScreen]: { pool: EarnPosition }
+  [Screens.NeeruVaultDetail]: { pool: EarnPosition }
   [Screens.ErrorScreen]: {
     errorMessage?: string
   }
@@ -309,6 +310,15 @@ export type StackParamList = {
     recipientAddress?: string
     recipientName?: string
     poolName?: string
+    // Optional per-leg breakdown for aggregate flows (Dolares -> Pesos with N
+    // dollar tokens combined). When present, TransactionSuccessScreen renders
+    // an aggregate at the top and a list of concrete legs below.
+    legs?: Array<{
+      fromTokenId: string
+      fromAmount: string
+      toAmount: string
+      transactionHash: string
+    }>
   }
   [Screens.UpgradeScreen]: undefined
   [Screens.ValidateRecipientIntro]: ValidateRecipientParams

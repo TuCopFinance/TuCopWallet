@@ -123,10 +123,8 @@ export default function NftsInfoCarousel({ route }: Props) {
     const tokenId = BigInt(activeNft.tokenId).toString()
     switch (networkId) {
       case NetworkId['celo-mainnet']:
-      case NetworkId['celo-sepolia']:
         return `${blockExplorerUrls[networkId].baseNftUrl}${activeNft.contractAddress}/instance/${tokenId}/metadata`
       case NetworkId['ethereum-mainnet']:
-      case NetworkId['ethereum-sepolia']:
         return `${blockExplorerUrls[networkId].baseNftUrl}${activeNft.contractAddress}/${tokenId}`
       default:
         return `${blockExplorerUrls[networkId].baseNftUrl}${activeNft.contractAddress}?a=${tokenId}`
@@ -150,17 +148,11 @@ export default function NftsInfoCarousel({ route }: Props) {
 
   const networkIdToExplorerString: Record<NetworkId, string> = {
     [NetworkId['celo-mainnet']]: t('nftInfoCarousel.viewOnCeloExplorer'),
-    [NetworkId['celo-sepolia']]: t('nftInfoCarousel.viewOnCeloExplorer'),
     [NetworkId['ethereum-mainnet']]: t('viewOnEthereumBlockExplorer'),
-    [NetworkId['ethereum-sepolia']]: t('viewOnEthereumBlockExplorer'),
     [NetworkId['arbitrum-one']]: t('viewOnArbiscan'),
-    [NetworkId['arbitrum-sepolia']]: t('viewOnArbiscan'),
     [NetworkId['op-mainnet']]: t('viewOnOPMainnetExplorer'),
-    [NetworkId['op-sepolia']]: t('viewOnOPSepoliaExplorer'),
     [NetworkId['polygon-pos-mainnet']]: t('viewOnPolygonPoSScan'),
-    [NetworkId['polygon-pos-amoy']]: t('viewOnPolygonPoSScan'),
     [NetworkId['base-mainnet']]: t('viewOnBaseScan'),
-    [NetworkId['base-sepolia']]: t('viewOnBaseScan'),
   }
 
   return (

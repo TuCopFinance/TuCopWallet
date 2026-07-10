@@ -92,7 +92,7 @@ describe('EarnDepositBottomSheet', () => {
   const commonAnalyticsProperties = {
     depositTokenId: mockArbUsdcTokenId,
     depositTokenAmount: '100',
-    networkId: NetworkId['arbitrum-sepolia'],
+    networkId: NetworkId['arbitrum-one'],
     providerId: mockEarnPositions[0].appId,
     poolId: mockEarnPositions[0].positionId,
   }
@@ -123,7 +123,7 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByText('earnFlow.depositBottomSheet.apy, {"apy":"1.92"}')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.amount')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(COP$133.00)')
+    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 assets.dollars(COP$133.00)')
 
     expect(getByText('earnFlow.depositBottomSheet.fee')).toBeTruthy()
     expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('COP$0.012(0.000006 ETH)')
@@ -133,7 +133,7 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByTestId('EarnDeposit/ProviderInfo')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.network')).toBeTruthy()
-    expect(getByText('Arbitrum Sepolia')).toBeTruthy()
+    expect(getByText('Arbitrum One')).toBeTruthy()
 
     expect(
       getByText('earnFlow.depositBottomSheet.footerV1_93, {"providerName":"Aave"}')
@@ -164,10 +164,10 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByText('earnFlow.depositBottomSheet.apy, {"apy":"1.92"}')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.amount')).toBeTruthy()
-    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 USDC(COP$133.00)')
+    expect(getByTestId('EarnDeposit/Amount')).toHaveTextContent('100.00 assets.dollars(COP$133.00)')
 
     expect(getByTestId('EarnDeposit/Swap/From')).toHaveTextContent('0.041 ETH')
-    expect(getByTestId('EarnDeposit/Swap/To')).toHaveTextContent('100.00 USDC')
+    expect(getByTestId('EarnDeposit/Swap/To')).toHaveTextContent('100.00 assets.dollars')
 
     expect(getByText('earnFlow.depositBottomSheet.fee')).toBeTruthy()
     expect(getByTestId('EarnDeposit/Fee')).toHaveTextContent('COP$0.012(0.000006 ETH)')
@@ -177,7 +177,7 @@ describe('EarnDepositBottomSheet', () => {
     expect(getByTestId('EarnDeposit/ProviderInfo')).toBeTruthy()
 
     expect(getByText('earnFlow.depositBottomSheet.network')).toBeTruthy()
-    expect(getByText('Arbitrum Sepolia')).toBeTruthy()
+    expect(getByText('Arbitrum One')).toBeTruthy()
 
     expect(
       getByText('earnFlow.depositBottomSheet.footerV1_93, {"providerName":"Aave"}')

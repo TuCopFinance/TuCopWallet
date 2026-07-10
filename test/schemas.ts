@@ -12,7 +12,7 @@ import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { updateCachedQuoteParams } from 'src/redux/migrations'
 import { RootState } from 'src/redux/store'
 import { Network, NetworkId, StandbyTransaction, TokenTransaction } from 'src/transactions/types'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import networkConfig from 'src/web3/networkConfig'
 import {
   mockCeloAddress,
@@ -32,9 +32,9 @@ function updateTestTokenInfo(tokenInfo: any): any {
   const isNative = tokenInfo.symbol === 'CELO'
   return {
     ...tokenInfo,
-    tokenId: `celo-sepolia:${isNative ? 'native' : tokenInfo.address}`,
+    tokenId: `celo-mainnet:${isNative ? 'native' : tokenInfo.address}`,
     isNative,
-    networkId: NetworkId['celo-sepolia'],
+    networkId: NetworkId['celo-mainnet'],
   }
 }
 
@@ -570,10 +570,14 @@ export const v16Schema = {
   },
   localCurrency: {
     ...v15Schema.localCurrency,
+    // Historical persisted shape: at v16, Currency enum values held legacy
+    // on-chain symbols ('cGLD'/'cEUR'/'cUSD'). The enum has since been
+    // rebranded internally (CELO/EURm/USDm) but historical state fixtures must
+    // keep the literal keys that real wallets had on disk.
     exchangeRates: {
-      [Currency.Celo]: '3',
-      [Currency.Euro]: '2',
-      [Currency.Dollar]: v15Schema.localCurrency.exchangeRate,
+      cGLD: '3',
+      cEUR: '2',
+      cUSD: v15Schema.localCurrency.exchangeRate,
     },
     exchangeRate: undefined,
     fetchRateFailed: false,
@@ -581,14 +585,15 @@ export const v16Schema = {
   stableToken: {
     ...v15Schema.stableToken,
     balances: {
-      [Currency.Euro]: null,
-      [Currency.Dollar]: v15Schema.stableToken.balance ?? null,
+      cEUR: null,
+      cUSD: v15Schema.stableToken.balance ?? null,
     },
     balance: undefined,
   },
   send: {
     ...v15Schema.send,
-    lastUsedCurrency: Currency.Dollar,
+    // Historical: at v16 Currency.Dollar held the legacy literal 'cUSD'.
+    lastUsedCurrency: 'cUSD',
   },
   exchange: {
     ...v15Schema.exchange,
@@ -2005,7 +2010,8 @@ export const v107Schema = {
     ...v106Schema.fiatConnect,
     cachedFiatAccountUses: v106Schema.fiatConnect.cachedFiatAccountUses.map((use: any) => ({
       ...use,
-      cryptoType: use.cryptoType === Currency.Celo ? CiCoCurrency.CELO : use.cryptoType,
+      // Historical: Currency.Celo held the legacy literal 'cGLD' at this version.
+      cryptoType: use.cryptoType === 'cGLD' ? CiCoCurrency.CELO : use.cryptoType,
     })),
     cachedQuoteParams: updateCachedQuoteParams(v106Schema.fiatConnect.cachedQuoteParams),
   },
@@ -2497,7 +2503,8 @@ export const v146Schema = {
   },
   localCurrency: {
     ..._.omit(v145Schema.localCurrency, 'exchangeRates'),
-    usdToLocalRate: v145Schema.localCurrency.exchangeRates[Currency.Dollar],
+    // Historical: v16 wrote exchangeRates['cUSD'] (legacy literal).
+    usdToLocalRate: v145Schema.localCurrency.exchangeRates.cUSD,
   },
 }
 
@@ -3666,7 +3673,7 @@ export const v244Schema = {
   },
 }
 
-// Migration 245 removed the deprecated divviProtocol slice from persisted state.
+// Migration 245 removed a deprecated slice from persisted state.
 // Schemas in this file never carried that slice explicitly, so the schema diff
 // from v244 is just the version bump.
 export const v245Schema = {
@@ -3687,6 +3694,99 @@ export const v246Schema = {
   },
 }
 
+// Migration 247 seeds the new dollarsSpend slice (Phase 3 foundation).
+export const v247Schema = {
+  ...v246Schema,
+  dollarsSpend: { inFlight: null },
+  _persist: {
+    ...v246Schema._persist,
+    version: 247,
+  },
+}
+
+// Migration 248 adds `transitioning` to dollarsSpend (Track B Task 4) so the
+// TransactionFlowShell can bridge the render gap between step failure and
+// PartialSuccessSheet without showing a blank frame.
+export const v248Schema = {
+  ...v247Schema,
+  dollarsSpend: { inFlight: null, transitioning: false },
+  _persist: {
+    ...v247Schema._persist,
+    version: 248,
+  },
+}
+
+// Migration 249 seeds the new `transactionInFlight` slice that backs the
+// useTransactionInFlight hook (Track A Task 4 — the keystone in-flight tx
+// state abstraction consumed by all feature flows).
+export const v249Schema = {
+  ...v248Schema,
+  transactionInFlight: { byFlow: {} },
+  _persist: {
+    ...v248Schema._persist,
+    version: 249,
+  },
+}
+
+// Migration 250 seeds the new `sentTransactionLog` slice (Track B Task 1 —
+// idempotency layer for sendPreparedTransactions so that crashed/restarted
+// saga reentries can resume without re-broadcasting submitted transactions).
+export const v250Schema = {
+  ...v249Schema,
+  sentTransactionLog: { byFlow: {} },
+  _persist: {
+    ...v249Schema._persist,
+    version: 250,
+  },
+}
+
+// Migration 251 adds `inFlight.isAtomic` to dollarsSpend so the
+// MultiSwapProgressSheet can differentiate the atomic 7702 path ("Cambiando
+// tus Dolares a Pesos...") from the legacy multi-step path ("Paso X de N")
+// without breaking persisted in-flight state. Only applies when a user has
+// an in-flight multi-swap when the app updates; otherwise no-op.
+//
+// Also reflects the runtime addition of the `neeru` slice (Neeru Vaults
+// earn integration). Phase 3 (#208) originally bumped to v252 to seed
+// the slice; PR #209 reverted the version bump because autoMergeLevel2
+// + the slice's REHYDRATE handler handle the missing-field case for
+// existing users without a migration. The test schema still has to
+// surface the slice shape so the RootStateSchema validation passes.
+export const v251Schema = {
+  ...v250Schema,
+  neeru: {
+    fetchStatus: 'idle',
+    positions: [],
+    optimisticPositions: [],
+    lastSyncedBlock: null,
+    lastSyncedAt: null,
+    closeStatus: 'idle',
+    closingPositionId: null,
+    lastError: null,
+  },
+  _persist: {
+    ...v250Schema._persist,
+    version: 251,
+  },
+}
+
+// WRI fee-adapter bootstrap: per-token pre-authorization state for the CIP-64
+// USDC/USDT adapters. Slice is added to the store unconditionally but NO
+// persist version bump (no store release at v251 has been published; bumping
+// before publishing breaks existing dogfood users by triggering an unnecessary
+// migration). autoMergeLevel2 will fold the new slice's initialState into
+// rehydrated state automatically.
+export const v251SchemaWithWriFeeAdapterBootstrap = {
+  ...v251Schema,
+  wriFeeAdapterBootstrap: {
+    byAdapter: {
+      USDC: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
+      USDT: { bootstrapped: false, lastAttemptAt: null, lastSuccessAt: null, lastError: null },
+    },
+    pending: null,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v246Schema as Partial<RootState>
+  return v251SchemaWithWriFeeAdapterBootstrap as Partial<RootState>
 }

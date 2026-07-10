@@ -1,13 +1,15 @@
 import BigNumber from 'bignumber.js'
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { LayoutAnimation, StyleSheet, Text, View } from 'react-native'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SwapEvents } from 'src/analytics/Events'
 import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
-import { formatValueToDisplay } from 'src/components/TokenDisplay'
+import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
+import { getTokenDisplayName } from 'src/tokens/utils'
 import Touchable from 'src/components/Touchable'
 import InfoIcon from 'src/icons/status/InfoIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
@@ -15,6 +17,7 @@ import { useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { SpendStep } from 'src/dollarsSpend/types'
 import { SwapFeeAmount } from 'src/swap/types'
 import { TokenBalance } from 'src/tokens/slice'
 
@@ -26,6 +29,16 @@ interface Props {
   slippagePercentage: string
   fromToken?: TokenBalance
   toToken?: TokenBalance
+  // Concrete settlement token the swap router will actually deliver into
+  // when `toToken` is the synthetic virtual "Dolares". When set, a row is
+  // rendered so the user can see which specific brand they will receive
+  // (mirrors the per-step breakdown the spending direction already shows).
+  settlementToken?: TokenBalance
+  // Per-token spend allocation when `fromToken` is the synthetic virtual
+  // "Dolares". Renders an expandable "Detalle por token" row inside this
+  // same panel so the consolidated transaction-details surface is the same
+  // shape regardless of swap direction.
+  spendSteps?: SpendStep[]
   exchangeRatePrice?: string
   swapAmount?: BigNumber
   fetchingSwapQuote: boolean
@@ -141,6 +154,8 @@ export function SwapTransactionDetails({
   slippagePercentage,
   fromToken,
   toToken,
+  settlementToken,
+  spendSteps,
   exchangeRatePrice,
   exchangeRateInfoBottomSheetRef,
   fetchingSwapQuote,
@@ -150,6 +165,8 @@ export function SwapTransactionDetails({
   networkFee,
 }: Props) {
   const { t } = useTranslation()
+  const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
+  const hasSpendSteps = !!spendSteps && spendSteps.length > 0
   const usdToLocalCurrencyRate = useSelector(usdToLocalCurrencyRateSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const estimatedFeesString = getEstimatedTotalFees({
@@ -161,30 +178,78 @@ export function SwapTransactionDetails({
 
   const placeholder = '-'
 
-  if (!toToken || !fromToken || !exchangeRatePrice) {
+  if (!toToken || !fromToken) {
     return null
   }
 
   return (
     <View style={styles.container} testID="SwapTransactionDetails">
-      <View style={styles.row} testID="SwapTransactionDetails/ExchangeRate">
-        <LabelWithInfo
-          onPress={() => {
-            AppAnalytics.track(SwapEvents.swap_show_info, {
-              type: SwapShowInfoType.EXCHANGE_RATE,
-            })
-            exchangeRateInfoBottomSheetRef.current?.snapToIndex(0)
-          }}
-          label={t('swapScreen.transactionDetails.exchangeRate')}
-          testID="SwapTransactionDetails/ExchangeRate/MoreInfo"
-        />
-        <ValueWithLoading
-          isLoading={fetchingSwapQuote}
-          value={`1 ${fromToken.symbol} ≈ ${new BigNumber(exchangeRatePrice).toFormat(5, BigNumber.ROUND_DOWN)} ${
-            toToken.symbol
-          }`}
-        />
-      </View>
+      {!!exchangeRatePrice && (
+        <View style={styles.row} testID="SwapTransactionDetails/ExchangeRate">
+          <LabelWithInfo
+            onPress={() => {
+              AppAnalytics.track(SwapEvents.swap_show_info, {
+                type: SwapShowInfoType.EXCHANGE_RATE,
+              })
+              exchangeRateInfoBottomSheetRef.current?.snapToIndex(0)
+            }}
+            label={t('swapScreen.transactionDetails.exchangeRate')}
+            testID="SwapTransactionDetails/ExchangeRate/MoreInfo"
+          />
+          <ValueWithLoading
+            isLoading={fetchingSwapQuote}
+            // Display symbols via getTokenSymbol so legacy on-chain names
+            // (cCOP) render as user-facing labels (Pesos). Without this the
+            // exchange-rate row reads e.g. "1 cCOP ≈ 0.00028 Dolares".
+            value={`1 ${getTokenSymbol(t, fromToken.symbol, fromToken.tokenId)} ≈ ${new BigNumber(
+              exchangeRatePrice
+            ).toFormat(
+              5,
+              BigNumber.ROUND_DOWN
+            )} ${getTokenSymbol(t, toToken.symbol, toToken.tokenId)}`}
+          />
+        </View>
+      )}
+      {settlementToken && (
+        <View style={styles.row} testID="SwapTransactionDetails/SettlementToken">
+          <Text style={styles.label}>{t('swapScreen.transactionDetails.receivingIn')}</Text>
+          <Text style={styles.value} testID="SwapTransactionDetails/SettlementToken/Value">
+            {(() => {
+              const ticker = getDollarTokenTicker(settlementToken.tokenId)
+              return ticker ?? settlementToken.name ?? settlementToken.symbol
+            })()}
+          </Text>
+        </View>
+      )}
+      {hasSpendSteps && (
+        <View testID="SwapTransactionDetails/SpendBreakdown">
+          <Touchable
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+              setSpendDetailExpanded((v) => !v)
+            }}
+            testID="SwapTransactionDetails/SpendBreakdown/Toggle"
+          >
+            <View style={styles.row}>
+              <Text style={styles.label}>{t('swapScreen.transactionDetails.perTokenDetail')}</Text>
+              <Text style={styles.value}>
+                {spendDetailExpanded
+                  ? t('swapScreen.transactionDetails.perTokenDetailCollapse')
+                  : t('swapScreen.transactionDetails.perTokenDetailExpand', {
+                      count: spendSteps!.length,
+                    })}
+              </Text>
+            </View>
+          </Touchable>
+          {spendDetailExpanded &&
+            spendSteps!.map((step) => (
+              <View key={step.tokenId} style={[styles.row, styles.subRow]}>
+                <Text style={styles.subLabel}>{step.symbol}</Text>
+                <Text style={styles.value}>{`$${step.amountUsd.toFormat(2)}`}</Text>
+              </View>
+            ))}
+        </View>
+      )}
       <View style={styles.row} testID="SwapTransactionDetails/Fees">
         <LabelWithInfo
           onPress={() => {
@@ -201,6 +266,18 @@ export function SwapTransactionDetails({
           value={estimatedFeesString ?? placeholder}
         />
       </View>
+      {!!networkFee?.token?.symbol && !fetchingSwapQuote && (
+        // Bug E UX surface: the user can see which of their visible balances
+        // covers the network fee. Was added so a tx paid in Pesos / Dólares no
+        // longer looks like an unexplained CELO debit. Uses getTokenDisplayName
+        // so the user reads "Pesos" / "Dólares" / "Oro" instead of the chain
+        // symbols (COPm, USDm, XAUt0). CELO falls through to its raw symbol so
+        // the user still sees something if the last-resort fallback fires.
+        <View style={styles.row} testID="SwapTransactionDetails/FeePaidIn">
+          <Text style={styles.label}>{t('swapScreen.transactionDetails.feePaidIn')}</Text>
+          <Text style={styles.value}>{getTokenDisplayName(networkFee.token.symbol)}</Text>
+        </View>
+      )}
       {!!estimatedDurationInSeconds && (
         <View style={styles.row} testID="SwapTransactionDetails/EstimatedDuration">
           <LabelWithInfo
@@ -270,6 +347,14 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: colors.gray4,
     marginRight: Spacing.Tiny4,
+  },
+  subRow: {
+    paddingLeft: Spacing.Regular16,
+    marginTop: Spacing.Smallest8,
+  },
+  subLabel: {
+    ...typeScale.bodySmall,
+    color: colors.gray4,
   },
   loaderContainer: {
     ...StyleSheet.absoluteFillObject,

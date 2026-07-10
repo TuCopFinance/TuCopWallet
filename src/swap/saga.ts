@@ -24,9 +24,19 @@ import {
   getPrefixedTxAnalyticsProperties,
   getTxReceiptAnalyticsProperties,
 } from 'src/transactions/utils'
+import { classifyError } from 'src/lib/errors'
+import { simulateSwapTransaction } from 'src/lib/preflight'
+import {
+  inFlightAbort,
+  inFlightAdvance,
+  inFlightFail,
+  inFlightStart,
+} from 'src/lib/useTransactionInFlight/actions'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
@@ -34,7 +44,7 @@ import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import { decodeFunctionData, erc20Abi } from 'viem'
+import { Address, decodeFunctionData, erc20Abi } from 'viem'
 
 const TAG = 'swap/saga'
 
@@ -77,7 +87,8 @@ function getSwapTxsReceiptAnalyticsProperties(
 
 export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
   const swapSubmittedAt = Date.now()
-  const { swapId, userInput, quote, areSwapTokensShuffled } = action.payload
+  const { swapId, userInput, quote, areSwapTokensShuffled, suppressSuccessNavigation } =
+    action.payload
   const { fromTokenId, toTokenId, updatedField, swapAmount } = userInput
   const {
     provider,
@@ -107,6 +118,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     yield* put(swapError(swapId))
     return
   }
+
+  const flowId = `swap-${swapId}`
+  yield* put(
+    inFlightStart({
+      flowId,
+      flowKind: 'swap',
+      steps: 1,
+      currentStep: 0,
+      status: 'preparing',
+      preparedTransactions: serializablePreparedTransactions,
+      networkId: fromToken.networkId,
+      retryCount: 0,
+      startedAt: swapSubmittedAt,
+    })
+  )
 
   const fromTokenBalance = fromToken.balance.shiftedBy(fromToken.decimals).toString()
   const estimatedSellTokenUsdValue = calculateEstimatedUsdValue({
@@ -243,6 +269,58 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     })
     createSwapStandbyTxHandlers.push(createSwapStandbyTx)
 
+    // Pre-flight simulation (Track B / WRI): when the swap requires a separate
+    // approve + swap pair, simulate the swap call against the latest state. If
+    // the swap would revert for non-allowance reasons (slippage, paused
+    // router, etc), abort BEFORE emitting the approve so the user does not end
+    // up with a dangling allowance. Guarded by a Statsig flag for safe rollout.
+    const preflightOn = yield* call(
+      getFeatureGate,
+      StatsigFeatureGates.WRI_PREFLIGHT_SWAP_SIMULATION
+    )
+    if (preflightOn && preparedTransactions.length > 1) {
+      const swapTx = preparedTransactions[preparedTransactions.length - 1]
+      if (swapTx?.to && swapTx?.data !== undefined) {
+        const approvedAmountForSim =
+          preparedTransactions[0]?.data && preparedTransactions[0].to === fromToken.address
+            ? (() => {
+                try {
+                  const decoded = decodeFunctionData({
+                    abi: erc20Abi,
+                    data: preparedTransactions[0].data!,
+                  })
+                  if (decoded.functionName === 'approve' && decoded.args) {
+                    return decoded.args[1] as bigint
+                  }
+                } catch {
+                  // fall through
+                }
+                return BigInt(0)
+              })()
+            : BigInt(0)
+
+        const sim = yield* call(simulateSwapTransaction, publicClient[network], {
+          from: wallet.account.address as Address,
+          to: swapTx.to as Address,
+          data: (swapTx.data ?? '0x') as `0x${string}`,
+          value: BigInt(swapTx.value ?? 0),
+          assumedAllowance: approvedAmountForSim,
+          sellToken: fromToken.address as Address,
+        })
+        if (sim.kind === 'revert') {
+          Logger.warn(TAG, `Pre-flight swap simulation reverted: ${sim.reason}`)
+          yield* put(swapError(swapId))
+          yield* put(
+            inFlightFail({
+              flowId,
+              errorClass: classifyError(new Error(`Pre-flight reverted: ${sim.reason}`)),
+            })
+          )
+          return
+        }
+      }
+    }
+
     const txHashes = yield* call(
       sendPreparedTransactions,
       serializablePreparedTransactions,
@@ -280,17 +358,23 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         networkId,
       })
     )
+    yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
-    // Navigate to success screen
-    navigate(Screens.TransactionSuccessScreen, {
-      fromTokenId,
-      toTokenId,
-      fromAmount: swapAmount[Field.FROM],
-      toAmount: swapAmount[Field.TO],
-      transactionHash: swapTxReceipt.transactionHash,
-      networkId,
-      type: 'swap' as const,
-    })
+    // Navigate to success screen unless the parent multi-swap flow told us
+    // not to (see SwapInfo.suppressSuccessNavigation). The orchestrator will
+    // navigate once at the end with the aggregated leg breakdown so the user
+    // does not see the sheet flash for each step.
+    if (!suppressSuccessNavigation) {
+      navigate(Screens.TransactionSuccessScreen, {
+        fromTokenId,
+        toTokenId,
+        fromAmount: swapAmount[Field.FROM],
+        toAmount: swapAmount[Field.TO],
+        transactionHash: swapTxReceipt.transactionHash,
+        networkId,
+        type: 'swap' as const,
+      })
+    }
 
     // Success is tracked only for same-chain swaps. Cross-chain swap success is tracked in the query helper
     // because for the cross-chain swaps, we have to wait for the transaction to be included in the
@@ -307,12 +391,14 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     if (err === CANCELLED_PIN_INPUT) {
       Logger.info(TAG, 'Swap cancelled by user')
       yield* put(swapCancel(swapId))
+      yield* put(inFlightAbort({ flowId }))
       return
     }
     const error = ensureError(err)
     // dispatch the error early, in case the rest of the handling throws
     // and leaves the app in a bad state
     yield* put(swapError(swapId))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
     // Only vibrate if we haven't already submitted the transaction
     // since the user may be doing something else on the app by now
     // (different screen or a new swap)
