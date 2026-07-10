@@ -45,6 +45,7 @@ import { useLocalToTokenAmount, useTokenInfo, useTokenToLocalAmount } from 'src/
 import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getTokenDisplayName } from 'src/tokens/utils'
 import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
@@ -443,7 +444,7 @@ function EarnEnterAmount({ route }: Props) {
               >
                 <>
                   <TokenIcon token={inputToken} size={IconSize.SMALL} />
-                  <Text style={styles.tokenName}>{inputToken.symbol}</Text>
+                  <Text style={styles.tokenName}>{getTokenDisplayName(inputToken.symbol)}</Text>
                   {dropdownEnabled && <DownArrowIcon color={Colors.gray5} />}
                 </>
               </Touchable>
@@ -488,14 +489,18 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.title', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(
+                prepareTransactionsResult.feeCurrencies[0].symbol
+              ),
             })}
             description={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(
+                prepareTransactionsResult.feeCurrencies[0].symbol
+              ),
               network: NETWORK_NAMES[prepareTransactionsResult.feeCurrencies[0].networkId],
             })}
             ctaLabel={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.noGasCta', {
-              feeTokenSymbol: feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(feeCurrencies[0].symbol),
               network: NETWORK_NAMES[prepareTransactionsResult.feeCurrencies[0].networkId],
             })}
             onPressCta={() => {
@@ -520,10 +525,10 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.insufficientBalanceWarning.title', {
-              tokenSymbol: inputToken.symbol,
+              tokenSymbol: getTokenDisplayName(inputToken.symbol),
             })}
             description={t('sendEnterAmountScreen.insufficientBalanceWarning.description', {
-              tokenSymbol: inputToken.symbol,
+              tokenSymbol: getTokenDisplayName(inputToken.symbol),
             })}
             style={styles.warning}
             testID="EarnEnterAmount/NotEnoughBalanceWarning"
