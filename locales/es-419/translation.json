@@ -2954,21 +2954,22 @@
       "ninetyDays": "Deposito a 90 dias"
     },
     "explainer": {
+      "close": "Cerrar",
       "flexible": {
         "title": "Depósito Flexible",
-        "body": "Depositá y retirá tus Pesos cuando quieras, sin plazo mínimo ni penalizaciones. Los intereses se acumulan a diario a la tasa E.A. que ves en la card. Ideal si querés flexibilidad total."
+        "body": "Deposita y retira tus Pesos cuando quieras, sin plazo mínimo ni comisiones. Los intereses se generan cada día y se abonan cada vez que retiras. Ideal si necesitas tener el dinero disponible."
       },
       "thirtyDays": {
         "title": "Depósito a 30 días",
-        "body": "Tu capital queda bloqueado por 30 días. Al vencer, retirás capital + intereses sin ningún cargo.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+        "body": "Tus Pesos quedan guardados 30 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo.\n\nSi los necesitas antes, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca. Los intereses se van acumulando día a día."
       },
       "sixtyDays": {
         "title": "Depósito a 60 días",
-        "body": "Tu capital queda bloqueado por 60 días. Al vencer, retirás capital + intereses sin ningún cargo. Suele pagar mejor tasa que Flexible y 30 días.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+        "body": "Tus Pesos quedan guardados 60 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo. Suele rendir más que Flexible y 30 días.\n\nSi los necesitas antes, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca. Los intereses se van acumulando día a día."
       },
       "ninetyDays": {
         "title": "Depósito a 90 días",
-        "body": "Tu capital queda bloqueado por 90 días. Al vencer, retirás capital + intereses sin ningún cargo. Es la opción que suele pagar la mejor tasa.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+        "body": "Tus Pesos quedan guardados 90 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo. Suele ser la opción con mejor rendimiento.\n\nSi los necesitas antes, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca. Los intereses se van acumulando día a día."
       }
     },
     "detail": {
