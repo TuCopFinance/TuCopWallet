@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
@@ -149,6 +149,7 @@ export default function PoolCard({
     return { title: t(keys.title), body: t(keys.body) }
   }, [pool, t])
 
+  const [isExplainerOpen, setExplainerOpen] = useState(false)
   const onPressExplainer = (event: any) => {
     event.stopPropagation?.()
     if (!neeruExplainer) return
@@ -159,7 +160,7 @@ export default function PoolCard({
       poolAmount: balance,
       providerId: appId,
     })
-    Alert.alert(neeruExplainer.title, neeruExplainer.body, [{ text: t('ok') ?? 'OK' }])
+    setExplainerOpen(true)
   }
 
   const onPress = () => {
@@ -253,6 +254,32 @@ export default function PoolCard({
           </Text>
         </View>
       </Touchable>
+      {neeruExplainer && (
+        <Modal
+          visible={isExplainerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setExplainerOpen(false)}
+        >
+          <Pressable style={styles.explainerBackdrop} onPress={() => setExplainerOpen(false)}>
+            <Pressable
+              style={styles.explainerCard}
+              onPress={(e) => e.stopPropagation()}
+              testID={`PoolCard/${positionId}/ExplainerSheet`}
+            >
+              <Text style={styles.explainerTitle}>{neeruExplainer.title}</Text>
+              <Text style={styles.explainerBody}>{neeruExplainer.body}</Text>
+              <Touchable
+                onPress={() => setExplainerOpen(false)}
+                style={styles.explainerClose}
+                testID={`PoolCard/${positionId}/ExplainerClose`}
+              >
+                <Text style={styles.explainerCloseText}>{t('neeruVaults.explainer.close')}</Text>
+              </Touchable>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      )}
     </Shadow>
   )
 }
@@ -341,5 +368,35 @@ const styles = StyleSheet.create({
     color: Colors.black,
     fontWeight: '600',
     lineHeight: 18,
+  },
+  explainerBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.Regular16,
+  },
+  explainerCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: Spacing.Regular16,
+    gap: Spacing.Small12,
+  },
+  explainerTitle: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.black,
+  },
+  explainerBody: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+  },
+  explainerClose: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: Spacing.Small12,
+    paddingVertical: Spacing.Smallest8,
+    marginTop: Spacing.Smallest8,
+  },
+  explainerCloseText: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
   },
 })
