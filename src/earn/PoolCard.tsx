@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
@@ -268,7 +268,13 @@ export default function PoolCard({
               testID={`PoolCard/${positionId}/ExplainerSheet`}
             >
               <Text style={styles.explainerTitle}>{neeruExplainer.title}</Text>
-              <Text style={styles.explainerBody}>{neeruExplainer.body}</Text>
+              <ScrollView
+                style={styles.explainerScroll}
+                contentContainerStyle={styles.explainerScrollContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={styles.explainerBody}>{neeruExplainer.body}</Text>
+              </ScrollView>
               <Touchable
                 onPress={() => setExplainerOpen(false)}
                 style={styles.explainerClose}
@@ -356,18 +362,18 @@ const styles = StyleSheet.create({
     gap: Spacing.Tiny4,
   },
   explainerBadge: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: Colors.gray2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   explainerBadgeText: {
-    ...typeScale.bodyXSmall,
-    color: Colors.black,
+    ...typeScale.bodyXXSmall,
+    color: Colors.gray4,
     fontWeight: '600',
-    lineHeight: 18,
+    lineHeight: 14,
   },
   explainerBackdrop: {
     flex: 1,
@@ -380,6 +386,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.Regular16,
     gap: Spacing.Small12,
+    maxHeight: '80%',
+  },
+  explainerScroll: {
+    flexGrow: 0,
+  },
+  explainerScrollContent: {
+    paddingVertical: Spacing.Smallest8,
   },
   explainerTitle: {
     ...typeScale.labelSemiBoldSmall,
