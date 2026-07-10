@@ -51,6 +51,67 @@ const HEADER_OPACITY_ANIMATION_DISTANCE = 20
 
 export const MARRANITOS_POSITION_TYPE = 'marranitos'
 export const MY_MARRANITOS_POSITION_TYPE = 'misMarranitos'
+export const SECTION_HEADER_TYPE = 'sectionHeader'
+
+// Fixed section order for the "haz crecer tu dinero" list. Keeps the layout
+// predictable regardless of how the backend orders pools day-to-day. Providers
+// not in this list fall through to the trailing "otros" bucket.
+const SECTION_ORDER: Array<{ id: string; titleKey: string; match: (item: any) => boolean }> = [
+  {
+    id: 'neeru',
+    titleKey: 'earnFlow.section.neeru',
+    match: (item) => item?.appId === 'neeru-vaults',
+  },
+  {
+    id: 'allbridge',
+    titleKey: 'earnFlow.section.allbridge',
+    match: (item) => item?.appId === 'allbridge',
+  },
+  {
+    id: 'aave',
+    titleKey: 'earnFlow.section.aave',
+    match: (item) => item?.appId === 'aave',
+  },
+  {
+    id: 'marranitos',
+    titleKey: 'earnFlow.section.marranitos',
+    match: (item) =>
+      item?.positionType === MARRANITOS_POSITION_TYPE ||
+      item?.positionType === MY_MARRANITOS_POSITION_TYPE,
+  },
+]
+
+// Interleaves section header pseudo-items between grouped pools so the flat
+// list rendering in PoolList can lay them out with headers without a full
+// SectionList refactor. Items not matching any known section go into an
+// "others" bucket rendered last.
+function groupPoolsIntoSections(pools: any[]) {
+  if (pools.length === 0) return []
+  const buckets: Record<string, any[]> = {}
+  const others: any[] = []
+  for (const section of SECTION_ORDER) buckets[section.id] = []
+  for (const pool of pools) {
+    const section = SECTION_ORDER.find((s) => s.match(pool))
+    if (section) buckets[section.id].push(pool)
+    else others.push(pool)
+  }
+  const out: any[] = []
+  for (const section of SECTION_ORDER) {
+    const items = buckets[section.id]
+    if (items.length === 0) continue
+    out.push({ positionType: SECTION_HEADER_TYPE, id: section.id, titleKey: section.titleKey })
+    out.push(...items)
+  }
+  if (others.length > 0) {
+    out.push({
+      positionType: SECTION_HEADER_TYPE,
+      id: 'others',
+      titleKey: 'earnFlow.section.others',
+    })
+    out.push(...others)
+  }
+  return out
+}
 
 type Props = NativeStackScreenProps<StackParamList, Screens.EarnHome>
 
@@ -292,7 +353,7 @@ export default function EarnHome({ navigation, route }: Props) {
     }
   }, [walletAddress])
 
-  const allPools = useMemo(() => {
+  const flatPools = useMemo(() => {
     const marranitos =
       activeTab === EarnTabType.AllPools ? marranitos_pools.filter((pool) => pool.isActive) : stakes
     return [
@@ -305,8 +366,14 @@ export default function EarnHome({ navigation, route }: Props) {
     ]
   }, [displayPools, tokenList, marranitos_pools, activeTab])
 
+  // Interleaved with section-header pseudo-items so the flat list rendering
+  // in PoolList can group pools by provider (Neeru, Allbridge, ...). Empty
+  // states below use `flatPools` because header items would falsely inflate
+  // the length even when zero real pools are available.
+  const allPools = useMemo(() => groupPoolsIntoSections(flatPools), [flatPools])
+
   const zeroPoolsinMyPoolsTab =
-    !errorLoadingPools && allPools.length === 0 && activeTab === EarnTabType.MyPools
+    !errorLoadingPools && flatPools.length === 0 && activeTab === EarnTabType.MyPools
 
   const loadStakes = async () => {
     if (!walletAddress) return
@@ -351,8 +418,8 @@ export default function EarnHome({ navigation, route }: Props) {
             <EarnTabBar activeTab={activeTab} onChange={handleChangeActiveView} />
           </View>
         </Animated.View>
-        {((allPools.length === 0 && activeTab === EarnTabType.AllPools) ||
-          (allPools.length === 0 && errorLoadingPools)) && (
+        {((flatPools.length === 0 && activeTab === EarnTabType.AllPools) ||
+          (flatPools.length === 0 && errorLoadingPools)) && (
           <View style={styles.textContainer}>
             <AttentionIcon size={48} color={Colors.black} />
             <Text style={styles.errorTitle}>{t('earnFlow.home.errorTitle')}</Text>
@@ -366,7 +433,7 @@ export default function EarnHome({ navigation, route }: Props) {
             <Text style={styles.description}>{t('earnFlow.home.noPoolsDescription')}</Text>
           </View>
         )}
-        {!!allPools.length &&
+        {!!flatPools.length &&
           !errorLoadingPools &&
           !zeroPoolsinMyPoolsTab &&
           (activeTab === EarnTabType.AllPools || activeTab === EarnTabType.MyPools) && (
