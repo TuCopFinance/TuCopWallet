@@ -2953,6 +2953,24 @@
       "sixtyDays": "Deposito a 60 dias",
       "ninetyDays": "Deposito a 90 dias"
     },
+    "explainer": {
+      "flexible": {
+        "title": "Depósito Flexible",
+        "body": "Depositá y retirá tus Pesos cuando quieras, sin plazo mínimo ni penalizaciones. Los intereses se acumulan a diario a la tasa E.A. que ves en la card. Ideal si querés flexibilidad total."
+      },
+      "thirtyDays": {
+        "title": "Depósito a 30 días",
+        "body": "Tu capital queda bloqueado por 30 días. Al vencer, retirás capital + intereses sin ningún cargo.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+      },
+      "sixtyDays": {
+        "title": "Depósito a 60 días",
+        "body": "Tu capital queda bloqueado por 60 días. Al vencer, retirás capital + intereses sin ningún cargo. Suele pagar mejor tasa que Flexible y 30 días.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+      },
+      "ninetyDays": {
+        "title": "Depósito a 90 días",
+        "body": "Tu capital queda bloqueado por 90 días. Al vencer, retirás capital + intereses sin ningún cargo. Es la opción que suele pagar la mejor tasa.\n\nSi necesitás retirar antes, se aplica una comisión del 20% SOBRE LOS INTERESES ganados (nunca sobre tu capital). Los intereses se acumulan a diario."
+      }
+    },
     "detail": {
       "header": "Tus depositos {{categoryLabel}}",
       "aggregateBalance": "Total en {{categoryLabel}}: {{amount}} Pesos",

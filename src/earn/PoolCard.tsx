@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { Alert, StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
@@ -23,6 +23,22 @@ import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
+
+const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; body: string }> = {
+  0: { title: 'neeruVaults.explainer.flexible.title', body: 'neeruVaults.explainer.flexible.body' },
+  1: {
+    title: 'neeruVaults.explainer.thirtyDays.title',
+    body: 'neeruVaults.explainer.thirtyDays.body',
+  },
+  2: {
+    title: 'neeruVaults.explainer.sixtyDays.title',
+    body: 'neeruVaults.explainer.sixtyDays.body',
+  },
+  3: {
+    title: 'neeruVaults.explainer.ninetyDays.title',
+    body: 'neeruVaults.explainer.ninetyDays.body',
+  },
+}
 
 const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
   0: 'neeruVaults.cardSubtitle.flexible',
@@ -121,6 +137,31 @@ export default function PoolCard({
     return t(key)
   }, [pool, t])
 
+  // Per-tranche explainer sheet. The `?` next to the subtitle fires this so
+  // the user can read how the specific option (Flexible / 30 / 60 / 90 days)
+  // behaves without leaving the Earn tab. Uses native Alert for zero-infra
+  // cost; a designed BottomSheet is a follow-up if we want richer content.
+  const neeruExplainer = useMemo(() => {
+    if (pool.appId !== 'neeru-vaults') return null
+    const trancheId = categoryIdFromPositionId(pool.positionId)
+    if (trancheId === null) return null
+    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[trancheId]
+    return { title: t(keys.title), body: t(keys.body) }
+  }, [pool, t])
+
+  const onPressExplainer = (event: any) => {
+    event.stopPropagation?.()
+    if (!neeruExplainer) return
+    AppAnalytics.track(EarnEvents.earn_pool_card_press, {
+      poolId: positionId,
+      depositTokenId,
+      networkId,
+      poolAmount: balance,
+      providerId: appId,
+    })
+    Alert.alert(neeruExplainer.title, neeruExplainer.body, [{ text: t('ok') ?? 'OK' }])
+  }
+
   const onPress = () => {
     AppAnalytics.track(EarnEvents.earn_pool_card_press, {
       poolId: positionId,
@@ -155,7 +196,21 @@ export default function PoolCard({
             ))}
             <View style={styles.titleTextContainer}>
               <Text style={styles.titleTokens}>{cardTitle}</Text>
-              {cardSubtitle ? <Text style={styles.cardSubtitle}>{cardSubtitle}</Text> : null}
+              {cardSubtitle ? (
+                <View style={styles.subtitleRow}>
+                  <Text style={styles.cardSubtitle}>{cardSubtitle}</Text>
+                  {neeruExplainer && (
+                    <Touchable
+                      onPress={onPressExplainer}
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      style={styles.explainerBadge}
+                      testID={`PoolCard/${positionId}/ExplainerButton`}
+                    >
+                      <Text style={styles.explainerBadgeText}>?</Text>
+                    </Touchable>
+                  )}
+                </View>
+              ) : null}
             </View>
           </View>
           <View style={styles.keyValueContainer}>
@@ -267,5 +322,24 @@ const styles = StyleSheet.create({
   rateEquivalent: {
     ...typeScale.bodyXSmall,
     color: Colors.gray3,
+  },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.Tiny4,
+  },
+  explainerBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: Colors.gray2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  explainerBadgeText: {
+    ...typeScale.bodyXSmall,
+    color: Colors.black,
+    fontWeight: '600',
+    lineHeight: 18,
   },
 })
