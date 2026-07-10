@@ -22,6 +22,7 @@ import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruTrancheId, trancheIdFromPositionId } from 'src/earn/neeru/constants'
+import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 
 const NEERU_CARD_SUBTITLE_KEY_BY_TRANCHE: Record<NeeruTrancheId, string> = {
   0: 'neeruVaults.cardSubtitle.flexible',
@@ -90,7 +91,19 @@ export default function PoolCard({
     return `${localCurrencySymbol}${tvlInFiat ? formatValueToDisplay(tvlInFiat) : '--'}`
   }, [localCurrencySymbol, tvlInFiat])
 
-  const totalYieldRate = getTotalYieldRate(pool).toFixed(2)
+  const rawYieldRate = getTotalYieldRate(pool).toNumber()
+  const totalYieldRate = rawYieldRate.toFixed(2)
+  // Neeru quotes a monthly effective rate (M.V.). The headline on the card
+  // needs to be the annual effective rate (E.A.) so the number is directly
+  // comparable to bank promos and other DeFi surfaces the user browses. Keep
+  // the monthly rate visible as a smaller subtitle so no context is lost.
+  const isNeeruPool = pool.appId === 'neeru-vaults'
+  const neeruRates = useMemo(() => {
+    if (!isNeeruPool) return null
+    const mv = rawYieldRate
+    const ea = effectiveAnnualPercentFromMonthly(mv)
+    return { mv: mv.toFixed(2), ea: ea.toFixed(2) }
+  }, [isNeeruPool, rawYieldRate])
 
   // Card title is always the user-friendly token display name per the wallet manual
   // (cCOP -> Pesos, USDT/USDC/USDm -> Dolares, etc).
@@ -148,11 +161,22 @@ export default function PoolCard({
           <View style={styles.keyValueContainer}>
             <View style={styles.keyValueRow}>
               <Text style={styles.keyText}>{t('earnFlow.poolCard.yieldRate')}</Text>
-              <Text style={styles.valueTextBold}>
-                {t('earnFlow.poolCard.percentage', {
-                  percentage: totalYieldRate,
-                })}
-              </Text>
+              {neeruRates ? (
+                <View style={styles.rateStackContainer} testID="PoolCard/NeeruRateStack">
+                  <Text style={styles.valueTextBold}>
+                    {t('earnFlow.poolCard.percentageEa', { percentage: neeruRates.ea })}
+                  </Text>
+                  <Text style={styles.rateEquivalent}>
+                    {t('earnFlow.poolCard.mvEquivalent', { percentage: neeruRates.mv })}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.valueTextBold}>
+                  {t('earnFlow.poolCard.percentage', {
+                    percentage: totalYieldRate,
+                  })}
+                </Text>
+              )}
             </View>
             <View style={styles.keyValueRow}>
               <Text style={styles.keyText}>{t('earnFlow.poolCard.tvl')}</Text>
@@ -236,5 +260,12 @@ const styles = StyleSheet.create({
     gap: Spacing.Smallest8,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  rateStackContainer: {
+    alignItems: 'flex-end',
+  },
+  rateEquivalent: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray3,
   },
 })

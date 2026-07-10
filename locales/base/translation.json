@@ -2745,6 +2745,13 @@
       "network": "Network",
       "fees": "Fees"
     },
+    "section": {
+      "neeru": "Neeru",
+      "allbridge": "Allbridge",
+      "aave": "Aave",
+      "marranitos": "Marranitos",
+      "others": "Others"
+    },
     "home": {
       "title": "Earn",
       "learnMore": "<0>Learn more</0> about yield pools.",
@@ -2775,6 +2782,8 @@
       "addToPool": "Add to Pool",
       "apy": "{{apy}}% APY",
       "percentage": "{{percentage}}%",
+      "percentageEa": "{{percentage}}% APY",
+      "mvEquivalent": "Approx {{percentage}}% monthly",
       "poweredBy": "Powered by {{providerName}}",
       "deposited": "Supplied",
       "depositAndEarnings": "Deposit & Earnings",

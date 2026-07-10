@@ -15,7 +15,11 @@ import { NotificationVariant } from 'src/components/InLineNotification'
 import { showToast } from 'src/components/showToast'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { MARRANITOS_POSITION_TYPE, MY_MARRANITOS_POSITION_TYPE } from 'src/earn/EarnHome'
+import {
+  MARRANITOS_POSITION_TYPE,
+  MY_MARRANITOS_POSITION_TYPE,
+  SECTION_HEADER_TYPE,
+} from 'src/earn/EarnHome'
 import MarranitosContract, { STAKING_ADDRESS } from 'src/earn/marranitos/MarranitosContract'
 import MarranitosPoolCard from 'src/earn/marranitos/MarranitosPoolCard'
 import { RenderStakeItem } from 'src/earn/marranitos/RenderStakeItem'
@@ -153,7 +157,11 @@ export default function PoolList({
     <AnimatedFlatList
       data={displayPools}
       renderItem={({ item }) =>
-        item.positionType == MARRANITOS_POSITION_TYPE ? (
+        item.positionType == SECTION_HEADER_TYPE ? (
+          <Text style={styles.sectionHeader} testID={`PoolList/SectionHeader/${item.id}`}>
+            {t(item.titleKey)}
+          </Text>
+        ) : item.positionType == MARRANITOS_POSITION_TYPE ? (
           <MarranitosPoolCard
             pool={item}
             testID={`PoolCard/${item.positionId}`}
@@ -171,7 +179,9 @@ export default function PoolList({
           <PoolCard pool={item} testID={`PoolCard/${item.positionId}`} />
         )
       }
-      keyExtractor={(item) => item.positionId}
+      keyExtractor={(item) =>
+        item.positionType === SECTION_HEADER_TYPE ? `section-${item.id}` : item.positionId
+      }
       onScroll={handleScroll}
       // Workaround iOS setting an incorrect automatic inset at the top
       scrollIndicatorInsets={{ top: 0.01 }}
@@ -217,5 +227,11 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     fontWeight: '600',
     textDecorationLine: 'underline',
+  },
+  sectionHeader: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.black,
+    marginTop: Spacing.Small12,
+    marginBottom: Spacing.Smallest8,
   },
 })
