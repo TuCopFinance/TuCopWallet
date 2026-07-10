@@ -182,7 +182,7 @@ describe('EarnEnterAmount', () => {
       )
 
       expect(getByTestId('EarnEnterAmount/TokenSelect')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/TokenSelect')).toHaveTextContent('USDC')
+      expect(getByTestId('EarnEnterAmount/TokenSelect')).toHaveTextContent('Dólares')
       expect(getByTestId('EarnEnterAmount/TokenSelect')).toBeDisabled()
       expect(queryByTestId('downArrowIcon')).toBeFalsy()
     })
@@ -422,7 +422,7 @@ describe('EarnEnterAmount', () => {
       )
 
       expect(getByTestId('EarnEnterAmount/TokenSelect')).toBeTruthy()
-      expect(getByTestId('EarnEnterAmount/TokenSelect')).toHaveTextContent('USDC')
+      expect(getByTestId('EarnEnterAmount/TokenSelect')).toHaveTextContent('Dólares')
       expect(getByTestId('EarnEnterAmount/TokenSelect')).toBeDisabled()
       expect(queryByTestId('downArrowIcon')).toBeFalsy()
     })

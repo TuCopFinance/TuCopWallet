@@ -2946,6 +2946,24 @@
       "sixtyDays": "60-day deposit",
       "ninetyDays": "90-day deposit"
     },
+    "explainer": {
+      "flexible": {
+        "title": "Flexible deposit",
+        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no penalties. Interest accrues daily at the E.A. rate shown on the card. Ideal if you want full flexibility."
+      },
+      "thirtyDays": {
+        "title": "30-day deposit",
+        "body": "Your capital is locked for 30 days. At maturity you withdraw principal + interest at no cost.\n\nIf you need to withdraw earlier, a 20% fee is charged ON THE INTEREST EARNED only (never on your capital). Interest accrues daily."
+      },
+      "sixtyDays": {
+        "title": "60-day deposit",
+        "body": "Your capital is locked for 60 days. At maturity you withdraw principal + interest at no cost. Usually pays a higher rate than Flexible and 30 days.\n\nIf you need to withdraw earlier, a 20% fee is charged ON THE INTEREST EARNED only (never on your capital). Interest accrues daily."
+      },
+      "ninetyDays": {
+        "title": "90-day deposit",
+        "body": "Your capital is locked for 90 days. At maturity you withdraw principal + interest at no cost. Usually the highest rate.\n\nIf you need to withdraw earlier, a 20% fee is charged ON THE INTEREST EARNED only (never on your capital). Interest accrues daily."
+      }
+    },
     "detail": {
       "header": "Your {{trancheLabel}} positions",
       "aggregateBalance": "Total in {{trancheLabel}}: {{amount}} Pesos",
