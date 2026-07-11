@@ -3024,7 +3024,7 @@
       "unknown": "Algo salio mal. Intenta de nuevo.",
       "invalidTranche": "Opcion invalida.",
       "invalidAmount": "Monto invalido.",
-      "amountBelowMin": "Deposito minimo: {{minAmount}} Pesos.",
+      "amountBelowMin": "El monto es menor al mínimo permitido para este depósito.",
       "depositsPaused": "Los depositos estan temporalmente pausados.",
       "globalCapExceeded": "El fondo esta lleno. Intenta mas tarde.",
       "trancheCapExceeded": "Esta opcion esta llena. Prueba otra o intenta mas tarde.",
