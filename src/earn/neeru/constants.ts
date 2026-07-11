@@ -18,8 +18,12 @@ export const NEERU_CATEGORY_LABEL_KEYS: Record<NeeruCategoryId, string> = {
   3: 'neeruVaults.categories.ninetyDays',
 }
 
+// Backend renamed the positionId suffix from `:category-<N>` to `:category-<N>`
+// as part of the categoria UX cutover. Accept both so persisted state from
+// prior wallet versions still parses cleanly during the transition; the new
+// form is what backend emits going forward.
 export const categoryIdFromPositionId = (positionId: string): NeeruCategoryId | null => {
-  const match = positionId.match(/:category-(\d)$/)
+  const match = positionId.match(/:(?:tranche|category)-(\d)$/)
   if (!match) return null
   const id = Number(match[1])
   if (id < 0 || id > 3) return null
