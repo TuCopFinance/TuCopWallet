@@ -14,4 +14,14 @@ describe('trancheIdFromPositionId', () => {
       trancheIdFromPositionId('celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:tranche-9')
     ).toBeNull()
   })
+  it('extracts tranche id from a positionId using the new :category- suffix', () => {
+    expect(
+      trancheIdFromPositionId('celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:category-2')
+    ).toBe(2)
+  })
+  it('returns null for out-of-range category', () => {
+    expect(
+      trancheIdFromPositionId('celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:category-9')
+    ).toBeNull()
+  })
 })
