@@ -264,7 +264,23 @@ export async function tryEstimateTransactions(
     feeCurrencyAddress
   )
 
-  for (const baseTx of baseTransactions) {
+  // ERC-20 `approve(address,uint256)` selector.
+  const APPROVE_SELECTOR = '0x095ea7b3'
+  // Fallback gas for non-ERC20-transfer txs that follow an approve in the same
+  // batch. Multi-tx flows (approve -> deposit / withdraw / etc.) fail
+  // `eth_estimateGas` on the second tx because the simulator runs against
+  // LATEST state where the approve has not yet executed, and the callee's
+  // `transferFrom` reverts with `insufficient allowance`. We already fall
+  // back for plain ERC-20 transfers (line 209), but complex integrations
+  // (Neeru deposit, Allbridge deposit, etc.) hit the same class of revert.
+  // Use a conservative-but-realistic default so those flows are priced and
+  // not silently classified as `not-enough-balance-for-gas`. On-chain the
+  // wallet still respects any smaller gas the RPC would have set for the
+  // actual submission, so this is not an over-charge risk.
+  const POST_APPROVE_FALLBACK_GAS = BigInt(300_000)
+
+  for (let i = 0; i < baseTransactions.length; i++) {
+    const baseTx = baseTransactions[i]
     if (baseTx.gas) {
       // We have an estimate of gas already and don't want to recalculate it
       // e.g. if this is a swap transaction that depends on an approval transaction that hasn't been submitted yet, so simulation would fail
@@ -294,6 +310,40 @@ export async function tryEstimateTransactions(
         baseFeePerGas,
       })
       if (!tx) {
+        // Post-approve fallback: if a prior tx in this batch was an ERC-20
+        // approve, the revert is almost certainly the LATEST-state allowance
+        // gap, not a real "no funds" condition. Use the fallback gas so the
+        // whole batch prices instead of silently returning null (which would
+        // present as `not-enough-balance-for-gas` to the user).
+        const prevTxs = baseTransactions.slice(0, i)
+        const anyPrevApprove = prevTxs.some((prev) =>
+          prev.data?.toLowerCase().startsWith(APPROVE_SELECTOR)
+        )
+        if (anyPrevApprove) {
+          const fallbackGas =
+            POST_APPROVE_FALLBACK_GAS + BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING)
+          Logger.warn(
+            TAG,
+            `Post-approve fallback gas for feeCurrency ${feeCurrency.symbol} at batch index ${i}`,
+            {
+              fallbackGas: fallbackGas.toString(),
+              feeCurrency: feeCurrencyAddress,
+              from: baseTx.from,
+              to: baseTx.to,
+              txData: baseTx.data?.toString().substring(0, 100),
+            }
+          )
+          transactions.push({
+            ...baseTx,
+            maxFeePerGas,
+            maxPriorityFeePerGas,
+            ...(feeCurrencyAddress && { feeCurrency: feeCurrencyAddress }),
+            gas: fallbackGas,
+            _estimatedGasUse: fallbackGas,
+            _baseFeePerGas: baseFeePerGas,
+          })
+          continue
+        }
         return null
       }
       transactions.push(tx)
