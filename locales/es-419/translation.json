@@ -2957,19 +2957,19 @@
       "close": "Cerrar",
       "flexible": {
         "title": "Depósito Flexible",
-        "body": "Deposita y retira tus Pesos cuando quieras, sin plazo mínimo ni comisiones. Los intereses se generan cada día y se abonan al retirar. Ideal si necesitas tener el dinero disponible.\n\nNo tiene vencimiento ni renovación: el depósito queda activo hasta que decidas retirarlo."
+        "body": "Depositas y retiras tus Pesos cuando quieras, sin plazo mínimo ni comisiones. Los intereses se generan día a día y se abonan al retirar. Ideal si necesitas tener el dinero disponible.\n\nNo tiene vencimiento ni renovación: el depósito queda activo hasta que decidas retirarlo."
       },
       "thirtyDays": {
         "title": "Depósito a 30 días",
-        "body": "Tus Pesos quedan guardados 30 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo. Los intereses se van acumulando día a día.\n\nRenovación automática: si al vencer no retiras, el depósito se renueva por otros 30 días con los intereses sumados al capital, para que sigan generando rendimiento.\n\nSi necesitas retirar antes del vencimiento, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
+        "body": "Tus Pesos quedan guardados 30 días. Los intereses se acumulan día a día durante el plazo.\n\nAl cumplirse los 30 días tienes una ventana de 7 días para retirar el capital + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 30 días. Los intereses generados se suman al capital para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
       },
       "sixtyDays": {
         "title": "Depósito a 60 días",
-        "body": "Tus Pesos quedan guardados 60 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo. Suele rendir más que Flexible y 30 días. Los intereses se van acumulando día a día.\n\nRenovación automática: si al vencer no retiras, el depósito se renueva por otros 60 días con los intereses sumados al capital, para que sigan generando rendimiento.\n\nSi necesitas retirar antes del vencimiento, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
+        "body": "Tus Pesos quedan guardados 60 días. Los intereses se acumulan día a día durante el plazo. Suele rendir más que Flexible y 30 días.\n\nAl cumplirse los 60 días tienes una ventana de 7 días para retirar el capital + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 60 días. Los intereses generados se suman al capital para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
       },
       "ninetyDays": {
         "title": "Depósito a 90 días",
-        "body": "Tus Pesos quedan guardados 90 días. Al terminar el plazo, retiras el capital + los intereses ganados sin costo. Suele ser la opción con mejor rendimiento. Los intereses se van acumulando día a día.\n\nRenovación automática: si al vencer no retiras, el depósito se renueva por otros 90 días con los intereses sumados al capital, para que sigan generando rendimiento.\n\nSi necesitas retirar antes del vencimiento, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
+        "body": "Tus Pesos quedan guardados 90 días. Los intereses se acumulan día a día durante el plazo. Suele ser la opción con mejor rendimiento.\n\nAl cumplirse los 90 días tienes una ventana de 7 días para retirar el capital + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 90 días. Los intereses generados se suman al capital para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu capital nunca se toca."
       }
     },
     "detail": {
