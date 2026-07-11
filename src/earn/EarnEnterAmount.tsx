@@ -285,6 +285,7 @@ function EarnEnterAmount({ route }: Props) {
 
   const isAmountLessThanBalance = tokenAmount && tokenAmount.lte(balanceInInputToken)
   const showNotEnoughBalanceForGasWarning =
+    !prepareTransactionError &&
     isAmountLessThanBalance &&
     prepareTransactionsResult &&
     prepareTransactionsResult.type === 'not-enough-balance-for-gas'
