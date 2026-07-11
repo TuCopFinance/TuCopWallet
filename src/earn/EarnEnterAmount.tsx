@@ -46,6 +46,7 @@ import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
+import { extractNeeruErrorCode, mapNeeruErrorToI18nKey } from 'src/earn/neeru/errorMapping'
 import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
@@ -538,7 +539,16 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('sendEnterAmountScreen.prepareTransactionError.title')}
-            description={t('sendEnterAmountScreen.prepareTransactionError.description')}
+            description={
+              // Surface the specific Neeru backend error (GLOBAL_CAP_EXCEEDED,
+              // TRANCHE_CAP_EXCEEDED, DEPOSITS_PAUSED, AMOUNT_BELOW_MIN, ...)
+              // as a Colombian-Spanish description whenever the failing pool is
+              // Neeru. Falls back to the generic prepare-transaction copy for
+              // Allbridge / Aave / any provider without a code map.
+              pool.appId === 'neeru-vaults'
+                ? t(mapNeeruErrorToI18nKey(extractNeeruErrorCode(prepareTransactionError)))
+                : t('sendEnterAmountScreen.prepareTransactionError.description')
+            }
             style={styles.warning}
             testID="EarnEnterAmount/PrepareTransactionError"
           />
