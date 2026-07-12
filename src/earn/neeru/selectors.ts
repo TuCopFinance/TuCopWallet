@@ -38,7 +38,7 @@ export const neeruPositionsByCategorySelector = createSelector(
       2: [],
       3: [],
     }
-    for (const p of positions) acc[p.tranche].push(p)
+    for (const p of positions) acc[p.category].push(p)
     return acc
   }
 )

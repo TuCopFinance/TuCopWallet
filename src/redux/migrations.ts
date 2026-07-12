@@ -2122,4 +2122,21 @@ export const migrations = {
       },
     }
   },
+  252: (state: any) => {
+    // Neeru zero-exposure refactor renames the persisted position shape
+    // (principal -> amount, tranche -> category, categoryLabel -> categoryLabel,
+    // endTs -> endTs, rateValue -> rateValue). Rather than rewriting
+    // every persisted entry, clear the cached positions on upgrade: the earn
+    // screen refetches from the backend on mount, so the visible impact is a
+    // single fetch cycle and no data loss.
+    if (!state.neeru) return state
+    return {
+      ...state,
+      neeru: {
+        ...state.neeru,
+        positions: [],
+        optimisticPositions: [],
+      },
+    }
+  },
 }

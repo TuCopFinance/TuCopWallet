@@ -20,6 +20,7 @@ import {
   neeruLastErrorSelector,
   neeruPositionsByCategorySelector,
 } from 'src/earn/neeru/selectors'
+import { NEERU_LOW_POOL_ERROR } from 'src/earn/neeru/saga'
 import { emergencyCloseStart, fetchPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { navigate } from 'src/navigator/NavigationService'
@@ -46,14 +47,14 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const fetchStatus = useSelector(neeruFetchStatusSelector)
   const closeStatus = useSelector(neeruCloseStatusSelector)
   const lastError = useSelector(neeruLastErrorSelector)
-  const byTranche = useSelector(neeruPositionsByCategorySelector)
+  const byCategory = useSelector(neeruPositionsByCategorySelector)
   const [selectedPosition, setSelectedPosition] = React.useState<NeeruIndividualPosition | null>(
     null
   )
   const [emergencyTarget, setEmergencyTarget] = React.useState<NeeruIndividualPosition | null>(null)
   const lastSelectedRef = React.useRef<NeeruIndividualPosition | null>(null)
 
-  const trancheId = categoryIdFromPositionId(pool.positionId)
+  const categoryId = categoryIdFromPositionId(pool.positionId)
 
   useEffect(() => {
     dispatch(fetchPositionsStart())
@@ -66,19 +67,19 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   }, [selectedPosition])
 
   useEffect(() => {
-    if (closeStatus === 'error' && lastError === 'InterestPoolLow' && lastSelectedRef.current) {
+    if (closeStatus === 'error' && lastError === NEERU_LOW_POOL_ERROR && lastSelectedRef.current) {
       setEmergencyTarget(lastSelectedRef.current)
       setSelectedPosition(null)
     }
   }, [closeStatus, lastError])
 
-  if (trancheId === null) {
+  if (categoryId === null) {
     return null
   }
 
-  const positions = byTranche[trancheId]
-  const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[trancheId])
-  const description = t(DESCRIPTION_KEY_BY_CATEGORY[trancheId])
+  const positions = byCategory[categoryId]
+  const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
+  const description = t(DESCRIPTION_KEY_BY_CATEGORY[categoryId])
   const total = positions
     .reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
     .toFixed(2)

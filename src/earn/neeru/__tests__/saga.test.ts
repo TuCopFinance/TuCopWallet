@@ -6,6 +6,7 @@ import { NEERU_CONTRACT_ADDRESS } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import {
   NEERU_LOW_POOL_ACTION,
+  NEERU_LOW_POOL_ERROR,
   awaitOptimisticResolution,
   closeNeeruPositionSaga,
   emergencyCloseNeeruPositionSaga,
@@ -109,8 +110,10 @@ describe('closeNeeruPositionSaga', () => {
       .run()
   })
 
-  it('on InterestPoolLow revert, dispatches NEERU_LOW_POOL_ACTION + closePositionFailure', async () => {
-    const err = new Error('Reverted: InterestPoolLow')
+  it('on low-pool revert selector, dispatches NEERU_LOW_POOL_ACTION + closePositionFailure', async () => {
+    const err = Object.assign(new Error('Execution reverted'), {
+      cause: { data: '0x2648b779' },
+    })
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
@@ -119,7 +122,7 @@ describe('closeNeeruPositionSaga', () => {
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(err)],
       ])
       .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
   })
 
@@ -184,9 +187,9 @@ describe('pollUntilBackendCatchesUp', () => {
     positions: txHashes.map(
       (h, i): NeeruIndividualPosition => ({
         positionId: `id-${i}`,
-        tranche: 1,
+        category: 1,
         categoryLabel: '',
-        principal: '0',
+        amount: '0',
         accruedInterest: '0',
         rateValue: '0',
         monthlyRatePercentage: 0,
@@ -196,7 +199,7 @@ describe('pollUntilBackendCatchesUp', () => {
         depositTxHash: h,
         renewedFromPositionId: null,
         currentPayoutIfClosed: {
-          principal: '0',
+          amount: '0',
           interest: '0',
           penaltyBps: 0,
           interestAfterPenalty: '0',
@@ -297,11 +300,11 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(parseDepositEvent).toHaveBeenCalledWith(receipt, NEERU_CONTRACT_ADDRESS)
   })
 
-  it('skips when parsed tranche is out of range', async () => {
+  it('skips when parsed category is out of range', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 7,
+      amount: '0',
+      category: 7,
       rateValue: '0',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
@@ -314,8 +317,8 @@ describe('handleNeeruDepositOptimistic', () => {
   it('happy path: adds optimistic, awaits matched, then removes', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '10000000000000000000000', // 10000 * 1e18
-      tranche: 1,
+      amount: '10000000000000000000000', // 10000 * 1e18
+      category: 1,
       rateValue: '1000003290000000000000000000',
     })
     const recorded: NeeruIndividualPosition[] = []
@@ -338,15 +341,15 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(recorded).toHaveLength(1)
     expect(recorded[0].depositTxHash).toBe(TX.toLowerCase())
     expect(recorded[0].optimistic).toBe(true)
-    expect(recorded[0].tranche).toBe(1)
-    expect(recorded[0].principal).toBe('10000')
+    expect(recorded[0].category).toBe(1)
+    expect(recorded[0].amount).toBe('10000')
   })
 
   it('timeout path: adds optimistic then marks it stale', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '5000000000000000000000', // 5000 * 1e18
-      tranche: 0, // flexible
+      amount: '5000000000000000000000', // 5000 * 1e18
+      category: 0, // flexible
       rateValue: '1000000000000000000000000000',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
@@ -362,8 +365,8 @@ describe('handleNeeruDepositOptimistic', () => {
   it('passes the tucopBackendApiUrl to the resolver', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 2,
+      amount: '0',
+      category: 2,
       rateValue: '1000003290000000000000000000',
     })
     let observed: any
@@ -388,9 +391,6 @@ describe('handleNeeruDepositOptimistic', () => {
 })
 
 describe('isLowPoolError', () => {
-  it('detects dev-style error.message', () => {
-    expect(isLowPoolError(new Error('Reverted: InterestPoolLow'))).toBe(true)
-  })
   it('detects viem prod-style selector in error.cause.data', () => {
     const err = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
@@ -410,11 +410,11 @@ describe('isLowPoolError', () => {
   })
 })
 
-describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
+describe('closeNeeruPositionSaga prod-shape low-pool revert', () => {
   const WALLET = '0x' + 'a'.repeat(40)
   const POSITION_ID = '4242'
 
-  it('detects InterestPoolLow when viem revert surfaces as selector in cause.data', async () => {
+  it('detects the low-pool selector in cause.data and dispatches the wallet-side action', async () => {
     const prodShapeError = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
     })
@@ -427,7 +427,7 @@ describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
         [matchers.call.fn(prepareTransactions), Promise.reject(prodShapeError)],
       ])
       .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
   })
 })

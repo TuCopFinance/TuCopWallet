@@ -15,7 +15,7 @@ describe('monthlyPercentFromRateValue', () => {
 describe('computePayout', () => {
   it('isEarly=false returns full payout', () => {
     const r = computePayout({
-      principal: '10000',
+      amount: '10000',
       accruedInterest: '100',
       penaltyBps: 2000,
       isEarly: false,
@@ -26,7 +26,7 @@ describe('computePayout', () => {
 
   it('isEarly=true applies penalty to interest only', () => {
     const r = computePayout({
-      principal: '10000',
+      amount: '10000',
       accruedInterest: '100',
       penaltyBps: 2000,
       isEarly: true,

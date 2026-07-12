@@ -2,6 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native'
 import * as React from 'react'
 import { Provider } from 'react-redux'
 import NeeruVaultDetailScreen from 'src/earn/neeru/NeeruVaultDetailScreen'
+import { NEERU_LOW_POOL_ERROR } from 'src/earn/neeru/saga'
 import { initialState as initialNeeruState } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { navigate } from 'src/navigator/NavigationService'
@@ -22,9 +23,9 @@ const pool = {
 
 const positionFor = (positionId: string): NeeruIndividualPosition => ({
   positionId,
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '1',
   monthlyRatePercentage: 1.0,
@@ -34,7 +35,7 @@ const positionFor = (positionId: string): NeeruIndividualPosition => ({
   depositTxHash: '0x' + 'a'.repeat(64),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',
@@ -142,7 +143,7 @@ describe('NeeruVaultDetailScreen', () => {
     expect(getByTestId('NeeruEmergencyCloseSheet')).toBeTruthy()
   })
 
-  it('opens NeeruEmergencyCloseSheet when close fails with InterestPoolLow', () => {
+  it('opens NeeruEmergencyCloseSheet when close fails with the low-pool error signal', () => {
     // Start with idle state so user can tap Manage to seed lastSelectedRef
     const store = createMockStore({
       neeru: {
@@ -160,14 +161,15 @@ describe('NeeruVaultDetailScreen', () => {
     fireEvent.press(getByTestId('NeeruPositionRow.Manage.789'))
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
 
-    // Backend / chain now reports InterestPoolLow via slice update
+    // Backend / chain now reports the low-pool selector; wallet-side slice
+    // surfaces it via the opaque NEERU_LOW_POOL_ERROR signal.
     const failedStore = createMockStore({
       neeru: {
         ...initialNeeruState,
         positions: [positionFor('789')],
         fetchStatus: 'success',
         closeStatus: 'error',
-        lastError: 'InterestPoolLow',
+        lastError: NEERU_LOW_POOL_ERROR,
       },
     } as any)
     rerender(

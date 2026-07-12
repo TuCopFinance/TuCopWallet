@@ -2367,6 +2367,15 @@
             ],
             "type": "string"
         },
+        "NeeruCategoryId": {
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "type": "number"
+        },
         "NeeruCloseStatus": {
             "enum": [
                 "error",
@@ -2391,11 +2400,17 @@
                 "accruedInterest": {
                     "type": "string"
                 },
+                "amount": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/NeeruCategoryId"
+                },
+                "categoryLabel": {
+                    "type": "string"
+                },
                 "currentPayoutIfClosed": {
                     "$ref": "#/definitions/NeeruPositionPayout"
-                },
-                "rateValue": {
-                    "type": "string"
                 },
                 "depositBlock": {
                     "type": "number"
@@ -2415,7 +2430,7 @@
                 "positionId": {
                     "type": "string"
                 },
-                "principal": {
+                "rateValue": {
                     "type": "string"
                 },
                 "renewedFromPositionId": {
@@ -2429,34 +2444,31 @@
                 },
                 "startTs": {
                     "type": "number"
-                },
-                "tranche": {
-                    "$ref": "#/definitions/NeeruCategoryId"
-                },
-                "categoryLabel": {
-                    "type": "string"
                 }
             },
             "required": [
                 "accruedInterest",
+                "amount",
+                "category",
+                "categoryLabel",
                 "currentPayoutIfClosed",
-                "rateValue",
                 "depositBlock",
                 "depositTxHash",
                 "endTs",
                 "monthlyRatePercentage",
                 "positionId",
-                "principal",
+                "rateValue",
                 "renewedFromPositionId",
-                "startTs",
-                "tranche",
-                "categoryLabel"
+                "startTs"
             ],
             "type": "object"
         },
         "NeeruPositionPayout": {
             "additionalProperties": false,
             "properties": {
+                "amount": {
+                    "type": "string"
+                },
                 "interest": {
                     "type": "string"
                 },
@@ -2469,19 +2481,16 @@
                 "penaltyBps": {
                     "type": "number"
                 },
-                "principal": {
-                    "type": "string"
-                },
                 "total": {
                     "type": "string"
                 }
             },
             "required": [
+                "amount",
                 "interest",
                 "interestAfterPenalty",
                 "isEarly",
                 "penaltyBps",
-                "principal",
                 "total"
             ],
             "type": "object"
@@ -2543,15 +2552,6 @@
                 "positions"
             ],
             "type": "object"
-        },
-        "NeeruCategoryId": {
-            "enum": [
-                0,
-                1,
-                2,
-                3
-            ],
-            "type": "number"
         },
         "NetworkId": {
             "enum": [
