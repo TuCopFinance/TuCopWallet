@@ -431,6 +431,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
                 autoFocus
                 placeholder={new BigNumber(0).toFormat(2)}
                 testID="GoldBuyEnterAmount/TokenAmountInput"
+                hasError={!!insufficientBalance}
               />
               {selectedToken && (
                 <Touchable

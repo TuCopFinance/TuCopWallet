@@ -244,6 +244,7 @@ export default function EnterAmount({
             amountType={amountType}
             toggleAmountType={handleToggleAmountType}
             onOpenTokenPicker={tokenSelectionDisabled ? undefined : onOpenTokenPicker}
+            hasError={!!showLowerAmountError}
           />
 
           {!!maxFeeAmount && !!amount && (
@@ -373,6 +374,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: Spacing.Smallest8,
   },
+  amountInputError: {
+    color: Colors.error,
+  },
   feeContainer: {
     marginVertical: Spacing.Regular16,
     padding: Spacing.Regular16,
@@ -419,6 +423,7 @@ export function AmountInput({
   placeholder = '0',
   testID = 'AmountInput',
   editable = true,
+  hasError = false,
 }: {
   inputValue: string
   onInputChange(value: string): void
@@ -428,6 +433,11 @@ export function AmountInput({
   placeholder?: string
   testID?: string
   editable?: boolean
+  // When true, colors the typed amount red so the user gets predictive
+  // feedback as they cross a validation threshold (over-balance, over-cap,
+  // etc.). The inline InLineNotification below the input still explains
+  // what went wrong; this prop is the fast visual signal.
+  hasError?: boolean
 }) {
   // the startPosition and inputRef variables exist to ensure TextInput
   // displays the start of the value for long values on Android
@@ -459,7 +469,11 @@ export function AmountInput({
         // unset lineHeight to allow ellipsis on long inputs on iOS. For
         // android, ellipses doesn't work and unsetting line height causes
         // height changes when amount is entered
-        inputStyle={[inputStyle, Platform.select({ ios: { lineHeight: undefined } })]}
+        inputStyle={[
+          inputStyle,
+          Platform.select({ ios: { lineHeight: undefined } }),
+          hasError && styles.amountInputError,
+        ]}
         testID={testID}
         onBlur={() => {
           handleSetStartPosition(0)
