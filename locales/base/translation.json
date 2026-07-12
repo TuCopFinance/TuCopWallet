@@ -2745,6 +2745,13 @@
       "network": "Network",
       "fees": "Fees"
     },
+    "section": {
+      "neeru": "Neeru",
+      "allbridge": "Allbridge",
+      "aave": "Aave",
+      "marranitos": "Marranitos",
+      "others": "Others"
+    },
     "home": {
       "title": "Earn",
       "learnMore": "<0>Learn more</0> about yield pools.",
@@ -2775,6 +2782,8 @@
       "addToPool": "Add to Pool",
       "apy": "{{apy}}% APY",
       "percentage": "{{percentage}}%",
+      "percentageEa": "{{percentage}}% APY",
+      "mvEquivalent": "Approx {{percentage}}% monthly",
       "poweredBy": "Powered by {{providerName}}",
       "deposited": "Supplied",
       "depositAndEarnings": "Deposit & Earnings",
@@ -2936,6 +2945,25 @@
       "thirtyDays": "30-day deposit",
       "sixtyDays": "60-day deposit",
       "ninetyDays": "90-day deposit"
+    },
+    "explainer": {
+      "close": "Close",
+      "flexible": {
+        "title": "Flexible deposit",
+        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no fees. Interest is generated day by day and paid out on each withdrawal. Ideal if you want the money to stay available.\n\nNo maturity, no renewal: the deposit stays active until you decide to withdraw."
+      },
+      "thirtyDays": {
+        "title": "30-day deposit",
+        "body": "Your Pesos are locked for 30 days. Interest builds up day by day during the term.\n\nOnce the 30 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 30 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+      },
+      "sixtyDays": {
+        "title": "60-day deposit",
+        "body": "Your Pesos are locked for 60 days. Interest builds up day by day during the term. Usually pays more than Flexible and 30 days.\n\nOnce the 60 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 60 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+      },
+      "ninetyDays": {
+        "title": "90-day deposit",
+        "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term. Usually the best rate.\n\nOnce the 90 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+      }
     },
     "detail": {
       "header": "Your {{categoryLabel}} positions",

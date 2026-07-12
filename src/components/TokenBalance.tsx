@@ -47,7 +47,7 @@ import {
   useTotalTokenBalance,
 } from 'src/tokens/hooks'
 import { tokenFetchErrorSelector } from 'src/tokens/selectors'
-import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
+import { getSupportedNetworkIdsForTokenBalances, getTokenDisplayName } from 'src/tokens/utils'
 
 function TokenBalance({
   style = styles.balance,
@@ -110,7 +110,7 @@ function TokenBalance({
           {!hideBalance && (
             <Text style={styles.tokenBalance}>
               {formatValueToDisplay(tokenBalance)}{' '}
-              {tokensWithUsdValue[0].symbol === 'cCOP' ? 'COPm' : tokensWithUsdValue[0].symbol}
+              {getTokenDisplayName(tokensWithUsdValue[0].symbol)}
             </Text>
           )}
         </View>

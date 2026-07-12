@@ -299,7 +299,7 @@ describe('usePrepareEnterAmountTransactionsCallback', () => {
     })
 
     await expect(result.current.refreshPreparedTransactions(mockRefreshArgs)).rejects.toEqual(
-      new Error('Unable to trigger shortcut: 500 Internal Server Error')
+      new Error('Unable to trigger shortcut: 500 Internal Server Error {}')
     )
     jest.useFakeTimers()
   })

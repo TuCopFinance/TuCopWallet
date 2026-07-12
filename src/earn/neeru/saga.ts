@@ -187,7 +187,7 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
         address: walletAddress,
         appId: 'neeru-vaults',
         networkId: NetworkId['celo-mainnet'],
-        shortcutId: 'withdraw-principal-only',
+        shortcutId: 'withdraw-amount-only',
         positionId,
       }
     )
