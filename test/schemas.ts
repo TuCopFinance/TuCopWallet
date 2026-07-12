@@ -3787,6 +3787,24 @@ export const v251SchemaWithWriFeeAdapterBootstrap = {
   },
 }
 
+// Neeru zero-exposure refactor. The persisted position shape is renamed
+// (principal -> amount, tranche -> category, trancheLabel -> categoryLabel,
+// maturityTs -> endTs, dailyRateRay -> rateValue). Migration 252 clears
+// state.neeru.positions and state.neeru.optimisticPositions so old-shape
+// entries do not survive the upgrade; the earn screen refetches on mount.
+export const v252Schema = {
+  ...v251SchemaWithWriFeeAdapterBootstrap,
+  neeru: {
+    ...v251SchemaWithWriFeeAdapterBootstrap.neeru,
+    positions: [],
+    optimisticPositions: [],
+  },
+  _persist: {
+    ...v251SchemaWithWriFeeAdapterBootstrap._persist,
+    version: 252,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v251SchemaWithWriFeeAdapterBootstrap as Partial<RootState>
+  return v252Schema as Partial<RootState>
 }
