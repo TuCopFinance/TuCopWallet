@@ -288,6 +288,7 @@ export default function TokenEnterAmount({
   onInputChange,
   toggleAmountType,
   onOpenTokenPicker,
+  hasError = false,
 }: {
   token?: TokenBalance
   inputValue: string
@@ -302,6 +303,11 @@ export default function TokenEnterAmount({
   onInputChange(value: string): void
   toggleAmountType?(): void
   onOpenTokenPicker?(): void
+  // Predictive visual signal that the typed amount crossed a validation
+  // threshold (over-balance, over-cap, etc.). When true, colors the amount
+  // red so the user sees the problem before submit — the inline warning
+  // below explains what happened.
+  hasError?: boolean
 }) {
   const { t } = useTranslation()
   // the startPosition and inputRef variables exist to ensure TextInput
@@ -410,6 +416,7 @@ export default function TokenEnterAmount({
               styles.primaryAmountText,
               inputStyle,
               Platform.select({ ios: { lineHeight: undefined } }),
+              hasError && styles.amountInputError,
             ]}
             onBlur={() => {
               handleSetStartPosition(0)
@@ -500,6 +507,9 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 0,
     color: Colors.black,
+  },
+  amountInputError: {
+    color: Colors.error,
   },
   secondaryAmountText: {
     ...typeScale.bodyMedium,

@@ -45,6 +45,8 @@ import { useLocalToTokenAmount, useTokenInfo, useTokenToLocalAmount } from 'src/
 import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import { getTokenDisplayName } from 'src/tokens/utils'
+import { extractNeeruErrorCode, mapNeeruErrorToI18nKey } from 'src/earn/neeru/errorMapping'
 import { getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
@@ -283,6 +285,7 @@ function EarnEnterAmount({ route }: Props) {
 
   const isAmountLessThanBalance = tokenAmount && tokenAmount.lte(balanceInInputToken)
   const showNotEnoughBalanceForGasWarning =
+    !prepareTransactionError &&
     isAmountLessThanBalance &&
     prepareTransactionsResult &&
     prepareTransactionsResult.type === 'not-enough-balance-for-gas'
@@ -432,6 +435,7 @@ function EarnEnterAmount({ route }: Props) {
                 autoFocus
                 placeholder={new BigNumber(0).toFormat(2)}
                 testID="EarnEnterAmount/TokenAmountInput"
+                hasError={!!tokenAmount && !isAmountLessThanBalance}
               />
               <Touchable
                 borderRadius={TOKEN_SELECTOR_BORDER_RADIUS}
@@ -442,7 +446,7 @@ function EarnEnterAmount({ route }: Props) {
               >
                 <>
                   <TokenIcon token={inputToken} size={IconSize.SMALL} />
-                  <Text style={styles.tokenName}>{inputToken.symbol}</Text>
+                  <Text style={styles.tokenName}>{getTokenDisplayName(inputToken.symbol)}</Text>
                   {dropdownEnabled && <DownArrowIcon color={Colors.gray5} />}
                 </>
               </Touchable>
@@ -456,6 +460,7 @@ function EarnEnterAmount({ route }: Props) {
                 placeholder={`${localCurrencySymbol}${new BigNumber(0).toFormat(2)}`}
                 testID="EarnEnterAmount/LocalAmountInput"
                 editable={!!transactionToken.priceUsd}
+                hasError={!!tokenAmount && !isAmountLessThanBalance}
               />
             </View>
           </View>
@@ -486,14 +491,18 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.title', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(
+                prepareTransactionsResult.feeCurrencies[0].symbol
+              ),
             })}
             description={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(
+                prepareTransactionsResult.feeCurrencies[0].symbol
+              ),
               network: NETWORK_NAMES[prepareTransactionsResult.feeCurrencies[0].networkId],
             })}
             ctaLabel={t('earnFlow.enterAmount.notEnoughBalanceForGasWarning.noGasCta', {
-              feeTokenSymbol: feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenDisplayName(feeCurrencies[0].symbol),
               network: NETWORK_NAMES[prepareTransactionsResult.feeCurrencies[0].networkId],
             })}
             onPressCta={() => {
@@ -518,10 +527,10 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.insufficientBalanceWarning.title', {
-              tokenSymbol: inputToken.symbol,
+              tokenSymbol: getTokenDisplayName(inputToken.symbol),
             })}
             description={t('sendEnterAmountScreen.insufficientBalanceWarning.description', {
-              tokenSymbol: inputToken.symbol,
+              tokenSymbol: getTokenDisplayName(inputToken.symbol),
             })}
             style={styles.warning}
             testID="EarnEnterAmount/NotEnoughBalanceWarning"
@@ -531,7 +540,16 @@ function EarnEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('sendEnterAmountScreen.prepareTransactionError.title')}
-            description={t('sendEnterAmountScreen.prepareTransactionError.description')}
+            description={
+              // Surface the specific Neeru backend error (GLOBAL_CAP_EXCEEDED,
+              // TRANCHE_CAP_EXCEEDED, DEPOSITS_PAUSED, AMOUNT_BELOW_MIN, ...)
+              // as a Colombian-Spanish description whenever the failing pool is
+              // Neeru. Falls back to the generic prepare-transaction copy for
+              // Allbridge / Aave / any provider without a code map.
+              pool.appId === 'neeru-vaults'
+                ? t(mapNeeruErrorToI18nKey(extractNeeruErrorCode(prepareTransactionError)))
+                : t('sendEnterAmountScreen.prepareTransactionError.description')
+            }
             style={styles.warning}
             testID="EarnEnterAmount/PrepareTransactionError"
           />
