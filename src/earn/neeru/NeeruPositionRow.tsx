@@ -22,8 +22,8 @@ function celoscanUrlFor(txHash: string): string {
 export default function NeeruPositionRow({ position, onManagePress }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
-  const isFlexible = position.tranche === 0
-  const maturityDate = new Date(position.maturityTs * 1000).toLocaleDateString()
+  const isFlexible = position.category === 0
+  const endDate = new Date(position.endTs * 1000).toLocaleDateString()
   const isOptimistic = position.optimistic === true
   const isStale = isOptimistic && position.staleOptimistic === true
 
@@ -31,7 +31,7 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
     <View testID="NeeruPositionRow" style={styles.row}>
       <View style={styles.column}>
         <Text style={styles.line}>
-          {t('neeruVaults.positionRow.principal', { amount: position.principal })}
+          {t('neeruVaults.positionRow.principal', { amount: position.amount })}
         </Text>
         <Text style={styles.line}>
           {t('neeruVaults.positionRow.interest', { amount: position.accruedInterest })}
@@ -39,7 +39,7 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
         <Text style={styles.subline}>
           {isFlexible
             ? t('neeruVaults.positionRow.flexible')
-            : t('neeruVaults.positionRow.maturity', { date: maturityDate })}
+            : t('neeruVaults.positionRow.maturity', { date: endDate })}
         </Text>
         {isOptimistic && !isStale && (
           <View testID="NeeruPositionRow.ProcessingBadge" style={styles.badge}>

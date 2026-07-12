@@ -2,12 +2,13 @@ import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
 import {
-  FONDO_COPM_MVP_ADDRESS,
-  NEERU_TRANCHE_LABEL_KEYS,
-  NeeruTrancheId,
+  NEERU_CATEGORY_LABEL_KEYS,
+  NEERU_CONTRACT_ADDRESS,
+  NEERU_ERR_INTEREST_POOL_LOW_SELECTOR,
+  NeeruCategoryId,
 } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
-import { computePayout, monthlyPercentFromDailyRateRay } from 'src/earn/neeru/rateConversion'
+import { computePayout, monthlyPercentFromRateValue } from 'src/earn/neeru/rateConversion'
 import {
   addOptimisticPosition,
   closePositionFailure,
@@ -39,38 +40,35 @@ import { call, delay, put, race, select, spawn, takeLeading } from 'typed-redux-
 
 const TAG = 'earn/neeru/saga'
 
-export const NEERU_INTEREST_POOL_LOW_ACTION = 'neeru/interestPoolLow' as const
+// Wallet-internal signals for the low-interest-pool code path. Kept opaque
+// (no contract-error-name mirror) so the wallet repo does not identify the
+// underlying revert reason in tracked source.
+export const NEERU_LOW_POOL_ACTION = 'neeru/lowPool' as const
+export const NEERU_LOW_POOL_ERROR = 'neeru:low-pool' as const
 
 const NEERU_OPTIMISTIC_POLL_INTERVAL_MS = 15_000
 const NEERU_OPTIMISTIC_TIMEOUT_MS = 5 * 60_000
 
-const TRANCHE_DURATION_SECONDS: Record<NeeruTrancheId, number> = {
+const CATEGORY_DURATION_SECONDS: Record<NeeruCategoryId, number> = {
   0: 0,
   1: 30 * 86_400,
   2: 60 * 86_400,
   3: 90 * 86_400,
 }
 
-// 4-byte selector for the custom error InterestPoolLow(). Matched here because
-// the fondo ABI is intentionally not loaded into the wallet (zero-exposure),
-// so viem surfaces reverts with the raw selector instead of the decoded name.
-const INTEREST_POOL_LOW_SELECTOR = '0x2648b779'
-
-export function isInterestPoolLow(error: unknown): boolean {
+// Match the low-interest-pool custom-error selector. viem surfaces custom
+// error reverts as raw hex in cause.data / cause.details / message when the
+// wallet does not embed the source ABI; matching the 4-byte selector keeps
+// the detection working without exposing the error name.
+export function isLowPoolError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
 
+  const selector = NEERU_ERR_INTEREST_POOL_LOW_SELECTOR.toLowerCase()
   const msg = error.message ?? ''
-  if (msg.toLowerCase().includes('interestpoollow')) return true
-
   const cause = (error as { cause?: { data?: unknown; details?: unknown } }).cause
   const candidates: unknown[] = [cause?.data, cause?.details, msg]
   for (const c of candidates) {
-    if (
-      typeof c === 'string' &&
-      c.toLowerCase().includes(INTEREST_POOL_LOW_SELECTOR.toLowerCase())
-    ) {
-      return true
-    }
+    if (typeof c === 'string' && c.toLowerCase().includes(selector)) return true
   }
   return false
 }
@@ -148,12 +146,12 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     yield* put(closePositionSuccess({ positionId }))
   } catch (e) {
     const error = ensureError(e)
-    if (isInterestPoolLow(error)) {
+    if (isLowPoolError(error)) {
       yield* put({
-        type: NEERU_INTEREST_POOL_LOW_ACTION,
+        type: NEERU_LOW_POOL_ACTION,
         payload: { positionId },
       })
-      yield* put(closePositionFailure({ positionId, error: 'InterestPoolLow' }))
+      yield* put(closePositionFailure({ positionId, error: NEERU_LOW_POOL_ERROR }))
       return
     }
     Logger.error(TAG, 'close failed', error)
@@ -221,37 +219,37 @@ export function* watchEmergencyCloseNeeruPosition() {
 function buildOptimisticPosition({
   txHash,
   blockNumber,
-  tranche,
-  principalRaw,
-  dailyRateRay,
+  category,
+  amountRaw,
+  rateValue,
 }: {
   txHash: string
   blockNumber: number
-  tranche: NeeruTrancheId
-  principalRaw: string
-  dailyRateRay: string
+  category: NeeruCategoryId
+  amountRaw: string
+  rateValue: string
 }): NeeruIndividualPosition {
-  const principalDecimal = new BigNumber(principalRaw).shiftedBy(-18).toFixed()
+  const amountDecimal = new BigNumber(amountRaw).shiftedBy(-18).toFixed()
   const startTs = Math.floor(Date.now() / 1000)
-  const maturityTs = tranche === 0 ? 0 : startTs + TRANCHE_DURATION_SECONDS[tranche]
+  const endTs = category === 0 ? 0 : startTs + CATEGORY_DURATION_SECONDS[category]
   return {
     positionId: `optimistic:${txHash}`,
-    tranche,
-    trancheLabel: NEERU_TRANCHE_LABEL_KEYS[tranche],
-    principal: principalDecimal,
+    category,
+    categoryLabel: NEERU_CATEGORY_LABEL_KEYS[category],
+    amount: amountDecimal,
     accruedInterest: '0',
-    dailyRateRay,
-    monthlyRatePercentage: monthlyPercentFromDailyRateRay(dailyRateRay),
+    rateValue,
+    monthlyRatePercentage: monthlyPercentFromRateValue(rateValue),
     startTs,
-    maturityTs,
+    endTs,
     depositBlock: blockNumber,
     depositTxHash: txHash,
     renewedFromPositionId: null,
     currentPayoutIfClosed: computePayout({
-      principal: principalDecimal,
+      amount: amountDecimal,
       accruedInterest: '0',
       penaltyBps: 0,
-      isEarly: tranche !== 0,
+      isEarly: category !== 0,
     }),
     optimistic: true,
     staleOptimistic: false,
@@ -311,26 +309,26 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
     Logger.warn(TAG, 'no wallet address, skipping optimistic flow')
     return
   }
-  const parsed = parseDepositEvent(receipt, FONDO_COPM_MVP_ADDRESS)
+  const parsed = parseDepositEvent(receipt, NEERU_CONTRACT_ADDRESS)
   if (!parsed) {
-    Logger.warn(TAG, 'no Deposit event in receipt; falling back to normal fetch', {
+    Logger.warn(TAG, 'no deposit event in receipt; falling back to normal fetch', {
       tx: receipt.transactionHash,
     })
     yield* put(fetchPositionsStart())
     return
   }
-  const tranche = parsed.tranche
-  if (tranche < 0 || tranche > 3) {
-    Logger.warn(TAG, 'tranche out of range in Deposit event', { tranche })
+  const category = parsed.category
+  if (category < 0 || category > 3) {
+    Logger.warn(TAG, 'category out of range in deposit event', { category })
     return
   }
   const txHash = receipt.transactionHash.toLowerCase()
   const optimistic = buildOptimisticPosition({
     txHash,
     blockNumber: Number(receipt.blockNumber),
-    tranche: tranche as NeeruTrancheId,
-    principalRaw: parsed.principal,
-    dailyRateRay: parsed.dailyRateRay,
+    category: category as NeeruCategoryId,
+    amountRaw: parsed.amount,
+    rateValue: parsed.rateValue,
   })
   yield* put(addOptimisticPosition(optimistic))
 

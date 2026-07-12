@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { NeeruTrancheId } from 'src/earn/neeru/constants'
+import { NeeruCategoryId } from 'src/earn/neeru/constants'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { RootState } from 'src/redux/store'
 
@@ -29,16 +29,16 @@ export const neeruPositionsSelector = createSelector(
   }
 )
 
-export const neeruPositionsByTrancheSelector = createSelector(
+export const neeruPositionsByCategorySelector = createSelector(
   [neeruPositionsSelector],
-  (positions): Record<NeeruTrancheId, NeeruIndividualPosition[]> => {
-    const acc: Record<NeeruTrancheId, NeeruIndividualPosition[]> = {
+  (positions): Record<NeeruCategoryId, NeeruIndividualPosition[]> => {
+    const acc: Record<NeeruCategoryId, NeeruIndividualPosition[]> = {
       0: [],
       1: [],
       2: [],
       3: [],
     }
-    for (const p of positions) acc[p.tranche].push(p)
+    for (const p of positions) acc[p.category].push(p)
     return acc
   }
 )

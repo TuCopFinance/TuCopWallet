@@ -1,8 +1,8 @@
-import { NeeruTrancheId } from 'src/earn/neeru/constants'
+import { NeeruCategoryId } from 'src/earn/neeru/constants'
 
 export interface NeeruPositionPayout {
-  principal: string // decimal COPm
-  interest: string // decimal COPm
+  amount: string
+  interest: string
   penaltyBps: number
   interestAfterPenalty: string
   total: string
@@ -11,21 +11,18 @@ export interface NeeruPositionPayout {
 
 export interface NeeruIndividualPosition {
   positionId: string
-  tranche: NeeruTrancheId
-  trancheLabel: string
-  principal: string
+  category: NeeruCategoryId
+  categoryLabel: string
+  amount: string
   accruedInterest: string
-  dailyRateRay: string
+  rateValue: string
   monthlyRatePercentage: number
   startTs: number
-  maturityTs: number
+  endTs: number
   depositBlock: number
   depositTxHash: string
   renewedFromPositionId: string | null
   currentPayoutIfClosed: NeeruPositionPayout
-  // Optimistic-UI flags. Absent for positions sourced from the
-  // backend; present on entries the wallet seeded locally after a
-  // successful Deposit and before the indexer surfaces it.
   optimistic?: boolean
   staleOptimistic?: boolean
 }

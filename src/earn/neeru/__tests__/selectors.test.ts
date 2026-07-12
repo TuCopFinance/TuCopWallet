@@ -1,7 +1,7 @@
 import {
   neeruClosingPositionIdSelector,
   neeruFetchStatusSelector,
-  neeruPositionsByTrancheSelector,
+  neeruPositionsByCategorySelector,
   neeruPositionsSelector,
 } from 'src/earn/neeru/selectors'
 import { initialState as initialNeeruState } from 'src/earn/neeru/slice'
@@ -11,23 +11,23 @@ const txHash = (n: number): string => '0x' + n.toString(16).padStart(64, '0')
 
 const make = (
   id: string,
-  tranche: 0 | 1 | 2 | 3,
+  category: 0 | 1 | 2 | 3,
   overrides: Partial<NeeruIndividualPosition> = {}
 ): NeeruIndividualPosition => ({
   positionId: id,
-  tranche,
-  trancheLabel: '',
-  principal: '100',
+  category,
+  categoryLabel: '',
+  amount: '100',
   accruedInterest: '1',
-  dailyRateRay: '0',
+  rateValue: '0',
   monthlyRatePercentage: 0,
   startTs: 0,
-  maturityTs: 0,
+  endTs: 0,
   depositBlock: 0,
   depositTxHash: txHash(Number(id) || 1),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '100',
+    amount: '100',
     interest: '1',
     penaltyBps: 0,
     interestAfterPenalty: '1',
@@ -44,11 +44,11 @@ describe('neeru selectors', () => {
   it('returns fetch status', () => {
     expect(neeruFetchStatusSelector(buildState({ fetchStatus: 'loading' }))).toBe('loading')
   })
-  it('groups positions by tranche', () => {
+  it('groups positions by category', () => {
     const state = buildState({
       positions: [make('1', 0), make('2', 1), make('3', 1)],
     })
-    const grouped = neeruPositionsByTrancheSelector(state)
+    const grouped = neeruPositionsByCategorySelector(state)
     expect(grouped[0]).toHaveLength(1)
     expect(grouped[1]).toHaveLength(2)
     expect(grouped[2]).toHaveLength(0)
@@ -109,12 +109,12 @@ describe('neeru selectors', () => {
       expect(merged).toEqual([backend])
     })
 
-    it('optimistic-only state surfaces the optimistic position in byTranche grouping', () => {
+    it('optimistic-only state surfaces the optimistic position in byCategory grouping', () => {
       const state = buildState({
         positions: [],
         optimisticPositions: [optimisticOnly],
       })
-      const grouped = neeruPositionsByTrancheSelector(state)
+      const grouped = neeruPositionsByCategorySelector(state)
       expect(grouped[2]).toEqual([optimisticOnly])
       expect(grouped[0]).toEqual([])
     })

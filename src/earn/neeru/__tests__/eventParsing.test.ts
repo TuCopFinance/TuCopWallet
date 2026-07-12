@@ -1,33 +1,28 @@
-import { TransactionReceipt, encodeEventTopics, keccak256, toBytes, toHex } from 'viem'
-import { fondoCOPmMVPAbi } from 'src/earn/neeru/abi'
-import { FONDO_COPM_MVP_ADDRESS } from 'src/earn/neeru/constants'
+import { TransactionReceipt, encodeAbiParameters, keccak256, pad, toBytes, toHex } from 'viem'
+import { NEERU_CONTRACT_ADDRESS, NEERU_DEPOSIT_TOPIC0 } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 
-const CONTRACT = FONDO_COPM_MVP_ADDRESS as `0x${string}`
+const CONTRACT = NEERU_CONTRACT_ADDRESS
 const DEPOSITOR = ('0x' + 'a'.repeat(40)) as `0x${string}`
 const POSITION_ID = BigInt(42)
-const TRANCHE = 1
-const PRINCIPAL = BigInt('10000000000000000000000') // 10000 * 1e18
-const DAILY_RATE_RAY = BigInt('1000331300000000000000000000')
+const CATEGORY = 1
+const AMOUNT = BigInt('10000000000000000000000') // 10000 * 1e18
+const RATE_VALUE = BigInt('1000331300000000000000000000')
 
 type Log = TransactionReceipt['logs'][number]
 
 function buildDepositLog(): Log {
-  const topics = encodeEventTopics({
-    abi: fondoCOPmMVPAbi,
-    eventName: 'Deposit',
-    args: { depositor: DEPOSITOR, positionId: POSITION_ID },
-  })
-  const trancheBytes = toBytes(TRANCHE, { size: 32 })
-  const principalBytes = toBytes(PRINCIPAL, { size: 32 })
-  const dailyRateBytes = toBytes(DAILY_RATE_RAY, { size: 32 })
-  const data = ('0x' +
-    Buffer.from([...trancheBytes, ...principalBytes, ...dailyRateBytes]).toString(
-      'hex'
-    )) as `0x${string}`
+  const data = encodeAbiParameters(
+    [{ type: 'uint8' }, { type: 'uint256' }, { type: 'uint256' }],
+    [CATEGORY, AMOUNT, RATE_VALUE]
+  )
   return {
     address: CONTRACT,
-    topics: [...topics] as [`0x${string}`, ...`0x${string}`[]],
+    topics: [
+      NEERU_DEPOSIT_TOPIC0,
+      pad(DEPOSITOR, { size: 32 }),
+      pad(toHex(POSITION_ID), { size: 32 }),
+    ] as [`0x${string}`, ...`0x${string}`[]],
     data,
     blockHash: ('0x' + '1'.repeat(64)) as `0x${string}`,
     blockNumber: BigInt(70_750_000),
@@ -58,14 +53,14 @@ function buildReceipt(logs: Log[]): TransactionReceipt {
 }
 
 describe('parseDepositEvent', () => {
-  it('returns parsed fields when the Deposit log is present', () => {
+  it('returns parsed fields when the deposit log is present', () => {
     const receipt = buildReceipt([buildDepositLog()])
     const result = parseDepositEvent(receipt, CONTRACT)
     expect(result).not.toBeNull()
     expect(result?.contractPositionId).toBe(POSITION_ID.toString())
-    expect(result?.principal).toBe(PRINCIPAL.toString())
-    expect(result?.tranche).toBe(TRANCHE)
-    expect(result?.dailyRateRay).toBe(DAILY_RATE_RAY.toString())
+    expect(result?.amount).toBe(AMOUNT.toString())
+    expect(result?.category).toBe(CATEGORY)
+    expect(result?.rateValue).toBe(RATE_VALUE.toString())
   })
 
   it('returns null when no logs are emitted by the contract', () => {
@@ -75,12 +70,11 @@ describe('parseDepositEvent', () => {
     expect(parseDepositEvent(receipt, CONTRACT)).toBeNull()
   })
 
-  it('returns null when logs exist but none match the Deposit signature', () => {
-    const noiseTopic = keccak256(toHex('NotDeposit()'))
+  it('returns null when logs exist but the topic0 does not match', () => {
+    const noiseTopic = keccak256(toBytes('SomeOtherEvent()'))
     const log: Log = {
       ...buildDepositLog(),
-      topics: [noiseTopic],
-      data: '0x' as `0x${string}`,
+      topics: [noiseTopic] as [`0x${string}`, ...`0x${string}`[]],
     }
     const receipt = buildReceipt([log])
     expect(parseDepositEvent(receipt, CONTRACT)).toBeNull()

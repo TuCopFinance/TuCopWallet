@@ -21,10 +21,10 @@ import { Spacing } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
-import { NeeruTrancheId, trancheIdFromPositionId } from 'src/earn/neeru/constants'
+import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 
-const NEERU_EXPLAINER_KEY_BY_TRANCHE: Record<NeeruTrancheId, { title: string; body: string }> = {
+const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; body: string }> = {
   0: { title: 'neeruVaults.explainer.flexible.title', body: 'neeruVaults.explainer.flexible.body' },
   1: {
     title: 'neeruVaults.explainer.thirtyDays.title',
@@ -40,7 +40,7 @@ const NEERU_EXPLAINER_KEY_BY_TRANCHE: Record<NeeruTrancheId, { title: string; bo
   },
 }
 
-const NEERU_CARD_SUBTITLE_KEY_BY_TRANCHE: Record<NeeruTrancheId, string> = {
+const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
   0: 'neeruVaults.cardSubtitle.flexible',
   1: 'neeruVaults.cardSubtitle.thirtyDays',
   2: 'neeruVaults.cardSubtitle.sixtyDays',
@@ -131,9 +131,9 @@ export default function PoolCard({
   // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
   const cardSubtitle = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = trancheIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const key = NEERU_CARD_SUBTITLE_KEY_BY_TRANCHE[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[categoryId]
     return t(key)
   }, [pool, t])
 
@@ -143,9 +143,9 @@ export default function PoolCard({
   // cost; a designed BottomSheet is a follow-up if we want richer content.
   const neeruExplainer = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = trancheIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const keys = NEERU_EXPLAINER_KEY_BY_TRANCHE[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[categoryId]
     return { title: t(keys.title), body: t(keys.body) }
   }, [pool, t])
 
