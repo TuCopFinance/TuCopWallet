@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { NeeruTrancheId } from 'src/earn/neeru/constants'
+import { NeeruCategoryId } from 'src/earn/neeru/constants'
 import {
   NeeruIndividualPosition,
   NeeruPositionPayout,
@@ -9,17 +9,8 @@ import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
 const NEERU_FETCH_TIMEOUT_MS = 15_000
 
-// The backend Neeru feed was renamed on the wire (principal -> amount,
-// tranche -> category, trancheLabel -> categoryLabel) as part of the
-// "categoria" UX cutover. The wallet's internal model keeps the old field
-// names because on-chain event args (Deposit.principal, Deposit.tranche)
-// are structural and cannot be renamed, and mirroring the immutable layer
-// keeps the wallet-side surface consistent across the whole earn stack.
-// Everything the backend produces flows through this adapter; nothing
-// downstream needs to know about the wire rename.
 interface RawPayout {
-  amount?: string
-  principal?: string
+  amount: string
   interest: string
   penaltyBps: number
   interestAfterPenalty: string
@@ -29,17 +20,14 @@ interface RawPayout {
 
 interface RawPosition {
   positionId: string
-  category?: NeeruTrancheId
-  tranche?: NeeruTrancheId
-  categoryLabel?: string
-  trancheLabel?: string
-  amount?: string
-  principal?: string
+  category: NeeruCategoryId
+  categoryLabel: string
+  amount: string
   accruedInterest: string
-  dailyRateRay: string
+  rateValue: string
   monthlyRatePercentage: number
   startTs: number
-  maturityTs: number
+  endTs: number
   depositBlock: number
   depositTxHash: string
   renewedFromPositionId: string | null
@@ -55,22 +43,9 @@ interface RawResponse {
   lastSyncedAt: string
 }
 
-function pickFirst(
-  ...values: Array<string | number | NeeruTrancheId | undefined>
-): string | number | undefined {
-  for (const v of values) {
-    if (v !== undefined && v !== null) return v as string | number
-  }
-  return undefined
-}
-
 function adaptPayout(raw: RawPayout): NeeruPositionPayout {
-  const principal = pickFirst(raw.amount, raw.principal)
-  if (principal === undefined) {
-    throw new Error('Neeru payout missing amount/principal')
-  }
   return {
-    principal: new BigNumber(principal).toFixed(),
+    amount: new BigNumber(raw.amount).toFixed(),
     interest: raw.interest,
     penaltyBps: raw.penaltyBps,
     interestAfterPenalty: raw.interestAfterPenalty,
@@ -80,24 +55,16 @@ function adaptPayout(raw: RawPayout): NeeruPositionPayout {
 }
 
 export function adaptNeeruPosition(raw: RawPosition): NeeruIndividualPosition {
-  const tranche = pickFirst(raw.category, raw.tranche) as NeeruTrancheId | undefined
-  const trancheLabel = pickFirst(raw.categoryLabel, raw.trancheLabel)
-  const principal = pickFirst(raw.amount, raw.principal)
-  if (tranche === undefined || trancheLabel === undefined || principal === undefined) {
-    throw new Error(
-      `Neeru position missing required fields (positionId=${raw.positionId}, tranche=${tranche}, label=${trancheLabel}, principal=${principal})`
-    )
-  }
   return {
     positionId: raw.positionId,
-    tranche,
-    trancheLabel: String(trancheLabel),
-    principal: new BigNumber(principal).toFixed(),
+    category: raw.category,
+    categoryLabel: String(raw.categoryLabel),
+    amount: new BigNumber(raw.amount).toFixed(),
     accruedInterest: raw.accruedInterest,
-    dailyRateRay: raw.dailyRateRay,
+    rateValue: raw.rateValue,
     monthlyRatePercentage: raw.monthlyRatePercentage,
     startTs: raw.startTs,
-    maturityTs: raw.maturityTs,
+    endTs: raw.endTs,
     depositBlock: raw.depositBlock,
     depositTxHash: raw.depositTxHash,
     renewedFromPositionId: raw.renewedFromPositionId,

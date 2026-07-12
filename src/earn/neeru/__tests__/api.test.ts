@@ -43,17 +43,17 @@ describe('fetchNeeruPositions', () => {
     expect(result.lastSyncedBlock).toBe(70750000)
   })
 
-  it('adapts positions with new wire names (amount/category/categoryLabel)', async () => {
-    const newWirePosition = {
-      positionId: '0xfondo:category-2',
-      category: 2,
+  it('adapts positions from the wire shape into the wallet-internal shape', async () => {
+    const wirePosition = {
+      positionId: 'earn:category-2',
+      category: 2 as const,
       categoryLabel: 'sixtyDays',
       amount: '1000',
       accruedInterest: '5',
-      dailyRateRay: '1000000000000000000000000000',
+      rateValue: '1000000000000000000000000000',
       monthlyRatePercentage: 0.5,
       startTs: 1700000000,
-      maturityTs: 1705184000,
+      endTs: 1705184000,
       depositBlock: 70000000,
       depositTxHash: '0xabc',
       renewedFromPositionId: null,
@@ -68,7 +68,7 @@ describe('fetchNeeruPositions', () => {
     }
     mockFetch.mockResponseOnce(
       JSON.stringify({
-        data: { ...mockFixture.data, positions: [newWirePosition] },
+        data: { ...mockFixture.data, positions: [wirePosition] },
       }),
       { status: 200 }
     )
@@ -80,87 +80,39 @@ describe('fetchNeeruPositions', () => {
       })
     )
     expect(result.positions).toHaveLength(1)
-    expect(result.positions[0].tranche).toBe(2)
-    expect(result.positions[0].trancheLabel).toBe('sixtyDays')
-    expect(result.positions[0].principal).toBe('1000')
-    expect(result.positions[0].currentPayoutIfClosed.principal).toBe('1000')
+    expect(result.positions[0].category).toBe(2)
+    expect(result.positions[0].categoryLabel).toBe('sixtyDays')
+    expect(result.positions[0].amount).toBe('1000')
+    expect(result.positions[0].currentPayoutIfClosed.amount).toBe('1000')
   })
 
-  it('adapts positions with legacy wire names (principal/tranche/trancheLabel)', async () => {
-    // Kept because backend recommended dual-read during rollout; if a cached
-    // response predates the wire rename this branch keeps the position usable.
-    const oldWirePosition = {
-      positionId: '0xfondo:tranche-3',
-      tranche: 3,
-      trancheLabel: 'ninetyDays',
-      principal: '500',
-      accruedInterest: '2',
-      dailyRateRay: '1000000000000000000000000000',
-      monthlyRatePercentage: 0.75,
-      startTs: 1700000000,
-      maturityTs: 1707776000,
-      depositBlock: 70000001,
-      depositTxHash: '0xdef',
-      renewedFromPositionId: null,
-      currentPayoutIfClosed: {
-        principal: '500',
-        interest: '2',
-        penaltyBps: 0,
-        interestAfterPenalty: '2',
-        total: '502',
-        isEarly: false,
-      },
-    }
-    mockFetch.mockResponseOnce(
-      JSON.stringify({
-        data: { ...mockFixture.data, positions: [oldWirePosition] },
-      }),
-      { status: 200 }
-    )
-
-    const result = await runWithTimers(() =>
-      fetchNeeruPositions({
-        baseUrl: 'https://example.test',
-        walletAddress: '0x' + 'a'.repeat(40),
-      })
-    )
-    expect(result.positions).toHaveLength(1)
-    expect(result.positions[0].tranche).toBe(3)
-    expect(result.positions[0].trancheLabel).toBe('ninetyDays')
-    expect(result.positions[0].principal).toBe('500')
-  })
-
-  it('adaptNeeruPosition prefers new wire names when both are present', () => {
+  it('adaptNeeruPosition normalizes amount via BigNumber (dedupes trailing zeros)', () => {
     const adapted = adaptNeeruPosition({
-      positionId: '0xfondo:category-1',
-      tranche: 3,
-      category: 1,
-      trancheLabel: 'old',
-      categoryLabel: 'new',
-      principal: '999',
-      amount: '111',
+      positionId: 'earn:category-1',
+      category: 1 as const,
+      categoryLabel: 'thirtyDays',
+      amount: '111.00',
       accruedInterest: '0',
-      dailyRateRay: '1000000000000000000000000000',
+      rateValue: '1000000000000000000000000000',
       monthlyRatePercentage: 0.3,
       startTs: 0,
-      maturityTs: 0,
+      endTs: 0,
       depositBlock: 0,
       depositTxHash: '0x0',
       renewedFromPositionId: null,
       currentPayoutIfClosed: {
-        amount: '111',
-        principal: '999',
+        amount: '111.00',
         interest: '0',
         penaltyBps: 0,
         interestAfterPenalty: '0',
-        total: '111',
+        total: '111.00',
         isEarly: false,
       },
     })
-    expect(adapted.tranche).toBe(1)
-    expect(adapted.trancheLabel).toBe('new')
-    expect(adapted.principal).toBe('111')
-    expect(adapted.currentPayoutIfClosed.principal).toBe('111')
+    expect(adapted.category).toBe(1)
+    expect(adapted.categoryLabel).toBe('thirtyDays')
+    expect(adapted.amount).toBe('111')
+    expect(adapted.currentPayoutIfClosed.amount).toBe('111')
   })
 
   it('throws on non-2xx', async () => {

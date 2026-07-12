@@ -2,16 +2,17 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
-import { FONDO_COPM_MVP_ADDRESS } from 'src/earn/neeru/constants'
+import { NEERU_CONTRACT_ADDRESS } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import {
-  NEERU_INTEREST_POOL_LOW_ACTION,
+  NEERU_LOW_POOL_ACTION,
+  NEERU_LOW_POOL_ERROR,
   awaitOptimisticResolution,
   closeNeeruPositionSaga,
   emergencyCloseNeeruPositionSaga,
   fetchNeeruPositionsSaga,
   handleNeeruDepositOptimistic,
-  isInterestPoolLow,
+  isLowPoolError,
   pollUntilBackendCatchesUp,
 } from 'src/earn/neeru/saga'
 import {
@@ -109,8 +110,10 @@ describe('closeNeeruPositionSaga', () => {
       .run()
   })
 
-  it('on InterestPoolLow revert, dispatches NEERU_INTEREST_POOL_LOW_ACTION + closePositionFailure', async () => {
-    const err = new Error('Reverted: InterestPoolLow')
+  it('on low-pool revert selector, dispatches NEERU_LOW_POOL_ACTION + closePositionFailure', async () => {
+    const err = Object.assign(new Error('Execution reverted'), {
+      cause: { data: '0x2648b779' },
+    })
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
@@ -118,8 +121,8 @@ describe('closeNeeruPositionSaga', () => {
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(err)],
       ])
-      .put({ type: NEERU_INTEREST_POOL_LOW_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
   })
 
@@ -184,19 +187,19 @@ describe('pollUntilBackendCatchesUp', () => {
     positions: txHashes.map(
       (h, i): NeeruIndividualPosition => ({
         positionId: `id-${i}`,
-        tranche: 1,
-        trancheLabel: '',
-        principal: '0',
+        category: 1,
+        categoryLabel: '',
+        amount: '0',
         accruedInterest: '0',
-        dailyRateRay: '0',
+        rateValue: '0',
         monthlyRatePercentage: 0,
         startTs: 0,
-        maturityTs: 0,
+        endTs: 0,
         depositBlock: 0,
         depositTxHash: h,
         renewedFromPositionId: null,
         currentPayoutIfClosed: {
-          principal: '0',
+          amount: '0',
           interest: '0',
           penaltyBps: 0,
           interestAfterPenalty: '0',
@@ -294,15 +297,15 @@ describe('handleNeeruDepositOptimistic', () => {
       .put(fetchPositionsStart())
       .not.put.actionType('neeru/addOptimisticPosition')
       .run()
-    expect(parseDepositEvent).toHaveBeenCalledWith(receipt, FONDO_COPM_MVP_ADDRESS)
+    expect(parseDepositEvent).toHaveBeenCalledWith(receipt, NEERU_CONTRACT_ADDRESS)
   })
 
-  it('skips when parsed tranche is out of range', async () => {
+  it('skips when parsed category is out of range', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 7,
-      dailyRateRay: '0',
+      amount: '0',
+      category: 7,
+      rateValue: '0',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([[matchers.select(walletAddressSelector), WALLET]])
@@ -314,9 +317,9 @@ describe('handleNeeruDepositOptimistic', () => {
   it('happy path: adds optimistic, awaits matched, then removes', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '10000000000000000000000', // 10000 * 1e18
-      tranche: 1,
-      dailyRateRay: '1000003290000000000000000000',
+      amount: '10000000000000000000000', // 10000 * 1e18
+      category: 1,
+      rateValue: '1000003290000000000000000000',
     })
     const recorded: NeeruIndividualPosition[] = []
     await expectSaga(handleNeeruDepositOptimistic, receipt)
@@ -338,16 +341,16 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(recorded).toHaveLength(1)
     expect(recorded[0].depositTxHash).toBe(TX.toLowerCase())
     expect(recorded[0].optimistic).toBe(true)
-    expect(recorded[0].tranche).toBe(1)
-    expect(recorded[0].principal).toBe('10000')
+    expect(recorded[0].category).toBe(1)
+    expect(recorded[0].amount).toBe('10000')
   })
 
   it('timeout path: adds optimistic then marks it stale', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '5000000000000000000000', // 5000 * 1e18
-      tranche: 0, // flexible
-      dailyRateRay: '1000000000000000000000000000',
+      amount: '5000000000000000000000', // 5000 * 1e18
+      category: 0, // flexible
+      rateValue: '1000000000000000000000000000',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
@@ -362,9 +365,9 @@ describe('handleNeeruDepositOptimistic', () => {
   it('passes the tucopBackendApiUrl to the resolver', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 2,
-      dailyRateRay: '1000003290000000000000000000',
+      amount: '0',
+      category: 2,
+      rateValue: '1000003290000000000000000000',
     })
     let observed: any
     await expectSaga(handleNeeruDepositOptimistic, receipt)
@@ -387,34 +390,31 @@ describe('handleNeeruDepositOptimistic', () => {
   })
 })
 
-describe('isInterestPoolLow', () => {
-  it('detects dev-style error.message', () => {
-    expect(isInterestPoolLow(new Error('Reverted: InterestPoolLow'))).toBe(true)
-  })
+describe('isLowPoolError', () => {
   it('detects viem prod-style selector in error.cause.data', () => {
     const err = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
     })
-    expect(isInterestPoolLow(err)).toBe(true)
+    expect(isLowPoolError(err)).toBe(true)
   })
   it('detects selector inside a longer hex blob (cause.details)', () => {
     const err = Object.assign(new Error('estimateGas failed'), {
       cause: { details: 'execution reverted: 0x2648b779000000000000' },
     })
-    expect(isInterestPoolLow(err)).toBe(true)
+    expect(isLowPoolError(err)).toBe(true)
   })
   it('returns false for unrelated errors', () => {
-    expect(isInterestPoolLow(new Error('insufficient funds'))).toBe(false)
-    expect(isInterestPoolLow('not an error')).toBe(false)
-    expect(isInterestPoolLow(null)).toBe(false)
+    expect(isLowPoolError(new Error('insufficient funds'))).toBe(false)
+    expect(isLowPoolError('not an error')).toBe(false)
+    expect(isLowPoolError(null)).toBe(false)
   })
 })
 
-describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
+describe('closeNeeruPositionSaga prod-shape low-pool revert', () => {
   const WALLET = '0x' + 'a'.repeat(40)
   const POSITION_ID = '4242'
 
-  it('detects InterestPoolLow when viem revert surfaces as selector in cause.data', async () => {
+  it('detects the low-pool selector in cause.data and dispatches the wallet-side action', async () => {
     const prodShapeError = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
     })
@@ -426,8 +426,8 @@ describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
         [matchers.call.fn(triggerShortcutRequest), { transactions: [] }],
         [matchers.call.fn(prepareTransactions), Promise.reject(prodShapeError)],
       ])
-      .put({ type: NEERU_INTEREST_POOL_LOW_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
   })
 })

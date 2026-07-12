@@ -7,9 +7,9 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import {
-  NEERU_TRANCHE_LABEL_KEYS,
-  NeeruTrancheId,
-  trancheIdFromPositionId,
+  NEERU_CATEGORY_LABEL_KEYS,
+  NeeruCategoryId,
+  categoryIdFromPositionId,
 } from 'src/earn/neeru/constants'
 import NeeruCloseSheet from 'src/earn/neeru/NeeruCloseSheet'
 import NeeruEmergencyCloseSheet from 'src/earn/neeru/NeeruEmergencyCloseSheet'
@@ -18,8 +18,9 @@ import {
   neeruCloseStatusSelector,
   neeruFetchStatusSelector,
   neeruLastErrorSelector,
-  neeruPositionsByTrancheSelector,
+  neeruPositionsByCategorySelector,
 } from 'src/earn/neeru/selectors'
+import { NEERU_LOW_POOL_ERROR } from 'src/earn/neeru/saga'
 import { emergencyCloseStart, fetchPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { navigate } from 'src/navigator/NavigationService'
@@ -32,7 +33,7 @@ import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.NeeruVaultDetail>
 
-const DESCRIPTION_KEY_BY_TRANCHE: Record<NeeruTrancheId, string> = {
+const DESCRIPTION_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
   0: 'neeruVaults.detail.descriptionByTranche.flexible',
   1: 'neeruVaults.detail.descriptionByTranche.thirtyDays',
   2: 'neeruVaults.detail.descriptionByTranche.sixtyDays',
@@ -46,14 +47,14 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const fetchStatus = useSelector(neeruFetchStatusSelector)
   const closeStatus = useSelector(neeruCloseStatusSelector)
   const lastError = useSelector(neeruLastErrorSelector)
-  const byTranche = useSelector(neeruPositionsByTrancheSelector)
+  const byCategory = useSelector(neeruPositionsByCategorySelector)
   const [selectedPosition, setSelectedPosition] = React.useState<NeeruIndividualPosition | null>(
     null
   )
   const [emergencyTarget, setEmergencyTarget] = React.useState<NeeruIndividualPosition | null>(null)
   const lastSelectedRef = React.useRef<NeeruIndividualPosition | null>(null)
 
-  const trancheId = trancheIdFromPositionId(pool.positionId)
+  const categoryId = categoryIdFromPositionId(pool.positionId)
 
   useEffect(() => {
     dispatch(fetchPositionsStart())
@@ -66,19 +67,19 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   }, [selectedPosition])
 
   useEffect(() => {
-    if (closeStatus === 'error' && lastError === 'InterestPoolLow' && lastSelectedRef.current) {
+    if (closeStatus === 'error' && lastError === NEERU_LOW_POOL_ERROR && lastSelectedRef.current) {
       setEmergencyTarget(lastSelectedRef.current)
       setSelectedPosition(null)
     }
   }, [closeStatus, lastError])
 
-  if (trancheId === null) {
+  if (categoryId === null) {
     return null
   }
 
-  const positions = byTranche[trancheId]
-  const trancheLabel = t(NEERU_TRANCHE_LABEL_KEYS[trancheId])
-  const description = t(DESCRIPTION_KEY_BY_TRANCHE[trancheId])
+  const positions = byCategory[categoryId]
+  const trancheLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
+  const description = t(DESCRIPTION_KEY_BY_CATEGORY[categoryId])
   const total = positions
     .reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
     .toFixed(2)
