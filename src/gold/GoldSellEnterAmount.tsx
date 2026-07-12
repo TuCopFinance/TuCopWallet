@@ -296,6 +296,7 @@ export default function GoldSellEnterAmount(_props: Props) {
                 autoFocus
                 placeholder={new BigNumber(0).toFormat(XAUT0_DECIMALS)}
                 testID="GoldSellEnterAmount/GoldAmountInput"
+                hasError={!!insufficientBalance}
               />
               <View style={styles.goldBadge}>
                 <GoldIconSelector size={20} />

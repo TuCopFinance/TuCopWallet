@@ -285,7 +285,15 @@ export async function triggerShortcutRequest(hooksApiUrl: string, bodyJson: any)
     30_000
   )
   if (!response.ok) {
-    throw new Error(`Unable to trigger shortcut: ${response.status} ${response.statusText}`)
+    let body = ''
+    try {
+      body = await response.text()
+    } catch {
+      // ignore body read failure
+    }
+    throw new Error(
+      `Unable to trigger shortcut: ${response.status} ${response.statusText} ${body}`.trim()
+    )
   }
   const { data } = await response.json()
   return data
