@@ -32,7 +32,7 @@ export default function NeeruEmergencyCloseSheet({ position, onConfirm, onCancel
         <Text style={styles.subtitle}>{t('neeruVaults.emergencyCloseSheet.subtitle')}</Text>
         <Text style={styles.bodyText}>
           {t('neeruVaults.emergencyCloseSheet.explanation', {
-            principal: position.principal,
+            principal: position.amount,
             interest: position.accruedInterest,
           })}
         </Text>

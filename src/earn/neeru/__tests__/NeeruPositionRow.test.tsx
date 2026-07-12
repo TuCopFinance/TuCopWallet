@@ -11,9 +11,9 @@ const TX = '0x' + 'a'.repeat(64)
 
 const pos: NeeruIndividualPosition = {
   positionId: '1234',
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '0',
   monthlyRatePercentage: 1.0,
@@ -23,7 +23,7 @@ const pos: NeeruIndividualPosition = {
   depositTxHash: TX,
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',

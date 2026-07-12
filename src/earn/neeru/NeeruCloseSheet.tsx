@@ -26,7 +26,7 @@ export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequest
   const ref = React.useRef<BottomSheetModal>(null)
 
   const { currentPayoutIfClosed: payout } = position
-  const maturityDate = new Date(position.endTs * 1000).toLocaleDateString()
+  const endDate = new Date(position.endTs * 1000).toLocaleDateString()
   const penaltyAmount = new BigNumber(payout.interest).minus(payout.interestAfterPenalty).toFixed()
 
   return (
@@ -38,10 +38,7 @@ export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequest
     >
       <View style={styles.body}>
         <Text style={styles.subtitle}>{t('neeruVaults.closeSheet.currentPayout')}</Text>
-        <Row
-          label={t('neeruVaults.closeSheet.amountLabel')}
-          value={`${payout.principal} Pesos`}
-        />
+        <Row label={t('neeruVaults.closeSheet.amountLabel')} value={`${payout.amount} Pesos`} />
         <Row label={t('neeruVaults.closeSheet.interestLabel')} value={`${payout.interest} Pesos`} />
         {payout.isEarly && (
           <Row
@@ -55,7 +52,7 @@ export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequest
         <Row label={t('neeruVaults.closeSheet.totalLabel')} value={`${payout.total} Pesos`} bold />
         {payout.isEarly && (
           <Text style={styles.warning}>
-            {t('neeruVaults.closeSheet.earlyWarning', { date: maturityDate })}
+            {t('neeruVaults.closeSheet.earlyWarning', { date: endDate })}
           </Text>
         )}
         <Button

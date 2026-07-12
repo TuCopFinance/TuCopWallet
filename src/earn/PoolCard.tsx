@@ -131,9 +131,9 @@ export default function PoolCard({
   // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
   const cardSubtitle = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = categoryIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[categoryId]
     return t(key)
   }, [pool, t])
 
@@ -143,9 +143,9 @@ export default function PoolCard({
   // cost; a designed BottomSheet is a follow-up if we want richer content.
   const neeruExplainer = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = categoryIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[categoryId]
     return { title: t(keys.title), body: t(keys.body) }
   }, [pool, t])
 

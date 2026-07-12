@@ -11,13 +11,13 @@ const txHash = (n: number): string => '0x' + n.toString(16).padStart(64, '0')
 
 const make = (
   id: string,
-  tranche: 0 | 1 | 2 | 3,
+  category: 0 | 1 | 2 | 3,
   overrides: Partial<NeeruIndividualPosition> = {}
 ): NeeruIndividualPosition => ({
   positionId: id,
-  tranche,
+  category,
   categoryLabel: '',
-  principal: '100',
+  amount: '100',
   accruedInterest: '1',
   rateValue: '0',
   monthlyRatePercentage: 0,
@@ -27,7 +27,7 @@ const make = (
   depositTxHash: txHash(Number(id) || 1),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '100',
+    amount: '100',
     interest: '1',
     penaltyBps: 0,
     interestAfterPenalty: '1',
@@ -44,7 +44,7 @@ describe('neeru selectors', () => {
   it('returns fetch status', () => {
     expect(neeruFetchStatusSelector(buildState({ fetchStatus: 'loading' }))).toBe('loading')
   })
-  it('groups positions by tranche', () => {
+  it('groups positions by category', () => {
     const state = buildState({
       positions: [make('1', 0), make('2', 1), make('3', 1)],
     })
@@ -109,7 +109,7 @@ describe('neeru selectors', () => {
       expect(merged).toEqual([backend])
     })
 
-    it('optimistic-only state surfaces the optimistic position in byTranche grouping', () => {
+    it('optimistic-only state surfaces the optimistic position in byCategory grouping', () => {
       const state = buildState({
         positions: [],
         optimisticPositions: [optimisticOnly],
