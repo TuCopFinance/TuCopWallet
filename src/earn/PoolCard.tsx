@@ -128,7 +128,7 @@ export default function PoolCard({
     [tokensInfo]
   )
 
-  // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
+  // For Neeru pools, append a per-category subtitle so the 4 cards are distinguishable.
   const cardSubtitle = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
     const categoryId = categoryIdFromPositionId(pool.positionId)
@@ -137,7 +137,7 @@ export default function PoolCard({
     return t(key)
   }, [pool, t])
 
-  // Per-tranche explainer sheet. The `?` next to the subtitle fires this so
+  // Per-category explainer sheet. The `?` next to the subtitle fires this so
   // the user can read how the specific option (Flexible / 30 / 60 / 90 days)
   // behaves without leaving the Earn tab. Uses native Alert for zero-infra
   // cost; a designed BottomSheet is a follow-up if we want richer content.

@@ -45,7 +45,7 @@ const renderRow = (position: NeeruIndividualPosition, onManagePress = jest.fn())
 describe('NeeruPositionRow', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('renders principal and interest for backend positions', () => {
+  it('renders amount and interest for backend positions', () => {
     const { getByText } = renderRow(pos)
     expect(getByText(/10000/)).toBeTruthy()
     expect(getByText(/82.5/)).toBeTruthy()
