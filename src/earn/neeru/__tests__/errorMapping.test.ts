@@ -11,13 +11,17 @@ describe('mapNeeruErrorToI18nKey', () => {
   it('returns unknown for unrecognized', () => {
     expect(mapNeeruErrorToI18nKey('SOME_NEW_CODE')).toBe('neeruVaults.errors.unknown')
   })
-  it('maps INVALID_CATEGORY (new wire) to the same i18n key as INVALID_TRANCHE', () => {
+  it('maps INVALID_CATEGORY to the invalidTranche i18n key', () => {
     expect(mapNeeruErrorToI18nKey('INVALID_CATEGORY')).toBe('neeruVaults.errors.invalidTranche')
   })
-  it('maps CATEGORY_CAP_EXCEEDED (new wire) to the same i18n key as TRANCHE_CAP_EXCEEDED', () => {
+  it('maps CATEGORY_CAP_EXCEEDED to the trancheCapExceeded i18n key', () => {
     expect(mapNeeruErrorToI18nKey('CATEGORY_CAP_EXCEEDED')).toBe(
       'neeruVaults.errors.trancheCapExceeded'
     )
+  })
+  it('does not map the pre-cutover TRANCHE_* codes anymore', () => {
+    expect(mapNeeruErrorToI18nKey('INVALID_TRANCHE')).toBe('neeruVaults.errors.unknown')
+    expect(mapNeeruErrorToI18nKey('TRANCHE_CAP_EXCEEDED')).toBe('neeruVaults.errors.unknown')
   })
 })
 
