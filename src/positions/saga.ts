@@ -63,7 +63,7 @@ function getHooksApiFunctionUrl(
 // Server-side envelope surfaced by the earn positions endpoint when one of
 // the wired apps (allbridge / neeru-vaults) fails to load and the other
 // still returned; the missing slice must be treated as unknown rather than
-// as an empty result. See tasks/specs/wallet-consumer-spec.md section 8.
+// as an empty result (backend consumer spec section 8, bilateral doc).
 interface HooksApiMeta {
   partialFailure?: {
     neeru?: boolean
