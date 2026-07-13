@@ -76,9 +76,7 @@ export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequest
               onPress={() => onAmountOnlyRequested(position)}
               style={styles.secondaryCta}
             />
-            <Text style={styles.amountOnlyHelp}>
-              {t('neeruVaults.closeSheet.amountOnlyHelp')}
-            </Text>
+            <Text style={styles.amountOnlyHelp}>{t('neeruVaults.closeSheet.amountOnlyHelp')}</Text>
           </>
         )}
       </View>

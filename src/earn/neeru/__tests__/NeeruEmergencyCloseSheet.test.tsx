@@ -27,7 +27,7 @@ const pos: NeeruIndividualPosition = {
 }
 
 describe('NeeruEmergencyCloseSheet', () => {
-  it('renders principal and interest in the explanation', () => {
+  it('renders amount and interest in the explanation', () => {
     const { getByText } = render(
       <NeeruEmergencyCloseSheet position={pos} onConfirm={jest.fn()} onCancel={jest.fn()} />
     )
