@@ -37,7 +37,7 @@ describe('NeeruCloseSheet', () => {
         <NeeruCloseSheet position={pos} onClose={jest.fn()} />
       </Provider>
     )
-    // Translation mock returns keys, so we assert on the principal/interest VALUES
+    // Translation mock returns keys, so we assert on the amount/interest VALUES
     expect(getByText(/10000/)).toBeTruthy()
     expect(getByText(/82.5/)).toBeTruthy()
     expect(getByText(/10066/)).toBeTruthy()
@@ -55,29 +55,29 @@ describe('NeeruCloseSheet', () => {
     expect(spy).toHaveBeenCalledWith(closePositionStart({ positionId: '1234' }))
   })
 
-  it('hides the principal-only option when no callback is provided', () => {
+  it('hides the amount-only option when no callback is provided', () => {
     const store = createMockStore({ neeru: initialNeeruState } as any)
     const { queryByTestId } = render(
       <Provider store={store}>
         <NeeruCloseSheet position={pos} onClose={jest.fn()} />
       </Provider>
     )
-    expect(queryByTestId('NeeruCloseSheet.PrincipalOnly')).toBeNull()
+    expect(queryByTestId('NeeruCloseSheet.AmountOnly')).toBeNull()
   })
 
-  it('exposes principal-only option that invokes the callback with the position', () => {
+  it('exposes amount-only option that invokes the callback with the position', () => {
     const store = createMockStore({ neeru: initialNeeruState } as any)
-    const onPrincipalOnlyRequested = jest.fn()
+    const onAmountOnlyRequested = jest.fn()
     const { getByTestId } = render(
       <Provider store={store}>
         <NeeruCloseSheet
           position={pos}
           onClose={jest.fn()}
-          onPrincipalOnlyRequested={onPrincipalOnlyRequested}
+          onAmountOnlyRequested={onAmountOnlyRequested}
         />
       </Provider>
     )
-    fireEvent.press(getByTestId('NeeruCloseSheet.PrincipalOnly'))
-    expect(onPrincipalOnlyRequested).toHaveBeenCalledWith(pos)
+    fireEvent.press(getByTestId('NeeruCloseSheet.AmountOnly'))
+    expect(onAmountOnlyRequested).toHaveBeenCalledWith(pos)
   })
 })

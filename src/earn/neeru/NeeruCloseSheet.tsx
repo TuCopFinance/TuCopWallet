@@ -16,10 +16,10 @@ import { Spacing } from 'src/styles/styles'
 interface Props {
   position: NeeruIndividualPosition
   onClose: () => void
-  onPrincipalOnlyRequested?: (position: NeeruIndividualPosition) => void
+  onAmountOnlyRequested?: (position: NeeruIndividualPosition) => void
 }
 
-export default function NeeruCloseSheet({ position, onClose, onPrincipalOnlyRequested }: Props) {
+export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequested }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const closeStatus = useSelector(neeruCloseStatusSelector)
@@ -38,7 +38,7 @@ export default function NeeruCloseSheet({ position, onClose, onPrincipalOnlyRequ
     >
       <View style={styles.body}>
         <Text style={styles.subtitle}>{t('neeruVaults.closeSheet.currentPayout')}</Text>
-        <Row label={t('neeruVaults.closeSheet.principalLabel')} value={`${payout.amount} Pesos`} />
+        <Row label={t('neeruVaults.closeSheet.amountLabel')} value={`${payout.amount} Pesos`} />
         <Row label={t('neeruVaults.closeSheet.interestLabel')} value={`${payout.interest} Pesos`} />
         {payout.isEarly && (
           <Row
@@ -65,20 +65,18 @@ export default function NeeruCloseSheet({ position, onClose, onPrincipalOnlyRequ
           onPress={() => dispatch(closePositionStart({ positionId: position.positionId }))}
           style={styles.cta}
         />
-        {onPrincipalOnlyRequested && (
+        {onAmountOnlyRequested && (
           <>
             <Button
-              testID="NeeruCloseSheet.PrincipalOnly"
+              testID="NeeruCloseSheet.AmountOnly"
               size={BtnSizes.FULL}
               type={BtnTypes.SECONDARY}
-              text={t('neeruVaults.closeSheet.principalOnlyCta')}
+              text={t('neeruVaults.closeSheet.amountOnlyCta')}
               disabled={closeStatus === 'loading'}
-              onPress={() => onPrincipalOnlyRequested(position)}
+              onPress={() => onAmountOnlyRequested(position)}
               style={styles.secondaryCta}
             />
-            <Text style={styles.principalOnlyHelp}>
-              {t('neeruVaults.closeSheet.principalOnlyHelp')}
-            </Text>
+            <Text style={styles.amountOnlyHelp}>{t('neeruVaults.closeSheet.amountOnlyHelp')}</Text>
           </>
         )}
       </View>
@@ -126,7 +124,7 @@ const styles = StyleSheet.create({
   },
   cta: { marginTop: Spacing.Regular16 },
   secondaryCta: { marginTop: Spacing.Smallest8 },
-  principalOnlyHelp: {
+  amountOnlyHelp: {
     ...typeScale.bodySmall,
     color: Colors.gray3,
     marginTop: Spacing.Smallest8,

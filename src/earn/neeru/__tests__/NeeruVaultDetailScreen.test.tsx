@@ -16,7 +16,7 @@ jest.mock('src/navigator/NavigationService', () => ({ navigate: jest.fn() }))
 const pool = {
   ...mockEarnPositions[0],
   appId: 'neeru-vaults',
-  positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:tranche-1',
+  positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:category-1',
   address: '0x988af5977201a0e988f2c75ea952532f6beb5082',
   networkId: NetworkId['celo-mainnet'],
 }
@@ -123,7 +123,7 @@ describe('NeeruVaultDetailScreen', () => {
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
   })
 
-  it('opens NeeruEmergencyCloseSheet proactively when principal-only option is tapped', () => {
+  it('opens NeeruEmergencyCloseSheet proactively when amount-only option is tapped', () => {
     const store = createMockStore({
       neeru: {
         ...initialNeeruState,
@@ -138,7 +138,7 @@ describe('NeeruVaultDetailScreen', () => {
     )
     fireEvent.press(getByTestId('NeeruPositionRow.Manage.321'))
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
-    fireEvent.press(getByTestId('NeeruCloseSheet.PrincipalOnly'))
+    fireEvent.press(getByTestId('NeeruCloseSheet.AmountOnly'))
     expect(queryByTestId('NeeruCloseSheet')).toBeNull()
     expect(getByTestId('NeeruEmergencyCloseSheet')).toBeTruthy()
   })

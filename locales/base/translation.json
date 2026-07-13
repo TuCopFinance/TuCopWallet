@@ -2934,7 +2934,7 @@
     }
   },
   "neeruVaults": {
-    "tranches": {
+    "categories": {
       "flexible": "Flexible",
       "thirtyDays": "30 days",
       "sixtyDays": "60 days",
@@ -2950,28 +2950,28 @@
       "close": "Close",
       "flexible": {
         "title": "Flexible deposit",
-        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no fees. Interest is generated day by day and paid out on each withdrawal. Ideal if you want the money to stay available.\n\nNo maturity, no renewal: the deposit stays active until you decide to withdraw."
+        "body": "Deposit and withdraw your Pesos anytime, with no lock-up and no fees. Interest is generated day by day and paid out on each withdrawal. Ideal if you want the money to stay available.\n\nNo end date, no renewal: the deposit stays active until you decide to withdraw."
       },
       "thirtyDays": {
         "title": "30-day deposit",
-        "body": "Your Pesos are locked for 30 days. Interest builds up day by day during the term.\n\nOnce the 30 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 30 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+        "body": "Your Pesos are locked for 30 days. Interest builds up day by day during the term.\n\nOnce the 30 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 30 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
       },
       "sixtyDays": {
         "title": "60-day deposit",
-        "body": "Your Pesos are locked for 60 days. Interest builds up day by day during the term. Usually pays more than Flexible and 30 days.\n\nOnce the 60 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 60 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+        "body": "Your Pesos are locked for 60 days. Interest builds up day by day during the term. Usually pays more than Flexible and 30 days.\n\nOnce the 60 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 60 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
       },
       "ninetyDays": {
         "title": "90-day deposit",
-        "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term. Usually the best rate.\n\nOnce the 90 days are up, you have a 7-day window to withdraw principal + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the capital so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your capital is never touched."
+        "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term. Usually the best rate.\n\nOnce the 90 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
       }
     },
     "detail": {
-      "header": "Your {{trancheLabel}} positions",
-      "aggregateBalance": "Total in {{trancheLabel}}: {{amount}} Pesos",
+      "header": "Your {{categoryLabel}} positions",
+      "aggregateBalance": "Total in {{categoryLabel}}: {{amount}} Pesos",
       "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% monthly",
       "depositCta": "Deposit",
       "noPositions": "You don't have positions in this option yet",
-      "descriptionByTranche": {
+      "descriptionByCategory": {
         "flexible": "Withdraw anytime with no minimum lock",
         "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
         "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
@@ -2979,9 +2979,9 @@
       }
     },
     "positionRow": {
-      "principal": "Principal: {{amount}} Pesos",
+      "amount": "Deposited: {{amount}} Pesos",
       "interest": "Earned: {{amount}} Pesos",
-      "maturity": "Available {{date}}",
+      "availableAt": "Available {{date}}",
       "flexible": "No minimum time",
       "depositedAt": "Deposited on {{date}}",
       "manageCta": "Manage",
@@ -2993,34 +2993,34 @@
     "closeSheet": {
       "title": "Withdraw your deposit",
       "currentPayout": "You will receive",
-      "principalLabel": "Principal",
+      "amountLabel": "Deposited",
       "interestLabel": "Interest earned",
       "penaltyLabel": "Early withdrawal fee ({{percentage}}%)",
       "totalLabel": "Total",
-      "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your principal.",
+      "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your deposit.",
       "confirmCta": "Confirm withdrawal",
-      "principalOnlyCta": "Exit with principal only",
-      "principalOnlyHelp": "If the normal withdrawal fails, you can recover your principal without interest."
+      "amountOnlyCta": "Withdraw deposit only",
+      "amountOnlyHelp": "If the normal withdrawal fails, you can recover your deposit without interest."
     },
     "emergencyCloseSheet": {
       "title": "Emergency withdrawal",
       "subtitle": "The fund cannot pay interest right now",
-      "explanation": "You can recover your principal of {{principal}} Pesos now, but you will forfeit the {{interest}} Pesos of interest you earned. This is irreversible.",
+      "explanation": "You can recover your deposit of {{amount}} Pesos now, but you will forfeit the {{interest}} Pesos of interest you earned. This is irreversible.",
       "alternative": "If you can wait, the fund usually recovers within a few hours.",
       "primaryCta": "Wait and try again later",
-      "secondaryCta": "Withdraw principal only",
+      "secondaryCta": "Withdraw deposit only",
       "confirmAgain": "Tap again to confirm"
     },
     "errors": {
       "fetchPositionsFailed": "We couldn't load your positions. Pull down to retry.",
       "closeFailed": "We couldn't process the withdrawal. Try again.",
       "unknown": "Something went wrong. Try again.",
-      "invalidTranche": "Invalid tranche selected.",
+      "invalidCategory": "Invalid category.",
       "invalidAmount": "Invalid amount.",
       "amountBelowMin": "Minimum deposit: {{minAmount}} Pesos.",
       "depositsPaused": "Deposits are temporarily paused.",
       "globalCapExceeded": "The fund is full. Try later.",
-      "trancheCapExceeded": "This option is full. Try another or come back later.",
+      "categoryCapExceeded": "This option is full. Try another or come back later.",
       "rateNotSet": "This option is not available right now.",
       "positionStale": "Refresh your positions and try again.",
       "positionAlreadyClosed": "This position is already closed.",

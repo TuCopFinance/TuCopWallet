@@ -32,17 +32,14 @@ export type NeeruCategoryId = 0 | 1 | 2 | 3
 export const NEERU_CATEGORY_IDS: NeeruCategoryId[] = [3, 2, 1, 0]
 
 export const NEERU_CATEGORY_LABEL_KEYS: Record<NeeruCategoryId, string> = {
-  0: 'neeruVaults.tranches.flexible',
-  1: 'neeruVaults.tranches.thirtyDays',
-  2: 'neeruVaults.tranches.sixtyDays',
-  3: 'neeruVaults.tranches.ninetyDays',
+  0: 'neeruVaults.categories.flexible',
+  1: 'neeruVaults.categories.thirtyDays',
+  2: 'neeruVaults.categories.sixtyDays',
+  3: 'neeruVaults.categories.ninetyDays',
 }
 
-// Backend positionId suffix was renamed from `:tranche-<N>` to `:category-<N>`
-// in the 2026-07 wire cutover. Accept both so persisted state from prior
-// wallet versions still parses cleanly during the transition.
 export const categoryIdFromPositionId = (positionId: string): NeeruCategoryId | null => {
-  const match = positionId.match(/:(?:tranche|category)-(\d)$/)
+  const match = positionId.match(/:category-(\d)$/)
   if (!match) return null
   const id = Number(match[1])
   if (id < 0 || id > 3) return null

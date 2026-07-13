@@ -31,7 +31,7 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
     <View testID="NeeruPositionRow" style={styles.row}>
       <View style={styles.column}>
         <Text style={styles.line}>
-          {t('neeruVaults.positionRow.principal', { amount: position.amount })}
+          {t('neeruVaults.positionRow.amount', { amount: position.amount })}
         </Text>
         <Text style={styles.line}>
           {t('neeruVaults.positionRow.interest', { amount: position.accruedInterest })}
@@ -39,7 +39,7 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
         <Text style={styles.subline}>
           {isFlexible
             ? t('neeruVaults.positionRow.flexible')
-            : t('neeruVaults.positionRow.maturity', { date: endDate })}
+            : t('neeruVaults.positionRow.availableAt', { date: endDate })}
         </Text>
         {isOptimistic && !isStale && (
           <View testID="NeeruPositionRow.ProcessingBadge" style={styles.badge}>
