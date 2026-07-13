@@ -2,12 +2,12 @@
 // backend post-2026-07-11 categoria cutover. Source of truth: backend
 // consumer spec section 8 (hooks-api triggerShortcut, bilateral doc).
 const NEERU_ERROR_KEYS: Record<string, string> = {
-  INVALID_CATEGORY: 'neeruVaults.errors.invalidTranche',
+  INVALID_CATEGORY: 'neeruVaults.errors.invalidCategory',
   INVALID_AMOUNT: 'neeruVaults.errors.invalidAmount',
   AMOUNT_BELOW_MIN: 'neeruVaults.errors.amountBelowMin',
   DEPOSITS_PAUSED: 'neeruVaults.errors.depositsPaused',
   GLOBAL_CAP_EXCEEDED: 'neeruVaults.errors.globalCapExceeded',
-  CATEGORY_CAP_EXCEEDED: 'neeruVaults.errors.trancheCapExceeded',
+  CATEGORY_CAP_EXCEEDED: 'neeruVaults.errors.categoryCapExceeded',
   RATE_NOT_SET: 'neeruVaults.errors.rateNotSet',
   POSITION_NOT_FOUND: 'neeruVaults.errors.positionStale',
   POSITION_NOT_OWNED: 'neeruVaults.errors.positionStale',

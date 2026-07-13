@@ -50,11 +50,11 @@ describe('PoolCard', () => {
   })
 
   describe('card title display', () => {
-    it('renders Neeru pool title as the token display name with tranche subtitle below', () => {
+    it('renders Neeru pool title as the token display name with category subtitle below', () => {
       const neeruPool = {
         ...mockEarnPositions[0],
         appId: 'neeru-vaults',
-        positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:tranche-1',
+        positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082:category-1',
       }
       const { getByText, queryByText } = render(
         <Provider store={createMockStore({ tokens: { tokenBalances: mockTokenBalances } })}>
@@ -63,7 +63,7 @@ describe('PoolCard', () => {
       )
       // Title is the token display name (USDC -> Dólares from getTokenDisplayName)
       expect(getByText('Dólares')).toBeTruthy()
-      // Subtitle is the tranche-specific i18n key (mock returns key)
+      // Subtitle is the category-specific i18n key (mock returns key)
       expect(getByText('neeruVaults.cardSubtitle.thirtyDays')).toBeTruthy()
       // Raw token symbols never shown
       expect(queryByText('USDC')).toBeNull()

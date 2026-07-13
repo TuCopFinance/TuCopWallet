@@ -34,10 +34,10 @@ import { Spacing } from 'src/styles/styles'
 type Props = NativeStackScreenProps<StackParamList, Screens.NeeruVaultDetail>
 
 const DESCRIPTION_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
-  0: 'neeruVaults.detail.descriptionByTranche.flexible',
-  1: 'neeruVaults.detail.descriptionByTranche.thirtyDays',
-  2: 'neeruVaults.detail.descriptionByTranche.sixtyDays',
-  3: 'neeruVaults.detail.descriptionByTranche.ninetyDays',
+  0: 'neeruVaults.detail.descriptionByCategory.flexible',
+  1: 'neeruVaults.detail.descriptionByCategory.thirtyDays',
+  2: 'neeruVaults.detail.descriptionByCategory.sixtyDays',
+  3: 'neeruVaults.detail.descriptionByCategory.ninetyDays',
 }
 
 export default function NeeruVaultDetailScreen({ route }: Props) {
@@ -78,7 +78,7 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   }
 
   const positions = byCategory[categoryId]
-  const trancheLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
+  const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
   const description = t(DESCRIPTION_KEY_BY_CATEGORY[categoryId])
   const total = positions
     .reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
@@ -95,10 +95,10 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
           />
         }
       >
-        <Text style={styles.header}>{t('neeruVaults.detail.header', { trancheLabel })}</Text>
+        <Text style={styles.header}>{t('neeruVaults.detail.header', { categoryLabel })}</Text>
         <Text style={styles.description}>{description}</Text>
         <Text style={styles.total}>
-          {t('neeruVaults.detail.aggregateBalance', { trancheLabel, amount: total })}
+          {t('neeruVaults.detail.aggregateBalance', { categoryLabel, amount: total })}
         </Text>
 
         {positions.length === 0 ? (
@@ -128,7 +128,7 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
         <NeeruCloseSheet
           position={selectedPosition}
           onClose={() => setSelectedPosition(null)}
-          onPrincipalOnlyRequested={(pos) => {
+          onAmountOnlyRequested={(pos) => {
             setSelectedPosition(null)
             setEmergencyTarget(pos)
           }}
