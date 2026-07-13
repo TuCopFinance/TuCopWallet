@@ -1,6 +1,6 @@
 // Stable enumeration of the wallet-facing trigger error codes emitted by the
-// backend post-2026-07-11 categoria cutover. Source of truth:
-// tasks/specs/wallet-consumer-spec.md section 8 (hooks-api triggerShortcut).
+// backend post-2026-07-11 categoria cutover. Source of truth: backend
+// consumer spec section 8 (hooks-api triggerShortcut, bilateral doc).
 const NEERU_ERROR_KEYS: Record<string, string> = {
   INVALID_CATEGORY: 'neeruVaults.errors.invalidTranche',
   INVALID_AMOUNT: 'neeruVaults.errors.invalidAmount',
