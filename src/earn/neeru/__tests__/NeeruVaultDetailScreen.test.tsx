@@ -123,7 +123,7 @@ describe('NeeruVaultDetailScreen', () => {
     expect(getByTestId('NeeruCloseSheet')).toBeTruthy()
   })
 
-  it('opens NeeruEmergencyCloseSheet proactively when principal-only option is tapped', () => {
+  it('opens NeeruEmergencyCloseSheet proactively when amount-only option is tapped', () => {
     const store = createMockStore({
       neeru: {
         ...initialNeeruState,

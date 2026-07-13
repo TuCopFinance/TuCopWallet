@@ -82,3 +82,17 @@ jobs:
           # Force color output in the terminal with chalk
           # See https://github.com/chalk/supports-color/issues/106
           FORCE_COLOR: 2
+
+  backend-smoke:
+    name: Backend smoke (pre-release)
+    runs-on: ubuntu-latest
+    # Release-quality gate: runs the wallet-consumer-spec verification
+    # playbook against production before we cut a release. Six curl checks
+    # (health, neeru catalogue, shortcut list, asset URLs, positions detail,
+    # feed indexer lag). Skipped on Development PRs so a transient backend
+    # blip does not block day-to-day work.
+    if: github.event_name != 'pull_request' || github.base_ref == 'main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pre-release backend smoke
+        run: bash scripts/pre-release-backend-smoke.sh
