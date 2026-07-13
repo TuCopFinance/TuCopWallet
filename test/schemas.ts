@@ -3788,8 +3788,7 @@ export const v251SchemaWithWriFeeAdapterBootstrap = {
 }
 
 // Neeru zero-exposure refactor. The persisted position shape is renamed
-// (principal -> amount, tranche -> category, categoryLabel -> categoryLabel,
-// endTs -> endTs, rateValue -> rateValue). Migration 252 clears
+// (five fields renamed to opaque wire names). Migration 252 clears
 // state.neeru.positions and state.neeru.optimisticPositions so old-shape
 // entries do not survive the upgrade; the earn screen refetches on mount.
 export const v252Schema = {
