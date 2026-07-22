@@ -278,12 +278,26 @@ export async function tryEstimateTransactions(
   // wallet still respects any smaller gas the RPC would have set for the
   // actual submission, so this is not an over-charge risk.
   const POST_APPROVE_FALLBACK_GAS = BigInt(300_000)
+  // Extra buffer when the shortcut pre-supplied `gas` and we are paying with a
+  // non-native fee currency (CIP-64). The hooks API cannot know the exact
+  // CIP-64 overhead nor real-world state variance, and STATIC_GAS_PADDING
+  // alone (~50k) has been observed to leave complex calls (Neeru deposit
+  // 2026-07-14) inches from the limit and OOG. This adds 25% of the
+  // shortcut's own gas on top so calls with pre-set gas retain a real
+  // safety margin. Wallet-estimated txs (`else` branch below) already get
+  // Forno's binary-search LIMIT plus STATIC_GAS_PADDING, so they are
+  // unaffected.
+  const SHORTCUT_NON_NATIVE_BUFFER_BPS = BigInt(2500)
 
   for (let i = 0; i < baseTransactions.length; i++) {
     const baseTx = baseTransactions[i]
     if (baseTx.gas) {
       // We have an estimate of gas already and don't want to recalculate it
       // e.g. if this is a swap transaction that depends on an approval transaction that hasn't been submitted yet, so simulation would fail
+      const staticPadding = BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING)
+      const shortcutBuffer = feeCurrency.isNative
+        ? BigInt(0)
+        : (baseTx.gas * SHORTCUT_NON_NATIVE_BUFFER_BPS) / BigInt(10_000)
       transactions.push({
         ...baseTx,
         maxFeePerGas,
@@ -292,10 +306,11 @@ export async function tryEstimateTransactions(
         // See https://github.com/wagmi-dev/viem/blob/e0149711da5894ac5f0719414b4ecc06ccaecb7b/src/chains/celo/serializers.ts#L164-L168
         ...(feeCurrencyAddress && { feeCurrency: feeCurrencyAddress }),
         // We assume the provided gas value is with the native fee currency
-        // If it's not, we add the static padding
-        gas: baseTx.gas + BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING),
+        // If it's not, we add the static padding + a percentage buffer
+        // (see SHORTCUT_NON_NATIVE_BUFFER_BPS above).
+        gas: baseTx.gas + staticPadding + shortcutBuffer,
         _estimatedGasUse: baseTx._estimatedGasUse
-          ? baseTx._estimatedGasUse + BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING)
+          ? baseTx._estimatedGasUse + staticPadding + shortcutBuffer
           : undefined,
         _baseFeePerGas: baseFeePerGas,
       })
