@@ -137,6 +137,39 @@ describe('SwapFeedItem', () => {
     expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
   })
 
+  it('renders failed subtitle and grays the incoming amount when the swap reverted', () => {
+    const { getByTestId } = render(
+      <Provider store={createMockStore()}>
+        <SwapFeedItem transaction={{ ...swapTransaction, status: TransactionStatus.Failed }} />
+      </Provider>
+    )
+
+    expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent('feedItemFailedTransaction')
+    expect(getByTestId('SwapFeedItem/subtitle')).not.toHaveTextContent('feedItemSwapPath')
+    // Incoming amount still rendered so users can see what would have arrived, but styling
+    // switches to gray so it does not read as a real inbound movement.
+    expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 cEUR')
+  })
+
+  it('renders failed subtitle for a reverted cross-chain swap regardless of route text', () => {
+    const { getByTestId } = render(
+      <Provider
+        store={createMockStore({
+          tokens: { tokenBalances: mockTokenBalances },
+        })}
+      >
+        <SwapFeedItem
+          transaction={{ ...crossChainSwapTransaction, status: TransactionStatus.Failed }}
+        />
+      </Provider>
+    )
+
+    expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent('feedItemFailedTransaction')
+    expect(getByTestId('SwapFeedItem/subtitle')).not.toHaveTextContent(
+      'transactionFeed.crossChainSwapTransactionLabel'
+    )
+  })
+
   it('renders correctly for pending cross-chain swap with no inAmount value', async () => {
     const { getByTestId, queryByTestId } = render(
       <Provider store={createMockStore()}>
