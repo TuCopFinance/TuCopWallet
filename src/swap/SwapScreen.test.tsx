@@ -251,7 +251,12 @@ const preparedTransactions: SerializableTransactionRequest[] = [
     data: '0x0',
     feeCurrency: mockCusdAddress as `0x${string}`,
     from: '0x0000000000000000000000000000000000007E57',
-    gas: '1850000',
+    // Swap tx base gas = 1_800_000. On CIP-64 (non-native fee currency) the
+    // wallet adds STATIC_GAS_PADDING (50_000) + SHORTCUT_NON_NATIVE_BUFFER_BPS
+    // (25% of 1_800_000 = 450_000) = 2_300_000 total. The buffer landed with
+    // the fix for the 2026-07-14 Neeru OOG so shortcut-supplied gas retains
+    // real headroom over CIP-64 overhead + real-world variance.
+    gas: '2300000',
     // The swap (second) tx has no fresh estimateGas call in this fixture so
     // _estimatedGasUse stays undefined, matching the actual saga output.
     _estimatedGasUse: undefined,
@@ -1294,15 +1299,19 @@ describe('SwapScreen', () => {
       // Per Bug E fix: pickFeeCurrency promotes cUSD ahead of CELO whenever
       // the user has any cUSD balance. The fixture token mock has cUSD
       // priceUsd = 1 and uses 18 decimals (same as CELO), so the gas math is:
-      //   gas: 21000 (approval) + 1850000 (swap, CIP-64 adds 50k overhead) = 1871000
-      //   maxGasFee:        1871000 * 12 Gwei = 0.022452 cUSD
-      //   estimatedGasFee:  (12600 calibrated approval + 1850000 swap) * 8 Gwei = 0.0149008 cUSD
+      //   swap base gas:   1_800_000
+      //   CIP-64 overhead: STATIC_GAS_PADDING (50_000) + 25% shortcut buffer
+      //                    (450_000) = 500_000  -> total swap gas 2_300_000
+      //   gas:             21_000 (approval) + 2_300_000 (swap) = 2_321_000
+      //   maxGasFee:       2_321_000 * 12 Gwei = 0.027852 cUSD
+      //   estimatedGasFee: (12_600 calibrated approval + 2_300_000 swap) * 8 Gwei
+      //                                                              = 0.0185008 cUSD
       //   ...USD = same numeric value since cUSD priceUsd = 1.
-      gas: 1871000,
-      maxGasFee: 0.022452,
-      maxGasFeeUsd: 0.022452,
-      estimatedGasFee: 0.0149008,
-      estimatedGasFeeUsd: 0.0149008,
+      gas: 2321000,
+      maxGasFee: 0.027852,
+      maxGasFeeUsd: 0.027852,
+      estimatedGasFee: 0.0185008,
+      estimatedGasFeeUsd: 0.0185008,
       appFeePercentageIncludedInPrice: undefined,
       feeCurrency: mockCusdAddress,
       feeCurrencySymbol: 'cUSD',

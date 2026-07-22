@@ -14,7 +14,7 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useTokenInfo } from 'src/tokens/hooks'
 import TransactionFeedItemImage from 'src/transactions/feed/TransactionFeedItemImage'
-import { TokenExchange, TokenTransactionTypeV2 } from 'src/transactions/types'
+import { TokenExchange, TokenTransactionTypeV2, TransactionStatus } from 'src/transactions/types'
 import { formatFeedTime } from 'src/utils/time'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -36,6 +36,7 @@ function SwapFeedItem({ transaction }: Props) {
   }
 
   const isCrossChainSwap = transaction.type === TokenTransactionTypeV2.CrossChainSwapTransaction
+  const isFailed = transaction.status === TransactionStatus.Failed
   // EIP-7702 atomic batches from the TuCop indexer feed (and from the
   // fetch-Blockscout classifier for the same batches) populate
   // fromTokenAmounts with every leg of the batch. When every leg is a
@@ -155,7 +156,7 @@ function SwapFeedItem({ transaction }: Props) {
                 showSymbol={true}
                 showExplicitPositiveSign={true}
                 hideSign={false}
-                style={styles.amount}
+                style={[styles.amount, isFailed && { color: colors.gray3 }]}
                 testID={'SwapFeedItem/incomingAmount'}
               />
             )}
@@ -172,22 +173,24 @@ function SwapFeedItem({ transaction }: Props) {
               adjustsFontSizeToFit={true}
               minimumFontScale={0.8}
             >
-              {isCrossChainSwap
-                ? t('transactionFeed.crossChainSwapTransactionLabel')
-                : isMultiDollarSwap
-                  ? t('feedItemSwapPath', {
-                      token1: t('assets.dollars'),
-                      token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                    })
-                  : isMultiLegSwap
-                    ? t('feedItemSwapPathMulti', {
-                        count: fromLegCount,
+              {isFailed
+                ? t('feedItemFailedTransaction')
+                : isCrossChainSwap
+                  ? t('transactionFeed.crossChainSwapTransactionLabel')
+                  : isMultiDollarSwap
+                    ? t('feedItemSwapPath', {
+                        token1: t('assets.dollars'),
                         token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
                       })
-                    : t('feedItemSwapPath', {
-                        token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
-                        token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
-                      })}
+                    : isMultiLegSwap
+                      ? t('feedItemSwapPathMulti', {
+                          count: fromLegCount,
+                          token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                        })
+                      : t('feedItemSwapPath', {
+                          token1: getTokenName(outgoingTokenInfo, transaction.outAmount.tokenId),
+                          token2: getTokenName(incomingTokenInfo, transaction.inAmount.tokenId),
+                        })}
             </Text>
             {isMultiDollarSwap && multiDollarOutgoingTotal ? (
               <Text style={styles.tokenAmount} testID={'SwapFeedItem/outgoingAmount'}>
