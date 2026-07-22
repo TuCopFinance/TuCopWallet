@@ -8,7 +8,7 @@ import { Screens } from 'src/navigator/Screens'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import EarnFeedItem from 'src/transactions/feed/EarnFeedItem'
-import { NetworkId, TokenTransactionTypeV2 } from 'src/transactions/types'
+import { NetworkId, TokenTransactionTypeV2, TransactionStatus } from 'src/transactions/types'
 import { createMockStore } from 'test/utils'
 import {
   mockAaveArbUsdcAddress,
@@ -182,6 +182,18 @@ describe.each([
       expect(AppAnalytics.track).toHaveBeenCalledWith(EarnEvents.earn_feed_item_select, {
         origin: type,
       })
+    })
+
+    it('Should render failed subtitle when transaction reverted', () => {
+      const failedTx = { ...transaction, status: TransactionStatus.Failed }
+      const { getByTestId } = render(
+        <Provider store={store}>
+          <EarnFeedItem transaction={failedTx} />
+        </Provider>
+      )
+
+      expect(getByTestId('EarnFeedItem/subtitle')).toHaveTextContent('feedItemFailedTransaction')
+      expect(getByTestId('EarnFeedItem/subtitle')).not.toHaveTextContent(expectedSubTitle)
     })
   }
 )
