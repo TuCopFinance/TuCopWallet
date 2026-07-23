@@ -2534,6 +2534,9 @@
                     },
                     "type": "array"
                 },
+                "pendingEmergencyFallback": {
+                    "$ref": "#/definitions/Record<string,RawShortcutTransaction[]>"
+                },
                 "positions": {
                     "items": {
                         "$ref": "#/definitions/NeeruIndividualPosition"
@@ -2549,6 +2552,7 @@
                 "lastSyncedAt",
                 "lastSyncedBlock",
                 "optimisticPositions",
+                "pendingEmergencyFallback",
                 "positions"
             ],
             "type": "object"
@@ -4135,6 +4139,10 @@
             "type": "object"
         },
         "Record<string,InFlightDescriptor>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
+        "Record<string,RawShortcutTransaction[]>": {
             "additionalProperties": false,
             "type": "object"
         },
