@@ -3006,8 +3006,7 @@
       "totalLabel": "Total",
       "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al deposito.",
       "confirmCta": "Confirmar retiro",
-      "amountOnlyCta": "Retirar solo el deposito",
-      "amountOnlyHelp": "Si el retiro normal falla, puedes recuperar tu deposito sin intereses."
+      "amountOnlyCta": "Retirar solo mi deposito (sin intereses)"
     },
     "emergencyCloseSheet": {
       "title": "Retiro de emergencia",
