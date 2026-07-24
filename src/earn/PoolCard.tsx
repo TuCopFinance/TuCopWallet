@@ -23,6 +23,7 @@ import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
+import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; body: string }> = {
   0: { title: 'neeruVaults.explainer.flexible.title', body: 'neeruVaults.explainer.flexible.body' },
@@ -96,11 +97,15 @@ export default function PoolCard({
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
-  const poolBalanceString = useMemo(
-    () =>
-      `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`,
-    [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat]
-  )
+  const poolBalanceString = useMemo(() => {
+    // COPm has no USD price feed (priceUsd = '0'), so the USD-to-local
+    // conversion collapses to zero. It IS the local currency (1 COPm = 1 COP
+    // as a stable), so use the raw balance directly with the local symbol.
+    if (depositTokenId === COPM_TOKEN_ID_MAINNET) {
+      return `${localCurrencySymbol}${formatValueToDisplay(new BigNumber(balance).plus(rewardAmountInFiat))}`
+    }
+    return `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`
+  }, [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat, depositTokenId, balance])
 
   const tvlInFiat = useDollarsToLocalAmount(tvl ?? null)
   const tvlString = useMemo(() => {

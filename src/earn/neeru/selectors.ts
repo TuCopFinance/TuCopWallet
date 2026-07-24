@@ -11,6 +11,9 @@ export const neeruClosingPositionIdSelector = (state: RootState) =>
   neeruSlice(state).closingPositionId
 export const neeruLastErrorSelector = (state: RootState) => neeruSlice(state).lastError
 
+export const neeruEmergencyFallbackByIdSelector = (state: RootState, positionId: string) =>
+  neeruSlice(state).pendingEmergencyFallback[positionId]
+
 const neeruBackendPositionsSelector = (state: RootState) => neeruSlice(state).positions
 const neeruOptimisticPositionsSelector = (state: RootState) => neeruSlice(state).optimisticPositions
 
