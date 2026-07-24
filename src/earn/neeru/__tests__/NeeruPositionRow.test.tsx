@@ -47,8 +47,9 @@ describe('NeeruPositionRow', () => {
 
   it('renders amount and interest for backend positions', () => {
     const { getByText } = renderRow(pos)
-    expect(getByText(/10000/)).toBeTruthy()
-    expect(getByText(/82.5/)).toBeTruthy()
+    // formatValueToDisplay renders thousands separators + 2 decimals ("10,000.00").
+    expect(getByText(/10,000/)).toBeTruthy()
+    expect(getByText(/82\.50/)).toBeTruthy()
   })
 
   it('fires onManagePress when manage CTA tapped (non-optimistic)', () => {

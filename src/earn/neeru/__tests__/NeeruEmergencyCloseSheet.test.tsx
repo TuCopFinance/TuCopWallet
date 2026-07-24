@@ -29,16 +29,27 @@ const pos: NeeruIndividualPosition = {
 describe('NeeruEmergencyCloseSheet', () => {
   it('renders amount and interest in the explanation', () => {
     const { getByText } = render(
-      <NeeruEmergencyCloseSheet position={pos} onConfirm={jest.fn()} onCancel={jest.fn()} />
+      <NeeruEmergencyCloseSheet
+        forwardedRef={React.createRef()}
+        position={pos}
+        onConfirm={jest.fn()}
+        onCancel={jest.fn()}
+      />
     )
-    expect(getByText(/10000/)).toBeTruthy()
-    expect(getByText(/82.5/)).toBeTruthy()
+    // formatValueToDisplay renders thousands separators + 2 decimals ("10,000.00").
+    expect(getByText(/10,000/)).toBeTruthy()
+    expect(getByText(/82\.50/)).toBeTruthy()
   })
 
   it('requires two taps on the secondary CTA before firing onConfirm', () => {
     const onConfirm = jest.fn()
     const { getByTestId } = render(
-      <NeeruEmergencyCloseSheet position={pos} onConfirm={onConfirm} onCancel={jest.fn()} />
+      <NeeruEmergencyCloseSheet
+        forwardedRef={React.createRef()}
+        position={pos}
+        onConfirm={onConfirm}
+        onCancel={jest.fn()}
+      />
     )
     fireEvent.press(getByTestId('NeeruEmergencyCloseSheet.Secondary'))
     expect(onConfirm).not.toHaveBeenCalled()

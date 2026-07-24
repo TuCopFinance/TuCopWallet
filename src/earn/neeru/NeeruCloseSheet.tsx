@@ -1,10 +1,12 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import type { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
-import BottomSheet from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { neeruCloseStatusSelector } from 'src/earn/neeru/selectors'
 import { closePositionStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
@@ -14,73 +16,99 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 interface Props {
-  position: NeeruIndividualPosition
+  forwardedRef: React.RefObject<BottomSheetModal>
+  position: NeeruIndividualPosition | null
   onClose: () => void
-  onAmountOnlyRequested?: (position: NeeruIndividualPosition) => void
+  onAmountOnly?: (position: NeeruIndividualPosition) => void
 }
 
-export default function NeeruCloseSheet({ position, onClose, onAmountOnlyRequested }: Props) {
+function formatPesos(value: string | BigNumber): string {
+  return `${formatValueToDisplay(new BigNumber(value))} Pesos`
+}
+
+export default function NeeruCloseSheet({ forwardedRef, position, onClose, onAmountOnly }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const closeStatus = useSelector(neeruCloseStatusSelector)
-  const ref = React.useRef<BottomSheetModal>(null)
 
-  const { currentPayoutIfClosed: payout } = position
-  const endDate = new Date(position.endTs * 1000).toLocaleDateString()
-  const penaltyAmount = new BigNumber(payout.interest).minus(payout.interestAfterPenalty).toFixed()
+  const renderBackdrop = useCallback(
+    (props: BottomSheetDefaultBackdropProps) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+    ),
+    []
+  )
+
+  const payout = position?.currentPayoutIfClosed
+  const endDate = position ? new Date(position.endTs * 1000).toLocaleDateString() : ''
+  const penaltyAmount = payout
+    ? new BigNumber(payout.interest).minus(payout.interestAfterPenalty).toFixed()
+    : '0'
 
   return (
-    <BottomSheet
-      forwardedRef={ref}
-      onClose={onClose}
-      title={t('neeruVaults.closeSheet.title')}
-      testId="NeeruCloseSheet"
+    <BottomSheetModal
+      ref={forwardedRef}
+      enableDynamicSizing
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onDismiss={onClose}
     >
-      <View style={styles.body}>
-        <Text style={styles.subtitle}>{t('neeruVaults.closeSheet.currentPayout')}</Text>
-        <Row label={t('neeruVaults.closeSheet.amountLabel')} value={`${payout.amount} Pesos`} />
-        <Row label={t('neeruVaults.closeSheet.interestLabel')} value={`${payout.interest} Pesos`} />
-        {payout.isEarly && (
-          <Row
-            label={t('neeruVaults.closeSheet.penaltyLabel', {
-              percentage: payout.penaltyBps / 100,
-            })}
-            value={`-${penaltyAmount} Pesos`}
-            negative
-          />
-        )}
-        <Row label={t('neeruVaults.closeSheet.totalLabel')} value={`${payout.total} Pesos`} bold />
-        {payout.isEarly && (
-          <Text style={styles.warning}>
-            {t('neeruVaults.closeSheet.earlyWarning', { date: endDate })}
-          </Text>
-        )}
-        <Button
-          testID="NeeruCloseSheet.Confirm"
-          size={BtnSizes.FULL}
-          type={BtnTypes.PRIMARY}
-          text={t('neeruVaults.closeSheet.confirmCta')}
-          showLoading={closeStatus === 'loading'}
-          disabled={closeStatus === 'loading'}
-          onPress={() => dispatch(closePositionStart({ positionId: position.positionId }))}
-          style={styles.cta}
-        />
-        {onAmountOnlyRequested && (
-          <>
-            <Button
-              testID="NeeruCloseSheet.AmountOnly"
-              size={BtnSizes.FULL}
-              type={BtnTypes.SECONDARY}
-              text={t('neeruVaults.closeSheet.amountOnlyCta')}
-              disabled={closeStatus === 'loading'}
-              onPress={() => onAmountOnlyRequested(position)}
-              style={styles.secondaryCta}
+      <BottomSheetView>
+        {position && payout && (
+          <View style={styles.body} testID="NeeruCloseSheet">
+            <Text style={styles.title}>{t('neeruVaults.closeSheet.title')}</Text>
+            <Text style={styles.subtitle}>{t('neeruVaults.closeSheet.currentPayout')}</Text>
+            <Row
+              label={t('neeruVaults.closeSheet.amountLabel')}
+              value={formatPesos(payout.amount)}
             />
-            <Text style={styles.amountOnlyHelp}>{t('neeruVaults.closeSheet.amountOnlyHelp')}</Text>
-          </>
+            <Row
+              label={t('neeruVaults.closeSheet.interestLabel')}
+              value={formatPesos(payout.interest)}
+            />
+            {payout.isEarly && (
+              <Row
+                label={t('neeruVaults.closeSheet.penaltyLabel', {
+                  percentage: payout.penaltyBps / 100,
+                })}
+                value={`-${formatPesos(penaltyAmount)}`}
+                negative
+              />
+            )}
+            <Row
+              label={t('neeruVaults.closeSheet.totalLabel')}
+              value={formatPesos(payout.total)}
+              bold
+            />
+            {payout.isEarly && (
+              <Text style={styles.warning}>
+                {t('neeruVaults.closeSheet.earlyWarning', { date: endDate })}
+              </Text>
+            )}
+            <Button
+              testID="NeeruCloseSheet.Confirm"
+              size={BtnSizes.FULL}
+              type={BtnTypes.PRIMARY}
+              text={t('neeruVaults.closeSheet.confirmCta')}
+              showLoading={closeStatus === 'loading'}
+              disabled={closeStatus === 'loading'}
+              onPress={() => dispatch(closePositionStart({ positionId: position.positionId }))}
+              style={styles.cta}
+            />
+            {onAmountOnly && (
+              <Button
+                testID="NeeruCloseSheet.AmountOnly"
+                size={BtnSizes.FULL}
+                type={BtnTypes.SECONDARY}
+                text={t('neeruVaults.closeSheet.amountOnlyCta')}
+                disabled={closeStatus === 'loading'}
+                onPress={() => onAmountOnly(position)}
+                style={styles.cta}
+              />
+            )}
+          </View>
         )}
-      </View>
-    </BottomSheet>
+      </BottomSheetView>
+    </BottomSheetModal>
   )
 }
 
@@ -106,7 +134,12 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  body: { padding: Spacing.Regular16, gap: Spacing.Smallest8 },
+  body: { padding: Spacing.Thick24, gap: Spacing.Smallest8 },
+  title: {
+    ...typeScale.titleSmall,
+    color: Colors.black,
+    marginBottom: Spacing.Small12,
+  },
   subtitle: {
     ...typeScale.bodyMedium,
     color: Colors.gray3,
@@ -123,11 +156,4 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Smallest8,
   },
   cta: { marginTop: Spacing.Regular16 },
-  secondaryCta: { marginTop: Spacing.Smallest8 },
-  amountOnlyHelp: {
-    ...typeScale.bodySmall,
-    color: Colors.gray3,
-    marginTop: Spacing.Smallest8,
-    textAlign: 'center',
-  },
 })

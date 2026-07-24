@@ -1,11 +1,13 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import {
   NEERU_CATEGORY_LABEL_KEYS,
   NeeruCategoryId,
@@ -52,7 +54,9 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
     null
   )
   const [emergencyTarget, setEmergencyTarget] = React.useState<NeeruIndividualPosition | null>(null)
-  const lastSelectedRef = React.useRef<NeeruIndividualPosition | null>(null)
+  const lastSelectedRef = useRef<NeeruIndividualPosition | null>(null)
+  const closeSheetRef = useRef<BottomSheetModal>(null)
+  const emergencySheetRef = useRef<BottomSheetModal>(null)
 
   const categoryId = categoryIdFromPositionId(pool.positionId)
 
@@ -68,10 +72,25 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
 
   useEffect(() => {
     if (closeStatus === 'error' && lastError === NEERU_LOW_POOL_ERROR && lastSelectedRef.current) {
-      setEmergencyTarget(lastSelectedRef.current)
+      closeSheetRef.current?.dismiss()
       setSelectedPosition(null)
+      setEmergencyTarget(lastSelectedRef.current)
+      // Allow the close sheet dismissal animation to finish before we open the
+      // emergency sheet, so the two modals don't stack visually.
+      setTimeout(() => emergencySheetRef.current?.present(), 250)
     }
   }, [closeStatus, lastError])
+
+  useEffect(() => {
+    // Withdraw succeeded: the saga navigates to TransactionSuccessScreen but
+    // the bottom sheet stays mounted on top of it. Dismiss both explicitly.
+    if (closeStatus === 'success') {
+      closeSheetRef.current?.dismiss()
+      emergencySheetRef.current?.dismiss()
+      setSelectedPosition(null)
+      setEmergencyTarget(null)
+    }
+  }, [closeStatus])
 
   if (categoryId === null) {
     return null
@@ -80,9 +99,14 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const positions = byCategory[categoryId]
   const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
   const description = t(DESCRIPTION_KEY_BY_CATEGORY[categoryId])
-  const total = positions
-    .reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
-    .toFixed(2)
+  const total = formatValueToDisplay(
+    positions.reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
+  )
+
+  const handleManagePress = (pos: NeeruIndividualPosition) => {
+    setSelectedPosition(pos)
+    closeSheetRef.current?.present()
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -106,11 +130,7 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
         ) : (
           <View style={styles.positionsList}>
             {positions.map((p) => (
-              <NeeruPositionRow
-                key={p.positionId}
-                position={p}
-                onManagePress={(pos) => setSelectedPosition(pos)}
-              />
+              <NeeruPositionRow key={p.positionId} position={p} onManagePress={handleManagePress} />
             ))}
           </View>
         )}
@@ -124,26 +144,31 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
           style={styles.cta}
         />
       </ScrollView>
-      {selectedPosition && (
-        <NeeruCloseSheet
-          position={selectedPosition}
-          onClose={() => setSelectedPosition(null)}
-          onAmountOnlyRequested={(pos) => {
-            setSelectedPosition(null)
-            setEmergencyTarget(pos)
-          }}
-        />
-      )}
-      {emergencyTarget && (
-        <NeeruEmergencyCloseSheet
-          position={emergencyTarget}
-          onCancel={() => setEmergencyTarget(null)}
-          onConfirm={(pos) => {
-            dispatch(emergencyCloseStart({ positionId: pos.positionId }))
-            setEmergencyTarget(null)
-          }}
-        />
-      )}
+      <NeeruCloseSheet
+        forwardedRef={closeSheetRef}
+        position={selectedPosition}
+        onClose={() => setSelectedPosition(null)}
+        onAmountOnly={(pos) => {
+          // Proactive amount-only path: user knows the interest pool may be low
+          // (or accepts forfeiting interest for other reasons) and skips the
+          // full withdraw attempt. Same sheet transition as the LOW_POOL
+          // fallback, minus the failed close round-trip.
+          closeSheetRef.current?.dismiss()
+          setSelectedPosition(null)
+          setEmergencyTarget(pos)
+          setTimeout(() => emergencySheetRef.current?.present(), 250)
+        }}
+      />
+      <NeeruEmergencyCloseSheet
+        forwardedRef={emergencySheetRef}
+        position={emergencyTarget}
+        onCancel={() => setEmergencyTarget(null)}
+        onConfirm={(pos) => {
+          dispatch(emergencyCloseStart({ positionId: pos.positionId }))
+          emergencySheetRef.current?.dismiss()
+          setEmergencyTarget(null)
+        }}
+      />
     </SafeAreaView>
   )
 }

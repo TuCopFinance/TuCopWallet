@@ -342,6 +342,7 @@ describe('store state', () => {
           "lastSyncedAt": null,
           "lastSyncedBlock": null,
           "optimisticPositions": [],
+          "pendingEmergencyFallback": {},
           "positions": [],
         },
         "networkInfo": {

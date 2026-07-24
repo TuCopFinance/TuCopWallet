@@ -3763,6 +3763,7 @@ export const v251Schema = {
     closeStatus: 'idle',
     closingPositionId: null,
     lastError: null,
+    pendingEmergencyFallback: {},
   },
   _persist: {
     ...v250Schema._persist,

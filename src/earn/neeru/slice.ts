@@ -1,4 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
+import { RawShortcutTransaction } from 'src/positions/slice'
 import { REHYDRATE, RehydrateAction, getRehydratePayload } from 'src/redux/persist-helper'
 import { NeeruCloseStatus, NeeruFetchStatus, NeeruIndividualPosition } from 'src/earn/neeru/types'
 
@@ -11,6 +12,11 @@ export interface NeeruState {
   closeStatus: NeeruCloseStatus
   closingPositionId: string | null
   lastError: string | null
+  // Pre-built fallback calldata handed back by the hooks-api when the withdraw
+  // simulation reverts with LOW_POOL. Keyed by positionId. The emergency saga
+  // consumes it once and clears it, so the amount-only sheet flips without a
+  // second triggerShortcut round-trip. Transient (not persisted).
+  pendingEmergencyFallback: Record<string, RawShortcutTransaction[]>
 }
 
 export const initialState: NeeruState = {
@@ -22,6 +28,7 @@ export const initialState: NeeruState = {
   closeStatus: 'idle',
   closingPositionId: null,
   lastError: null,
+  pendingEmergencyFallback: {},
 }
 
 const slice = createSlice({
@@ -96,15 +103,27 @@ const slice = createSlice({
     clearOptimisticPositions: (state) => {
       state.optimisticPositions = []
     },
+    setEmergencyFallback: (
+      state,
+      action: PayloadAction<{ positionId: string; transactions: RawShortcutTransaction[] }>
+    ) => {
+      state.pendingEmergencyFallback[action.payload.positionId] = action.payload.transactions
+    },
+    clearEmergencyFallback: (state, action: PayloadAction<{ positionId: string }>) => {
+      delete state.pendingEmergencyFallback[action.payload.positionId]
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
       ...state,
       ...getRehydratePayload(action, 'neeru'),
-      // Always reset transient optimistic state on app start. The
-      // backend-truth `positions` array stays as-is from disk so the
-      // pre-fetch UI has something to show.
+      // Always reset transient state on app start. The backend-truth
+      // `positions` array stays as-is from disk so the pre-fetch UI has
+      // something to show. Optimistic entries and the pre-built emergency
+      // fallback are both short-lived request/response state that would
+      // reference stale calldata if kept across sessions.
       optimisticPositions: [],
+      pendingEmergencyFallback: {},
     }))
   },
 })
@@ -121,6 +140,8 @@ export const {
   removeOptimisticPosition,
   markOptimisticPositionStale,
   clearOptimisticPositions,
+  setEmergencyFallback,
+  clearEmergencyFallback,
 } = slice.actions
 
 export default slice.reducer

@@ -2999,8 +2999,7 @@
       "totalLabel": "Total",
       "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your deposit.",
       "confirmCta": "Confirm withdrawal",
-      "amountOnlyCta": "Withdraw deposit only",
-      "amountOnlyHelp": "If the normal withdrawal fails, you can recover your deposit without interest."
+      "amountOnlyCta": "Withdraw only my deposit (no interest)"
     },
     "emergencyCloseSheet": {
       "title": "Emergency withdrawal",
