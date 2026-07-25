@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
+import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
 import {
   NEERU_CATEGORY_LABEL_KEYS,
   NEERU_CONTRACT_ADDRESS,
@@ -568,6 +569,7 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
 }
 
 export function* neeruSaga() {
+  yield* spawn(neeruConfigSaga)
   yield* spawn(watchFetchNeeruPositions)
   yield* spawn(watchCloseNeeruPosition)
   yield* spawn(watchEmergencyCloseNeeruPosition)

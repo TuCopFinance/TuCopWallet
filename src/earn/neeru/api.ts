@@ -1,13 +1,19 @@
 import BigNumber from 'bignumber.js'
 import { NeeruCategoryId } from 'src/earn/neeru/constants'
 import {
+  NeeruCatalogue,
   NeeruIndividualPosition,
+  NeeruMeta,
   NeeruPositionPayout,
   NeeruPositionsResponse,
 } from 'src/earn/neeru/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
 const NEERU_FETCH_TIMEOUT_MS = 15_000
+// Config endpoints (meta + catalogue) have short backend cache, so a shorter
+// wallet-side timeout is enough. Falling back to hardcoded defaults is quick
+// and always safe, no reason to keep the boot flow waiting.
+const NEERU_CONFIG_FETCH_TIMEOUT_MS = 5_000
 
 interface RawPayout {
   amount: string
@@ -95,4 +101,37 @@ export async function fetchNeeruPositions({
     lastSyncedBlock: raw.lastSyncedBlock,
     lastSyncedAt: raw.lastSyncedAt,
   }
+}
+
+// Fetches the earn-vault meta descriptor (proxy address, event topic0, data
+// schema, error selectors, deposit token identity). Backend caches 5min and
+// returns the same payload byte-for-byte so wallet can compare against the
+// hardcoded defaults in a CI drift check.
+export async function fetchNeeruMeta({ baseUrl }: { baseUrl: string }): Promise<NeeruMeta> {
+  const url = new URL('/api/meta/contracts/neeru', baseUrl)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruMeta failed: ${response.status} ${response.statusText}`)
+  }
+  const body = await response.json()
+  return body as NeeruMeta
+}
+
+// Fetches the current catalogue of earn categories (id, lock period, rate,
+// monthly + annual effective percentages) and the deposit token metadata.
+// Rates fluctuate operationally (operator retunes via setTranche) so wallet
+// never caches this payload past the current session.
+export async function fetchNeeruCatalogue({
+  baseUrl,
+}: {
+  baseUrl: string
+}): Promise<NeeruCatalogue> {
+  const url = new URL('/api/earn/neeru/catalogue', baseUrl)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruCatalogue failed: ${response.status} ${response.statusText}`)
+  }
+  const body = await response.json()
+  const raw = body.data as NeeruCatalogue
+  return raw
 }

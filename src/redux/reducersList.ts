@@ -7,6 +7,7 @@ import dappsReducer from 'src/dapps/slice'
 import dollarsSpendReducer from 'src/dollarsSpend/slice'
 import earnReducer from 'src/earn/slice'
 import neeruReducer from 'src/earn/neeru/slice'
+import neeruConfigReducer from 'src/earn/neeru/configSlice'
 import { reducer as fiatExchanges } from 'src/fiatExchanges/reducer'
 import fiatConnectReducer from 'src/fiatconnect/slice'
 import { homeReducer as home } from 'src/home/reducers'
@@ -61,6 +62,7 @@ export const reducersList = {
   points: pointsReducer,
   earn: earnReducer,
   neeru: neeruReducer,
+  neeruConfig: neeruConfigReducer,
   buckspay: bucksPayReducer,
   gold: goldReducer,
   transactionInFlight: transactionInFlightReducer,
