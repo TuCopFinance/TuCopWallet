@@ -81,3 +81,22 @@ export function neeruCatalogueSelector(state: RootState): ResolvedNeeruCatalogue
     hasError: catalogueFetchStatus === 'error',
   }
 }
+
+// Convenience: look up a single category by id from the current catalogue.
+// Returns null when the catalogue is empty OR when the id is not present so
+// callers must handle the missing case (skeleton / retry) rather than
+// silently using stale hardcoded rates.
+export function neeruCatalogueCategoryByIdSelector(
+  state: RootState,
+  id: number
+): { secs: string; monthlyRatePercentage: number; annualEffectivePercentage: number } | null {
+  const catalogue = state.neeruConfig.catalogue
+  if (!catalogue) return null
+  const found = catalogue.categories.find((c) => c.id === id)
+  if (!found) return null
+  return {
+    secs: found.secs,
+    monthlyRatePercentage: found.monthlyRatePercentage,
+    annualEffectivePercentage: found.annualEffectivePercentage,
+  }
+}
