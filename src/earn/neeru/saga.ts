@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
-import { fetchNeeruPositions } from 'src/earn/neeru/api'
+import { fetchNeeruPositions, fetchNeeruTxStatus, NeeruTxStatusResponse } from 'src/earn/neeru/api'
 import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
 import {
   neeruCatalogueCategoryByIdSelector,
@@ -129,10 +129,88 @@ export function isLowPoolError(error: unknown, lowPoolSelector: `0x${string}`): 
   return false
 }
 
+export type NeeruRevertConfidence =
+  | 'confirmed' // wallet + backend agree on the same selector
+  | 'transient' // backend saw selector at N-1, wallet no longer reproduces at latest
+  | 'live-only' // wallet sees selector at latest, backend did not at N-1
+  | 'unknown' // neither source extracted a selector
+
+// Runs wallet-side eth_call at `latest` for a reverted tx and extracts the
+// 4-byte custom-error selector from viem's cause/message. Returns null when
+// no selector could be pulled out (call succeeded now, no error data, etc).
+function* extractSelectorFromWalletReplay({
+  base,
+  walletAddress,
+  client,
+}: {
+  base: { to?: `0x${string}`; data?: `0x${string}` }
+  walletAddress: string
+  client: (typeof publicClient)[keyof typeof publicClient]
+}): Generator<any, string | null, any> {
+  try {
+    yield* call([client, 'call'], {
+      account: walletAddress as `0x${string}`,
+      to: base.to,
+      data: base.data,
+    })
+    // Call succeeded: state at latest no longer reproduces the revert (transient).
+    return null
+  } catch (callError) {
+    const anyErr = callError as {
+      cause?: { data?: unknown; details?: unknown; cause?: { data?: unknown } }
+      message?: string
+    }
+    const candidates: unknown[] = [
+      anyErr?.cause?.data,
+      anyErr?.cause?.cause?.data,
+      anyErr?.cause?.details,
+      anyErr?.message,
+    ]
+    for (const c of candidates) {
+      if (typeof c !== 'string') continue
+      const selectorMatch = c.match(/0x[0-9a-fA-F]{8}(?![0-9a-fA-F])/)
+      if (selectorMatch) return selectorMatch[0]
+    }
+    return null
+  }
+}
+
+// Two-source cross-check per the design agreed with backend on 2026-07-25.
+// Wallet eth_call at `latest` + backend /tx/status (replay at N-1) build a
+// resolved revert view. Disagreement is not an error, it is information: the
+// caller can surface a different UX (transient vs live-only vs unknown).
+export function resolveRevert(
+  walletSelector: string | null,
+  backend: NeeruTxStatusResponse | null
+): { selector: string | null; confidence: NeeruRevertConfidence } {
+  const backendSelector = backend?.revert?.selector ?? null
+  if (walletSelector && backendSelector) {
+    if (walletSelector.toLowerCase() === backendSelector.toLowerCase()) {
+      return { selector: walletSelector, confidence: 'confirmed' }
+    }
+    // Different selectors is an unusual case, surface the wallet-side one
+    // (it reflects current state) and log the disagreement so we notice.
+    Logger.warn(TAG, 'two-source revert selectors disagree', {
+      walletSelector,
+      backendSelector,
+    })
+    return { selector: walletSelector, confidence: 'live-only' }
+  }
+  if (!walletSelector && backendSelector) {
+    return { selector: backendSelector, confidence: 'transient' }
+  }
+  if (walletSelector && !backendSelector) {
+    return { selector: walletSelector, confidence: 'live-only' }
+  }
+  return { selector: null, confidence: 'unknown' }
+}
+
 // Wait for the on-chain receipts of every tx we just sent. If any one reverted,
-// re-run it as an eth_call at the reverted block to surface the custom-error
-// selector (viem attaches it to cause.data / cause.details), then throw an
-// Error whose shape the isLowPoolError matcher above understands.
+// cross-check wallet eth_call at latest against backend /tx/status (replay at
+// N-1) and throw an Error whose cause carries the resolved selector plus the
+// confidence tag so callers can branch UX. Selector-matching helpers
+// (isLowPoolError, classifySimulationRevert) still work because cause.data
+// carries the raw hex selector byte-for-byte.
 export function* enforceReceiptsOrThrow({
   txHashes,
   baseTransactions,
@@ -151,48 +229,43 @@ export function* enforceReceiptsOrThrow({
       hash: txHashes[i],
     })
     if (receipt.status === 'success') continue
-    // Reverted: replay against `latest` (not the receipt block, Forno frequently
-    // rejects historical block state with "block is out of range") to extract
-    // the revert data. The Neeru contract state that drove the revert (low
-    // interest pool) persists across blocks, so re-simulating now reproduces
-    // the same custom error and surfaces the selector on cause.data.
-    let revertData: string | undefined
+
+    const base = baseTransactions[i] as { to?: `0x${string}`; data?: `0x${string}` }
+    // Wallet-side eth_call replay at latest. Persistent state (e.g. LOW_POOL
+    // still active) reproduces the error; race conditions post-mining do not.
+    const walletSelector: string | null = yield* extractSelectorFromWalletReplay({
+      base,
+      walletAddress,
+      client,
+    })
+    // Backend /tx/status: replay at N-1 against their RPC fallback chain.
+    // Fail-soft: if backend is down we still throw with wallet-side data.
+    let backendStatus: NeeruTxStatusResponse | null = null
     try {
-      const base = baseTransactions[i] as { to?: `0x${string}`; data?: `0x${string}` }
-      yield* call([client, 'call'], {
-        account: walletAddress as `0x${string}`,
-        to: base.to,
-        data: base.data,
+      backendStatus = yield* call(fetchNeeruTxStatus, {
+        baseUrl: networkConfig.tucopBackendApiUrl,
+        txHash: txHashes[i],
       })
-    } catch (callError) {
-      // viem attaches revert data under different keys depending on how the
-      // node returned it. Walk a few common shapes.
-      const anyErr = callError as {
-        cause?: { data?: unknown; details?: unknown; cause?: { data?: unknown } }
-        message?: string
-      }
-      const candidates: unknown[] = [
-        anyErr?.cause?.data,
-        anyErr?.cause?.cause?.data,
-        anyErr?.cause?.details,
-        anyErr?.message,
-      ]
-      for (const c of candidates) {
-        if (typeof c !== 'string') continue
-        // Prefer a bare 4-byte selector if present, else keep the full string
-        // so the LOW_POOL matcher below (substring match) still works.
-        const selectorMatch = c.match(/0x[0-9a-fA-F]{8}(?![0-9a-fA-F])/)
-        if (selectorMatch) {
-          revertData = selectorMatch[0]
-          break
-        }
-        if (!revertData) revertData = c
-      }
+    } catch (e) {
+      Logger.warn(TAG, 'backend /tx/status unreachable, degrading to wallet-only', e)
     }
-    const err = new Error(`tx reverted on-chain (${revertData ?? 'no revert data'})`)
-    ;(err as { cause?: { data?: string; details?: string } }).cause = {
-      data: revertData,
-      details: revertData,
+    const resolved = resolveRevert(walletSelector, backendStatus)
+
+    const err = new Error(
+      `tx reverted on-chain (${resolved.selector ?? 'no revert data'}, confidence=${resolved.confidence})`
+    )
+    ;(
+      err as {
+        cause?: {
+          data?: string | null
+          details?: string | null
+          confidence?: NeeruRevertConfidence
+        }
+      }
+    ).cause = {
+      data: resolved.selector ?? undefined,
+      details: resolved.selector ?? undefined,
+      confidence: resolved.confidence,
     }
     throw err
   }
