@@ -99,13 +99,20 @@ export default function PoolCard({
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
   const poolBalanceString = useMemo(() => {
-    // COPm has no USD price feed (priceUsd = '0'), so the USD-to-local
-    // conversion collapses to zero. It IS the local currency (1 COPm = 1 COP
-    // as a stable), so use the raw balance directly with the local symbol.
+    // Prefer the standard USD-to-local conversion when we have a live
+    // priceUsd for the deposit token. Backend now provides real priceUsd
+    // for COPm so the pool balance renders in local currency correctly
+    // for every token that has a price feed.
+    if (poolBalanceInFiat) {
+      return `${localCurrencySymbol}${formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat))}`
+    }
+    // Defensive fallback for COPm when its priceUsd degrades to 0 (backend
+    // outage or fail-soft response). 1 COPm approximates 1 COP as a peso
+    // stablecoin so the raw balance is still a meaningful headline.
     if (depositTokenId === COPM_TOKEN_ID_MAINNET) {
       return `${localCurrencySymbol}${formatValueToDisplay(new BigNumber(balance).plus(rewardAmountInFiat))}`
     }
-    return `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`
+    return `${localCurrencySymbol}--`
   }, [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat, depositTokenId, balance])
 
   const tvlInFiat = useDollarsToLocalAmount(tvl ?? null)
