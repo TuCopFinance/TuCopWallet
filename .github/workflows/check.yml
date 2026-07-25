@@ -96,3 +96,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run pre-release backend smoke
         run: bash scripts/pre-release-backend-smoke.sh
+
+  neeru-meta-drift:
+    name: Neeru meta drift check
+    runs-on: ubuntu-latest
+    # Blocking check on every PR. Compares the hardcoded Neeru meta fallback
+    # (constants that ride the release when backend is unreachable) against
+    # the live /api/meta/contracts/neeru + /api/earn/neeru/catalogue payloads.
+    # Any drift means merge blocked so the class of bug shipped in PR #272
+    # cannot repeat silently.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/yarn-install
+      - name: Run live drift check
+        env:
+          NEERU_LIVE_META_CHECK: '1'
+        run: yarn jest src/earn/neeru/__tests__/hardcoded-vs-live.test.ts
