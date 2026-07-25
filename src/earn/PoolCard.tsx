@@ -22,6 +22,7 @@ import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
@@ -119,12 +120,29 @@ export default function PoolCard({
   // comparable to bank promos and other DeFi surfaces the user browses. Keep
   // the monthly rate visible as a smaller subtitle so no context is lost.
   const isNeeruPool = pool.appId === 'neeru-vaults'
+  const neeruCategoryId = useMemo(
+    () => (isNeeruPool ? categoryIdFromPositionId(pool.positionId) : null),
+    [isNeeruPool, pool.positionId]
+  )
+  // Backend catalogue is the source of truth for both rates (retunes without a
+  // contract upgrade would otherwise leave stale numbers on the card). Falls
+  // back to the local monthly-to-annual conversion only when the catalogue is
+  // not loaded yet, so the UI still surfaces something reasonable pre-fetch.
+  const catalogueCategory = useSelector((state) =>
+    neeruCategoryId !== null ? neeruCatalogueCategoryByIdSelector(state, neeruCategoryId) : null
+  )
   const neeruRates = useMemo(() => {
     if (!isNeeruPool) return null
+    if (catalogueCategory) {
+      return {
+        mv: catalogueCategory.monthlyRatePercentage.toFixed(2),
+        ea: catalogueCategory.annualEffectivePercentage.toFixed(2),
+      }
+    }
     const mv = rawYieldRate
     const ea = effectiveAnnualPercentFromMonthly(mv)
     return { mv: mv.toFixed(2), ea: ea.toFixed(2) }
-  }, [isNeeruPool, rawYieldRate])
+  }, [isNeeruPool, rawYieldRate, catalogueCategory])
 
   // Card title is always the user-friendly token display name per the wallet manual
   // (cCOP -> Pesos, USDT/USDC/USDm -> Dolares, etc).
