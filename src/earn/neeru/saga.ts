@@ -2,10 +2,14 @@ import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
 import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
-import { neeruMetaSelector } from 'src/earn/neeru/configSelectors'
+import {
+  neeruCatalogueCategoryByIdSelector,
+  neeruMetaSelector,
+} from 'src/earn/neeru/configSelectors'
+import { fetchCatalogueStart } from 'src/earn/neeru/configSlice'
 import { NEERU_CATEGORY_LABEL_KEYS, NeeruCategoryId } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
-import { computePayout, monthlyPercentFromRateValue } from 'src/earn/neeru/rateConversion'
+import { computePayout } from 'src/earn/neeru/rateConversion'
 import {
   addOptimisticPosition,
   clearEmergencyFallback,
@@ -105,13 +109,6 @@ export function classifySimulationRevert(
 
 const NEERU_OPTIMISTIC_POLL_INTERVAL_MS = 15_000
 const NEERU_OPTIMISTIC_TIMEOUT_MS = 5 * 60_000
-
-const CATEGORY_DURATION_SECONDS: Record<NeeruCategoryId, number> = {
-  0: 0,
-  1: 30 * 86_400,
-  2: 60 * 86_400,
-  3: 90 * 86_400,
-}
 
 // Match the low-interest-pool custom-error selector. viem surfaces custom
 // error reverts as raw hex in cause.data / cause.details / message when the
@@ -450,16 +447,20 @@ function buildOptimisticPosition({
   category,
   amountRaw,
   rateValue,
+  secs,
+  monthlyRatePercentage,
 }: {
   txHash: string
   blockNumber: number
   category: NeeruCategoryId
   amountRaw: string
   rateValue: string
+  secs: number
+  monthlyRatePercentage: number
 }): NeeruIndividualPosition {
   const amountDecimal = new BigNumber(amountRaw).shiftedBy(-18).toFixed()
   const startTs = Math.floor(Date.now() / 1000)
-  const endTs = category === 0 ? 0 : startTs + CATEGORY_DURATION_SECONDS[category]
+  const endTs = secs === 0 ? 0 : startTs + secs
   return {
     positionId: `optimistic:${txHash}`,
     category,
@@ -467,7 +468,7 @@ function buildOptimisticPosition({
     amount: amountDecimal,
     accruedInterest: '0',
     rateValue,
-    monthlyRatePercentage: monthlyPercentFromRateValue(rateValue),
+    monthlyRatePercentage,
     startTs,
     endTs,
     depositBlock: blockNumber,
@@ -556,6 +557,20 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
     Logger.warn(TAG, 'category out of range in deposit event', { category })
     return
   }
+  // Optimistic UI needs the lock-period (secs) and the monthly rate to
+  // render the position row properly. Both come from the runtime catalogue
+  // (no fallback: rates fluctuate operationally). If it is not loaded yet,
+  // trigger the fetch in the background and let backend indexer polling
+  // surface the position instead.
+  const categoryConfig = yield* select(neeruCatalogueCategoryByIdSelector, category)
+  if (!categoryConfig) {
+    Logger.warn(TAG, 'no catalogue entry for category, falling back to backend fetch', {
+      category,
+    })
+    yield* put(fetchCatalogueStart())
+    yield* put(fetchPositionsStart())
+    return
+  }
   const txHash = receipt.transactionHash.toLowerCase()
   const optimistic = buildOptimisticPosition({
     txHash,
@@ -563,6 +578,8 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
     category: category as NeeruCategoryId,
     amountRaw: parsed.amount,
     rateValue: parsed.rateValue,
+    secs: Number(categoryConfig.secs),
+    monthlyRatePercentage: categoryConfig.monthlyRatePercentage,
   })
   yield* put(addOptimisticPosition(optimistic))
 

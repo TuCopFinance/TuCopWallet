@@ -1,14 +1,12 @@
-import { computePayout, monthlyPercentFromRateValue } from 'src/earn/neeru/rateConversion'
+import { computePayout, effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 
-describe('monthlyPercentFromRateValue', () => {
-  it('returns 0 for RAY (1e27)', () => {
-    expect(monthlyPercentFromRateValue('1000000000000000000000000000')).toBeCloseTo(0, 4)
+describe('effectiveAnnualPercentFromMonthly', () => {
+  it('returns 0 for a non-positive monthly rate', () => {
+    expect(effectiveAnnualPercentFromMonthly(0)).toBe(0)
+    expect(effectiveAnnualPercentFromMonthly(-1)).toBe(0)
   })
-  it('computes ~1% monthly for the launch 30d rate', () => {
-    // rateValue corresponding to ~1%/30d compounding
-    const rate = monthlyPercentFromRateValue('1000331300000000000000000000')
-    expect(rate).toBeGreaterThan(0.9)
-    expect(rate).toBeLessThan(1.1)
+  it('compounds 1% monthly to ~12.68% annual (matches backend catalogue)', () => {
+    expect(effectiveAnnualPercentFromMonthly(1)).toBeCloseTo(12.6825, 3)
   })
 })
 

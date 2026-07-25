@@ -34,6 +34,7 @@ import {
   positionsStatusSelector,
 } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { fetchCatalogueStart } from 'src/earn/neeru/configSlice'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
@@ -351,7 +352,10 @@ export default function EarnHome({ navigation, route }: Props) {
       // Corregir el error de promesa no manejada
       void loadStakes()
     }
-  }, [walletAddress])
+    // Refresh the Neeru catalogue on every EarnHome mount so pool cards
+    // pick up backend retunes without waiting for the next boot cycle.
+    dispatch(fetchCatalogueStart())
+  }, [walletAddress, dispatch])
 
   const flatPools = useMemo(() => {
     const marranitos =
