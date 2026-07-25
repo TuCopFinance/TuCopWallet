@@ -1,30 +1,12 @@
-import Config from 'react-native-config'
-import { NetworkId } from 'src/transactions/types'
+// Contract identity, event topic0, data schema, error selectors and deposit
+// token address are no longer sourced from build-time env. They flow through
+// the neeruConfig Redux slice at runtime (backend > cache > hardcoded
+// fallback) and callers read them via neeruMetaSelector. The hardcoded
+// last-resort values live in configSelectors.NEERU_META_HARDCODED_FALLBACK
+// and a blocking CI job (neeru-meta-drift) fails merge if they drift from
+// the live /api/meta/contracts/neeru payload.
 
 export const NEERU_APP_ID = 'neeru-vaults'
-
-// Contract address, event topic0 and revert selectors are read from build-time
-// env so that repo source alone does not identify the earn-vault contract.
-// Defaults keep local dev builds functional without .env edits; production
-// builds override via .env.mainnet.
-export const NEERU_CONTRACT_ADDRESS = (Config.NEERU_CONTRACT_ADDRESS ??
-  '0x988af5977201a0e988f2c75ea952532f6beb5082') as `0x${string}`
-export const NEERU_DEPOSIT_TOPIC0 = (Config.NEERU_DEPOSIT_TOPIC0 ??
-  '0x8835c22a0c751188de86681e15904223c054bedd5c68ec8858945b7831290273') as `0x${string}`
-
-// 4-byte revert selectors, matched against viem's cause.data / details when
-// a write reverts. Backend indexer emits these; wallet only needs to detect
-// them by hex so we can branch the UX.
-export const NEERU_ERR_INTEREST_POOL_LOW_SELECTOR = (Config.NEERU_ERR_INTEREST_POOL_LOW_SELECTOR ??
-  '0x2648b779') as `0x${string}`
-export const NEERU_ERR_ALREADY_CLOSED_SELECTOR = (Config.NEERU_ERR_ALREADY_CLOSED_SELECTOR ??
-  '0x9acb7e52') as `0x${string}`
-export const NEERU_ERR_NOT_OWNER_SELECTOR = (Config.NEERU_ERR_NOT_OWNER_SELECTOR ??
-  '0x30cd7471') as `0x${string}`
-
-// Deposit token used by the earn-vault (COPm mainnet).
-export const DEPOSIT_TOKEN_ADDRESS = '0x8a567e2ae79ca692bd748ab832081c45de4041ea' as const
-export const DEPOSIT_TOKEN_ID = `${NetworkId['celo-mainnet']}:${DEPOSIT_TOKEN_ADDRESS}` as const
 
 export type NeeruCategoryId = 0 | 1 | 2 | 3
 

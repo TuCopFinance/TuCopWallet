@@ -2,14 +2,8 @@ import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
 import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
-import {
-  NEERU_CATEGORY_LABEL_KEYS,
-  NEERU_CONTRACT_ADDRESS,
-  NEERU_ERR_ALREADY_CLOSED_SELECTOR,
-  NEERU_ERR_INTEREST_POOL_LOW_SELECTOR,
-  NEERU_ERR_NOT_OWNER_SELECTOR,
-  NeeruCategoryId,
-} from 'src/earn/neeru/constants'
+import { neeruMetaSelector } from 'src/earn/neeru/configSelectors'
+import { NEERU_CATEGORY_LABEL_KEYS, NeeruCategoryId } from 'src/earn/neeru/constants'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import { computePayout, monthlyPercentFromRateValue } from 'src/earn/neeru/rateConversion'
 import {
@@ -90,15 +84,22 @@ interface TriggerShortcutResponseData {
 // Match the raw selector on the simulationRevert envelope against the three
 // known 4-byte error selectors from the vault contract. Returns an opaque
 // tag so callers can branch UX without leaking the contract error name.
+// Error selectors are injected (typically from neeruMetaSelector) so runtime
+// backend meta can override the hardcoded fallback.
 export function classifySimulationRevert(
-  simulationRevert: SimulationRevertInfo | undefined
+  simulationRevert: SimulationRevertInfo | undefined,
+  errorSelectors: {
+    INTEREST_POOL_LOW: `0x${string}`
+    ALREADY_CLOSED: `0x${string}`
+    NOT_OWNER: `0x${string}`
+  }
 ): 'low_pool' | 'already_closed' | 'not_owner' | 'unknown' | null {
   if (!simulationRevert) return null
   const selector = (simulationRevert.selector ?? '').toLowerCase()
   if (!selector) return 'unknown'
-  if (selector === NEERU_ERR_INTEREST_POOL_LOW_SELECTOR.toLowerCase()) return 'low_pool'
-  if (selector === NEERU_ERR_ALREADY_CLOSED_SELECTOR.toLowerCase()) return 'already_closed'
-  if (selector === NEERU_ERR_NOT_OWNER_SELECTOR.toLowerCase()) return 'not_owner'
+  if (selector === errorSelectors.INTEREST_POOL_LOW.toLowerCase()) return 'low_pool'
+  if (selector === errorSelectors.ALREADY_CLOSED.toLowerCase()) return 'already_closed'
+  if (selector === errorSelectors.NOT_OWNER.toLowerCase()) return 'not_owner'
   return 'unknown'
 }
 
@@ -116,10 +117,12 @@ const CATEGORY_DURATION_SECONDS: Record<NeeruCategoryId, number> = {
 // error reverts as raw hex in cause.data / cause.details / message when the
 // wallet does not embed the source ABI; matching the 4-byte selector keeps
 // the detection working without exposing the error name.
-export function isLowPoolError(error: unknown): boolean {
+// The selector is injected (typically from neeruMetaSelector) so runtime
+// backend meta can override the hardcoded fallback.
+export function isLowPoolError(error: unknown, lowPoolSelector: `0x${string}`): boolean {
   if (!(error instanceof Error)) return false
 
-  const selector = NEERU_ERR_INTEREST_POOL_LOW_SELECTOR.toLowerCase()
+  const selector = lowPoolSelector.toLowerCase()
   const msg = error.message ?? ''
   const cause = (error as { cause?: { data?: unknown; details?: unknown } }).cause
   const candidates: unknown[] = [cause?.data, cause?.details, msg]
@@ -235,6 +238,7 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     return
   }
   const hooksApiUrl = yield* select(hooksApiUrlSelector)
+  const { meta } = yield* select(neeruMetaSelector)
   // Bug E: stables ahead of CELO so the Neeru open/close path doesn't burn a
   // hidden CELO balance to pay gas.
   const feeCurrencies = reorderForBugE(
@@ -254,7 +258,10 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     // pre-built amount-only fallback the wallet can use without a second
     // triggerShortcut round-trip). Short-circuit before signing anything.
     if (response.transactions.length === 0) {
-      const category = classifySimulationRevert(response.dataProps?.simulationRevert)
+      const category = classifySimulationRevert(
+        response.dataProps?.simulationRevert,
+        meta.errorSelectors
+      )
       if (category === 'low_pool') {
         const fallbackTxs = response.dataProps?.fallback?.transactions ?? []
         if (fallbackTxs.length > 0) {
@@ -326,7 +333,7 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     })
   } catch (e) {
     const error = ensureError(e)
-    if (isLowPoolError(error)) {
+    if (isLowPoolError(error, meta.errorSelectors.INTEREST_POOL_LOW)) {
       yield* put({
         type: NEERU_LOW_POOL_ACTION,
         payload: { positionId },
@@ -530,7 +537,13 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
     Logger.warn(TAG, 'no wallet address, skipping optimistic flow')
     return
   }
-  const parsed = parseDepositEvent(receipt, NEERU_CONTRACT_ADDRESS)
+  const { meta } = yield* select(neeruMetaSelector)
+  const parsed = parseDepositEvent(
+    receipt,
+    meta.proxyAddress,
+    meta.events.Deposit.topic0,
+    meta.events.Deposit.dataSchema
+  )
   if (!parsed) {
     Logger.warn(TAG, 'no deposit event in receipt; falling back to normal fetch', {
       tx: receipt.transactionHash,
