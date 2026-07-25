@@ -10,7 +10,7 @@ export const NEERU_APP_ID = 'neeru-vaults'
 export const NEERU_CONTRACT_ADDRESS = (Config.NEERU_CONTRACT_ADDRESS ??
   '0x988af5977201a0e988f2c75ea952532f6beb5082') as `0x${string}`
 export const NEERU_DEPOSIT_TOPIC0 = (Config.NEERU_DEPOSIT_TOPIC0 ??
-  '0x12ef563408f10ef4a1dde37b59a2538dcc75957c7e154bf71deea27089689653') as `0x${string}`
+  '0x8835c22a0c751188de86681e15904223c054bedd5c68ec8858945b7831290273') as `0x${string}`
 
 // 4-byte revert selectors, matched against viem's cause.data / details when
 // a write reverts. Backend indexer emits these; wallet only needs to detect
