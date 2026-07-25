@@ -1,6 +1,5 @@
 import { Address, TransactionReceipt, decodeAbiParameters, hexToBigInt } from 'viem'
-import { DEPOSIT_EVENT_DATA_SCHEMA } from 'src/earn/neeru/abi'
-import { NEERU_DEPOSIT_TOPIC0 } from 'src/earn/neeru/constants'
+import { NeeruMetaDataSchemaSlot } from 'src/earn/neeru/types'
 
 interface ParsedDepositEvent {
   contractPositionId: string
@@ -14,12 +13,19 @@ interface ParsedDepositEvent {
 // and by topic0 so only the target event decodes. Returns null when no
 // matching log is present or the payload does not decode, so callers can
 // fall back to the normal backend-fetch flow without throwing.
+//
+// The contract address, topic0, and data schema are injected from the
+// caller (typically via neeruMetaSelector) rather than read from static
+// constants so runtime state can override the hardcoded fallback when the
+// backend meta endpoint is reachable.
 export function parseDepositEvent(
   receipt: TransactionReceipt,
-  contractAddress: Address
+  contractAddress: Address,
+  topic0: `0x${string}`,
+  dataSchema: readonly NeeruMetaDataSchemaSlot[]
 ): ParsedDepositEvent | null {
   const normalizedAddr = contractAddress.toLowerCase()
-  const normalizedTopic0 = NEERU_DEPOSIT_TOPIC0.toLowerCase()
+  const normalizedTopic0 = topic0.toLowerCase()
   const log = receipt.logs.find(
     (l) =>
       l.address.toLowerCase() === normalizedAddr && l.topics[0]?.toLowerCase() === normalizedTopic0
@@ -28,10 +34,12 @@ export function parseDepositEvent(
   if (!log.topics[2]) return null
 
   try {
-    const [categoryRaw, amountRaw, rateRaw] = decodeAbiParameters(
-      DEPOSIT_EVENT_DATA_SCHEMA,
-      log.data
-    ) as [number, bigint, bigint, bigint]
+    const [categoryRaw, amountRaw, rateRaw] = decodeAbiParameters(dataSchema, log.data) as [
+      number,
+      bigint,
+      bigint,
+      bigint,
+    ]
     return {
       contractPositionId: hexToBigInt(log.topics[2]).toString(),
       amount: amountRaw.toString(),

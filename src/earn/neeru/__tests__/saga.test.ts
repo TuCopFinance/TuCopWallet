@@ -2,7 +2,7 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
-import { NEERU_CONTRACT_ADDRESS } from 'src/earn/neeru/constants'
+import { NEERU_META_HARDCODED_FALLBACK, neeruMetaSelector } from 'src/earn/neeru/configSelectors'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import {
   NEERU_ALREADY_CLOSED_ERROR,
@@ -45,6 +45,15 @@ import { walletAddressSelector } from 'src/web3/selectors'
 jest.mock('src/earn/neeru/eventParsing', () => ({
   parseDepositEvent: jest.fn(),
 }))
+
+// Resolved neeruMetaSelector value that all sagas expect when they read the
+// meta from Redux. Using the fallback keeps assertions comparing against
+// exactly the hex constants the CI drift check enforces.
+const RESOLVED_META = {
+  meta: NEERU_META_HARDCODED_FALLBACK,
+  source: 'fallback' as const,
+  isDegraded: true,
+}
 
 describe('fetchNeeruPositionsSaga', () => {
   const WALLET = '0x' + 'a'.repeat(40)
@@ -108,6 +117,7 @@ describe('closeNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
         [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
@@ -125,6 +135,7 @@ describe('closeNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(err)],
       ])
@@ -138,6 +149,7 @@ describe('closeNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
       ])
@@ -160,6 +172,7 @@ describe('emergencyCloseNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
         [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
@@ -178,6 +191,7 @@ describe('emergencyCloseNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
       ])
@@ -302,11 +316,19 @@ describe('handleNeeruDepositOptimistic', () => {
   it('falls back to fetchPositionsStart when the Deposit event is missing', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue(null)
     await expectSaga(handleNeeruDepositOptimistic, receipt)
-      .provide([[matchers.select(walletAddressSelector), WALLET]])
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+      ])
       .put(fetchPositionsStart())
       .not.put.actionType('neeru/addOptimisticPosition')
       .run()
-    expect(parseDepositEvent).toHaveBeenCalledWith(receipt, NEERU_CONTRACT_ADDRESS)
+    expect(parseDepositEvent).toHaveBeenCalledWith(
+      receipt,
+      NEERU_META_HARDCODED_FALLBACK.proxyAddress,
+      NEERU_META_HARDCODED_FALLBACK.events.primary.topic0,
+      NEERU_META_HARDCODED_FALLBACK.events.primary.dataSchema
+    )
   })
 
   it('skips when parsed category is out of range', async () => {
@@ -317,7 +339,10 @@ describe('handleNeeruDepositOptimistic', () => {
       rateValue: '0',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
-      .provide([[matchers.select(walletAddressSelector), WALLET]])
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+      ])
       .not.put.actionType('neeru/addOptimisticPosition')
       .not.put(fetchPositionsStart())
       .run()
@@ -334,6 +359,7 @@ describe('handleNeeruDepositOptimistic', () => {
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         {
           put: (effect: any, next: any) => {
             if (effect.action?.type === addOptimisticPosition.type) {
@@ -364,6 +390,7 @@ describe('handleNeeruDepositOptimistic', () => {
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.call.fn(awaitOptimisticResolution), 'timedOut' as const],
       ])
       .put(markOptimisticPositionStale({ depositTxHash: TX.toLowerCase() }))
@@ -382,6 +409,7 @@ describe('handleNeeruDepositOptimistic', () => {
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         {
           call: (effect: any, next: any) => {
             if (effect.fn === awaitOptimisticResolution) {
@@ -400,22 +428,23 @@ describe('handleNeeruDepositOptimistic', () => {
 })
 
 describe('isLowPoolError', () => {
+  const LOW_POOL = NEERU_META_HARDCODED_FALLBACK.errorSelectors.e1
   it('detects viem prod-style selector in error.cause.data', () => {
     const err = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
     })
-    expect(isLowPoolError(err)).toBe(true)
+    expect(isLowPoolError(err, LOW_POOL)).toBe(true)
   })
   it('detects selector inside a longer hex blob (cause.details)', () => {
     const err = Object.assign(new Error('estimateGas failed'), {
       cause: { details: 'execution reverted: 0x2648b779000000000000' },
     })
-    expect(isLowPoolError(err)).toBe(true)
+    expect(isLowPoolError(err, LOW_POOL)).toBe(true)
   })
   it('returns false for unrelated errors', () => {
-    expect(isLowPoolError(new Error('insufficient funds'))).toBe(false)
-    expect(isLowPoolError('not an error')).toBe(false)
-    expect(isLowPoolError(null)).toBe(false)
+    expect(isLowPoolError(new Error('insufficient funds'), LOW_POOL)).toBe(false)
+    expect(isLowPoolError('not an error', LOW_POOL)).toBe(false)
+    expect(isLowPoolError(null, LOW_POOL)).toBe(false)
   })
 })
 
@@ -435,6 +464,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [
           matchers.call.fn(triggerShortcutRequest),
@@ -459,6 +489,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [
           matchers.call.fn(triggerShortcutRequest),
@@ -481,6 +512,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [
           matchers.call.fn(triggerShortcutRequest),
@@ -502,6 +534,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [
           matchers.call.fn(triggerShortcutRequest),
@@ -523,6 +556,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [
           matchers.call.fn(triggerShortcutRequest),
@@ -544,6 +578,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), { transactions: [] }],
       ])
@@ -579,6 +614,7 @@ describe('emergencyCloseNeeruPositionSaga pre-built fallback consumption', () =>
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         {
           call(effect, next) {
@@ -607,6 +643,7 @@ describe('emergencyCloseNeeruPositionSaga pre-built fallback consumption', () =>
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         {
           call(effect, next) {
