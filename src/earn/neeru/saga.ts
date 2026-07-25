@@ -89,21 +89,23 @@ interface TriggerShortcutResponseData {
 // known 4-byte error selectors from the vault contract. Returns an opaque
 // tag so callers can branch UX without leaking the contract error name.
 // Error selectors are injected (typically from neeruMetaSelector) so runtime
-// backend meta can override the hardcoded fallback.
+// backend meta can override the hardcoded fallback. e1/e2/e3 mirror the
+// order the backend enumerates its errorSelectors so the mapping is opaque
+// but stable.
 export function classifySimulationRevert(
   simulationRevert: SimulationRevertInfo | undefined,
   errorSelectors: {
-    INTEREST_POOL_LOW: `0x${string}`
-    ALREADY_CLOSED: `0x${string}`
-    NOT_OWNER: `0x${string}`
+    e1: `0x${string}`
+    e2: `0x${string}`
+    e3: `0x${string}`
   }
 ): 'low_pool' | 'already_closed' | 'not_owner' | 'unknown' | null {
   if (!simulationRevert) return null
   const selector = (simulationRevert.selector ?? '').toLowerCase()
   if (!selector) return 'unknown'
-  if (selector === errorSelectors.INTEREST_POOL_LOW.toLowerCase()) return 'low_pool'
-  if (selector === errorSelectors.ALREADY_CLOSED.toLowerCase()) return 'already_closed'
-  if (selector === errorSelectors.NOT_OWNER.toLowerCase()) return 'not_owner'
+  if (selector === errorSelectors.e1.toLowerCase()) return 'low_pool'
+  if (selector === errorSelectors.e2.toLowerCase()) return 'already_closed'
+  if (selector === errorSelectors.e3.toLowerCase()) return 'not_owner'
   return 'unknown'
 }
 
@@ -403,7 +405,7 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     })
   } catch (e) {
     const error = ensureError(e)
-    if (isLowPoolError(error, meta.errorSelectors.INTEREST_POOL_LOW)) {
+    if (isLowPoolError(error, meta.errorSelectors.e1)) {
       yield* put({
         type: NEERU_LOW_POOL_ACTION,
         payload: { positionId },
@@ -615,8 +617,8 @@ export function* handleNeeruDepositOptimistic(receipt: TransactionReceipt) {
   const parsed = parseDepositEvent(
     receipt,
     meta.proxyAddress,
-    meta.events.Deposit.topic0,
-    meta.events.Deposit.dataSchema
+    meta.events.primary.topic0,
+    meta.events.primary.dataSchema
   )
   if (!parsed) {
     Logger.warn(TAG, 'no deposit event in receipt; falling back to normal fetch', {
