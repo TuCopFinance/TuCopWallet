@@ -31,12 +31,12 @@ export function parseDepositEvent(
     const [categoryRaw, amountRaw, rateRaw] = decodeAbiParameters(
       DEPOSIT_EVENT_DATA_SCHEMA,
       log.data
-    )
+    ) as [number, bigint, bigint, bigint]
     return {
       contractPositionId: hexToBigInt(log.topics[2]).toString(),
-      amount: (amountRaw as bigint).toString(),
-      category: Number(categoryRaw as number),
-      rateValue: (rateRaw as bigint).toString(),
+      amount: amountRaw.toString(),
+      category: Number(categoryRaw),
+      rateValue: rateRaw.toString(),
     }
   } catch {
     return null

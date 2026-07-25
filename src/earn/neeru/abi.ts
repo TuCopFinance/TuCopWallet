@@ -11,4 +11,5 @@ export const DEPOSIT_EVENT_DATA_SCHEMA = [
   { type: 'uint8' },
   { type: 'uint256' },
   { type: 'uint256' },
+  { type: 'uint256' },
 ] as const
