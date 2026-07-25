@@ -8,13 +8,14 @@ const POSITION_ID = BigInt(42)
 const CATEGORY = 1
 const AMOUNT = BigInt('10000000000000000000000') // 10000 * 1e18
 const RATE_VALUE = BigInt('1000331300000000000000000000')
+const TRAILING_SLOT = BigInt('1723507200') // ignored by the parser but must be present in data
 
 type Log = TransactionReceipt['logs'][number]
 
 function buildDepositLog(): Log {
   const data = encodeAbiParameters(
-    [{ type: 'uint8' }, { type: 'uint256' }, { type: 'uint256' }],
-    [CATEGORY, AMOUNT, RATE_VALUE]
+    [{ type: 'uint8' }, { type: 'uint256' }, { type: 'uint256' }, { type: 'uint256' }],
+    [CATEGORY, AMOUNT, RATE_VALUE, TRAILING_SLOT]
   )
   return {
     address: CONTRACT,
