@@ -345,6 +345,16 @@ describe('store state', () => {
           "pendingEmergencyFallback": {},
           "positions": [],
         },
+        "neeruConfig": {
+          "catalogue": null,
+          "catalogueFetchStatus": "idle",
+          "catalogueLastError": null,
+          "meta": null,
+          "metaFetchStatus": "idle",
+          "metaFetchedAt": null,
+          "metaLastError": null,
+          "metaSource": null,
+        },
         "networkInfo": {
           "connected": false,
           "rehydrated": true,

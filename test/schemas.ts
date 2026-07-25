@@ -3805,6 +3805,25 @@ export const v252Schema = {
   },
 }
 
+// neeruConfig slice: caches backend /meta payload with source + fetchedAt so
+// the wallet can survive backend outages without reintroducing hardcoded
+// contract state as a permanent fallback. Slice is added unconditionally, no
+// persist version bump (autoMergeLevel2 folds the initial state for existing
+// users; migration 252 is still the last release cut).
+export const v252SchemaWithNeeruConfig = {
+  ...v252Schema,
+  neeruConfig: {
+    meta: null,
+    metaSource: null,
+    metaFetchedAt: null,
+    metaFetchStatus: 'idle',
+    metaLastError: null,
+    catalogue: null,
+    catalogueFetchStatus: 'idle',
+    catalogueLastError: null,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v252Schema as Partial<RootState>
+  return v252SchemaWithNeeruConfig as Partial<RootState>
 }
