@@ -36,3 +36,52 @@ export interface NeeruPositionsResponse {
 
 export type NeeruFetchStatus = 'idle' | 'loading' | 'success' | 'error'
 export type NeeruCloseStatus = 'idle' | 'loading' | 'success' | 'error'
+
+// Backend meta endpoint payload shape. Any type (0x-hex, structural schema)
+// is preserved as-is so callers can compare against local hardcoded defaults
+// byte-for-byte.
+export interface NeeruMetaDataSchemaSlot {
+  type: string
+}
+
+export interface NeeruMeta {
+  proxyAddress: `0x${string}`
+  events: { primary: {
+      topic0: `0x${string}`
+      dataSchema: NeeruMetaDataSchemaSlot[]
+    }
+  }
+  errorSelectors: {
+    e1: `0x${string}`
+    e2: `0x${string}`
+    e3: `0x${string}`
+  }
+  depositToken: {
+    address: `0x${string}`
+    chainId: number
+    networkId: string
+  }
+  version: string
+}
+
+// Backend catalogue endpoint payload shape. Rates fluctuate operationally
+// so wallet never persists them (see NeeruConfigState); only meta is cached.
+export interface NeeruCatalogueCategory {
+  id: number
+  secs: string
+  rateRay: string
+  monthlyRatePercentage: number
+  annualEffectivePercentage: number
+}
+
+export interface NeeruCatalogueToken {
+  address: `0x${string}`
+  decimals: number
+  symbol: string
+}
+
+export interface NeeruCatalogue {
+  categories: NeeruCatalogueCategory[]
+  token: NeeruCatalogueToken
+  fetchedAt: string
+}
