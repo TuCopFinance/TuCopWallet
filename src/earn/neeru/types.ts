@@ -37,9 +37,13 @@ export interface NeeruPositionsResponse {
 export type NeeruFetchStatus = 'idle' | 'loading' | 'success' | 'error'
 export type NeeruCloseStatus = 'idle' | 'loading' | 'success' | 'error'
 
-// Backend meta endpoint payload shape. Any type (0x-hex, structural schema)
-// is preserved as-is so callers can compare against local hardcoded defaults
-// byte-for-byte.
+// Internal opaque shape for the earn-vault runtime config. The backend
+// payload uses semantic names (event names, error names) that this shape
+// deliberately hides: event names become positional (primary/secondary),
+// error selectors become numbered (e1/e2/e3). The adapter in api.ts is the
+// single boundary where semantic names appear; every other tracked file
+// consumes only the opaque projection. Enforces the zero-exposure policy
+// (contract surface is not reconstructible from a repo grep).
 export interface NeeruMetaDataSchemaSlot {
   type: string
 }
@@ -47,15 +51,15 @@ export interface NeeruMetaDataSchemaSlot {
 export interface NeeruMeta {
   proxyAddress: `0x${string}`
   events: {
-    Deposit: {
+    primary: {
       topic0: `0x${string}`
       dataSchema: NeeruMetaDataSchemaSlot[]
     }
   }
   errorSelectors: {
-    INTEREST_POOL_LOW: `0x${string}`
-    ALREADY_CLOSED: `0x${string}`
-    NOT_OWNER: `0x${string}`
+    e1: `0x${string}`
+    e2: `0x${string}`
+    e3: `0x${string}`
   }
   depositToken: {
     address: `0x${string}`
