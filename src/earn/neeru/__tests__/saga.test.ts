@@ -350,8 +350,8 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(parseDepositEvent).toHaveBeenCalledWith(
       receipt,
       NEERU_META_HARDCODED_FALLBACK.proxyAddress,
-      NEERU_META_HARDCODED_FALLBACK.events.Deposit.topic0,
-      NEERU_META_HARDCODED_FALLBACK.events.Deposit.dataSchema
+      NEERU_META_HARDCODED_FALLBACK.events.primary.topic0,
+      NEERU_META_HARDCODED_FALLBACK.events.primary.dataSchema
     )
   })
 
@@ -500,7 +500,7 @@ describe('resolveRevert (two-source cross-check matrix)', () => {
 })
 
 describe('isLowPoolError', () => {
-  const LOW_POOL = NEERU_META_HARDCODED_FALLBACK.errorSelectors.INTEREST_POOL_LOW
+  const LOW_POOL = NEERU_META_HARDCODED_FALLBACK.errorSelectors.e1
   it('detects viem prod-style selector in error.cause.data', () => {
     const err = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
@@ -543,7 +543,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
           {
             transactions: [],
             dataProps: {
-              simulationRevert: { selector: '0x2648b779', reason: 'INTEREST_POOL_LOW' },
+              simulationRevert: { selector: '0x2648b779', reason: 'E1' },
               fallback: { shortcutId: 'withdraw-amount-only', transactions: [FALLBACK_TX] },
             },
           },
@@ -568,7 +568,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
           {
             transactions: [],
             dataProps: {
-              simulationRevert: { selector: '0x2648b779', reason: 'INTEREST_POOL_LOW' },
+              simulationRevert: { selector: '0x2648b779', reason: 'E1' },
             },
           },
         ],
@@ -578,7 +578,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .run()
   })
 
-  it('routes ALREADY_CLOSED selector to its dedicated failure tag', async () => {
+  it('routes the e2 selector to its dedicated failure tag', async () => {
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
       .withState({ neeru: neeruInitialState })
       .provide([
@@ -591,7 +591,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
           {
             transactions: [],
             dataProps: {
-              simulationRevert: { selector: '0x9acb7e52', reason: 'ALREADY_CLOSED' },
+              simulationRevert: { selector: '0x9acb7e52', reason: 'E2' },
             },
           },
         ],
@@ -600,7 +600,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
       .run()
   })
 
-  it('routes NOT_OWNER selector to its dedicated failure tag', async () => {
+  it('routes the e3 selector to its dedicated failure tag', async () => {
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
       .withState({ neeru: neeruInitialState })
       .provide([
@@ -613,7 +613,7 @@ describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
           {
             transactions: [],
             dataProps: {
-              simulationRevert: { selector: '0x30cd7471', reason: 'NOT_OWNER' },
+              simulationRevert: { selector: '0x30cd7471', reason: 'E3' },
             },
           },
         ],

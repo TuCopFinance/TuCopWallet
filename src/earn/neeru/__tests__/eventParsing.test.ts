@@ -3,8 +3,8 @@ import { NEERU_META_HARDCODED_FALLBACK } from 'src/earn/neeru/configSelectors'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 
 const CONTRACT = NEERU_META_HARDCODED_FALLBACK.proxyAddress
-const TOPIC0 = NEERU_META_HARDCODED_FALLBACK.events.Deposit.topic0
-const DATA_SCHEMA = NEERU_META_HARDCODED_FALLBACK.events.Deposit.dataSchema
+const TOPIC0 = NEERU_META_HARDCODED_FALLBACK.events.primary.topic0
+const DATA_SCHEMA = NEERU_META_HARDCODED_FALLBACK.events.primary.dataSchema
 const DEPOSITOR = ('0x' + 'a'.repeat(40)) as `0x${string}`
 const POSITION_ID = BigInt(42)
 const CATEGORY = 1
