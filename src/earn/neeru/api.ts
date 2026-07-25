@@ -135,3 +135,34 @@ export async function fetchNeeruCatalogue({
   const raw = body.data as NeeruCatalogue
   return raw
 }
+
+// Backend transaction status endpoint. Backend replays eth_call at N-1
+// (block before mining) against its fallback RPC chain and returns the
+// revert selector. Wallet cross-checks against its own eth_call at latest
+// (see enforceReceiptsOrThrow). Agreement raises confidence, disagreement
+// surfaces "estado incierto" to the user.
+export interface NeeruTxStatusResponse {
+  status: 'success' | 'reverted'
+  blockNumber?: string
+  transactionHash: string
+  revert?: {
+    selector: string | null
+    reason: string
+  }
+}
+
+export async function fetchNeeruTxStatus({
+  baseUrl,
+  txHash,
+}: {
+  baseUrl: string
+  txHash: string
+}): Promise<NeeruTxStatusResponse> {
+  const url = new URL('/api/tx/status', baseUrl)
+  url.searchParams.set('hash', txHash)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruTxStatus failed: ${response.status} ${response.statusText}`)
+  }
+  return (await response.json()) as NeeruTxStatusResponse
+}

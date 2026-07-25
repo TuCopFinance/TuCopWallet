@@ -20,6 +20,7 @@ import {
   fetchNeeruPositionsSaga,
   handleNeeruDepositOptimistic,
   isLowPoolError,
+  resolveRevert,
   pollUntilBackendCatchesUp,
 } from 'src/earn/neeru/saga'
 import {
@@ -450,6 +451,51 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(observed.baseUrl).toBe(networkConfig.tucopBackendApiUrl)
     expect(observed.walletAddress).toBe(WALLET)
     expect(observed.txHash).toBe(TX.toLowerCase())
+  })
+})
+
+describe('resolveRevert (two-source cross-check matrix)', () => {
+  const LOW_POOL = '0x2648b779'
+  const OTHER = '0x9acb7e52'
+  const backendReverted = (selector: string | null) => ({
+    status: 'reverted' as const,
+    transactionHash: '0x' + 'a'.repeat(64),
+    revert: { selector, reason: selector ? 'X' : 'UNKNOWN' },
+  })
+
+  it('both sources agree on the same selector -> confirmed', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(LOW_POOL))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'confirmed' })
+  })
+
+  it('backend sees selector, wallet does not -> transient (already resolved on-chain)', () => {
+    const r = resolveRevert(null, backendReverted(LOW_POOL))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'transient' })
+  })
+
+  it('wallet sees selector, backend does not -> live-only (new reason after mining)', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(null))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('neither source extracts a selector -> unknown', () => {
+    const r = resolveRevert(null, backendReverted(null))
+    expect(r).toEqual({ selector: null, confidence: 'unknown' })
+  })
+
+  it('two sources disagree on the selector -> prefers wallet-side, flags live-only', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(OTHER))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('backend response missing entirely -> falls back to wallet-only', () => {
+    const r = resolveRevert(LOW_POOL, null)
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('backend response missing + wallet null -> unknown', () => {
+    const r = resolveRevert(null, null)
+    expect(r).toEqual({ selector: null, confidence: 'unknown' })
   })
 })
 
