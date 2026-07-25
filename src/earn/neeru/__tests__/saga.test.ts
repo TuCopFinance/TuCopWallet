@@ -2,7 +2,11 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
-import { NEERU_META_HARDCODED_FALLBACK, neeruMetaSelector } from 'src/earn/neeru/configSelectors'
+import {
+  NEERU_META_HARDCODED_FALLBACK,
+  neeruCatalogueCategoryByIdSelector,
+  neeruMetaSelector,
+} from 'src/earn/neeru/configSelectors'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import {
   NEERU_ALREADY_CLOSED_ERROR,
@@ -54,6 +58,25 @@ const RESOLVED_META = {
   source: 'fallback' as const,
   isDegraded: true,
 }
+
+// Resolved catalogue category rows used by handleNeeruDepositOptimistic when
+// it needs to synthesise an optimistic position row.
+const CAT_ROWS: Record<
+  number,
+  { secs: string; monthlyRatePercentage: number; annualEffectivePercentage: number }
+> = {
+  0: { secs: '0', monthlyRatePercentage: 0.8, annualEffectivePercentage: 10.033869 },
+  1: { secs: '2592000', monthlyRatePercentage: 1.0, annualEffectivePercentage: 12.682503 },
+  2: { secs: '5184000', monthlyRatePercentage: 1.05, annualEffectivePercentage: 13.35373 },
+  3: { secs: '7776000', monthlyRatePercentage: 1.1, annualEffectivePercentage: 14.02862 },
+}
+const catalogueRowProvide = (category: number) => [
+  matchers.select.like({
+    selector: neeruCatalogueCategoryByIdSelector,
+    args: [category] as const,
+  }),
+  CAT_ROWS[category] ?? null,
+]
 
 describe('fetchNeeruPositionsSaga', () => {
   const WALLET = '0x' + 'a'.repeat(40)
@@ -360,6 +383,7 @@ describe('handleNeeruDepositOptimistic', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(1) as any,
         {
           put: (effect: any, next: any) => {
             if (effect.action?.type === addOptimisticPosition.type) {
@@ -391,6 +415,7 @@ describe('handleNeeruDepositOptimistic', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(0) as any,
         [matchers.call.fn(awaitOptimisticResolution), 'timedOut' as const],
       ])
       .put(markOptimisticPositionStale({ depositTxHash: TX.toLowerCase() }))
@@ -410,6 +435,7 @@ describe('handleNeeruDepositOptimistic', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(2) as any,
         {
           call: (effect: any, next: any) => {
             if (effect.fn === awaitOptimisticResolution) {
