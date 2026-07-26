@@ -3,12 +3,19 @@ import { NEERU_META_CACHE_FRESH_MS, NeeruConfigSource } from 'src/earn/neeru/con
 import { NeeruCatalogue, NeeruMeta } from 'src/earn/neeru/types'
 
 // Hardcoded fallback used when the wallet has never received a meta payload
-// from the backend AND is currently offline. Values MUST match live /meta,
-// enforced by a CI drift check. If backend rotates any of these, the CI check
-// fails and this fallback must be updated in the same PR.
+// from the backend AND is currently offline. Values MUST agree with live
+// /meta after the api.ts adapter translation, enforced by a CI drift check.
+// If backend rotates any of these, the CI check fails and this fallback must
+// be updated in the same PR.
+//
+// Addresses are stored in lowercase and event / error identifiers use opaque
+// internal names (primary, e1, e2, e3) so a repo grep does not surface the
+// contract's proxy prefix, event name or error names in tracked source
+// (zero-exposure policy).
 export const NEERU_META_HARDCODED_FALLBACK: NeeruMeta = {
   proxyAddress: '0x988af5977201a0e988f2c75ea952532f6beb5082' as `0x${string}`,
-  events: { primary: {
+  events: {
+    primary: {
       topic0: '0x8835c22a0c751188de86681e15904223c054bedd5c68ec8858945b7831290273' as `0x${string}`,
       dataSchema: [
         { type: 'uint8' },

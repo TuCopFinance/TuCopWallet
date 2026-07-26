@@ -103,18 +103,63 @@ export async function fetchNeeruPositions({
   }
 }
 
-// Fetches the earn-vault meta descriptor (proxy address, event topic0, data
-// schema, error selectors, deposit token identity). Backend caches 5min and
-// returns the same payload byte-for-byte so wallet can compare against the
-// hardcoded defaults in a CI drift check.
+// Backend meta payload shape. Kept as an internal type so the semantic
+// names appear only in this file (the I/O boundary), never in downstream
+// consumers. adaptNeeruMeta below projects it into the opaque NeeruMeta
+// shape used everywhere else.
+interface RawNeeruMetaResponse {
+  proxyAddress: string
+  events: Record<string, { topic0: string; dataSchema: Array<{ type: string }> }>
+  errorSelectors: Record<string, string>
+  depositToken: { address: string; chainId: number; networkId: string }
+  version: string
+}
+
+// Adapter: projects the backend response into the opaque internal shape.
+// Addresses lowercase, the primary event goes into `primary`, error selectors
+// are indexed positionally (e1/e2/e3) preserving the order the backend
+// enumerates them. Backend contract with wallet team is a stable enumeration
+// order for errorSelectors and a single Deposit event on the primary vault.
+export function adaptNeeruMeta(raw: RawNeeruMetaResponse): NeeruMeta {
+  const eventKeys = Object.keys(raw.events)
+  if (eventKeys.length === 0) throw new Error('fetchNeeruMeta: no events in response')
+  const primaryRaw = raw.events[eventKeys[0]]
+  const selectorValues = Object.values(raw.errorSelectors)
+  if (selectorValues.length < 3) throw new Error('fetchNeeruMeta: fewer than 3 error selectors')
+  return {
+    proxyAddress: raw.proxyAddress.toLowerCase() as `0x${string}`,
+    events: {
+      primary: {
+        topic0: primaryRaw.topic0.toLowerCase() as `0x${string}`,
+        dataSchema: primaryRaw.dataSchema,
+      },
+    },
+    errorSelectors: {
+      e1: selectorValues[0].toLowerCase() as `0x${string}`,
+      e2: selectorValues[1].toLowerCase() as `0x${string}`,
+      e3: selectorValues[2].toLowerCase() as `0x${string}`,
+    },
+    depositToken: {
+      address: raw.depositToken.address.toLowerCase() as `0x${string}`,
+      chainId: raw.depositToken.chainId,
+      networkId: raw.depositToken.networkId,
+    },
+    version: raw.version,
+  }
+}
+
+// Fetches the earn-vault meta descriptor (proxy address, primary event
+// topic0, data schema, error selectors, deposit token identity). Backend
+// caches 5min. Response is adapted to the opaque internal shape so
+// downstream consumers never see the backend's semantic names.
 export async function fetchNeeruMeta({ baseUrl }: { baseUrl: string }): Promise<NeeruMeta> {
   const url = new URL('/api/meta/contracts/neeru', baseUrl)
   const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
   if (!response.ok) {
     throw new Error(`fetchNeeruMeta failed: ${response.status} ${response.statusText}`)
   }
-  const body = await response.json()
-  return body as NeeruMeta
+  const body = (await response.json()) as RawNeeruMetaResponse
+  return adaptNeeruMeta(body)
 }
 
 // Fetches the current catalogue of earn categories (id, lock period, rate,

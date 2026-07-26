@@ -1,5 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
+import { adaptNeeruMeta } from 'src/earn/neeru/api'
 import { NEERU_META_HARDCODED_FALLBACK } from 'src/earn/neeru/configSelectors'
+import { NeeruMeta } from 'src/earn/neeru/types'
 
 // Gate the whole suite behind an env var so local `yarn test` runs offline
 // stay green. CI opts in via NEERU_LIVE_META_CHECK=1 on the drift-check job.
@@ -29,7 +31,7 @@ async function fetchWithTimeout(url: string): Promise<Response> {
 describeLive('Neeru meta drift check (live backend)', () => {
   jest.setTimeout(FETCH_TIMEOUT_MS + 5_000)
 
-  let liveMeta: any
+  let liveMetaAdapted: NeeruMeta
   let liveCatalogue: any
 
   beforeAll(async () => {
@@ -41,7 +43,11 @@ describeLive('Neeru meta drift check (live backend)', () => {
     if (!metaRes.ok) {
       throw new Error(`/meta returned ${metaRes.status} ${metaRes.statusText}`)
     }
-    liveMeta = await metaRes.json()
+    const rawMeta = await metaRes.json()
+    // Route the live response through the same adapter every consumer uses,
+    // so the assertions compare the opaque internal projection byte-for-byte
+    // and the semantic backend names never appear in this file.
+    liveMetaAdapted = adaptNeeruMeta(rawMeta)
 
     const catRes = await fetchWithTimeout(`${BACKEND_BASE_URL}/api/earn/neeru/catalogue`)
     if (!catRes.ok) {
@@ -55,20 +61,18 @@ describeLive('Neeru meta drift check (live backend)', () => {
     fetchMock.enableMocks()
   })
 
-  it('proxyAddress matches live /meta byte for byte', () => {
-    expect(liveMeta.proxyAddress.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.proxyAddress.toLowerCase()
-    )
+  it('proxyAddress matches live /meta (adapter-normalised, byte for byte)', () => {
+    expect(liveMetaAdapted.proxyAddress).toBe(NEERU_META_HARDCODED_FALLBACK.proxyAddress)
   })
 
   it('primary event topic0 matches live /meta byte for byte', () => {
-    expect(liveMeta.events.primary.topic0.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.events.primary.topic0.toLowerCase()
+    expect(liveMetaAdapted.events.primary.topic0).toBe(
+      NEERU_META_HARDCODED_FALLBACK.events.primary.topic0
     )
   })
 
   it('primary event dataSchema is structurally identical to live /meta', () => {
-    const liveSchema = liveMeta.events.primary.dataSchema
+    const liveSchema = liveMetaAdapted.events.primary.dataSchema
     const localSchema = NEERU_META_HARDCODED_FALLBACK.events.primary.dataSchema
     expect(liveSchema).toHaveLength(localSchema.length)
     for (let i = 0; i < liveSchema.length; i++) {
@@ -76,21 +80,15 @@ describeLive('Neeru meta drift check (live backend)', () => {
     }
   })
 
-  it('errorSelectors match live /meta byte for byte (3 selectors)', () => {
-    expect(liveMeta.errorSelectors.e1.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.errorSelectors.e1.toLowerCase()
-    )
-    expect(liveMeta.errorSelectors.e2.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.errorSelectors.e2.toLowerCase()
-    )
-    expect(liveMeta.errorSelectors.e3.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.errorSelectors.e3.toLowerCase()
-    )
+  it('all three error selectors match live /meta byte for byte', () => {
+    expect(liveMetaAdapted.errorSelectors.e1).toBe(NEERU_META_HARDCODED_FALLBACK.errorSelectors.e1)
+    expect(liveMetaAdapted.errorSelectors.e2).toBe(NEERU_META_HARDCODED_FALLBACK.errorSelectors.e2)
+    expect(liveMetaAdapted.errorSelectors.e3).toBe(NEERU_META_HARDCODED_FALLBACK.errorSelectors.e3)
   })
 
   it('depositToken.address matches live /meta byte for byte', () => {
-    expect(liveMeta.depositToken.address.toLowerCase()).toBe(
-      NEERU_META_HARDCODED_FALLBACK.depositToken.address.toLowerCase()
+    expect(liveMetaAdapted.depositToken.address).toBe(
+      NEERU_META_HARDCODED_FALLBACK.depositToken.address
     )
   })
 
