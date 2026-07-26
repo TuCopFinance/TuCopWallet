@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions, fetchNeeruTxStatus, NeeruTxStatusResponse } from 'src/earn/neeru/api'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
 import {
   neeruCatalogueCategoryByIdSelector,
@@ -294,6 +295,11 @@ export function* fetchNeeruPositionsSaga(_action: ReturnType<typeof fetchPositio
   } catch (e) {
     const error = ensureError(e)
     Logger.error(TAG, 'fetchNeeruPositions failed', error)
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'neeru',
+      action: 'fetch_positions',
+    })
     yield* put(fetchPositionsFailure({ error: error.message }))
   }
 }
@@ -414,6 +420,11 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
       return
     }
     Logger.error(TAG, 'close failed', error)
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'neeru',
+      action: 'close_position',
+    })
     yield* put(closePositionFailure({ positionId, error: error.message }))
   }
 }
@@ -508,6 +519,11 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
   } catch (e) {
     const error = ensureError(e)
     Logger.error(TAG, 'emergency close failed', error)
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'neeru',
+      action: 'emergency_close',
+    })
     yield* put(closePositionFailure({ positionId, error: error.message }))
   }
 }
