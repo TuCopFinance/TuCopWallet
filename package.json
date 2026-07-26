@@ -205,7 +205,6 @@
     "@react-native-community/cli": "^15.0.1",
     "@react-native/babel-preset": "^0.77.0",
     "@react-native/metro-config": "^0.77.0",
-    "@sentry/types": "^7.111.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.7.2",
     "@types/country-data": "^0.0.5",
