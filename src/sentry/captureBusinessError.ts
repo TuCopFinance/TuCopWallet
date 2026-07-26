@@ -24,6 +24,7 @@ export type BusinessProvider =
   | 'allbridge'
   | 'jumpstart'
   | 'buckspay'
+  | 'wri'
   | 'internal'
 
 export interface BusinessContext {
@@ -37,9 +38,14 @@ export interface BusinessContext {
 }
 
 // Single entry point every saga uses so the schema is enforced by shape,
-// not by convention. Fingerprint is set so Sentry groups the same business
-// error across users regardless of the underlying exception message
-// (avoids one issue per user for the same failure mode).
+// not by convention. Fingerprint is set to the tuple
+// [feature, provider, action, errorCode ?? 'unclassified'] so Sentry
+// groups the same business failure into ONE issue across users regardless
+// of the underlying exception message. Trade-off: this favours
+// count/rate dashboards over per-user triage. Per-user detail is still
+// available on the individual events within the issue; if in the future
+// we need finer grouping (e.g. per HTTP status code), we can append more
+// segments here without changing the tag shape.
 export function captureBusinessError(error: unknown, context: BusinessContext): void {
   if (!SENTRY_ENABLED) return
   const err = error instanceof Error ? error : new Error(String(error))

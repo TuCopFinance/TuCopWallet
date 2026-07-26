@@ -39,6 +39,7 @@ import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -371,6 +372,7 @@ export function* triggerShortcutSaga({ payload }: ReturnType<typeof triggerShort
       feature: 'positions',
       provider: 'internal',
       action: 'trigger_shortcut',
+      errorCode: classifyHttpError(error),
       extra: { shortcutId: payload.data?.shortcutId, appId: payload.data?.appId },
     })
     yield* put(triggerShortcutFailure(payload.id))
@@ -427,6 +429,7 @@ export function* executeShortcutSaga({
       feature: 'positions',
       provider: 'internal',
       action: 'execute_shortcut',
+      errorCode: classifyHttpError(error),
       extra: { shortcutId: shortcut.shortcutId, appId: shortcut.appId },
     })
     AppAnalytics.track(

@@ -92,7 +92,8 @@ export function initializeSentryEarly() {
     environment: DeviceInfo.getBundleId(),
     enableAutoSessionTracking: true,
     // Never send PII by default. beforeSend below strips wallet addresses,
-    // tx hashes and large numeric amounts from every payload.
+    // tx hashes and large numeric amounts from every payload; the SDK will
+    // not attach IP address of its own either.
     sendDefaultPii: false,
     integrations: [
       navigationIntegration,
@@ -103,7 +104,21 @@ export function initializeSentryEarly() {
       }),
     ],
     tracesSampleRate: 0.2, // Default sample rate, can be updated later
-    beforeSend: (event) => scrubSensitiveStrings(event),
+    beforeSend: (event) => {
+      const scrubbed = scrubSensitiveStrings(event)
+      if (!scrubbed) return null
+      // Belt-and-suspenders: even with sendDefaultPii=false the SDK can attach
+      // a client IP when the event has a user context. Force it null so
+      // Sentry's ingest server never stores an IP even if the setting drifts.
+      if (scrubbed.user) {
+        // ip_address = null tells Sentry ingest to strip the connection IP
+        // too. The SDK types disallow null explicitly, but the API accepts
+        // it; deleting the property has the same effect and satisfies TS.
+        const { ip_address: _drop, ...userWithoutIp } = scrubbed.user
+        scrubbed.user = userWithoutIp as typeof scrubbed.user
+      }
+      return scrubbed
+    },
     beforeBreadcrumb: (breadcrumb) => scrubSensitiveStrings(breadcrumb),
   })
 

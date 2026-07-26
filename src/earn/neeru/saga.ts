@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions, fetchNeeruTxStatus, NeeruTxStatusResponse } from 'src/earn/neeru/api'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError, classifyRevertConfidence } from 'src/sentry/classifyHttpError'
 import { neeruConfigSaga } from 'src/earn/neeru/configSaga'
 import {
   neeruCatalogueCategoryByIdSelector,
@@ -299,6 +300,7 @@ export function* fetchNeeruPositionsSaga(_action: ReturnType<typeof fetchPositio
       feature: 'earn',
       provider: 'neeru',
       action: 'fetch_positions',
+      errorCode: classifyHttpError(error),
     })
     yield* put(fetchPositionsFailure({ error: error.message }))
   }
@@ -424,6 +426,10 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
       feature: 'earn',
       provider: 'neeru',
       action: 'close_position',
+      // Prefer the confidence tag from the two-source safety net when the
+      // error came from enforceReceiptsOrThrow. Falls back to HTTP class
+      // for anything else (triggerShortcut network failures, etc).
+      errorCode: classifyRevertConfidence(error) ?? classifyHttpError(error),
     })
     yield* put(closePositionFailure({ positionId, error: error.message }))
   }
@@ -523,6 +529,7 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
       feature: 'earn',
       provider: 'neeru',
       action: 'emergency_close',
+      errorCode: classifyRevertConfidence(error) ?? classifyHttpError(error),
     })
     yield* put(closePositionFailure({ positionId, error: error.message }))
   }
