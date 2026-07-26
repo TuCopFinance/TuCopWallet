@@ -4,6 +4,7 @@ import DeviceInfo from 'react-native-device-info'
 import { sentryTracesSampleRateSelector } from 'src/app/selectors'
 import { APP_BUNDLE_ID, SENTRY_CLIENT_URL, SENTRY_ENABLED } from 'src/config'
 import Logger from 'src/utils/Logger'
+import { opaqueAccountId, scrubSensitiveStrings } from 'src/sentry/piiScrub'
 import networkConfig from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 import { select } from 'typed-redux-saga'
@@ -90,6 +91,9 @@ export function initializeSentryEarly() {
     dsn: SENTRY_CLIENT_URL,
     environment: DeviceInfo.getBundleId(),
     enableAutoSessionTracking: true,
+    // Never send PII by default. beforeSend below strips wallet addresses,
+    // tx hashes and large numeric amounts from every payload.
+    sendDefaultPii: false,
     integrations: [
       navigationIntegration,
       Sentry.reactNativeTracingIntegration({
@@ -99,6 +103,8 @@ export function initializeSentryEarly() {
       }),
     ],
     tracesSampleRate: 0.2, // Default sample rate, can be updated later
+    beforeSend: (event) => scrubSensitiveStrings(event),
+    beforeBreadcrumb: (breadcrumb) => scrubSensitiveStrings(breadcrumb),
   })
 
   Logger.info(TAG, 'installSentry', 'Sentry installation complete')
@@ -130,12 +136,10 @@ export function* initializeSentryUserContext() {
   if (!account) {
     return
   }
-  Logger.debug(
-    TAG,
-    'initializeSentryUserContext',
-    `Setting Sentry user context to account "${account}"`
-  )
-  Sentry.setUser({
-    username: account,
-  })
+  // Never send the raw wallet address to Sentry. opaqueAccountId returns a
+  // stable, deterministic id that lets us count sessions per user without
+  // exposing which on-chain account they are.
+  const id = opaqueAccountId(account)
+  Logger.debug(TAG, 'initializeSentryUserContext', 'Setting Sentry user context (opaque id)')
+  Sentry.setUser({ id })
 }
