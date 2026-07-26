@@ -89,7 +89,9 @@ interface TriggerShortcutResponseData {
 // known 4-byte error selectors from the vault contract. Returns an opaque
 // tag so callers can branch UX without leaking the contract error name.
 // Error selectors are injected (typically from neeruMetaSelector) so runtime
-// backend meta can override the hardcoded fallback.
+// backend meta can override the hardcoded fallback. e1/e2/e3 mirror the
+// order the backend enumerates its errorSelectors so the mapping is opaque
+// but stable.
 export function classifySimulationRevert(
   simulationRevert: SimulationRevertInfo | undefined,
   errorSelectors: {

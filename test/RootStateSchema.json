@@ -2641,19 +2641,19 @@
                 "errorSelectors": {
                     "additionalProperties": false,
                     "properties": {
-                        "ALREADY_CLOSED": {
+                        "e1": {
                             "items": {
                                 "type": "string"
                             },
                             "type": "array"
                         },
-                        "INTEREST_POOL_LOW": {
+                        "e2": {
                             "items": {
                                 "type": "string"
                             },
                             "type": "array"
                         },
-                        "NOT_OWNER": {
+                        "e3": {
                             "items": {
                                 "type": "string"
                             },
@@ -2661,16 +2661,16 @@
                         }
                     },
                     "required": [
-                        "ALREADY_CLOSED",
-                        "INTEREST_POOL_LOW",
-                        "NOT_OWNER"
+                        "e1",
+                        "e2",
+                        "e3"
                     ],
                     "type": "object"
                 },
                 "events": {
                     "additionalProperties": false,
                     "properties": {
-                        "Deposit": {
+                        "primary": {
                             "additionalProperties": false,
                             "properties": {
                                 "dataSchema": {
@@ -2694,7 +2694,7 @@
                         }
                     },
                     "required": [
-                        "Deposit"
+                        "primary"
                     ],
                     "type": "object"
                 },
