@@ -221,9 +221,9 @@ TuCopWallet/
 │   ├── Fastfile                    #   Build lanes
 │   └── metadata/                   #   Store listings (en-US, es-419 + screenshots)
 │
-├── scripts/                        # Build and utility scripts (27 files)
+├── scripts/                        # Build and utility scripts
 │   ├── setup-ci-cd.sh              #   CI/CD setup
-│   ├── key_placer.sh               #   Signing key placement
+│   ├── populate_secrets.sh         #   Populate gitignored secrets from Keychain/env
 │   ├── pre-deploy.sh               #   Pre-deployment checks
 │   ├── verify_locales.sh           #   Locale file validation
 │   ├── force_update_check.js       #   Version check testing
@@ -248,8 +248,7 @@ TuCopWallet/
 ├── package.json                    # Dependencies and scripts
 ├── react-native.config.js          # React Native CLI config
 ├── renovate.json5                  # Dependency update automation
-├── secrets.json.enc                # Encrypted secrets (CI)
-├── secrets.json.template           # Secrets template
+├── secrets.json.template           # Secrets template (real values populated at postinstall)
 ├── tsconfig.json                   # TypeScript config
 ├── yarn.lock                       # Dependency lockfile
 │
