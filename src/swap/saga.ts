@@ -32,6 +32,7 @@ import {
   inFlightFail,
   inFlightStart,
 } from 'src/lib/useTransactionInFlight/actions'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
@@ -412,6 +413,13 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       ...getTimeMetrics(),
       ...getSwapTxsReceiptAnalyticsProperties(trackedTxs, networkId, tokensById),
       error: error.message,
+    })
+    captureBusinessError(error, {
+      feature: 'swap',
+      provider: 'squid',
+      action: 'execute',
+      errorCode: String(classifyError(error)),
+      extra: { swapType, submitted },
     })
   }
 }

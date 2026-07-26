@@ -38,6 +38,8 @@ import { RootState } from 'src/redux/store'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -366,6 +368,13 @@ export function* triggerShortcutSaga({ payload }: ReturnType<typeof triggerShort
     const data = yield* call(triggerShortcutRequest, hooksApiUrl, payload.data)
     yield* put(triggerShortcutSuccess({ id: payload.id, transactions: data.transactions }))
   } catch (error) {
+    captureBusinessError(error, {
+      feature: 'positions',
+      provider: 'internal',
+      action: 'trigger_shortcut',
+      errorCode: classifyHttpError(error),
+      extra: { shortcutId: payload.data?.shortcutId, appId: payload.data?.appId },
+    })
     yield* put(triggerShortcutFailure(payload.id))
   }
 }
@@ -416,6 +425,13 @@ export function* executeShortcutSaga({
     // TODO customise error message when there are more shortcut types
     yield* put(showError(ErrorMessages.SHORTCUT_CLAIM_REWARD_FAILED))
     Logger.warn(`${TAG}/executeShortcutSaga`, 'Failed to claim reward', error)
+    captureBusinessError(error, {
+      feature: 'positions',
+      provider: 'internal',
+      action: 'execute_shortcut',
+      errorCode: classifyHttpError(error),
+      extra: { shortcutId: shortcut.shortcutId, appId: shortcut.appId },
+    })
     AppAnalytics.track(
       DappShortcutsEvents.dapp_shortcuts_reward_claim_error,
       trackedShortcutProperties
