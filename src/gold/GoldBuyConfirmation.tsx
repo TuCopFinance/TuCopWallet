@@ -449,9 +449,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
               isSubmitting ||
               (isVirtualDolares
                 ? !multiSwapPlan || multiSwapPlan.shortfall.gt(0)
-                : isGettingQuote || !preparedTransactions || !toTokenId)
+                : isGettingQuote ||
+                  !Array.isArray(preparedTransactions) ||
+                  preparedTransactions.length === 0 ||
+                  !estimatedGasFee ||
+                  estimatedGasFee === '0' ||
+                  !!quoteError ||
+                  !toTokenId)
             }
-            showLoading={isSubmitting}
+            showLoading={isSubmitting || isGettingQuote}
             testID="GoldBuyConfirmation/ConfirmButton"
           />
         </View>

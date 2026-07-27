@@ -337,7 +337,16 @@ export default function GoldSellConfirmation({ route }: Props) {
             text={t('goldFlow.sell.confirm')}
             size={BtnSizes.FULL}
             type={BtnTypes.PRIMARY}
-            disabled={isSubmitting || isGettingQuote || !preparedTransactions}
+            disabled={
+              isSubmitting ||
+              isGettingQuote ||
+              !Array.isArray(preparedTransactions) ||
+              preparedTransactions.length === 0 ||
+              !estimatedGasFee ||
+              estimatedGasFee === '0' ||
+              !!quoteError ||
+              !toTokenId
+            }
             showLoading={isSubmitting || isGettingQuote}
             testID="GoldSellConfirmation/ConfirmButton"
           />
