@@ -41,32 +41,49 @@ describe(estimateFeesPerGas, () => {
     expect(getBlock).toHaveBeenCalledWith(client, { blockTag: 'latest' })
   })
 
-  it('should return the correct fees per gas on Celo when fee currency is specified', async () => {
+  it('should build a CIP-64 fee envelope from eth_gasPrice(feeCurrency) when fee currency is specified', async () => {
+    // Block header baseFee is intentionally in NATIVE units; the CIP-64 path
+    // must NOT mix it with the fee-currency gas price. Set it to a value
+    // that would be nonsensical if the code accidentally used it as the
+    // baseFee for a CIP-64 tx.
     const mockBlock = {
       baseFeePerGas: BigInt('100000000'),
       hash: '0x123',
       number: BigInt(100),
-    } as any as Block // 0.1 Gwei
+    } as any as Block
     jest.mocked(getBlock).mockResolvedValue(mockBlock)
+
+    // Fee-currency gas price = 2 Gwei-equivalent in fee-currency units.
+    const gasPriceInFc = BigInt('0x77359400') // 2_000_000_000
 
     const client = {
       chain: { id: networkConfig.viemChain.celo.id },
       request: jest.fn(async ({ method, params }) => {
-        if (method === 'eth_gasPrice' && params?.[0] === '0x456') return '0x77359400' // 2 Gwei with fee currency
-        if (method === 'eth_gasPrice') return '0x3b9aca00' // 1 Gwei fallback
+        if (method === 'eth_gasPrice' && params?.[0] === '0x456') return '0x77359400'
         throw new Error(`Unknown method ${method}`)
       }),
     }
 
     const fees = await estimateFeesPerGas(client as any, '0x456' as Address)
 
-    // Critical validations
-    expect(fees.baseFeePerGas).toBe(BigInt('100000000')) // 0.1 Gwei (matches CELO_MIN_GAS_PRICES.CELO)
-    expect(fees.maxPriorityFeePerGas).toBeGreaterThan(BigInt(0))
-    expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas)
+    // maxFee: 2x current gas price = 4 Gwei-equivalent (100% headroom)
+    expect(fees.maxFeePerGas).toBe(gasPriceInFc * BigInt(2))
+    // priority: 25% of current gas price
+    expect(fees.maxPriorityFeePerGas).toBe(gasPriceInFc / BigInt(4))
+    // baseFee (reported): current - priority (approximate, in fee-currency units)
+    expect(fees.baseFeePerGas).toBe(gasPriceInFc - gasPriceInFc / BigInt(4))
+
+    // The invariant that matters: maxFee > baseFee + priority (op-reth requires
+    // real headroom so the tx survives base-fee movement between estimation
+    // and inclusion).
     expect(fees.maxFeePerGas).toBeGreaterThan(fees.baseFeePerGas + fees.maxPriorityFeePerGas)
 
+    // Block header baseFee (native units) must not have leaked into the result.
+    expect(fees.baseFeePerGas).not.toBe(BigInt('100000000'))
+
+    // Native-only helpers must not have been called on the CIP-64 path.
     expect(defaultEstimateFeesPerGas).not.toHaveBeenCalled()
+    expect(getBlock).not.toHaveBeenCalled()
   })
 
   it('should return the default fees per gas on other networks', async () => {
