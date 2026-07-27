@@ -68,4 +68,36 @@ describe('circuitBreaker', () => {
     // Only 1 fresh failure -> still closed
     expect(shouldShortCircuit('api.example.test')).toBe(false)
   })
+
+  it('isolates the breaker per key (host+path), not per host', () => {
+    // Simulates the real problem this refactor addresses: 5 failures on
+    // `/hooks-api` on tucop-backend used to open the breaker for the whole
+    // host, blocking unrelated calls to `/api/prices/xaut` on the same host.
+    // After the switch to `${host}${pathname}` keys, the two routes are
+    // isolated even though they share a host component in the string.
+    for (let i = 0; i < FAILURE_THRESHOLD; i++) {
+      recordFailure('tucop-backend-production.up.railway.app/hooks-api/triggerShortcut')
+    }
+    expect(
+      shouldShortCircuit('tucop-backend-production.up.railway.app/hooks-api/triggerShortcut')
+    ).toBe(true)
+    expect(shouldShortCircuit('tucop-backend-production.up.railway.app/api/prices/xaut')).toBe(
+      false
+    )
+    expect(shouldShortCircuit('tucop-backend-production.up.railway.app/api/positions')).toBe(false)
+  })
+
+  it('recordSuccess on one key does not affect another key', () => {
+    for (let i = 0; i < FAILURE_THRESHOLD; i++) {
+      recordFailure('host.test/pathA')
+      recordFailure('host.test/pathB')
+    }
+    expect(shouldShortCircuit('host.test/pathA')).toBe(true)
+    expect(shouldShortCircuit('host.test/pathB')).toBe(true)
+
+    recordSuccess('host.test/pathA')
+    expect(shouldShortCircuit('host.test/pathA')).toBe(false)
+    // pathB is still open, success on pathA must not have cleared it.
+    expect(shouldShortCircuit('host.test/pathB')).toBe(true)
+  })
 })
