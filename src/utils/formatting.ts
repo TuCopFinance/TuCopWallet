@@ -3,13 +3,46 @@ import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts
 import { CURRENCIES, Currency } from 'src/utils/currencies'
 
 /**
- * How many decimal places to show in token amount inputs / displays inside
- * gold + swap flows. We use 6 across the board so that small Oro amounts
- * (1.000 Pesos ≈ 0.000061 Oro) stay readable without rounding to zero, and
- * fiat-pegged tokens like Pesos / Dólares show a consistent precision next
- * to them. The `tokenId` param is kept for future per-token tuning.
+ * How many decimal places to allow WHEN THE USER IS TYPING into an amount
+ * input field. 6 across the board so small Oro amounts (1.000 Pesos ≈
+ * 0.000061 Oro) can still be entered without rounding to zero.
+ *
+ * NOT for display. Use `getDisplayDecimalsForToken` for rendering finalised
+ * amounts on review / confirmation / receipt screens.
  */
 export function getInputDecimalsForToken(_tokenId?: string): number {
+  return 6
+}
+
+/**
+ * How many decimal places to show when RENDERING a token amount to the user
+ * (review screens, receipts, transaction details). Stablecoins follow local
+ * fiat conventions (2 decimals) so peso amounts read as "8,992.13 Pesos"
+ * instead of "8,992.134348 Pesos". Non-stable tokens keep 6 decimals so
+ * small Oro balances stay readable.
+ *
+ * Pass the TokenBalance if available (uses the `isStableCoin` flag from
+ * the tokens catalog), or a tokenId string for known constants.
+ */
+export function getDisplayDecimalsForToken(token?: {
+  tokenId?: string
+  isStableCoin?: boolean
+}): number {
+  if (token?.isStableCoin) return 2
+  // Explicit stablecoin fallback when only the id is available (e.g. before
+  // the tokens catalog has resolved). Matches the same tokens the backend
+  // flags as isStableCoin in networkConfig.
+  const stableIds = new Set<string>([
+    // Mento family
+    'celo-mainnet:0x8a567e2ae79ca692bd748ab832081c45de4041ea', // COPm
+    'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a', // USDm
+    'celo-mainnet:0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73', // EURm
+    'celo-mainnet:0xe8537a3d056da446677b9e9d6c5db704eaab4787', // BRLm
+    // Non-Mento
+    'celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e', // USDT
+    'celo-mainnet:0xceba9300f2b948710d2653dd7b07f33a8b32118c', // USDC
+  ])
+  if (token?.tokenId && stableIds.has(token.tokenId.toLowerCase())) return 2
   return 6
 }
 
