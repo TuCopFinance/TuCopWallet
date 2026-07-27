@@ -22,6 +22,12 @@ export interface GoldPriceData {
   priceUsd: number // Price per troy ounce in USD
   price24hChange: number // Percentage change
   timestamp: number
+  // TuCop backend price proxy responds with X-Stale: true when the value was
+  // served from the 24h stale cache (upstream unreachable but a recent-ish
+  // price is available). Only set on backend responses; DIA and the
+  // hardcoded fallback leave both undefined.
+  isStale?: boolean
+  staleAgeSeconds?: number
 }
 
 export interface GoldSwapQuote {
