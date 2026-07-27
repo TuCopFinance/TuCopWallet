@@ -52,9 +52,7 @@
     "pre-deploy": "./scripts/pre-deploy.sh",
     "generate-release-notes": "ts-node ./scripts/generate-release-notes.ts",
     "deploy:update-disclaimer": "yarn licenses generate-disclaimer --prod > src/account/LicenseDisclaimer.txt && ./scripts/copy_license_to_android_assets.sh",
-    "postinstall": "patch-package && ./scripts/fix-android-gradle.sh && yarn --ignore-engines keys:decrypt && ./scripts/copy_license_to_android_assets.sh",
-    "keys:decrypt": "bash scripts/key_placer.sh decrypt",
-    "keys:encrypt": "bash scripts/key_placer.sh encrypt",
+    "postinstall": "patch-package && ./scripts/fix-android-gradle.sh && ./scripts/populate_secrets.sh && ./scripts/copy_license_to_android_assets.sh",
     "release-build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/build/intermediates/res/merged/release/ && rm -rf android/app/src/main/res/drawable-* && rm -rf android/app/src/main/res/raw/* && cd android && ./gradlew assembleRelease && cd ..",
     "release-build:ios": "./scripts/run_app.sh -p ios -r",
     "prepare": "husky"
@@ -207,7 +205,6 @@
     "@react-native-community/cli": "^15.0.1",
     "@react-native/babel-preset": "^0.77.0",
     "@react-native/metro-config": "^0.77.0",
-    "@sentry/types": "^7.111.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.7.2",
     "@types/country-data": "^0.0.5",

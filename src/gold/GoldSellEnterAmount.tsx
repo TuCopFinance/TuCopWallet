@@ -40,7 +40,7 @@ import { Spacing } from 'src/styles/styles'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
-import { getInputDecimalsForToken } from 'src/utils/formatting'
+import { getDisplayDecimalsForToken } from 'src/utils/formatting'
 import { parseInputAmount } from 'src/utils/parsing'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -323,12 +323,10 @@ export default function GoldSellEnterAmount(_props: Props) {
                   </Touchable>
                   <Text style={styles.outputAmountText}>
                     {outputAmount
-                      ? outputAmount
-                          .decimalPlaces(
-                            getInputDecimalsForToken(selectedOutputToken.tokenId),
-                            BigNumber.ROUND_DOWN
-                          )
-                          .toFormat()
+                      ? (() => {
+                          const d = getDisplayDecimalsForToken(selectedOutputToken)
+                          return outputAmount.decimalPlaces(d, BigNumber.ROUND_DOWN).toFormat(d)
+                        })()
                       : '0'}
                   </Text>
                 </>
