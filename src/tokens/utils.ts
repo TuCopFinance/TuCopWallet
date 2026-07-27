@@ -255,3 +255,33 @@ export function getTokenDisplayName(symbol: string): string {
   // Keep original for others (CELO, etc.)
   return symbol
 }
+
+// Mento local-currency stablecoins pegged 1:1 to a national fiat currency.
+// When a pool's `dataProps.tvl` or `balance * priceUsd` produces a value in
+// one of these tokens' units, that value is ALREADY in the user's local
+// currency. Passing it through `useDollarsToLocalAmount` would multiply by
+// the USD->local rate a second time (e.g. by ~4000 for COP), inflating the
+// display 4000x.
+//
+// Not the same as the "dollars" family (USDT / USDC / USDm / USAT), which
+// are USD-denominated and DO need the USD->local conversion.
+//
+// Callers use this to branch between two rendering paths in earn / pool
+// screens. See src/earn/utils.ts:getEarnPositionBalanceValues and consumers.
+const LOCAL_CURRENCY_STABLE_SYMBOLS = new Set([
+  'COPM', // Colombian Peso (Mento)
+  'EURM', // Euro (Mento)
+  'BRLM', // Brazilian Real (Mento)
+  'XOFM', // West African CFA Franc (Mento)
+  'GHSM', // Ghanaian Cedi (Mento)
+  'KESM', // Kenyan Shilling (Mento)
+  // Legacy Mento names still in circulation on older tx / balance records.
+  'CCOP',
+  'CEUR',
+  'CREAL',
+])
+
+export function isLocalCurrencyStable(symbol: string | undefined | null): boolean {
+  if (!symbol) return false
+  return LOCAL_CURRENCY_STABLE_SYMBOLS.has(symbol.toUpperCase())
+}

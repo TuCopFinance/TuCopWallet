@@ -76,8 +76,20 @@ export default function PoolCard({
   const depositTokenInfo = allTokens[depositTokenId]
 
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const { poolBalanceInUsd } = useMemo(() => getEarnPositionBalanceValues({ pool }), [pool])
-  const poolBalanceInFiat = useDollarsToLocalAmount(poolBalanceInUsd) ?? null
+  const { poolBalanceInUsd, poolBalanceInDepositToken, isLocalCurrencyDenominated } = useMemo(
+    () => getEarnPositionBalanceValues({ pool }),
+    [pool]
+  )
+  const poolBalanceUsdToLocal = useDollarsToLocalAmount(poolBalanceInUsd) ?? null
+  // Local-currency Mento stablecoins (COPm, EURm, ...) already carry values
+  // in the user's local currency. Their `balance * priceUsd` product happens
+  // to equal the local amount when the user's fiat is the currency the token
+  // represents, so passing it through useDollarsToLocalAmount would multiply
+  // by the USD->local rate a second time (see isLocalCurrencyStable comment).
+  // Use the deposit-token balance directly instead.
+  const poolBalanceInFiat = isLocalCurrencyDenominated
+    ? poolBalanceInDepositToken
+    : poolBalanceUsdToLocal
 
   const rewardAmountInUsd = useMemo(
     () =>
@@ -115,7 +127,11 @@ export default function PoolCard({
     return `${localCurrencySymbol}--`
   }, [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat, depositTokenId, balance])
 
-  const tvlInFiat = useDollarsToLocalAmount(tvl ?? null)
+  // Same branch as the pool balance above: for local-currency Mento pools
+  // the backend already returns TVL in the local currency (e.g. COP for
+  // COPm pools) so skip the USD->local conversion.
+  const tvlUsdToLocal = useDollarsToLocalAmount(tvl ?? null)
+  const tvlInFiat = isLocalCurrencyDenominated ? (tvl ? new BigNumber(tvl) : null) : tvlUsdToLocal
   const tvlString = useMemo(() => {
     return `${localCurrencySymbol}${tvlInFiat ? formatValueToDisplay(tvlInFiat) : '--'}`
   }, [localCurrencySymbol, tvlInFiat])

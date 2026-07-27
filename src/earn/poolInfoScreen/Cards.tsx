@@ -65,14 +65,17 @@ export function DepositAndEarningsCard({
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const localCurrencyExchangeRate = useSelector(usdToLocalCurrencyRateSelector)
 
-  const { poolBalanceInUsd: depositBalanceInUsd, poolBalanceInDepositToken } = useMemo(
-    () => getEarnPositionBalanceValues({ pool: earnPosition }),
-    [earnPosition]
-  )
-  // Deposit items used to calculate the total balance and total deposited
-  const depositBalanceInLocalCurrency = new BigNumber(localCurrencyExchangeRate ?? 0).multipliedBy(
-    depositBalanceInUsd ?? 0
-  )
+  const {
+    poolBalanceInUsd: depositBalanceInUsd,
+    poolBalanceInDepositToken,
+    isLocalCurrencyDenominated,
+  } = useMemo(() => getEarnPositionBalanceValues({ pool: earnPosition }), [earnPosition])
+  // Deposit items used to calculate the total balance and total deposited.
+  // For local-currency Mento pools (COPm, EURm, ...) the "USD" balance is
+  // already in the user's local currency, so skip the USD->local multiply.
+  const depositBalanceInLocalCurrency = isLocalCurrencyDenominated
+    ? depositBalanceInUsd
+    : new BigNumber(localCurrencyExchangeRate ?? 0).multipliedBy(depositBalanceInUsd ?? 0)
 
   // Earning items used to calculate the total balance and total deposited
   const earningItemsTokenIds = earningItems.map((item) => item.tokenId)
@@ -266,7 +269,15 @@ export function TvlCard({
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
   const { t } = useTranslation()
   const tvl = earnPosition.dataProps.tvl
-  const tvlInFiat = useDollarsToLocalAmount(tvl ?? null)
+  const { isLocalCurrencyDenominated } = useMemo(
+    () => getEarnPositionBalanceValues({ pool: earnPosition }),
+    [earnPosition]
+  )
+  // Same branch as the deposit balance: for local-currency Mento pools the
+  // backend returns TVL already denominated in the local currency (COP for
+  // COPm pools). Skip the USD->local conversion to avoid a second multiply.
+  const tvlUsdToLocal = useDollarsToLocalAmount(tvl ?? null)
+  const tvlInFiat = isLocalCurrencyDenominated ? (tvl ? new BigNumber(tvl) : null) : tvlUsdToLocal
   const tvlString = useMemo(() => {
     return `${localCurrencySymbol}${tvlInFiat ? formatValueToDisplay(tvlInFiat) : '--'}`
   }, [localCurrencySymbol, tvlInFiat])

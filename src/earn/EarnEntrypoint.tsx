@@ -11,8 +11,7 @@ import Touchable from 'src/components/Touchable'
 import { EarnTabType } from 'src/earn/types'
 import { getEarnPositionBalanceValues } from 'src/earn/utils'
 import { earnCardBackground } from 'src/images/Images'
-import { useDollarsToLocalAmount } from 'src/localCurrency/hooks'
-import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
+import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { earnPositionsSelector } from 'src/positions/selectors'
@@ -28,20 +27,27 @@ export default function EarnEntrypoint() {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
 
   const pools = useSelector(earnPositionsSelector)
-  const [hasSuppliedPools, totalSuppliedValueUsd] = useMemo(
-    () => [
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const [hasSuppliedPools, totalSuppliedValueLocal] = useMemo(() => {
+    // Sum each pool's balance already CONVERTED to local currency. Local-
+    // currency Mento pools (COPm etc) return their balance in the user's
+    // local currency directly, USD pools need the USD->local rate. Summing
+    // after conversion keeps a mixed portfolio's total honest.
+    const localRate = new BigNumber(usdToLocalRate ?? 0)
+    return [
       pools.some((pool) => new BigNumber(pool.balance).gt(0)),
-      pools.reduce(
-        (acc, pool) => {
-          const { poolBalanceInUsd } = getEarnPositionBalanceValues({ pool })
-          return acc.plus(poolBalanceInUsd)
-        },
-        new BigNumber(0) ?? null
-      ),
-    ],
-    [pools]
-  )
-  const totalSuppliedValue = useDollarsToLocalAmount(totalSuppliedValueUsd)
+      pools.reduce((acc, pool) => {
+        const { poolBalanceInUsd, isLocalCurrencyDenominated } = getEarnPositionBalanceValues({
+          pool,
+        })
+        const local = isLocalCurrencyDenominated
+          ? poolBalanceInUsd
+          : localRate.multipliedBy(poolBalanceInUsd)
+        return acc.plus(local)
+      }, new BigNumber(0)),
+    ]
+  }, [pools, usdToLocalRate])
+  const totalSuppliedValue = totalSuppliedValueLocal.gt(0) ? totalSuppliedValueLocal : null
   const totalSupplied = useMemo(
     () =>
       `${localCurrencySymbol}${totalSuppliedValue ? formatValueToDisplay(totalSuppliedValue) : '--'}`,
