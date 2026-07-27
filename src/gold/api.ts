@@ -1,4 +1,8 @@
+import * as Sentry from '@sentry/react-native'
+import { SENTRY_ENABLED } from 'src/config'
 import { GoldPriceData } from 'src/gold/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
@@ -41,6 +45,33 @@ export interface DiaAssetQuotationResponse {
   Price: number
   PriceYesterday: number
   Time: string
+}
+
+// The wallet's per-host circuit breaker (see src/lib/circuitBreaker) short-
+// circuits requests to a synthetic Response with this exact statusText once
+// FAILURE_THRESHOLD failures accumulate within FAILURE_WINDOW_MS for the
+// same host. When that happens, the fetch never actually leaves the device
+// and backend logs will show ZERO requests during the outage window.
+// Distinguishing this from a real upstream 5xx unblocks the debugging loop
+// with backend: they only need to look at their logs if this bucket is NOT
+// what fired.
+const CIRCUIT_OPEN_MARKER = 'Service Unavailable (circuit open)'
+
+function isCircuitBreakerError(error: unknown): boolean {
+  if (!error) return false
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes(CIRCUIT_OPEN_MARKER)
+}
+
+// Emits an operational signal to Sentry naming which of the three sources
+// finally produced the price the app is showing. Backend can dashboard the
+// `fallback_hardcoded` rate as a proxy for "how often is our price feed
+// degraded end-to-end". Mirrors the neeru_meta_source pattern.
+type GoldPriceSource = 'backend' | 'dia_data' | 'fallback_hardcoded'
+
+function tagPriceSource(source: GoldPriceSource): void {
+  if (!SENTRY_ENABLED) return
+  Sentry.setTag('gold_price_source', source)
 }
 
 /**
@@ -132,20 +163,38 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   try {
     const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
+    tagPriceSource('backend')
     Logger.debug(TAG, 'Got XAUt price from TuCop backend', { price: priceData.priceUsd })
     return priceData
   } catch (primaryError: any) {
     Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
+    captureBusinessError(primaryError, {
+      feature: 'transactions',
+      provider: 'internal',
+      action: 'fetch_gold_price_backend',
+      errorCode: isCircuitBreakerError(primaryError)
+        ? 'circuit_open'
+        : classifyHttpError(primaryError),
+    })
   }
 
   // Fallback to DIA Data
   try {
     const priceData = await fetchFromDiaApi()
     cachedGoldPrice = priceData
+    tagPriceSource('dia_data')
     Logger.debug(TAG, 'Got XAUt price from DIA', { price: priceData.priceUsd })
     return priceData
   } catch (fallbackError: any) {
     Logger.error(TAG, 'DIA API also failed', fallbackError.message)
+    captureBusinessError(fallbackError, {
+      feature: 'transactions',
+      provider: 'internal',
+      action: 'fetch_gold_price_dia',
+      errorCode: isCircuitBreakerError(fallbackError)
+        ? 'circuit_open'
+        : classifyHttpError(fallbackError),
+    })
     throw new Error('All XAUt price APIs failed')
   }
 }
@@ -160,14 +209,18 @@ export async function fetchGoldPriceWithFallback(): Promise<GoldPriceData> {
   } catch (error: any) {
     Logger.warn(TAG, 'All APIs failed, using fallback', error.message)
 
-    // Return cached price if available
+    // Return cached price if available. Tag the source as fallback_hardcoded
+    // regardless of whether we hit stale cache vs the constant, because from
+    // the user's perspective both are "degraded" states worth counting.
     if (cachedGoldPrice) {
       Logger.debug(TAG, 'Returning stale cached price')
+      tagPriceSource('fallback_hardcoded')
       return cachedGoldPrice
     }
 
     // Return hardcoded fallback as last resort
     Logger.debug(TAG, 'Returning hardcoded fallback price')
+    tagPriceSource('fallback_hardcoded')
     return { ...FALLBACK_GOLD_PRICE, timestamp: Date.now() }
   }
 }
