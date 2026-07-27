@@ -63,6 +63,9 @@ jobs:
           build-tools: 35.0.0
 
       - name: Install dependencies
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_CLIENT_URL: ${{ secrets.SENTRY_CLIENT_URL }}
         run: |
           yarn install --frozen-lockfile
           yarn postinstall
@@ -127,6 +130,10 @@ jobs:
         run: |
           yarn install --frozen-lockfile
           yarn postinstall
+        env:
+          # See build-android/Install dependencies for rationale.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_CLIENT_URL: ${{ secrets.SENTRY_CLIENT_URL }}
 
       - name: Setup environment
         run: cp .env.mainnet .env
