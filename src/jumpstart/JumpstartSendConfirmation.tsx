@@ -122,7 +122,18 @@ function JumpstartSendConfirmation({ route }: Props) {
             size={BtnSizes.FULL}
             style={styles.button}
             showLoading={jumpstartSendStatus === 'loading'}
-            disabled={jumpstartSendStatus === 'loading' || jumpstartSendStatus === 'success'}
+            disabled={
+              jumpstartSendStatus === 'loading' ||
+              jumpstartSendStatus === 'success' ||
+              // Belt-and-suspenders: the previous screen (JumpstartEnterAmount)
+              // gates its Continue button on prepareJumpstartTransactions
+              // being `possible`, so serializablePreparedTransactions should
+              // always be populated here. Refuse to fire the saga if we ever
+              // land with an empty array so the user gets a disabled state
+              // instead of a silently-failed send.
+              !Array.isArray(serializablePreparedTransactions) ||
+              serializablePreparedTransactions.length === 0
+            }
             testID="JumpstartSendConfirmation/ConfirmButton"
           />
           <InLineNotification
