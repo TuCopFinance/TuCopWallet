@@ -3661,6 +3661,8 @@ export const v244Schema = {
     goldPriceUsd: null,
     goldPrice24hChange: null,
     goldPriceFetchedAt: null,
+    goldPriceIsStale: false,
+    goldPriceStaleAgeSeconds: 0,
     buyStatus: 'idle',
     sellStatus: 'idle',
     priceFetchStatus: 'idle',

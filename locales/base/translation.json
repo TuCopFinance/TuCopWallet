@@ -3186,6 +3186,7 @@
   },
   "goldFlow": {
     "gold": "Gold",
+    "stalePriceBadge": "Outdated price",
     "entrypoint": {
       "title": "Digital Gold",
       "investTitle": "Invest in Digital Gold",

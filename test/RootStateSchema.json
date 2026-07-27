@@ -6664,6 +6664,12 @@
                         "number"
                     ]
                 },
+                "goldPriceIsStale": {
+                    "type": "boolean"
+                },
+                "goldPriceStaleAgeSeconds": {
+                    "type": "number"
+                },
                 "goldPriceUsd": {
                     "type": [
                         "null",
@@ -6701,6 +6707,8 @@
                 "error",
                 "goldPrice24hChange",
                 "goldPriceFetchedAt",
+                "goldPriceIsStale",
+                "goldPriceStaleAgeSeconds",
                 "goldPriceUsd",
                 "hasSeenGoldInfo",
                 "preferredIconVariant",

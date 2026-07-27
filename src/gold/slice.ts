@@ -15,6 +15,13 @@ export interface State {
   goldPriceUsd: number | null
   goldPrice24hChange: number | null
   goldPriceFetchedAt: number | null
+  // TuCop backend price proxy sets these when the response came from the
+  // 24h stale cache (upstream unreachable). Both undefined on fresh
+  // responses and on DIA / hardcoded fallback responses. UI surfaces a
+  // "cotización desactualizada" badge when goldPriceIsStale is true and
+  // goldPriceStaleAgeSeconds > 300 (5min).
+  goldPriceIsStale: boolean
+  goldPriceStaleAgeSeconds: number
 
   // Operation status
   buyStatus: GoldOperationStatus
@@ -42,6 +49,8 @@ const initialState: State = {
   goldPriceUsd: null,
   goldPrice24hChange: null,
   goldPriceFetchedAt: null,
+  goldPriceIsStale: false,
+  goldPriceStaleAgeSeconds: 0,
   buyStatus: 'idle',
   sellStatus: 'idle',
   priceFetchStatus: 'idle',
@@ -65,6 +74,8 @@ export const slice = createSlice({
       state.goldPriceUsd = action.payload.priceUsd
       state.goldPrice24hChange = action.payload.price24hChange
       state.goldPriceFetchedAt = action.payload.timestamp
+      state.goldPriceIsStale = action.payload.isStale ?? false
+      state.goldPriceStaleAgeSeconds = action.payload.staleAgeSeconds ?? 0
       state.priceFetchStatus = 'success'
     },
     fetchGoldPriceError: (state, action: PayloadAction<string>) => {
