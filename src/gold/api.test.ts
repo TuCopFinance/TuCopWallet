@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react-native'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -5,7 +7,28 @@ jest.mock('src/utils/fetchWithTimeout', () => ({
   fetchWithTimeout: jest.fn(),
 }))
 
+jest.mock('src/sentry/captureBusinessError', () => ({
+  captureBusinessError: jest.fn(),
+}))
+
+jest.mock('@sentry/react-native', () => ({
+  setTag: jest.fn(),
+}))
+
+// SENTRY_ENABLED is read via `import { SENTRY_ENABLED } from 'src/config'`
+// and defaults to false in test env. Force it on so tagPriceSource fires,
+// but preserve the rest of the config module so downstream imports (e.g.
+// networkConfig) keep resolving the real values they need.
+jest.mock('src/config', () => ({
+  ...jest.requireActual('src/config'),
+  SENTRY_ENABLED: true,
+}))
+
 const mockFetchWithTimeout = fetchWithTimeout as jest.MockedFunction<typeof fetchWithTimeout>
+const mockCaptureBusinessError = captureBusinessError as jest.MockedFunction<
+  typeof captureBusinessError
+>
+const mockSetTag = Sentry.setTag as jest.MockedFunction<typeof Sentry.setTag>
 
 function jsonResponse(body: object, ok = true, status = 200): Response {
   return {
@@ -32,6 +55,8 @@ function loadApi(): ApiModule {
 
 beforeEach(() => {
   mockFetchWithTimeout.mockReset()
+  mockCaptureBusinessError.mockReset()
+  mockSetTag.mockReset()
 })
 
 describe('gold/api', () => {
@@ -102,5 +127,102 @@ describe('gold/api', () => {
   it('uses the URL configured on networkConfig', () => {
     expect(networkConfig.getXautPriceUrl).toMatch(/^https:\/\/.+\/api\/prices\/xaut\?vs=usd$/)
     expect(networkConfig.blockscoutProxyBase).toMatch(/^https:\/\/.+\/api\/v2$/)
+  })
+
+  describe('Sentry telemetry', () => {
+    it('tags gold_price_source=backend on primary success', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 3210, asOf: 'x' })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await fetchGoldPriceFromApi()
+
+      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'backend')
+      expect(mockCaptureBusinessError).not.toHaveBeenCalled()
+    })
+
+    it('tags gold_price_source=dia_data on fallback success', async () => {
+      mockFetchWithTimeout
+        .mockResolvedValueOnce(jsonResponse({ error: 'boom' }, false, 502))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            Symbol: 'XAUT',
+            Name: 'Tether Gold',
+            Price: 3100,
+            PriceYesterday: 3000,
+            Time: 'x',
+          })
+        )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await fetchGoldPriceFromApi()
+
+      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'dia_data')
+    })
+
+    it('tags gold_price_source=fallback_hardcoded when all APIs fail', async () => {
+      mockFetchWithTimeout
+        .mockResolvedValueOnce(jsonResponse({}, false, 500))
+        .mockResolvedValueOnce(jsonResponse({}, false, 500))
+
+      const { fetchGoldPriceWithFallback } = loadApi()
+      await fetchGoldPriceWithFallback()
+
+      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'fallback_hardcoded')
+    })
+
+    it('captures a business error with the classified HTTP error code when backend returns 5xx', async () => {
+      mockFetchWithTimeout
+        .mockResolvedValueOnce(jsonResponse({}, false, 502))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            Symbol: 'XAUT',
+            Name: 'Tether Gold',
+            Price: 3100,
+            PriceYesterday: 3000,
+            Time: 'x',
+          })
+        )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await fetchGoldPriceFromApi()
+
+      expect(mockCaptureBusinessError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          feature: 'transactions',
+          provider: 'internal',
+          action: 'fetch_gold_price_backend',
+        })
+      )
+    })
+
+    it('tags errorCode=circuit_open when the wallet circuit breaker short-circuits the request', async () => {
+      // The circuit breaker in fetchWithTimeout returns a synthetic 503 whose
+      // statusText contains 'Service Unavailable (circuit open)'. The code
+      // path throws with that message included when response.ok is false.
+      mockFetchWithTimeout.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        text: async () => 'Service Unavailable (circuit open)',
+      } as unknown as Response)
+      // DIA also short-circuits (unlikely but exercises both branches)
+      mockFetchWithTimeout.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        text: async () => 'ok',
+        json: async () => ({}),
+      } as unknown as Response)
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await expect(fetchGoldPriceFromApi()).rejects.toThrow('All XAUt price APIs failed')
+
+      const backendCall = mockCaptureBusinessError.mock.calls.find(
+        ([, ctx]) => ctx.action === 'fetch_gold_price_backend'
+      )
+      expect(backendCall).toBeDefined()
+      expect(backendCall![1].errorCode).toBe('circuit_open')
+    })
   })
 })
