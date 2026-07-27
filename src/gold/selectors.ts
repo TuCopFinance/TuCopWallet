@@ -61,6 +61,14 @@ export const goldPriceFetchedAtSelector = (state: RootState) => state.gold.goldP
 
 export const goldPriceFetchStatusSelector = (state: RootState) => state.gold.priceFetchStatus
 
+// True when the last successful backend price fetch was served from the
+// 24h stale cache. See setGoldPrice in slice + fetchFromTucopBackend in
+// gold/api. UI uses this + the stale age threshold to decide whether to
+// show the "cotización desactualizada" badge.
+export const goldPriceIsStaleSelector = (state: RootState) => state.gold.goldPriceIsStale
+export const goldPriceStaleAgeSecondsSelector = (state: RootState) =>
+  state.gold.goldPriceStaleAgeSeconds
+
 // Operation status selectors
 export const goldBuyStatusSelector = (state: RootState) => state.gold.buyStatus
 
