@@ -9,9 +9,15 @@ import {
 const MAX_ATTEMPTS = 3
 const BASE_BACKOFF_MS = 250
 
-function extractHost(url: string): string | null {
+// Circuit-breaker key is `${host}${pathname}` (query string intentionally
+// excluded so that different query params on the same route do not fragment
+// the failure counter). Path-level scoping prevents cross-endpoint
+// contamination on shared hosts: a burst of 502s on `/hooks-api` no longer
+// opens the breaker for `/api/prices/xaut` on the same tucop-backend host.
+function extractCircuitKey(url: string): string | null {
   try {
-    return new URL(url).host
+    const u = new URL(url)
+    return `${u.host}${u.pathname}`
   } catch {
     return null
   }
@@ -29,7 +35,7 @@ function backoffDelayMs(attempt: number): number {
 }
 
 function addRetryBreadcrumb(
-  host: string | null,
+  circuitKey: string | null,
   attempt: number,
   data: { status?: number; error?: string }
 ): void {
@@ -37,7 +43,7 @@ function addRetryBreadcrumb(
     Sentry.addBreadcrumb({
       category: 'fetch',
       level: 'warning',
-      message: `Retry attempt ${attempt} for ${host ?? 'unknown'}`,
+      message: `Retry attempt ${attempt} for ${circuitKey ?? 'unknown'}`,
       data,
     })
   } catch {
@@ -62,13 +68,16 @@ async function attemptFetch(
 }
 
 /**
- * Fetch with timeout, retry on transient failures, and per-host circuit breaker.
+ * Fetch with timeout, retry on transient failures, and per-endpoint circuit
+ * breaker.
  *
  * - Retries up to {@link MAX_ATTEMPTS} times on 5xx responses or network errors.
  * - Does NOT retry on 4xx (client errors are not transient).
  * - Exponential backoff between attempts: 250ms * 2^attempt + jitter.
- * - Per-host circuit breaker: after sustained failures the breaker opens and
- *   subsequent requests short-circuit with a synthetic 503 until it closes.
+ * - Circuit breaker keyed by `${host}${pathname}` (see `extractCircuitKey`):
+ *   after sustained failures on a specific route the breaker opens and
+ *   subsequent requests to that same route short-circuit with a synthetic
+ *   503 until it closes. Other routes on the same host are unaffected.
  *
  * External signature is unchanged (returns `Promise<Response>`); callers do
  * not need updating.
@@ -78,9 +87,9 @@ export const fetchWithTimeout = async (
   options: RequestInit | null = null,
   duration: number = FETCH_TIMEOUT_DURATION
 ): Promise<Response> => {
-  const host = extractHost(url)
+  const circuitKey = extractCircuitKey(url)
 
-  if (host && shouldShortCircuit(host)) {
+  if (circuitKey && shouldShortCircuit(circuitKey)) {
     return new Response('', {
       status: 503,
       statusText: 'Service Unavailable (circuit open)',
@@ -95,8 +104,8 @@ export const fetchWithTimeout = async (
       const response = await attemptFetch(url, options, duration)
       if (response.status >= 500) {
         lastResponse = response
-        if (host) recordFailure(host)
-        addRetryBreadcrumb(host, attempt + 1, { status: response.status })
+        if (circuitKey) recordFailure(circuitKey)
+        addRetryBreadcrumb(circuitKey, attempt + 1, { status: response.status })
         if (attempt < MAX_ATTEMPTS - 1) {
           await sleep(backoffDelayMs(attempt))
           continue
@@ -104,12 +113,14 @@ export const fetchWithTimeout = async (
         return response
       }
       // 2xx, 3xx, 4xx: do not retry. 2xx clears breaker, others leave as-is.
-      if (response.status < 400 && host) recordSuccess(host)
+      if (response.status < 400 && circuitKey) recordSuccess(circuitKey)
       return response
     } catch (err) {
       lastError = err
-      if (host) recordFailure(host)
-      addRetryBreadcrumb(host, attempt + 1, { error: (err as Error)?.message ?? String(err) })
+      if (circuitKey) recordFailure(circuitKey)
+      addRetryBreadcrumb(circuitKey, attempt + 1, {
+        error: (err as Error)?.message ?? String(err),
+      })
       if (attempt < MAX_ATTEMPTS - 1) {
         await sleep(backoffDelayMs(attempt))
         continue
