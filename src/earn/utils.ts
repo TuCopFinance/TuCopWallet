@@ -3,6 +3,7 @@ import { EarnPosition } from 'src/positions/types'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { SwapTransaction } from 'src/swap/types'
+import { isLocalCurrencyStable } from 'src/tokens/utils'
 import { Network, NetworkId } from 'src/transactions/types'
 import { INTERNAL_RPC_SUPPORTED_NETWORKS } from 'src/viem'
 import { networkIdToNetwork } from 'src/web3/networkConfig'
@@ -50,5 +51,13 @@ export function getEarnPositionBalanceValues({ pool }: { pool: EarnPosition }) {
   const poolBalanceInDepositToken = new BigNumber(pool.balance).multipliedBy(
     pool.pricePerShare[0] ?? 1
   )
-  return { poolBalanceInUsd, poolBalanceInDepositToken }
+  // When the deposit token is a local-currency Mento stablecoin (COPm, EURm,
+  // BRLm, ...), the value produced by `balance * priceUsd` is already
+  // denominated in the user's local currency for holders of that currency.
+  // Consumers must skip `useDollarsToLocalAmount` in that case to avoid a
+  // second USD->local multiplication (e.g. 4000x for COP). Same applies to
+  // `dataProps.tvl` when the pool is local-currency denominated.
+  const depositTokenSymbol = pool.tokens?.[0]?.symbol
+  const isLocalCurrencyDenominated = isLocalCurrencyStable(depositTokenSymbol)
+  return { poolBalanceInUsd, poolBalanceInDepositToken, isLocalCurrencyDenominated }
 }

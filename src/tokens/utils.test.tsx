@@ -7,6 +7,7 @@ import {
   getHigherBalanceCurrency,
   getTokenId,
   isHistoricalPriceUpdated,
+  isLocalCurrencyStable,
   sortFirstStableThenCeloThenOthersByUsdBalance,
 } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
@@ -293,5 +294,41 @@ describe(isHistoricalPriceUpdated, () => {
         },
       })
     ).toEqual(true)
+  })
+})
+
+describe(isLocalCurrencyStable, () => {
+  it.each([
+    ['COPm', true],
+    ['copm', true],
+    ['EURm', true],
+    ['BRLm', true],
+    ['XOFm', true],
+    ['GHSm', true],
+    ['KESm', true],
+    // legacy Mento naming still shows up on historical records
+    ['cCOP', true],
+    ['cEUR', true],
+    ['cREAL', true],
+  ] as const)('classifies %s as local-currency stable', (symbol, expected) => {
+    expect(isLocalCurrencyStable(symbol)).toBe(expected)
+  })
+
+  it.each([
+    ['USDT', false],
+    ['USDC', false],
+    ['USDm', false],
+    ['USAT', false],
+    ['cUSD', false],
+    ['CELO', false],
+    ['XAUt0', false],
+    ['', false],
+  ] as const)('does not classify %s as local-currency stable', (symbol, expected) => {
+    expect(isLocalCurrencyStable(symbol)).toBe(expected)
+  })
+
+  it('returns false for undefined / null', () => {
+    expect(isLocalCurrencyStable(undefined)).toBe(false)
+    expect(isLocalCurrencyStable(null)).toBe(false)
   })
 })
