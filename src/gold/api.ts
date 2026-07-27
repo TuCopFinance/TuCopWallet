@@ -67,11 +67,28 @@ function isCircuitBreakerError(error: unknown): boolean {
 // finally produced the price the app is showing. Backend can dashboard the
 // `fallback_hardcoded` rate as a proxy for "how often is our price feed
 // degraded end-to-end". Mirrors the neeru_meta_source pattern.
-type GoldPriceSource = 'backend' | 'dia_data' | 'fallback_hardcoded'
+//
+// `backend_stale` is a sub-state of a successful backend fetch: the response
+// came from the 24h stale cache (upstream unreachable but backend still
+// served a recent-ish value). Counted separately from `backend` so backend
+// can alert on the ratio without losing "the fetch itself succeeded".
+type GoldPriceSource = 'backend' | 'backend_stale' | 'dia_data' | 'fallback_hardcoded'
 
 function tagPriceSource(source: GoldPriceSource): void {
   if (!SENTRY_ENABLED) return
   Sentry.setTag('gold_price_source', source)
+}
+
+// Bucketed age so Sentry aggregations do not explode into per-second
+// cardinality while still surfacing the operational shape: is the stale
+// cache serving fresh-ish reads or hours-old ones?
+type StaleAgeBucket = '<5min' | '5-15min' | '15-60min' | '>1h'
+
+function bucketizeStaleAge(seconds: number): StaleAgeBucket {
+  if (seconds < 5 * 60) return '<5min'
+  if (seconds < 15 * 60) return '5-15min'
+  if (seconds < 60 * 60) return '15-60min'
+  return '>1h'
 }
 
 /**
@@ -110,10 +127,18 @@ async function fetchFromTucopBackend(): Promise<GoldPriceData> {
     throw new Error('Invalid priceUsd in TuCop price proxy response')
   }
 
+  // Backend contract (shipped 2026-07-27): X-Stale + X-Stale-Age headers set
+  // when the response body came from the 24h stale cache instead of the
+  // fresh (60s TTL) upstream fetch. Absence of the header means fresh.
+  const isStale = response.headers.get('X-Stale') === 'true'
+  const staleAgeSeconds = isStale ? Number(response.headers.get('X-Stale-Age') ?? 0) : 0
+
   return {
     priceUsd: data.priceUsd,
     price24hChange: 0,
     timestamp: Date.now(),
+    isStale,
+    staleAgeSeconds,
   }
 }
 
@@ -163,8 +188,22 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   try {
     const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
-    tagPriceSource('backend')
-    Logger.debug(TAG, 'Got XAUt price from TuCop backend', { price: priceData.priceUsd })
+    if (priceData.isStale) {
+      tagPriceSource('backend_stale')
+      if (SENTRY_ENABLED) {
+        Sentry.setTag(
+          'gold_price_stale_age_bucket',
+          bucketizeStaleAge(priceData.staleAgeSeconds ?? 0)
+        )
+      }
+    } else {
+      tagPriceSource('backend')
+    }
+    Logger.debug(TAG, 'Got XAUt price from TuCop backend', {
+      price: priceData.priceUsd,
+      isStale: priceData.isStale ?? false,
+      staleAgeSeconds: priceData.staleAgeSeconds ?? 0,
+    })
     return priceData
   } catch (primaryError: any) {
     Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
