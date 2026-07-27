@@ -243,6 +243,13 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     })
     createStandbyTxHandlers.push(createSwapStandbyTx)
 
+    // Pad handlers with null-returning entries so the array length always
+    // matches preparedTransactions.length even for multi-hop or non-approve
+    // first-tx cases (see swap/saga.ts for the same rationale).
+    while (createStandbyTxHandlers.length < preparedTransactions.length) {
+      createStandbyTxHandlers.splice(createStandbyTxHandlers.length - 1, 0, () => null)
+    }
+
     // Send transactions
     const txHashes = yield* call(
       sendPreparedTransactions,
@@ -454,6 +461,11 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
       feeCurrencyId,
     })
     createStandbyTxHandlers.push(createSwapStandbyTx)
+
+    // Same padding rationale as buyGoldSaga above.
+    while (createStandbyTxHandlers.length < preparedTransactions.length) {
+      createStandbyTxHandlers.splice(createStandbyTxHandlers.length - 1, 0, () => null)
+    }
 
     // Send transactions
     const txHashes = yield* call(

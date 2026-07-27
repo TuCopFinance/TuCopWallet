@@ -38,6 +38,7 @@ import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/tr
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { safely } from 'src/utils/safely'
 import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
@@ -250,6 +251,26 @@ export function* sendJumpstartTransactions(
     const createStandbyTxHandlers = []
     const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
 
+    // Defence-in-depth: the confirm screen should never dispatch with empty
+    // prepared transactions (they arrive as a route param from EnterAmount
+    // which already gates on `.type === 'possible'`). If we ever enter with
+    // zero, fail with a Sentry breadcrumb before the mismatch check in
+    // sendPreparedTransactions eats the error.
+    if (preparedTransactions.length === 0) {
+      const emptyError = new Error('preparedTransactions empty at jumpstart send')
+      Logger.error(`${TAG}/sendJumpstartTransactionSaga`, emptyError.message)
+      captureBusinessError(emptyError, {
+        feature: 'jumpstart',
+        provider: 'jumpstart',
+        action: 'send_empty_prepared_txs',
+        errorCode: 'empty_prepared_txs',
+      })
+      AppAnalytics.track(JumpstartEvents.jumpstart_send_failed, trackedProperties)
+      yield* put(depositTransactionFailed())
+      vibrateError()
+      return
+    }
+
     // in this flow, there should only be 1 or 2 transactions. if there are 2
     // transactions, the first one should be an approval.
     if (preparedTransactions.length > 2) {
@@ -359,6 +380,13 @@ export function* sendJumpstartTransactions(
     AppAnalytics.track(JumpstartEvents.jumpstart_send_failed, trackedProperties)
     yield* put(depositTransactionFailed())
     vibrateError()
+    captureBusinessError(error, {
+      feature: 'jumpstart',
+      provider: 'jumpstart',
+      action: 'send_execute',
+      errorCode: String(classifyError(error)),
+      extra: { tokenId: sendToken.tokenId, sendAmount },
+    })
   }
 }
 
