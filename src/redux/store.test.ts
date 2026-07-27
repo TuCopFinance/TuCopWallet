@@ -273,6 +273,8 @@ describe('store state', () => {
           "error": null,
           "goldPrice24hChange": null,
           "goldPriceFetchedAt": null,
+          "goldPriceIsStale": false,
+          "goldPriceStaleAgeSeconds": 0,
           "goldPriceUsd": null,
           "hasSeenGoldInfo": false,
           "preferredIconVariant": "bar",
