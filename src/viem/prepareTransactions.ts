@@ -201,16 +201,29 @@ export async function tryEstimateTransaction({
           /gas required exceeds allowance/.test(e.cause.details)))
 
     if (isInsufficientFundsError) {
-      // Gas estimation failed due to insufficient funds
-      // For ERC20 transfers, use a fallback estimate instead of rejecting outright
-      // Standard ERC20 transfer typically uses ~50,000-65,000 gas
-      const isERC20Transfer = tx.data && (tx.data as string).startsWith('0xa9059cbb')
+      // Gas estimation failed due to insufficient funds (or, for CIP-64 fee
+      // currencies, a Celo Forno flake that surfaces the same class).
+      // Standard ERC20 ops have well-known gas costs, so use a fallback
+      // instead of rejecting outright.
+      const dataHex = tx.data as string | undefined
+      const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
+      // ERC-20 transfer(address,uint256): typically 50-65k gas.
+      const isERC20Transfer = selector === '0xa9059cbb'
+      // ERC-20 approve(address,uint256): typically 45-55k gas. Same
+      // deterministic cost, and if Forno keeps failing to estimate the
+      // approve (observed live 2026-07-26 with feeCurrency=COPm returning
+      // "Missing or invalid parameters") the whole downstream flow stalls
+      // without this fallback because the approve is the first tx in the
+      // batch and the swap that follows is gated on it.
+      const isERC20Approve = selector === '0x095ea7b3'
 
-      if (isERC20Transfer) {
+      if (isERC20Transfer || isERC20Approve) {
         const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
         Logger.warn(
           TAG,
-          `Using fallback gas estimate for ERC20 transfer with feeCurrency ${feeCurrencySymbol}`,
+          `Using fallback gas estimate for ERC20 ${
+            isERC20Transfer ? 'transfer' : 'approve'
+          } with feeCurrency ${feeCurrencySymbol}`,
           {
             fallbackGas: fallbackGas.toString(),
             txValue: tx.value?.toString(),

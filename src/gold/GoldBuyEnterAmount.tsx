@@ -507,7 +507,11 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('goldFlow.buy.quoteErrorTitle')}
-            description={t('goldFlow.buy.quoteErrorDescription')}
+            description={
+              quoteError instanceof Error && quoteError.message
+                ? quoteError.message
+                : t('goldFlow.buy.quoteErrorDescription')
+            }
             style={styles.warning}
             testID="GoldBuyEnterAmount/QuoteError"
           />
