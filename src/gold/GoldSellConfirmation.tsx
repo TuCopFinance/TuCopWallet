@@ -26,7 +26,7 @@ import { Spacing } from 'src/styles/styles'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
-import { getInputDecimalsForToken } from 'src/utils/formatting'
+import { getDisplayDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -257,9 +257,12 @@ export default function GoldSellConfirmation({ route }: Props) {
             <TokenIcon token={toToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
               <Text style={styles.tokenAmount}>
-                {parsedToAmount
-                  .decimalPlaces(getInputDecimalsForToken(toToken.tokenId), BigNumber.ROUND_DOWN)
-                  .toFormat()}{' '}
+                {(() => {
+                  const displayDecimals = getDisplayDecimalsForToken(toToken)
+                  return parsedToAmount
+                    .decimalPlaces(displayDecimals, BigNumber.ROUND_DOWN)
+                    .toFormat(displayDecimals)
+                })()}{' '}
                 {getTokenName(toToken)}
               </Text>
               <TokenDisplay
@@ -287,7 +290,7 @@ export default function GoldSellConfirmation({ route }: Props) {
               {isGettingQuote
                 ? t('goldFlow.sell.estimatingFee')
                 : parsedGasFee && gasFeeToken
-                  ? `${parsedGasFee.toFormat(6)} ${getTokenName(gasFeeToken)}`
+                  ? `${parsedGasFee.toFormat(getDisplayDecimalsForToken(gasFeeToken))} ${getTokenName(gasFeeToken)}`
                   : t('goldFlow.sell.estimatingFee')}
             </Text>
           </View>
