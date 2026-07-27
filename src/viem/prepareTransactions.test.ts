@@ -84,6 +84,17 @@ describe('prepareTransactions module', () => {
     ),
     {}
   )
+  // op-reth (Celo mainnet client from 2026-07-22) returns this catch-all
+  // wording for -32602 InvalidInputRpcError instead of op-geth's
+  // "gas required exceeds allowance". Also fires for CIP-64 fee-currency
+  // edge cases where op-reth is stricter than op-geth. Must still be
+  // classified as recoverable so the fee-currency cascade continues.
+  const mockOpRethInvalidInputRpcError = new EstimateGasExecutionError(
+    new InvalidInputRpcError(
+      new BaseError('test mock', { details: 'Missing or invalid parameters.' })
+    ),
+    {}
+  )
 
   const mockNativeFeeCurrency = {
     address: '0xfee1',
@@ -864,6 +875,24 @@ describe('prepareTransactions module', () => {
     })
     it('returns null if estimateGas throws InvalidInputRpcError with gas required exceeds allowance', async () => {
       mocked(estimateGas).mockRejectedValue(mockInvalidInputRpcError)
+      const baseTransaction: TransactionRequest = { from: '0x123' }
+      const estimateTransactionOutput = await tryEstimateTransaction({
+        client: mockPublicClient,
+        baseTransaction,
+        maxFeePerGas: BigInt(456),
+        feeCurrencySymbol: 'FEE',
+        feeCurrencyAddress: '0xabc',
+        maxPriorityFeePerGas: BigInt(789),
+        baseFeePerGas: BigInt(200),
+      })
+      expect(estimateTransactionOutput).toEqual(null)
+    })
+    it('returns null if estimateGas throws op-reth InvalidInputRpcError with Missing or invalid parameters', async () => {
+      // Verifies the widened classification: any InvalidInputRpcError is
+      // recoverable, not just op-geth's "gas required exceeds allowance"
+      // wording. If this ever throws again, the CIP-64 flow on Celo
+      // mainnet will regress the way it did before 2026-07-26.
+      mocked(estimateGas).mockRejectedValue(mockOpRethInvalidInputRpcError)
       const baseTransaction: TransactionRequest = { from: '0x123' }
       const estimateTransactionOutput = await tryEstimateTransaction({
         client: mockPublicClient,

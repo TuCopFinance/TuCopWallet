@@ -191,16 +191,42 @@ export async function tryEstimateTransaction({
       baseFeePerGas,
     })
   } catch (e) {
-    const isInsufficientFundsError =
+    // "Recoverable" here means: estimation failed for a reason we can
+    // handle by either substituting a hardcoded gas fallback (for well-
+    // known ERC-20 selectors below) or by returning null and letting the
+    // fee-currency cascade in tryEstimateTransactions try the next
+    // candidate. The alternative is `throw e` which bubbles up and
+    // presents to the user as an unclassified failure with a hung UI.
+    //
+    // Historically only "insufficient funds"-shaped errors were treated
+    // as recoverable. That class widened in practice:
+    //
+    //   1. InsufficientFundsError                                         (canonical)
+    //   2. ExecutionRevertedError with contract-emitted balance regex     (ERC-20)
+    //   3. InvalidInputRpcError with "gas required exceeds allowance"     (op-geth)
+    //   4. InvalidInputRpcError with "Missing or invalid parameters"      (op-reth, catch-all -32602)
+    //
+    // (4) is the op-reth wording for the same class op-geth surfaced as
+    // (3), plus for stricter CIP-64 fee-currency validation that op-reth
+    // added in the 2026-07-22 Celo mainnet migration. Rather than track
+    // every future wording variant with a regex, treat ALL
+    // InvalidInputRpcError sub-causes as recoverable. False positives are
+    // safe (they retry with the next fee currency or use the hardcoded
+    // ERC-20 fallback); false negatives (missing a valid recoverable
+    // shape) crash the flow, which is much worse.
+    //
+    // Observability: the return-null branch always emits a Logger.warn,
+    // and captureBusinessError fires in the downstream saga catches, so
+    // spikes in this fallback are still visible on Sentry.
+    const isRecoverableEstimationError =
       e instanceof EstimateGasExecutionError &&
       (e.cause instanceof InsufficientFundsError ||
-        (e.cause instanceof ExecutionRevertedError && // viem does not reliably label node errors as InsufficientFundsError when the user has enough to pay for the transfer, but not for the transfer + gas
+        (e.cause instanceof ExecutionRevertedError &&
           (/transfer value exceeded balance of sender/.test(e.cause.details) ||
             /transfer amount exceeds balance/.test(e.cause.details))) ||
-        (e.cause instanceof InvalidInputRpcError &&
-          /gas required exceeds allowance/.test(e.cause.details)))
+        e.cause instanceof InvalidInputRpcError)
 
-    if (isInsufficientFundsError) {
+    if (isRecoverableEstimationError) {
       // Gas estimation failed due to insufficient funds (or, for CIP-64 fee
       // currencies, a Celo Forno flake that surfaces the same class).
       // Standard ERC20 ops have well-known gas costs, so use a fallback
