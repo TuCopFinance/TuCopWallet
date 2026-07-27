@@ -3160,6 +3160,7 @@
   },
   "goldFlow": {
     "gold": "Oro",
+    "stalePriceBadge": "Cotización desactualizada",
     "entrypoint": {
       "title": "Oro Digital",
       "investTitle": "Invierte en Oro Digital",
