@@ -69,7 +69,7 @@ import { DOLLAR_TOKEN_IDS } from 'src/tokens/dollarGroup'
 import { TokenBalance } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
-import { getInputDecimalsForToken } from 'src/utils/formatting'
+import { getDisplayDecimalsForToken, getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -1076,21 +1076,23 @@ export function SwapScreen({ route }: Props) {
             // fetched (the FROM is synthetic; refreshQuote is gated). Show
             // the aggregated multi-swap output here instead so the user can
             // see how much they will receive across all the underlying steps.
-            // Cap the displayed decimals via getInputDecimalsForToken so the
-            // TO field doesn't dump full BigNumber precision into the UI
-            // (project rule: never surface raw chain precision to displays).
+            // Cap the displayed decimals via getDisplayDecimalsForToken
+            // (stablecoins render at 2, other tokens at 6) so the TO field
+            // reads like a monetary amount instead of dumping full BigNumber
+            // precision into the UI. Since this field is `editable={false}`
+            // for virtual Dolares the display decimals rule applies.
             parsedInputValue={
               isVirtualDolares ? multiSwapQuote.totalOutToken : parsedSwapAmount[Field.TO]
             }
             inputValue={
               isVirtualDolares
                 ? multiSwapQuote.totalOutToken.gt(0)
-                  ? multiSwapQuote.totalOutToken
-                      .decimalPlaces(
-                        getInputDecimalsForToken(toToken?.tokenId),
-                        BigNumber.ROUND_DOWN
-                      )
-                      .toFormat({ decimalSeparator })
+                  ? (() => {
+                      const d = getDisplayDecimalsForToken(toToken)
+                      return multiSwapQuote.totalOutToken
+                        .decimalPlaces(d, BigNumber.ROUND_DOWN)
+                        .toFormat(d, { decimalSeparator })
+                    })()
                   : ''
                 : inputSwapAmount[Field.TO]
             }
