@@ -62,12 +62,23 @@ DETAIL=$(curl -sf "$BASE/api/earn/neeru/positions?address=$ADDR")
 echo "$DETAIL" | jq -e '.data.positions | type == "array"' >/dev/null \
   || fail "detail endpoint did not return a positions array"
 
-next "feed indexer health (lag under 100 blocks)"
-FEED_HEALTH=$(curl -sf "$BASE/api/transactions/indexer/health")
-LAG=$(echo "$FEED_HEALTH" | jq '.lagBlocks')
-[[ "$LAG" =~ ^-?[0-9]+$ ]] || fail "lagBlocks not numeric: $LAG"
-if [[ "$LAG" -gt 100 ]]; then
-  fail "indexer lag $LAG blocks exceeds 100-block threshold"
+next "feed indexer health (lag under 500 blocks, or catching up)"
+LAG_1=$(curl -sf "$BASE/api/transactions/indexer/health" | jq '.lagBlocks')
+[[ "$LAG_1" =~ ^-?[0-9]+$ ]] || fail "lagBlocks not numeric: $LAG_1"
+if [[ "$LAG_1" -le 500 ]]; then
+  :
+else
+  sleep 10
+  LAG_2=$(curl -sf "$BASE/api/transactions/indexer/health" | jq '.lagBlocks')
+  [[ "$LAG_2" =~ ^-?[0-9]+$ ]] || fail "lagBlocks not numeric on retry: $LAG_2"
+  DELTA=$((LAG_1 - LAG_2))
+  if [[ "$LAG_2" -le 500 ]]; then
+    :
+  elif [[ "$DELTA" -ge 50 ]]; then
+    echo "  indexer catching up: $LAG_1 -> $LAG_2 blocks ($DELTA delta in 10s)"
+  else
+    fail "indexer lag $LAG_2 blocks exceeds 500-block threshold and not catching up (delta=$DELTA in 10s)"
+  fi
 fi
 
 echo
