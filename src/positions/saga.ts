@@ -104,6 +104,12 @@ async function fetchPositions({
   networkIds.forEach((networkId) => getPositionsUrl.searchParams.append('networkIds', networkId))
 
   const getEarnPositionsUrl = getHooksApiFunctionUrl(hooksApiUrl, 'getEarnPositions')
+  // Backend uses `address` to scope balance and earningItems (rewards) to the
+  // caller. Without it, the response falls back to a generic pool listing with
+  // zeroes; today the dedupe loop below hides that because getPositions
+  // returns Neeru with real per-user values, but a change in that contract
+  // would leave earn cards showing 0 balance and empty rewards.
+  getEarnPositionsUrl.searchParams.set('address', walletAddress)
 
   // const { supportedPools, supportedAppIds } = getDynamicConfigParams(
   //   DynamicConfigs[StatsigDynamicConfigs.EARN_CONFIG]
