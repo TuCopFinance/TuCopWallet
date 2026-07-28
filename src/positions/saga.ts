@@ -34,9 +34,12 @@ import {
   triggerShortcutSuccess,
 } from 'src/positions/slice'
 import { Position, Shortcut } from 'src/positions/types'
+import { RootState } from 'src/redux/store'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -59,11 +62,22 @@ function getHooksApiFunctionUrl(
   return url
 }
 
+// Server-side envelope surfaced by the earn positions endpoint when one of
+// the wired apps (allbridge / neeru-vaults) fails to load and the other
+// still returned; the missing slice must be treated as unknown rather than
+// as an empty result (backend consumer spec section 8, bilateral doc).
+interface HooksApiMeta {
+  partialFailure?: {
+    neeru?: boolean
+    allbridge?: boolean
+  }
+}
+
 async function fetchHooks<T>(
   url: string,
   options: RequestInit | null = null,
   duration: number = HOOKS_FETCH_TIMEOUT
-) {
+): Promise<{ data: T; meta?: HooksApiMeta }> {
   const response = await fetchWithTimeout(url, options, duration)
   if (!response.ok) {
     throw new Error(`Unable to fetch ${url}: ${response.status} ${response.statusText}`)
@@ -71,7 +85,7 @@ async function fetchHooks<T>(
   const json = await response.json()
 
   Logger.debug('response fetch hooks', json.data)
-  return json.data as T
+  return { data: json.data as T, meta: json.meta as HooksApiMeta | undefined }
 }
 
 async function fetchPositions({
@@ -106,10 +120,20 @@ async function fetchPositions({
 
   const options: RequestInit = { headers: { 'Accept-Language': language } }
 
-  const [walletPositions, earnPositions] = await Promise.all([
+  const [walletResponse, earnResponse] = await Promise.all([
     fetchHooks<Position[]>(getPositionsUrl.toString(), options),
     fetchHooks<Position[]>(getEarnPositionsUrl.toString(), options),
   ])
+
+  const walletPositions = walletResponse.data
+  const earnPositions = earnResponse.data
+  const partialFailure = earnResponse.meta?.partialFailure
+
+  if (partialFailure && (partialFailure.neeru || partialFailure.allbridge)) {
+    Logger.warn(TAG, 'getEarnPositions returned partialFailure; earn slice may be incomplete', {
+      partialFailure,
+    })
+  }
 
   Logger.debug('WALLET', walletPositions)
 
@@ -129,6 +153,7 @@ async function fetchPositions({
   return {
     positions,
     earnPositionIds: earnPositions.map((position) => position.positionId),
+    partialFailure,
   }
 }
 
@@ -139,7 +164,8 @@ async function fetchShortcuts(hooksApiUrl: string, walletAddress: string) {
   url.searchParams.set('address', walletAddress)
   networkIds.forEach((networkId) => url.searchParams.append('networkIds', networkId))
 
-  return await fetchHooks<Shortcut[]>(url.toString())
+  const { data } = await fetchHooks<Shortcut[]>(url.toString())
+  return data
 }
 
 export function* fetchShortcutsSaga() {
@@ -187,7 +213,7 @@ export function* fetchPositionsSaga() {
     const hooksApiUrl = yield* select(hooksApiUrlSelector)
     const language = (yield* select(currentLanguageSelector)) || 'en'
     const shortLanguage = language.split('-')[0]
-    const { positions, earnPositionIds } = yield* call(fetchPositions, {
+    const { positions, earnPositionIds, partialFailure } = yield* call(fetchPositions, {
       hooksApiUrl,
       walletAddress: address,
       language: shortLanguage,
@@ -197,7 +223,41 @@ export function* fetchPositionsSaga() {
     Logger.debug(TAG, 'walletAddress>>>', hooksApiUrl)
     Logger.debug(TAG, 'positions>>>', positions)
 
-    yield* put(fetchPositionsSuccess({ positions, earnPositionIds, fetchedAt: Date.now() }))
+    // When the earn endpoint reports partialFailure the missing slice is
+    // "unknown, not empty" per the backend spec. Merging with the prior
+    // cache keeps any positions from the missing slice visible until the
+    // next successful fetch; without this the Earn tab would render empty
+    // cards for the affected app (repro: 2026-07-11 selector-bug window).
+    let effectivePositions = positions
+    let effectiveEarnPositionIds = earnPositionIds
+    if (partialFailure && (partialFailure.neeru || partialFailure.allbridge)) {
+      const previousPositions = yield* select((state: RootState) => state.positions.positions)
+      const previousEarnPositionIds = yield* select(
+        (state: RootState) => state.positions.earnPositionIds
+      )
+      const affectedAppIds = new Set<string>()
+      if (partialFailure.neeru) affectedAppIds.add('neeru-vaults')
+      if (partialFailure.allbridge) affectedAppIds.add('allbridge')
+      const preserved = previousPositions.filter((p) => affectedAppIds.has(p.appId))
+      const seen = new Set(positions.map((p) => p.positionId))
+      const merged = [...positions, ...preserved.filter((p) => !seen.has(p.positionId))]
+      const preservedIds = preserved.map((p) => p.positionId)
+      effectivePositions = merged
+      effectiveEarnPositionIds = Array.from(
+        new Set([
+          ...earnPositionIds,
+          ...previousEarnPositionIds.filter((id) => preservedIds.includes(id)),
+        ])
+      )
+    }
+
+    yield* put(
+      fetchPositionsSuccess({
+        positions: effectivePositions,
+        earnPositionIds: effectiveEarnPositionIds,
+        fetchedAt: Date.now(),
+      })
+    )
   } catch (err) {
     const error = ensureError(err)
     yield* put(fetchPositionsFailure(error))
@@ -308,6 +368,13 @@ export function* triggerShortcutSaga({ payload }: ReturnType<typeof triggerShort
     const data = yield* call(triggerShortcutRequest, hooksApiUrl, payload.data)
     yield* put(triggerShortcutSuccess({ id: payload.id, transactions: data.transactions }))
   } catch (error) {
+    captureBusinessError(error, {
+      feature: 'positions',
+      provider: 'internal',
+      action: 'trigger_shortcut',
+      errorCode: classifyHttpError(error),
+      extra: { shortcutId: payload.data?.shortcutId, appId: payload.data?.appId },
+    })
     yield* put(triggerShortcutFailure(payload.id))
   }
 }
@@ -358,6 +425,13 @@ export function* executeShortcutSaga({
     // TODO customise error message when there are more shortcut types
     yield* put(showError(ErrorMessages.SHORTCUT_CLAIM_REWARD_FAILED))
     Logger.warn(`${TAG}/executeShortcutSaga`, 'Failed to claim reward', error)
+    captureBusinessError(error, {
+      feature: 'positions',
+      provider: 'internal',
+      action: 'execute_shortcut',
+      errorCode: classifyHttpError(error),
+      extra: { shortcutId: shortcut.shortcutId, appId: shortcut.appId },
+    })
     AppAnalytics.track(
       DappShortcutsEvents.dapp_shortcuts_reward_claim_error,
       trackedShortcutProperties

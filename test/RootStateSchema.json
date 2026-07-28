@@ -2367,6 +2367,89 @@
             ],
             "type": "string"
         },
+        "NeeruCatalogue": {
+            "additionalProperties": false,
+            "properties": {
+                "categories": {
+                    "items": {
+                        "$ref": "#/definitions/NeeruCatalogueCategory"
+                    },
+                    "type": "array"
+                },
+                "fetchedAt": {
+                    "type": "string"
+                },
+                "token": {
+                    "$ref": "#/definitions/NeeruCatalogueToken"
+                }
+            },
+            "required": [
+                "categories",
+                "fetchedAt",
+                "token"
+            ],
+            "type": "object"
+        },
+        "NeeruCatalogueCategory": {
+            "additionalProperties": false,
+            "properties": {
+                "annualEffectivePercentage": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "monthlyRatePercentage": {
+                    "type": "number"
+                },
+                "rateRay": {
+                    "type": "string"
+                },
+                "secs": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "annualEffectivePercentage",
+                "id",
+                "monthlyRatePercentage",
+                "rateRay",
+                "secs"
+            ],
+            "type": "object"
+        },
+        "NeeruCatalogueToken": {
+            "additionalProperties": false,
+            "properties": {
+                "address": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "decimals": {
+                    "type": "number"
+                },
+                "symbol": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "address",
+                "decimals",
+                "symbol"
+            ],
+            "type": "object"
+        },
+        "NeeruCategoryId": {
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "type": "number"
+        },
         "NeeruCloseStatus": {
             "enum": [
                 "error",
@@ -2375,6 +2458,81 @@
                 "success"
             ],
             "type": "string"
+        },
+        "NeeruConfigState": {
+            "additionalProperties": false,
+            "properties": {
+                "catalogue": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/NeeruCatalogue"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "catalogueFetchStatus": {
+                    "$ref": "#/definitions/NeeruFetchStatus"
+                },
+                "catalogueLastError": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "meta": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/NeeruMeta"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "metaFetchStatus": {
+                    "$ref": "#/definitions/NeeruFetchStatus"
+                },
+                "metaFetchedAt": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "metaLastError": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "metaSource": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "backend",
+                                "cache",
+                                "fallback"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "catalogue",
+                "catalogueFetchStatus",
+                "catalogueLastError",
+                "meta",
+                "metaFetchStatus",
+                "metaFetchedAt",
+                "metaLastError",
+                "metaSource"
+            ],
+            "type": "object"
         },
         "NeeruFetchStatus": {
             "enum": [
@@ -2391,11 +2549,17 @@
                 "accruedInterest": {
                     "type": "string"
                 },
+                "amount": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/NeeruCategoryId"
+                },
+                "categoryLabel": {
+                    "type": "string"
+                },
                 "currentPayoutIfClosed": {
                     "$ref": "#/definitions/NeeruPositionPayout"
-                },
-                "rateValue": {
-                    "type": "string"
                 },
                 "depositBlock": {
                     "type": "number"
@@ -2415,7 +2579,7 @@
                 "positionId": {
                     "type": "string"
                 },
-                "principal": {
+                "rateValue": {
                     "type": "string"
                 },
                 "renewedFromPositionId": {
@@ -2429,34 +2593,148 @@
                 },
                 "startTs": {
                     "type": "number"
-                },
-                "tranche": {
-                    "$ref": "#/definitions/NeeruCategoryId"
-                },
-                "categoryLabel": {
-                    "type": "string"
                 }
             },
             "required": [
                 "accruedInterest",
+                "amount",
+                "category",
+                "categoryLabel",
                 "currentPayoutIfClosed",
-                "rateValue",
                 "depositBlock",
                 "depositTxHash",
                 "endTs",
                 "monthlyRatePercentage",
                 "positionId",
-                "principal",
+                "rateValue",
                 "renewedFromPositionId",
-                "startTs",
-                "tranche",
-                "categoryLabel"
+                "startTs"
+            ],
+            "type": "object"
+        },
+        "NeeruMeta": {
+            "additionalProperties": false,
+            "properties": {
+                "depositToken": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "address": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "chainId": {
+                            "type": "number"
+                        },
+                        "networkId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "address",
+                        "chainId",
+                        "networkId"
+                    ],
+                    "type": "object"
+                },
+                "errorSelectors": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "e1": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "e2": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "e3": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "e1",
+                        "e2",
+                        "e3"
+                    ],
+                    "type": "object"
+                },
+                "events": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "primary": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "dataSchema": {
+                                    "items": {
+                                        "$ref": "#/definitions/NeeruMetaDataSchemaSlot"
+                                    },
+                                    "type": "array"
+                                },
+                                "topic0": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "required": [
+                                "dataSchema",
+                                "topic0"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "primary"
+                    ],
+                    "type": "object"
+                },
+                "proxyAddress": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "version": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "depositToken",
+                "errorSelectors",
+                "events",
+                "proxyAddress",
+                "version"
+            ],
+            "type": "object"
+        },
+        "NeeruMetaDataSchemaSlot": {
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type"
             ],
             "type": "object"
         },
         "NeeruPositionPayout": {
             "additionalProperties": false,
             "properties": {
+                "amount": {
+                    "type": "string"
+                },
                 "interest": {
                     "type": "string"
                 },
@@ -2469,19 +2747,16 @@
                 "penaltyBps": {
                     "type": "number"
                 },
-                "principal": {
-                    "type": "string"
-                },
                 "total": {
                     "type": "string"
                 }
             },
             "required": [
+                "amount",
                 "interest",
                 "interestAfterPenalty",
                 "isEarly",
                 "penaltyBps",
-                "principal",
                 "total"
             ],
             "type": "object"
@@ -2525,6 +2800,9 @@
                     },
                     "type": "array"
                 },
+                "pendingEmergencyFallback": {
+                    "$ref": "#/definitions/Record<string,RawShortcutTransaction[]>"
+                },
                 "positions": {
                     "items": {
                         "$ref": "#/definitions/NeeruIndividualPosition"
@@ -2540,18 +2818,10 @@
                 "lastSyncedAt",
                 "lastSyncedBlock",
                 "optimisticPositions",
+                "pendingEmergencyFallback",
                 "positions"
             ],
             "type": "object"
-        },
-        "NeeruCategoryId": {
-            "enum": [
-                0,
-                1,
-                2,
-                3
-            ],
-            "type": "number"
         },
         "NetworkId": {
             "enum": [
@@ -4135,6 +4405,10 @@
             "type": "object"
         },
         "Record<string,InFlightDescriptor>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
+        "Record<string,RawShortcutTransaction[]>": {
             "additionalProperties": false,
             "type": "object"
         },
@@ -6390,6 +6664,12 @@
                         "number"
                     ]
                 },
+                "goldPriceIsStale": {
+                    "type": "boolean"
+                },
+                "goldPriceStaleAgeSeconds": {
+                    "type": "number"
+                },
                 "goldPriceUsd": {
                     "type": [
                         "null",
@@ -6427,6 +6707,8 @@
                 "error",
                 "goldPrice24hChange",
                 "goldPriceFetchedAt",
+                "goldPriceIsStale",
+                "goldPriceStaleAgeSeconds",
                 "goldPriceUsd",
                 "hasSeenGoldInfo",
                 "preferredIconVariant",
@@ -8371,6 +8653,9 @@
         "neeru": {
             "$ref": "#/definitions/NeeruState"
         },
+        "neeruConfig": {
+            "$ref": "#/definitions/NeeruConfigState"
+        },
         "networkInfo": {
             "$ref": "#/definitions/State_2"
         },
@@ -8460,6 +8745,7 @@
         "keylessBackup",
         "localCurrency",
         "neeru",
+        "neeruConfig",
         "networkInfo",
         "nfts",
         "points",

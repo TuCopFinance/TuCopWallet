@@ -8,9 +8,9 @@ import { createMockStore } from 'test/utils'
 
 const pos: NeeruIndividualPosition = {
   positionId: '1234',
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '0',
   monthlyRatePercentage: 1.0,
@@ -20,7 +20,7 @@ const pos: NeeruIndividualPosition = {
   depositTxHash: '0x' + 'a'.repeat(64),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',
@@ -34,13 +34,14 @@ describe('NeeruCloseSheet', () => {
     const store = createMockStore({ neeru: initialNeeruState } as any)
     const { getByText } = render(
       <Provider store={store}>
-        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
+        <NeeruCloseSheet forwardedRef={React.createRef()} position={pos} onClose={jest.fn()} />
       </Provider>
     )
-    // Translation mock returns keys, so we assert on the principal/interest VALUES
-    expect(getByText(/10000/)).toBeTruthy()
-    expect(getByText(/82.5/)).toBeTruthy()
-    expect(getByText(/10066/)).toBeTruthy()
+    // Translation mock returns keys, so we assert on the amount/interest VALUES.
+    // formatValueToDisplay renders thousands separators + 2 decimals ("10,000.00").
+    expect(getByText(/10,000/)).toBeTruthy()
+    expect(getByText(/82\.50/)).toBeTruthy()
+    expect(getByText(/10,066/)).toBeTruthy()
   })
 
   it('dispatches closePositionStart on confirm', () => {
@@ -48,36 +49,20 @@ describe('NeeruCloseSheet', () => {
     const spy = jest.spyOn(store, 'dispatch')
     const { getByTestId } = render(
       <Provider store={store}>
-        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
+        <NeeruCloseSheet forwardedRef={React.createRef()} position={pos} onClose={jest.fn()} />
       </Provider>
     )
     fireEvent.press(getByTestId('NeeruCloseSheet.Confirm'))
     expect(spy).toHaveBeenCalledWith(closePositionStart({ positionId: '1234' }))
   })
 
-  it('hides the principal-only option when no callback is provided', () => {
+  it('does not expose an amount-only option (emergency flow is auto-triggered)', () => {
     const store = createMockStore({ neeru: initialNeeruState } as any)
     const { queryByTestId } = render(
       <Provider store={store}>
-        <NeeruCloseSheet position={pos} onClose={jest.fn()} />
+        <NeeruCloseSheet forwardedRef={React.createRef()} position={pos} onClose={jest.fn()} />
       </Provider>
     )
     expect(queryByTestId('NeeruCloseSheet.AmountOnly')).toBeNull()
-  })
-
-  it('exposes principal-only option that invokes the callback with the position', () => {
-    const store = createMockStore({ neeru: initialNeeruState } as any)
-    const onAmountOnlyRequested = jest.fn()
-    const { getByTestId } = render(
-      <Provider store={store}>
-        <NeeruCloseSheet
-          position={pos}
-          onClose={jest.fn()}
-          onAmountOnlyRequested={onAmountOnlyRequested}
-        />
-      </Provider>
-    )
-    fireEvent.press(getByTestId('NeeruCloseSheet.AmountOnly'))
-    expect(onAmountOnlyRequested).toHaveBeenCalledWith(pos)
   })
 })

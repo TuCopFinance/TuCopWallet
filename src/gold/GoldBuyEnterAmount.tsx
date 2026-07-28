@@ -18,6 +18,8 @@ import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
 import {
   goldPriceFetchStatusSelector,
+  goldPriceIsStaleSelector,
+  goldPriceStaleAgeSecondsSelector,
   goldPriceUsdSelector,
   xaut0TokenSelector,
 } from 'src/gold/selectors'
@@ -47,7 +49,7 @@ import { DOLLAR_TOKEN_IDS, getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
-import { getInputDecimalsForToken } from 'src/utils/formatting'
+import { getDisplayDecimalsForToken, getInputDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import { parseInputAmount } from 'src/utils/parsing'
 import networkConfig from 'src/web3/networkConfig'
@@ -74,6 +76,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   const goldPriceUsdFromStore = useSelector(goldPriceUsdSelector)
   const goldPriceFetchStatus = useSelector(goldPriceFetchStatusSelector)
+  const goldPriceIsStale = useSelector(goldPriceIsStaleSelector)
+  const goldPriceStaleAgeSeconds = useSelector(goldPriceStaleAgeSecondsSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const xaut0Token = useSelector(xaut0TokenSelector)
@@ -420,6 +424,17 @@ export default function GoldBuyEnterAmount({ route }: Props) {
             </View>
           )}
 
+          {/* Stale-price badge. Only shows when the backend served the price
+              from its 24h stale cache AND the value is more than 5 minutes
+              old. Sub-5min stale is common at fresh-cache eviction boundaries
+              and would flap the badge for essentially fresh data; the 5min
+              threshold matches the fresh TTL headroom. */}
+          {goldPriceIsStale && goldPriceStaleAgeSeconds > 300 && (
+            <View style={styles.stalePriceBadgeContainer}>
+              <Text style={styles.stalePriceBadge}>{t('goldFlow.stalePriceBadge')}</Text>
+            </View>
+          )}
+
           {/* Input Box */}
           <View style={styles.inputBox}>
             <View style={styles.inputRow}>
@@ -468,7 +483,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           {/* Balance Display */}
           {selectedToken && (
             <Text style={styles.balanceText}>
-              {t('goldFlow.buy.available')}: {selectedToken.balance.toFormat(4)}{' '}
+              {t('goldFlow.buy.available')}:{' '}
+              {selectedToken.balance.toFormat(getDisplayDecimalsForToken(selectedToken))}{' '}
               {getTokenName(selectedToken)}
             </Text>
           )}
@@ -507,7 +523,11 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           <InLineNotification
             variant={NotificationVariant.Error}
             title={t('goldFlow.buy.quoteErrorTitle')}
-            description={t('goldFlow.buy.quoteErrorDescription')}
+            description={
+              quoteError instanceof Error && quoteError.message
+                ? quoteError.message
+                : t('goldFlow.buy.quoteErrorDescription')
+            }
             style={styles.warning}
             testID="GoldBuyEnterAmount/QuoteError"
           />
@@ -577,6 +597,18 @@ const styles = StyleSheet.create({
   priceText: {
     ...typeScale.bodyMedium,
     color: Colors.gray4,
+  },
+  stalePriceBadgeContainer: {
+    marginTop: Spacing.Smallest8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.Regular16,
+    paddingVertical: Spacing.Tiny4,
+    borderRadius: 100,
+    backgroundColor: Colors.warningLight,
+  },
+  stalePriceBadge: {
+    ...typeScale.labelSmall,
+    color: Colors.warningDark,
   },
   inputBox: {
     marginTop: Spacing.Large32,

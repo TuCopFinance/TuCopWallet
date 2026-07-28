@@ -1,16 +1,13 @@
-// Backend renamed TRANCHE-* codes to CATEGORY-* in the categoria UX cutover.
-// Both are mapped to the same i18n keys so cached error responses from prior
-// backend versions still surface a translated message; new codes are what
-// current backend emits.
+// Stable enumeration of the wallet-facing trigger error codes emitted by the
+// backend post-2026-07-11 categoria cutover. Source of truth: backend
+// consumer spec section 8 (hooks-api triggerShortcut, bilateral doc).
 const NEERU_ERROR_KEYS: Record<string, string> = {
-  INVALID_TRANCHE: 'neeruVaults.errors.invalidTranche',
-  INVALID_CATEGORY: 'neeruVaults.errors.invalidTranche',
+  INVALID_CATEGORY: 'neeruVaults.errors.invalidCategory',
   INVALID_AMOUNT: 'neeruVaults.errors.invalidAmount',
   AMOUNT_BELOW_MIN: 'neeruVaults.errors.amountBelowMin',
   DEPOSITS_PAUSED: 'neeruVaults.errors.depositsPaused',
   GLOBAL_CAP_EXCEEDED: 'neeruVaults.errors.globalCapExceeded',
-  TRANCHE_CAP_EXCEEDED: 'neeruVaults.errors.trancheCapExceeded',
-  CATEGORY_CAP_EXCEEDED: 'neeruVaults.errors.trancheCapExceeded',
+  CATEGORY_CAP_EXCEEDED: 'neeruVaults.errors.categoryCapExceeded',
   RATE_NOT_SET: 'neeruVaults.errors.rateNotSet',
   POSITION_NOT_FOUND: 'neeruVaults.errors.positionStale',
   POSITION_NOT_OWNED: 'neeruVaults.errors.positionStale',

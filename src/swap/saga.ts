@@ -32,6 +32,7 @@ import {
   inFlightFail,
   inFlightStart,
 } from 'src/lib/useTransactionInFlight/actions'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { safely } from 'src/utils/safely'
@@ -213,7 +214,31 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
 
     const beforeSwapExecutionTimestamp = Date.now()
     quoteToTransactionElapsedTimeInMs = beforeSwapExecutionTimestamp - quoteReceivedAt
-    const createSwapStandbyTxHandlers = []
+
+    // Defence-in-depth: the swap screen gates confirm on a live quote with
+    // non-empty preparedTransactions, but state can theoretically be stale
+    // (screen kept open for hours, quote refetched to empty, etc). If we
+    // ever enter with zero txs, fail early with a user-facing message
+    // instead of exploding on the mismatch check in sendPreparedTransactions.
+    if (preparedTransactions.length === 0) {
+      const emptyError = new Error('preparedTransactions empty at swapStart')
+      Logger.error(TAG, emptyError.message)
+      yield* put(swapError(swapId))
+      yield* put(inFlightFail({ flowId, errorClass: classifyError(emptyError) }))
+      captureBusinessError(emptyError, {
+        feature: 'swap',
+        provider: 'squid',
+        action: 'empty_prepared_txs',
+        errorCode: 'empty_prepared_txs',
+        extra: { swapType },
+      })
+      return
+    }
+
+    const createSwapStandbyTxHandlers: ((
+      transactionHash: string,
+      feeCurrencyId?: string
+    ) => BaseStandbyTransaction | null)[] = []
 
     // If there are 2 transactions, the first should be an approval. verify and
     // add a standby transaction for it
@@ -268,6 +293,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       feeCurrencyId,
     })
     createSwapStandbyTxHandlers.push(createSwapStandbyTx)
+
+    // Pad handlers with null-returning entries so the array length always
+    // matches preparedTransactions.length. Handles two edge cases without
+    // blowing up on the mismatch check downstream:
+    //   1) Squid returns a multi-hop route with intermediate txs between
+    //      approve and swap (approve + hop + swap = 3 txs).
+    //   2) The first tx of a 2-tx batch is NOT a standard approve (e.g.
+    //      permit2 or a batched call) so the approve-handler push above
+    //      is skipped, but there are still 2 on-chain txs to send.
+    // The intermediate/unknown txs are still SUBMITTED, just not recorded
+    // as user-facing standby entries. Splice before the swap handler at
+    // the tail so the swap remains the last one.
+    while (createSwapStandbyTxHandlers.length < preparedTransactions.length) {
+      createSwapStandbyTxHandlers.splice(createSwapStandbyTxHandlers.length - 1, 0, () => null)
+    }
 
     // Pre-flight simulation (Track B / WRI): when the swap requires a separate
     // approve + swap pair, simulate the swap call against the latest state. If
@@ -412,6 +452,13 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       ...getTimeMetrics(),
       ...getSwapTxsReceiptAnalyticsProperties(trackedTxs, networkId, tokensById),
       error: error.message,
+    })
+    captureBusinessError(error, {
+      feature: 'swap',
+      provider: 'squid',
+      action: 'execute',
+      errorCode: String(classifyError(error)),
+      extra: { swapType, submitted },
     })
   }
 }

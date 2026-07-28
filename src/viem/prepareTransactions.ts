@@ -191,26 +191,65 @@ export async function tryEstimateTransaction({
       baseFeePerGas,
     })
   } catch (e) {
-    const isInsufficientFundsError =
+    // "Recoverable" here means: estimation failed for a reason we can
+    // handle by either substituting a hardcoded gas fallback (for well-
+    // known ERC-20 selectors below) or by returning null and letting the
+    // fee-currency cascade in tryEstimateTransactions try the next
+    // candidate. The alternative is `throw e` which bubbles up and
+    // presents to the user as an unclassified failure with a hung UI.
+    //
+    // Historically only "insufficient funds"-shaped errors were treated
+    // as recoverable. That class widened in practice:
+    //
+    //   1. InsufficientFundsError                                         (canonical)
+    //   2. ExecutionRevertedError with contract-emitted balance regex     (ERC-20)
+    //   3. InvalidInputRpcError with "gas required exceeds allowance"     (op-geth)
+    //   4. InvalidInputRpcError with "Missing or invalid parameters"      (op-reth, catch-all -32602)
+    //
+    // (4) is the op-reth wording for the same class op-geth surfaced as
+    // (3), plus for stricter CIP-64 fee-currency validation that op-reth
+    // added in the 2026-07-22 Celo mainnet migration. Rather than track
+    // every future wording variant with a regex, treat ALL
+    // InvalidInputRpcError sub-causes as recoverable. False positives are
+    // safe (they retry with the next fee currency or use the hardcoded
+    // ERC-20 fallback); false negatives (missing a valid recoverable
+    // shape) crash the flow, which is much worse.
+    //
+    // Observability: the return-null branch always emits a Logger.warn,
+    // and captureBusinessError fires in the downstream saga catches, so
+    // spikes in this fallback are still visible on Sentry.
+    const isRecoverableEstimationError =
       e instanceof EstimateGasExecutionError &&
       (e.cause instanceof InsufficientFundsError ||
-        (e.cause instanceof ExecutionRevertedError && // viem does not reliably label node errors as InsufficientFundsError when the user has enough to pay for the transfer, but not for the transfer + gas
+        (e.cause instanceof ExecutionRevertedError &&
           (/transfer value exceeded balance of sender/.test(e.cause.details) ||
             /transfer amount exceeds balance/.test(e.cause.details))) ||
-        (e.cause instanceof InvalidInputRpcError &&
-          /gas required exceeds allowance/.test(e.cause.details)))
+        e.cause instanceof InvalidInputRpcError)
 
-    if (isInsufficientFundsError) {
-      // Gas estimation failed due to insufficient funds
-      // For ERC20 transfers, use a fallback estimate instead of rejecting outright
-      // Standard ERC20 transfer typically uses ~50,000-65,000 gas
-      const isERC20Transfer = tx.data && (tx.data as string).startsWith('0xa9059cbb')
+    if (isRecoverableEstimationError) {
+      // Gas estimation failed due to insufficient funds (or, for CIP-64 fee
+      // currencies, a Celo Forno flake that surfaces the same class).
+      // Standard ERC20 ops have well-known gas costs, so use a fallback
+      // instead of rejecting outright.
+      const dataHex = tx.data as string | undefined
+      const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
+      // ERC-20 transfer(address,uint256): typically 50-65k gas.
+      const isERC20Transfer = selector === '0xa9059cbb'
+      // ERC-20 approve(address,uint256): typically 45-55k gas. Same
+      // deterministic cost, and if Forno keeps failing to estimate the
+      // approve (observed live 2026-07-26 with feeCurrency=COPm returning
+      // "Missing or invalid parameters") the whole downstream flow stalls
+      // without this fallback because the approve is the first tx in the
+      // batch and the swap that follows is gated on it.
+      const isERC20Approve = selector === '0x095ea7b3'
 
-      if (isERC20Transfer) {
+      if (isERC20Transfer || isERC20Approve) {
         const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
         Logger.warn(
           TAG,
-          `Using fallback gas estimate for ERC20 transfer with feeCurrency ${feeCurrencySymbol}`,
+          `Using fallback gas estimate for ERC20 ${
+            isERC20Transfer ? 'transfer' : 'approve'
+          } with feeCurrency ${feeCurrencySymbol}`,
           {
             fallbackGas: fallbackGas.toString(),
             txValue: tx.value?.toString(),
@@ -278,12 +317,26 @@ export async function tryEstimateTransactions(
   // wallet still respects any smaller gas the RPC would have set for the
   // actual submission, so this is not an over-charge risk.
   const POST_APPROVE_FALLBACK_GAS = BigInt(300_000)
+  // Extra buffer when the shortcut pre-supplied `gas` and we are paying with a
+  // non-native fee currency (CIP-64). The hooks API cannot know the exact
+  // CIP-64 overhead nor real-world state variance, and STATIC_GAS_PADDING
+  // alone (~50k) has been observed to leave complex calls (Neeru deposit
+  // 2026-07-14) inches from the limit and OOG. This adds 25% of the
+  // shortcut's own gas on top so calls with pre-set gas retain a real
+  // safety margin. Wallet-estimated txs (`else` branch below) already get
+  // Forno's binary-search LIMIT plus STATIC_GAS_PADDING, so they are
+  // unaffected.
+  const SHORTCUT_NON_NATIVE_BUFFER_BPS = BigInt(2500)
 
   for (let i = 0; i < baseTransactions.length; i++) {
     const baseTx = baseTransactions[i]
     if (baseTx.gas) {
       // We have an estimate of gas already and don't want to recalculate it
       // e.g. if this is a swap transaction that depends on an approval transaction that hasn't been submitted yet, so simulation would fail
+      const staticPadding = BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING)
+      const shortcutBuffer = feeCurrency.isNative
+        ? BigInt(0)
+        : (baseTx.gas * SHORTCUT_NON_NATIVE_BUFFER_BPS) / BigInt(10_000)
       transactions.push({
         ...baseTx,
         maxFeePerGas,
@@ -292,10 +345,11 @@ export async function tryEstimateTransactions(
         // See https://github.com/wagmi-dev/viem/blob/e0149711da5894ac5f0719414b4ecc06ccaecb7b/src/chains/celo/serializers.ts#L164-L168
         ...(feeCurrencyAddress && { feeCurrency: feeCurrencyAddress }),
         // We assume the provided gas value is with the native fee currency
-        // If it's not, we add the static padding
-        gas: baseTx.gas + BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING),
+        // If it's not, we add the static padding + a percentage buffer
+        // (see SHORTCUT_NON_NATIVE_BUFFER_BPS above).
+        gas: baseTx.gas + staticPadding + shortcutBuffer,
         _estimatedGasUse: baseTx._estimatedGasUse
-          ? baseTx._estimatedGasUse + BigInt(feeCurrency.isNative ? 0 : STATIC_GAS_PADDING)
+          ? baseTx._estimatedGasUse + staticPadding + shortcutBuffer
           : undefined,
         _baseFeePerGas: baseFeePerGas,
       })

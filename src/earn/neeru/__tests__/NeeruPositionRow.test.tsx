@@ -11,9 +11,9 @@ const TX = '0x' + 'a'.repeat(64)
 
 const pos: NeeruIndividualPosition = {
   positionId: '1234',
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '0',
   monthlyRatePercentage: 1.0,
@@ -23,7 +23,7 @@ const pos: NeeruIndividualPosition = {
   depositTxHash: TX,
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',
@@ -45,10 +45,11 @@ const renderRow = (position: NeeruIndividualPosition, onManagePress = jest.fn())
 describe('NeeruPositionRow', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('renders principal and interest for backend positions', () => {
+  it('renders amount and interest for backend positions', () => {
     const { getByText } = renderRow(pos)
-    expect(getByText(/10000/)).toBeTruthy()
-    expect(getByText(/82.5/)).toBeTruthy()
+    // formatValueToDisplay renders thousands separators + 2 decimals ("10,000.00").
+    expect(getByText(/10,000/)).toBeTruthy()
+    expect(getByText(/82\.50/)).toBeTruthy()
   })
 
   it('fires onManagePress when manage CTA tapped (non-optimistic)', () => {

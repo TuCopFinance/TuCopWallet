@@ -1,8 +1,10 @@
+import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, StyleSheet, Text, View } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Touchable from 'src/components/Touchable'
+import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { fetchPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { useDispatch } from 'src/redux/hooks'
@@ -19,11 +21,15 @@ function celoscanUrlFor(txHash: string): string {
   return `https://celoscan.io/tx/${txHash}`
 }
 
+function formatAmount(value: string): string {
+  return formatValueToDisplay(new BigNumber(value))
+}
+
 export default function NeeruPositionRow({ position, onManagePress }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
-  const isFlexible = position.tranche === 0
-  const maturityDate = new Date(position.endTs * 1000).toLocaleDateString()
+  const isFlexible = position.category === 0
+  const endDate = new Date(position.endTs * 1000).toLocaleDateString()
   const isOptimistic = position.optimistic === true
   const isStale = isOptimistic && position.staleOptimistic === true
 
@@ -31,15 +37,17 @@ export default function NeeruPositionRow({ position, onManagePress }: Props) {
     <View testID="NeeruPositionRow" style={styles.row}>
       <View style={styles.column}>
         <Text style={styles.line}>
-          {t('neeruVaults.positionRow.amount', { amount: position.principal })}
+          {t('neeruVaults.positionRow.amount', { amount: formatAmount(position.amount) })}
         </Text>
         <Text style={styles.line}>
-          {t('neeruVaults.positionRow.interest', { amount: position.accruedInterest })}
+          {t('neeruVaults.positionRow.interest', {
+            amount: formatAmount(position.accruedInterest),
+          })}
         </Text>
         <Text style={styles.subline}>
           {isFlexible
             ? t('neeruVaults.positionRow.flexible')
-            : t('neeruVaults.positionRow.availableAt', { date: maturityDate })}
+            : t('neeruVaults.positionRow.availableAt', { date: endDate })}
         </Text>
         {isOptimistic && !isStale && (
           <View testID="NeeruPositionRow.ProcessingBadge" style={styles.badge}>

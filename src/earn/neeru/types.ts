@@ -1,8 +1,8 @@
 import { NeeruCategoryId } from 'src/earn/neeru/constants'
 
 export interface NeeruPositionPayout {
-  principal: string // decimal COPm
-  interest: string // decimal COPm
+  amount: string
+  interest: string
   penaltyBps: number
   interestAfterPenalty: string
   total: string
@@ -11,9 +11,9 @@ export interface NeeruPositionPayout {
 
 export interface NeeruIndividualPosition {
   positionId: string
-  tranche: NeeruCategoryId
+  category: NeeruCategoryId
   categoryLabel: string
-  principal: string
+  amount: string
   accruedInterest: string
   rateValue: string
   monthlyRatePercentage: number
@@ -23,9 +23,6 @@ export interface NeeruIndividualPosition {
   depositTxHash: string
   renewedFromPositionId: string | null
   currentPayoutIfClosed: NeeruPositionPayout
-  // Optimistic-UI flags. Absent for positions sourced from the
-  // backend; present on entries the wallet seeded locally after a
-  // successful Deposit and before the indexer surfaces it.
   optimistic?: boolean
   staleOptimistic?: boolean
 }
@@ -39,3 +36,57 @@ export interface NeeruPositionsResponse {
 
 export type NeeruFetchStatus = 'idle' | 'loading' | 'success' | 'error'
 export type NeeruCloseStatus = 'idle' | 'loading' | 'success' | 'error'
+
+// Internal opaque shape for the earn-vault runtime config. The backend
+// payload uses semantic names (event names, error names) that this shape
+// deliberately hides: event names become positional (primary/secondary),
+// error selectors become numbered (e1/e2/e3). The adapter in api.ts is the
+// single boundary where semantic names appear; every other tracked file
+// consumes only the opaque projection. Enforces the zero-exposure policy
+// (contract surface is not reconstructible from a repo grep).
+export interface NeeruMetaDataSchemaSlot {
+  type: string
+}
+
+export interface NeeruMeta {
+  proxyAddress: `0x${string}`
+  events: {
+    primary: {
+      topic0: `0x${string}`
+      dataSchema: NeeruMetaDataSchemaSlot[]
+    }
+  }
+  errorSelectors: {
+    e1: `0x${string}`
+    e2: `0x${string}`
+    e3: `0x${string}`
+  }
+  depositToken: {
+    address: `0x${string}`
+    chainId: number
+    networkId: string
+  }
+  version: string
+}
+
+// Backend catalogue endpoint payload shape. Rates fluctuate operationally
+// so wallet never persists them (see NeeruConfigState); only meta is cached.
+interface NeeruCatalogueCategory {
+  id: number
+  secs: string
+  rateRay: string
+  monthlyRatePercentage: number
+  annualEffectivePercentage: number
+}
+
+interface NeeruCatalogueToken {
+  address: `0x${string}`
+  decimals: number
+  symbol: string
+}
+
+export interface NeeruCatalogue {
+  categories: NeeruCatalogueCategory[]
+  token: NeeruCatalogueToken
+  fetchedAt: string
+}

@@ -1,25 +1,22 @@
 import BigNumber from 'bignumber.js'
 import { NeeruCategoryId } from 'src/earn/neeru/constants'
 import {
+  NeeruCatalogue,
   NeeruIndividualPosition,
+  NeeruMeta,
   NeeruPositionPayout,
   NeeruPositionsResponse,
 } from 'src/earn/neeru/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
 const NEERU_FETCH_TIMEOUT_MS = 15_000
+// Config endpoints (meta + catalogue) have short backend cache, so a shorter
+// wallet-side timeout is enough. Falling back to hardcoded defaults is quick
+// and always safe, no reason to keep the boot flow waiting.
+const NEERU_CONFIG_FETCH_TIMEOUT_MS = 5_000
 
-// The backend Neeru feed was renamed on the wire (principal -> amount,
-// tranche -> category, categoryLabel -> categoryLabel) as part of the
-// "categoria" UX cutover. The wallet's internal model keeps the old field
-// names because on-chain event args (Deposit.principal, Deposit.tranche)
-// are structural and cannot be renamed, and mirroring the immutable layer
-// keeps the wallet-side surface consistent across the whole earn stack.
-// Everything the backend produces flows through this adapter; nothing
-// downstream needs to know about the wire rename.
 interface RawPayout {
-  amount?: string
-  principal?: string
+  amount: string
   interest: string
   penaltyBps: number
   interestAfterPenalty: string
@@ -29,12 +26,9 @@ interface RawPayout {
 
 interface RawPosition {
   positionId: string
-  category?: NeeruCategoryId
-  tranche?: NeeruCategoryId
-  categoryLabel?: string
-  categoryLabel?: string
-  amount?: string
-  principal?: string
+  category: NeeruCategoryId
+  categoryLabel: string
+  amount: string
   accruedInterest: string
   rateValue: string
   monthlyRatePercentage: number
@@ -55,22 +49,9 @@ interface RawResponse {
   lastSyncedAt: string
 }
 
-function pickFirst(
-  ...values: Array<string | number | NeeruCategoryId | undefined>
-): string | number | undefined {
-  for (const v of values) {
-    if (v !== undefined && v !== null) return v as string | number
-  }
-  return undefined
-}
-
 function adaptPayout(raw: RawPayout): NeeruPositionPayout {
-  const principal = pickFirst(raw.amount, raw.principal)
-  if (principal === undefined) {
-    throw new Error('Neeru payout missing amount/principal')
-  }
   return {
-    principal: new BigNumber(principal).toFixed(),
+    amount: new BigNumber(raw.amount).toFixed(),
     interest: raw.interest,
     penaltyBps: raw.penaltyBps,
     interestAfterPenalty: raw.interestAfterPenalty,
@@ -80,19 +61,11 @@ function adaptPayout(raw: RawPayout): NeeruPositionPayout {
 }
 
 export function adaptNeeruPosition(raw: RawPosition): NeeruIndividualPosition {
-  const tranche = pickFirst(raw.category, raw.tranche) as NeeruCategoryId | undefined
-  const categoryLabel = pickFirst(raw.categoryLabel, raw.categoryLabel)
-  const principal = pickFirst(raw.amount, raw.principal)
-  if (tranche === undefined || categoryLabel === undefined || principal === undefined) {
-    throw new Error(
-      `Neeru position missing required fields (positionId=${raw.positionId}, tranche=${tranche}, label=${categoryLabel}, principal=${principal})`
-    )
-  }
   return {
     positionId: raw.positionId,
-    tranche,
-    categoryLabel: String(categoryLabel),
-    principal: new BigNumber(principal).toFixed(),
+    category: raw.category,
+    categoryLabel: String(raw.categoryLabel),
+    amount: new BigNumber(raw.amount).toFixed(),
     accruedInterest: raw.accruedInterest,
     rateValue: raw.rateValue,
     monthlyRatePercentage: raw.monthlyRatePercentage,
@@ -128,4 +101,113 @@ export async function fetchNeeruPositions({
     lastSyncedBlock: raw.lastSyncedBlock,
     lastSyncedAt: raw.lastSyncedAt,
   }
+}
+
+// Backend meta payload shape. Kept as an internal type so the semantic
+// names appear only in this file (the I/O boundary), never in downstream
+// consumers. adaptNeeruMeta below projects it into the opaque NeeruMeta
+// shape used everywhere else.
+interface RawNeeruMetaResponse {
+  proxyAddress: string
+  events: Record<string, { topic0: string; dataSchema: Array<{ type: string }> }>
+  errorSelectors: Record<string, string>
+  depositToken: { address: string; chainId: number; networkId: string }
+  version: string
+}
+
+// Adapter: projects the backend response into the opaque internal shape.
+// Addresses lowercase, the primary event goes into `primary`, error selectors
+// are indexed positionally (e1/e2/e3) preserving the order the backend
+// enumerates them. Backend contract with wallet team is a stable enumeration
+// order for errorSelectors and a single Deposit event on the primary vault.
+export function adaptNeeruMeta(raw: RawNeeruMetaResponse): NeeruMeta {
+  const eventKeys = Object.keys(raw.events)
+  if (eventKeys.length === 0) throw new Error('fetchNeeruMeta: no events in response')
+  const primaryRaw = raw.events[eventKeys[0]]
+  const selectorValues = Object.values(raw.errorSelectors)
+  if (selectorValues.length < 3) throw new Error('fetchNeeruMeta: fewer than 3 error selectors')
+  return {
+    proxyAddress: raw.proxyAddress.toLowerCase() as `0x${string}`,
+    events: {
+      primary: {
+        topic0: primaryRaw.topic0.toLowerCase() as `0x${string}`,
+        dataSchema: primaryRaw.dataSchema,
+      },
+    },
+    errorSelectors: {
+      e1: selectorValues[0].toLowerCase() as `0x${string}`,
+      e2: selectorValues[1].toLowerCase() as `0x${string}`,
+      e3: selectorValues[2].toLowerCase() as `0x${string}`,
+    },
+    depositToken: {
+      address: raw.depositToken.address.toLowerCase() as `0x${string}`,
+      chainId: raw.depositToken.chainId,
+      networkId: raw.depositToken.networkId,
+    },
+    version: raw.version,
+  }
+}
+
+// Fetches the earn-vault meta descriptor (proxy address, primary event
+// topic0, data schema, error selectors, deposit token identity). Backend
+// caches 5min. Response is adapted to the opaque internal shape so
+// downstream consumers never see the backend's semantic names.
+export async function fetchNeeruMeta({ baseUrl }: { baseUrl: string }): Promise<NeeruMeta> {
+  const url = new URL('/api/meta/contracts/neeru', baseUrl)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruMeta failed: ${response.status} ${response.statusText}`)
+  }
+  const body = (await response.json()) as RawNeeruMetaResponse
+  return adaptNeeruMeta(body)
+}
+
+// Fetches the current catalogue of earn categories (id, lock period, rate,
+// monthly + annual effective percentages) and the deposit token metadata.
+// Rates fluctuate operationally (operator retunes via setTranche) so wallet
+// never caches this payload past the current session.
+export async function fetchNeeruCatalogue({
+  baseUrl,
+}: {
+  baseUrl: string
+}): Promise<NeeruCatalogue> {
+  const url = new URL('/api/earn/neeru/catalogue', baseUrl)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruCatalogue failed: ${response.status} ${response.statusText}`)
+  }
+  const body = await response.json()
+  const raw = body.data as NeeruCatalogue
+  return raw
+}
+
+// Backend transaction status endpoint. Backend replays eth_call at N-1
+// (block before mining) against its fallback RPC chain and returns the
+// revert selector. Wallet cross-checks against its own eth_call at latest
+// (see enforceReceiptsOrThrow). Agreement raises confidence, disagreement
+// surfaces "estado incierto" to the user.
+export interface NeeruTxStatusResponse {
+  status: 'success' | 'reverted'
+  blockNumber?: string
+  transactionHash: string
+  revert?: {
+    selector: string | null
+    reason: string
+  }
+}
+
+export async function fetchNeeruTxStatus({
+  baseUrl,
+  txHash,
+}: {
+  baseUrl: string
+  txHash: string
+}): Promise<NeeruTxStatusResponse> {
+  const url = new URL('/api/tx/status', baseUrl)
+  url.searchParams.set('hash', txHash)
+  const response = await fetchWithTimeout(url.toString(), null, NEERU_CONFIG_FETCH_TIMEOUT_MS)
+  if (!response.ok) {
+    throw new Error(`fetchNeeruTxStatus failed: ${response.status} ${response.statusText}`)
+  }
+  return (await response.json()) as NeeruTxStatusResponse
 }

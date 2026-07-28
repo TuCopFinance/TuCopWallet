@@ -43,6 +43,7 @@ import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/tr
 import networkConfig from 'src/web3/networkConfig'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { safely } from 'src/utils/safely'
 import { publicClient } from 'src/viem'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
@@ -152,6 +153,26 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
 
   const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
 
+  // Defence-in-depth: the confirm screen should never dispatch buyGoldStart
+  // with an empty preparedTransactions (the button is gated on this). If it
+  // still happens (e.g. stale state, race with quote refetch), fail early
+  // with a user-actionable message instead of hitting the mismatch check in
+  // sendPreparedTransactions.
+  if (preparedTransactions.length === 0) {
+    const error = new Error('preparedTransactions empty at buyGoldStart')
+    Logger.error(TAG, error.message)
+    yield* put(buyGoldError('Estamos preparando tu compra, esperá un momento y probá de nuevo.'))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'squid',
+      action: 'buy_gold_empty_prepared_txs',
+      errorCode: 'empty_prepared_txs',
+      extra: { fromTokenId, fromAmount },
+    })
+    return
+  }
+
   try {
     AppAnalytics.track(GoldEvents.gold_buy_submit_start, {
       amount: fromAmount,
@@ -221,6 +242,13 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
       feeCurrencyId,
     })
     createStandbyTxHandlers.push(createSwapStandbyTx)
+
+    // Pad handlers with null-returning entries so the array length always
+    // matches preparedTransactions.length even for multi-hop or non-approve
+    // first-tx cases (see swap/saga.ts for the same rationale).
+    while (createStandbyTxHandlers.length < preparedTransactions.length) {
+      createStandbyTxHandlers.splice(createStandbyTxHandlers.length - 1, 0, () => null)
+    }
 
     // Send transactions
     const txHashes = yield* call(
@@ -295,6 +323,13 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
       amount: fromAmount,
       error: error.message,
     })
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'squid',
+      action: 'buy_gold_execute',
+      errorCode: String(classifyError(error)),
+      extra: { fromAmount, fromTokenId },
+    })
   }
 }
 
@@ -344,6 +379,22 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
   const sellExecuteContext = newTransactionContext(TAG, 'GoldSell/Execute')
 
   const preparedTransactions = getPreparedTransactions(serializablePreparedTransactions)
+
+  // Defence-in-depth: mirror of buyGoldSaga guard. See notes there.
+  if (preparedTransactions.length === 0) {
+    const error = new Error('preparedTransactions empty at sellGoldStart')
+    Logger.error(TAG, error.message)
+    yield* put(sellGoldError('Estamos preparando tu venta, esperá un momento y probá de nuevo.'))
+    yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'squid',
+      action: 'sell_gold_empty_prepared_txs',
+      errorCode: 'empty_prepared_txs',
+      extra: { toTokenId, xautAmount },
+    })
+    return
+  }
 
   try {
     AppAnalytics.track(GoldEvents.gold_sell_submit_start, {
@@ -411,6 +462,11 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     })
     createStandbyTxHandlers.push(createSwapStandbyTx)
 
+    // Same padding rationale as buyGoldSaga above.
+    while (createStandbyTxHandlers.length < preparedTransactions.length) {
+      createStandbyTxHandlers.splice(createStandbyTxHandlers.length - 1, 0, () => null)
+    }
+
     // Send transactions
     const txHashes = yield* call(
       sendPreparedTransactions,
@@ -467,6 +523,13 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     AppAnalytics.track(GoldEvents.gold_sell_submit_error, {
       amount: xautAmount,
       error: error.message,
+    })
+    captureBusinessError(error, {
+      feature: 'earn',
+      provider: 'squid',
+      action: 'sell_gold_execute',
+      errorCode: String(classifyError(error)),
+      extra: { xautAmount, toTokenId },
     })
   }
 }

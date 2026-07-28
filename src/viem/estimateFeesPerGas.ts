@@ -42,6 +42,23 @@ async function estimateCeloL2FeesPerGas(
   feeCurrency: Address | undefined,
   chainId: number
 ): Promise<{ maxFeePerGas: bigint; maxPriorityFeePerGas: bigint; baseFeePerGas: bigint }> {
+  // CIP-64 non-native fee currency: use eth_gasPrice(feeCurrency) as the sole
+  // authoritative source and build a wide envelope around it. Do NOT mix with
+  // block.baseFeePerGas, which is denominated in native (CELO wei) and is
+  // therefore not directly comparable with the fee-currency gas price.
+  //
+  // The previous shared path subtracted (gasPrice(fc) - baseFee(native)) to
+  // derive a "priority" fee, which produced priority ≈ gasPrice(fc) and left
+  // maxFee within ~2-3% of the current price. op-geth tolerated the tight
+  // margin; op-reth (Celo mainnet migrated 2026-07-22) is stricter about
+  // validating that maxFee >= actual on-chain baseFee + priority and rejects
+  // the request as "Missing or invalid parameters" whenever the base moves
+  // up between estimation and inclusion. This branch fixes the class of
+  // Forno rejections we observed on Gold buys.
+  if (feeCurrency) {
+    return estimateCip64FeesPerGas(client, feeCurrency)
+  }
+
   // Get the most recent block to ensure we have current base fee
   const block = await getBlock(client, { blockTag: 'latest' })
 
@@ -166,4 +183,67 @@ async function estimateCeloL2FeesPerGas(
     maxPriorityFeePerGas: adjustedPriorityFee,
     baseFeePerGas: adjustedBaseFee,
   }
+}
+
+/**
+ * Dedicated estimator for CIP-64 non-native fee currency transactions.
+ *
+ * Rationale: on Celo, `eth_gasPrice(feeCurrency)` returns the current total
+ * gas price in fee-currency units (baseFee + a small priority) already
+ * scaled through the fee currency adapter. Block header baseFeePerGas is in
+ * native units and cannot be mixed with it. This function treats the fee-
+ * currency gas price as authoritative:
+ *
+ *   - maxFeePerGas   = gasPrice(fc) * 2         (100% headroom for base drift)
+ *   - maxPriorityFee = gasPrice(fc) / 4         (25% of current price)
+ *   - baseFeePerGas  = gasPrice(fc) - priority  (approximate, reported for UI)
+ *
+ * The 100% headroom is deliberately generous because op-reth rejects on any
+ * borderline case and the cost of a rejected tx (user-visible error) is
+ * higher than the cost of a slightly-overestimated maxFee (user is never
+ * actually charged above realBaseFee + priority regardless of maxFee).
+ */
+async function estimateCip64FeesPerGas(
+  client: Client,
+  feeCurrency: Address
+): Promise<{ maxFeePerGas: bigint; maxPriorityFeePerGas: bigint; baseFeePerGas: bigint }> {
+  let gasPriceInFeeCurrency: bigint
+  try {
+    const raw = await client.request({
+      method: 'eth_gasPrice',
+      params: [feeCurrency],
+    } as any)
+    gasPriceInFeeCurrency = BigInt(raw as string)
+  } catch (error) {
+    // If the node refuses the fee-currency variant, fall back to the plain
+    // eth_gasPrice and let downstream estimation surface the error. Do NOT
+    // silently substitute the native gas price into a CIP-64 tx — units
+    // would mismatch again.
+    Logger.warn('estimateFeesPerGas', 'CIP-64 eth_gasPrice(feeCurrency) failed:', {
+      feeCurrency,
+      error,
+    })
+    throw error
+  }
+
+  if (gasPriceInFeeCurrency <= BigInt(0)) {
+    throw new Error(
+      `CIP-64 eth_gasPrice(${feeCurrency}) returned non-positive value: ${gasPriceInFeeCurrency}`
+    )
+  }
+
+  const maxFeePerGas = gasPriceInFeeCurrency * BigInt(2)
+  const maxPriorityFeePerGas = gasPriceInFeeCurrency / BigInt(4)
+  const baseFeePerGas = gasPriceInFeeCurrency - maxPriorityFeePerGas
+
+  Logger.debug('estimateFeesPerGas', 'CIP-64 estimation:', {
+    feeCurrency,
+    gasPriceInFeeCurrency: gasPriceInFeeCurrency.toString(),
+    maxFeePerGas: maxFeePerGas.toString(),
+    maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+    baseFeePerGas: baseFeePerGas.toString(),
+    headroomMultiple: '2x',
+  })
+
+  return { maxFeePerGas, maxPriorityFeePerGas, baseFeePerGas }
 }

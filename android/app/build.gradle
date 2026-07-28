@@ -79,7 +79,7 @@ apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.grad
 def isDetoxTestBuild = Boolean.valueOf(project.properties['isDetoxBuild'] ?: 'false')
 
 if (!isDetoxTestBuild) {
-  // apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+  apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 }
 
 /**
@@ -159,7 +159,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
-        versionName "1.118.7"
+        versionName "1.118.8"
         multiDexEnabled true
         ndk {
             // Reads from reactNativeArchitectures (gradle.properties or CLI override).

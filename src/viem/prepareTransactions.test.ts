@@ -84,6 +84,17 @@ describe('prepareTransactions module', () => {
     ),
     {}
   )
+  // op-reth (Celo mainnet client from 2026-07-22) returns this catch-all
+  // wording for -32602 InvalidInputRpcError instead of op-geth's
+  // "gas required exceeds allowance". Also fires for CIP-64 fee-currency
+  // edge cases where op-reth is stricter than op-geth. Must still be
+  // classified as recoverable so the fee-currency cascade continues.
+  const mockOpRethInvalidInputRpcError = new EstimateGasExecutionError(
+    new InvalidInputRpcError(
+      new BaseError('test mock', { details: 'Missing or invalid parameters.' })
+    ),
+    {}
+  )
 
   const mockNativeFeeCurrency = {
     address: '0xfee1',
@@ -385,17 +396,17 @@ describe('prepareTransactions module', () => {
             to: '0xto' as Address,
             data: '0xdata',
 
-            gas: BigInt(15_000), // 50k will be added for fee currency 1 since it is non-native
+            gas: BigInt(15_000), // 50k padding + 25% shortcut buffer (3_750) added for non-native fee currency 1
           },
         ],
         origin: 'earn-withdraw',
       })
       expect(result).toStrictEqual({
         type: 'need-decrease-spend-amount-for-gas',
-        maxGasFeeInDecimal: new BigNumber('65.65'), // (15k + 50k non-native gas token buffer) * 1.01 multiplier / 1000 feeCurrency1 decimals
-        estimatedGasFeeInDecimal: new BigNumber('65'), // 15k + 50k non-native gas token buffer / 1000 feeCurrency1 decimals
+        maxGasFeeInDecimal: new BigNumber('69.4375'), // (15k + 50k padding + 3_750 shortcut buffer) * 1.01 / 1000 feeCurrency1 decimals
+        estimatedGasFeeInDecimal: new BigNumber('68.75'), // (15k + 50k padding + 3_750 shortcut buffer) / 1000 feeCurrency1 decimals
         feeCurrency: mockFeeCurrencies[1],
-        decreasedSpendAmount: new BigNumber(4.35), // 70.0 balance minus maxGasFee
+        decreasedSpendAmount: new BigNumber(0.5625), // 70.0 balance minus maxGasFee
       })
       expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
       expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -468,17 +479,17 @@ describe('prepareTransactions module', () => {
             to: '0xto' as Address,
             data: '0xdata',
 
-            gas: BigInt(15_000), // 50k will be added for fee currency 1 since it is non-native
+            gas: BigInt(15_000), // 50k padding + 25% shortcut buffer (3_750) added for non-native fee currency 1
           },
         ],
         origin: 'wallet-connect',
       })
       expect(result).toStrictEqual({
         type: 'need-decrease-spend-amount-for-gas',
-        maxGasFeeInDecimal: new BigNumber('65.65'), // (15k + 50k non-native gas token buffer) * 1.01 multiplier / 1000 feeCurrency1 decimals
-        estimatedGasFeeInDecimal: new BigNumber('65'), // 15k + 50k non-native gas token buffer / 1000 feeCurrency1 decimals
+        maxGasFeeInDecimal: new BigNumber('69.4375'), // (15k + 50k padding + 3_750 shortcut buffer) * 1.01 / 1000 feeCurrency1 decimals
+        estimatedGasFeeInDecimal: new BigNumber('68.75'), // (15k + 50k padding + 3_750 shortcut buffer) / 1000 feeCurrency1 decimals
         feeCurrency: mockFeeCurrencies[1],
-        decreasedSpendAmount: new BigNumber(4.35), // 70.0 balance minus maxGasFee
+        decreasedSpendAmount: new BigNumber(0.5625), // 70.0 balance minus maxGasFee
       })
       expect(AppAnalytics.track).toHaveBeenCalledTimes(1)
       expect(AppAnalytics.track).toHaveBeenCalledWith(
@@ -578,7 +589,7 @@ describe('prepareTransactions module', () => {
             to: '0xto' as Address,
             data: '0xdata',
 
-            gas: BigInt(100), // 50k will be added for fee currency 2 since it is non-native
+            gas: BigInt(100), // 50k padding + 25% shortcut buffer (25) added for non-native fee currency 2
             _estimatedGasUse: BigInt(50),
           },
         ],
@@ -604,12 +615,12 @@ describe('prepareTransactions module', () => {
             to: '0xto',
             data: '0xdata',
 
-            gas: BigInt(50_100),
+            gas: BigInt(50_125),
             maxFeePerGas: BigInt(1),
             maxPriorityFeePerGas: BigInt(2),
             feeCurrency: mockFeeCurrencies[1].address,
             _baseFeePerGas: BigInt(1),
-            _estimatedGasUse: BigInt(50_050),
+            _estimatedGasUse: BigInt(50_075),
           },
         ],
         feeCurrency: mockFeeCurrencies[1],
@@ -876,6 +887,24 @@ describe('prepareTransactions module', () => {
       })
       expect(estimateTransactionOutput).toEqual(null)
     })
+    it('returns null if estimateGas throws op-reth InvalidInputRpcError with Missing or invalid parameters', async () => {
+      // Verifies the widened classification: any InvalidInputRpcError is
+      // recoverable, not just op-geth's "gas required exceeds allowance"
+      // wording. If this ever throws again, the CIP-64 flow on Celo
+      // mainnet will regress the way it did before 2026-07-26.
+      mocked(estimateGas).mockRejectedValue(mockOpRethInvalidInputRpcError)
+      const baseTransaction: TransactionRequest = { from: '0x123' }
+      const estimateTransactionOutput = await tryEstimateTransaction({
+        client: mockPublicClient,
+        baseTransaction,
+        maxFeePerGas: BigInt(456),
+        feeCurrencySymbol: 'FEE',
+        feeCurrencyAddress: '0xabc',
+        maxPriorityFeePerGas: BigInt(789),
+        baseFeePerGas: BigInt(200),
+      })
+      expect(estimateTransactionOutput).toEqual(null)
+    })
     it('throws if estimateGas throws error for some other reason besides insufficient funds', async () => {
       mocked(estimateGas).mockRejectedValue(mockExceededAllowanceError)
       const baseTransaction: TransactionRequest = { from: '0x123' }
@@ -961,6 +990,54 @@ describe('prepareTransactions module', () => {
           true
         )
       ).rejects.toThrowError('App transport not available for network ethereum')
+    })
+    it('adds static padding + shortcut buffer to shortcut txs with non-native fee currency', async () => {
+      // Regression: on 2026-07-14 a Neeru deposit reverted OOG with the wallet
+      // trusting a shortcut-provided gas of 260k + 50k static padding = 310k
+      // limit. The tx consumed 306,385. The 25% shortcut buffer (65_000 extra
+      // for a 260k baseline) keeps such calls off the ceiling.
+      mocked(estimateFeesPerGas).mockResolvedValue({
+        maxFeePerGas: BigInt(10),
+        maxPriorityFeePerGas: BigInt(2),
+        baseFeePerGas: BigInt(5),
+      })
+      const estimateTransactionsOutput = await tryEstimateTransactions(
+        [{ from: '0x123', gas: BigInt(260_000), _estimatedGasUse: BigInt(260_000) }],
+        mockFeeCurrencies[1]
+      )
+      expect(estimateTransactionsOutput).toStrictEqual([
+        {
+          from: '0x123',
+          feeCurrency: mockFeeCurrencies[1].address,
+          // 260_000 + 50_000 static padding + 65_000 (25% of 260k) shortcut buffer
+          gas: BigInt(375_000),
+          _estimatedGasUse: BigInt(375_000),
+          maxFeePerGas: BigInt(10),
+          maxPriorityFeePerGas: BigInt(2),
+          _baseFeePerGas: BigInt(5),
+        },
+      ])
+    })
+    it('does not add shortcut buffer when fee currency is native', async () => {
+      mocked(estimateFeesPerGas).mockResolvedValue({
+        maxFeePerGas: BigInt(10),
+        maxPriorityFeePerGas: BigInt(2),
+        baseFeePerGas: BigInt(5),
+      })
+      const estimateTransactionsOutput = await tryEstimateTransactions(
+        [{ from: '0x123', gas: BigInt(260_000), _estimatedGasUse: BigInt(260_000) }],
+        mockFeeCurrencies[0]
+      )
+      expect(estimateTransactionsOutput).toStrictEqual([
+        {
+          from: '0x123',
+          gas: BigInt(260_000),
+          _estimatedGasUse: BigInt(260_000),
+          maxFeePerGas: BigInt(10),
+          maxPriorityFeePerGas: BigInt(2),
+          _baseFeePerGas: BigInt(5),
+        },
+      ])
     })
   })
   describe('getMaxGasFee', () => {

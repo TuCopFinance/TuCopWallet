@@ -17,9 +17,9 @@ import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 
 const fixturePosition: NeeruIndividualPosition = {
   positionId: '1234',
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '1000003290000000000000000000',
   monthlyRatePercentage: 1.0,
@@ -29,7 +29,7 @@ const fixturePosition: NeeruIndividualPosition = {
   depositTxHash: '0x' + 'a'.repeat(64),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',
@@ -96,9 +96,12 @@ describe('neeru slice', () => {
 
   it('handles closePositionFailure', () => {
     let state = reducer(initialState, closePositionStart({ positionId: '1234' }))
-    state = reducer(state, closePositionFailure({ positionId: '1234', error: 'InterestPoolLow' }))
+    state = reducer(
+      state,
+      closePositionFailure({ positionId: '1234', error: 'wallet-error-signal' })
+    )
     expect(state.closeStatus).toBe('error')
-    expect(state.lastError).toBe('InterestPoolLow')
+    expect(state.lastError).toBe('wallet-error-signal')
   })
 
   it('emergencyCloseStart sets loading + closingPositionId', () => {
@@ -121,13 +124,11 @@ describe('neeru slice', () => {
       state = reducer(state, addOptimisticPosition(optimisticFixture(txB)))
       expect(state.optimisticPositions).toHaveLength(2)
 
-      // Same txHash with different principal replaces in place
-      const updated = { ...optimisticFixture(txA), principal: '99999' }
+      // Same txHash with different amount replaces in place
+      const updated = { ...optimisticFixture(txA), amount: '99999' }
       state = reducer(state, addOptimisticPosition(updated))
       expect(state.optimisticPositions).toHaveLength(2)
-      expect(state.optimisticPositions.find((p) => p.depositTxHash === txA)?.principal).toBe(
-        '99999'
-      )
+      expect(state.optimisticPositions.find((p) => p.depositTxHash === txA)?.amount).toBe('99999')
     })
 
     it('removeOptimisticPosition filters by depositTxHash', () => {

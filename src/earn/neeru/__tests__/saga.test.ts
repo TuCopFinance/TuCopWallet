@@ -2,20 +2,30 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { TransactionReceipt } from 'viem'
 import { fetchNeeruPositions } from 'src/earn/neeru/api'
-import { NEERU_CONTRACT_ADDRESS } from 'src/earn/neeru/constants'
+import {
+  NEERU_META_HARDCODED_FALLBACK,
+  neeruCatalogueCategoryByIdSelector,
+  neeruMetaSelector,
+} from 'src/earn/neeru/configSelectors'
 import { parseDepositEvent } from 'src/earn/neeru/eventParsing'
 import {
+  NEERU_ALREADY_CLOSED_ERROR,
   NEERU_LOW_POOL_ACTION,
+  NEERU_LOW_POOL_ERROR,
+  NEERU_NOT_OWNER_ERROR,
+  NEERU_UNKNOWN_REVERT_ERROR,
   awaitOptimisticResolution,
   closeNeeruPositionSaga,
   emergencyCloseNeeruPositionSaga,
   fetchNeeruPositionsSaga,
   handleNeeruDepositOptimistic,
   isLowPoolError,
+  resolveRevert,
   pollUntilBackendCatchesUp,
 } from 'src/earn/neeru/saga'
 import {
   addOptimisticPosition,
+  clearEmergencyFallback,
   closePositionFailure,
   closePositionStart,
   closePositionSuccess,
@@ -23,8 +33,10 @@ import {
   fetchPositionsFailure,
   fetchPositionsStart,
   fetchPositionsSuccess,
+  initialState as neeruInitialState,
   markOptimisticPositionStale,
   removeOptimisticPosition,
+  setEmergencyFallback,
 } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { triggerShortcutRequest } from 'src/positions/saga'
@@ -38,6 +50,34 @@ import { walletAddressSelector } from 'src/web3/selectors'
 jest.mock('src/earn/neeru/eventParsing', () => ({
   parseDepositEvent: jest.fn(),
 }))
+
+// Resolved neeruMetaSelector value that all sagas expect when they read the
+// meta from Redux. Using the fallback keeps assertions comparing against
+// exactly the hex constants the CI drift check enforces.
+const RESOLVED_META = {
+  meta: NEERU_META_HARDCODED_FALLBACK,
+  source: 'fallback' as const,
+  isDegraded: true,
+}
+
+// Resolved catalogue category rows used by handleNeeruDepositOptimistic when
+// it needs to synthesise an optimistic position row.
+const CAT_ROWS: Record<
+  number,
+  { secs: string; monthlyRatePercentage: number; annualEffectivePercentage: number }
+> = {
+  0: { secs: '0', monthlyRatePercentage: 0.8, annualEffectivePercentage: 10.033869 },
+  1: { secs: '2592000', monthlyRatePercentage: 1.0, annualEffectivePercentage: 12.682503 },
+  2: { secs: '5184000', monthlyRatePercentage: 1.05, annualEffectivePercentage: 13.35373 },
+  3: { secs: '7776000', monthlyRatePercentage: 1.1, annualEffectivePercentage: 14.02862 },
+}
+const catalogueRowProvide = (category: number) => [
+  matchers.select.like({
+    selector: neeruCatalogueCategoryByIdSelector,
+    args: [category] as const,
+  }),
+  CAT_ROWS[category] ?? null,
+]
 
 describe('fetchNeeruPositionsSaga', () => {
   const WALLET = '0x' + 'a'.repeat(40)
@@ -97,9 +137,11 @@ describe('closeNeeruPositionSaga', () => {
   it('dispatches success on happy path', async () => {
     const fakeTxs = [{ to: '0x', data: '0x', value: '0', networkId: 'celo-mainnet' }]
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
         [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
@@ -109,17 +151,20 @@ describe('closeNeeruPositionSaga', () => {
       .run()
   })
 
-  it('on InterestPoolLow revert, dispatches NEERU_LOW_POOL_ACTION + closePositionFailure', async () => {
-    const err = new Error('Reverted: InterestPoolLow')
+  it('on low-pool revert selector, dispatches NEERU_LOW_POOL_ACTION + closePositionFailure', async () => {
+    const err = Object.assign(new Error('Execution reverted'), {
+      cause: { data: '0x2648b779' },
+    })
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(err)],
       ])
       .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
   })
 
@@ -128,6 +173,7 @@ describe('closeNeeruPositionSaga', () => {
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
       ])
@@ -146,9 +192,11 @@ describe('emergencyCloseNeeruPositionSaga', () => {
       emergencyCloseNeeruPositionSaga,
       emergencyCloseStart({ positionId: POSITION_ID })
     )
+      .withState({ neeru: neeruInitialState })
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), { transactions: fakeTxs }],
         [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
@@ -163,9 +211,11 @@ describe('emergencyCloseNeeruPositionSaga', () => {
       emergencyCloseNeeruPositionSaga,
       emergencyCloseStart({ positionId: POSITION_ID })
     )
+      .withState({ neeru: neeruInitialState })
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
         [matchers.call.fn(triggerShortcutRequest), Promise.reject(new Error('boom'))],
       ])
@@ -184,9 +234,9 @@ describe('pollUntilBackendCatchesUp', () => {
     positions: txHashes.map(
       (h, i): NeeruIndividualPosition => ({
         positionId: `id-${i}`,
-        tranche: 1,
+        category: 1,
         categoryLabel: '',
-        principal: '0',
+        amount: '0',
         accruedInterest: '0',
         rateValue: '0',
         monthlyRatePercentage: 0,
@@ -196,7 +246,7 @@ describe('pollUntilBackendCatchesUp', () => {
         depositTxHash: h,
         renewedFromPositionId: null,
         currentPayoutIfClosed: {
-          principal: '0',
+          amount: '0',
           interest: '0',
           penaltyBps: 0,
           interestAfterPenalty: '0',
@@ -290,22 +340,33 @@ describe('handleNeeruDepositOptimistic', () => {
   it('falls back to fetchPositionsStart when the Deposit event is missing', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue(null)
     await expectSaga(handleNeeruDepositOptimistic, receipt)
-      .provide([[matchers.select(walletAddressSelector), WALLET]])
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+      ])
       .put(fetchPositionsStart())
       .not.put.actionType('neeru/addOptimisticPosition')
       .run()
-    expect(parseDepositEvent).toHaveBeenCalledWith(receipt, NEERU_CONTRACT_ADDRESS)
+    expect(parseDepositEvent).toHaveBeenCalledWith(
+      receipt,
+      NEERU_META_HARDCODED_FALLBACK.proxyAddress,
+      NEERU_META_HARDCODED_FALLBACK.events.primary.topic0,
+      NEERU_META_HARDCODED_FALLBACK.events.primary.dataSchema
+    )
   })
 
-  it('skips when parsed tranche is out of range', async () => {
+  it('skips when parsed category is out of range', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 7,
+      amount: '0',
+      category: 7,
       rateValue: '0',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
-      .provide([[matchers.select(walletAddressSelector), WALLET]])
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+      ])
       .not.put.actionType('neeru/addOptimisticPosition')
       .not.put(fetchPositionsStart())
       .run()
@@ -314,14 +375,16 @@ describe('handleNeeruDepositOptimistic', () => {
   it('happy path: adds optimistic, awaits matched, then removes', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '10000000000000000000000', // 10000 * 1e18
-      tranche: 1,
+      amount: '10000000000000000000000', // 10000 * 1e18
+      category: 1,
       rateValue: '1000003290000000000000000000',
     })
     const recorded: NeeruIndividualPosition[] = []
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(1) as any,
         {
           put: (effect: any, next: any) => {
             if (effect.action?.type === addOptimisticPosition.type) {
@@ -338,20 +401,22 @@ describe('handleNeeruDepositOptimistic', () => {
     expect(recorded).toHaveLength(1)
     expect(recorded[0].depositTxHash).toBe(TX.toLowerCase())
     expect(recorded[0].optimistic).toBe(true)
-    expect(recorded[0].tranche).toBe(1)
-    expect(recorded[0].principal).toBe('10000')
+    expect(recorded[0].category).toBe(1)
+    expect(recorded[0].amount).toBe('10000')
   })
 
   it('timeout path: adds optimistic then marks it stale', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '42',
-      principal: '5000000000000000000000', // 5000 * 1e18
-      tranche: 0, // flexible
+      amount: '5000000000000000000000', // 5000 * 1e18
+      category: 0, // flexible
       rateValue: '1000000000000000000000000000',
     })
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(0) as any,
         [matchers.call.fn(awaitOptimisticResolution), 'timedOut' as const],
       ])
       .put(markOptimisticPositionStale({ depositTxHash: TX.toLowerCase() }))
@@ -362,14 +427,16 @@ describe('handleNeeruDepositOptimistic', () => {
   it('passes the tucopBackendApiUrl to the resolver', async () => {
     ;(parseDepositEvent as jest.Mock).mockReturnValue({
       contractPositionId: '1',
-      principal: '0',
-      tranche: 2,
+      amount: '0',
+      category: 2,
       rateValue: '1000003290000000000000000000',
     })
     let observed: any
     await expectSaga(handleNeeruDepositOptimistic, receipt)
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        catalogueRowProvide(2) as any,
         {
           call: (effect: any, next: any) => {
             if (effect.fn === awaitOptimisticResolution) {
@@ -387,47 +454,283 @@ describe('handleNeeruDepositOptimistic', () => {
   })
 })
 
-describe('isLowPoolError', () => {
-  it('detects dev-style error.message', () => {
-    expect(isLowPoolError(new Error('Reverted: InterestPoolLow'))).toBe(true)
+describe('resolveRevert (two-source cross-check matrix)', () => {
+  const LOW_POOL = '0x2648b779'
+  const OTHER = '0x9acb7e52'
+  const backendReverted = (selector: string | null) => ({
+    status: 'reverted' as const,
+    transactionHash: '0x' + 'a'.repeat(64),
+    revert: { selector, reason: selector ? 'X' : 'UNKNOWN' },
   })
+
+  it('both sources agree on the same selector -> confirmed', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(LOW_POOL))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'confirmed' })
+  })
+
+  it('backend sees selector, wallet does not -> transient (already resolved on-chain)', () => {
+    const r = resolveRevert(null, backendReverted(LOW_POOL))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'transient' })
+  })
+
+  it('wallet sees selector, backend does not -> live-only (new reason after mining)', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(null))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('neither source extracts a selector -> unknown', () => {
+    const r = resolveRevert(null, backendReverted(null))
+    expect(r).toEqual({ selector: null, confidence: 'unknown' })
+  })
+
+  it('two sources disagree on the selector -> prefers wallet-side, flags live-only', () => {
+    const r = resolveRevert(LOW_POOL, backendReverted(OTHER))
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('backend response missing entirely -> falls back to wallet-only', () => {
+    const r = resolveRevert(LOW_POOL, null)
+    expect(r).toEqual({ selector: LOW_POOL, confidence: 'live-only' })
+  })
+
+  it('backend response missing + wallet null -> unknown', () => {
+    const r = resolveRevert(null, null)
+    expect(r).toEqual({ selector: null, confidence: 'unknown' })
+  })
+})
+
+describe('isLowPoolError', () => {
+  const LOW_POOL = NEERU_META_HARDCODED_FALLBACK.errorSelectors.e1
   it('detects viem prod-style selector in error.cause.data', () => {
     const err = Object.assign(new Error('Execution reverted'), {
       cause: { data: '0x2648b779' },
     })
-    expect(isLowPoolError(err)).toBe(true)
+    expect(isLowPoolError(err, LOW_POOL)).toBe(true)
   })
   it('detects selector inside a longer hex blob (cause.details)', () => {
     const err = Object.assign(new Error('estimateGas failed'), {
       cause: { details: 'execution reverted: 0x2648b779000000000000' },
     })
-    expect(isLowPoolError(err)).toBe(true)
+    expect(isLowPoolError(err, LOW_POOL)).toBe(true)
   })
   it('returns false for unrelated errors', () => {
-    expect(isLowPoolError(new Error('insufficient funds'))).toBe(false)
-    expect(isLowPoolError('not an error')).toBe(false)
-    expect(isLowPoolError(null)).toBe(false)
+    expect(isLowPoolError(new Error('insufficient funds'), LOW_POOL)).toBe(false)
+    expect(isLowPoolError('not an error', LOW_POOL)).toBe(false)
+    expect(isLowPoolError(null, LOW_POOL)).toBe(false)
   })
 })
 
-describe('closeNeeruPositionSaga prod-shape InterestPoolLow', () => {
+describe('closeNeeruPositionSaga simulation-revert envelope consumer', () => {
   const WALLET = '0x' + 'a'.repeat(40)
   const POSITION_ID = '4242'
+  const FALLBACK_TX = {
+    to: '0x988af5977201a0e988f2c75ea952532f6beb5082',
+    data: '0xa64f127e',
+    value: '0',
+    networkId: 'celo-mainnet',
+  }
 
-  it('detects InterestPoolLow when viem revert surfaces as selector in cause.data', async () => {
-    const prodShapeError = Object.assign(new Error('Execution reverted'), {
-      cause: { data: '0x2648b779' },
-    })
+  it('routes LOW_POOL selector to the wallet-side action + stashes the pre-built fallback', async () => {
     await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
       .provide([
         [matchers.select(walletAddressSelector), WALLET],
         [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
         [matchers.select.like({ selector: feeCurrenciesSelector }), []],
-        [matchers.call.fn(triggerShortcutRequest), { transactions: [] }],
-        [matchers.call.fn(prepareTransactions), Promise.reject(prodShapeError)],
+        [
+          matchers.call.fn(triggerShortcutRequest),
+          {
+            transactions: [],
+            dataProps: {
+              simulationRevert: { selector: '0x2648b779', reason: 'E1' },
+              fallback: { shortcutId: 'withdraw-amount-only', transactions: [FALLBACK_TX] },
+            },
+          },
+        ],
+      ])
+      .put(setEmergencyFallback({ positionId: POSITION_ID, transactions: [FALLBACK_TX] as any }))
+      .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
+      .run()
+  })
+
+  it('LOW_POOL without a pre-built fallback still dispatches the wallet-side action', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [
+          matchers.call.fn(triggerShortcutRequest),
+          {
+            transactions: [],
+            dataProps: {
+              simulationRevert: { selector: '0x2648b779', reason: 'E1' },
+            },
+          },
+        ],
       ])
       .put({ type: NEERU_LOW_POOL_ACTION, payload: { positionId: POSITION_ID } })
-      .put(closePositionFailure({ positionId: POSITION_ID, error: 'InterestPoolLow' }))
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_LOW_POOL_ERROR }))
       .run()
+  })
+
+  it('routes the e2 selector to its dedicated failure tag', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [
+          matchers.call.fn(triggerShortcutRequest),
+          {
+            transactions: [],
+            dataProps: {
+              simulationRevert: { selector: '0x9acb7e52', reason: 'E2' },
+            },
+          },
+        ],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_ALREADY_CLOSED_ERROR }))
+      .run()
+  })
+
+  it('routes the e3 selector to its dedicated failure tag', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [
+          matchers.call.fn(triggerShortcutRequest),
+          {
+            transactions: [],
+            dataProps: {
+              simulationRevert: { selector: '0x30cd7471', reason: 'E3' },
+            },
+          },
+        ],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_NOT_OWNER_ERROR }))
+      .run()
+  })
+
+  it('routes an unknown selector to the generic revert tag', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [
+          matchers.call.fn(triggerShortcutRequest),
+          {
+            transactions: [],
+            dataProps: {
+              simulationRevert: { selector: '0xdeadbeef', reason: 'UNKNOWN' },
+            },
+          },
+        ],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_UNKNOWN_REVERT_ERROR }))
+      .run()
+  })
+
+  it('empty transactions with no dataProps at all is treated as unknown revert (defense against a stray empty response)', async () => {
+    await expectSaga(closeNeeruPositionSaga, closePositionStart({ positionId: POSITION_ID }))
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        [matchers.call.fn(triggerShortcutRequest), { transactions: [] }],
+      ])
+      .put(closePositionFailure({ positionId: POSITION_ID, error: NEERU_UNKNOWN_REVERT_ERROR }))
+      .run()
+  })
+})
+
+describe('emergencyCloseNeeruPositionSaga pre-built fallback consumption', () => {
+  const WALLET = '0x' + 'a'.repeat(40)
+  const POSITION_ID = '4243'
+  const STASHED_TX = {
+    to: '0x988af5977201a0e988f2c75ea952532f6beb5082' as `0x${string}`,
+    data: '0xa64f127e' as `0x${string}`,
+    value: '0',
+    networkId: 'celo-mainnet',
+    from: WALLET as `0x${string}`,
+    gas: '240000',
+    estimatedGasUse: '130000',
+  }
+
+  it('skips the triggerShortcut round-trip when a pre-built fallback exists in state', async () => {
+    const stateWithStash = {
+      ...neeruInitialState,
+      pendingEmergencyFallback: { [POSITION_ID]: [STASHED_TX] },
+    }
+    let triggerCalled = false
+    await expectSaga(
+      emergencyCloseNeeruPositionSaga,
+      emergencyCloseStart({ positionId: POSITION_ID })
+    )
+      .withState({ neeru: stateWithStash })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        {
+          call(effect, next) {
+            if (effect.fn === triggerShortcutRequest) {
+              triggerCalled = true
+            }
+            return next()
+          },
+        },
+        [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
+        [matchers.call.fn(sendPreparedTransactions), []],
+      ])
+      .put(clearEmergencyFallback({ positionId: POSITION_ID }))
+      .put(closePositionSuccess({ positionId: POSITION_ID }))
+      .run()
+    expect(triggerCalled).toBe(false)
+  })
+
+  it('falls back to a fresh triggerShortcut when no pre-built fallback is stashed', async () => {
+    let triggerCalled = false
+    await expectSaga(
+      emergencyCloseNeeruPositionSaga,
+      emergencyCloseStart({ positionId: POSITION_ID })
+    )
+      .withState({ neeru: neeruInitialState })
+      .provide([
+        [matchers.select(walletAddressSelector), WALLET],
+        [matchers.select(hooksApiUrlSelector), 'https://x.test/hooks-api'],
+        [matchers.select(neeruMetaSelector), RESOLVED_META],
+        [matchers.select.like({ selector: feeCurrenciesSelector }), []],
+        {
+          call(effect, next) {
+            if (effect.fn === triggerShortcutRequest) {
+              triggerCalled = true
+              return { transactions: [STASHED_TX] }
+            }
+            return next()
+          },
+        },
+        [matchers.call.fn(prepareTransactions), { type: 'possible', transactions: [] }],
+        [matchers.call.fn(sendPreparedTransactions), []],
+      ])
+      .put(closePositionSuccess({ positionId: POSITION_ID }))
+      .run()
+    expect(triggerCalled).toBe(true)
   })
 })

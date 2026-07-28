@@ -20,6 +20,7 @@ import {
   EarnSwapDeposit,
   EarnWithdraw,
   TokenTransactionTypeV2,
+  TransactionStatus,
 } from 'src/transactions/types'
 import { formatFeedTime } from 'src/utils/time'
 
@@ -72,6 +73,11 @@ export default function EarnFeedItem({ transaction }: Props) {
     transaction.type !== TokenTransactionTypeV2.EarnDeposit &&
     transaction.type !== TokenTransactionTypeV2.EarnSwapDeposit
 
+  const isFailed = transaction.status === TransactionStatus.Failed
+  if (isFailed) {
+    subtitle = t('feedItemFailedTransaction')
+  }
+
   return (
     <Touchable
       testID={`EarnFeedItem/${transaction.transactionHash}`}
@@ -97,7 +103,10 @@ export default function EarnFeedItem({ transaction }: Props) {
               tokenId={tokenId}
               showLocalAmount={true}
               showExplicitPositiveSign={true}
-              style={[styles.amount, isPositive && { color: Colors.accent }]}
+              style={[
+                styles.amount,
+                isFailed ? { color: Colors.gray3 } : isPositive && { color: Colors.accent },
+              ]}
               testID={'EarnFeedItem/amount'}
             />
           </View>

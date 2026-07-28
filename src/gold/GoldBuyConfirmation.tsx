@@ -38,6 +38,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
+import { getDisplayDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -404,7 +405,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
               ) : (
                 <Text style={styles.detailValue}>
                   {parsedGasFee && gasFeeToken
-                    ? `${parsedGasFee.toFormat(6)} ${getGasFeeTokenName()}`
+                    ? `${parsedGasFee.toFormat(getDisplayDecimalsForToken(gasFeeToken))} ${getGasFeeTokenName()}`
                     : t('goldFlow.buy.estimatingFee')}
                 </Text>
               )}
@@ -449,9 +450,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
               isSubmitting ||
               (isVirtualDolares
                 ? !multiSwapPlan || multiSwapPlan.shortfall.gt(0)
-                : isGettingQuote || !preparedTransactions || !toTokenId)
+                : isGettingQuote ||
+                  !Array.isArray(preparedTransactions) ||
+                  preparedTransactions.length === 0 ||
+                  !estimatedGasFee ||
+                  estimatedGasFee === '0' ||
+                  !!quoteError ||
+                  !toTokenId)
             }
-            showLoading={isSubmitting}
+            showLoading={isSubmitting || isGettingQuote}
             testID="GoldBuyConfirmation/ConfirmButton"
           />
         </View>

@@ -1,4 +1,8 @@
+import * as Sentry from '@sentry/react-native'
+import { SENTRY_ENABLED } from 'src/config'
 import { GoldPriceData } from 'src/gold/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
@@ -43,6 +47,50 @@ export interface DiaAssetQuotationResponse {
   Time: string
 }
 
+// The wallet's per-host circuit breaker (see src/lib/circuitBreaker) short-
+// circuits requests to a synthetic Response with this exact statusText once
+// FAILURE_THRESHOLD failures accumulate within FAILURE_WINDOW_MS for the
+// same host. When that happens, the fetch never actually leaves the device
+// and backend logs will show ZERO requests during the outage window.
+// Distinguishing this from a real upstream 5xx unblocks the debugging loop
+// with backend: they only need to look at their logs if this bucket is NOT
+// what fired.
+const CIRCUIT_OPEN_MARKER = 'Service Unavailable (circuit open)'
+
+function isCircuitBreakerError(error: unknown): boolean {
+  if (!error) return false
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes(CIRCUIT_OPEN_MARKER)
+}
+
+// Emits an operational signal to Sentry naming which of the three sources
+// finally produced the price the app is showing. Backend can dashboard the
+// `fallback_hardcoded` rate as a proxy for "how often is our price feed
+// degraded end-to-end". Mirrors the neeru_meta_source pattern.
+//
+// `backend_stale` is a sub-state of a successful backend fetch: the response
+// came from the 24h stale cache (upstream unreachable but backend still
+// served a recent-ish value). Counted separately from `backend` so backend
+// can alert on the ratio without losing "the fetch itself succeeded".
+type GoldPriceSource = 'backend' | 'backend_stale' | 'dia_data' | 'fallback_hardcoded'
+
+function tagPriceSource(source: GoldPriceSource): void {
+  if (!SENTRY_ENABLED) return
+  Sentry.setTag('gold_price_source', source)
+}
+
+// Bucketed age so Sentry aggregations do not explode into per-second
+// cardinality while still surfacing the operational shape: is the stale
+// cache serving fresh-ish reads or hours-old ones?
+type StaleAgeBucket = '<5min' | '5-15min' | '15-60min' | '>1h'
+
+function bucketizeStaleAge(seconds: number): StaleAgeBucket {
+  if (seconds < 5 * 60) return '<5min'
+  if (seconds < 15 * 60) return '5-15min'
+  if (seconds < 60 * 60) return '15-60min'
+  return '>1h'
+}
+
 /**
  * Check if cached price is still valid
  */
@@ -79,10 +127,18 @@ async function fetchFromTucopBackend(): Promise<GoldPriceData> {
     throw new Error('Invalid priceUsd in TuCop price proxy response')
   }
 
+  // Backend contract (shipped 2026-07-27): X-Stale + X-Stale-Age headers set
+  // when the response body came from the 24h stale cache instead of the
+  // fresh (60s TTL) upstream fetch. Absence of the header means fresh.
+  const isStale = response.headers.get('X-Stale') === 'true'
+  const staleAgeSeconds = isStale ? Number(response.headers.get('X-Stale-Age') ?? 0) : 0
+
   return {
     priceUsd: data.priceUsd,
     price24hChange: 0,
     timestamp: Date.now(),
+    isStale,
+    staleAgeSeconds,
   }
 }
 
@@ -132,20 +188,52 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   try {
     const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
-    Logger.debug(TAG, 'Got XAUt price from TuCop backend', { price: priceData.priceUsd })
+    if (priceData.isStale) {
+      tagPriceSource('backend_stale')
+      if (SENTRY_ENABLED) {
+        Sentry.setTag(
+          'gold_price_stale_age_bucket',
+          bucketizeStaleAge(priceData.staleAgeSeconds ?? 0)
+        )
+      }
+    } else {
+      tagPriceSource('backend')
+    }
+    Logger.debug(TAG, 'Got XAUt price from TuCop backend', {
+      price: priceData.priceUsd,
+      isStale: priceData.isStale ?? false,
+      staleAgeSeconds: priceData.staleAgeSeconds ?? 0,
+    })
     return priceData
   } catch (primaryError: any) {
     Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
+    captureBusinessError(primaryError, {
+      feature: 'transactions',
+      provider: 'internal',
+      action: 'fetch_gold_price_backend',
+      errorCode: isCircuitBreakerError(primaryError)
+        ? 'circuit_open'
+        : classifyHttpError(primaryError),
+    })
   }
 
   // Fallback to DIA Data
   try {
     const priceData = await fetchFromDiaApi()
     cachedGoldPrice = priceData
+    tagPriceSource('dia_data')
     Logger.debug(TAG, 'Got XAUt price from DIA', { price: priceData.priceUsd })
     return priceData
   } catch (fallbackError: any) {
     Logger.error(TAG, 'DIA API also failed', fallbackError.message)
+    captureBusinessError(fallbackError, {
+      feature: 'transactions',
+      provider: 'internal',
+      action: 'fetch_gold_price_dia',
+      errorCode: isCircuitBreakerError(fallbackError)
+        ? 'circuit_open'
+        : classifyHttpError(fallbackError),
+    })
     throw new Error('All XAUt price APIs failed')
   }
 }
@@ -160,14 +248,18 @@ export async function fetchGoldPriceWithFallback(): Promise<GoldPriceData> {
   } catch (error: any) {
     Logger.warn(TAG, 'All APIs failed, using fallback', error.message)
 
-    // Return cached price if available
+    // Return cached price if available. Tag the source as fallback_hardcoded
+    // regardless of whether we hit stale cache vs the constant, because from
+    // the user's perspective both are "degraded" states worth counting.
     if (cachedGoldPrice) {
       Logger.debug(TAG, 'Returning stale cached price')
+      tagPriceSource('fallback_hardcoded')
       return cachedGoldPrice
     }
 
     // Return hardcoded fallback as last resort
     Logger.debug(TAG, 'Returning hardcoded fallback price')
+    tagPriceSource('fallback_hardcoded')
     return { ...FALLBACK_GOLD_PRICE, timestamp: Date.now() }
   }
 }

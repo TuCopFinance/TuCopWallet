@@ -332,18 +332,41 @@ export function useGoldQuote() {
           origin,
         })
 
+        // Gas estimation failed for every eligible fee currency (usually the
+        // user's balance in each candidate is below the projected gas cost,
+        // or Forno rejected `eth_estimateGas` for the currency they tried to
+        // pay with). Returning a fake "success" quote with estimatedGasFee=0
+        // and preparedTransactions=[] would leave the confirm screen stuck on
+        // "Estimando..." indefinitely (button gate rightly refuses to enable).
+        // Throw an actionable error instead so the confirm screen renders a
+        // user-facing message and lets them retry / pick another amount.
+        if (
+          preparedTransactions.type !== 'possible' ||
+          preparedTransactions.transactions.length === 0
+        ) {
+          // `not-enough-balance-for-gas` from prepareTransactions can mean
+          // TWO different things: the user truly lacks balance, OR the RPC
+          // rejected `eth_estimateGas` for every candidate fee currency (a
+          // common Celo Forno flakiness when the maxFee/baseFee margin gets
+          // tight for CIP-64 non-native fee tokens). From here we cannot
+          // distinguish the two, so surface a message that is honest about
+          // both possibilities and encourages a retry.
+          const reason =
+            preparedTransactions.type === 'not-enough-balance-for-gas'
+              ? 'No pudimos estimar la tarifa de red ahora. Puede ser que la red esté saturada o que necesites un poco más de saldo. Probá de nuevo en unos segundos.'
+              : preparedTransactions.type === 'need-decrease-spend-amount-for-gas'
+                ? 'Reducí un poco el monto para dejar saldo para la tarifa de red.'
+                : 'No pudimos preparar la transacción. Probá de nuevo en unos segundos.'
+          throw new Error(reason)
+        }
+
         // Calculate estimated gas fee from transactions
         let estimatedGasFeeValue = '0'
-        if (
-          preparedTransactions.type === 'possible' &&
-          preparedTransactions.transactions.length > 0
-        ) {
-          try {
-            const gasFee = getEstimatedGasFee(preparedTransactions.transactions)
-            estimatedGasFeeValue = gasFee.toFixed(0)
-          } catch (e) {
-            Logger.warn(TAG, 'Could not calculate gas fee', e)
-          }
+        try {
+          const gasFee = getEstimatedGasFee(preparedTransactions.transactions)
+          estimatedGasFeeValue = gasFee.toFixed(0)
+        } catch (e) {
+          Logger.warn(TAG, 'Could not calculate gas fee', e)
         }
 
         const quote: GoldSwapQuote = {
@@ -411,56 +434,4 @@ export function calculateFromGoldAmount(
 
   const goldValueUsd = goldAmount.multipliedBy(goldPriceUsd)
   return goldValueUsd.dividedBy(outputPriceUsd)
-}
-
-/**
- * Estimate gas for a gold swap transaction using the swap API
- */
-export async function estimateGoldSwapGas(
-  fromToken: TokenBalance,
-  toToken: TokenBalance,
-  amount: BigNumber,
-  walletAddress: string,
-  feeCurrencies: TokenBalance[]
-): Promise<{ estimatedGasFee: string; gasFeeTokenId: string } | null> {
-  try {
-    // Fetch quote from backend API to get accurate gas estimation
-    const { transaction: swapTransaction } = await fetchSwapQuote(
-      fromToken,
-      toToken,
-      amount,
-      walletAddress
-    )
-
-    // Create transactions from the quote
-    const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
-      fromToken,
-      swapTransaction,
-      walletAddress
-    )
-
-    // Prepare transactions with fee estimation
-    const preparedTransactions = await prepareTransactions({
-      feeCurrencies,
-      spendToken: fromToken,
-      spendTokenAmount: new BigNumber(amountToApprove.toString()).shiftedBy(-fromToken.decimals),
-      decreasedAmountGasFeeMultiplier: 1.2,
-      baseTransactions,
-      throwOnSpendTokenAmountExceedsBalance: false,
-      origin: 'gold-buy' as TransactionOrigin,
-    })
-
-    if (preparedTransactions.type === 'possible' && preparedTransactions.transactions.length > 0) {
-      const gasFee = getEstimatedGasFee(preparedTransactions.transactions)
-      return {
-        estimatedGasFee: gasFee.toFixed(0),
-        gasFeeTokenId: preparedTransactions.feeCurrency.tokenId,
-      }
-    }
-
-    return null
-  } catch (error: any) {
-    Logger.warn(TAG, 'Failed to estimate gold swap gas', error)
-    return null
-  }
 }

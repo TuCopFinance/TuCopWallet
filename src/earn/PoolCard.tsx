@@ -22,7 +22,9 @@ import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
+import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
 const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; body: string }> = {
   0: { title: 'neeruVaults.explainer.flexible.title', body: 'neeruVaults.explainer.flexible.body' },
@@ -74,8 +76,20 @@ export default function PoolCard({
   const depositTokenInfo = allTokens[depositTokenId]
 
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const { poolBalanceInUsd } = useMemo(() => getEarnPositionBalanceValues({ pool }), [pool])
-  const poolBalanceInFiat = useDollarsToLocalAmount(poolBalanceInUsd) ?? null
+  const { poolBalanceInUsd, poolBalanceInDepositToken, isLocalCurrencyDenominated } = useMemo(
+    () => getEarnPositionBalanceValues({ pool }),
+    [pool]
+  )
+  const poolBalanceUsdToLocal = useDollarsToLocalAmount(poolBalanceInUsd) ?? null
+  // Local-currency Mento stablecoins (COPm, EURm, ...) already carry values
+  // in the user's local currency. Their `balance * priceUsd` product happens
+  // to equal the local amount when the user's fiat is the currency the token
+  // represents, so passing it through useDollarsToLocalAmount would multiply
+  // by the USD->local rate a second time (see isLocalCurrencyStable comment).
+  // Use the deposit-token balance directly instead.
+  const poolBalanceInFiat = isLocalCurrencyDenominated
+    ? poolBalanceInDepositToken
+    : poolBalanceUsdToLocal
 
   const rewardAmountInUsd = useMemo(
     () =>
@@ -96,13 +110,28 @@ export default function PoolCard({
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
-  const poolBalanceString = useMemo(
-    () =>
-      `${localCurrencySymbol}${poolBalanceInFiat ? formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat)) : '--'}`,
-    [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat]
-  )
+  const poolBalanceString = useMemo(() => {
+    // Prefer the standard USD-to-local conversion when we have a live
+    // priceUsd for the deposit token. Backend now provides real priceUsd
+    // for COPm so the pool balance renders in local currency correctly
+    // for every token that has a price feed.
+    if (poolBalanceInFiat) {
+      return `${localCurrencySymbol}${formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat))}`
+    }
+    // Defensive fallback for COPm when its priceUsd degrades to 0 (backend
+    // outage or fail-soft response). 1 COPm approximates 1 COP as a peso
+    // stablecoin so the raw balance is still a meaningful headline.
+    if (depositTokenId === COPM_TOKEN_ID_MAINNET) {
+      return `${localCurrencySymbol}${formatValueToDisplay(new BigNumber(balance).plus(rewardAmountInFiat))}`
+    }
+    return `${localCurrencySymbol}--`
+  }, [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat, depositTokenId, balance])
 
-  const tvlInFiat = useDollarsToLocalAmount(tvl ?? null)
+  // Same branch as the pool balance above: for local-currency Mento pools
+  // the backend already returns TVL in the local currency (e.g. COP for
+  // COPm pools) so skip the USD->local conversion.
+  const tvlUsdToLocal = useDollarsToLocalAmount(tvl ?? null)
+  const tvlInFiat = isLocalCurrencyDenominated ? (tvl ? new BigNumber(tvl) : null) : tvlUsdToLocal
   const tvlString = useMemo(() => {
     return `${localCurrencySymbol}${tvlInFiat ? formatValueToDisplay(tvlInFiat) : '--'}`
   }, [localCurrencySymbol, tvlInFiat])
@@ -114,12 +143,29 @@ export default function PoolCard({
   // comparable to bank promos and other DeFi surfaces the user browses. Keep
   // the monthly rate visible as a smaller subtitle so no context is lost.
   const isNeeruPool = pool.appId === 'neeru-vaults'
+  const neeruCategoryId = useMemo(
+    () => (isNeeruPool ? categoryIdFromPositionId(pool.positionId) : null),
+    [isNeeruPool, pool.positionId]
+  )
+  // Backend catalogue is the source of truth for both rates (retunes without a
+  // contract upgrade would otherwise leave stale numbers on the card). Falls
+  // back to the local monthly-to-annual conversion only when the catalogue is
+  // not loaded yet, so the UI still surfaces something reasonable pre-fetch.
+  const catalogueCategory = useSelector((state) =>
+    neeruCategoryId !== null ? neeruCatalogueCategoryByIdSelector(state, neeruCategoryId) : null
+  )
   const neeruRates = useMemo(() => {
     if (!isNeeruPool) return null
+    if (catalogueCategory) {
+      return {
+        mv: catalogueCategory.monthlyRatePercentage.toFixed(2),
+        ea: catalogueCategory.annualEffectivePercentage.toFixed(2),
+      }
+    }
     const mv = rawYieldRate
     const ea = effectiveAnnualPercentFromMonthly(mv)
     return { mv: mv.toFixed(2), ea: ea.toFixed(2) }
-  }, [isNeeruPool, rawYieldRate])
+  }, [isNeeruPool, rawYieldRate, catalogueCategory])
 
   // Card title is always the user-friendly token display name per the wallet manual
   // (cCOP -> Pesos, USDT/USDC/USDm -> Dolares, etc).
@@ -128,24 +174,24 @@ export default function PoolCard({
     [tokensInfo]
   )
 
-  // For Neeru pools, append a per-tranche subtitle so the 4 cards are distinguishable.
+  // For Neeru pools, append a per-category subtitle so the 4 cards are distinguishable.
   const cardSubtitle = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = categoryIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[categoryId]
     return t(key)
   }, [pool, t])
 
-  // Per-tranche explainer sheet. The `?` next to the subtitle fires this so
+  // Per-category explainer sheet. The `?` next to the subtitle fires this so
   // the user can read how the specific option (Flexible / 30 / 60 / 90 days)
   // behaves without leaving the Earn tab. Uses native Alert for zero-infra
   // cost; a designed BottomSheet is a follow-up if we want richer content.
   const neeruExplainer = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
-    const trancheId = categoryIdFromPositionId(pool.positionId)
-    if (trancheId === null) return null
-    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[trancheId]
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return null
+    const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[categoryId]
     return { title: t(keys.title), body: t(keys.body) }
   }, [pool, t])
 

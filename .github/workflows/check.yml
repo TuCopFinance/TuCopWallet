@@ -82,3 +82,33 @@ jobs:
           # Force color output in the terminal with chalk
           # See https://github.com/chalk/supports-color/issues/106
           FORCE_COLOR: 2
+
+  backend-smoke:
+    name: Backend smoke (pre-release)
+    runs-on: ubuntu-latest
+    # Release-quality gate: runs the wallet-consumer-spec verification
+    # playbook against production before we cut a release. Six curl checks
+    # (health, neeru catalogue, shortcut list, asset URLs, positions detail,
+    # feed indexer lag). Skipped on Development PRs so a transient backend
+    # blip does not block day-to-day work.
+    if: github.event_name != 'pull_request' || github.base_ref == 'main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pre-release backend smoke
+        run: bash scripts/pre-release-backend-smoke.sh
+
+  neeru-meta-drift:
+    name: Neeru meta drift check
+    runs-on: ubuntu-latest
+    # Blocking check on every PR. Compares the hardcoded Neeru meta fallback
+    # (constants that ride the release when backend is unreachable) against
+    # the live /api/meta/contracts/neeru + /api/earn/neeru/catalogue payloads.
+    # Any drift means merge blocked so the class of bug shipped in PR #272
+    # cannot repeat silently.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/yarn-install
+      - name: Run live drift check
+        env:
+          NEERU_LIVE_META_CHECK: '1'
+        run: yarn jest src/earn/neeru/__tests__/hardcoded-vs-live.test.ts

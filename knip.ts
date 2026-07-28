@@ -34,7 +34,6 @@ const config: KnipConfig = {
     'react-native-adjust', // required for @segment/analytics-react-native-plugin-adjust
     'react-native-vector-icons', // used via react-native-dropdown-picker
     '@react-native-community/cli', // react-native cli tooling
-    '@sentry/types', // type definitions for sentry
     'react-native-svg-mock', // test mocking
     '@types/jest',
   ],

@@ -3661,6 +3661,8 @@ export const v244Schema = {
     goldPriceUsd: null,
     goldPrice24hChange: null,
     goldPriceFetchedAt: null,
+    goldPriceIsStale: false,
+    goldPriceStaleAgeSeconds: 0,
     buyStatus: 'idle',
     sellStatus: 'idle',
     priceFetchStatus: 'idle',
@@ -3763,6 +3765,7 @@ export const v251Schema = {
     closeStatus: 'idle',
     closingPositionId: null,
     lastError: null,
+    pendingEmergencyFallback: {},
   },
   _persist: {
     ...v250Schema._persist,
@@ -3787,6 +3790,42 @@ export const v251SchemaWithWriFeeAdapterBootstrap = {
   },
 }
 
+// Neeru zero-exposure refactor. The persisted position shape is renamed
+// (five fields renamed to opaque wire names). Migration 252 clears
+// state.neeru.positions and state.neeru.optimisticPositions so old-shape
+// entries do not survive the upgrade; the earn screen refetches on mount.
+export const v252Schema = {
+  ...v251SchemaWithWriFeeAdapterBootstrap,
+  neeru: {
+    ...v251SchemaWithWriFeeAdapterBootstrap.neeru,
+    positions: [],
+    optimisticPositions: [],
+  },
+  _persist: {
+    ...v251SchemaWithWriFeeAdapterBootstrap._persist,
+    version: 252,
+  },
+}
+
+// neeruConfig slice: caches backend /meta payload with source + fetchedAt so
+// the wallet can survive backend outages without reintroducing hardcoded
+// contract state as a permanent fallback. Slice is added unconditionally, no
+// persist version bump (autoMergeLevel2 folds the initial state for existing
+// users; migration 252 is still the last release cut).
+export const v252SchemaWithNeeruConfig = {
+  ...v252Schema,
+  neeruConfig: {
+    meta: null,
+    metaSource: null,
+    metaFetchedAt: null,
+    metaFetchStatus: 'idle',
+    metaLastError: null,
+    catalogue: null,
+    catalogueFetchStatus: 'idle',
+    catalogueLastError: null,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v251SchemaWithWriFeeAdapterBootstrap as Partial<RootState>
+  return v252SchemaWithNeeruConfig as Partial<RootState>
 }

@@ -34,24 +34,66 @@ TuCOP Wallet is a React Native mobile application that provides digital wallet s
 ## Quick Start
 
 ```bash
-# 1. Clone and install
+# 1. Clone and install (postinstall auto-populates local secret files, see below)
 git clone https://github.com/TuCopFinance/TuCopWallet.git
 cd TuCopWallet
 nvm use 20.17.0
 yarn install
 
-# 2. Configure secrets
-cp secrets.json.template secrets.json
-# Edit secrets.json with your API keys
-
-# 3. Run on Android (mainnetdev)
+# 2. Run on Android (mainnetdev)
 yarn dev:android
 
-# 4. Run on iOS (mainnetdev)
+# 3. Run on iOS (mainnetdev)
 yarn dev:ios
 ```
 
 For detailed setup instructions, see [docs/guides/wallet-setup.md](docs/guides/wallet-setup.md).
+
+### Secret loading (`scripts/populate_secrets.sh`)
+
+`yarn install` runs the `populate_secrets.sh` postinstall hook which
+generates three gitignored files the build reads at compile time:
+
+- `ios/sentry.properties`
+- `android/sentry.properties`
+- `secrets.json`
+
+The script sources values from two places, in order:
+
+1. **Environment variables** (used by CI): `SENTRY_AUTH_TOKEN`,
+   `SENTRY_CLIENT_URL`.
+2. **macOS Keychain** (used by dev laptops): entries under
+   `acct=tucop-finance` with `svce=SENTRY_ORG_TOKEN` and
+   `svce=SENTRY_CLIENT_URL`.
+
+If neither is present the script warns and writes empty auth token +
+DSN. The app still builds, but runtime error reporting stays disabled
+and release builds cannot upload sourcemaps.
+
+**Dev setup on a fresh macOS**:
+
+```bash
+# One-time: store the Sentry token and DSN in the Keychain
+security add-generic-password -a tucop-finance -s SENTRY_ORG_TOKEN -w '<token>'
+security add-generic-password -a tucop-finance -s SENTRY_CLIENT_URL -w '<dsn>'
+# Then re-run:
+yarn postinstall
+```
+
+Ask a team lead for the current token/DSN values (or read them from a
+shared 1Password vault; do not commit them). The token should be an
+Organisation Auth Token created in Sentry Settings → Auth Tokens with
+scope `org:ci`.
+
+**CI**: `SENTRY_AUTH_TOKEN` and `SENTRY_CLIENT_URL` are set as
+repository secrets in
+[Actions → Secrets](https://github.com/TuCopFinance/TuCopWallet/settings/secrets/actions)
+and exported to the `Install dependencies` step of `.github/workflows/build.yml`.
+No manual per-run configuration is needed.
+
+This replaces the previous `yarn keys:decrypt` mechanism that depended
+on Valora's GCP KMS project (`celo-mobile-testnet`), which TuCOP does
+not have access to. See PR #285 for the migration rationale.
 
 ## Project Structure
 
@@ -221,9 +263,9 @@ TuCopWallet/
 │   ├── Fastfile                    #   Build lanes
 │   └── metadata/                   #   Store listings (en-US, es-419 + screenshots)
 │
-├── scripts/                        # Build and utility scripts (27 files)
+├── scripts/                        # Build and utility scripts
 │   ├── setup-ci-cd.sh              #   CI/CD setup
-│   ├── key_placer.sh               #   Signing key placement
+│   ├── populate_secrets.sh         #   Populate gitignored secrets from Keychain/env
 │   ├── pre-deploy.sh               #   Pre-deployment checks
 │   ├── verify_locales.sh           #   Locale file validation
 │   ├── force_update_check.js       #   Version check testing
@@ -248,8 +290,7 @@ TuCopWallet/
 ├── package.json                    # Dependencies and scripts
 ├── react-native.config.js          # React Native CLI config
 ├── renovate.json5                  # Dependency update automation
-├── secrets.json.enc                # Encrypted secrets (CI)
-├── secrets.json.template           # Secrets template
+├── secrets.json.template           # Secrets template (real values populated at postinstall)
 ├── tsconfig.json                   # TypeScript config
 ├── yarn.lock                       # Dependency lockfile
 │

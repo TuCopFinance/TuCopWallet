@@ -5,9 +5,9 @@ import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 
 const pos: NeeruIndividualPosition = {
   positionId: '1234',
-  tranche: 1,
+  category: 1,
   categoryLabel: '30 dias',
-  principal: '10000',
+  amount: '10000',
   accruedInterest: '82.5',
   rateValue: '0',
   monthlyRatePercentage: 1.0,
@@ -17,7 +17,7 @@ const pos: NeeruIndividualPosition = {
   depositTxHash: '0x' + 'a'.repeat(64),
   renewedFromPositionId: null,
   currentPayoutIfClosed: {
-    principal: '10000',
+    amount: '10000',
     interest: '82.5',
     penaltyBps: 2000,
     interestAfterPenalty: '66',
@@ -27,18 +27,29 @@ const pos: NeeruIndividualPosition = {
 }
 
 describe('NeeruEmergencyCloseSheet', () => {
-  it('renders principal and interest in the explanation', () => {
+  it('renders amount and interest in the explanation', () => {
     const { getByText } = render(
-      <NeeruEmergencyCloseSheet position={pos} onConfirm={jest.fn()} onCancel={jest.fn()} />
+      <NeeruEmergencyCloseSheet
+        forwardedRef={React.createRef()}
+        position={pos}
+        onConfirm={jest.fn()}
+        onCancel={jest.fn()}
+      />
     )
-    expect(getByText(/10000/)).toBeTruthy()
-    expect(getByText(/82.5/)).toBeTruthy()
+    // formatValueToDisplay renders thousands separators + 2 decimals ("10,000.00").
+    expect(getByText(/10,000/)).toBeTruthy()
+    expect(getByText(/82\.50/)).toBeTruthy()
   })
 
   it('requires two taps on the secondary CTA before firing onConfirm', () => {
     const onConfirm = jest.fn()
     const { getByTestId } = render(
-      <NeeruEmergencyCloseSheet position={pos} onConfirm={onConfirm} onCancel={jest.fn()} />
+      <NeeruEmergencyCloseSheet
+        forwardedRef={React.createRef()}
+        position={pos}
+        onConfirm={onConfirm}
+        onCancel={jest.fn()}
+      />
     )
     fireEvent.press(getByTestId('NeeruEmergencyCloseSheet.Secondary'))
     expect(onConfirm).not.toHaveBeenCalled()

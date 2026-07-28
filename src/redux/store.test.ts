@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 251,
+          "version": 252,
         },
         "account": {
           "acceptedTerms": false,
@@ -273,6 +273,8 @@ describe('store state', () => {
           "error": null,
           "goldPrice24hChange": null,
           "goldPriceFetchedAt": null,
+          "goldPriceIsStale": false,
+          "goldPriceStaleAgeSeconds": 0,
           "goldPriceUsd": null,
           "hasSeenGoldInfo": false,
           "preferredIconVariant": "bar",
@@ -342,7 +344,18 @@ describe('store state', () => {
           "lastSyncedAt": null,
           "lastSyncedBlock": null,
           "optimisticPositions": [],
+          "pendingEmergencyFallback": {},
           "positions": [],
+        },
+        "neeruConfig": {
+          "catalogue": null,
+          "catalogueFetchStatus": "idle",
+          "catalogueLastError": null,
+          "meta": null,
+          "metaFetchStatus": "idle",
+          "metaFetchedAt": null,
+          "metaLastError": null,
+          "metaSource": null,
         },
         "networkInfo": {
           "connected": false,
