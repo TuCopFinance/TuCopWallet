@@ -71,7 +71,7 @@ export interface NeeruMeta {
 
 // Backend catalogue endpoint payload shape. Rates fluctuate operationally
 // so wallet never persists them (see NeeruConfigState); only meta is cached.
-export interface NeeruCatalogueCategory {
+interface NeeruCatalogueCategory {
   id: number
   secs: string
   rateRay: string
@@ -79,7 +79,7 @@ export interface NeeruCatalogueCategory {
   annualEffectivePercentage: number
 }
 
-export interface NeeruCatalogueToken {
+interface NeeruCatalogueToken {
   address: `0x${string}`
   decimals: number
   symbol: string

@@ -38,7 +38,7 @@ export const NEERU_META_HARDCODED_FALLBACK: NeeruMeta = {
   version: 'v1-2026-06-29',
 }
 
-export interface ResolvedNeeruMeta {
+interface ResolvedNeeruMeta {
   meta: NeeruMeta
   source: NeeruConfigSource
   isDegraded: boolean
@@ -70,7 +70,7 @@ export function neeruMetaSelector(state: RootState): ResolvedNeeruMeta {
   }
 }
 
-export interface ResolvedNeeruCatalogue {
+interface ResolvedNeeruCatalogue {
   catalogue: NeeruCatalogue | null
   isLoading: boolean
   hasError: boolean

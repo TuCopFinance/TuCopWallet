@@ -4,7 +4,7 @@
 // (network vs backend 5xx vs bad request vs parse). Aligned with backend's
 // 2026-07-26 review of the Sentry schema.
 
-export type HttpErrorClass =
+type HttpErrorClass =
   | 'network_error' // fetch rejected, DNS, connection refused, offline
   | 'timeout' // AbortError from fetchWithTimeout / any explicit timeout
   | 'http_4xx' // backend returned 400-499 (client-side classification)
@@ -17,7 +17,7 @@ export type HttpErrorClass =
 // Emitting these as errorCode gives operational signal (spikes in
 // revert_unknown indicate the backend /tx/status endpoint degraded) without
 // exposing any contract-level selector.
-export type RevertConfidenceClass =
+type RevertConfidenceClass =
   | 'revert_confirmed'
   | 'revert_transient'
   | 'revert_live_only'

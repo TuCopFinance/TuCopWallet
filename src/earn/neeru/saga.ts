@@ -133,7 +133,7 @@ export function isLowPoolError(error: unknown, lowPoolSelector: `0x${string}`): 
   return false
 }
 
-export type NeeruRevertConfidence =
+type NeeruRevertConfidence =
   | 'confirmed' // wallet + backend agree on the same selector
   | 'transient' // backend saw selector at N-1, wallet no longer reproduces at latest
   | 'live-only' // wallet sees selector at latest, backend did not at N-1

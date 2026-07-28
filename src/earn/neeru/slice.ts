@@ -3,7 +3,7 @@ import { RawShortcutTransaction } from 'src/positions/slice'
 import { REHYDRATE, RehydrateAction, getRehydratePayload } from 'src/redux/persist-helper'
 import { NeeruCloseStatus, NeeruFetchStatus, NeeruIndividualPosition } from 'src/earn/neeru/types'
 
-export interface NeeruState {
+interface NeeruState {
   fetchStatus: NeeruFetchStatus
   positions: NeeruIndividualPosition[]
   optimisticPositions: NeeruIndividualPosition[]

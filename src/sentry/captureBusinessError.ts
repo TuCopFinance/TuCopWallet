@@ -5,7 +5,7 @@ import { SENTRY_ENABLED } from 'src/config'
 // integration (Squid, Allbridge, Aave, Compound, etc) gets a value here so
 // the Sentry dashboard can group / filter without pattern-matching free-form
 // strings. Keep names stable, they become the tag values in every event.
-export type BusinessFeature =
+type BusinessFeature =
   | 'earn' // earn-vaults family (deposits, withdraws, close, emergency)
   | 'swap' // any token-to-token swap
   | 'transactions' // generic tx send / receipt / feed
@@ -17,7 +17,7 @@ export type BusinessFeature =
 // values as the wallet integrates new backends. 'internal' covers wallet-
 // native flows (e.g. positions fetch failure that is not a specific
 // provider). Aligned with backend's taxonomy so joint dashboards work.
-export type BusinessProvider =
+type BusinessProvider =
   | 'neeru'
   | 'marranitos'
   | 'squid'
@@ -27,7 +27,7 @@ export type BusinessProvider =
   | 'wri'
   | 'internal'
 
-export interface BusinessContext {
+interface BusinessContext {
   feature: BusinessFeature
   provider: BusinessProvider
   action: string // e.g. 'close_position', 'trigger_shortcut', 'send_prepared'

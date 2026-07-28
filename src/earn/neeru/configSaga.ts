@@ -68,11 +68,11 @@ export function* fetchNeeruCatalogueSaga() {
   }
 }
 
-export function* watchFetchNeeruMeta() {
+function* watchFetchNeeruMeta() {
   yield* takeLatest(fetchMetaStart.type, fetchNeeruMetaSaga)
 }
 
-export function* watchFetchNeeruCatalogue() {
+function* watchFetchNeeruCatalogue() {
   yield* takeLatest(fetchCatalogueStart.type, fetchNeeruCatalogueSaga)
 }
 
