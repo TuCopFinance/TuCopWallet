@@ -84,7 +84,7 @@ src/
 
 - **App**: 1.118.5 (build: 255 / versionCode 1021081774)
 - **Network**: Celo mainnet only
-- **Node**: 20.17.0 required
+- **Node**: 24.18.1 (Krypton LTS); 22.x also supported per `engines`
 
 ---
 
