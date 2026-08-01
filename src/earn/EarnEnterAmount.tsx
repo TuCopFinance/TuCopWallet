@@ -565,11 +565,6 @@ function EarnEnterAmount({ route }: Props) {
             testID="EarnEnterAmount/WithdrawingAndClaimingCard"
           />
         )}
-        <EnterAmountOptions
-          onPressAmount={onSelectPercentageAmount}
-          selectedAmount={selectedPercentage}
-          testID="EarnEnterAmount/AmountOptions"
-        />
         <Button
           onPress={onPressContinue}
           text={t('earnFlow.enterAmount.continue')}
@@ -580,6 +575,14 @@ function EarnEnterAmount({ route }: Props) {
           testID="EarnEnterAmount/Continue"
         />
       </KeyboardAwareScrollView>
+      {/* Percentage Options rendered OUTSIDE the ScrollView so its
+          position:absolute + bottom:0 anchor to the screen, not to
+          the scrolled content. See GoldBuyEnterAmount for full note. */}
+      <EnterAmountOptions
+        onPressAmount={onSelectPercentageAmount}
+        selectedAmount={selectedPercentage}
+        testID="EarnEnterAmount/AmountOptions"
+      />
       {tokenAmount && (
         <FeeDetailsBottomSheet
           forwardedRef={feeDetailsBottomSheetRef}
