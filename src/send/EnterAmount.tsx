@@ -324,12 +324,6 @@ export default function EnterAmount({
 
         {children}
 
-        <EnterAmountOptions
-          onPressAmount={onSelectPercentageAmount}
-          selectedAmount={selectedPercentage}
-          testID="SendEnterAmount/AmountOptions"
-        />
-
         <ProceedComponent
           tokenAmount={processedAmounts.token.bignum}
           localAmount={processedAmounts.local.bignum}
@@ -340,6 +334,16 @@ export default function EnterAmount({
           showLoading={prepareTransactionsLoading}
         />
       </KeyboardAwareScrollView>
+
+      {/* Percentage Options rendered OUTSIDE the ScrollView so its
+          position:absolute + bottom:0 anchor to the screen, not to
+          the scrolled content. See GoldBuyEnterAmount for full note. */}
+      <EnterAmountOptions
+        onPressAmount={onSelectPercentageAmount}
+        selectedAmount={selectedPercentage}
+        testID="SendEnterAmount/AmountOptions"
+      />
+
       <TokenBottomSheet
         forwardedRef={tokenBottomSheetRef}
         snapPoints={['90%']}
