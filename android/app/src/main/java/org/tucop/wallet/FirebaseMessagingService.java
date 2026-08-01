@@ -1,4 +1,4 @@
-package xyz.mobilestack;
+package org.tucop.wallet;
 
 import android.os.Bundle;
 import android.util.Log;

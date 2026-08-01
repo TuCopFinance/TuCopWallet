@@ -1,4 +1,4 @@
-package xyz.mobilestack;
+package org.tucop.wallet;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -25,7 +25,7 @@ public class DetoxTest {
     DetoxConfig detoxConfig = new DetoxConfig();
     detoxConfig.idlePolicyConfig.masterTimeoutSec = 90;
     detoxConfig.idlePolicyConfig.idleResourceTimeoutSec = 60;
-    detoxConfig.rnContextLoadTimeoutSec = (xyz.mobilestack.BuildConfig.DEBUG ? 180 : 60);
+    detoxConfig.rnContextLoadTimeoutSec = (org.tucop.wallet.BuildConfig.DEBUG ? 180 : 60);
 
     Detox.runTests(mActivityRule, detoxConfig);
   }
