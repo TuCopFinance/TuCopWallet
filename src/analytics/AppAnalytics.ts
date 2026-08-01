@@ -1,4 +1,5 @@
 import { SegmentClient } from '@segment/analytics-react-native'
+import { StatsigClientRN } from '@statsig/react-native-bindings'
 import _ from 'lodash'
 import { Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
@@ -8,11 +9,10 @@ import { AnalyticsPropertiesList } from 'src/analytics/Properties'
 import { getCurrentUserTraits } from 'src/analytics/selectors'
 import { E2E_TEST_STATSIG_ID, isE2EEnv, STATSIG_API_KEY, STATSIG_ENV } from 'src/config'
 import { store } from 'src/redux/store'
-import { getDefaultStatsigUser } from 'src/statsig'
+import { getDefaultStatsigUser, localGateOverrides, setStatsigClient } from 'src/statsig'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { ensureError } from 'src/utils/ensureError'
 import Logger from 'src/utils/Logger'
-import { Statsig } from 'statsig-react-native'
 import { sha256 } from 'viem'
 
 const TAG = 'AppAnalytics'
@@ -142,12 +142,21 @@ class AppAnalytics {
       Logger.debug(TAG, 'Statsig stable ID', overrideStableID)
 
       Logger.info(TAG, 'Statsig Integration initialized!', STATSIG_API_KEY)
-      await Statsig.initialize(STATSIG_API_KEY, statsigUser, {
-        // StableID should match Segment anonymousId
-        overrideStableID,
-        environment: STATSIG_ENV,
-        localMode: isE2EEnv,
-      })
+      const client = new StatsigClientRN(
+        STATSIG_API_KEY,
+        // StableID must match Segment anonymousId; the new SDK reads it from
+        // the user's `customIDs.stableID` field instead of a top-level option.
+        { ...statsigUser, customIDs: { ...statsigUser.customIDs, stableID: overrideStableID } },
+        {
+          environment: STATSIG_ENV,
+          // In E2E, block all network traffic so tests are deterministic and
+          // the client falls back to default values (analog of legacy `localMode`).
+          networkConfig: { preventAllNetworkTraffic: isE2EEnv },
+          overrideAdapter: localGateOverrides,
+        }
+      )
+      setStatsigClient(client)
+      await client.initializeAsync()
     } catch (error) {
       Logger.warn(TAG, `Statsig setup error`, error)
     }
