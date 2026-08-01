@@ -2985,7 +2985,7 @@
         "step2": "Starts earning interest 24 hours after the deposit.",
         "step3Flexible": "Withdraw whenever you want, no fee.",
         "step3Fixed": "Withdraw at the end of the lock period. Early withdrawal available with a fee on the interest.",
-        "trustNote": "No banks or middlemen. Your deposit goes to Neeru, a public contract on the Celo network, and only you can withdraw it."
+        "trustNote": "No banks or middlemen. Only you control your deposit."
       }
     },
     "positionRow": {
