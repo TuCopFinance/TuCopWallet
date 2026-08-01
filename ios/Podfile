@@ -108,11 +108,43 @@ post_install do |installer|
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_CLOCK_GETTIME=1'
       end
 
-      # Fix fmt library consteval issue with Xcode 26.4 beta
-      # https://github.com/fmtlib/fmt/issues/4116
-      if target.name == 'fmt'
+    end
+
+    # Patch fmt/base.h to disable consteval on Xcode 26.5.
+    # https://github.com/fmtlib/fmt/issues/4116
+    #
+    # fmt 11.0.2 (pinned transitively via React Native 0.77.3) unconditionally
+    # sets `#define FMT_USE_CONSTEVAL 1` in fmt/base.h, so command-line -D
+    # flags cannot override it. Xcode 26.5 clang is strict enough to fail the
+    # consteval evaluation inside format-inl.h, breaking the whole iOS build.
+    #
+    # This rewrites the header at pod-install time so each `#define FMT_USE_CONSTEVAL <n>`
+    # only fires if not already defined. Combined with the -DFMT_USE_CONSTEVAL=0
+    # below, this forces fmt to take the constexpr fallback branch. Header
+    # rewrite is idempotent - a second run finds the guards already in place.
+    #
+    # When React Native ships a newer fmt (>=11.1) that has upstream guards,
+    # delete this whole block.
+    if target.name == 'fmt'
+      # Set the build setting first, so even if the header rewrite fails, the
+      # -D flag is still present for the compiler.
+      target.build_configurations.each do |config|
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FMT_CONSTEVAL=constexpr'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FMT_USE_CONSTEVAL=0'
+      end
+      # Header is installed read-only by CocoaPods; chmod +w before patching.
+      fmt_base_h = File.join(installer.sandbox.pod_dir(target.name), 'include', 'fmt', 'base.h')
+      if File.exist?(fmt_base_h)
+        contents = File.read(fmt_base_h)
+        # Guard the two lines that unconditionally re-define FMT_USE_CONSTEVAL 1
+        # so the compile-time -DFMT_USE_CONSTEVAL=0 wins.
+        patched = contents
+          .gsub(/^(#\s*define\s+FMT_USE_CONSTEVAL\s+1)$/, "#ifndef FMT_USE_CONSTEVAL\n\\1\n#endif")
+        if patched != contents
+          File.chmod(0644, fmt_base_h)
+          File.write(fmt_base_h, patched)
+          puts "[fmt patch] Guarded FMT_USE_CONSTEVAL redefinitions in #{fmt_base_h}"
+        end
       end
     end
 
