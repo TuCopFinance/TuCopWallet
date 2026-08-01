@@ -457,7 +457,7 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       feature: 'swap',
       provider: 'squid',
       action: 'execute',
-      errorCode: String(classifyError(error)),
+      errorCode: classifyError(error).kind,
       extra: { swapType, submitted },
     })
   }

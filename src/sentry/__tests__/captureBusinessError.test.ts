@@ -94,4 +94,34 @@ describe('captureBusinessError', () => {
       httpStatus: 502,
     })
   })
+
+  it('coerces a non-string errorCode object to JSON instead of [object Object]', () => {
+    // Real regression: gold/saga.ts was passing classifyError(err) directly,
+    // which is an ErrorClass object. String(obj) collapses to
+    // "[object Object]" and every gold-buy revert landed with the same
+    // useless tag. captureBusinessError must defensively JSON.stringify
+    // any object it receives so the tag stays greppable.
+    captureBusinessError(new Error('boom'), {
+      feature: 'gold',
+      provider: 'squid',
+      action: 'buy_gold_execute',
+      // simulating the old buggy call site that passed a whole object
+      errorCode: { kind: 'revert', message: 'execution reverted', retryable: false } as any,
+    })
+    const tagsArg = mockScope.setTags.mock.calls[0][0]
+    expect(tagsArg.errorCode).toContain('revert')
+    expect(tagsArg.errorCode).not.toBe('[object Object]')
+    const fingerprintArg = mockScope.setFingerprint.mock.calls[0][0]
+    expect(fingerprintArg[3]).not.toBe('[object Object]')
+  })
+
+  it('coerces primitive non-string errorCodes (number, boolean) to their string form', () => {
+    captureBusinessError(new Error('boom'), {
+      feature: 'swap',
+      provider: 'squid',
+      action: 'execute',
+      errorCode: 502 as any,
+    })
+    expect(mockScope.setTags).toHaveBeenCalledWith(expect.objectContaining({ errorCode: '502' }))
+  })
 })
