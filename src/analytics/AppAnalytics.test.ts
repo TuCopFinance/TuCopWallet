@@ -1,11 +1,11 @@
 import { createClient } from '@segment/analytics-react-native'
+import { StatsigClientRN } from '@statsig/react-native-bindings'
 import { PincodeType } from 'src/account/reducer'
 import AppAnalyticsModule from 'src/analytics/AppAnalytics'
 import { OnboardingEvents } from 'src/analytics/Events'
 import { store } from 'src/redux/store'
 import { getDefaultStatsigUser, getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { NetworkId } from 'src/transactions/types'
-import { Statsig } from 'statsig-react-native'
 import { getMockStoreData } from 'test/utils'
 import {
   mockCeloAddress,
@@ -29,7 +29,11 @@ jest.mock('src/config', () => ({
   ...(jest.requireActual('src/config') as any),
   STATSIG_API_KEY: 'statsig-key',
 }))
-jest.mock('statsig-react-native')
+jest.mock('@statsig/react-native-bindings', () => ({
+  StatsigClientRN: jest.fn().mockImplementation(() => ({
+    initializeAsync: jest.fn().mockResolvedValue(undefined),
+  })),
+}))
 jest.mock('src/statsig')
 jest.mock('src/web3/networkConfig', () => {
   const originalModule = jest.requireActual('src/web3/networkConfig')
@@ -168,11 +172,14 @@ describe('AppAnalytics', () => {
   it('creates statsig client on initialization with default statsig user', async () => {
     jest.mocked(getDefaultStatsigUser).mockReturnValue({ userID: 'someUserId' })
     await AppAnalytics.init()
-    expect(Statsig.initialize).toHaveBeenCalledWith(
+    expect(StatsigClientRN).toHaveBeenCalledWith(
       'statsig-key',
-      { userID: 'someUserId' },
-      // Segment client is disabled, so overrideStableID uses device uniqueID as fallback
-      { environment: { tier: 'production' }, overrideStableID: mockDeviceId, localMode: false }
+      // Segment client is disabled, so stableID uses device uniqueID as fallback
+      { userID: 'someUserId', customIDs: { stableID: mockDeviceId } },
+      expect.objectContaining({
+        environment: { tier: 'production' },
+        networkConfig: { preventAllNetworkTraffic: false },
+      })
     )
   })
 

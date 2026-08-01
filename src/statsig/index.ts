@@ -1,3 +1,11 @@
+import type {
+  DynamicConfig,
+  Experiment,
+  FeatureGate,
+  OverrideAdapter,
+  StatsigUser,
+} from '@statsig/js-client'
+import { StatsigClientRN } from '@statsig/react-native-bindings'
 import * as _ from 'lodash'
 import { LaunchArguments } from 'react-native-launch-arguments'
 import { startOnboardingTimeSelector } from 'src/account/selectors'
@@ -14,16 +22,53 @@ import {
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { EvaluationReason } from 'statsig-js'
-import { DynamicConfig, Statsig, StatsigUser } from 'statsig-react-native'
 
 const TAG = 'Statsig'
+
+// Local override adapter — replaces `Statsig.overrideGate()` / `removeGateOverride()`
+// from the legacy static API. Only gates are supported (matches how the app used
+// launch-arg overrides). Installed once in `StatsigOptions.overrideAdapter` at
+// init time; callers mutate `localGateOverrides` at runtime.
+class LocalGateOverrideAdapter implements OverrideAdapter {
+  private overrides = new Map<string, boolean>()
+
+  set(gate: string, value: boolean) {
+    this.overrides.set(gate, value)
+  }
+
+  clear() {
+    this.overrides.clear()
+  }
+
+  getGateOverride(current: FeatureGate): FeatureGate | null {
+    if (!this.overrides.has(current.name)) {
+      return null
+    }
+    return {
+      ...current,
+      value: this.overrides.get(current.name)!,
+      details: { ...current.details, reason: 'LocalOverride' },
+    }
+  }
+}
+
+export const localGateOverrides = new LocalGateOverrideAdapter()
+
+let statsigClient: StatsigClientRN | null = null
+
+export function setStatsigClient(client: StatsigClientRN) {
+  statsigClient = client
+}
+
+export function getStatsigClient(): StatsigClientRN | null {
+  return statsigClient
+}
 
 function getParams<T extends Record<string, StatsigParameter>>({
   config,
   defaultValues,
 }: {
-  config: DynamicConfig
+  config: DynamicConfig | Experiment
   defaultValues: T
 }) {
   type Parameter = keyof T
@@ -33,7 +78,7 @@ function getParams<T extends Record<string, StatsigParameter>>({
     Parameter,
     DefaultValue,
   ][]) {
-    output[param] = config.get(param as string, defaultValue)
+    output[param] = config.get(param as string, defaultValue) as DefaultValue
   }
   return output
 }
@@ -46,21 +91,16 @@ export function getExperimentParams<T extends Record<string, StatsigParameter>>(
   defaultValues: T
 }): T {
   try {
-    const experiment = Statsig.getExperiment(experimentName)
-    if (!isE2EEnv && experiment.getEvaluationDetails().reason === EvaluationReason.Uninitialized) {
+    if (!statsigClient) {
+      return defaultValues
+    }
+    const experiment = statsigClient.getExperiment(experimentName)
+    if (!isE2EEnv && experiment.details.reason === 'Uninitialized') {
       // SDK is uninitialized, return default values silently
       return defaultValues
     }
     return getParams({ config: experiment, defaultValues })
   } catch (error) {
-    // Check if error is due to uninitialized SDK
-    if (
-      error instanceof Error &&
-      error.message.includes('Call and wait for initialize() to finish first')
-    ) {
-      // SDK is uninitialized, return default values silently
-      return defaultValues
-    }
     Logger.warn(
       TAG,
       `getExperimentParams: Error getting params for experiment: ${experimentName}`,
@@ -78,21 +118,16 @@ function _getDynamicConfigParams<T extends Record<string, StatsigParameter>>({
   defaultValues: T
 }): T {
   try {
-    const config = Statsig.getConfig(configName)
-    if (!isE2EEnv && config.getEvaluationDetails().reason === EvaluationReason.Uninitialized) {
+    if (!statsigClient) {
+      return defaultValues
+    }
+    const config = statsigClient.getDynamicConfig(configName)
+    if (!isE2EEnv && config.details.reason === 'Uninitialized') {
       // SDK is uninitialized, return default values silently
       return defaultValues
     }
     return getParams({ config, defaultValues })
   } catch (error) {
-    // Check if error is due to uninitialized SDK
-    if (
-      error instanceof Error &&
-      error.message.includes('Call and wait for initialize() to finish first')
-    ) {
-      // SDK is uninitialized, return default values silently
-      return defaultValues
-    }
     Logger.warn(TAG, `Error getting params for dynamic config: ${configName}`, error)
     return defaultValues
   }
@@ -123,28 +158,18 @@ export function getDynamicConfigParams<T extends Record<string, StatsigParameter
 }
 
 export function getFeatureGate(featureGateName: StatsigFeatureGates) {
+  // Two gates default to true; every other gate defaults to false.
+  const defaultValue =
+    featureGateName === StatsigFeatureGates.ALLOW_HOOKS_PREVIEW ||
+    featureGateName === StatsigFeatureGates.SHOW_ONBOARDING_PHONE_VERIFICATION
   try {
-    const gate = Statsig.checkGate(featureGateName)
-    return gate
-  } catch (error) {
-    // Check if error is due to uninitialized SDK
-    if (
-      error instanceof Error &&
-      error.message.includes('Call and wait for initialize() to finish first')
-    ) {
-      // SDK is uninitialized, return default value silently
-      return (
-        featureGateName === StatsigFeatureGates.ALLOW_HOOKS_PREVIEW ||
-        featureGateName === StatsigFeatureGates.SHOW_ONBOARDING_PHONE_VERIFICATION
-      )
+    if (!statsigClient) {
+      return defaultValue
     }
+    return statsigClient.checkGate(featureGateName)
+  } catch (error) {
     Logger.warn(TAG, `Error getting feature gate: ${featureGateName}`, error)
-    // gates should always default to false, this boolean is to just remain BC
-    // with two gates defaulting to true
-    return (
-      featureGateName === StatsigFeatureGates.ALLOW_HOOKS_PREVIEW ||
-      featureGateName === StatsigFeatureGates.SHOW_ONBOARDING_PHONE_VERIFICATION
-    )
+    return defaultValue
   }
 }
 
@@ -180,18 +205,13 @@ export function getDefaultStatsigUser(): StatsigUser {
  */
 export async function patchUpdateStatsigUser(statsigUser?: StatsigUser) {
   try {
-    const defaultUser = getDefaultStatsigUser()
-    await Statsig.updateUser(_.merge(defaultUser, statsigUser))
-  } catch (error) {
-    // Check if error is due to uninitialized SDK
-    if (
-      error instanceof Error &&
-      error.message.includes('Call and wait for initialize() to finish first')
-    ) {
-      // SDK is not yet initialized, skip the update silently
+    if (!statsigClient) {
       Logger.debug(TAG, 'Statsig not initialized yet, skipping user update')
       return
     }
+    const defaultUser = getDefaultStatsigUser()
+    await statsigClient.updateUserAsync(_.merge(defaultUser, statsigUser))
+  } catch (error) {
     Logger.error(TAG, 'Failed to update Statsig user', error)
   }
 }
@@ -199,13 +219,13 @@ export async function patchUpdateStatsigUser(statsigUser?: StatsigUser) {
 export function setupOverridesFromLaunchArgs() {
   try {
     Logger.debug(TAG, 'Cleaning up local overrides')
-    Statsig.removeGateOverride() // remove all gate overrides
+    localGateOverrides.clear()
     const { statsigGateOverrides } = LaunchArguments.value<ExpectedLaunchArgs>()
     if (statsigGateOverrides) {
       Logger.debug(TAG, 'Setting up gate overrides', statsigGateOverrides)
       statsigGateOverrides.split(',').forEach((gateOverride: string) => {
         const [gate, value] = gateOverride.split('=')
-        Statsig.overrideGate(gate, value === 'true')
+        localGateOverrides.set(gate, value === 'true')
       })
     }
   } catch (err) {
