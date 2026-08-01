@@ -4,10 +4,10 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
+        buildToolsVersion = "36.0.0"
         minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 35
+        compileSdkVersion = 36
+        targetSdkVersion = 36
         kotlinVersion = "2.0.21"
         // NDK r28 required for 16 KB page size support (Google Play, post-Nov 2025).
         // Earlier libQuickCrypto.so crashed at load due to __cxa_init_primary_exception
