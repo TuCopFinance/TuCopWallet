@@ -2,12 +2,13 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
+import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import {
   NEERU_CATEGORY_LABEL_KEYS,
   NeeruCategoryId,
@@ -16,6 +17,7 @@ import {
 import NeeruCloseSheet from 'src/earn/neeru/NeeruCloseSheet'
 import NeeruEmergencyCloseSheet from 'src/earn/neeru/NeeruEmergencyCloseSheet'
 import NeeruPositionRow from 'src/earn/neeru/NeeruPositionRow'
+import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 import {
   neeruCloseStatusSelector,
   neeruFetchStatusSelector,
@@ -25,6 +27,7 @@ import {
 import { NEERU_LOW_POOL_ERROR } from 'src/earn/neeru/saga'
 import { emergencyCloseStart, fetchPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
+import { getTotalYieldRate } from 'src/earn/utils'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -92,6 +95,23 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
     }
   }, [closeStatus])
 
+  // Backend catalogue is the source of truth for both rates (retunes without
+  // a contract upgrade would otherwise leave stale numbers on the empty
+  // state hero). Falls back to the pool's yield rate + monthly->annual
+  // conversion when the catalogue is not loaded yet, so a cold boot still
+  // surfaces a reasonable E.A.
+  const catalogueCategory = useSelector((state) =>
+    categoryId !== null ? neeruCatalogueCategoryByIdSelector(state, categoryId) : null
+  )
+  const monthlyRate = useMemo(() => {
+    if (catalogueCategory) return catalogueCategory.monthlyRatePercentage
+    return getTotalYieldRate(pool).toNumber()
+  }, [catalogueCategory, pool])
+  const annualRate = useMemo(() => {
+    if (catalogueCategory) return catalogueCategory.annualEffectivePercentage
+    return effectiveAnnualPercentFromMonthly(monthlyRate)
+  }, [catalogueCategory, monthlyRate])
+
   if (categoryId === null) {
     return null
   }
@@ -102,6 +122,11 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   const total = formatValueToDisplay(
     positions.reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
   )
+  const isEmpty = positions.length === 0
+  const withdrawStepKey =
+    categoryId === 0
+      ? 'neeruVaults.detail.emptyState.step3Flexible'
+      : 'neeruVaults.detail.emptyState.step3Fixed'
 
   const handleManagePress = (pos: NeeruIndividualPosition) => {
     setSelectedPosition(pos)
@@ -121,18 +146,64 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
       >
         <Text style={styles.header}>{t('neeruVaults.detail.header', { categoryLabel })}</Text>
         <Text style={styles.description}>{description}</Text>
-        <Text style={styles.total}>
-          {t('neeruVaults.detail.aggregateBalance', { categoryLabel, amount: total })}
-        </Text>
 
-        {positions.length === 0 ? (
-          <Text style={styles.empty}>{t('neeruVaults.detail.noPositions')}</Text>
-        ) : (
-          <View style={styles.positionsList}>
-            {positions.map((p) => (
-              <NeeruPositionRow key={p.positionId} position={p} onManagePress={handleManagePress} />
-            ))}
+        {isEmpty ? (
+          // Rich empty state: rate hero + how-it-works + trust footer.
+          // Replaces the previous sparse "Total en X: 0.00 Pesos" + one-line
+          // "Todavia no tienes depositos" that read as if the page were broken.
+          // Redundant total row is suppressed here (0 balance is implied).
+          <View testID="NeeruVaultDetail.EmptyState" style={styles.emptyCard}>
+            <Text style={styles.emptyRateEyebrow}>
+              {t('neeruVaults.detail.emptyState.rateEyebrow')}
+            </Text>
+            <Text style={styles.emptyRateValue}>
+              {t('neeruVaults.detail.emptyState.rateValueEa', {
+                percentage: annualRate.toFixed(2),
+              })}
+            </Text>
+            <Text style={styles.emptyRateSubtitle}>
+              {t('neeruVaults.detail.emptyState.rateEquivalentMv', {
+                percentage: monthlyRate.toFixed(2),
+              })}
+            </Text>
+
+            <View style={styles.emptyDivider} />
+
+            <Text style={styles.emptyStepsHeader}>
+              {t('neeruVaults.detail.emptyState.howItWorksHeader')}
+            </Text>
+            <View style={styles.emptyStep}>
+              <Text style={styles.emptyStepNumber}>1</Text>
+              <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step1')}</Text>
+            </View>
+            <View style={styles.emptyStep}>
+              <Text style={styles.emptyStepNumber}>2</Text>
+              <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step2')}</Text>
+            </View>
+            <View style={styles.emptyStep}>
+              <Text style={styles.emptyStepNumber}>3</Text>
+              <Text style={styles.emptyStepText}>{t(withdrawStepKey)}</Text>
+            </View>
+
+            <Text style={styles.emptyTrustNote}>
+              {t('neeruVaults.detail.emptyState.trustNote')}
+            </Text>
           </View>
+        ) : (
+          <>
+            <Text style={styles.total}>
+              {t('neeruVaults.detail.aggregateBalance', { categoryLabel, amount: total })}
+            </Text>
+            <View style={styles.positionsList}>
+              {positions.map((p) => (
+                <NeeruPositionRow
+                  key={p.positionId}
+                  position={p}
+                  onManagePress={handleManagePress}
+                />
+              ))}
+            </View>
+          </>
         )}
 
         <Button
@@ -179,12 +250,65 @@ const styles = StyleSheet.create({
   header: { ...typeScale.titleMedium, color: Colors.black },
   description: { ...typeScale.bodyMedium, color: Colors.gray3 },
   total: { ...typeScale.bodyLarge, color: Colors.black },
-  empty: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray3,
-    marginTop: Spacing.Large32,
-    textAlign: 'center',
-  },
   positionsList: { gap: Spacing.Smallest8 },
   cta: { marginTop: Spacing.Large32 },
+  emptyCard: {
+    backgroundColor: Colors.gray1,
+    borderRadius: 16,
+    padding: Spacing.Thick24,
+    marginTop: Spacing.Smallest8,
+    gap: Spacing.Smallest8,
+  },
+  emptyRateEyebrow: {
+    ...typeScale.labelSmall,
+    color: Colors.gray4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  emptyRateValue: {
+    ...typeScale.titleLarge,
+    color: Colors.accent,
+  },
+  emptyRateSubtitle: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+  },
+  emptyDivider: {
+    height: 1,
+    backgroundColor: Colors.gray2,
+    marginVertical: Spacing.Regular16,
+  },
+  emptyStepsHeader: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.black,
+    marginBottom: Spacing.Smallest8,
+  },
+  emptyStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.Small12,
+    marginBottom: Spacing.Smallest8,
+  },
+  emptyStepNumber: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.white,
+    backgroundColor: Colors.accent,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    textAlign: 'center',
+    lineHeight: 24,
+    overflow: 'hidden',
+  },
+  emptyStepText: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    flex: 1,
+  },
+  emptyTrustNote: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    marginTop: Spacing.Regular16,
+    fontStyle: 'italic',
+  },
 })
