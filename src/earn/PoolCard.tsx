@@ -280,10 +280,12 @@ export default function PoolCard({
                 </Text>
               )}
             </View>
-            <View style={styles.keyValueRow}>
-              <Text style={styles.keyText}>{t('earnFlow.poolCard.tvl')}</Text>
-              <Text style={styles.valueText}>{tvlString}</Text>
-            </View>
+            {!isNeeruPool && (
+              <View style={styles.keyValueRow}>
+                <Text style={styles.keyText}>{t('earnFlow.poolCard.tvl')}</Text>
+                <Text style={styles.valueText}>{tvlString}</Text>
+              </View>
+            )}
           </View>
           {new BigNumber(balance).gt(0) && !!depositTokenInfo && (
             <View style={styles.withBalanceContainer}>
