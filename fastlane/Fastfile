@@ -120,10 +120,10 @@ platform :ios do
   desc 'Build the iOS application - requires environment param'
   lane :build do |options|
     gym(
-      workspace: 'ios/MobileStack.xcworkspace',
+      workspace: 'ios/TuCop.xcworkspace',
       # Needs double quotes because Ruby differentiates
       # https://stackoverflow.com/questions/6395288/double-vs-single-quotes
-      scheme: "MobileStack-#{options[:environment]}",
+      scheme: "TuCop-#{options[:environment]}",
       configuration: 'Release',
       xcargs: [
         "-allowProvisioningUpdates",
