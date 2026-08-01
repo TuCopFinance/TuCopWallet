@@ -18,7 +18,7 @@
                BlueprintIdentifier = "A23CB41F2D65AF8100B5ECCE"
                BuildableName = "NotificationService.appex"
                BlueprintName = "NotificationService"
-               ReferencedContainer = "container:MobileStack.xcodeproj">
+               ReferencedContainer = "container:TuCop.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,8 +31,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
                BuildableName = "TuCop.app"
-               BlueprintName = "MobileStack"
-               ReferencedContainer = "container:MobileStack.xcodeproj">
+               BlueprintName = "TuCop"
+               ReferencedContainer = "container:TuCop.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -63,8 +63,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
             BuildableName = "TuCop.app"
-            BlueprintName = "MobileStack"
-            ReferencedContainer = "container:MobileStack.xcodeproj">
+            BlueprintName = "TuCop"
+            ReferencedContainer = "container:TuCop.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -82,8 +82,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
             BuildableName = "TuCop.app"
-            BlueprintName = "MobileStack"
-            ReferencedContainer = "container:MobileStack.xcodeproj">
+            BlueprintName = "TuCop"
+            ReferencedContainer = "container:TuCop.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

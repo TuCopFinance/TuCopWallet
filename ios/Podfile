@@ -7,11 +7,11 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 # Allow using RNFirebase as static frameworks
 # https://rnfirebase.io/#allow-ios-static-frameworks
 # Otherwise we get the following error:
-# `The 'Pods-MobileStack' target has transitive dependencies that include statically linked binaries [...]`
+# `The 'Pods-TuCop' target has transitive dependencies that include statically linked binaries [...]`
 $RNFirebaseAsStaticFramework = true
 
 # Workaround for the following error:
-# `The 'Pods-MobileStack' target has transitive dependencies that include statically linked binaries [...]`
+# `The 'Pods-TuCop' target has transitive dependencies that include statically linked binaries [...]`
 $static_framework = [
   # Flipper removed due to build issues with iOS SDK 18.5
 ]
@@ -49,7 +49,7 @@ end
 
 setup_permissions(['Camera', 'AppTrackingTransparency', 'Contacts'])
 
-target "MobileStack" do
+target "TuCop" do
   config = use_native_modules!
 
   # Add this line to ensure fonts are copied
