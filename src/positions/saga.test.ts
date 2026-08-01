@@ -155,6 +155,11 @@ describe(fetchPositionsSaga, () => {
         })
       )
       .run()
+
+    const calledUrls = mockFetch.mock.calls.map(([url]) => String(url))
+    const earnPositionsCall = calledUrls.find((u) => u.includes('/getEarnPositions'))
+    expect(earnPositionsCall).toBeDefined()
+    expect(earnPositionsCall).toContain(`address=${mockAccount}`)
   })
 
   it("should return unique positions when there's an overlap between positions and earn positions", async () => {
