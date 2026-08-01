@@ -581,6 +581,7 @@ function EarnEnterAmount({ route }: Props) {
       <EnterAmountOptions
         onPressAmount={onSelectPercentageAmount}
         selectedAmount={selectedPercentage}
+        flow="earn"
         testID="EarnEnterAmount/AmountOptions"
       />
       {tokenAmount && (

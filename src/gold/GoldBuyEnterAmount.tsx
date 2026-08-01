@@ -554,6 +554,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
       <EnterAmountOptions
         onPressAmount={onSelectPercentageAmount}
         selectedAmount={selectedPercentage}
+        flow="gold_buy"
         testID="GoldBuyEnterAmount/AmountOptions"
       />
 
