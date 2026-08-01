@@ -533,13 +533,6 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           />
         )}
 
-        {/* Percentage Options */}
-        <EnterAmountOptions
-          onPressAmount={onSelectPercentageAmount}
-          selectedAmount={selectedPercentage}
-          testID="GoldBuyEnterAmount/AmountOptions"
-        />
-
         {/* Continue Button */}
         <Button
           onPress={onPressContinue}
@@ -552,6 +545,17 @@ export default function GoldBuyEnterAmount({ route }: Props) {
           testID="GoldBuyEnterAmount/Continue"
         />
       </KeyboardAwareScrollView>
+
+      {/* Percentage Options rendered OUTSIDE the ScrollView so its
+          position:absolute + bottom:0 anchor to the screen, not to
+          the scrolled content. Inside the ScrollView the chip container
+          would move with the content when the keyboard opens and end
+          up off-screen (regression exposed by the RN 0.77 upgrade). */}
+      <EnterAmountOptions
+        onPressAmount={onSelectPercentageAmount}
+        selectedAmount={selectedPercentage}
+        testID="GoldBuyEnterAmount/AmountOptions"
+      />
 
       {/* Token Picker */}
       <TokenBottomSheet

@@ -384,13 +384,6 @@ export default function GoldSellEnterAmount(_props: Props) {
           />
         )}
 
-        {/* Percentage Options */}
-        <EnterAmountOptions
-          onPressAmount={onSelectPercentageAmount}
-          selectedAmount={selectedPercentage}
-          testID="GoldSellEnterAmount/AmountOptions"
-        />
-
         {/* Continue Button */}
         <Button
           onPress={onPressContinue}
@@ -402,6 +395,15 @@ export default function GoldSellEnterAmount(_props: Props) {
           testID="GoldSellEnterAmount/Continue"
         />
       </KeyboardAwareScrollView>
+
+      {/* Percentage Options rendered OUTSIDE the ScrollView so its
+          position:absolute + bottom:0 anchor to the screen, not to
+          the scrolled content. See GoldBuyEnterAmount for full note. */}
+      <EnterAmountOptions
+        onPressAmount={onSelectPercentageAmount}
+        selectedAmount={selectedPercentage}
+        testID="GoldSellEnterAmount/AmountOptions"
+      />
 
       {/* Token Picker */}
       <TokenBottomSheet
