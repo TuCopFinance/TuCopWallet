@@ -3657,7 +3657,7 @@
   dependencies:
     "@statsig/client-core" "3.33.3"
 
-"@statsig/react-bindings@3.33.3", "@statsig/react-bindings@^3.33.3":
+"@statsig/react-bindings@3.33.3":
   version "3.33.3"
   resolved "https://registry.yarnpkg.com/@statsig/react-bindings/-/react-bindings-3.33.3.tgz#d30f67f640524e9f06d9253a2e22c1dd8c338571"
   integrity sha512-WYwdyJdzZlfAu9q0CYkE/E2UIYBSFWuo5MC/30x2ckvIArCmEvLmFgp5PMYKPYtwCNXiraX1mwozxenTr6k+0g==
