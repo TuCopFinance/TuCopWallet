@@ -270,12 +270,12 @@ RootStack (BottomSheetNavigator)
 
 ### iOS Schemes
 
-| Scheme                   | Network      | Use              |
-| ------------------------ | ------------ | ---------------- |
-| `MobileStack-testnetdev` | Celo Sepolia | **Development**  |
-| `MobileStack-testnet`    | Celo Sepolia | Testing          |
-| `MobileStack-mainnet`    | Celo Mainnet | **Production**   |
-| `MobileStack-mainnetdev` | Celo Mainnet | Advanced testing |
+| Scheme             | Network      | Use              |
+| ------------------ | ------------ | ---------------- |
+| `TuCop-testnetdev` | Celo Sepolia | **Development**  |
+| `TuCop-testnet`    | Celo Sepolia | Testing          |
+| `TuCop-mainnet`    | Celo Mainnet | **Production**   |
+| `TuCop-mainnetdev` | Celo Mainnet | Advanced testing |
 
 ### Android Flavors
 

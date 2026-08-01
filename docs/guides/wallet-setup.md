@@ -76,8 +76,8 @@ If `yarn dev:ios` fails, use xcodebuild directly:
 xcrun simctl list devices | grep "iPhone 15 Pro"
 
 # Build and install
-xcodebuild -workspace ios/MobileStack.xcworkspace \
-  -scheme MobileStack-testnetdev \
+xcodebuild -workspace ios/TuCop.xcworkspace \
+  -scheme TuCop-testnetdev \
   -configuration Debug \
   -destination 'platform=iOS Simulator,id=<SIMULATOR_ID>' \
   build
@@ -88,12 +88,12 @@ xcrun simctl launch <SIMULATOR_ID> org.tucop
 
 ### iOS Build Schemes
 
-| Scheme                   | Network                | Display Name             | Use for                 |
-| ------------------------ | ---------------------- | ------------------------ | ----------------------- |
-| `MobileStack-testnetdev` | Celo Sepolia (testnet) | TuCop (Celo Sepolia dev) | **Primary development** |
-| `MobileStack-testnet`    | Celo Sepolia (testnet) | TuCop Celo Sepolia       | Testing                 |
-| `MobileStack-mainnet`    | Celo mainnet           | TuCop                    | Production              |
-| `MobileStack-mainnetdev` | Celo mainnet           | TuCop (dev)              | Advanced testing        |
+| Scheme             | Network                | Display Name             | Use for                 |
+| ------------------ | ---------------------- | ------------------------ | ----------------------- |
+| `TuCop-testnetdev` | Celo Sepolia (testnet) | TuCop (Celo Sepolia dev) | **Primary development** |
+| `TuCop-testnet`    | Celo Sepolia (testnet) | TuCop Celo Sepolia       | Testing                 |
+| `TuCop-mainnet`    | Celo mainnet           | TuCop                    | Production              |
+| `TuCop-mainnetdev` | Celo mainnet           | TuCop (dev)              | Advanced testing        |
 
 > **Testnet**: Celo Sepolia (chain ID 11142220).
 > Reference: [Celo Sepolia Docs](https://docs.celo.org/tooling/testnets/celo-sepolia)

@@ -147,10 +147,10 @@ jobs:
       - name: Build iOS Archive
         run: |
           cd ios
-          xcodebuild -workspace MobileStack.xcworkspace \
-            -scheme MobileStack-mainnet \
+          xcodebuild -workspace TuCop.xcworkspace \
+            -scheme TuCop-mainnet \
             -configuration Release \
-            -archivePath build/MobileStack.xcarchive \
+            -archivePath build/TuCop.xcarchive \
             archive \
             CODE_SIGNING_ALLOWED=NO
 
