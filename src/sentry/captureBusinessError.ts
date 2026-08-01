@@ -7,6 +7,7 @@ import { SENTRY_ENABLED } from 'src/config'
 // strings. Keep names stable, they become the tag values in every event.
 export type BusinessFeature =
   | 'earn' // earn-vaults family (deposits, withdraws, close, emergency)
+  | 'gold' // digital gold buy / sell (XAUt0)
   | 'swap' // any token-to-token swap
   | 'transactions' // generic tx send / receipt / feed
   | 'buckspay' // COPm to COP off-ramp
@@ -46,22 +47,41 @@ export interface BusinessContext {
 // available on the individual events within the issue; if in the future
 // we need finer grouping (e.g. per HTTP status code), we can append more
 // segments here without changing the tag shape.
+// Defensive coercion so a caller passing a non-string errorCode (e.g. an
+// object like classifyError() returns) never lands in Sentry as the
+// useless "[object Object]" string. Strings pass through; primitives
+// stringify normally; objects go through JSON.stringify with a fallback
+// to their constructor name if serialization throws (circular refs).
+function normalizeErrorCode(errorCode: unknown): string | undefined {
+  if (errorCode == null) return undefined
+  if (typeof errorCode === 'string') return errorCode
+  if (typeof errorCode !== 'object') return String(errorCode)
+  try {
+    const json = JSON.stringify(errorCode)
+    // JSON.stringify returns undefined for functions / symbols
+    return json ?? (errorCode as object).constructor?.name ?? 'unknown_object'
+  } catch {
+    return (errorCode as object).constructor?.name ?? 'unstringifiable_object'
+  }
+}
+
 export function captureBusinessError(error: unknown, context: BusinessContext): void {
   if (!SENTRY_ENABLED) return
   const err = error instanceof Error ? error : new Error(String(error))
+  const normalizedErrorCode = normalizeErrorCode(context.errorCode)
   Sentry.withScope((scope) => {
     scope.setTags({
       feature: context.feature,
       provider: context.provider,
       action: context.action,
-      ...(context.errorCode ? { errorCode: context.errorCode } : {}),
+      ...(normalizedErrorCode ? { errorCode: normalizedErrorCode } : {}),
     })
     if (context.extra) scope.setContext('business', context.extra)
     scope.setFingerprint([
       context.feature,
       context.provider,
       context.action,
-      context.errorCode ?? 'unclassified',
+      normalizedErrorCode ?? 'unclassified',
     ])
     Sentry.captureException(err)
   })

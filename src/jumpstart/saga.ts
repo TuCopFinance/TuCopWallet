@@ -384,7 +384,7 @@ export function* sendJumpstartTransactions(
       feature: 'jumpstart',
       provider: 'jumpstart',
       action: 'send_execute',
-      errorCode: String(classifyError(error)),
+      errorCode: classifyError(error).kind,
       extra: { tokenId: sendToken.tokenId, sendAmount },
     })
   }
