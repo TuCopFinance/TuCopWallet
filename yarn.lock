@@ -3645,6 +3645,43 @@
   resolved "https://registry.npmjs.org/@stablelib/wipe/-/wipe-1.0.1.tgz"
   integrity sha512-WfqfX/eXGiAd3RJe4VU2snh/ZPwtSjLG4ynQ/vYzvghTh7dHFcI1wl+nrkWG6lGhukOxOsUHfv8dUXr58D0ayg==
 
+"@statsig/client-core@3.33.3":
+  version "3.33.3"
+  resolved "https://registry.yarnpkg.com/@statsig/client-core/-/client-core-3.33.3.tgz#09e22dc80661e022edbd79fe4a9589697505fd47"
+  integrity sha512-L9CMsROdc/dMsdEq8gXnoO8/XNUwxh3YjU5ZIbLLyc/DIDYVzioo+R2NIS9XDiiqaW7A7SRZdjjiUQq7qXloCw==
+
+"@statsig/js-client@3.33.3", "@statsig/js-client@^3.33.3":
+  version "3.33.3"
+  resolved "https://registry.yarnpkg.com/@statsig/js-client/-/js-client-3.33.3.tgz#7d3a9e05e2b8cadc3cf53a26422cb34baacc4c97"
+  integrity sha512-FjEZDYzLJ2iwie4Dma4lAOLbGXdU6W/xp6ib+7rqgDd2+0I9qduwof6W577NNc/gVzLTq2D8tsGauQD+oJmlPw==
+  dependencies:
+    "@statsig/client-core" "3.33.3"
+
+"@statsig/react-bindings@3.33.3":
+  version "3.33.3"
+  resolved "https://registry.yarnpkg.com/@statsig/react-bindings/-/react-bindings-3.33.3.tgz#d30f67f640524e9f06d9253a2e22c1dd8c338571"
+  integrity sha512-WYwdyJdzZlfAu9q0CYkE/E2UIYBSFWuo5MC/30x2ckvIArCmEvLmFgp5PMYKPYtwCNXiraX1mwozxenTr6k+0g==
+  dependencies:
+    "@statsig/client-core" "3.33.3"
+    "@statsig/js-client" "3.33.3"
+
+"@statsig/react-native-bindings@^3.33.3":
+  version "3.33.3"
+  resolved "https://registry.yarnpkg.com/@statsig/react-native-bindings/-/react-native-bindings-3.33.3.tgz#ce98af5963a92c7dfd305525e603042d87cd6933"
+  integrity sha512-VsLDTcVN2KfgVZSVohXvh2VSlZ5FNJ+qSOymyiIVc32euweK+bki1VQLET4k1BsMgFFeneXJYqE9wi10/PJnug==
+  dependencies:
+    "@statsig/client-core" "3.33.3"
+    "@statsig/js-client" "3.33.3"
+    "@statsig/react-bindings" "3.33.3"
+    "@statsig/react-native-core" "3.33.3"
+
+"@statsig/react-native-core@3.33.3":
+  version "3.33.3"
+  resolved "https://registry.yarnpkg.com/@statsig/react-native-core/-/react-native-core-3.33.3.tgz#86b4cf952995b006e4bcb5590fd40f18bec9fc50"
+  integrity sha512-cSPuaxQ3x82PmuzfgonD3hLxBE+xr7eUL1rKcWJtQ+eUhZEqq/xOdOAH6ZgNAkzcjguuCIEePp0oygO4KONKjQ==
+  dependencies:
+    "@statsig/client-core" "3.33.3"
+
 "@stdlib/array-float32@^0.0.x":
   version "0.0.6"
   resolved "https://registry.npmjs.org/@stdlib/array-float32/-/array-float32-0.0.6.tgz"
@@ -10335,11 +10372,6 @@ js-queue@2.0.2:
   dependencies:
     easy-stack "^1.0.1"
 
-js-sha256@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.npmjs.org/js-sha256/-/js-sha256-0.11.0.tgz"
-  integrity sha512-6xNlKayMZvds9h1Y1VWc0fQHQ82BxTXizWPEtEeGvmOUYpBRy4gbWroHLpzowe6xiQhHpelCQiE7HEdznyBL9Q==
-
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
@@ -14218,28 +14250,6 @@ static-extend@^0.1.1:
     define-property "^0.2.5"
     object-copy "^0.1.0"
 
-statsig-js@4.49.0:
-  version "4.49.0"
-  resolved "https://registry.npmjs.org/statsig-js/-/statsig-js-4.49.0.tgz"
-  integrity sha512-N4drx6fzI168Q4NndFY3IJbSDqpWSBWvS290H/RnT/g3Et58SvtXzG5qqgzmqy4CwcmwH+IL8K15pL7hPnfvUQ==
-  dependencies:
-    js-sha256 "^0.11.0"
-    uuid "^8.3.2"
-
-statsig-react-native@^4.15.0:
-  version "4.15.0"
-  resolved "https://registry.npmjs.org/statsig-react-native/-/statsig-react-native-4.15.0.tgz"
-  integrity sha512-XvPAkfX9B18B8AVt3PWDW4BgNGjKpR0aCRZavAWvSVY9nJLBPNnG1Ms43c5dG61ORNjvMliCSpifZ+ADeGo9bw==
-  dependencies:
-    statsig-react "^1.36.0"
-
-statsig-react@^1.36.0:
-  version "1.36.0"
-  resolved "https://registry.npmjs.org/statsig-react/-/statsig-react-1.36.0.tgz"
-  integrity sha512-QcTHla3ypfn2RvrnHGNlqWbiC2W/ZjcMM5LT6ExNV4skH7Xhspto3dMS3JVzBhOb74OEDZK4DbxQj9Wdz6XW0w==
-  dependencies:
-    statsig-js "4.49.0"
-
 statuses@2.0.1:
   version "2.0.1"
   resolved "https://registry.npmjs.org/statuses/-/statuses-2.0.1.tgz"
@@ -15267,11 +15277,6 @@ uuid@^3.0.1, uuid@^3.3.3:
   version "3.4.0"
   resolved "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
-
-uuid@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
-  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 uuid@^9.0.1:
   version "9.0.1"

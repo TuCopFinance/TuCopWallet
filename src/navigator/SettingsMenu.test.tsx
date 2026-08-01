@@ -18,12 +18,6 @@ jest.mock('src/statsig', () => ({
   })),
 }))
 
-jest.mock('statsig-react-native', () => ({
-  Statsig: {
-    getStableID: jest.fn().mockReturnValue('stableId'),
-  },
-}))
-
 describe('SettingsMenu', () => {
   beforeEach(() => {
     jest.clearAllMocks()
