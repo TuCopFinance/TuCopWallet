@@ -2992,7 +2992,7 @@
         "step2": "Empieza a generar intereses 24 horas despues del deposito.",
         "step3Flexible": "Retiras cuando quieras, sin costo.",
         "step3Fixed": "Retiras al vencimiento del plazo. Retiro anticipado disponible con penalidad sobre los intereses.",
-        "trustNote": "Tu dinero se queda en tu wallet, sin intermediarios. Contrato ejecutado en la red Celo."
+        "trustNote": "Sin bancos ni empresas de por medio. Tu deposito va a Neeru, un contrato publico en la red Celo, y solo tu puedes retirarlo."
       }
     },
     "positionRow": {
