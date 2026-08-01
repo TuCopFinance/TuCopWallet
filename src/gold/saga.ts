@@ -324,10 +324,10 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
       error: error.message,
     })
     captureBusinessError(error, {
-      feature: 'earn',
+      feature: 'gold',
       provider: 'squid',
       action: 'buy_gold_execute',
-      errorCode: String(classifyError(error)),
+      errorCode: classifyError(error).kind,
       extra: { fromAmount, fromTokenId },
     })
   }
@@ -525,10 +525,10 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
       error: error.message,
     })
     captureBusinessError(error, {
-      feature: 'earn',
+      feature: 'gold',
       provider: 'squid',
       action: 'sell_gold_execute',
-      errorCode: String(classifyError(error)),
+      errorCode: classifyError(error).kind,
       extra: { xautAmount, toTokenId },
     })
   }
