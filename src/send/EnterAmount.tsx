@@ -341,6 +341,7 @@ export default function EnterAmount({
       <EnterAmountOptions
         onPressAmount={onSelectPercentageAmount}
         selectedAmount={selectedPercentage}
+        flow="send"
         testID="SendEnterAmount/AmountOptions"
       />
 

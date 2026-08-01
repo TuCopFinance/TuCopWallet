@@ -8,19 +8,27 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import Touchable from 'src/components/Touchable'
+import { captureUxSignalOnce } from 'src/sentry/captureUxSignal'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 
+// Flow tag emitted on the "percentage_chip_tap" UX signal so we can tell
+// which screen a user tapped from in Sentry (send vs gold_buy vs earn, etc).
+// Keep values stable, they become Sentry tags and fingerprint segments.
+export type EnterAmountOptionsFlow = 'send' | 'gold_buy' | 'gold_sell' | 'earn' | 'swap'
+
 export default function EnterAmountOptions({
   onPressAmount,
   selectedAmount,
   testID,
+  flow,
 }: {
   onPressAmount(amount: number): void
   selectedAmount: number | null
   testID: string
+  flow: EnterAmountOptionsFlow
 }) {
   const { t } = useTranslation()
   const translateY = useSharedValue(0)
@@ -98,7 +106,25 @@ export default function EnterAmountOptions({
     >
       <View style={styles.contentContainer} testID={testID}>
         {amountOptions.map(({ amount, label }) => (
-          <Touchable borderRadius={100} key={label} onPress={() => onPressAmount(amount)}>
+          <Touchable
+            borderRadius={100}
+            key={label}
+            onPress={() => {
+              // Post-release verification signal (see captureUxSignalOnce).
+              // Fires once per (flow, percentage) per session so we can query
+              // Sentry to confirm real users are hitting these chips on
+              // Android + iOS after the KeyboardAwareScrollView layout fix
+              // (PR #299). No PII, no amounts, no addresses. Percentage is
+              // encoded as an integer (25, 50, 75, 100) for readable tags.
+              const percentageTag = String(Math.round(amount * 100))
+              captureUxSignalOnce(
+                `ux.percentage_chip:${flow}:${percentageTag}`,
+                'percentage_chip_tap',
+                { flow, percentage: percentageTag }
+              )
+              onPressAmount(amount)
+            }}
+          >
             <View
               style={[
                 styles.chip,

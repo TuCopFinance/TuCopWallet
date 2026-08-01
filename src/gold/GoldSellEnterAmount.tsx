@@ -402,6 +402,7 @@ export default function GoldSellEnterAmount(_props: Props) {
       <EnterAmountOptions
         onPressAmount={onSelectPercentageAmount}
         selectedAmount={selectedPercentage}
+        flow="gold_sell"
         testID="GoldSellEnterAmount/AmountOptions"
       />
 

@@ -1347,6 +1347,7 @@ export function SwapScreen({ route }: Props) {
       <EnterAmountOptions
         onPressAmount={handleSelectAmountPercentage}
         selectedAmount={selectedPercentage}
+        flow="swap"
         testID="SwapEnterAmount/AmountOptions"
       />
       {tokenBottomSheetsConfig.map(({ fieldType, tokens, filterChips, origin }) => (
