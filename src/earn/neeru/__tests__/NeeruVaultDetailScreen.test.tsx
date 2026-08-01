@@ -80,16 +80,30 @@ describe('NeeruVaultDetailScreen', () => {
     })
   })
 
-  it('shows empty state when no positions', () => {
+  it('shows rich empty state when no positions', () => {
     const store = createMockStore({
       neeru: { ...initialNeeruState, positions: [], fetchStatus: 'success' },
     } as any)
-    const { getByText } = render(
+    const { getByTestId, getByText, queryByText } = render(
       <Provider store={store}>
         <NeeruVaultDetailScreen route={{ params: { pool } } as any} navigation={{} as any} />
       </Provider>
     )
-    expect(getByText('neeruVaults.detail.noPositions')).toBeTruthy()
+    // Rich card is rendered
+    expect(getByTestId('NeeruVaultDetail.EmptyState')).toBeTruthy()
+    // Rate hero, how-it-works header, and 3 steps are visible
+    expect(getByText('neeruVaults.detail.emptyState.rateEyebrow')).toBeTruthy()
+    expect(getByText('neeruVaults.detail.emptyState.howItWorksHeader')).toBeTruthy()
+    expect(getByText('neeruVaults.detail.emptyState.step1')).toBeTruthy()
+    expect(getByText('neeruVaults.detail.emptyState.step2')).toBeTruthy()
+    // Mock pool is category 1 (30 dias fixed tranche), so the withdraw step
+    // is the fixed variant (mentions the lock period + early withdraw fee).
+    expect(getByText('neeruVaults.detail.emptyState.step3Fixed')).toBeTruthy()
+    expect(getByText('neeruVaults.detail.emptyState.trustNote')).toBeTruthy()
+    // Legacy sparse "Total en X: 0.00 Pesos" and one-line "no tienes depositos"
+    // are suppressed in the empty state (they read as if the page were broken)
+    expect(queryByText('neeruVaults.detail.aggregateBalance')).toBeNull()
+    expect(queryByText('neeruVaults.detail.noPositions')).toBeNull()
   })
 
   it('does not render the legacy transparency block', () => {

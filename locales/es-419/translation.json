@@ -2977,12 +2977,22 @@
       "aggregateBalance": "Total en {{categoryLabel}}: {{amount}} Pesos",
       "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% mensual",
       "depositCta": "Depositar",
-      "noPositions": "Todavia no tienes depositos en esta opcion",
       "descriptionByCategory": {
         "flexible": "Retira en cualquier momento, sin tiempo minimo",
         "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
         "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
         "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
+      },
+      "emptyState": {
+        "rateEyebrow": "Tasa estimada",
+        "rateValueEa": "{{percentage}}% al ano",
+        "rateEquivalentMv": "Equivale a {{percentage}}% al mes",
+        "howItWorksHeader": "Como funciona",
+        "step1": "Depositas tus Pesos desde tu wallet.",
+        "step2": "Empieza a generar intereses 24 horas despues del deposito.",
+        "step3Flexible": "Retiras cuando quieras, sin costo.",
+        "step3Fixed": "Retiras al vencimiento del plazo. Retiro anticipado disponible con penalidad sobre los intereses.",
+        "trustNote": "Tu dinero se queda en tu wallet, sin intermediarios. Contrato ejecutado en la red Celo."
       }
     },
     "positionRow": {

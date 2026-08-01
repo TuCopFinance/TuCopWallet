@@ -2970,12 +2970,22 @@
       "aggregateBalance": "Total in {{categoryLabel}}: {{amount}} Pesos",
       "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% monthly",
       "depositCta": "Deposit",
-      "noPositions": "You don't have positions in this option yet",
       "descriptionByCategory": {
         "flexible": "Withdraw anytime with no minimum lock",
         "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
         "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
         "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
+      },
+      "emptyState": {
+        "rateEyebrow": "Estimated rate",
+        "rateValueEa": "{{percentage}}% per year",
+        "rateEquivalentMv": "Equivalent to {{percentage}}% per month",
+        "howItWorksHeader": "How it works",
+        "step1": "Deposit your Pesos from your wallet.",
+        "step2": "Starts earning interest 24 hours after the deposit.",
+        "step3Flexible": "Withdraw whenever you want, no fee.",
+        "step3Fixed": "Withdraw at the end of the lock period. Early withdrawal available with a fee on the interest.",
+        "trustNote": "Your money stays in your wallet, no intermediaries. Contract runs on the Celo network."
       }
     },
     "positionRow": {
