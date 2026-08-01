@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.17.0'
+  NODE_VERSION: '24.18.1'
   JAVA_VERSION: '17'
   RUBY_VERSION: '3.0'
 
