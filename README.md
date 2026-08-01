@@ -328,10 +328,10 @@ yarn version --major          # Bump major (1.0.0 → 2.0.0)
 
 ## iOS Build Schemes
 
-| Scheme                   | Network      | Display Name | Use For                 |
-| ------------------------ | ------------ | ------------ | ----------------------- |
-| `MobileStack-mainnet`    | Celo mainnet | TuCop        | Production              |
-| `MobileStack-mainnetdev` | Celo mainnet | TuCop (dev)  | **Primary development** |
+| Scheme             | Network      | Display Name | Use For                 |
+| ------------------ | ------------ | ------------ | ----------------------- |
+| `TuCop-mainnet`    | Celo mainnet | TuCop        | Production              |
+| `TuCop-mainnetdev` | Celo mainnet | TuCop (dev)  | **Primary development** |
 
 ## Android Build Configuration
 

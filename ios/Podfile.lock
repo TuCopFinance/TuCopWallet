@@ -218,7 +218,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - PersonaInquirySDK2 (2.3.9)
-  - PromisesObjC (2.4.0)
+  - PromisesObjC (2.4.1)
   - QuickCrypto (1.0.18):
     - DoubleConversion
     - glog
@@ -2690,7 +2690,7 @@ SPEC CHECKSUMS:
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NitroModules: 976940466f7d2496b26b439988b1736703e0b73b
   PersonaInquirySDK2: 8153173c5f6d4e964874c9f0d7b375652c9bb6f9
-  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   QuickCrypto: c332806b4e8889c55bed9966154000eadcaec96c
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 6ee92578d332db1d4e03267d3ae98bcf8b780863
@@ -2806,6 +2806,6 @@ SPEC CHECKSUMS:
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   Yoga: 2b02f3f767761bb4ffd25b1bb56fd264be57bd6b
 
-PODFILE CHECKSUM: df8aee781e8cc3f23e3f789e023a229cc327217e
+PODFILE CHECKSUM: f5d64e1cf485b7970cd9ceb263db48e8468b920b
 
 COCOAPODS: 1.16.2

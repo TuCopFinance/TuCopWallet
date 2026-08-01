@@ -10,14 +10,14 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "&quot;$SRCROOT/../scripts/xcode_scheme_build_pre_action.sh&quot; &quot;${ENVFILE:-.env.mainnetnightly}&quot;&#10;">
+               scriptText = "&quot;$SRCROOT/../scripts/xcode_scheme_build_pre_action.sh&quot; &quot;${ENVFILE:-.env.mainnetdev}&quot;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
                      BuildableName = "TuCop.app"
-                     BlueprintName = "MobileStack"
-                     ReferencedContainer = "container:MobileStack.xcodeproj">
+                     BlueprintName = "TuCop"
+                     ReferencedContainer = "container:TuCop.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -34,8 +34,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
                BuildableName = "TuCop.app"
-               BlueprintName = "MobileStack"
-               ReferencedContainer = "container:MobileStack.xcodeproj">
+               BlueprintName = "TuCop"
+               ReferencedContainer = "container:TuCop.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,8 +50,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
             BuildableName = "TuCop.app"
-            BlueprintName = "MobileStack"
-            ReferencedContainer = "container:MobileStack.xcodeproj">
+            BlueprintName = "TuCop"
+            ReferencedContainer = "container:TuCop.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -73,8 +73,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
             BuildableName = "TuCop.app"
-            BlueprintName = "MobileStack"
-            ReferencedContainer = "container:MobileStack.xcodeproj">
+            BlueprintName = "TuCop"
+            ReferencedContainer = "container:TuCop.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -90,8 +90,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
             BuildableName = "TuCop.app"
-            BlueprintName = "MobileStack"
-            ReferencedContainer = "container:MobileStack.xcodeproj">
+            BlueprintName = "TuCop"
+            ReferencedContainer = "container:TuCop.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
