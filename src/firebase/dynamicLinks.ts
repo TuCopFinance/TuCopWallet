@@ -3,6 +3,7 @@ import {
   APP_STORE_ID as appStoreId,
   DYNAMIC_LINK_DOMAIN_URI_PREFIX as baseURI,
   APP_BUNDLE_ID as bundleId,
+  FIREBASE_ENABLED,
 } from 'src/config'
 import { getDynamicConfigParams } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
@@ -21,7 +22,20 @@ const commonDynamicLinkParams: Omit<FirebaseDynamicLinksTypes.DynamicLinkParamet
   },
 }
 
+// Thrown when a Firebase Dynamic Links helper is invoked while Firebase is
+// disabled at the .env level. Callers can catch this specifically to fall
+// back to a plain web URL, disable the "share via link" affordance, or
+// surface a friendly "feature unavailable" message. Kept as its own class
+// so callers do not need to string-match on Firebase's native error.
+export class FirebaseDisabledError extends Error {
+  constructor(feature: string) {
+    super(`Firebase is disabled; cannot ${feature}`)
+    this.name = 'FirebaseDisabledError'
+  }
+}
+
 export async function createInviteLink(address: string) {
+  if (!FIREBASE_ENABLED) throw new FirebaseDisabledError('createInviteLink')
   const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
   return dynamicLinks().buildShortLink({
     ...commonDynamicLinkParams,
@@ -30,6 +44,7 @@ export async function createInviteLink(address: string) {
 }
 
 export async function createJumpstartLink(privateKey: string, networkId: NetworkId) {
+  if (!FIREBASE_ENABLED) throw new FirebaseDisabledError('createJumpstartLink')
   const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
   // avoid calling firebase sdk with private key during link creation to protect
   // the private key from being stored
