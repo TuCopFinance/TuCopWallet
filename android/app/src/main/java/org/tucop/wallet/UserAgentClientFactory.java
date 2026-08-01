@@ -1,4 +1,4 @@
-package xyz.mobilestack;
+package org.tucop.wallet;
 
 import android.content.Context;
 import com.facebook.react.modules.network.OkHttpClientFactory;

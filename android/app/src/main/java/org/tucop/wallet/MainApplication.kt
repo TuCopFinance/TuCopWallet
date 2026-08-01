@@ -1,4 +1,4 @@
-package xyz.mobilestack
+package org.tucop.wallet
 
 import androidx.multidex.MultiDexApplication
 import cl.json.ShareApplication
