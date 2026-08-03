@@ -71,13 +71,12 @@ function TabWallet() {
   // Gold local value still needed for the Tus inversiones section below
   const { goldLocalValue } = useTotalBalanceWithInvestments(goldBalance)
 
-  // Sum of external investments (Neeru + Allbridge + Aave) shown as a single
-  // aggregated row below Gold. Kept in sync with BalanceCard's
-  // SUPPORTED_INVESTMENT_APP_IDS so both surfaces agree on which apps count.
+  // Sum of external investments (Neeru + Allbridge) shown as a single
+  // aggregated row below Gold. Only the protocols TuCop actually integrates.
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const allPositions = useSelector(positionsByBalanceUsdSelector)
   const otherInvestmentsLocalValue = useMemo(() => {
-    const supportedApps = new Set(['aave', 'allbridge', 'neeru-vaults'])
+    const supportedApps = new Set(['allbridge', 'neeru-vaults'])
     const usdSum = allPositions
       .filter((p) => supportedApps.has(p.appId))
       .reduce((sum, p) => sum.plus(getPositionBalanceUsd(p)), new BigNumber(0))
