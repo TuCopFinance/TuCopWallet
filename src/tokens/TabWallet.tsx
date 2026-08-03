@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -11,9 +12,11 @@ import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import { refreshAllBalances } from 'src/home/actions'
 import { FlatCard } from 'src/home/TabHome'
 import i18n from 'src/i18n'
-import { getLocalCurrencySymbol } from 'src/localCurrency/selectors'
+import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
+import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -67,6 +70,19 @@ function TabWallet() {
 
   // Gold local value still needed for the Tus inversiones section below
   const { goldLocalValue } = useTotalBalanceWithInvestments(goldBalance)
+
+  // Sum of external investments (Neeru + Allbridge + Aave) shown as a single
+  // aggregated row below Gold. Kept in sync with BalanceCard's
+  // SUPPORTED_INVESTMENT_APP_IDS so both surfaces agree on which apps count.
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const allPositions = useSelector(positionsByBalanceUsdSelector)
+  const otherInvestmentsLocalValue = useMemo(() => {
+    const supportedApps = new Set(['aave', 'allbridge', 'neeru-vaults'])
+    const usdSum = allPositions
+      .filter((p) => supportedApps.has(p.appId))
+      .reduce((sum, p) => sum.plus(getPositionBalanceUsd(p)), new BigNumber(0))
+    return usdToLocalRate ? usdSum.multipliedBy(usdToLocalRate) : new BigNumber(0)
+  }, [allPositions, usdToLocalRate])
 
   Logger.info('TOKEN', allTokens)
   Logger.info('supportedNetworkIds', supportedNetworkIds)
@@ -166,6 +182,35 @@ function TabWallet() {
                     </View>
                   </View>
                 </Touchable>
+
+                {/* Other investments: single aggregated row summing all
+                    external protocol positions (Neeru + Allbridge + Aave).
+                    Only rendered when the user has at least one position. */}
+                {otherInvestmentsLocalValue.gt(0) && (
+                  <Touchable
+                    onPress={() => navigate(Screens.EarnHome)}
+                    testID="OtherInvestmentsItem"
+                  >
+                    <View style={styles.goldItem}>
+                      <Grow size={32} />
+                      <View style={styles.goldTextContainer}>
+                        <View>
+                          <Text style={styles.goldLabel}>{t('assets.otherInvestments')}</Text>
+                        </View>
+                        <View style={styles.goldBalanceContainer}>
+                          {!hideWalletBalances ? (
+                            <Text style={styles.goldBalance}>
+                              {localCurrencySymbol}
+                              {otherInvestmentsLocalValue.toFormat(2)}
+                            </Text>
+                          ) : (
+                            <Text style={styles.goldBalance}>••••••</Text>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  </Touchable>
+                )}
               </View>
 
               <View style={{ marginHorizontal: 20 }}>
