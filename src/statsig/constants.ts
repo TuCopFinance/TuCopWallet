@@ -137,7 +137,7 @@ export const DynamicConfigs = {
         // Somm Real Yield ETH
         `${NetworkId['op-mainnet']}:0xc47bb288178ea40bf520a91826a3dee9e0dbfa4c`,
       ],
-      supportedAppIds: ['aave', 'allbridge'],
+      supportedAppIds: ['allbridge', 'neeru-vaults'],
     },
   },
 } satisfies {

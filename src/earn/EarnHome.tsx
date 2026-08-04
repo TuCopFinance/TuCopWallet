@@ -69,11 +69,6 @@ const SECTION_ORDER: Array<{ id: string; titleKey: string; match: (item: any) =>
     match: (item) => item?.appId === 'allbridge',
   },
   {
-    id: 'aave',
-    titleKey: 'earnFlow.section.aave',
-    match: (item) => item?.appId === 'aave',
-  },
-  {
     id: 'marranitos',
     titleKey: 'earnFlow.section.marranitos',
     match: (item) =>
