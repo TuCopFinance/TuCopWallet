@@ -12,7 +12,11 @@ const describeLive = RUN_LIVE ? describe : describe.skip
 
 const BACKEND_BASE_URL =
   process.env.NEERU_LIVE_META_BASE_URL ?? 'https://tucop-backend-production.up.railway.app'
-const FETCH_TIMEOUT_MS = 15_000
+// Matches the wallet-side NEERU_FETCH_TIMEOUT_MS bump (45s) so the drift
+// check tolerates the backend's occasional cold-response tail
+// (Railway container spin-up + DB pool warm on first hit after idle can
+// stretch to 20-30s). Below this the CI job flakes on cold cache runs.
+const FETCH_TIMEOUT_MS = 45_000
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController()
@@ -29,7 +33,8 @@ async function fetchWithTimeout(url: string): Promise<Response> {
 }
 
 describeLive('Neeru meta drift check (live backend)', () => {
-  jest.setTimeout(FETCH_TIMEOUT_MS + 5_000)
+  // 2 backend calls in beforeAll, so allow 2x the per-fetch timeout + margin.
+  jest.setTimeout(FETCH_TIMEOUT_MS * 2 + 10_000)
 
   let liveMetaAdapted: NeeruMeta
   let liveCatalogue: any
