@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { execFileSync } from 'child_process'
 import path from 'path'
+import { getPositionBalanceLocal } from 'src/positions/getPositionBalanceUsd'
+import type { Position } from 'src/positions/types'
 import { convertLocalToTokenAmount, convertTokenToLocalAmount } from 'src/tokens/utils'
 import networkConfig from 'src/web3/networkConfig'
 import type { TokenBalance } from 'src/tokens/slice'
@@ -75,6 +77,71 @@ describe('COPm <-> COP is always 1:1', () => {
     })
     // 10 USDT * 1 USD/USDT * 4000 COP/USD = 40_000 COP
     expect(local?.toFixed()).toBe('40000')
+  })
+
+  it('getPositionBalanceLocal renders a Neeru-style COPm vault share 1:1 via dataProps.depositTokenId', () => {
+    // Vault shares carry their own share-token metadata (arbitrary
+    // symbol, share priceUsd) but the deposit token is COPm. Regression
+    // fence for the iOS bug where "En inversiones COP$10,000" drifted
+    // to COP$9,934 because the vault share's tokenId didn't match COPm.
+    const neeruShare: Position = {
+      type: 'app-token',
+      appId: 'neeru-vaults',
+      appName: 'Neeru Vaults',
+      networkId: 'celo-mainnet' as Position['networkId'],
+      positionId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082',
+      address: '0x988af5977201a0e988f2c75ea952532f6beb5082',
+      tokenId: 'celo-mainnet:0x988af5977201a0e988f2c75ea952532f6beb5082', // share token, NOT copm
+      symbol: 'nCOPm',
+      decimals: 18,
+      balance: '10000',
+      priceUsd: '0.0003098516',
+      supply: '10000',
+      pricePerShare: ['1'],
+      tokens: [],
+      displayProps: { title: '', description: '', imageUrl: '' },
+      availableShortcutIds: [],
+      dataProps: {
+        depositTokenId: networkConfig.copmTokenId,
+        withdrawTokenId: networkConfig.copmTokenId,
+        yieldRates: [],
+        earningItems: [],
+      },
+    }
+    // 10_000 shares * pricePerShare 1 = 10_000 COPm = 10_000 COP.
+    // NOT 10_000 * 0.0003098516 * 3221.58 = ~9976 COP (the drifted value).
+    const local = getPositionBalanceLocal(neeruShare, '3221.58')
+    expect(local.toFixed()).toBe('10000')
+  })
+
+  it('getPositionBalanceLocal falls back to usd*rate for non-COPm positions', () => {
+    const allbridgeShare: Position = {
+      type: 'app-token',
+      appId: 'allbridge',
+      appName: 'Allbridge',
+      networkId: 'celo-mainnet' as Position['networkId'],
+      positionId: 'celo-mainnet:0xAllbridgeShare',
+      address: '0xAllbridgeShare',
+      tokenId: 'celo-mainnet:0xAllbridgeShare',
+      symbol: 'aUSDT',
+      decimals: 18,
+      balance: '10',
+      priceUsd: '1',
+      supply: '1000',
+      pricePerShare: ['1'],
+      tokens: [],
+      displayProps: { title: '', description: '', imageUrl: '' },
+      availableShortcutIds: [],
+      dataProps: {
+        depositTokenId: 'celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e', // USDT
+        withdrawTokenId: 'celo-mainnet:0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e',
+        yieldRates: [],
+        earningItems: [],
+      },
+    }
+    // 10 shares * $1 * 4000 COP/USD = 40_000 COP
+    const local = getPositionBalanceLocal(allbridgeShare, '4000')
+    expect(local.toFixed()).toBe('40000')
   })
 })
 
