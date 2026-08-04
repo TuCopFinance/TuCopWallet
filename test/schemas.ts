@@ -3826,6 +3826,16 @@ export const v252SchemaWithNeeruConfig = {
   },
 }
 
+// Firebase / Jumpstart / Invite teardown (PR #318). Migration 253 strips
+// the `jumpstart` slice from persisted state.
+export const v253Schema = {
+  ..._.omit(v252SchemaWithNeeruConfig, 'jumpstart'),
+  _persist: {
+    ...v252SchemaWithNeeruConfig._persist,
+    version: 253,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v252SchemaWithNeeruConfig as Partial<RootState>
+  return v253Schema as Partial<RootState>
 }
