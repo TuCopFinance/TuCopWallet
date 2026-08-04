@@ -321,6 +321,8 @@ dependencies {
     //For CleverTap Android SDK v3.6.4 and above add the following -
     implementation 'com.android.installreferrer:installreferrer:2.2'
     implementation 'com.google.android.gms:play-services-base:17.4.0'
+    // Native FCM SDK is required by CleverTap for Android push notifications.
+    // Kept even after removing @react-native-firebase/* JS packages.
     implementation "com.google.firebase:firebase-messaging:23.0.6"
     implementation 'com.google.android.exoplayer:exoplayer:2.17.1'
     implementation 'com.google.android.exoplayer:exoplayer-hls:2.17.1'
@@ -347,9 +349,6 @@ dependencies {
     // FLAG_IMMUTABLE or FLAG_MUTABLE be specified when creating a PendingIntent
     implementation 'androidx.work:work-runtime:2.7.1'
 
-    // this ensures 1.5.0+ version is not picked by
-    // https://github.com/invertase/react-native-firebase/blob/v11.5.0/packages/auth/android/build.gradle#L88
-    // which requires minCompileSdk 33
     implementation 'androidx.browser:browser:1.4.0'
 
     if (hermesEnabled.toBoolean()) {
@@ -359,14 +358,6 @@ dependencies {
     }
 }
 
-def enableFirebase = project.env.get("FIREBASE_ENABLED")
-
-if (enableFirebase.toBoolean()){
-  println 'Firebase is enabled in .env variable'
-  apply plugin: 'com.google.gms.google-services'
-} else {
-  println 'Info: Firebase is disabled in .env variable'
-}
 
 // This is to fix a duplicate class error
 // Duplicate class org.bouncycastle.LICENSE found in modules jetified-bcprov-jdk15to18-1.69 (org.bouncycastle:bcprov-jdk15to18:1.69) and jetified-bcprov-jdk18on-1.71 (org.bouncycastle:bcprov-jdk18on:1.71)

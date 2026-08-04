@@ -72,19 +72,6 @@ export const DynamicConfigs = {
       tokenInfo: {} as { [tokenId: string]: { cicoOrder: number } },
     },
   },
-  [StatsigDynamicConfigs.WALLET_JUMPSTART_CONFIG]: {
-    configName: StatsigDynamicConfigs.WALLET_JUMPSTART_CONFIG,
-    defaultValues: {
-      jumpstartContracts: {} as {
-        [key in NetworkId]?: {
-          contractAddress?: string
-          depositERC20GasEstimate: string
-          retiredContractAddresses?: string[]
-        }
-      },
-      maxAllowedSendAmountUsd: 100,
-    },
-  },
   [StatsigDynamicConfigs.NFT_CELEBRATION_CONFIG]: {
     configName: StatsigDynamicConfigs.NFT_CELEBRATION_CONFIG,
     defaultValues: {

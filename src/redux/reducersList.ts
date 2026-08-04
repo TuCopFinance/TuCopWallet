@@ -14,7 +14,6 @@ import { homeReducer as home } from 'src/home/reducers'
 import i18nReducer from 'src/i18n/slice'
 import { reducer as identity } from 'src/identity/reducer'
 import { reducer as imports } from 'src/import/reducer'
-import jumpstartReducer from 'src/jumpstart/slice'
 import keylessBackupReducer from 'src/keylessBackup/slice'
 import { reducer as localCurrency } from 'src/localCurrency/reducer'
 import { reducer as networkInfo } from 'src/networkInfo/reducer'
@@ -58,7 +57,6 @@ export const reducersList = {
   keylessBackup: keylessBackupReducer,
   nfts: nftsReducer,
   priceHistory: priceHistoryReducer,
-  jumpstart: jumpstartReducer,
   points: pointsReducer,
   earn: earnReducer,
   neeru: neeruReducer,

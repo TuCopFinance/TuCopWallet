@@ -16,7 +16,6 @@ import { getAppLocked } from 'src/app/selectors'
 import { useDeepLinks } from 'src/app/useDeepLinks'
 import { APP_STORE_ID, DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
 import { useAppUpdateChecker } from 'src/hooks/useAppUpdateChecker'
-import JumpstartClaimStatusToasts from 'src/jumpstart/JumpstartClaimStatusToasts'
 import {
   navigateClearingStack,
   navigationRef,
@@ -262,7 +261,6 @@ export const NavigatorWrapper = () => {
         <AlertBanner />
         <DeepLinkRecovery />
         <ShakeForSupport />
-        <JumpstartClaimStatusToasts />
       </View>
     </NavigationContainer>
   )

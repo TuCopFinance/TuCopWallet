@@ -2,16 +2,8 @@ import { Actions as AccountActions } from 'src/account/actions'
 import { multiSwapCompleted } from 'src/dollarsSpend/slice'
 import { depositSuccess, withdrawSuccess } from 'src/earn/slice'
 import { createFiatConnectTransferCompleted } from 'src/fiatconnect/slice'
-import { notificationsChannel } from 'src/firebase/firebase'
-import {
-  Actions,
-  cleverTapInboxMessagesReceived,
-  setLoading,
-  updateNotifications,
-} from 'src/home/actions'
+import { Actions, cleverTapInboxMessagesReceived, setLoading } from 'src/home/actions'
 import { CleverTapInboxMessage, cleverTapInboxMessagesChannel } from 'src/home/cleverTapInbox'
-import { IdToNotification } from 'src/home/reducers'
-import { depositTransactionSucceeded } from 'src/jumpstart/slice'
 import { fetchLocalCurrencyRateSaga } from 'src/localCurrency/saga'
 import { fetchPositionsSaga, fetchShortcutsSaga } from 'src/positions/saga'
 import { executeShortcutSuccess } from 'src/positions/slice'
@@ -62,7 +54,6 @@ export function* watchRefreshBalances() {
       withdrawSuccess.type,
       SendActions.SEND_PAYMENT_SUCCESS,
       createFiatConnectTransferCompleted.type,
-      depositTransactionSucceeded.type,
       swapSuccess.type,
       // 7702 atomic batch (Dolares -> Pesos) marks completion without
       // emitting per-step swapSuccess actions, so we need its own trigger
@@ -71,25 +62,6 @@ export function* watchRefreshBalances() {
     ],
     safely(withLoading(withTimeout(REFRESH_TIMEOUT, refreshAllBalances)))
   )
-}
-
-function* fetchNotifications() {
-  const channel = yield* call(notificationsChannel)
-  if (!channel) {
-    return
-  }
-  try {
-    while (true) {
-      const notifications = (yield* take(channel)) as IdToNotification
-      yield* put(updateNotifications(notifications))
-    }
-  } catch (error) {
-    Logger.error(`${TAG}@fetchNotifications`, 'Failed to update notifications', error)
-  } finally {
-    if (yield* cancelled()) {
-      channel.close()
-    }
-  }
 }
 
 function* fetchCleverTapInboxMessages() {
@@ -115,6 +87,5 @@ function* fetchCleverTapInboxMessages() {
 
 export function* homeSaga() {
   yield* spawn(watchRefreshBalances)
-  yield* spawn(fetchNotifications)
   yield* spawn(fetchCleverTapInboxMessages)
 }

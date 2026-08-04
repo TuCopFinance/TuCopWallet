@@ -8,8 +8,7 @@ import {
   assignProviderToTxHash,
   setProviderLogos,
 } from 'src/fiatExchanges/actions'
-import { ProviderLogos, TxHashToProvider, providerLogosSelector } from 'src/fiatExchanges/reducer'
-import { readOnceFromFirebase } from 'src/firebase/firebase'
+import { TxHashToProvider, providerLogosSelector } from 'src/fiatExchanges/reducer'
 import i18n from 'src/i18n'
 import { updateKnownAddresses } from 'src/identity/actions'
 import { navigate } from 'src/navigator/NavigationService'
@@ -124,13 +123,9 @@ function* bidaliPaymentRequest({
   }
 }
 
-export function* fetchTxHashesToProviderMapping() {
-  const account = yield* call(getAccount)
-  const txHashesToProvider: TxHashToProvider | null = yield* call(
-    readOnceFromFirebase,
-    `registrations/${account}/txHashes`
-  )
-  return txHashesToProvider
+export function* fetchTxHashesToProviderMapping(): Generator<any, TxHashToProvider | null, any> {
+  yield* call(getAccount)
+  return null
 }
 
 export function* tagTxsWithProviderInfo(action: UpdateTransactionsPayload) {
@@ -167,13 +162,7 @@ export function* tagTxsWithProviderInfo(action: UpdateTransactionsPayload) {
 }
 
 export function* importProviderLogos() {
-  const providerLogos: ProviderLogos = yield readOnceFromFirebase('providerLogos')
-  if (providerLogos) {
-    yield* put(setProviderLogos(providerLogos))
-  } else {
-    // Firebase disabled or no data, use empty provider logos
-    yield* put(setProviderLogos({}))
-  }
+  yield* put(setProviderLogos({}))
 }
 
 export function* watchBidaliPaymentRequests() {

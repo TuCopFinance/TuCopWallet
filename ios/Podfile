@@ -4,12 +4,6 @@ source 'https://cdn.cocoapods.org/'
 # Disable New Architecture (Fabric/TurboModules) - we use Old Architecture
 ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 
-# Allow using RNFirebase as static frameworks
-# https://rnfirebase.io/#allow-ios-static-frameworks
-# Otherwise we get the following error:
-# `The 'Pods-TuCop' target has transitive dependencies that include statically linked binaries [...]`
-$RNFirebaseAsStaticFramework = true
-
 # Workaround for the following error:
 # `The 'Pods-TuCop' target has transitive dependencies that include statically linked binaries [...]`
 $static_framework = [

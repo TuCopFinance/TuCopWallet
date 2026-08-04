@@ -65,7 +65,7 @@ export function useTransactionRecipient(transfer: TokenTransfer): Recipient {
 }
 
 // Note: This hook is tested from src/transactions/feed/TransferFeedItem.test.ts
-export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boolean) {
+export function useTransferFeedDetails(transfer: TokenTransfer) {
   const { t } = useTranslation()
   const addressToDisplayName = useSelector(addressToDisplayNameSelector)
   const rewardsSenders = useSelector(rewardsSendersSelector)
@@ -87,9 +87,6 @@ export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boo
     case TokenTransactionTypeV2.Sent: {
       if (fcTransferDisplayInfo) {
         ;({ title, subtitle, localAmount: customLocalAmount } = fcTransferDisplayInfo)
-      } else if (isJumpstart) {
-        title = t('feedItemJumpstartTitle')
-        subtitle = t('feedItemJumpstartSentSubtitle')
       } else {
         title = t('feedItemSentTitle')
         subtitle = t('feedItemSentInfo', { displayName })
@@ -123,9 +120,6 @@ export function useTransferFeedDetails(transfer: TokenTransfer, isJumpstart: boo
       } else if (isCoinbasePaySender) {
         title = t('feedItemDepositTitle')
         subtitle = t('feedItemReceivedInfo', { displayName })
-      } else if (isJumpstart) {
-        title = t('feedItemJumpstartTitle')
-        subtitle = t('feedItemJumpstartReceivedSubtitle')
       } else {
         title = t('feedItemReceivedTitle')
         subtitle = t('feedItemReceivedInfo', { displayName })

@@ -9,7 +9,7 @@ import { CICOFlow } from 'src/fiatExchanges/utils'
 import { FiatConnectQuoteSuccess } from 'src/fiatconnect'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { RootState } from 'src/redux/reducers'
-import { getDynamicConfigParams, getFeatureGate } from 'src/statsig'
+import { getFeatureGate } from 'src/statsig'
 import TransferFeedItem from 'src/transactions/feed/TransferFeedItem'
 import {
   Fee,
@@ -26,7 +26,6 @@ import {
   mockCusdAddress,
   mockCusdTokenId,
   mockFiatConnectQuotes,
-  mockJumpstartAdddress,
   mockName,
   mockTestTokenAddress,
   mockTestTokenTokenId,
@@ -42,8 +41,6 @@ const MOCK_CONTACT = {
   contactId: 'contactId',
   address: MOCK_ADDRESS,
 }
-const mockRetiredJumpstartAdddress = '0xabc'
-
 jest.mock('src/statsig')
 
 jest.mock('src/web3/networkConfig', () => {
@@ -66,14 +63,6 @@ describe('TransferFeedItem', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(getFeatureGate).mockReturnValue(true)
-    jest.mocked(getDynamicConfigParams).mockReturnValue({
-      jumpstartContracts: {
-        [NetworkId['celo-mainnet']]: {
-          contractAddress: mockJumpstartAdddress,
-          retiredContractAddresses: [mockRetiredJumpstartAdddress],
-        },
-      },
-    })
   })
   function renderScreen({
     storeOverrides = {},
@@ -531,43 +520,6 @@ describe('TransferFeedItem', () => {
       expectedSubtitleSections: ['feedItemFcTransferBankAccount'],
       expectedAmount: `-US$${transferOutFcQuote.quote.quote.fiatAmount}.00`,
       expectedTokenAmount: `${transferTotalCost}.00 cUSD`,
-    })
-  })
-
-  it.each([
-    { address: mockJumpstartAdddress, addressType: 'current' },
-    { address: mockRetiredJumpstartAdddress, addressType: 'retired' },
-  ])('renders correctly for jumpstart deposit to $addressType contract', async ({ address }) => {
-    const { getByTestId } = renderScreen({
-      type: TokenTransactionTypeV2.Sent,
-      address,
-      amount: {
-        tokenAddress: mockCusdAddress,
-        tokenId: mockCusdTokenId,
-        value: -10,
-      },
-    })
-
-    expectDisplay({
-      getByTestId,
-      expectedTitleSections: ['feedItemJumpstartTitle'],
-      expectedSubtitleSections: ['feedItemJumpstartSentSubtitle'],
-      expectedAmount: '-COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
-    })
-  })
-
-  it('renders correctly for jumpstart receive', async () => {
-    const { getByTestId } = renderScreen({
-      type: TokenTransactionTypeV2.Received,
-      address: mockJumpstartAdddress,
-    })
-    expectDisplay({
-      getByTestId,
-      expectedTitleSections: ['feedItemJumpstartTitle'],
-      expectedSubtitleSections: ['feedItemJumpstartReceivedSubtitle'],
-      expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
     })
   })
 })

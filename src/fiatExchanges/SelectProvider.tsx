@@ -36,7 +36,6 @@ import {
   selectFiatConnectQuoteLoadingSelector,
 } from 'src/fiatconnect/selectors'
 import { fetchFiatConnectQuotes } from 'src/fiatconnect/slice'
-import { readOnceFromFirebase } from 'src/firebase/firebase'
 import InfoIcon from 'src/icons/status/InfoIcon'
 import Wallet from 'src/icons/navigator/Wallet'
 import BucksPayIcon from 'src/icons/features/BucksPayIcon'
@@ -118,8 +117,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 
   const { t } = useTranslation()
   const coinbasePayEnabled = useSelector(coinbasePayEnabledSelector)
-  const appIdResponse = useAsync(async () => readOnceFromFirebase('coinbasePay/appId'), [])
-  const appId = appIdResponse.result
+  const appId: string | undefined = undefined
   const insets = useSafeAreaInsets()
 
   const [isUSDT, setIsUSDT] = useState(false)
@@ -232,12 +230,13 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     PaymentMethod.Coinbase,
     asyncProviders.result?.externalProviders
   )
-  const coinbasePayVisible =
+  const coinbasePayVisible = Boolean(
     flow === CICOFlow.CashIn &&
-    coinbaseProvider &&
-    !coinbaseProvider.restricted &&
-    coinbasePayEnabled &&
-    appId
+      coinbaseProvider &&
+      !coinbaseProvider.restricted &&
+      coinbasePayEnabled &&
+      appId
+  )
 
   const analyticsData = getProviderSelectionAnalyticsData({
     normalizedQuotes,
@@ -434,7 +433,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
           analyticsData={analyticsData}
         />
       )}
-      {coinbaseProvider && coinbasePayVisible && (
+      {coinbaseProvider && coinbasePayVisible && appId && (
         <CoinbasePaymentSection
           cryptoAmount={cryptoAmount}
           coinbaseProvider={coinbaseProvider}

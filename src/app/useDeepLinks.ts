@@ -1,11 +1,9 @@
-import dynamicLinks from '@react-native-firebase/dynamic-links'
 import CleverTap from 'clevertap-react-native'
 import { useEffect, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { Linking, Platform } from 'react-native'
 import { deepLinkDeferred, openDeepLink } from 'src/app/actions'
 import { pendingDeepLinkSelector } from 'src/app/selectors'
-import { DYNAMIC_LINK_DOMAIN_URI_PREFIX, FIREBASE_ENABLED } from 'src/config'
 import { hasVisitedHomeSelector } from 'src/home/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Logger from 'src/utils/Logger'
@@ -27,15 +25,6 @@ export const useDeepLinks = () => {
   const handleOpenURL = (event: { url: string }, isSecureOrigin: boolean = false) => {
     Logger.debug('Deep Link Received:', event.url)
 
-    if (event.url.startsWith(DYNAMIC_LINK_DOMAIN_URI_PREFIX)) {
-      // dynamic links come through both the `dynamicLinks` and `Linking` APIs.
-      // the dynamicLinks handlers will already resolve the link, only the
-      // Linking api will pass the raw dynamic link with the prefix through here
-      // so we can ignore it to avoid double handling the link.
-      Logger.info('useDeepLinks/handleOpenURL', 'Ignoring dynamic link', event.url)
-      return
-    }
-
     // defer consuming deep links until the user has completed onboarding
     if (shouldConsumeDeepLinks) {
       dispatch(openDeepLink(event.url, isSecureOrigin))
@@ -51,8 +40,6 @@ export const useDeepLinks = () => {
   }, [pendingDeepLink, address, hasVisitedHome])
 
   const handleOpenInitialURL = (event: { url: string }, isSecureOrigin: boolean = false) => {
-    // this function handles initial deep links, but not dynamic links (which
-    // are handled by firebase)
     if (!isConsumingInitialLink) {
       setIsConsumingInitialLink(true)
       handleOpenURL(event, isSecureOrigin)
@@ -76,13 +63,6 @@ export const useDeepLinks = () => {
       }
     })
 
-    if (FIREBASE_ENABLED) {
-      const firebaseUrl = await dynamicLinks().getInitialLink()
-      if (firebaseUrl) {
-        handleOpenURL({ url: firebaseUrl.url })
-      }
-    }
-
     const initialUrl = await Linking.getInitialURL()
     if (initialUrl) {
       handleOpenInitialURL({ url: initialUrl })
@@ -103,15 +83,9 @@ export const useDeepLinks = () => {
       handleOpenURL(event)
     })
 
-    let dynamicLinksUnsubsribe: () => void | undefined
-    if (FIREBASE_ENABLED) {
-      dynamicLinksUnsubsribe = dynamicLinks().onLink(({ url }) => handleOpenURL({ url }))
-    }
-
     return () => {
       CleverTap.removeListener('CleverTapPushNotificationClicked')
       linkingEventListener.remove()
-      dynamicLinksUnsubsribe?.()
     }
   }, [])
 }

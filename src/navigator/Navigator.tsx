@@ -71,11 +71,6 @@ import KycPending from 'src/fiatconnect/kyc/KycPending'
 import NotificationCenter from 'src/home/NotificationCenter'
 import { currentLanguageSelector } from 'src/i18n/selectors'
 import ImportWallet from 'src/import/ImportWallet'
-import Invite from 'src/invite/Invite'
-import JumpstartEnterAmount from 'src/jumpstart/JumpstartEnterAmount'
-import JumpstartSendConfirmation from 'src/jumpstart/JumpstartSendConfirmation'
-import JumpstartShareLink from 'src/jumpstart/JumpstartShareLink'
-import JumpstartTransactionDetailsScreen from 'src/jumpstart/JumpstartTransactionDetailsScreen'
 import KeylessBackupIntro from 'src/keylessBackup/KeylessBackupIntro'
 import KeylessBackupPhoneCodeInput from 'src/keylessBackup/KeylessBackupPhoneCodeInput'
 import KeylessBackupPhoneInput from 'src/keylessBackup/KeylessBackupPhoneInput'
@@ -269,21 +264,6 @@ const sendScreens = (Navigator: typeof Stack) => (
       name={Screens.SendEnterAmount}
       component={SendEnterAmount}
       options={noHeader}
-    />
-    <Navigator.Screen
-      name={Screens.JumpstartEnterAmount}
-      component={JumpstartEnterAmount}
-      options={noHeader}
-    />
-    <Navigator.Screen
-      name={Screens.JumpstartSendConfirmation}
-      component={JumpstartSendConfirmation}
-      options={headerWithBackButton}
-    />
-    <Navigator.Screen
-      name={Screens.JumpstartShareLink}
-      component={JumpstartShareLink}
-      options={JumpstartShareLink.navigationOptions}
     />
   </>
 )
@@ -535,11 +515,6 @@ const generalScreens = (Navigator: typeof Stack) => (
       options={TransactionSuccessScreen.navigationOptions}
     />
     <Navigator.Screen
-      name={Screens.JumpstartTransactionDetailsScreen}
-      component={JumpstartTransactionDetailsScreen}
-      options={noHeader}
-    />
-    <Navigator.Screen
       name={Screens.GoldEducation}
       component={GoldEducation}
       options={GoldEducation.navigationOptions as NativeStackNavigationOptions}
@@ -564,7 +539,6 @@ const generalScreens = (Navigator: typeof Stack) => (
       component={ReFiColombiaSubsidiesScreen}
       options={headerWithBackButton}
     />
-    <Navigator.Screen name={Screens.Invite} component={Invite} options={noHeader} />
     <Navigator.Screen name={Screens.Support} component={Support} options={noHeader} />
   </>
 )

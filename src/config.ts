@@ -80,7 +80,6 @@ export const E2E_TEST_STATSIG_ID = 'e2e_test_statsig_id'
 export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
 
 // FEATURE FLAGS
-export const FIREBASE_ENABLED = false
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 // SECRETS
@@ -129,7 +128,6 @@ export const SIMPLEX_FEES_URL =
   'https://support.simplex.com/hc/en-gb/articles/360014078420-What-fees-am-I-paying-'
 
 export const APP_STORE_ID = Config.APP_STORE_ID
-export const DYNAMIC_LINK_DOMAIN_URI_PREFIX = 'https://tucop.xyz'
 export const CROWDIN_DISTRIBUTION_HASH = 'e-f9f6869461793b9d1a353b2v7c'
 export const OTA_TRANSLATIONS_FILEPATH = `file://${CachesDirectoryPath}/translations`
 

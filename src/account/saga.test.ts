@@ -33,14 +33,6 @@ const mockFetch = fetch as FetchMock
 jest.unmock('src/pincode/authentication')
 jest.mock('src/analytics/AppAnalytics')
 
-jest.mock('@react-native-firebase/app', () => ({
-  app: jest.fn(() => ({
-    messaging: () => ({
-      getToken: jest.fn().mockResolvedValue('someToken'),
-    }),
-  })),
-}))
-
 describe('handleUpdateAccountRegistration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -59,7 +51,6 @@ describe('handleUpdateAccountRegistration', () => {
         appVersion: '0.0.1',
         language: 'en-US',
         country: 'US',
-        fcmToken: 'someToken',
       })
       .run()
   })
@@ -75,7 +66,6 @@ describe('handleUpdateAccountRegistration', () => {
       ])
       .call(updateAccountRegistration, '0xabc', 'someSignedMessage', {
         appVersion: '0.0.1',
-        fcmToken: 'someToken',
       })
       .run()
 

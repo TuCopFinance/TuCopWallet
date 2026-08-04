@@ -1,4 +1,3 @@
-import firebase from '@react-native-firebase/app'
 import { Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import {
@@ -16,8 +15,6 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { phoneNumberVerificationCompleted } from 'src/app/actions'
 import { inviterAddressSelector } from 'src/app/selectors'
 import { clearStoredMnemonic } from 'src/backup/utils'
-import { FIREBASE_ENABLED } from 'src/config'
-import { firebaseSignOut } from 'src/firebase/firebase'
 import { currentLanguageSelector } from 'src/i18n/selectors'
 import { navigate, navigateClearingStack, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -54,15 +51,6 @@ function* clearStoredAccountSaga({ account }: ClearStoredAccountAction) {
     yield* call(clearStoredMnemonic)
     yield* call(AppAnalytics.reset)
     yield* call(clearStoredAccounts)
-
-    // Ignore error if it was caused by Firebase.
-    try {
-      yield* call(firebaseSignOut, firebase.app())
-    } catch (error) {
-      if (FIREBASE_ENABLED) {
-        Logger.error(TAG + '@clearStoredAccount', 'Failed to sign out from Firebase', error)
-      }
-    }
 
     yield* call(persistor.flush)
     yield* call(restartApp)
@@ -190,23 +178,11 @@ export function* handleUpdateAccountRegistration() {
   const language = yield* select(currentLanguageSelector)
   const country = yield* select(userLocationDataSelector)
 
-  let fcmToken
-  try {
-    const isEmulator = yield* call([DeviceInfo, 'isEmulator'])
-    // Emulators can't handle fcm tokens and calling getToken on them will throw an error
-    if (!isEmulator) {
-      fcmToken = yield* call([firebase.app().messaging(), 'getToken'])
-    }
-  } catch (error) {
-    Logger.error(`${TAG}@handleUpdateAccountRegistration`, 'Could not get fcm token', error)
-  }
-
   try {
     yield* call(updateAccountRegistration, address, signedMessage, {
       appVersion,
       ...(language && { language }),
       ...(country?.countryCodeAlpha2 && { country: country?.countryCodeAlpha2 }),
-      ...(fcmToken && { fcmToken }),
     })
   } catch (error) {
     Logger.error(

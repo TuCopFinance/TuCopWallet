@@ -9,17 +9,14 @@ import {
   request as requestPermission,
 } from 'react-native-permissions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { JumpstartEvents, SendEvents } from 'src/analytics/Events'
+import { SendEvents } from 'src/analytics/Events'
 import { phoneNumberVerifiedSelector } from 'src/app/selectors'
 import Dialog from 'src/components/Dialog'
 import SelectRecipientButton from 'src/components/SelectRecipientButton'
-import MagicWand from 'src/icons/misc/MagicWand'
 import QRCode from 'src/icons/features/QRCode'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { useSelector } from 'src/redux/hooks'
-import { getFeatureGate } from 'src/statsig'
-import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
 import Logger from 'src/utils/Logger'
 import { CONTACTS_PERMISSION } from 'src/utils/contacts'
@@ -37,7 +34,6 @@ export default function SelectRecipientButtons({
   const { t } = useTranslation()
 
   const phoneNumberVerified = useSelector(phoneNumberVerifiedSelector)
-  const jumpstartSendEnabled = getFeatureGate(StatsigFeatureGates.SHOW_JUMPSTART_SEND)
 
   const [_contactsPermissionStatus, setContactsPermissionStatus] = useState<
     PermissionStatus | undefined
@@ -155,23 +151,8 @@ export default function SelectRecipientButtons({
     setShowEnableContactsModal(false)
   }
 
-  const onPressJumpstart = () => {
-    AppAnalytics.track(JumpstartEvents.send_select_recipient_jumpstart)
-    navigate(Screens.JumpstartEnterAmount)
-  }
-
   return (
     <>
-      {jumpstartSendEnabled && (
-        <SelectRecipientButton
-          testID={'SelectRecipient/Jumpstart'}
-          title={t('sendSelectRecipient.jumpstart.title')}
-          subtitle={t('sendSelectRecipient.jumpstart.subtitle')}
-          onPress={onPressJumpstart}
-          icon={<MagicWand color={Colors.black} />}
-          gradientBackground
-        />
-      )}
       <SelectRecipientButton
         testID={'SelectRecipient/QR'}
         title={t('sendSelectRecipient.qr.title')}

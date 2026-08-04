@@ -5,12 +5,11 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { EffectProviders, StaticProvider } from 'redux-saga-test-plan/providers'
 import { select } from 'redux-saga/effects'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { AppEvents, InviteEvents } from 'src/analytics/Events'
+import { AppEvents } from 'src/analytics/Events'
 import { HooksEnablePreviewOrigin, WalletConnectPairingOrigin } from 'src/analytics/types'
 import {
   appLock,
   inAppReviewRequested,
-  inviteLinkConsumed,
   openDeepLink,
   openUrl,
   setAppState,
@@ -38,14 +37,12 @@ import {
   currentLanguageSelector,
   otaTranslationsAppVersionSelector,
 } from 'src/i18n/selectors'
-import { jumpstartLinkHandler } from 'src/jumpstart/jumpstartLinkHandler'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { handlePaymentDeeplink } from 'src/send/utils'
-import { getDynamicConfigParams, getFeatureGate, patchUpdateStatsigUser } from 'src/statsig'
-import { NetworkId } from 'src/transactions/types'
+import { getFeatureGate, patchUpdateStatsigUser } from 'src/statsig'
 import { navigateToURI } from 'src/utils/linking'
 import Logger from 'src/utils/Logger'
 import { ONE_DAY_IN_MILLIS } from 'src/utils/time'
@@ -55,11 +52,10 @@ import { WalletConnectRequestType } from 'src/walletConnect/types'
 import { handleWalletConnectDeepLink } from 'src/walletConnect/walletConnect'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { createMockStore } from 'test/utils'
-import { mockAccount, mockTokenBalances } from 'test/values'
+import { mockAccount } from 'test/values'
 
 jest.mock('src/analytics/AppAnalytics')
 jest.mock('src/statsig')
-jest.mock('src/jumpstart/jumpstartLinkHandler')
 jest.mock('src/positions/saga')
 jest.mock('react-native-in-app-review', () => ({
   RequestInAppReview: () => mockRequestInAppReview(),
@@ -189,73 +185,6 @@ describe('handleDeepLink', () => {
       pathStartsWith: 'openScreen',
       fullPath: '/openScreen',
       query: 'screen=FiatExchangeCurrency&flow=CashIn',
-    })
-  })
-
-  it('Handles long share deep link', async () => {
-    const deepLink = 'https://celo.org/share/abc123'
-    await expectSaga(handleDeepLink, openDeepLink(deepLink))
-      .provide([[select(walletAddressSelector), mockAccount]])
-      .put(inviteLinkConsumed('abc123'))
-      .run()
-
-    expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
-    expect(AppAnalytics.track).toHaveBeenCalledWith(AppEvents.handle_deeplink, {
-      pathStartsWith: 'share',
-      fullPath: '/share/abc123',
-      query: null,
-    })
-    expect(AppAnalytics.track).toHaveBeenCalledWith(InviteEvents.opened_via_invite_url, {
-      inviterAddress: 'abc123',
-    })
-  })
-
-  it('Handles share deep link', async () => {
-    const deepLink = 'https://celo.org/share/abc123'
-    await expectSaga(handleDeepLink, openDeepLink(deepLink))
-      .provide([[select(walletAddressSelector), mockAccount]])
-      .put(inviteLinkConsumed('abc123'))
-      .run()
-
-    expect(AppAnalytics.track).toHaveBeenCalledTimes(2)
-    expect(AppAnalytics.track).toHaveBeenCalledWith(AppEvents.handle_deeplink, {
-      pathStartsWith: 'share',
-      fullPath: '/share/abc123',
-      query: null,
-    })
-    expect(AppAnalytics.track).toHaveBeenCalledWith(InviteEvents.opened_via_invite_url, {
-      inviterAddress: 'abc123',
-    })
-  })
-
-  it('Handles jumpstart links', async () => {
-    const deepLink = `${DEEP_LINK_URL_SCHEME}://wallet/jumpstart/0xPrivateKey/celo-mainnet`
-    jest.mocked(getDynamicConfigParams).mockReturnValue({
-      jumpstartContracts: {
-        [NetworkId['celo-mainnet']]: { contractAddress: '0xTEST' },
-      },
-    })
-    await expectSaga(handleDeepLink, openDeepLink(deepLink))
-      .withState(
-        createMockStore({
-          tokens: {
-            tokenBalances: mockTokenBalances,
-          },
-        }).getState()
-      )
-      .provide([[select(walletAddressSelector), '0xwallet']])
-      .run()
-
-    expect(jumpstartLinkHandler).toHaveBeenCalledWith(
-      'celo-mainnet',
-      '0xTEST',
-      '0xPrivateKey',
-      '0xwallet'
-    )
-    expect(AppAnalytics.track).toHaveBeenCalledWith(AppEvents.handle_deeplink, {
-      pathStartsWith: 'jumpstart',
-      fullPath: null,
-      query: null,
     })
   })
 
