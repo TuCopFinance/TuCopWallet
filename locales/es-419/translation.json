@@ -2111,7 +2111,8 @@
     "tetherUsd": "USDT",
     "usdCoin": "USDC",
     "yourMoney": "Tu dinero",
-    "yourInvestments": "Tus inversiones"
+    "yourInvestments": "Tus inversiones",
+    "otherInvestments": "Otras inversiones"
   },
   "notificationCenterSpotlight": {
     "message": "Presentamos una nueva forma de reclamar recompensas, ver alertas y consultar actualizaciones en un solo lugar",
