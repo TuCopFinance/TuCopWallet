@@ -9,7 +9,7 @@ import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
-import { getTokenDisplayName } from 'src/tokens/utils'
+import { convertTokenToLocalAmount, getTokenDisplayName } from 'src/tokens/utils'
 import Touchable from 'src/components/Touchable'
 import InfoIcon from 'src/icons/status/InfoIcon'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
@@ -73,12 +73,17 @@ function getEstimatedTotalFees({
         return errorFallback
       }
 
-      if (usdToLocalCurrencyRate && localCurrencySymbol && feeComponent.token.priceUsd) {
-        estimatedFeeInLocalCurrency = estimatedFeeInLocalCurrency.plus(
-          feeComponent.amount
-            .multipliedBy(feeComponent.token.priceUsd)
-            .multipliedBy(usdToLocalCurrencyRate)
-        )
+      // Route through convertTokenToLocalAmount so COPm fees render 1:1 with
+      // COP instead of drifting through priceUsd * usdToLocalRate.
+      const feeInLocal =
+        localCurrencySymbol &&
+        convertTokenToLocalAmount({
+          tokenAmount: feeComponent.amount,
+          tokenInfo: feeComponent.token,
+          usdToLocalRate: usdToLocalCurrencyRate,
+        })
+      if (feeInLocal) {
+        estimatedFeeInLocalCurrency = estimatedFeeInLocalCurrency.plus(feeInLocal)
       } else {
         const existingFeeComponentForToken =
           estimatedFeeWithoutFiatPrice[feeComponent.token.tokenId]

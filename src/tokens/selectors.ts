@@ -7,8 +7,7 @@ import {
   TIME_UNTIL_TOKEN_INFO_BECOMES_STALE,
   TOKEN_MIN_AMOUNT,
 } from 'src/config'
-import { LocalCurrencyCode } from 'src/localCurrency/consts'
-import { getLocalCurrencyCode, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { Token } from 'src/positions/types'
 import { RootState } from 'src/redux/reducers'
 import { getFeatureGate } from 'src/statsig'
@@ -23,7 +22,7 @@ import { NetworkId } from 'src/transactions/types'
 import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import { isVersionBelowMinimum } from 'src/utils/versionCheck'
 import networkConfig from 'src/web3/networkConfig'
-import { isFeeCurrency, sortByUsdBalance, usdBalance } from './utils'
+import { isFeeCurrency, sortByUsdBalance, tokenBalanceToLocalCurrency, usdBalance } from './utils'
 
 type TokenBalanceWithPriceUsd = TokenBalance & {
   priceUsd: BigNumber
@@ -330,17 +329,9 @@ export const totalTokenBalanceSelector = createSelector(
     (state: RootState, networkIds: NetworkId[]) => tokensWithUsdValueSelector(state, networkIds),
     usdToLocalCurrencyRateSelector,
     tokenFetchErrorSelector,
-    getLocalCurrencyCode,
     (_state: RootState, networkIds: NetworkId[]) => networkIds,
   ],
-  (
-    tokensList,
-    tokensWithUsdValue,
-    usdToLocalRate,
-    tokenFetchError,
-    localCurrencyCode,
-    networkIds
-  ) => {
+  (tokensList, tokensWithUsdValue, usdToLocalRate, tokenFetchError, networkIds) => {
     if (tokenFetchError) {
       return null
     }
@@ -353,16 +344,17 @@ export const totalTokenBalanceSelector = createSelector(
     for (const token of tokensWithUsdValue.filter((token) =>
       networkIds.includes(token.networkId)
     )) {
-      // COPm with COP local currency should be 1:1 (avoid USD conversion rounding)
-      const isCopmWithCopCurrency =
-        (token.tokenId === networkConfig.copmTokenId || token.symbol === 'COPm') &&
-        localCurrencyCode === LocalCurrencyCode.COP
-
-      const tokenAmount = isCopmWithCopCurrency
-        ? new BigNumber(token.balance)
-        : new BigNumber(token.balance).multipliedBy(token.priceUsd).multipliedBy(usdToLocalRate)
-
-      totalBalance = totalBalance.plus(tokenAmount)
+      // COPm renders 1:1 with COP wallet-wide; the shared helper handles the
+      // short-circuit so this selector never re-invents the double-oracle
+      // path (see src/tokens/copmPegInvariant.test.ts).
+      totalBalance = totalBalance.plus(
+        tokenBalanceToLocalCurrency({
+          tokenId: token.tokenId,
+          balance: new BigNumber(token.balance),
+          priceUsd: token.priceUsd,
+          usdToLocalRate,
+        })
+      )
     }
 
     return totalBalance

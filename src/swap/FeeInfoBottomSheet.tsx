@@ -6,6 +6,7 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { convertTokenToLocalAmount } from 'src/tokens/utils'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -33,10 +34,14 @@ function FeeAmount({
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
 
   const feeAmount = showMaxAmount ? fee?.maxAmount : fee?.amount
+  // Route through convertTokenToLocalAmount so COPm fees render 1:1 with COP
+  // instead of drifting through priceUsd * usdToLocalRate.
   const feeAmountInLocalCurrency =
-    feeAmount && fee?.token?.priceUsd && usdToLocalCurrencyRate
-      ? feeAmount.times(fee.token.priceUsd).times(usdToLocalCurrencyRate)
-      : undefined
+    convertTokenToLocalAmount({
+      tokenAmount: feeAmount ?? null,
+      tokenInfo: fee?.token,
+      usdToLocalRate: usdToLocalCurrencyRate,
+    }) ?? undefined
 
   const isFeeZero = feeAmount && feeAmount.isZero()
   const loadingText = t('loading')

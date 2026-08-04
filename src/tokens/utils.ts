@@ -121,6 +121,42 @@ export function usdBalance(token: TokenBalance): BigNumber {
   return token.balance.times(token.priceUsd ?? 0)
 }
 
+// TuCop is COP-first: COPm is Mento-pegged to COP and the wallet treats the
+// two as 1:1 for every user-visible balance. Skipping priceUsd + usdToLocal
+// removes the double-oracle drift (CoinGecko priceUsd vs backend COP rate)
+// that otherwise made "COP$1,753" jitter between rate refreshes even when
+// the on-chain COPm balance was flat.
+function isCopmPeggedToLocal(tokenInfo: TokenBalance | undefined): boolean {
+  return tokenInfo?.tokenId === networkConfig.copmTokenId
+}
+
+// Duck-typed local-currency converter shared by call sites that hold
+// heterogeneous token shapes (position tokens have string priceUsd,
+// TokenBalance uses BigNumber, etc.). Preserves the same COPm 1:1 rule
+// as convertTokenToLocalAmount above. Prefer this helper (or the
+// TokenBalance-typed convertTokenToLocalAmount) over inline
+// `balance * priceUsd * usdToLocalRate` -- inline usage is grep-guarded
+// by src/tokens/copmPegInvariant.test.ts.
+export function tokenBalanceToLocalCurrency({
+  tokenId,
+  balance,
+  priceUsd,
+  usdToLocalRate,
+}: {
+  tokenId: string
+  balance: BigNumber
+  priceUsd: BigNumber | string | null | undefined
+  usdToLocalRate: string | null
+}): BigNumber {
+  if (tokenId === networkConfig.copmTokenId) {
+    return balance
+  }
+  if (!priceUsd || !usdToLocalRate) {
+    return new BigNumber(0)
+  }
+  return balance.multipliedBy(priceUsd).multipliedBy(usdToLocalRate)
+}
+
 export function convertLocalToTokenAmount({
   localAmount,
   tokenInfo,
@@ -130,8 +166,14 @@ export function convertLocalToTokenAmount({
   tokenInfo: TokenBalance | undefined
   usdToLocalRate: string | null
 }) {
+  if (!localAmount) {
+    return null
+  }
+  if (isCopmPeggedToLocal(tokenInfo)) {
+    return localAmount
+  }
   const tokenPriceUsd = tokenInfo?.priceUsd
-  if (!tokenPriceUsd || !usdToLocalRate || !localAmount) {
+  if (!tokenPriceUsd || !usdToLocalRate) {
     return null
   }
 
@@ -147,8 +189,14 @@ export function convertTokenToLocalAmount({
   tokenInfo: TokenBalance | undefined
   usdToLocalRate: string | null
 }) {
+  if (!tokenAmount) {
+    return null
+  }
+  if (isCopmPeggedToLocal(tokenInfo)) {
+    return tokenAmount
+  }
   const tokenPriceUsd = tokenInfo?.priceUsd
-  if (!tokenPriceUsd || !usdToLocalRate || !tokenAmount) {
+  if (!tokenPriceUsd || !usdToLocalRate) {
     return null
   }
 
