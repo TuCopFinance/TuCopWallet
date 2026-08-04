@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 252,
+          "version": 253,
         },
         "account": {
           "acceptedTerms": false,
@@ -314,12 +314,6 @@ describe('store state', () => {
         },
         "imports": {
           "isImportingWallet": false,
-        },
-        "jumpstart": {
-          "claimStatus": "idle",
-          "depositStatus": "idle",
-          "introHasBeenSeen": false,
-          "reclaimStatus": "idle",
         },
         "keylessBackup": {
           "appKeyshare": null,

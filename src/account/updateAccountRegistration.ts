@@ -4,7 +4,6 @@ export interface RegistrationProperties {
   language?: string | null
   country?: string
   appVersion?: string
-  fcmToken?: string
 }
 
 export async function updateAccountRegistration(

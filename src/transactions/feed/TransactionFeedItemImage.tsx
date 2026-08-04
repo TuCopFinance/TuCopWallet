@@ -5,7 +5,6 @@ import AttentionIcon from 'src/icons/status/Attention'
 import CircledIcon from 'src/icons/ui/CircledIcon'
 import EarnCoins from 'src/icons/features/EarnCoins'
 import GreenLoadingSpinner from 'src/icons/loading/GreenLoadingSpinner'
-import MagicWand from 'src/icons/misc/MagicWand'
 import SwapArrows from 'src/icons/actions/SwapArrows'
 import { Recipient } from 'src/recipients/recipient'
 import Colors from 'src/styles/colors'
@@ -32,7 +31,7 @@ type Props = { networkId: NetworkId; status: TransactionStatus; hideNetworkIcon?
   | {
       transactionType: TokenTransactionTypeV2.Sent | TokenTransactionTypeV2.Received
       recipient: Recipient
-      isJumpstart: boolean
+      isJumpstart?: boolean
     }
 )
 
@@ -71,18 +70,6 @@ function TransactionFeedItemBaseImage(props: Props) {
     transactionType === TokenTransactionTypeV2.Sent ||
     transactionType === TokenTransactionTypeV2.Received
   ) {
-    if (props.isJumpstart) {
-      return (
-        <CircledIcon
-          backgroundColor={Colors.white}
-          borderColor={Colors.primary}
-          radius={AVATAR_SIZE}
-        >
-          <MagicWand size={24} />
-        </CircledIcon>
-      )
-    }
-
     return <ContactCircle recipient={props.recipient} size={AVATAR_SIZE} />
   }
 

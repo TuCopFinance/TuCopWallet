@@ -74,13 +74,9 @@ class MainActivity : ReactActivity() {
         // Ensure the new intent is used instead of the original one
         setIntent(intent)
 
-        // if firebase is not enabled this would cause a crash because of the firebase app not being inited
-        val firebaseEnabled = BuildConfig.FIREBASE_ENABLED.toBoolean()
-        if (firebaseEnabled) {
-            val cleverTapDefaultInstance = CleverTapAPI.getDefaultInstance(this)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                cleverTapDefaultInstance?.pushNotificationClickedEvent(intent.extras)
-            }
+        val cleverTapDefaultInstance = CleverTapAPI.getDefaultInstance(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            cleverTapDefaultInstance?.pushNotificationClickedEvent(intent.extras)
         }
     }
 }

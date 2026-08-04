@@ -103,9 +103,6 @@ class AppAnalytics {
       // this.segmentClient.add({ plugin: new InjectTraits() })
       // this.segmentClient.add({ plugin: new AdjustPlugin() })
       // this.segmentClient.add({ plugin: new ClevertapPlugin() })
-      // if (FIREBASE_ENABLED) {
-      //   this.segmentClient.add({ plugin: new FirebasePlugin() })
-      // }
 
       try {
         const deviceInfo = await getDeviceInfo()

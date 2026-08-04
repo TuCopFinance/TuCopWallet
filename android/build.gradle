@@ -68,14 +68,6 @@ allprojects {
 }
 
 subprojects {
-    project ->
-    if (project.name.contains('react-native-firebase')) {
-        buildscript {
-            dependencies {
-                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-            }
-        }
-    }
     afterEvaluate {
         if (it.hasProperty("android")) {
             android {

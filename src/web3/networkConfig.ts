@@ -38,7 +38,6 @@ interface NetworkConfig {
   fetchExchangesUrl: string
   nftsAppUrl: string
   getSwapQuoteUrl: string
-  walletJumpstartUrl: string
   verifyPhoneNumberUrl: string
   resolvePhoneNumberUrl: string
   verifySmsCodeUrl: string
@@ -234,8 +233,6 @@ const GET_SWAP_QUOTE_URL = `${TUCOP_BACKEND_BASE_URL}/api/swap/quote`
 
 const HOOKS_API_URL_MAINNET = `${TUCOP_BACKEND_BASE_URL}/hooks-api`
 
-const JUMPSTART_CLAIM_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/walletJumpstart`
-
 const GET_NFTS_BY_OWNER_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getNfts`
 
 const CAB_API_KEY_MAINNET =
@@ -366,7 +363,6 @@ const networkConfig: NetworkConfig = {
   fetchExchangesUrl: FETCH_EXCHANGES_URL_MAINNET,
   nftsAppUrl: NFTS_APP_URL,
   getSwapQuoteUrl: GET_SWAP_QUOTE_URL,
-  walletJumpstartUrl: JUMPSTART_CLAIM_URL_MAINNET,
   verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_MAINNET,
   verifySmsCodeUrl: VERIFY_SMS_CODE_MAINNET,
   resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_MAINNET,

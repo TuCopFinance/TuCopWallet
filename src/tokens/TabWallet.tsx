@@ -15,7 +15,7 @@ import i18n from 'src/i18n'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
+import { getPositionBalanceLocal } from 'src/positions/getPositionBalanceUsd'
 import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
@@ -73,14 +73,15 @@ function TabWallet() {
 
   // Sum of external investments (Neeru + Allbridge) shown as a single
   // aggregated row below Gold. Only the protocols TuCop actually integrates.
+  // COPm-denominated positions (Neeru) render 1:1; non-COPm (Allbridge etc)
+  // convert through priceUsd * usdToLocalRate inside getPositionBalanceLocal.
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const allPositions = useSelector(positionsByBalanceUsdSelector)
   const otherInvestmentsLocalValue = useMemo(() => {
     const supportedApps = new Set(['allbridge', 'neeru-vaults'])
-    const usdSum = allPositions
+    return allPositions
       .filter((p) => supportedApps.has(p.appId))
-      .reduce((sum, p) => sum.plus(getPositionBalanceUsd(p)), new BigNumber(0))
-    return usdToLocalRate ? usdSum.multipliedBy(usdToLocalRate) : new BigNumber(0)
+      .reduce((sum, p) => sum.plus(getPositionBalanceLocal(p, usdToLocalRate)), new BigNumber(0))
   }, [allPositions, usdToLocalRate])
 
   Logger.info('TOKEN', allTokens)

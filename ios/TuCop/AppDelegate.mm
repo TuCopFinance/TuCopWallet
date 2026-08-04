@@ -16,9 +16,6 @@
 #import <React/RCTLinkingManager.h>
 #import <React/RCTHTTPRequestHandler.h>
 
-#import <FirebaseCore/FirebaseCore.h>
-#import <FirebaseAuth/FirebaseAuth.h>
-
 #import "RNSplashScreen.h"
 #import <segment_analytics_react_native-Swift.h>
 
@@ -58,33 +55,21 @@ static void SetCustomNSURLSessionConfiguration() {
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  // Reset keychain on first run to clear existing Firebase credentials
-  // Note: react-native-secure-key-store also does that but is run too late
-  // and hence can't clear Firebase credentials
+  // Reset keychain on first run to clear leftover credentials from previous installs.
   [self resetKeychainIfNecessary];
-  
-  // IMPORTANT: Order matters here! This is because both CleverTap and Firebase swizzle AppDelegate/UNUserNotificationCenterDelegate methods
-  // and only this specific order works! Also CleverTap account ID and token need to be provided via Info.plist
-  // to have push with deep links handled correctly. Instead of via Segment remote config which happens too late in the init process.
-  // 1. UNUserNotificationCenter set delegate
-  // 2. CleverTap autoIntegrate
-  // 3. Firebase configure
+
+  // CleverTap needs UNUserNotificationCenter delegate set before autoIntegrate,
+  // and its account ID/token come from Info.plist so push deep links resolve
+  // correctly on cold start (Segment remote config would be too late).
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   center.delegate = self;
-  
+
 #if DEBUG
   [CleverTap setDebugLevel:CleverTapLogDebug];
 #endif
   [CleverTap autoIntegrate];
   [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
-  
-  NSString *env = [RNCConfig envFor:@"FIREBASE_ENABLED"];
-  NSString *deepLinkUrlScheme = [RNCConfig envFor:@"DEEP_LINK_URL_SCHEME"];
-  if (env.boolValue) {
-    [FIROptions defaultOptions].deepLinkURLScheme = deepLinkUrlScheme;
-    [FIRApp configure];
-  }
-  
+
   SetCustomNSURLSessionConfiguration();
   
   self.moduleName = [RNCConfig envFor:@"APP_REGISTRY_NAME"];
@@ -172,10 +157,8 @@ static void SetCustomNSURLSessionConfiguration() {
   self.blurView = nil;
 }
 
-// This is needed for CleverTap push to appear while the app is in foreground, using the system banner
-// Note: this doesn't apply to push sent via FCM, which are handled on the React Native side
-// See https://github.com/invertase/react-native-firebase/blob/0d22eadfbb2f4a9229c63393bc87dc838511a617/packages/messaging/ios/RNFBMessaging/RNFBMessaging%2BUNUserNotificationCenter.m#L86
-- (void)userNotificationCenter:(UNUserNotificationCenter* )center willPresentNotification:(UNNotification* )notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler 
+// Foreground presentation for CleverTap push (system banner).
+- (void)userNotificationCenter:(UNUserNotificationCenter* )center willPresentNotification:(UNNotification* )notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
   NSLog(@"%@: will present notification: %@", self.description, notification.request.content.userInfo);
   [[CleverTap sharedInstance] recordNotificationViewedEventWithData:notification.request.content.userInfo];
@@ -187,7 +170,7 @@ static void SetCustomNSURLSessionConfiguration() {
     completionHandler(UIBackgroundFetchResultNewData);
 }
 
-// This is also needed for CleverTap to have correct push actions handling, because of the swizzling competition between CleverTap and Firebase
+// Passthrough handler kept explicit so CleverTap push actions dispatch cleanly.
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler {
   completionHandler();
 }

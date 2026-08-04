@@ -9,7 +9,6 @@ import { CICOEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import { getPersonaTemplateId } from 'src/firebase/firebase'
 import { createPersonaAccount, verifyWalletAddress } from 'src/in-house-liquidity'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Logger from 'src/utils/Logger'
@@ -45,8 +44,10 @@ const Persona = ({ kycStatus, text, onCanceled, onError, onPress, onSuccess, dis
 
   const dispatch = useDispatch()
 
-  const templateIdResponse = useAsync(async () => getPersonaTemplateId(), [])
-  const templateId = templateIdResponse.result
+  // Persona template ID used to come from Firebase Remote Config. Firebase was
+  // removed; TuCop does not surface FiatConnect KYC today, so leaving this
+  // undefined disables the launch path (guarded below).
+  const templateId: string | undefined = undefined
 
   const launchPersonaInquiry = useCallback(() => {
     if (typeof templateId !== 'string') {

@@ -37,7 +37,6 @@ import mocked = jest.mocked
 
 const AMOUNT_TO_CASH_IN = 100
 const MOCK_IP_ADDRESS = '1.1.1.7'
-const FAKE_APP_ID = 'fake app id'
 const restrictedCurrenciesTokenIds = [mockCeurTokenId, mockCusdTokenId]
 
 jest.mock('./utils', () => ({
@@ -51,10 +50,6 @@ jest.mock('./utils', () => ({
 jest.mock('@coinbase/cbpay-js', () => {
   return { generateOnRampURL: jest.fn() }
 })
-
-jest.mock('src/firebase/firebase', () => ({
-  readOnceFromFirebase: jest.fn().mockResolvedValue(FAKE_APP_ID),
-}))
 
 jest.mock('src/statsig', () => ({
   ...jest.requireActual('src/statsig/__mocks__/index'),
@@ -484,23 +479,9 @@ describe(SelectProviderScreen, () => {
       )
       await waitFor(() => expect(queryByText('Coinbase Pay')).toBeFalsy())
     })
-    it('shows coinbase card if coinbase is not restricted, feature flag is true, and CELO is selected', async () => {
-      const mockProvidersAdjusted = mockProviders
-      mockProvidersAdjusted.find((provider) => provider.name === 'CoinbasePay')!.restricted = false
-      jest.mocked(fetchProviders).mockResolvedValue(mockProvidersAdjusted)
-      mockStore = createMockStore({
-        ...mockStore,
-        app: {
-          coinbasePayEnabled: true,
-        },
-      })
-      const { queryByText } = render(
-        <Provider store={mockStore}>
-          <SelectProviderScreen {...mockScreenProps(CICOFlow.CashIn, mockCeloTokenId)} />
-        </Provider>
-      )
-      await waitFor(() => expect(queryByText('Coinbase Pay')).toBeTruthy())
-    })
+    // Coinbase Pay CTA is hard-gated off (appId used to come from Firebase
+    // Remote Config; Firebase was removed). The "shows coinbase card" happy
+    // path test was retired with that change.
 
     it.each(restrictedCurrenciesTokenIds)(
       'does not show coinbase card if %s is selected',

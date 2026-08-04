@@ -13,14 +13,13 @@ import { EarnPosition } from 'src/positions/types'
 import { Recipient } from 'src/recipients/recipient'
 import { QrCode, TransactionDataInput } from 'src/send/types'
 import { AssetTabType } from 'src/tokens/types'
-import { NetworkId, TokenTransaction, TokenTransfer } from 'src/transactions/types'
+import { NetworkId, TokenTransaction } from 'src/transactions/types'
 import { Countries } from 'src/utils/Countries'
 import { Currency } from 'src/utils/currencies'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { ActionRequestProps } from 'src/walletConnect/screens/ActionRequest'
 import { SessionRequestProps } from 'src/walletConnect/screens/SessionRequest'
 import { WalletConnectRequestType } from 'src/walletConnect/types'
-import { Address } from 'viem'
 
 // Typed nested navigator params
 type NestedNavigatorParams<ParamList> = {
@@ -176,7 +175,6 @@ export type StackParamList = {
         showZeroBalanceModal?: boolean
       }
     | undefined
-  [Screens.Invite]: undefined
   [Screens.EnableBiometry]: undefined
   [Screens.Language]:
     | {
@@ -190,9 +188,6 @@ export type StackParamList = {
     | undefined
   [Screens.Licenses]: undefined
   [Screens.LinkPhoneNumber]: undefined
-  [Screens.JumpstartTransactionDetailsScreen]: {
-    transaction: TokenTransfer
-  }
   [Screens.Main]: undefined
   [Screens.MainModal]: undefined
   [Screens.MultichainBeta]: undefined
@@ -254,19 +249,6 @@ export type StackParamList = {
   [Screens.SendConfirmation]: SendConfirmationParams
   [Screens.SendConfirmationModal]: SendConfirmationParams
   [Screens.SendEnterAmount]: SendEnterAmountParams
-  [Screens.JumpstartEnterAmount]: undefined
-  [Screens.JumpstartSendConfirmation]: {
-    link: string
-    sendAmount: string
-    tokenId: string
-    serializablePreparedTransactions: SerializableTransactionRequest[]
-    beneficiaryAddress: Address
-  }
-  [Screens.JumpstartShareLink]: {
-    link: string
-    sendAmount: string
-    tokenId: string
-  }
   [Screens.SignInWithEmail]: {
     keylessBackupFlow: KeylessBackupFlow
     origin: KeylessBackupOrigin

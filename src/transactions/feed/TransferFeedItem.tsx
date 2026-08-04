@@ -6,13 +6,8 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { HomeEvents } from 'src/analytics/Events'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
-import { jumpstartReclaimFlowStarted } from 'src/jumpstart/slice'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { useDispatch } from 'src/redux/hooks'
-import { getDynamicConfigParams } from 'src/statsig'
-import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs } from 'src/statsig/types'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -22,26 +17,17 @@ import TransactionFeedItemImage from 'src/transactions/feed/TransactionFeedItemI
 import { useTransferFeedDetails } from 'src/transactions/transferFeedUtils'
 import { TokenTransfer } from 'src/transactions/types'
 import { formatFeedTime } from 'src/utils/time'
-import { isPresent } from 'src/utils/typescript'
 interface Props {
   transfer: TokenTransfer
 }
 
 function TransferFeedItem({ transfer }: Props) {
   const { i18n } = useTranslation()
-  const dispatch = useDispatch()
   const { amount, timestamp } = transfer
-  const isJumpstart = isJumpstartTransaction(transfer)
   const formattedTime = formatFeedTime(timestamp, i18n)
 
   const openTransferDetails = () => {
-    if (isJumpstart) {
-      dispatch(jumpstartReclaimFlowStarted())
-      navigate(Screens.JumpstartTransactionDetailsScreen, { transaction: transfer })
-    } else {
-      navigate(Screens.TransactionDetailsScreen, { transaction: transfer })
-    }
-
+    navigate(Screens.TransactionDetailsScreen, { transaction: transfer })
     AppAnalytics.track(HomeEvents.transaction_feed_item_select, {
       itemType: transfer.type,
     })
@@ -50,10 +36,7 @@ function TransferFeedItem({ transfer }: Props) {
   const tokenInfo = useTokenInfo(amount.tokenId)
   const showTokenAmount = !amount.localAmount && !tokenInfo?.priceUsd
 
-  const { title, subtitle, recipient, customLocalAmount } = useTransferFeedDetails(
-    transfer,
-    isJumpstart
-  )
+  const { title, subtitle, recipient, customLocalAmount } = useTransferFeedDetails(transfer)
 
   const colorStyle = new BigNumber(amount.value).isPositive() ? { color: colors.accent } : {}
 
@@ -64,7 +47,6 @@ function TransferFeedItem({ transfer }: Props) {
           recipient={recipient}
           status={transfer.status}
           transactionType={transfer.type}
-          isJumpstart={isJumpstart}
           networkId={transfer.networkId}
         />
         <View style={styles.contentContainer}>
@@ -106,18 +88,6 @@ function TransferFeedItem({ transfer }: Props) {
       </View>
     </Touchable>
   )
-}
-
-function isJumpstartTransaction(tx: TokenTransfer) {
-  const jumpstartConfig = getDynamicConfigParams(
-    DynamicConfigs[StatsigDynamicConfigs.WALLET_JUMPSTART_CONFIG]
-  ).jumpstartContracts[tx.networkId]
-  const jumpstartAddresses = [
-    jumpstartConfig?.contractAddress,
-    ...(jumpstartConfig?.retiredContractAddresses ?? []),
-  ].filter(isPresent)
-
-  return jumpstartAddresses.includes(tx.address)
 }
 
 const styles = StyleSheet.create({

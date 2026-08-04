@@ -2138,4 +2138,13 @@ export const migrations = {
       },
     }
   },
+  253: (state: any) => {
+    // Firebase / Jumpstart / Invite teardown (PR #318). The `jumpstart`
+    // reducer was removed; drop any persisted jumpstart state so the
+    // additionalProperties:false schema validation stays happy on
+    // rehydrate for users upgrading from a version that had the slice.
+    if (!state || !('jumpstart' in state)) return state
+    const { jumpstart: _jumpstart, ...rest } = state
+    return rest
+  },
 }

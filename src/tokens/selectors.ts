@@ -7,13 +7,11 @@ import {
   TIME_UNTIL_TOKEN_INFO_BECOMES_STALE,
   TOKEN_MIN_AMOUNT,
 } from 'src/config'
-import { LocalCurrencyCode } from 'src/localCurrency/consts'
-import { getLocalCurrencyCode, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
+import { usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { Token } from 'src/positions/types'
 import { RootState } from 'src/redux/reducers'
-import { getDynamicConfigParams, getFeatureGate } from 'src/statsig'
-import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs, StatsigFeatureGates } from 'src/statsig/types'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import {
   TokenBalance,
   TokenBalanceWithAddress,
@@ -24,7 +22,7 @@ import { NetworkId } from 'src/transactions/types'
 import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
 import { isVersionBelowMinimum } from 'src/utils/versionCheck'
 import networkConfig from 'src/web3/networkConfig'
-import { isFeeCurrency, sortByUsdBalance, usdBalance } from './utils'
+import { isFeeCurrency, sortByUsdBalance, tokenBalanceToLocalCurrency, usdBalance } from './utils'
 
 type TokenBalanceWithPriceUsd = TokenBalance & {
   priceUsd: BigNumber
@@ -331,17 +329,9 @@ export const totalTokenBalanceSelector = createSelector(
     (state: RootState, networkIds: NetworkId[]) => tokensWithUsdValueSelector(state, networkIds),
     usdToLocalCurrencyRateSelector,
     tokenFetchErrorSelector,
-    getLocalCurrencyCode,
     (_state: RootState, networkIds: NetworkId[]) => networkIds,
   ],
-  (
-    tokensList,
-    tokensWithUsdValue,
-    usdToLocalRate,
-    tokenFetchError,
-    localCurrencyCode,
-    networkIds
-  ) => {
+  (tokensList, tokensWithUsdValue, usdToLocalRate, tokenFetchError, networkIds) => {
     if (tokenFetchError) {
       return null
     }
@@ -354,16 +344,17 @@ export const totalTokenBalanceSelector = createSelector(
     for (const token of tokensWithUsdValue.filter((token) =>
       networkIds.includes(token.networkId)
     )) {
-      // COPm with COP local currency should be 1:1 (avoid USD conversion rounding)
-      const isCopmWithCopCurrency =
-        (token.tokenId === networkConfig.copmTokenId || token.symbol === 'COPm') &&
-        localCurrencyCode === LocalCurrencyCode.COP
-
-      const tokenAmount = isCopmWithCopCurrency
-        ? new BigNumber(token.balance)
-        : new BigNumber(token.balance).multipliedBy(token.priceUsd).multipliedBy(usdToLocalRate)
-
-      totalBalance = totalBalance.plus(tokenAmount)
+      // COPm renders 1:1 with COP wallet-wide; the shared helper handles the
+      // short-circuit so this selector never re-invents the double-oracle
+      // path (see src/tokens/copmPegInvariant.test.ts).
+      totalBalance = totalBalance.plus(
+        tokenBalanceToLocalCurrency({
+          tokenId: token.tokenId,
+          balance: new BigNumber(token.balance),
+          priceUsd: token.priceUsd,
+          usdToLocalRate,
+        })
+      )
     }
 
     return totalBalance
@@ -536,9 +527,9 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
     // Current names (Mento rebranding): COPm, USDm
     // Fallback old names (Valora API): cCOP, cUSD
     //
-    // NOTE: this preserves the historical CELO-first priority for the 10
-    // legacy callers (swap, send, earn, dapps, jumpstart, gold, walletConnect,
-    // buckspay, subsidies, neeru). The Bug-E stables-first preference is
+    // NOTE: this preserves the historical CELO-first priority for the legacy
+    // callers (swap, send, earn, dapps, gold, walletConnect, buckspay,
+    // subsidies, neeru). The Bug-E stables-first preference is
     // applied inside `pickFeeCurrency` (src/tokens/feeCurrencyPicker.ts), used
     // only by the migrated flows (dollarsSpend legacy + 7702). Migrating the
     // remaining callers to `pickFeeCurrency` removes their dependency on this
@@ -623,22 +614,5 @@ export const importedTokensSelector = createSelector(
     }
 
     return tokenList.filter((token) => token?.isManuallyImported)
-  }
-)
-
-const getJumpstartEnabledNetworkIds = () =>
-  Object.keys(
-    getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.WALLET_JUMPSTART_CONFIG])
-      .jumpstartContracts
-  ) as NetworkId[]
-
-export const jumpstartSendTokensSelector = createSelector(
-  [(state) => sortedTokensWithBalanceSelector(state, getJumpstartEnabledNetworkIds())],
-  (tokensWithBalance) => {
-    return tokensWithBalance.filter((token) => {
-      // the jumpstart contract currently requires a token address for the
-      // depositERC20 method
-      return !!token.address
-    })
   }
 )

@@ -6,7 +6,7 @@ import * as Keychain from 'react-native-keychain'
 import { findBestLanguageTag } from 'react-native-localize'
 import { eventChannel } from 'redux-saga'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { AppEvents, InviteEvents } from 'src/analytics/Events'
+import { AppEvents } from 'src/analytics/Events'
 import { HooksEnablePreviewOrigin } from 'src/analytics/types'
 import {
   Actions,
@@ -16,12 +16,10 @@ import {
   androidMobileServicesAvailabilityChecked,
   appLock,
   inAppReviewRequested,
-  inviteLinkConsumed,
   openDeepLink,
   setAppState,
   setPublicConfig,
   setSupportedBiometryType,
-  updateRemoteConfigValues,
 } from 'src/app/actions'
 import { publicAppConfig } from 'src/app/publicConfig'
 import {
@@ -34,17 +32,15 @@ import {
   sentryNetworkErrorsSelector,
 } from 'src/app/selectors'
 import { CeloNewsConfig } from 'src/celoNews/types'
-import { DEFAULT_APP_LANGUAGE, FETCH_TIMEOUT_DURATION, isE2EEnv } from 'src/config'
+import { DEFAULT_APP_LANGUAGE, isE2EEnv } from 'src/config'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { FiatAccountSchemaCountryOverrides } from 'src/fiatconnect/types'
-import { fetchRemoteConfigValues } from 'src/firebase/firebase'
 import { initI18n } from 'src/i18n'
 import {
   allowOtaTranslationsSelector,
   currentLanguageSelector,
   otaTranslationsAppVersionSelector,
 } from 'src/i18n/selectors'
-import { jumpstartClaim } from 'src/jumpstart/saga'
 import { navigate, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -55,7 +51,6 @@ import { handlePaymentDeeplink } from 'src/send/utils'
 import { getFeatureGate, patchUpdateStatsigUser, setupOverridesFromLaunchArgs } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapSuccess } from 'src/swap/slice'
-import { NetworkId } from 'src/transactions/types'
 import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
 import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import Logger from 'src/utils/Logger'
@@ -73,9 +68,7 @@ import {
   all,
   call,
   cancelled,
-  delay,
   put,
-  race,
   select,
   spawn,
   take,
@@ -83,7 +76,6 @@ import {
   takeLatest,
 } from 'typed-redux-saga'
 import { parse } from 'url'
-import { Address, Hex } from 'viem'
 
 const TAG = 'app/saga'
 
@@ -203,32 +195,10 @@ export interface RemoteConfigValues {
 }
 
 export function* appRemoteFeatureFlagSaga() {
-  // Refresh feature flags on process start
-  // and every hour afterwards when the app becomes active.
-  // If the app keep getting killed and restarted we
-  // will load the flags more often, but that should be pretty rare.
-  // if that ever becomes a problem we can save it somewhere persistent.
-  let lastLoadTime = 0
-  let isAppActive = true
-
-  while (true) {
-    const isRefreshTime = Date.now() - lastLoadTime > 60 * 60 * 1000
-
-    if (isAppActive && isRefreshTime) {
-      const { configValues } = yield* race({
-        configValues: call(fetchRemoteConfigValues),
-        timeout: delay(FETCH_TIMEOUT_DURATION),
-      })
-      if (configValues) {
-        Logger.setNetworkErrors(configValues.sentryNetworkErrors)
-        yield* put(updateRemoteConfigValues(configValues))
-        lastLoadTime = Date.now()
-      }
-    }
-
-    const action = (yield* take(Actions.SET_APP_STATE)) as SetAppState
-    isAppActive = action.state === 'active'
-  }
+  // Firebase Remote Config was removed; feature flags now come from Statsig
+  // (see appRemoteFeatureFlagSaga's replacement in the Statsig client init).
+  // The persisted RemoteConfigValues slice keeps its defaults from
+  // REMOTE_CONFIG_VALUES_DEFAULTS.
 }
 
 function parseValue(value: string) {
@@ -313,16 +283,6 @@ export function* handleDeepLink(action: OpenDeepLink) {
       // of our own notifications for security reasons.
       const params = convertQueryToScreenParams(rawParams.query)
       navigate(params.screen as keyof StackParamList, params)
-    } else if (pathParts.length === 3 && pathParts[1] === 'share') {
-      const inviterAddress = pathParts[2]
-      yield* put(inviteLinkConsumed(inviterAddress))
-      AppAnalytics.track(InviteEvents.opened_via_invite_url, {
-        inviterAddress,
-      })
-    } else if (pathParts.length === 4 && pathParts[1] === 'jumpstart') {
-      const privateKey = pathParts[2] as Hex
-      const networkId = pathParts[3] as NetworkId
-      yield* call(jumpstartClaim, privateKey, networkId, walletAddress as Address)
     } else if (
       (yield* select(allowHooksPreviewSelector)) &&
       rawParams.pathname === '/hooks/enablePreview'

@@ -11,7 +11,7 @@ import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
+import { getPositionBalanceLocal } from 'src/positions/getPositionBalanceUsd'
 import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
 import { Position, Token } from 'src/positions/types'
 import { useSelector } from 'src/redux/hooks'
@@ -20,6 +20,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useCOPm, useDollarTokensWithBalance, useDollarUsdBalance } from 'src/tokens/hooks'
+import { tokenBalanceToLocalCurrency } from 'src/tokens/utils'
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -59,15 +60,31 @@ function collectClaimableTokens(tokens: Token[]): Token[] {
   return out
 }
 
-function splitDepositRewards(p: Position): { depositUsd: BigNumber; rewardsUsd: BigNumber } {
+// Deposit / rewards breakdown in local (COP) currency. COPm-denominated
+// tokens use their raw balance 1:1; any other token converts through
+// priceUsd * usdToLocalRate. This mirrors the wallet-wide invariant that
+// Pesos-denominated balances never touch a rate feed.
+function splitDepositRewardsLocal(
+  p: Position,
+  usdToLocalRate: string | null
+): { depositLocal: BigNumber; rewardsLocal: BigNumber } {
   const claimables = collectClaimableTokens(p.tokens)
-  const rewardsUsd = claimables.reduce(
-    (sum, t) => sum.plus(new BigNumber(t.balance).multipliedBy(t.priceUsd)),
+  const rewardsLocal = claimables.reduce(
+    (sum, t) => sum.plus(tokenBalanceInLocal(t, usdToLocalRate)),
     new BigNumber(0)
   )
-  const totalUsd = getPositionBalanceUsd(p)
-  const depositUsd = BigNumber.max(totalUsd.minus(rewardsUsd), 0)
-  return { depositUsd, rewardsUsd }
+  const totalLocal = getPositionBalanceLocal(p, usdToLocalRate)
+  const depositLocal = BigNumber.max(totalLocal.minus(rewardsLocal), 0)
+  return { depositLocal, rewardsLocal }
+}
+
+function tokenBalanceInLocal(token: Token, usdToLocalRate: string | null): BigNumber {
+  return tokenBalanceToLocalCurrency({
+    tokenId: token.tokenId,
+    balance: new BigNumber(token.balance),
+    priceUsd: token.priceUsd,
+    usdToLocalRate,
+  })
 }
 
 export default function BalanceCard({ testID }: Props) {
@@ -93,23 +110,21 @@ export default function BalanceCard({ testID }: Props) {
   const dollarTokensWithBalance = useDollarTokensWithBalance()
   const dolaresUsdBalance = useDollarUsdBalance()
 
-  const pesosBalance =
-    copmToken && copmToken.priceUsd && usdToLocalRate
-      ? copmToken.balance.multipliedBy(copmToken.priceUsd).multipliedBy(usdToLocalRate)
-      : new BigNumber(0)
+  // COPm is Mento-pegged to COP; always render 1:1 with no priceUsd /
+  // usdToLocalRate round-trip. See src/tokens/utils.ts isCopmPeggedToLocal.
+  const pesosBalance = copmToken ? copmToken.balance : new BigNumber(0)
 
   const goldLocalValue =
     goldPriceUsd && usdToLocalRate && !goldBalance.isZero()
       ? new BigNumber(goldPriceUsd).multipliedBy(usdToLocalRate).multipliedBy(goldBalance)
       : new BigNumber(0)
 
-  const supportedPositionsUsd = supportedPositions.reduce(
-    (sum, p) => sum.plus(getPositionBalanceUsd(p)),
+  // COPm-denominated positions (Neeru) render 1:1 with COP; only non-COPm
+  // positions (Allbridge etc) go through the priceUsd × usdToLocalRate path.
+  const positionsLocalValue = supportedPositions.reduce(
+    (sum, p) => sum.plus(getPositionBalanceLocal(p, usdToLocalRate)),
     new BigNumber(0)
   )
-  const positionsLocalValue = usdToLocalRate
-    ? supportedPositionsUsd.multipliedBy(usdToLocalRate)
-    : new BigNumber(0)
 
   const format = (value: BigNumber) =>
     hideBalances ? `XX${decimalSeparator}XX` : value.toFormat(2)
@@ -290,12 +305,12 @@ export default function BalanceCard({ testID }: Props) {
       )
     }
 
-    // investments: per app, two rows (deposit + rewards). Random
-    // hooks-detected positions never appear because we filter by
-    // SUPPORTED_INVESTMENT_APP_IDS upstream.
+    // Investments breakdown: deposit + rewards per app, already in COP.
+    // COPm-denominated (Neeru) tokens flow through the 1:1 helper; other
+    // tokens fall back to priceUsd * usdToLocalRate inside the helper.
     const grouped: Record<string, { appName: string; deposit: BigNumber; rewards: BigNumber }> = {}
     for (const p of supportedPositions) {
-      const { depositUsd, rewardsUsd } = splitDepositRewards(p)
+      const { depositLocal, rewardsLocal } = splitDepositRewardsLocal(p, usdToLocalRate)
       if (!grouped[p.appId]) {
         grouped[p.appId] = {
           appName: p.appName,
@@ -303,10 +318,9 @@ export default function BalanceCard({ testID }: Props) {
           rewards: new BigNumber(0),
         }
       }
-      grouped[p.appId].deposit = grouped[p.appId].deposit.plus(depositUsd)
-      grouped[p.appId].rewards = grouped[p.appId].rewards.plus(rewardsUsd)
+      grouped[p.appId].deposit = grouped[p.appId].deposit.plus(depositLocal)
+      grouped[p.appId].rewards = grouped[p.appId].rewards.plus(rewardsLocal)
     }
-    const rate = usdToLocalRate ? new BigNumber(usdToLocalRate) : new BigNumber(0)
 
     return (
       <>
@@ -318,7 +332,7 @@ export default function BalanceCard({ testID }: Props) {
                 <Text style={rowLabelStyle} numberOfLines={1}>
                   {t('tabHome.investmentDeposit', { appName: g.appName })}
                 </Text>
-                <Text style={rowAmountStyle}>{renderAmount(g.deposit.multipliedBy(rate))}</Text>
+                <Text style={rowAmountStyle}>{renderAmount(g.deposit)}</Text>
               </View>
             )
           }
@@ -328,7 +342,7 @@ export default function BalanceCard({ testID }: Props) {
                 <Text style={rowLabelStyle} numberOfLines={1}>
                   {t('tabHome.investmentRewards', { appName: g.appName })}
                 </Text>
-                <Text style={rowAmountStyle}>{renderAmount(g.rewards.multipliedBy(rate))}</Text>
+                <Text style={rowAmountStyle}>{renderAmount(g.rewards)}</Text>
               </View>
             )
           }

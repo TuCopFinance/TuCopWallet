@@ -21,13 +21,11 @@ import { neeruSaga } from 'src/earn/neeru/saga'
 import { goldSaga } from 'src/gold/saga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
-import { firebaseSaga } from 'src/firebase/saga'
 import { homeSaga } from 'src/home/saga'
 import { i18nSaga } from 'src/i18n/saga'
 import { identitySaga } from 'src/identity/saga'
 import { Actions as ImportActions } from 'src/import/actions'
 import { importSaga } from 'src/import/saga'
-import { jumpstartSaga } from 'src/jumpstart/saga'
 import { keylessBackupSaga } from 'src/keylessBackup/saga'
 import { localCurrencySaga } from 'src/localCurrency/saga'
 import { networkInfoSaga } from 'src/networkInfo/saga'
@@ -128,7 +126,6 @@ export function* rootSaga() {
     // yield* spawn(sentrySaga) // Commented out - Sentry disabled
     yield* spawn(networkInfoSaga)
     yield* spawn(accountSaga)
-    yield* spawn(firebaseSaga)
     yield* spawn(tokensSaga)
     yield* spawn(positionsSaga)
     yield* spawn(localCurrencySaga)
@@ -137,7 +134,6 @@ export function* rootSaga() {
     yield* spawn(identitySaga)
     yield* spawn(recipientsSaga)
     yield* spawn(sendSaga)
-    yield* spawn(jumpstartSaga)
     yield* spawn(importSaga)
     yield* spawn(checkAccountExistenceSaga)
     yield* spawn(fiatExchangesSaga)

@@ -1,7 +1,5 @@
-import firebase from '@react-native-firebase/app'
 import BigNumber from 'bignumber.js'
 import { default as DeviceInfo } from 'react-native-device-info'
-import { FIREBASE_ENABLED } from 'src/config'
 import { ExternalExchangeProvider } from 'src/fiatExchanges/ExternalExchanges'
 import NormalizedQuote from 'src/fiatExchanges/quotes/NormalizedQuote'
 import { ProviderSelectionAnalyticsData } from 'src/fiatExchanges/types'
@@ -231,43 +229,8 @@ export const fetchSimplexPaymentData = async (
 export const isSimplexQuote = (quote: RawProviderQuote[] | SimplexQuote): quote is SimplexQuote =>
   !!quote && 'wallet_id' in quote
 
-const typeCheckNestedProperties = (obj: any, property: string) =>
-  obj[property] &&
-  typeof obj[property].cashIn === 'boolean' &&
-  typeof obj[property].cashOut === 'boolean' &&
-  typeof obj[property].url === 'string' &&
-  obj[property].countries instanceof Array &&
-  obj[property].countries.every(
-    (country: any) => typeof country === 'string' && country.length === 2
-  )
-
-const isLegacyMobileMoneyProvider = (obj: any): obj is LegacyMobileMoneyProvider => {
-  return (
-    typeof obj.name === 'string' &&
-    typeCheckNestedProperties(obj, 'celo') &&
-    typeCheckNestedProperties(obj, 'cusd')
-  )
-}
-
-export const fetchLegacyMobileMoneyProviders = async () => {
-  if (!FIREBASE_ENABLED) return []
-  const firebaseLocalProviders: any[] = await firebase
-    .database()
-    .ref('localCicoProviders')
-    .once('value')
-    .then((snapshot) => snapshot.val())
-    .then((providers) =>
-      Object.entries(providers).map(([name, values]: [string, any]) => ({
-        ...values,
-        name,
-      }))
-    )
-
-  const providers: LegacyMobileMoneyProvider[] = firebaseLocalProviders.filter((provider) =>
-    isLegacyMobileMoneyProvider(provider)
-  )
-
-  return providers
+export const fetchLegacyMobileMoneyProviders = async (): Promise<LegacyMobileMoneyProvider[]> => {
+  return []
 }
 
 export const filterLegacyMobileMoneyProviders = (
