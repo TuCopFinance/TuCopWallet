@@ -40,10 +40,10 @@ const PEEK = 60
 const OVERLAP = CARD_BEHIND_HEIGHT - PEEK // 36px
 
 // Investments card surfaces only positions from apps integrated in the
-// wallet (Allbridge, Aave). Random hooks-detected positions are
+// wallet (Allbridge, Neeru vaults). Random hooks-detected positions are
 // excluded so the breakdown matches the user's mental model of "what
 // the wallet manages".
-const SUPPORTED_INVESTMENT_APP_IDS = new Set(['aave', 'allbridge'])
+const SUPPORTED_INVESTMENT_APP_IDS = new Set(['allbridge', 'neeru-vaults'])
 
 // Recurse nested AppToken positions to collect every claimable token.
 function collectClaimableTokens(tokens: Token[]): Token[] {
