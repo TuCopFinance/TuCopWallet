@@ -68,8 +68,12 @@ export const NavigatorWrapper = () => {
   useLogger(navigationRef)
   useDeepLinks()
 
-  // Sistema de verificación de actualizaciones - consulta directamente App Store / Play Store
+  // Sistema de verificación de actualizaciones - consulta directamente App Store / Play Store.
+  // Explicitly disabled in dev builds so simulator/dogfood sessions never
+  // land on the update prompt (Statsig's minRequiredVersion targets shipped
+  // users, not the local package.json version).
   const { updateInfo } = useAppUpdateChecker({
+    enabled: !__DEV__,
     minRequiredVersion,
     useBackend: false, // Consultar tiendas directamente (más confiable)
     showDialogAutomatically: true,
@@ -113,7 +117,16 @@ export const NavigatorWrapper = () => {
 
   // Force upgrade only when device version is below Statsig minRequiredVersion.
   // The local Statsig check is a fallback for when the store-version fetch fails.
+  //
+  // Dev builds (JS __DEV__ Metro bundle) are always exempt: Statsig's
+  // minRequiredVersion targets released production users, and dogfood /
+  // simulator builds carry a package.json version that is intentionally
+  // behind the shipped store version between releases. Without this guard,
+  // every simulator launch lands on the UpgradeScreen with no way past.
   const shouldForceUpgrade = useMemo(() => {
+    if (__DEV__) {
+      return false
+    }
     if (updateInfo?.isForced) {
       return true
     }
