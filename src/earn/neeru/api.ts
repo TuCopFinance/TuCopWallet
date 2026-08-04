@@ -9,7 +9,16 @@ import {
 } from 'src/earn/neeru/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
-const NEERU_FETCH_TIMEOUT_MS = 15_000
+// 15s was too tight in the wild: the /positions endpoint occasionally cold-
+// starts (Railway container spin-up + DB pool warm) and returns in 20-30s.
+// Under the old 15s cap fetchWithTimeout aborted before backend replied, all
+// 3 retries in the wrapper hit the same wall, and the screen fell back to
+// the empty state with a "Aborted" toast even for users who actually have a
+// position. 45s covers the p99 cold-response window observed 2026-08-04.
+// Sentry TUCOPWALLET-4 (43 events / 4 users) and TUCOPWALLET-D (37 events /
+// 2 users) are both AbortError from this same call site; both should stop
+// firing after this bump.
+const NEERU_FETCH_TIMEOUT_MS = 45_000
 // Config endpoints (meta + catalogue) have short backend cache, so a shorter
 // wallet-side timeout is enough. Falling back to hardcoded defaults is quick
 // and always safe, no reason to keep the boot flow waiting.
