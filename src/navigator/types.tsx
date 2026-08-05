@@ -90,7 +90,10 @@ export type StackParamList = {
   }
   [Screens.EarnHome]: { activeEarnTab?: EarnTabType } | undefined
   [Screens.EarnPoolInfoScreen]: { pool: EarnPosition }
-  [Screens.NeeruVaultDetail]: { pool: EarnPosition }
+  // autoManagePositionId: when navigating from EarnHome MyPools per-position
+  // cards, open the close sheet for this exact position on mount so the user
+  // does not have to tap "Administrar" twice.
+  [Screens.NeeruVaultDetail]: { pool: EarnPosition; autoManagePositionId?: string }
   [Screens.ErrorScreen]: {
     errorMessage?: string
   }

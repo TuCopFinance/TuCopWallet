@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
-import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Touchable from 'src/components/Touchable'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import { NEERU_CATEGORY_LABEL_KEYS, NeeruCategoryId } from 'src/earn/neeru/constants'
@@ -68,7 +68,9 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
   const isStale = isOptimistic && position.staleOptimistic === true
 
   const onPressManage = () => {
-    navigate(Screens.NeeruVaultDetail, { pool })
+    // Pass the exact positionId so the destination screen opens the close
+    // sheet for THIS position directly, no second "Administrar" tap needed.
+    navigate(Screens.NeeruVaultDetail, { pool, autoManagePositionId: position.positionId })
   }
 
   return (
@@ -129,14 +131,18 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
           </View>
         </View>
 
-        <Button
-          testID={`NeeruPositionCard.Manage.${position.positionId}`}
-          text={t('neeruVaults.positionRow.manageCta')}
-          size={BtnSizes.MEDIUM}
-          type={BtnTypes.SECONDARY}
-          onPress={onPressManage}
-          disabled={isOptimistic}
-        />
+        {!isOptimistic && (
+          <View style={styles.actionRow}>
+            <Touchable
+              testID={`NeeruPositionCard.Manage.${position.positionId}`}
+              onPress={onPressManage}
+              borderRadius={8}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionText}>{t('neeruVaults.positionRow.manageCta')}</Text>
+            </Touchable>
+          </View>
+        )}
       </View>
     </Shadow>
   )
@@ -168,4 +174,16 @@ const styles = StyleSheet.create({
   rowValueBold: { ...typeScale.labelSemiBoldSmall, color: Colors.black, textAlign: 'right' },
   rateStack: { alignItems: 'flex-end' },
   rateSub: { ...typeScale.bodyXSmall, color: Colors.gray3 },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  actionButton: {
+    paddingVertical: Spacing.Smallest8,
+    paddingHorizontal: Spacing.Small12,
+  },
+  actionText: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
+  },
 })

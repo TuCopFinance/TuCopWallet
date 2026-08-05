@@ -46,7 +46,7 @@ const DESCRIPTION_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
 }
 
 export default function NeeruVaultDetailScreen({ route }: Props) {
-  const { pool } = route.params
+  const { pool, autoManagePositionId } = route.params
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const fetchStatus = useSelector(neeruFetchStatusSelector)
@@ -66,6 +66,23 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   useEffect(() => {
     dispatch(fetchPositionsStart())
   }, [dispatch])
+
+  // Deep-open path: EarnHome MyPools per-position cards pass the exact
+  // positionId so we open the close sheet directly (skips the user tapping
+  // "Administrar" a second time inside NeeruPositionRow). Only fires once
+  // per mount; if the positionId is not found in the current byCategory
+  // snapshot, silently no-op (backend / optimistic races).
+  const didAutoOpenRef = useRef(false)
+  useEffect(() => {
+    if (didAutoOpenRef.current) return
+    if (!autoManagePositionId) return
+    if (categoryId === null) return
+    const target = byCategory[categoryId].find((p) => p.positionId === autoManagePositionId)
+    if (!target || target.optimistic) return
+    didAutoOpenRef.current = true
+    setSelectedPosition(target)
+    closeSheetRef.current?.present()
+  }, [autoManagePositionId, byCategory, categoryId])
 
   useEffect(() => {
     if (selectedPosition) {
