@@ -44,6 +44,16 @@ export default function NeeruCloseSheet({ forwardedRef, position, onClose, onAmo
     ? new BigNumber(payout.interest).minus(payout.interestAfterPenalty).toFixed()
     : '0'
 
+  // Flex category (0) pays interest per complete 24h day via integer division:
+  // closing before 24h from deposit yields 0 interest. Warn the user so they
+  // can wait, since there is no penalty concept for Flex to already flag this.
+  const nowSecs = Math.floor(Date.now() / 1000)
+  const elapsedSecs = position ? nowSecs - position.startTs : 0
+  const isFlexUnder24h = position?.category === 0 && elapsedSecs >= 0 && elapsedSecs < 86400
+  const flexHoursRemaining = isFlexUnder24h
+    ? Math.max(1, Math.ceil((86400 - elapsedSecs) / 3600))
+    : 0
+
   return (
     <BottomSheetModal
       ref={forwardedRef}
@@ -82,6 +92,13 @@ export default function NeeruCloseSheet({ forwardedRef, position, onClose, onAmo
             {payout.isEarly && (
               <Text style={styles.warning}>
                 {t('neeruVaults.closeSheet.earlyWarning', { date: endDate })}
+              </Text>
+            )}
+            {isFlexUnder24h && (
+              <Text testID="NeeruCloseSheet.FlexUnder24hWarning" style={styles.warning}>
+                {t('neeruVaults.closeSheet.flexUnder24hWarning', {
+                  count: flexHoursRemaining,
+                })}
               </Text>
             )}
             <Button

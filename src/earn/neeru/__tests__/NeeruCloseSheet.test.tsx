@@ -65,4 +65,72 @@ describe('NeeruCloseSheet', () => {
     )
     expect(queryByTestId('NeeruCloseSheet.AmountOnly')).toBeNull()
   })
+
+  describe('Flex under 24h warning', () => {
+    const flexPosition = (startTsSecondsAgo: number): NeeruIndividualPosition => {
+      const nowSecs = Math.floor(Date.now() / 1000)
+      return {
+        ...pos,
+        category: 0,
+        categoryLabel: 'Flexible',
+        startTs: nowSecs - startTsSecondsAgo,
+        currentPayoutIfClosed: {
+          amount: '10000',
+          interest: '0',
+          penaltyBps: 0,
+          interestAfterPenalty: '0',
+          total: '10000',
+          isEarly: false,
+        },
+      }
+    }
+
+    it('shows the warning when a Flex position is closed under 24h from deposit', () => {
+      const store = createMockStore({ neeru: initialNeeruState } as any)
+      const { getByTestId } = render(
+        <Provider store={store}>
+          <NeeruCloseSheet
+            forwardedRef={React.createRef()}
+            position={flexPosition(3600)}
+            onClose={jest.fn()}
+          />
+        </Provider>
+      )
+      expect(getByTestId('NeeruCloseSheet.FlexUnder24hWarning')).toBeTruthy()
+    })
+
+    it('does not show the warning when a Flex position is at least 24h old', () => {
+      const store = createMockStore({ neeru: initialNeeruState } as any)
+      const { queryByTestId } = render(
+        <Provider store={store}>
+          <NeeruCloseSheet
+            forwardedRef={React.createRef()}
+            position={flexPosition(86400 + 60)}
+            onClose={jest.fn()}
+          />
+        </Provider>
+      )
+      expect(queryByTestId('NeeruCloseSheet.FlexUnder24hWarning')).toBeNull()
+    })
+
+    it('does not show the warning for locked categories under 24h (they get earlyWarning instead)', () => {
+      const store = createMockStore({ neeru: initialNeeruState } as any)
+      const nowSecs = Math.floor(Date.now() / 1000)
+      const lockedUnder24h: NeeruIndividualPosition = {
+        ...pos,
+        category: 1,
+        startTs: nowSecs - 3600,
+      }
+      const { queryByTestId } = render(
+        <Provider store={store}>
+          <NeeruCloseSheet
+            forwardedRef={React.createRef()}
+            position={lockedUnder24h}
+            onClose={jest.fn()}
+          />
+        </Provider>
+      )
+      expect(queryByTestId('NeeruCloseSheet.FlexUnder24hWarning')).toBeNull()
+    })
+  })
 })
