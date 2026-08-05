@@ -3037,7 +3037,8 @@
       "flexUnder24hWarning_one": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} hora mas para completar tu primer dia.",
       "flexUnder24hWarning_other": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} horas mas para completar tu primer dia.",
       "confirmCta": "Confirmar retiro",
-      "amountOnlyCta": "Retirar solo mi deposito (sin intereses)"
+      "amountOnlyCta": "Retirar solo mi deposito (sin intereses)",
+      "depositMoreCta": "Haz otro deposito"
     },
     "emergencyCloseSheet": {
       "title": "Retiro de emergencia",

@@ -9,6 +9,7 @@ import { FiatAccount } from 'src/fiatconnect/slice'
 import { KeylessBackupFlow, KeylessBackupOrigin } from 'src/keylessBackup/types'
 import { Screens } from 'src/navigator/Screens'
 import { Nft } from 'src/nfts/types'
+import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { EarnPosition } from 'src/positions/types'
 import { Recipient } from 'src/recipients/recipient'
 import { QrCode, TransactionDataInput } from 'src/send/types'
@@ -90,10 +91,8 @@ export type StackParamList = {
   }
   [Screens.EarnHome]: { activeEarnTab?: EarnTabType } | undefined
   [Screens.EarnPoolInfoScreen]: { pool: EarnPosition }
-  // autoManagePositionId: when navigating from EarnHome MyPools per-position
-  // cards, open the close sheet for this exact position on mount so the user
-  // does not have to tap "Administrar" twice.
-  [Screens.NeeruVaultDetail]: { pool: EarnPosition; autoManagePositionId?: string }
+  [Screens.NeeruVaultDetail]: { pool: EarnPosition }
+  [Screens.NeeruManagePosition]: { position: NeeruIndividualPosition; pool: EarnPosition }
   [Screens.ErrorScreen]: {
     errorMessage?: string
   }

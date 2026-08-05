@@ -3029,7 +3029,8 @@
       "flexUnder24hWarning_one": "If you withdraw now you will not earn interest (the Flexible fund pays by complete days). Wait about {{count}} more hour to complete your first day.",
       "flexUnder24hWarning_other": "If you withdraw now you will not earn interest (the Flexible fund pays by complete days). Wait about {{count}} more hours to complete your first day.",
       "confirmCta": "Confirm withdrawal",
-      "amountOnlyCta": "Withdraw only my deposit (no interest)"
+      "amountOnlyCta": "Withdraw only my deposit (no interest)",
+      "depositMoreCta": "Make another deposit"
     },
     "emergencyCloseSheet": {
       "title": "Emergency withdrawal",
