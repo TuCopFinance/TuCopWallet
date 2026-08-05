@@ -3034,6 +3034,8 @@
       "penaltyLabel": "Comision por retiro temprano ({{percentage}}%)",
       "totalLabel": "Total",
       "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al deposito.",
+      "flexUnder24hWarning_one": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} hora mas para completar tu primer dia.",
+      "flexUnder24hWarning_other": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} horas mas para completar tu primer dia.",
       "confirmCta": "Confirmar retiro",
       "amountOnlyCta": "Retirar solo mi deposito (sin intereses)"
     },
