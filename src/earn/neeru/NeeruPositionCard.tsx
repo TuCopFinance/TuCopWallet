@@ -11,19 +11,15 @@ import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { EarnPosition } from 'src/positions/types'
 import { getTotalYieldRate } from 'src/earn/utils'
-import { useSelector } from 'src/redux/hooks'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 interface Props {
   position: NeeruIndividualPosition
-  // The parent EarnPosition for this pool. Needed so the "Administrar" button
-  // can navigate back into NeeruVaultDetail with the same route shape the rest
-  // of the app already uses. Passed down instead of derived so we do not
-  // re-fetch positions state twice.
   pool: EarnPosition
   testID?: string
 }
@@ -44,9 +40,6 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
   const isFlexible = categoryId === 0
   const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
 
-  // Rate source of truth is the backend catalogue when loaded. Falls back to
-  // the pool's local monthly-to-annual conversion so cold-boot renders are
-  // still reasonable.
   const catalogueCategory = useSelector((state) =>
     neeruCatalogueCategoryByIdSelector(state, categoryId)
   )
@@ -66,12 +59,6 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
 
   const isOptimistic = position.optimistic === true
   const isStale = isOptimistic && position.staleOptimistic === true
-
-  const onPressManage = () => {
-    // Pass the exact positionId so the destination screen opens the close
-    // sheet for THIS position directly, no second "Administrar" tap needed.
-    navigate(Screens.NeeruVaultDetail, { pool, autoManagePositionId: position.positionId })
-  }
 
   return (
     <Shadow
@@ -135,7 +122,7 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
           <View style={styles.actionRow}>
             <Touchable
               testID={`NeeruPositionCard.Manage.${position.positionId}`}
-              onPress={onPressManage}
+              onPress={() => navigate(Screens.NeeruManagePosition, { position, pool })}
               borderRadius={8}
               style={styles.actionButton}
             >

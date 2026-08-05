@@ -21,6 +21,7 @@ export enum Screens {
   EarnHome = 'EarnHome',
   EarnPoolInfoScreen = 'EarnPoolInfoScreen',
   NeeruVaultDetail = 'NeeruVaultDetail',
+  NeeruManagePosition = 'NeeruManagePosition',
   EnableBiometry = 'EnableBiometry',
   ErrorScreen = 'ErrorScreen',
   ExternalExchanges = 'ExternalExchanges',
