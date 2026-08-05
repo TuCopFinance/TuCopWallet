@@ -81,12 +81,17 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
     if (!target || target.optimistic) return
     didAutoOpenRef.current = true
     setSelectedPosition(target)
-    closeSheetRef.current?.present()
   }, [autoManagePositionId, byCategory, categoryId])
 
   useEffect(() => {
     if (selectedPosition) {
       lastSelectedRef.current = selectedPosition
+      // Present here (not in the tap handler) so BottomSheetModal's
+      // enableDynamicSizing measures children AFTER `position` is committed.
+      // Presenting synchronously in the handler would measure the empty
+      // (position=null) tree and snap the sheet to 0 height, which looks
+      // like the sheet never opened.
+      closeSheetRef.current?.present()
     }
   }, [selectedPosition])
 
@@ -95,11 +100,17 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
       closeSheetRef.current?.dismiss()
       setSelectedPosition(null)
       setEmergencyTarget(lastSelectedRef.current)
-      // Allow the close sheet dismissal animation to finish before we open the
-      // emergency sheet, so the two modals don't stack visually.
-      setTimeout(() => emergencySheetRef.current?.present(), 250)
     }
   }, [closeStatus, lastError])
+
+  useEffect(() => {
+    if (emergencyTarget) {
+      // Delay so the previous close-sheet dismissal animation finishes and
+      // dynamic-sizing measures the tree with emergency content committed.
+      const t = setTimeout(() => emergencySheetRef.current?.present(), 250)
+      return () => clearTimeout(t)
+    }
+  }, [emergencyTarget])
 
   useEffect(() => {
     // Withdraw succeeded: the saga navigates to TransactionSuccessScreen but
@@ -146,8 +157,9 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
       : 'neeruVaults.detail.emptyState.step3Fixed'
 
   const handleManagePress = (pos: NeeruIndividualPosition) => {
+    // Presentation happens in the selectedPosition useEffect above so the
+    // sheet's dynamic sizing measures a non-empty tree.
     setSelectedPosition(pos)
-    closeSheetRef.current?.present()
   }
 
   return (
@@ -239,12 +251,10 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
         onAmountOnly={(pos) => {
           // Proactive amount-only path: user knows the interest pool may be low
           // (or accepts forfeiting interest for other reasons) and skips the
-          // full withdraw attempt. Same sheet transition as the LOW_POOL
-          // fallback, minus the failed close round-trip.
+          // full withdraw attempt. The emergencyTarget effect handles present().
           closeSheetRef.current?.dismiss()
           setSelectedPosition(null)
           setEmergencyTarget(pos)
-          setTimeout(() => emergencySheetRef.current?.present(), 250)
         }}
       />
       <NeeruEmergencyCloseSheet
