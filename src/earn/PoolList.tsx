@@ -18,11 +18,13 @@ import { useSelector } from 'react-redux'
 import {
   MARRANITOS_POSITION_TYPE,
   MY_MARRANITOS_POSITION_TYPE,
+  NEERU_POSITION_TYPE,
   SECTION_HEADER_TYPE,
 } from 'src/earn/EarnHome'
 import MarranitosContract, { STAKING_ADDRESS } from 'src/earn/marranitos/MarranitosContract'
 import MarranitosPoolCard from 'src/earn/marranitos/MarranitosPoolCard'
 import { RenderStakeItem } from 'src/earn/marranitos/RenderStakeItem'
+import NeeruPositionCard from 'src/earn/neeru/NeeruPositionCard'
 import PoolCard from 'src/earn/PoolCard'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -175,6 +177,8 @@ export default function PoolList({
             handleWithdraw={handleMarranitosWithdraw}
             index={item.index}
           />
+        ) : item.positionType == NEERU_POSITION_TYPE ? (
+          <NeeruPositionCard position={item.position} pool={item.pool} />
         ) : (
           <PoolCard pool={item} testID={`PoolCard/${item.positionId}`} />
         )

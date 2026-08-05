@@ -3002,11 +3002,29 @@
       "availableAt": "Disponible el {{date}}",
       "flexible": "Sin tiempo minimo",
       "depositedAt": "Depositado el {{date}}",
-      "manageCta": "Gestionar",
+      "manageCta": "Administrar",
       "processingBadge": "Procesando",
       "optimisticTakingLong": "Esto puede tardar un par de minutos. Vuelve a intentar.",
       "refreshCta": "Refrescar",
       "viewOnCeloscanCta": "Ver en Celoscan"
+    },
+    "positionCard": {
+      "capital": "Capital",
+      "interestEarned": "Interes ganado",
+      "pesosAmount": "{{amount}} Pesos",
+      "rate": "Tasa",
+      "annualRate": "{{percentage}}% E.A.",
+      "monthlyRate": "Equivale a {{percentage}}% M.V.",
+      "maturity": "Disponible",
+      "maturityFlexible": "En cualquier momento",
+      "maturityDays_one": "En {{count}} dia ({{date}})",
+      "maturityDays_other": "En {{count}} dias ({{date}})"
+    },
+    "myPoolsSections": {
+      "flexible": "Pesos Flexible",
+      "thirtyDays": "Pesos a 30 dias",
+      "sixtyDays": "Pesos a 60 dias",
+      "ninetyDays": "Pesos a 90 dias"
     },
     "closeSheet": {
       "title": "Retira tu deposito",

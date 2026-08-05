@@ -35,6 +35,9 @@ import {
 } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { fetchCatalogueStart } from 'src/earn/neeru/configSlice'
+import { NEERU_APP_ID, NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+import { neeruPositionsByCategorySelector } from 'src/earn/neeru/selectors'
+import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import Colors from 'src/styles/colors'
@@ -53,11 +56,37 @@ const HEADER_OPACITY_ANIMATION_DISTANCE = 20
 export const MARRANITOS_POSITION_TYPE = 'marranitos'
 export const MY_MARRANITOS_POSITION_TYPE = 'misMarranitos'
 export const SECTION_HEADER_TYPE = 'sectionHeader'
+// Per-position pseudo-item type used only on the MyPools tab, so each Neeru
+// deposit renders as its own card with its own maturity + rate + Manage CTA
+// (grouped by plazo). Consolidated pool balance stays on the AllPools tab.
+export const NEERU_POSITION_TYPE = 'neeruPosition'
+
+// MyPools tab per-category ordering. User rule: Flexible first (no maturity,
+// always withdrawable), then plazos sorted by earliest maturity so the
+// deposits about to mature bubble to the top.
+const NEERU_MYPOOLS_CATEGORY_ORDER: NeeruCategoryId[] = [0, 1, 2, 3]
+const NEERU_MYPOOLS_SECTION_TITLE_KEYS: Record<NeeruCategoryId, string> = {
+  0: 'neeruVaults.myPoolsSections.flexible',
+  1: 'neeruVaults.myPoolsSections.thirtyDays',
+  2: 'neeruVaults.myPoolsSections.sixtyDays',
+  3: 'neeruVaults.myPoolsSections.ninetyDays',
+}
 
 // Fixed section order for the "haz crecer tu dinero" list. Keeps the layout
 // predictable regardless of how the backend orders pools day-to-day. Providers
 // not in this list fall through to the trailing "otros" bucket.
+//
+// The per-category Neeru sections come FIRST so NEERU_POSITION_TYPE items
+// (MyPools tab) match them instead of the generic 'neeru' section below.
+// The generic 'neeru' section still catches full-pool cards on the AllPools
+// tab (appId==='neeru-vaults' with no positionType).
 const SECTION_ORDER: Array<{ id: string; titleKey: string; match: (item: any) => boolean }> = [
+  ...NEERU_MYPOOLS_CATEGORY_ORDER.map((categoryId) => ({
+    id: `neeru-category-${categoryId}`,
+    titleKey: NEERU_MYPOOLS_SECTION_TITLE_KEYS[categoryId],
+    match: (item: any) =>
+      item?.positionType === NEERU_POSITION_TYPE && item?.category === categoryId,
+  })),
   {
     id: 'neeru',
     titleKey: 'earnFlow.section.neeru',
@@ -76,6 +105,43 @@ const SECTION_ORDER: Array<{ id: string; titleKey: string; match: (item: any) =>
       item?.positionType === MY_MARRANITOS_POSITION_TYPE,
   },
 ]
+
+// Expands each Neeru pool into per-position pseudo-items sorted by category
+// (Flexible first, then 30/60/90) and, within each fixed-term category, by
+// earliest maturity so the deposits about to mature float to the top. Each
+// item carries the parent pool alongside the position so downstream cards
+// can navigate back into NeeruVaultDetail without re-deriving the pool.
+function expandNeeruPositions(
+  neeruPools: any[],
+  positionsByCategory: Record<NeeruCategoryId, NeeruIndividualPosition[]>
+) {
+  const poolByCategory = new Map<NeeruCategoryId, any>()
+  for (const pool of neeruPools) {
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) continue
+    poolByCategory.set(categoryId, pool)
+  }
+  const out: any[] = []
+  for (const categoryId of NEERU_MYPOOLS_CATEGORY_ORDER) {
+    const positions = positionsByCategory[categoryId] ?? []
+    if (positions.length === 0) continue
+    const pool = poolByCategory.get(categoryId)
+    if (!pool) continue
+    // Flexible has no maturity, keep backend insertion order. Fixed-term
+    // categories sort ASC by endTs so soonest-to-mature is on top.
+    const sorted = categoryId === 0 ? positions : [...positions].sort((a, b) => a.endTs - b.endTs)
+    for (const position of sorted) {
+      out.push({
+        positionType: NEERU_POSITION_TYPE,
+        positionId: position.positionId,
+        category: categoryId,
+        position,
+        pool,
+      })
+    }
+  }
+  return out
+}
 
 // Interleaves section header pseudo-items between grouped pools so the flat
 // list rendering in PoolList can lay them out with headers without a full
@@ -352,18 +418,28 @@ export default function EarnHome({ navigation, route }: Props) {
     dispatch(fetchCatalogueStart())
   }, [walletAddress, dispatch])
 
+  const neeruPositionsByCategory = useSelector(neeruPositionsByCategorySelector)
+
   const flatPools = useMemo(() => {
     const marranitos =
       activeTab === EarnTabType.AllPools ? marranitos_pools.filter((pool) => pool.isActive) : stakes
-    return [
-      ...marranitos,
-      ...displayPools.filter((pool: any) =>
-        pool.tokens.some((token: any) =>
-          tokenList.map((token) => token.tokenId).includes(token.tokenId)
-        )
-      ),
-    ]
-  }, [displayPools, tokenList, marranitos_pools, activeTab])
+    const filteredPools = displayPools.filter((pool: any) =>
+      pool.tokens.some((token: any) =>
+        tokenList.map((token) => token.tokenId).includes(token.tokenId)
+      )
+    )
+    // MyPools tab: expand each Neeru pool into per-position pseudo-items
+    // grouped by category (Flexible first, then 30/60/90) and sorted by
+    // earliest maturity within each fixed-term category. Non-Neeru pools
+    // keep rendering as a single PoolCard per pool.
+    if (activeTab === EarnTabType.MyPools) {
+      const nonNeeruPools = filteredPools.filter((p: any) => p.appId !== NEERU_APP_ID)
+      const neeruPools = filteredPools.filter((p: any) => p.appId === NEERU_APP_ID)
+      const neeruItems = expandNeeruPositions(neeruPools, neeruPositionsByCategory)
+      return [...marranitos, ...neeruItems, ...nonNeeruPools]
+    }
+    return [...marranitos, ...filteredPools]
+  }, [displayPools, tokenList, marranitos_pools, activeTab, neeruPositionsByCategory])
 
   // Interleaved with section-header pseudo-items so the flat list rendering
   // in PoolList can group pools by provider (Neeru, Allbridge, ...). Empty

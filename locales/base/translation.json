@@ -3000,6 +3000,24 @@
       "refreshCta": "Refresh",
       "viewOnCeloscanCta": "View on Celoscan"
     },
+    "positionCard": {
+      "capital": "Capital",
+      "interestEarned": "Interest earned",
+      "pesosAmount": "{{amount}} Pesos",
+      "rate": "Rate",
+      "annualRate": "{{percentage}}% APR",
+      "monthlyRate": "Equivalent to {{percentage}}% monthly",
+      "maturity": "Available",
+      "maturityFlexible": "Any time",
+      "maturityDays_one": "In {{count}} day ({{date}})",
+      "maturityDays_other": "In {{count}} days ({{date}})"
+    },
+    "myPoolsSections": {
+      "flexible": "Pesos Flexible",
+      "thirtyDays": "Pesos 30 days",
+      "sixtyDays": "Pesos 60 days",
+      "ninetyDays": "Pesos 90 days"
+    },
     "closeSheet": {
       "title": "Withdraw your deposit",
       "currentPayout": "You will receive",

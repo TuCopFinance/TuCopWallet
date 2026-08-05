@@ -23,6 +23,7 @@ import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
 import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
+import { neeruPositionsByCategorySelector } from 'src/earn/neeru/selectors'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
@@ -110,22 +111,45 @@ export default function PoolCard({
   const rewardAmountInFiat =
     useDollarsToLocalAmount(new BigNumber(rewardAmountInUsd)) ?? new BigNumber(0)
 
+  // Neeru's positions API (state.neeru.positions) carries the per-position
+  // accruedInterest that the generic Positions API's `earningItems` does not.
+  // Consolidate at the pool level: sum every position in this pool's category
+  // and add its `accruedInterest` to the capital so the headline shown on the
+  // card reflects "capital + intereses generados" instead of just capital.
+  const neeruByCategory = useSelector(neeruPositionsByCategorySelector)
+  const neeruAccruedInterestForPool = useMemo(() => {
+    if (pool.appId !== 'neeru-vaults') return new BigNumber(0)
+    const categoryId = categoryIdFromPositionId(pool.positionId)
+    if (categoryId === null) return new BigNumber(0)
+    return neeruByCategory[categoryId].reduce(
+      (sum, pos) => sum.plus(new BigNumber(pos.accruedInterest || 0)),
+      new BigNumber(0)
+    )
+  }, [pool.appId, pool.positionId, neeruByCategory])
+
   const poolBalanceString = useMemo(() => {
     // Prefer the standard USD-to-local conversion when we have a live
     // priceUsd for the deposit token. Backend now provides real priceUsd
     // for COPm so the pool balance renders in local currency correctly
     // for every token that has a price feed.
     if (poolBalanceInFiat) {
-      return `${localCurrencySymbol}${formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat))}`
+      return `${localCurrencySymbol}${formatValueToDisplay(poolBalanceInFiat.plus(rewardAmountInFiat).plus(neeruAccruedInterestForPool))}`
     }
     // Defensive fallback for COPm when its priceUsd degrades to 0 (backend
     // outage or fail-soft response). 1 COPm approximates 1 COP as a peso
     // stablecoin so the raw balance is still a meaningful headline.
     if (depositTokenId === COPM_TOKEN_ID_MAINNET) {
-      return `${localCurrencySymbol}${formatValueToDisplay(new BigNumber(balance).plus(rewardAmountInFiat))}`
+      return `${localCurrencySymbol}${formatValueToDisplay(new BigNumber(balance).plus(rewardAmountInFiat).plus(neeruAccruedInterestForPool))}`
     }
     return `${localCurrencySymbol}--`
-  }, [localCurrencySymbol, poolBalanceInFiat, rewardAmountInFiat, depositTokenId, balance])
+  }, [
+    localCurrencySymbol,
+    poolBalanceInFiat,
+    rewardAmountInFiat,
+    depositTokenId,
+    balance,
+    neeruAccruedInterestForPool,
+  ])
 
   // Same branch as the pool balance above: for local-currency Mento pools
   // the backend already returns TVL in the local currency (e.g. COP for
