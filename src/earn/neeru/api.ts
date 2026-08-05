@@ -9,16 +9,24 @@ import {
 } from 'src/earn/neeru/types'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
-// 15s was too tight in the wild: the /positions endpoint occasionally cold-
-// starts (Railway container spin-up + DB pool warm) and returns in 20-30s.
-// Under the old 15s cap fetchWithTimeout aborted before backend replied, all
-// 3 retries in the wrapper hit the same wall, and the screen fell back to
-// the empty state with a "Aborted" toast even for users who actually have a
-// position. 45s covers the p99 cold-response window observed 2026-08-04.
-// Sentry TUCOPWALLET-4 (43 events / 4 users) and TUCOPWALLET-D (37 events /
-// 2 users) are both AbortError from this same call site; both should stop
-// firing after this bump.
-const NEERU_FETCH_TIMEOUT_MS = 45_000
+// Post-2026-08-04 backend hotfix stack (their PRs #163-#166, deploy Railway
+// c6205c29): warmup ticks every 20s + shared RPC client + /ready gated on
+// warmup + RPC chain reordered so ankr replaces forno at head to dodge the
+// Cloudflare 1015 rate-limit on the Railway egress IP.
+//
+// Prod trajectory:
+//   pre-fix: post-idle p99 20-30s -> timeout at 15s -> AbortError toast +
+//            empty state for users who actually had positions (Sentry
+//            TUCOPWALLET-4 and TUCOPWALLET-D, closed 2026-08-04 by
+//            temporarily bumping to 45s).
+//   post-fix: consistent sub-second including post-idle (0.24s observed;
+//            Sentry `errorCode:timeout` and `errorCode:circuit_open` both
+//            0 in the 24h after the backend deploy).
+//
+// 8s covers a comfortable ~30x margin over the new baseline and still fires
+// aggressively enough to protect the user from any future degradation.
+// Reopen the 45s bump only if TUCOPWALLET-4/D reappear.
+const NEERU_FETCH_TIMEOUT_MS = 8_000
 // Config endpoints (meta + catalogue) have short backend cache, so a shorter
 // wallet-side timeout is enough. Falling back to hardcoded defaults is quick
 // and always safe, no reason to keep the boot flow waiting.
