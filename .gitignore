@@ -83,6 +83,7 @@ tsconfig.tsbuildinfo
 *.orig
 
 */.next/*
+.env
 .env.local
 
 # Packages from old monorepo structure
