@@ -59,7 +59,6 @@ react {
 
 project.ext.envConfigFiles = [
     // IMPORTANT: longer variants should be first, as react-native-config plugin matches the first prefix it finds
-    mainnetnightly: ".env.mainnetnightly",
     mainnetdev: ".env.mainnetdev",
     mainnet: ".env.mainnet",
     apptest: ".env.test",
@@ -253,10 +252,8 @@ android {
         mainnetdev {
             dimension "default"
         }
-        mainnetnightly {
-            dimension "default"
-        }
-        // ProductFlavor names cannot start with 'test'
+        // Kept for Detox E2E harness (scripts/run_e2e.sh + package.json detox
+        // config binaryPath references app-apptest-*). NOT a shipping flavor.
         apptest {
             dimension "default"
         }

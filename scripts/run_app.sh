@@ -130,7 +130,15 @@ elif [ "$PLATFORM" = "ios" ]; then
   if [ -n "$DEVICE" ]; then
     device_param="--device=$DEVICE"
   fi
-  yarn react-native run-ios --scheme "TuCop-${ENV_NAME}" --configuration "$CONFIGURATION" --no-packager "${simulator_param}" "${device_param}"
+  # Map env name to Xcode scheme. The dev scheme is renamed to make it
+  # visually impossible to confuse with the production scheme in Xcode's
+  # dropdown (the 1.118.9 incident was caused by exactly that confusion).
+  # See .claude/rules/ios-build.md.
+  case "$ENV_NAME" in
+    mainnetdev) SCHEME="TuCop-mainnetdev-DO-NOT-SHIP" ;;
+    *)          SCHEME="TuCop-${ENV_NAME}" ;;
+  esac
+  yarn react-native run-ios --scheme "$SCHEME" --configuration "$CONFIGURATION" --no-packager "${simulator_param}" "${device_param}"
 
 else
   echo "Invalid value for platform, must be 'android' or 'ios'"

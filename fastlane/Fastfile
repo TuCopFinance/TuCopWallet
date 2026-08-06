@@ -74,30 +74,9 @@ platform :android do
     )
   end
 
-  desc 'Ship Testnet to Playstore Internal'
-  lane :testnet do
-    env = 'testnet'
-    build(environment: env)
-    # upload(environment: env, track: 'internal')
-  end
-
-  desc 'Ship Testnet Nightly to Playstore Internal'
-  lane :testnetnightly do
-    env = 'testnetnightly'
-    build(environment: env)
-    # upload(environment: env, track: 'internal')
-  end
-
   desc 'Ship Mainnet to Playstore Internal'
   lane :mainnet do
     env = 'mainnet'
-    build(environment: env)
-    # upload(environment: env, track: 'internal')
-  end
-
-  desc 'Ship Mainnet Nightly to Playstore Internal'
-  lane :mainnetnightly do
-    env = 'mainnetnightly'
     build(environment: env)
     # upload(environment: env, track: 'internal')
   end
@@ -160,30 +139,9 @@ platform :ios do
     )
   end
 
-  desc 'Ship Testnet to TestFlight'
-  lane :testnet do
-    env = 'testnet'
-    build(environment: env)
-    upload(environment: env)
-  end
-
-  desc 'Ship Testnet Nightly to TestFlight'
-  lane :testnetnightly do
-    env = 'testnetnightly'
-    build(environment: env)
-    upload(environment: env)
-  end
-
   desc 'Ship Mainnet to TestFlight'
   lane :mainnet do
     env = 'mainnet'
-    build(environment: env)
-    upload(environment: env)
-  end
-
-  desc 'Ship Mainnet Nightly to TestFlight'
-  lane :mainnetnightly do
-    env = 'mainnetnightly'
     build(environment: env)
     upload(environment: env)
   end

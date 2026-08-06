@@ -154,6 +154,15 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
+      # Guardrail after the 1.118.9 (259) incident: even though this step
+      # hardcodes -scheme TuCop-mainnet, verify the produced archive is
+      # actually the prod flavor (CFBundleDisplayName == "TuCop", not
+      # "TuCop (dev)") before it gets published as a GitHub Release artifact.
+      # If someone accidentally flips this scheme to mainnetdev in the
+      # future, this fails the workflow instead of shipping a dev binary.
+      - name: Validate iOS Archive is production flavor
+        run: ./scripts/validate-ios-archive.sh ios/build/TuCop.xcarchive
+
       - name: Upload iOS Archive
         uses: actions/upload-artifact@v4
         with:
