@@ -3023,7 +3023,7 @@
       "currentPayout": "You will receive",
       "amountLabel": "Deposited",
       "interestLabel": "Interest earned",
-      "penaltyLabel": "Early withdrawal fee ({{percentage}}%)",
+      "penaltyLabel": "Early withdrawal fee ({{percentage}}% of interest)",
       "totalLabel": "Total",
       "earlyWarning": "You are withdrawing before {{date}}. The fee applies only to the interest, never to your deposit.",
       "flexUnder24hWarning_one": "If you withdraw now you will not earn interest (the Flexible fund pays by complete days). Wait about {{count}} more hour to complete your first day.",
