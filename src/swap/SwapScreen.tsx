@@ -380,7 +380,17 @@ export function SwapScreen({ route }: Props) {
     return swappableToTokens.find((t) => DOLLAR_TOKEN_IDS.has(t.tokenId)) ?? toToken
   }, [toToken, swappableToTokens])
 
-  const fromTokenBalance = useTokenInfo(fromToken?.tokenId)?.balance ?? new BigNumber(0)
+  // When fromToken is the virtual Dolares aggregate, useTokenInfo returns
+  // undefined (virtual tokens are not in the registry) and fromTokenBalance
+  // would collapse to 0 — the percentage chips (25/50/75/100) then all land
+  // on 0 and the Confirmar button stays disabled. The synthetic token itself
+  // carries the aggregate balance (totalUsd across USAT/USDm/USDC/USDT, see
+  // buildDolaresVirtualToken), so use that directly for the virtual path.
+  const fromTokenInfo = useTokenInfo(fromToken?.tokenId)
+  const fromTokenBalance =
+    fromToken?.tokenId === DOLARES_VIRTUAL_TOKEN_ID
+      ? (fromToken.balance ?? new BigNumber(0))
+      : (fromTokenInfo?.balance ?? new BigNumber(0))
 
   const currentSwap = useSelector(currentSwapSelector)
   const swapStatus = startedSwapId === currentSwap?.id ? currentSwap.status : null
