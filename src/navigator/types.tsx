@@ -366,6 +366,7 @@ export type StackParamList = {
     preparedTransactions?: SerializableTransactionRequest[]
     toTokenId?: string
     swapProvider?: string
+    appFeePercentageIncludedInPrice?: string
   }
   [Screens.GoldSellEnterAmount]: undefined
   [Screens.GoldSellConfirmation]: {

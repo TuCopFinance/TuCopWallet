@@ -93,6 +93,7 @@ export interface GoldQuoteResult {
 interface BackendQuoteResult {
   transaction: SwapTransaction
   swapProvider: string
+  appFeePercentageIncludedInPrice: string | undefined
 }
 
 /**
@@ -173,6 +174,8 @@ async function fetchBackendQuote(
   return {
     transaction: quote.unvalidatedSwapTransaction,
     swapProvider: quote.details.swapProvider,
+    appFeePercentageIncludedInPrice:
+      quote.unvalidatedSwapTransaction.appFeePercentageIncludedInPrice,
   }
 }
 
@@ -302,12 +305,11 @@ export function useGoldQuote() {
         )
 
         // Fetch quote from backend API (handles Uniswap V4 routing)
-        const { transaction: swapTransaction, swapProvider } = await fetchSwapQuote(
-          fromToken,
-          toToken,
-          amount,
-          walletAddress
-        )
+        const {
+          transaction: swapTransaction,
+          swapProvider,
+          appFeePercentageIncludedInPrice,
+        } = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
 
         // Create transactions from the quote
         const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
@@ -382,6 +384,7 @@ export function useGoldQuote() {
             preparedTransactions.type === 'possible' ? preparedTransactions.transactions : []
           ),
           swapProvider,
+          appFeePercentageIncludedInPrice,
         }
 
         return {

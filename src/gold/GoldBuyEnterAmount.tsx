@@ -373,6 +373,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
         preparedTransactions: quoteResult.quote.preparedTransactions,
         toTokenId: xaut0Token.tokenId,
         swapProvider: quoteResult.quote.swapProvider,
+        appFeePercentageIncludedInPrice: quoteResult.quote.appFeePercentageIncludedInPrice,
       })
     } else {
       // Navigate without quote - confirmation screen will retry

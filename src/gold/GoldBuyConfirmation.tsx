@@ -58,6 +58,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
     preparedTransactions: initialPreparedTransactions,
     toTokenId,
     swapProvider: initialSwapProvider,
+    appFeePercentageIncludedInPrice: initialAppFeePercentageIncludedInPrice,
   } = route.params
 
   const buyStatus = useSelector(goldBuyStatusSelector)
@@ -103,6 +104,9 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const [preparedTransactions, setPreparedTransactions] = useState<any>(initialPreparedTransactions)
   const [quoteError, setQuoteError] = useState<string | null>(null)
   const [swapProvider, setSwapProvider] = useState<string | undefined>(initialSwapProvider)
+  const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
+    string | undefined
+  >(initialAppFeePercentageIncludedInPrice)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -154,6 +158,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
           setSwapProvider(quoteResult.quote.swapProvider)
+          setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
@@ -223,6 +228,20 @@ export default function GoldBuyConfirmation({ route }: Props) {
     if (!estimatedGasFee || !gasFeeToken) return null
     return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
   }, [estimatedGasFee, gasFeeToken])
+
+  // Integrator fee already discounted from the effective price by the backend
+  // proxy. Rendered as a separate line so the user sees it explicitly. Only
+  // meaningful on the single-token buy path (virtual-Dolares aggregates legs
+  // and is handled by DolaresMultiStepSummary elsewhere).
+  const parsedAppFee = useMemo(() => {
+    if (!appFeePercentageIncludedInPrice || !fromToken) return null
+    const percentage = new BigNumber(appFeePercentageIncludedInPrice)
+    if (percentage.lte(0)) return null
+    return {
+      amount: parsedFromAmount.multipliedBy(percentage).dividedBy(100),
+      percentage,
+    }
+  }, [appFeePercentageIncludedInPrice, fromToken, parsedFromAmount])
 
   // Format gas fee display name (same pattern as getTokenName)
   const getGasFeeTokenName = () => {
@@ -410,6 +429,18 @@ export default function GoldBuyConfirmation({ route }: Props) {
                 </Text>
               )}
             </View>
+            {!!parsedAppFee && !!fromToken && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>
+                  {t('goldFlow.buy.serviceFee', {
+                    percentage: parsedAppFee.percentage.toFormat(),
+                  })}
+                </Text>
+                <Text style={styles.detailValue}>
+                  {`${parsedAppFee.amount.toFormat(getDisplayDecimalsForToken(fromToken))} ${getTokenName(fromToken)}`}
+                </Text>
+              </View>
+            )}
             {!!swapProvider && (
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('goldFlow.buy.swapProvider')}</Text>

@@ -41,6 +41,11 @@ export interface GoldSwapQuote {
   allowanceTarget: string
   preparedTransactions: SerializableTransactionRequest[]
   swapProvider?: string // Provider used for the swap (e.g., 'squid', 'uniswap')
+  // Integrator fee already discounted from `price` in the swap quote, as
+  // percentage 0..100. Matches src/swap/types.ts SwapTransaction shape. The
+  // gold confirmation screens render this as a separate line so the user sees
+  // it explicitly instead of only in the effective rate.
+  appFeePercentageIncludedInPrice?: string
 }
 
 export interface GoldBuyInfo {

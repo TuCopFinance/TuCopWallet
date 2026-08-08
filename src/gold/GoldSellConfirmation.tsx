@@ -73,6 +73,9 @@ export default function GoldSellConfirmation({ route }: Props) {
   const [preparedTransactions, setPreparedTransactions] = useState<any>(null)
   const [quoteError, setQuoteError] = useState<string | null>(null)
   const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
+  const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
+    string | undefined
+  >(undefined)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -121,6 +124,7 @@ export default function GoldSellConfirmation({ route }: Props) {
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
           setSwapProvider(quoteResult.quote.swapProvider)
+          setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.sell.quoteErrorDescription'))
@@ -166,6 +170,19 @@ export default function GoldSellConfirmation({ route }: Props) {
     if (!estimatedGasFee || !gasFeeToken) return null
     return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
   }, [estimatedGasFee, gasFeeToken])
+
+  // Integrator fee already discounted from the effective price by the backend
+  // proxy. Rendered as a separate line so the user sees it explicitly. On the
+  // sell path the fee is charged on the XAUt0 side (the "from" token).
+  const parsedAppFee = useMemo(() => {
+    if (!appFeePercentageIncludedInPrice) return null
+    const percentage = new BigNumber(appFeePercentageIncludedInPrice)
+    if (percentage.lte(0)) return null
+    return {
+      amount: parsedXautAmount.multipliedBy(percentage).dividedBy(100),
+      percentage,
+    }
+  }, [appFeePercentageIncludedInPrice, parsedXautAmount])
 
   // Format swap provider name for display
   const getProviderDisplayName = (provider: string | undefined) => {
@@ -294,6 +311,18 @@ export default function GoldSellConfirmation({ route }: Props) {
                   : t('goldFlow.sell.estimatingFee')}
             </Text>
           </View>
+          {!!parsedAppFee && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>
+                {t('goldFlow.sell.serviceFee', {
+                  percentage: parsedAppFee.percentage.toFormat(),
+                })}
+              </Text>
+              <Text style={styles.detailValue}>
+                {`${parsedAppFee.amount.toFormat(XAUT0_DECIMALS)} ${t('goldFlow.gold')}`}
+              </Text>
+            </View>
+          )}
           {!!swapProvider && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{t('goldFlow.sell.swapProvider')}</Text>
