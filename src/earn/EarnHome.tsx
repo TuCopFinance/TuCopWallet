@@ -37,6 +37,7 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import { fetchCatalogueStart } from 'src/earn/neeru/configSlice'
 import { NEERU_APP_ID, NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { neeruPositionsByCategorySelector } from 'src/earn/neeru/selectors'
+import { fetchPositionsStart as fetchNeeruPositionsStart } from 'src/earn/neeru/slice'
 import { NeeruIndividualPosition } from 'src/earn/neeru/types'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
@@ -412,6 +413,14 @@ export default function EarnHome({ navigation, route }: Props) {
     if (walletAddress) {
       // Corregir el error de promesa no manejada
       void loadStakes()
+      // Neeru individual positions are only fetched via this action; the
+      // main positions/slice fetchPositionsStart is a different action and
+      // hydrates the aggregate pool balance (via hooks-api getEarnPositions)
+      // but not the per-position list rendered on the MyPools tab. Without
+      // this dispatch, opening EarnHome for the first time after a wallet
+      // import shows the pool balance in "Inversiones" but leaves "Mis
+      // Inversiones" empty until the user drills into NeeruVaultDetail.
+      dispatch(fetchNeeruPositionsStart())
     }
     // Refresh the Neeru catalogue on every EarnHome mount so pool cards
     // pick up backend retunes without waiting for the next boot cycle.
