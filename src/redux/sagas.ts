@@ -43,7 +43,7 @@ import {
 } from 'src/recipients/reducer'
 import { recipientsSaga } from 'src/recipients/saga'
 import { sendSaga } from 'src/send/saga'
-// import { sentrySaga } from 'src/sentry/saga' // Commented out - Sentry disabled
+import { sentrySaga } from 'src/sentry/saga'
 import { dollarsSpendSaga } from 'src/dollarsSpend/saga'
 import { swapSaga } from 'src/swap/saga'
 import { tokensSaga } from 'src/tokens/saga'
@@ -123,7 +123,7 @@ export function* rootSaga() {
     yield* spawn(loggerSaga)
     yield* spawn(appSaga)
     yield* spawn(i18nSaga)
-    // yield* spawn(sentrySaga) // Commented out - Sentry disabled
+    yield* spawn(sentrySaga)
     yield* spawn(networkInfoSaga)
     yield* spawn(accountSaga)
     yield* spawn(tokensSaga)
