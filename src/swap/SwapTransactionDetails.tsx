@@ -18,7 +18,7 @@ import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { SpendStep } from 'src/dollarsSpend/types'
-import { SwapFeeAmount } from 'src/swap/types'
+import { AppFeeAmount, SwapFeeAmount } from 'src/swap/types'
 import { TokenBalance } from 'src/tokens/slice'
 
 interface Props {
@@ -43,9 +43,18 @@ interface Props {
   swapAmount?: BigNumber
   fetchingSwapQuote: boolean
   estimatedDurationInSeconds?: number
-  appFee?: SwapFeeAmount
+  // Widened from SwapFeeAmount to AppFeeAmount so the details panel can
+  // render a dedicated "Tarifa de operacion (X%)" row using the percentage
+  // echo from the swap quote. Still passed through to getEstimatedTotalFees
+  // via the shared SwapFeeAmount fields.
+  appFee?: AppFeeAmount
   crossChainFee?: SwapFeeAmount
   networkFee?: SwapFeeAmount
+  // Multi-swap (virtual Dolares) surfaces a USDm-denominated placeholder
+  // token so the fee estimate can render in local currency; the actual fee
+  // currency is picked per step at execution time. Hide the "Pagada en" row
+  // in that case since the placeholder token would mislead the user.
+  hideFeePaidInRow?: boolean
 }
 
 function getEstimatedTotalFees({
@@ -168,6 +177,7 @@ export function SwapTransactionDetails({
   estimatedDurationInSeconds,
   crossChainFee,
   networkFee,
+  hideFeePaidInRow,
 }: Props) {
   const { t } = useTranslation()
   const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
@@ -271,7 +281,24 @@ export function SwapTransactionDetails({
           value={estimatedFeesString ?? placeholder}
         />
       </View>
-      {!!networkFee?.token?.symbol && !fetchingSwapQuote && (
+      {!!appFee && appFee.percentage.gt(0) && !!appFee.token && !fetchingSwapQuote && (
+        // Integrator fee already discounted from the effective price by the
+        // backend proxy. Rendered as a separate line so the user sees it
+        // explicitly instead of only inside the aggregated "Tarifas" total.
+        // Matches the copy used on the gold buy/sell confirmation screens so
+        // the user reads the same "Tarifa de operacion" label across surfaces.
+        <View style={styles.row} testID="SwapTransactionDetails/ServiceFee">
+          <Text style={styles.label}>
+            {t('swapScreen.transactionDetails.serviceFee', {
+              percentage: appFee.percentage.toFormat(),
+            })}
+          </Text>
+          <Text style={styles.value}>
+            {`${formatValueToDisplay(appFee.amount)} ${getTokenDisplayName(appFee.token.symbol)}`}
+          </Text>
+        </View>
+      )}
+      {!!networkFee?.token?.symbol && !fetchingSwapQuote && !hideFeePaidInRow && (
         // Bug E UX surface: the user can see which of their visible balances
         // covers the network fee. Was added so a tx paid in Pesos / Dólares no
         // longer looks like an unexplained CELO debit. Uses getTokenDisplayName

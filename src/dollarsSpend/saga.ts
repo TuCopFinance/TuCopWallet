@@ -44,7 +44,10 @@ const TAG = 'dollarsSpend/saga'
 // Slippage tolerance used for the per-step swap quote inside the multi-swap
 // legacy flow. See the call site comment for why this is higher than the
 // wallet's regular-swap default (0.5%). 7702 atomic path is separate.
-const MULTI_SWAP_SLIPPAGE_PERCENTAGE = '1.5'
+// Exported so SwapScreen can surface this exact value on the transaction
+// details panel when the virtual Dolares path is active; the Statsig
+// maxSlippagePercentage governs only the regular per-quote path.
+export const MULTI_SWAP_SLIPPAGE_PERCENTAGE = '1.5'
 
 export interface ExecuteMultiSwapPayload {
   steps: SpendStep[]

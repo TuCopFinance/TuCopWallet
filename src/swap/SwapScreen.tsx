@@ -44,6 +44,7 @@ import {
   buildDolaresVirtualToken,
   DOLARES_VIRTUAL_TOKEN_ID,
   executeMultiSwap,
+  MULTI_SWAP_SLIPPAGE_PERCENTAGE,
   multiSwapCleared,
   planSpend,
   useDollarBalanceSnapshots,
@@ -295,7 +296,9 @@ export function SwapScreen({ route }: Props) {
     DynamicConfigs[StatsigDynamicConfigs.SWAP_CONFIG]
   )
   const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
-  const parsedSlippagePercentage = new BigNumber(maxSlippagePercentage).toFormat()
+  // parsedSlippagePercentage is derived below near the isVirtualDolares
+  // declaration so it picks the tolerance the actually-active path will send
+  // on-chain (regular = Statsig, virtual Dolares = MULTI_SWAP_SLIPPAGE_PERCENTAGE).
 
   const { swappableFromTokens, swappableToTokens, areSwapTokensShuffled } = useSwappableTokens()
 
@@ -419,6 +422,16 @@ export function SwapScreen({ route }: Props) {
   )
 
   const isVirtualDolares = fromTokenId === DOLARES_VIRTUAL_TOKEN_ID
+
+  // Regular quote path uses maxSlippagePercentage from Statsig SWAP_CONFIG.
+  // Virtual Dolares multi-swap saga hardcodes MULTI_SWAP_SLIPPAGE_PERCENTAGE
+  // (currently 1.5%) because per-leg quotes need more headroom. Surface the
+  // right number depending on which path is active so the details panel
+  // never claims a tolerance the wallet is not going to send on-chain.
+  const parsedSlippagePercentage = useMemo(() => {
+    const active = isVirtualDolares ? MULTI_SWAP_SLIPPAGE_PERCENTAGE : maxSlippagePercentage
+    return new BigNumber(active).toFormat()
+  }, [isVirtualDolares, maxSlippagePercentage])
 
   const fromAmountUsd = useMemo(() => {
     if (!isVirtualDolares) return new BigNumber(0)
@@ -1166,6 +1179,12 @@ export function SwapScreen({ route }: Props) {
             }
             crossChainFee={crossChainFee}
             networkFee={networkFee}
+            // Virtual Dolares uses a USDm placeholder token so the fee estimate
+            // renders in local currency; the actual fee currency is chosen per
+            // step at execution time (typically COPm via CIP-64 when it's the
+            // cheapest available fee currency). Hide the "Pagada en" row to
+            // avoid promising a specific token that the picker may not honor.
+            hideFeePaidInRow={isVirtualDolares}
           />
           {showCrossChainFeeWarning && (
             <InLineNotification

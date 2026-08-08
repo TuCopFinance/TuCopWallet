@@ -1879,6 +1879,7 @@
       "maxNetworkFee": "Max Network Fee",
       "networkFee": "{{networkName}} Network Fee",
       "networkFeeNoNetwork": "Network Fee",
+      "serviceFee": "Service fee ({{percentage}}%)",
       "swapFee": "{{appName}} Fee",
       "swapFeeWaived": "Free",
       "appFee": "{{appName}} Fee",

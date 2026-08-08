@@ -1918,6 +1918,7 @@
       "infoDismissButton": "Entendido",
       "fees": "Tarifas",
       "feePaidIn": "Pagada en",
+      "serviceFee": "Tarifa de operacion ({{percentage}}%)",
       "feesCalculationError": "No es posible calcular las tarifas",
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",

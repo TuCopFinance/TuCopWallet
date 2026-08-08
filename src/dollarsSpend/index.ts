@@ -5,7 +5,7 @@
 export { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 export { planSpend } from 'src/dollarsSpend/planSpend'
 export { useMultiSwapQuote } from 'src/dollarsSpend/useMultiSwapQuote'
-export { executeMultiSwap } from 'src/dollarsSpend/saga'
+export { executeMultiSwap, MULTI_SWAP_SLIPPAGE_PERCENTAGE } from 'src/dollarsSpend/saga'
 export { multiSwapCleared } from 'src/dollarsSpend/slice'
 export { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
 export { buildDolaresVirtualToken } from 'src/dollarsSpend/dolaresVirtualToken'
