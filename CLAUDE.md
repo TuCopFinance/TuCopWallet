@@ -93,5 +93,5 @@ src/
 @.claude/rules/tokens.md - Token ecosystem & addresses
 @.claude/rules/ios-build.md - iOS schemes & troubleshooting
 @.claude/rules/android-build.md - Android config & SoLoader fix
-@.claude/rules/railway.md - Backend services
+@.claude/rules/railway.md - Backend sibling services (phone verification, twilio, buckspay)
 @.claude/rules/ci-cd.md - CI checks & Knip
