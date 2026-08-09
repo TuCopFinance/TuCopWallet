@@ -90,6 +90,15 @@ export interface FetchQuoteResponse {
   unvalidatedSwapTransaction: SwapTransaction
   details: {
     swapProvider: string
+    /**
+     * Backend flag introduced with the Uniswap V4 fallback initiative. When
+     * present, its value ('squid' | 'uniswap_v4' | ...) reflects the actual
+     * source that produced the winning quote for THIS request. Wallet uses
+     * it to tag Sentry events (swap_source) so the backend dashboard can
+     * split metrics by provider. Optional for backward compat with older
+     * backend responses that only carry swapProvider.
+     */
+    source?: string
   }
 }
 

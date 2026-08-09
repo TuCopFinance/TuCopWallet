@@ -1,6 +1,8 @@
+import * as Sentry from '@sentry/react-native'
 import BigNumber from 'bignumber.js'
 import { useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
+import { SENTRY_ENABLED } from 'src/config'
 import { useSelector } from 'src/redux/hooks'
 import {
   FetchQuoteResponse,
@@ -35,6 +37,19 @@ export const NO_QUOTE_ERROR_MESSAGE = 'No quote available'
 // prefix and shows a friendlier inline "try again" notification instead of
 // the generic crash sheet.
 export const SWAP_UPSTREAM_TRANSIENT_ERROR = 'SWAP_UPSTREAM_TRANSIENT'
+
+// Tag every subsequent Sentry event on the current scope with the source
+// that produced the winning quote. Backend owns a dashboard that splits
+// swap metrics by provider (squid vs uniswap_v4 vs future) — this is the
+// wallet-side signal that feeds it. Prefer the new `source` field the
+// backend introduced with the Uniswap V4 fallback; fall back to the
+// legacy swapProvider; ultimately 'unknown' when neither is present so
+// events remain visible on the dashboard even if the response is malformed.
+function tagSwapSource(response: FetchQuoteResponse): void {
+  if (!SENTRY_ENABLED) return
+  const source = response.details.source ?? response.details.swapProvider ?? 'unknown'
+  Sentry.setTag('swap_source', source)
+}
 
 export interface FetchSwapQuoteArgs {
   fromTokenId: string
@@ -217,6 +232,8 @@ export async function fetchSwapQuote(args: FetchSwapQuoteArgs): Promise<FetchSwa
   if (!quote.unvalidatedSwapTransaction) {
     throw new Error(NO_QUOTE_ERROR_MESSAGE)
   }
+
+  tagSwapSource(quote)
 
   const tx = quote.unvalidatedSwapTransaction
   return {
@@ -442,6 +459,8 @@ function useSwapQuote({
       if (!quote.unvalidatedSwapTransaction) {
         throw new Error(NO_QUOTE_ERROR_MESSAGE)
       }
+
+      tagSwapSource(quote)
 
       const swapPrice = quote.unvalidatedSwapTransaction.price
       const price =
