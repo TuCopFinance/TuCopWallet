@@ -269,7 +269,7 @@ const GET_WALLET_BALANCES_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getWalletBalance
 
 const GET_EXCHANGE_RATE_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getExchangeRate`
 
-const WEB3_AUTH_VERIFIER = 'valora-cab-auth0'
+const WEB3_AUTH_VERIFIER = 'tucop-cab-auth0'
 
 const BASE_SET_REGISTRATION_PROPERTIES_AUTH = {
   types: {

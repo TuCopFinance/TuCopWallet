@@ -27,7 +27,6 @@ export async function storeEncryptedMnemonic({
   Logger.debug(TAG, `Storing encrypted mnemonic for address: ${encryptionAddress}`)
   Logger.debug(TAG, `JWT length: ${jwt?.length || 0}`)
 
-  // Asegurarse de que el JWT existe
   if (!jwt) {
     Logger.error(TAG, 'No JWT provided for storing encrypted mnemonic')
     throw new Error('No JWT provided for storing encrypted mnemonic')

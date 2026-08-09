@@ -77,14 +77,14 @@ export const STATSIG_ENV = {
 export const E2E_TEST_STATSIG_ID = 'e2e_test_statsig_id'
 
 // Keyless backup settings
-export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
+export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_DEVNET
 
 // FEATURE FLAGS
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
 
 // SECRETS
 export const WEB3AUTH_CLIENT_ID =
-  'BAJWXF8YqQSoNtdfX3z-vxgkZ0ZfN0hJVT0eGuf9BqoRbojNIxthU0wnW0oBScduV6XLeEePSmVhHQXuaqBMjcw'
+  'BM8bwHQcla-BKvhYT1STC3A0FD0q1GXqejKOc_bit-4kIk7bAzyD3WKtGZl9Ha6vfZXTWoPO7OSCj0auMdUOdQU'
 
 export const ALCHEMY_ETHEREUM_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_ETHEREUM_API_KEY')
 export const ALCHEMY_ARBITRUM_API_KEY = keyOrUndefined(secretsFile, 'ALCHEMY_ARBITRUM_API_KEY')
@@ -106,8 +106,8 @@ export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, 'RECAPTCHA_SITE_KE
 export const BIDALI_URL = keyOrUndefined(secretsFile, 'BIDALI_URL')
 
 export const WALLET_CONNECT_PROJECT_ID = 'dcc6ce1fc698ea19c114e7afe1bc469f'
-export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'
-export const AUTH0_DOMAIN = 'auth.valora.xyz'
+export const AUTH0_CLIENT_ID = 'tmYxifaBcOxna5KWE41wayL2fxfVCORh'
+export const AUTH0_DOMAIN = 'tucop.us.auth0.com'
 
 export const SPEND_MERCHANT_LINKS: SpendMerchant[] = [
   {
