@@ -57,7 +57,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
     gasFeeTokenId: initialGasFeeTokenId,
     preparedTransactions: initialPreparedTransactions,
     toTokenId,
-    swapProvider: initialSwapProvider,
     appFeePercentageIncludedInPrice: initialAppFeePercentageIncludedInPrice,
   } = route.params
 
@@ -103,7 +102,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(initialGasFeeTokenId)
   const [preparedTransactions, setPreparedTransactions] = useState<any>(initialPreparedTransactions)
   const [quoteError, setQuoteError] = useState<string | null>(null)
-  const [swapProvider, setSwapProvider] = useState<string | undefined>(initialSwapProvider)
   const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
     string | undefined
   >(initialAppFeePercentageIncludedInPrice)
@@ -157,7 +155,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
             setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
-          setSwapProvider(quoteResult.quote.swapProvider)
           setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
           setQuoteError(null)
         } else {
@@ -264,16 +261,14 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return gasFeeToken.name
   }
 
-  // Format swap provider name for display
-  const getProviderDisplayName = (provider: string | undefined) => {
-    if (!provider) return null
-    const providerLower = provider.toLowerCase()
-    if (providerLower.includes('squid')) return 'Squid Router'
-    if (providerLower.includes('uniswap')) return 'Uniswap'
-    if (providerLower.includes('0x')) return '0x Protocol'
-    // Capitalize first letter
-    return provider.charAt(0).toUpperCase() + provider.slice(1)
-  }
+  // getProviderDisplayName removed 2026-08-09 (zero-tech-leak policy in
+  // feedback_no_tech_leak_in_user_copy.md). The old function exposed
+  // "Squid Router" / "Uniswap" / "0x Protocol" verbatim under the visible
+  // "Proveedor" row of the confirmation screen. The row itself is removed
+  // below. `swapProvider` state and its analytics logging are intentionally
+  // kept so a later iteration can surface the source inside a collapsable
+  // "detalles" panel (see Uniswap V4 fallback wallet plan) without leaking
+  // vendor names into the default view.
 
   const onPressConfirm = () => {
     if (isVirtualDolares) {
@@ -439,12 +434,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
                 <Text style={styles.detailValue}>
                   {`${parsedAppFee.amount.toFormat(getDisplayDecimalsForToken(fromToken))} ${getTokenName(fromToken)}`}
                 </Text>
-              </View>
-            )}
-            {!!swapProvider && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{t('goldFlow.buy.swapProvider')}</Text>
-                <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
               </View>
             )}
           </View>

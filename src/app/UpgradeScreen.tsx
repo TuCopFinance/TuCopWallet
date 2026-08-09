@@ -26,7 +26,7 @@ class UpgradeScreen extends React.Component<Props> {
   handleUpdate = () => {
     const { onUpdate } = this.props
     onUpdate?.()
-    navigateToAppStore()
+    void navigateToAppStore()
   }
 
   handleLater = () => {

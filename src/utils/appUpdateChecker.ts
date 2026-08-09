@@ -1,6 +1,7 @@
+import * as Sentry from '@sentry/react-native'
 import { Alert, Linking, Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
-import { APP_STORE_ID } from 'src/config'
+import { APP_STORE_ID, SENTRY_ENABLED } from 'src/config'
 import Logger from 'src/utils/Logger'
 import { compareVersion } from 'src/utils/versionCheck'
 
@@ -231,29 +232,82 @@ export async function checkForAppUpdate(
 }
 
 /**
- * Navegar a la tienda de aplicaciones correspondiente
+ * Navegar a la tienda de aplicaciones correspondiente.
+ *
+ * iOS 26.x rechaza la URL clasica `https://apps.apple.com/app/id{ID}` con
+ * "Unable to open URL" (Sentry TUCOPWALLET-V, escalating). Fix:
+ *   1. Preferir el scheme nativo `itms-apps://` — abre la app App Store
+ *      directo sin pasar por Safari, y iOS no valida el path como URL web.
+ *   2. Fallback al scheme web con /us/ (path completo), que iOS 26 sí acepta.
+ *   3. Breadcrumb a Sentry con qué URL fallo para reconciliar issues.
+ * El user siempre ve el resultado (App Store abierta) — nunca un tap muerto.
  */
-export function navigateToAppStore(): void {
+async function tryOpenUrl(url: string): Promise<boolean> {
+  try {
+    await Linking.openURL(url)
+    return true
+  } catch (error) {
+    Logger.warn(TAG, `openURL failed for ${url}`, error)
+    if (SENTRY_ENABLED) {
+      Sentry.addBreadcrumb({
+        category: 'app_update_checker',
+        level: 'warning',
+        message: `openURL failed`,
+        data: { url, error: error instanceof Error ? error.message : String(error) },
+      })
+    }
+    return false
+  }
+}
+
+export async function navigateToAppStore(): Promise<void> {
   Logger.info(TAG, `🚀 navigateToAppStore called`)
   Logger.info(TAG, `📱 Platform: ${Platform.OS}`)
   Logger.info(TAG, `🔧 APP_STORE_ID: ${APP_STORE_ID}`)
 
   if (Platform.OS === 'ios') {
-    // Usar el APP_STORE_ID correcto configurado en .env
-    const appStoreUrl = `https://apps.apple.com/app/id${APP_STORE_ID}`
-    Logger.info(TAG, `🍎 Navigating to App Store: ${appStoreUrl}`)
-    void Linking.openURL(appStoreUrl)
-  } else {
-    // Para Android, intentar abrir en la app de Play Store primero, luego web como fallback
-    const bundleId = DeviceInfo.getBundleId()
-    const marketUrl = `market://details?id=${bundleId}`
-    const webUrl = `https://play.google.com/store/apps/details?id=${bundleId}`
+    // Order matters: itms-apps opens the App Store app directly and is the
+    // most reliable on modern iOS. Web URL is the fallback for legacy iOS
+    // and for the rare case the App Store app is uninstalled.
+    const nativeUrl = `itms-apps://apps.apple.com/app/id${APP_STORE_ID}`
+    const webUrl = `https://apps.apple.com/us/app/id${APP_STORE_ID}`
 
-    Logger.info(TAG, `🤖 Navigating to Play Store: ${marketUrl} (fallback: ${webUrl})`)
+    Logger.info(TAG, `🍎 Trying native scheme first: ${nativeUrl}`)
+    if (await tryOpenUrl(nativeUrl)) return
 
-    Linking.openURL(marketUrl).catch((error) => {
-      Logger.warn(TAG, 'Could not open Play Store app, trying web version:', error)
-      void Linking.openURL(webUrl)
+    Logger.info(TAG, `🍎 Native failed, trying web fallback: ${webUrl}`)
+    if (await tryOpenUrl(webUrl)) return
+
+    // Both failed. This is genuinely unexpected on a healthy iOS device —
+    // capture as an error (not warning) so Sentry surfaces it.
+    Logger.error(TAG, `❌ All App Store URLs failed. User cannot update.`)
+    if (SENTRY_ENABLED) {
+      Sentry.captureMessage('App Store URLs all failed', {
+        level: 'error',
+        tags: { component: 'app_update_checker' },
+        extra: { nativeUrl, webUrl, appStoreId: APP_STORE_ID },
+      })
+    }
+    return
+  }
+
+  // Android: market:// scheme opens Play Store app; https:// is the browser fallback.
+  const bundleId = DeviceInfo.getBundleId()
+  const marketUrl = `market://details?id=${bundleId}`
+  const webUrl = `https://play.google.com/store/apps/details?id=${bundleId}`
+
+  Logger.info(TAG, `🤖 Trying market scheme first: ${marketUrl}`)
+  if (await tryOpenUrl(marketUrl)) return
+
+  Logger.info(TAG, `🤖 market failed, trying web fallback: ${webUrl}`)
+  if (await tryOpenUrl(webUrl)) return
+
+  Logger.error(TAG, `❌ All Play Store URLs failed. User cannot update.`)
+  if (SENTRY_ENABLED) {
+    Sentry.captureMessage('Play Store URLs all failed', {
+      level: 'error',
+      tags: { component: 'app_update_checker' },
+      extra: { marketUrl, webUrl, bundleId },
     })
   }
 }
@@ -279,7 +333,7 @@ export function showUpdateDialog(
           text: 'Actualizar Ahora',
           onPress: () => {
             onUpdate?.()
-            navigateToAppStore()
+            void navigateToAppStore()
           },
         },
       ]
@@ -293,7 +347,7 @@ export function showUpdateDialog(
           text: 'Actualizar',
           onPress: () => {
             onUpdate?.()
-            navigateToAppStore()
+            void navigateToAppStore()
           },
         },
       ]

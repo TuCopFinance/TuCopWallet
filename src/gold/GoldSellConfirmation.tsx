@@ -72,7 +72,6 @@ export default function GoldSellConfirmation({ route }: Props) {
   const [gasFeeTokenId, setGasFeeTokenId] = useState<string | undefined>(undefined)
   const [preparedTransactions, setPreparedTransactions] = useState<any>(null)
   const [quoteError, setQuoteError] = useState<string | null>(null)
-  const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
   const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
     string | undefined
   >(undefined)
@@ -123,7 +122,6 @@ export default function GoldSellConfirmation({ route }: Props) {
             setGasFeeTokenId(quoteResult.preparedTransactions.feeCurrency.tokenId)
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
-          setSwapProvider(quoteResult.quote.swapProvider)
           setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
           setQuoteError(null)
         } else {
@@ -184,16 +182,9 @@ export default function GoldSellConfirmation({ route }: Props) {
     }
   }, [appFeePercentageIncludedInPrice, parsedXautAmount])
 
-  // Format swap provider name for display
-  const getProviderDisplayName = (provider: string | undefined) => {
-    if (!provider) return null
-    const providerLower = provider.toLowerCase()
-    if (providerLower.includes('squid')) return 'Squid Router'
-    if (providerLower.includes('uniswap')) return 'Uniswap'
-    if (providerLower.includes('0x')) return '0x Protocol'
-    // Capitalize first letter
-    return provider.charAt(0).toUpperCase() + provider.slice(1)
-  }
+  // getProviderDisplayName removed 2026-08-09 (zero-tech-leak policy in
+  // feedback_no_tech_leak_in_user_copy.md). See identical removal in
+  // GoldBuyConfirmation.tsx for the rationale.
 
   const isSubmitting = sellStatus === 'loading'
 
@@ -321,12 +312,6 @@ export default function GoldSellConfirmation({ route }: Props) {
               <Text style={styles.detailValue}>
                 {`${parsedAppFee.amount.toFormat(XAUT0_DECIMALS)} ${t('goldFlow.gold')}`}
               </Text>
-            </View>
-          )}
-          {!!swapProvider && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('goldFlow.sell.swapProvider')}</Text>
-              <Text style={styles.detailValue}>{getProviderDisplayName(swapProvider)}</Text>
             </View>
           )}
         </View>
