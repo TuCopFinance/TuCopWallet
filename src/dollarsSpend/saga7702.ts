@@ -194,17 +194,32 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
 
     // Uniswap V4 leg: the quote came back with the sentinel `data: "0x"` on
     // the swap side (createBaseSwapTransactions skips it for us, so only the
-    // approve — if any — is in preparedTransactions above). We still need
-    // to sign the Permit2 typedData, POST /build-tx to receive the real
-    // UniversalRouter calldata, and append THAT to innerCalls so the atomic
-    // 7702 batch actually swaps. Without this, the batch would just approve
-    // (no-op if already approved) and no COPm would land.
+    // ERC20 approve — if any — is in preparedTransactions above). Two
+    // possible metadata shapes to reach the real UR call:
     //
-    // UX cost: one PIN + one signTypedData prompt per V4 leg. Multi-leg
-    // Dolares -> Pesos with N V4-routed legs => N sign prompts. Backend
-    // today only routes uniswap-v4 for USDT<->COPm, so in practice this is
-    // at most one leg per batch. Non-V4 legs (Squid) skip this block.
-    if (freshQuote.provider === UNISWAP_V4_PROVIDER && freshQuote.permit2) {
+    //  1. batchCalls (delegated user branch, common for our EIP-7702
+    //     spike/production wallets): backend hands us the Permit2.approve
+    //     + UniversalRouter.execute calls fully encoded. Wallet just
+    //     appends both to innerCalls of the outer 7702 batch — the whole
+    //     thing runs atomically and needs no Permit2 signature. Cheapest
+    //     path, one on-chain tx for the entire multi-leg Dolares batch.
+    //
+    //  2. permit2 (undelegated EOA branch, dead code today because our
+    //     users are all 7702 delegated by the time they reach 7702 saga —
+    //     saga.ts routes non-delegated users through the legacy loop
+    //     instead). Kept for defense: unlock, sign typedData, POST
+    //     /build-tx, append the returned {to, data, value}.
+    //
+    // Non-V4 legs (Squid) skip this whole block.
+    if (freshQuote.provider === UNISWAP_V4_PROVIDER && freshQuote.batchCalls) {
+      for (const call of freshQuote.batchCalls) {
+        innerCalls.push({
+          target: call.to as Address,
+          value: BigInt(call.value || '0'),
+          data: call.data as Hex,
+        })
+      }
+    } else if (freshQuote.provider === UNISWAP_V4_PROVIDER && freshQuote.permit2) {
       yield* call(getConnectedUnlockedAccount)
       const wallet = yield* call(getViemWallet, networkConfig.viemChain[Network.Celo])
       if (!wallet.account) {

@@ -23,6 +23,7 @@ import {
   Field,
   SwapInfo,
   UNISWAP_V4_PROVIDER,
+  UniswapV4BatchCall,
   UniswapV4BuildTxRequest,
   UniswapV4BuildTxResponse,
 } from 'src/swap/types'
@@ -140,7 +141,10 @@ function getSwapTxsReceiptAnalyticsProperties(
 }
 
 export function isUniswapV4SwapInfo(swapInfo: SwapInfo): boolean {
-  return swapInfo.quote.provider === UNISWAP_V4_PROVIDER && !!swapInfo.quote.permit2
+  return (
+    swapInfo.quote.provider === UNISWAP_V4_PROVIDER &&
+    (!!swapInfo.quote.permit2 || !!swapInfo.quote.batchCalls)
+  )
 }
 
 /**
@@ -169,6 +173,7 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     receivedAt: quoteReceivedAt,
     swapType,
     permit2,
+    batchCalls,
   } = quote
 
   const amountType = updatedField === Field.TO ? ('buyAmount' as const) : ('sellAmount' as const)
@@ -186,10 +191,11 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     return
   }
 
-  if (!permit2) {
+  if (!permit2 && !batchCalls) {
     // Guarded by caller (isUniswapV4SwapInfo) but re-check keeps types
-    // narrow inside the saga body.
-    Logger.error(TAG, `uniswap-v4 provider without permit2 metadata for ${swapId}`)
+    // narrow inside the saga body. Contract-shape violation: uniswap-v4
+    // provider without either bundle means the wallet cannot execute.
+    Logger.error(TAG, `uniswap-v4 provider without permit2 or batchCalls metadata for ${swapId}`)
     yield* put(swapError(swapId))
     return
   }
@@ -309,53 +315,68 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
       }
     }
 
-    // Phase B: sign Permit2, POST /build-tx, submit follower.
+    // Phase B: build follower tx(s) via one of two branches, then submit.
 
-    // Step 4: sign the Permit2 typed data. Call signTypedData on the
-    // LocalAccount directly (not the wallet-client action) — the account
-    // is our keychainAccountToAccount, which forwards to the unlocked
-    // PrivateKeyAccount and produces the compact 0x + 130 hex signature
-    // the backend expects.
+    // Branch B1: batchCalls — user is EIP-7702 delegated, backend gives us
+    // prebuilt calls to submit directly. Skip Permit2 sign + POST /build-tx
+    // (no signature involved; Permit2.approve inside batchCalls[0] sets
+    // the internal allowance on-chain).
     //
-    // Re-unlock the keychain before signing. `sendPreparedTransactions` in
-    // Phase A held the pin cache with `pinTransactional` but releases it in
-    // its `finally` block, so by the time we get here the cache may have
-    // expired (waitForTransactionReceipt above can burn many seconds). Call
-    // `getConnectedUnlockedAccount` to re-prompt/reuse the PIN as needed;
-    // otherwise `account.signTypedData` throws "authentication needed:
-    // password or unlock" and the whole flow errors after the on-chain
-    // approve already spent gas.
-    yield* call(getConnectedUnlockedAccount)
-    const account = wallet.account
-    const permit2Signature: Hex = yield* call(() =>
-      account.signTypedData!(permit2.typedData as unknown as TypedDataDefinition)
-    )
-
-    // Step 5: POST /api/swap/build-tx. Backend rebuilds calldata and
-    // returns {to, data, value}. Retries + timeouts handled by
-    // fetchWithTimeout; 4xx propagates as an Error to the catch below.
-    const buildResult = yield* call(postBuildTx, permit2.buildTxUrl, {
-      ...permit2.buildTxRequest,
-      permit2Signature,
-    })
-
-    // Step 6: prepare + submit the follower tx.
+    // Branch B2: permit2 — undelegated EOA, wallet signs the Permit2
+    // PermitSingle typedData, POSTs /build-tx to receive the real
+    // UniversalRouter calldata, and submits that. Same as before.
     const rawFeeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
     const feeCurrencies = reorderForBugE(rawFeeCurrencies)
+
+    let followerBaseTxs: { from: Address; to: Address; data: Hex; value: bigint }[]
+
+    if (batchCalls) {
+      followerBaseTxs = batchCalls.map((c: UniswapV4BatchCall) => ({
+        from: userAddress,
+        to: c.to as Address,
+        data: c.data as Hex,
+        value: BigInt(c.value || '0'),
+      }))
+    } else if (permit2) {
+      // Re-unlock the keychain before signing. `sendPreparedTransactions`
+      // in Phase A held the pin cache with `pinTransactional` but releases
+      // it in its `finally` block, so by the time we get here the cache
+      // may have expired (waitForTransactionReceipt above can burn many
+      // seconds). Call `getConnectedUnlockedAccount` to re-prompt/reuse
+      // the PIN as needed; otherwise `account.signTypedData` throws
+      // "authentication needed: password or unlock" and the whole flow
+      // errors after the on-chain approve already spent gas.
+      yield* call(getConnectedUnlockedAccount)
+      const account = wallet.account
+      const permit2Signature: Hex = yield* call(() =>
+        account.signTypedData!(permit2.typedData as unknown as TypedDataDefinition)
+      )
+      // POST /api/swap/build-tx. Backend rebuilds calldata and returns
+      // {to, data, value}. Retries + timeouts handled by fetchWithTimeout;
+      // 4xx propagates as an Error to the catch below.
+      const buildResult = yield* call(postBuildTx, permit2.buildTxUrl, {
+        ...permit2.buildTxRequest,
+        permit2Signature,
+      })
+      followerBaseTxs = [
+        {
+          from: userAddress,
+          to: buildResult.to as Address,
+          data: buildResult.data as Hex,
+          value: BigInt(buildResult.value || '0'),
+        },
+      ]
+    } else {
+      // Never reached — guarded above. Kept for type narrowing.
+      throw new Error('uniswap-v4 saga entered execution without permit2 or batchCalls')
+    }
 
     const swapTxPrepared: PreparedTransactionsResult = yield* call(() =>
       prepareTransactions({
         feeCurrencies,
         spendToken: fromToken,
         spendTokenAmount: new BigNumber(swapAmount[Field.FROM]).shiftedBy(fromToken.decimals),
-        baseTransactions: [
-          {
-            from: userAddress,
-            to: buildResult.to as Address,
-            data: buildResult.data as Hex,
-            value: BigInt(buildResult.value || '0'),
-          },
-        ],
+        baseTransactions: followerBaseTxs,
         throwOnSpendTokenAmountExceedsBalance: false,
         origin: 'swap',
       })
@@ -392,9 +413,25 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     const beforeSwapExecutionTimestamp = Date.now()
     quoteToTransactionElapsedTimeInMs = beforeSwapExecutionTimestamp - quoteReceivedAt
 
-    const followerHashes = yield* call(sendPreparedTransactions, followerSerializable, networkId, [
-      createSwapStandbyTx,
-    ])
+    // Standby handlers per prepared tx. For permit2 branch there is a
+    // single follower tx and we attach the swap standby directly. For
+    // batchCalls branch there are multiple prebuilt calls (Permit2.approve
+    // + UniversalRouter.execute); attach the swap standby to the LAST
+    // one (the UR call is what actually moves the buy token) and null
+    // handlers for the earlier calls so the feed does not double-count.
+    const standbyHandlers: ((
+      transactionHash: string,
+      feeCurrencyId?: string
+    ) => BaseStandbyTransaction | null)[] = followerSerializable.map((_tx, idx) =>
+      idx === followerSerializable.length - 1 ? createSwapStandbyTx : () => null
+    )
+
+    const followerHashes = yield* call(
+      sendPreparedTransactions,
+      followerSerializable,
+      networkId,
+      standbyHandlers
+    )
     submitted = true
 
     for (const hash of followerHashes) {
