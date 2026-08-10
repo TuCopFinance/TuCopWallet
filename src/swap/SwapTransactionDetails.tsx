@@ -55,6 +55,11 @@ interface Props {
   // currency is picked per step at execution time. Hide the "Pagada en" row
   // in that case since the placeholder token would mislead the user.
   hideFeePaidInRow?: boolean
+  // Backend swapProvider slug (e.g. "squid", "uniswap-v4"). Rendered inside
+  // the expandable "Detalle" section so users who want to know which venue
+  // executed the swap can see it, without pushing tech names into the
+  // primary confirm screen copy.
+  swapProvider?: string
 }
 
 function getEstimatedTotalFees({
@@ -178,9 +183,11 @@ export function SwapTransactionDetails({
   crossChainFee,
   networkFee,
   hideFeePaidInRow,
+  swapProvider,
 }: Props) {
   const { t } = useTranslation()
   const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
+  const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
   const hasSpendSteps = !!spendSteps && spendSteps.length > 0
   const usdToLocalCurrencyRate = useSelector(usdToLocalCurrencyRateSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
@@ -360,8 +367,57 @@ export function SwapTransactionDetails({
         />
         <Text style={styles.value}>{`${slippagePercentage}%`}</Text>
       </View>
+
+      {!!swapProvider && (
+        // Route reveal — hidden behind a toggle so the main confirm copy
+        // stays banking-language (no "Uniswap" / "Squid" upfront). Users
+        // who want to know which venue executed the swap can expand it.
+        // Kept as a leaf row (no nested BottomSheet) to avoid a modal
+        // stack on a screen that already has 4+ info sheets attached.
+        <View testID="SwapTransactionDetails/RouteReveal">
+          <Touchable
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+              setRouteDetailExpanded((v) => !v)
+            }}
+            testID="SwapTransactionDetails/RouteReveal/Toggle"
+          >
+            <View style={styles.row}>
+              <Text style={styles.label}>{t('swapScreen.transactionDetails.routeDetail')}</Text>
+              <Text style={styles.value}>
+                {routeDetailExpanded
+                  ? t('swapScreen.transactionDetails.routeDetailCollapse')
+                  : t('swapScreen.transactionDetails.routeDetailExpand')}
+              </Text>
+            </View>
+          </Touchable>
+          {routeDetailExpanded && (
+            <View style={[styles.row, styles.subRow]}>
+              <Text style={styles.subLabel}>{t('swapScreen.transactionDetails.routeLabel')}</Text>
+              <Text style={styles.value}>{formatSwapProvider(swapProvider)}</Text>
+            </View>
+          )}
+        </View>
+      )}
     </View>
   )
+}
+
+// Map backend swapProvider slugs to short user-facing labels. Kept as a
+// dedicated helper so the mapping stays in one place; unrecognized values
+// fall through as-is (uppercased first letter) instead of hiding behind
+// a generic 'unknown'.
+function formatSwapProvider(provider: string): string {
+  const map: Record<string, string> = {
+    squid: 'Squid',
+    'squid-router': 'Squid',
+    'uniswap-v4': 'Uniswap',
+    uniswap_v4: 'Uniswap',
+    uniswap: 'Uniswap',
+  }
+  const key = provider.toLowerCase()
+  if (map[key]) return map[key]
+  return provider.charAt(0).toUpperCase() + provider.slice(1)
 }
 
 const styles = StyleSheet.create({

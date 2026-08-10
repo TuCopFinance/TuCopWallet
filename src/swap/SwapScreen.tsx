@@ -1196,6 +1196,7 @@ export function SwapScreen({ route }: Props) {
             // cheapest available fee currency). Hide the "Pagada en" row to
             // avoid promising a specific token that the picker may not honor.
             hideFeePaidInRow={isVirtualDolares}
+            swapProvider={quote?.provider}
           />
           {showCrossChainFeeWarning && (
             <InLineNotification
