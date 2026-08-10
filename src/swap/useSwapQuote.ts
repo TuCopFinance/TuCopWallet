@@ -392,6 +392,23 @@ async function prepareSwapTransactions(
     unvalidatedSwapTransaction,
     walletAddress
   )
+  // Uniswap V4 + user already approved Permit2: baseTransactions is empty
+  // because the sentinel swap tx is skipped and no ERC20 approve is needed.
+  // Downstream `prepareTransactions` would throw inside `getFeeDecimals`
+  // (its feeCurrency loop runs `tryEstimateTransactions` on the empty array
+  // which yields an empty result, then `getFeeCurrency([])` returns
+  // undefined and the non-native COPm fee-currency branch throws
+  // "must be native"). Return a trivial possible-result instead so the
+  // preview screen still renders — the uniswap-v4 saga does the real
+  // prepare-and-submit after the Permit2 sign + build-tx roundtrip.
+  if (baseTransactions.length === 0) {
+    const feeCurrency = feeCurrencies.find((tok) => tok.isNative) ?? feeCurrencies[0] ?? fromToken
+    return {
+      type: 'possible',
+      transactions: [],
+      feeCurrency,
+    }
+  }
   return prepareTransactions({
     feeCurrencies,
     spendToken: fromToken,
