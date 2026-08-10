@@ -54,6 +54,7 @@ import {
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { getViemWallet } from 'src/web3/contracts'
 import networkConfig from 'src/web3/networkConfig'
+import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { Address, Hex, TypedDataDefinition } from 'viem'
@@ -315,6 +316,16 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // is our keychainAccountToAccount, which forwards to the unlocked
     // PrivateKeyAccount and produces the compact 0x + 130 hex signature
     // the backend expects.
+    //
+    // Re-unlock the keychain before signing. `sendPreparedTransactions` in
+    // Phase A held the pin cache with `pinTransactional` but releases it in
+    // its `finally` block, so by the time we get here the cache may have
+    // expired (waitForTransactionReceipt above can burn many seconds). Call
+    // `getConnectedUnlockedAccount` to re-prompt/reuse the PIN as needed;
+    // otherwise `account.signTypedData` throws "authentication needed:
+    // password or unlock" and the whole flow errors after the on-chain
+    // approve already spent gas.
+    yield* call(getConnectedUnlockedAccount)
     const account = wallet.account
     const permit2Signature: Hex = yield* call(() =>
       account.signTypedData!(permit2.typedData as unknown as TypedDataDefinition)
