@@ -9,7 +9,7 @@ import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
 import { swapCancel, swapError, swapStart, swapSuccess } from 'src/swap/slice'
-import { Field, SwapInfo } from 'src/swap/types'
+import { Field, SwapInfo, UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
@@ -87,6 +87,12 @@ function getSwapTxsReceiptAnalyticsProperties(
 }
 
 export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
+  // Uniswap V4 payloads are handled by uniswapV4SwapSaga; the sentinel
+  // `data: "0x"` in preparedTransactions would revert if this generic
+  // Squid-shaped path tried to submit it.
+  if (action.payload.quote.provider === UNISWAP_V4_PROVIDER) {
+    return
+  }
   const swapSubmittedAt = Date.now()
   const { swapId, userInput, quote, areSwapTokensShuffled, suppressSuccessNavigation } =
     action.payload

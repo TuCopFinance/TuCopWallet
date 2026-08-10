@@ -46,6 +46,7 @@ import { sendSaga } from 'src/send/saga'
 import { sentrySaga } from 'src/sentry/saga'
 import { dollarsSpendSaga } from 'src/dollarsSpend/saga'
 import { swapSaga } from 'src/swap/saga'
+import { uniswapV4SwapSaga } from 'src/swap/uniswapV4Saga'
 import { tokensSaga } from 'src/tokens/saga'
 import { setTokenBalances } from 'src/tokens/slice'
 import { transactionSaga } from 'src/transactions/saga'
@@ -142,6 +143,7 @@ export function* rootSaga() {
     yield* spawn(dappsSaga)
     yield* spawn(fiatConnectSaga)
     yield* spawn(swapSaga)
+    yield* spawn(uniswapV4SwapSaga)
     yield* spawn(dollarsSpendSaga)
     yield* spawn(keylessBackupSaga)
     yield* spawn(nftsSaga)
