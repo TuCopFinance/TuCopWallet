@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import Config from 'react-native-config'
 import { Environment as PersonaEnvironment } from 'react-native-persona'
 import { APP_REGISTRY_NAME, BIDALI_URL, DEFAULT_FORNO_URL, RECAPTCHA_SITE_KEY } from 'src/config'
 import { Network, NetworkId } from 'src/transactions/types'
@@ -234,7 +235,11 @@ const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
 // integratorId is attached (Squid attribution + revenue share lands with us
 // instead of Valora). The backend at TUCOP_BACKEND_BASE below preserves the
 // FetchQuoteResponse shape that this app already consumes (drop-in URL flip).
-const TUCOP_BACKEND_BASE_URL = 'https://tucop-backend-production.up.railway.app'
+// Dev-only override: set TUCOP_BACKEND_BASE_URL in .env to point the app at
+// a local backend (e.g. http://localhost:8080 for iOS simulator smoke tests
+// of the Uniswap V4 executor with flags ON). Falls back to prod.
+const TUCOP_BACKEND_BASE_URL =
+  Config.TUCOP_BACKEND_BASE_URL || 'https://tucop-backend-production.up.railway.app'
 
 const GET_SWAP_QUOTE_URL = `${TUCOP_BACKEND_BASE_URL}/api/swap/quote`
 
