@@ -11,6 +11,7 @@ import {
   SwapTransaction,
   SwapType,
   UNISWAP_V4_PROVIDER,
+  UniswapV4BatchCall,
   UniswapV4Permit2Metadata,
 } from 'src/swap/types'
 import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
@@ -269,11 +270,18 @@ interface BaseQuoteResult {
   appFeePercentageIncludedInPrice: string | undefined
   sellAmount: string
   /**
-   * Present ONLY when `provider === "uniswap-v4"`. SwapScreen forwards
-   * this into the SwapInfo dispatched with swapStart so the wallet-side
-   * uniswap-v4 saga can sign the Permit2 typed data + POST /build-tx.
+   * Present ONLY when `provider === "uniswap-v4"` AND user is NOT
+   * EIP-7702 delegated. SwapScreen forwards this into the SwapInfo
+   * dispatched with swapStart so the wallet-side uniswap-v4 saga can
+   * sign the Permit2 typed data + POST /build-tx.
    */
   permit2?: UniswapV4Permit2Metadata
+  /**
+   * Present ONLY when `provider === "uniswap-v4"` AND user IS EIP-7702
+   * delegated. Prebuilt inner calls the wallet wraps in
+   * BatchExecutor.execute() for one atomic tx.
+   */
+  batchCalls?: UniswapV4BatchCall[]
 }
 
 interface SameChainQuoteResult extends BaseQuoteResult {
@@ -392,6 +400,23 @@ async function prepareSwapTransactions(
     unvalidatedSwapTransaction,
     walletAddress
   )
+  // Uniswap V4 + user already approved Permit2: baseTransactions is empty
+  // because the sentinel swap tx is skipped and no ERC20 approve is needed.
+  // Downstream `prepareTransactions` would throw inside `getFeeDecimals`
+  // (its feeCurrency loop runs `tryEstimateTransactions` on the empty array
+  // which yields an empty result, then `getFeeCurrency([])` returns
+  // undefined and the non-native COPm fee-currency branch throws
+  // "must be native"). Return a trivial possible-result instead so the
+  // preview screen still renders — the uniswap-v4 saga does the real
+  // prepare-and-submit after the Permit2 sign + build-tx roundtrip.
+  if (baseTransactions.length === 0) {
+    const feeCurrency = feeCurrencies.find((tok) => tok.isNative) ?? feeCurrencies[0] ?? fromToken
+    return {
+      type: 'possible',
+      transactions: [],
+      feeCurrency,
+    }
+  }
   return prepareTransactions({
     feeCurrencies,
     spendToken: fromToken,
@@ -512,6 +537,7 @@ function useSwapQuote({
         allowanceTarget: quote.unvalidatedSwapTransaction.allowanceTarget,
         sellAmount: quote.unvalidatedSwapTransaction.sellAmount,
         permit2: quote.details.permit2,
+        batchCalls: quote.details.batchCalls,
       }
 
       if (quote.unvalidatedSwapTransaction.swapType === 'cross-chain') {
@@ -560,15 +586,22 @@ export interface FetchSwapQuoteForExecutionResult extends FetchSwapQuoteResult {
   sellAmount: string
   swapType: SwapType
   /**
-   * Present ONLY when `provider === "uniswap-v4"`. The wallet-side flow
-   * follows the Permit2 -> build-tx -> execute path documented in
-   * UniswapV4Permit2Metadata + spec section 12. When present, the
-   * returned `preparedTransactions.transactions` contains at most the
-   * ERC20 approve to Permit2; the swap tx itself is NOT prebuilt (data
-   * is the sentinel "0x"). The uniswap-v4 saga rehydrates the real
-   * calldata via /api/swap/build-tx after signing.
+   * Present ONLY when `provider === "uniswap-v4"` AND user is NOT
+   * EIP-7702 delegated. The wallet-side flow follows the Permit2 ->
+   * build-tx -> execute path documented in UniswapV4Permit2Metadata +
+   * spec section 12. When present, the returned
+   * `preparedTransactions.transactions` contains at most the ERC20
+   * approve to Permit2; the swap tx itself is NOT prebuilt (data is the
+   * sentinel "0x"). The uniswap-v4 saga rehydrates the real calldata via
+   * /api/swap/build-tx after signing.
    */
   permit2?: UniswapV4Permit2Metadata
+  /**
+   * Present ONLY when `provider === "uniswap-v4"` AND user IS EIP-7702
+   * delegated. Backend returns the prebuilt calls the wallet wraps in
+   * BatchExecutor.execute() for one atomic tx. No signature involved.
+   */
+  batchCalls?: UniswapV4BatchCall[]
 }
 
 // Heavy variant: fetches a quote AND builds approve + swap transactions.
@@ -625,11 +658,15 @@ export async function fetchSwapQuoteForExecution(
   // (quoteOnly=false). If we somehow got a planning response here it means
   // a caller wired the wrong endpoint and we'd silently broadcast garbage.
   //
-  // For uniswap-v4 responses, `data` is the sentinel "0x" by design — the
-  // real calldata is fetched via /api/swap/build-tx AFTER the wallet
-  // signs the Permit2 typed data. In that branch we require `to` +
-  // `from` + a valid permit2 bundle instead of `data`.
-  const isUniswapV4 = quote.details.swapProvider === UNISWAP_V4_PROVIDER && !!quote.details.permit2
+  // For uniswap-v4 responses, `data` is the sentinel "0x" by design —
+  // either the real calldata is fetched via /api/swap/build-tx after the
+  // wallet signs the Permit2 typed data (permit2 branch, undelegated
+  // EOAs) or prebuilt calls come inline via details.batchCalls
+  // (delegated users). In either branch we require `to` + `from` + at
+  // least one of {permit2, batchCalls}.
+  const isUniswapV4 =
+    quote.details.swapProvider === UNISWAP_V4_PROVIDER &&
+    (!!quote.details.permit2 || !!quote.details.batchCalls)
   if (!tx.from || !tx.to || (!isUniswapV4 && !tx.data)) {
     throw new Error(
       `fetchSwapQuoteForExecution received a non-executable quote (likely a planning quoteOnly=true response). Refusing to build transactions.`
@@ -660,6 +697,7 @@ export async function fetchSwapQuoteForExecution(
     sellAmount: tx.sellAmount,
     swapType: tx.swapType,
     permit2: quote.details.permit2,
+    batchCalls: quote.details.batchCalls,
   }
 }
 

@@ -35,10 +35,13 @@ describe('TechDetailsAccordion', () => {
     expect(queryByText(/errorName: Test/)).toBeTruthy()
   })
 
-  it('copies the formatted text to clipboard when Copy is tapped', () => {
-    const { getByText } = render(<TechDetailsAccordion context={ctx} />)
+  it('copies the formatted text to clipboard when the Copy icon is tapped', () => {
+    const { getByText, getByLabelText } = render(<TechDetailsAccordion context={ctx} />)
     fireEvent.press(getByText(/errors\.sheet\.techDetailsToggle/))
-    fireEvent.press(getByText(/errors\.sheet\.copyButton/))
+    // Copy button became an icon-only button (two-page clipboard SVG) placed
+    // in the toggle row so it stays visible when the stack is long. Query by
+    // accessibilityLabel instead of visible text.
+    fireEvent.press(getByLabelText(/errors\.sheet\.copyButton/))
     expect(Clipboard.setString).toHaveBeenCalledWith(expect.stringContaining('errorName: Test'))
   })
 

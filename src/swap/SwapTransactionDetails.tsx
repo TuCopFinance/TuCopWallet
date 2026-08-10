@@ -236,7 +236,23 @@ export function SwapTransactionDetails({
           </Text>
         </View>
       )}
-      {hasSpendSteps && (
+      {hasSpendSteps && spendSteps!.length === 1 && (
+        // Single-leg Dolares aggregate: show the concrete stablecoin
+        // inline (no toggle) so the user sees WHICH dollar we picked
+        // without having to expand anything. Aggregate swaps silently
+        // pick USAT -> USDm -> USDC -> USDT depending on balances; hiding
+        // that choice behind a toggle turned into "no sabia cuál gasté"
+        // in dogfooding. Reuses the SpendBreakdown testID so tests that
+        // assert the presence of the breakdown pass in both single- and
+        // multi-leg fixtures.
+        <View style={styles.row} testID="SwapTransactionDetails/SpendBreakdown">
+          <Text style={styles.label}>{t('swapScreen.transactionDetails.paidWith')}</Text>
+          <Text style={styles.value}>
+            {`${spendSteps![0].symbol} ($${spendSteps![0].amountUsd.toFormat(2)})`}
+          </Text>
+        </View>
+      )}
+      {hasSpendSteps && spendSteps!.length > 1 && (
         <View testID="SwapTransactionDetails/SpendBreakdown">
           <Touchable
             onPress={() => {

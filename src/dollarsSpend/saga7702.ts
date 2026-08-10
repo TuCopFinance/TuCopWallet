@@ -1,7 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
 import { call, delay, put, select } from 'typed-redux-saga'
-import { Address, encodeFunctionData, erc20Abi, Hex } from 'viem'
+import { Address, encodeFunctionData, erc20Abi, Hex, TypedDataDefinition } from 'viem'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FeeEvents } from 'src/analytics/Events'
 import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
@@ -16,6 +16,8 @@ import {
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { postBuildTx } from 'src/swap/uniswapV4Saga'
+import { UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { addStandbyTransaction } from 'src/transactions/slice'
 import { newTransactionContext, TokenTransactionTypeV2 } from 'src/transactions/types'
@@ -187,6 +189,72 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         target: tx.to as Address,
         value: tx.value ?? BigInt(0),
         data: tx.data as Hex,
+      })
+    }
+
+    // Uniswap V4 leg: the quote came back with the sentinel `data: "0x"` on
+    // the swap side (createBaseSwapTransactions skips it for us, so only the
+    // ERC20 approve — if any — is in preparedTransactions above). Two
+    // possible metadata shapes to reach the real UR call:
+    //
+    //  1. batchCalls (delegated user branch, common for our EIP-7702
+    //     spike/production wallets): backend hands us the Permit2.approve
+    //     + UniversalRouter.execute calls fully encoded. Wallet just
+    //     appends both to innerCalls of the outer 7702 batch — the whole
+    //     thing runs atomically and needs no Permit2 signature. Cheapest
+    //     path, one on-chain tx for the entire multi-leg Dolares batch.
+    //
+    //  2. permit2 (undelegated EOA branch, dead code today because our
+    //     users are all 7702 delegated by the time they reach 7702 saga —
+    //     saga.ts routes non-delegated users through the legacy loop
+    //     instead). Kept for defense: unlock, sign typedData, POST
+    //     /build-tx, append the returned {to, data, value}.
+    //
+    // Non-V4 legs (Squid) skip this whole block.
+    if (freshQuote.provider === UNISWAP_V4_PROVIDER && freshQuote.batchCalls) {
+      for (const call of freshQuote.batchCalls) {
+        innerCalls.push({
+          target: call.to as Address,
+          value: BigInt(call.value || '0'),
+          data: call.data as Hex,
+        })
+      }
+    } else if (freshQuote.provider === UNISWAP_V4_PROVIDER && freshQuote.permit2) {
+      yield* call(getConnectedUnlockedAccount)
+      const wallet = yield* call(getViemWallet, networkConfig.viemChain[Network.Celo])
+      if (!wallet.account) {
+        yield* put(
+          multiSwapStepFailed({
+            index: 0,
+            errorMessage: `No account available for uniswap-v4 sign step ${index}`,
+          })
+        )
+        yield* delay(50)
+        yield* put(multiSwapTransitionComplete())
+        return
+      }
+      const account = wallet.account
+      const permit2Signature: Hex = yield* call(() =>
+        account.signTypedData!(freshQuote.permit2!.typedData as unknown as TypedDataDefinition)
+      )
+      let buildResult: Awaited<ReturnType<typeof postBuildTx>>
+      try {
+        buildResult = yield* call(postBuildTx, freshQuote.permit2.buildTxUrl, {
+          ...freshQuote.permit2.buildTxRequest,
+          permit2Signature,
+        })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        Logger.warn(TAG, `uniswap-v4 build-tx failed for step ${index}: ${message}`)
+        yield* put(multiSwapStepFailed({ index: 0, errorMessage: message }))
+        yield* delay(50)
+        yield* put(multiSwapTransitionComplete())
+        return
+      }
+      innerCalls.push({
+        target: buildResult.to as Address,
+        value: BigInt(buildResult.value || '0'),
+        data: buildResult.data as Hex,
       })
     }
 
@@ -475,12 +543,21 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       // single dollar-family stablecoin. Without this, the standby shows
       // "Dolares (USDm) > Pesos" for a batch that actually pulled USDm +
       // USDC + USDT, misrepresenting the swap until the indexer catches up.
-      // outAmount stays pinned to USDm+total for backwards compatibility
-      // (matches the "largest leg" convention on the indexer side).
+      //
+      // outAmount tokenId: for single-leg, use the actual leg's tokenId so the
+      // feed label reflects what the user really spent (e.g. "Dolares (USDT)"
+      // when the picker selected USDT because USDm balance was 0). Prior
+      // implementation hardcoded usdmTokenId, misrepresenting USDC/USAT/USDT
+      // single-leg spends. For multi-leg the pin does not manifest visually
+      // because SwapFeedItem collapses to a generic "Dolares" via
+      // isMultiDollarSwap regardless of outAmount.tokenId; usdmTokenId is
+      // kept there as the historical indexer convention.
       const fromTokenAmounts = stepOutcomes.map((o) => ({
         tokenId: o.tokenId,
         value: o.outAmountTokenWhole.toFixed(),
       }))
+      const outAmountTokenId =
+        stepOutcomes.length === 1 ? stepOutcomes[0].tokenId : networkConfig.usdmTokenId
       yield* put(
         addStandbyTransaction({
           context: newTransactionContext(TAG, 'Dolares -> Pesos atomic batch'),
@@ -492,7 +569,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
             value: totalInAmount.toFixed(),
           },
           outAmount: {
-            tokenId: networkConfig.usdmTokenId,
+            tokenId: outAmountTokenId,
             value: totalOutUsd.toFixed(),
           },
           fromTokenAmounts,

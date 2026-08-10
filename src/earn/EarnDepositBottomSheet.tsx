@@ -34,7 +34,7 @@ import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactio
 const APP_ID_TO_PROVIDER_DOCUMENTS_URL: Record<string, string | undefined> = {
   beefy: 'https://docs.beefy.finance/',
 }
-const APP_TERMS_AND_CONDITIONS_URL = 'https://valora.xyz/terms'
+const APP_TERMS_AND_CONDITIONS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
 export default function EarnDepositBottomSheet({
   forwardedRef,

@@ -665,11 +665,23 @@ export function getFeeCurrencyAndAmounts(
   let estimatedFeeAmount = undefined
   if (prepareTransactionsResult?.type === 'possible') {
     feeCurrency = prepareTransactionsResult.feeCurrency
-    const feeDecimals = getFeeDecimals(prepareTransactionsResult.transactions, feeCurrency)
-    maxFeeAmount = getMaxGasFee(prepareTransactionsResult.transactions).shiftedBy(-feeDecimals)
-    estimatedFeeAmount = getEstimatedGasFee(prepareTransactionsResult.transactions).shiftedBy(
-      -feeDecimals
-    )
+    // Trivial-possible with zero transactions (e.g. Uniswap V4 quote where
+    // the user already granted the ERC20 approve to Permit2 in a prior
+    // session, so there is nothing to submit at quote time; the real
+    // follower tx is built later by the uniswap-v4 saga via /build-tx).
+    // getFeeDecimals throws if it can't reconcile the tx-side fee currency
+    // with the passed feeCurrency, but there are no txs here so there is
+    // no fee to compute either.
+    if (prepareTransactionsResult.transactions.length === 0) {
+      maxFeeAmount = new BigNumber(0)
+      estimatedFeeAmount = new BigNumber(0)
+    } else {
+      const feeDecimals = getFeeDecimals(prepareTransactionsResult.transactions, feeCurrency)
+      maxFeeAmount = getMaxGasFee(prepareTransactionsResult.transactions).shiftedBy(-feeDecimals)
+      estimatedFeeAmount = getEstimatedGasFee(prepareTransactionsResult.transactions).shiftedBy(
+        -feeDecimals
+      )
+    }
   } else if (prepareTransactionsResult?.type === 'need-decrease-spend-amount-for-gas') {
     feeCurrency = prepareTransactionsResult.feeCurrency
     maxFeeAmount = prepareTransactionsResult.maxGasFeeInDecimal

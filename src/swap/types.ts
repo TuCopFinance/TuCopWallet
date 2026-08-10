@@ -77,12 +77,21 @@ export interface SwapInfo {
     allowanceTarget: string
     swapType: SwapType
     /**
-     * Present ONLY when `provider === "uniswap-v4"`. Wallet must sign
-     * `typedData` + POST to `buildTxUrl` with `buildTxRequest` to
-     * receive the real {to, data, value} calldata. See
-     * UniswapV4Permit2Metadata for the full flow.
+     * Present ONLY when `provider === "uniswap-v4"` AND the user is NOT
+     * EIP-7702 delegated. Wallet must sign `typedData` + POST to
+     * `buildTxUrl` with `buildTxRequest` to receive the real
+     * {to, data, value} calldata. See UniswapV4Permit2Metadata for the
+     * full flow. Mutually exclusive with `batchCalls`.
      */
     permit2?: UniswapV4Permit2Metadata
+    /**
+     * Present ONLY when `provider === "uniswap-v4"` AND the user IS
+     * EIP-7702 delegated. Wallet wraps these prebuilt calls in a
+     * BatchExecutor.execute() and submits one atomic tx. No signature
+     * or POST /build-tx roundtrip involved. Mutually exclusive with
+     * `permit2`.
+     */
+    batchCalls?: UniswapV4BatchCall[]
   }
   areSwapTokensShuffled: boolean
   // Set to true when this swap is a single step inside a larger multi-swap
@@ -166,6 +175,26 @@ export interface UniswapV4Permit2Metadata {
  */
 export type SwapProvider = 'squid' | 'uniswap-v4' | (string & {})
 
+/**
+ * Prebuilt inner call for the Uniswap V4 batchCalls branch — used when the
+ * wallet is EIP-7702 delegated and Permit2's ERC1271 verification path
+ * would revert (the BatchExecutor delegate does not implement
+ * isValidSignature). Backend returns the calls already encoded so the
+ * wallet just wraps them in a BatchExecutor.execute() and submits one
+ * atomic tx. No Permit2 typedData signature is involved.
+ *
+ * Layout returned by backend (order is significant):
+ *   [0] Permit2.approve(sellToken, UniversalRouter, amount, expiration)
+ *   [1] UniversalRouter.execute(commands, inputs, deadline)
+ *
+ * See wallet-consumer-spec.md section 12 for the wire contract.
+ */
+export interface UniswapV4BatchCall {
+  to: string
+  data: string
+  value: string
+}
+
 export interface FetchQuoteResponse {
   unvalidatedSwapTransaction: SwapTransaction
   details: {
@@ -186,10 +215,20 @@ export interface FetchQuoteResponse {
      */
     source?: string
     /**
-     * Present only when swapProvider === "uniswap-v4". See
-     * UniswapV4Permit2Metadata for the full shape + wallet-side flow.
+     * Present only when swapProvider === "uniswap-v4" AND the user is NOT
+     * EIP-7702 delegated. See UniswapV4Permit2Metadata for the full shape
+     * + wallet-side flow. Mutually exclusive with `batchCalls`.
      */
     permit2?: UniswapV4Permit2Metadata
+    /**
+     * Present only when swapProvider === "uniswap-v4" AND the user IS
+     * EIP-7702 delegated. Backend detects delegation via eth_getCode
+     * starting with 0xef01 and switches from the Permit2 typed data
+     * flow (which reverts on 7702 EOAs via ERC1271 path) to prebuilt
+     * calls the wallet executes atomically through BatchExecutor.execute.
+     * Mutually exclusive with `permit2`.
+     */
+    batchCalls?: UniswapV4BatchCall[]
   }
 }
 
@@ -201,9 +240,37 @@ export interface FetchQuoteResponse {
  */
 export const UNISWAP_V4_PROVIDER = 'uniswap-v4'
 
-/** True iff the response should follow the Uniswap V4 Permit2 flow. */
+/**
+ * True iff the response is any variant of the Uniswap V4 route. Wallet
+ * MUST NOT submit `unvalidatedSwapTransaction` directly in this case —
+ * either the Permit2 flow or the batchCalls flow needs to run instead.
+ * A `swapProvider === "uniswap-v4"` with NEITHER `permit2` NOR
+ * `batchCalls` is a backend contract violation and callers should route
+ * to Sentry + fail loud instead of submitting the sentinel data.
+ */
 export function isUniswapV4Quote(response: FetchQuoteResponse): boolean {
-  return response.details.swapProvider === UNISWAP_V4_PROVIDER && !!response.details.permit2
+  return (
+    response.details.swapProvider === UNISWAP_V4_PROVIDER &&
+    (!!response.details.permit2 || !!response.details.batchCalls)
+  )
+}
+
+/** True iff the response is Uniswap V4 delegated-user variant (batchCalls). */
+export function isBatchCallsQuote(response: FetchQuoteResponse): boolean {
+  return (
+    response.details.swapProvider === UNISWAP_V4_PROVIDER &&
+    !!response.details.batchCalls &&
+    !response.details.permit2
+  )
+}
+
+/** True iff the response is Uniswap V4 EOA variant (Permit2 typedData). */
+export function isPermit2Quote(response: FetchQuoteResponse): boolean {
+  return (
+    response.details.swapProvider === UNISWAP_V4_PROVIDER &&
+    !!response.details.permit2 &&
+    !response.details.batchCalls
+  )
 }
 
 /**

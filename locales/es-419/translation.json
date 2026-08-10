@@ -1889,6 +1889,7 @@
       "perTokenDetailExpand_one": "{{count}} token",
       "perTokenDetailExpand_other": "{{count}} tokens",
       "perTokenDetailCollapse": "Ocultar",
+      "paidWith": "Pagado con",
       "swapFee": "Tarifa de {{appName}}",
       "swapFeeWaived": "Gratis",
       "appFee": "Tarifa de {{appName}}",
