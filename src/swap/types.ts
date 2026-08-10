@@ -72,10 +72,17 @@ export interface SwapInfo {
     receivedAt: number
     price: string
     appFeePercentageIncludedInPrice: string | undefined
-    provider: string
+    provider: SwapProvider
     estimatedPriceImpact: string | null
     allowanceTarget: string
     swapType: SwapType
+    /**
+     * Present ONLY when `provider === "uniswap-v4"`. Wallet must sign
+     * `typedData` + POST to `buildTxUrl` with `buildTxRequest` to
+     * receive the real {to, data, value} calldata. See
+     * UniswapV4Permit2Metadata for the full flow.
+     */
+    permit2?: UniswapV4Permit2Metadata
   }
   areSwapTokensShuffled: boolean
   // Set to true when this swap is a single step inside a larger multi-swap
@@ -86,10 +93,89 @@ export interface SwapInfo {
   suppressSuccessNavigation?: boolean
 }
 
+/**
+ * Direction discriminator for the Uniswap V4 fallback pool. Backend
+ * currently only implements the USDT<->COPm pair.
+ */
+export type UniswapV4Direction = 'USDT_TO_COPM' | 'COPM_TO_USDT'
+
+/**
+ * Body backend needs echoed back on the build-tx call, plus the
+ * wallet-computed `permit2Signature`. Every field is opaque to the
+ * wallet's business logic (wallet MUST NOT recompute permitAmount /
+ * deadline / nonce, just forward the values backend returned in the
+ * quote response).
+ */
+export interface UniswapV4BuildTxRequest {
+  direction: UniswapV4Direction
+  userAddress: string
+  sellAmount: string
+  minBuyAmount: string
+  deadline: string
+  permitToken: string
+  permitAmount: string
+  permitExpiration: number | string
+  permitNonce: number | string
+  permitSigDeadline: string
+}
+
+/**
+ * Metadata backend attaches when it decides the winning route is the
+ * Uniswap V4 fallback pool for USDT<->COPm (Mento suspends the pair over
+ * weekends). Present ONLY when `details.swapProvider === "uniswap-v4"`.
+ *
+ * The response's `unvalidatedSwapTransaction.data` is the sentinel "0x"
+ * in this branch — submitting it as-is reverts on-chain. Wallet must
+ * instead: (a) approve ERC20 -> Permit2 canonical if needed, (b) sign the
+ * `typedData` EIP-712 Permit2 payload, (c) POST the signature back to
+ * `buildTxUrl` with `buildTxRequest` to receive the real {to, data,
+ * value} calldata built by backend, (d) send that.
+ *
+ * `existingAllowance` reflects the user's current Permit2 allowance on
+ * chain for the sellToken -> Universal Router path. If `amount >=
+ * sellAmount && expiration > now + 60s` the client can skip the sign
+ * step (backend still builds the tx with the stale-but-valid nonce).
+ */
+export interface UniswapV4Permit2Metadata {
+  typedData: {
+    domain: Record<string, unknown>
+    types: Record<string, unknown>
+    primaryType: string
+    message: Record<string, unknown>
+  }
+  existingAllowance: {
+    /** wei-scale amount already permitted to the Universal Router */
+    amount: string
+    /** unix seconds; 0 = no active permit */
+    expiration: number
+    /** Permit2 nonce for this (owner, token, spender) tuple */
+    nonce: number
+  }
+  /** Absolute or relative URL to POST the signed permit + buildTxRequest to */
+  buildTxUrl: string
+  buildTxRequest: UniswapV4BuildTxRequest
+}
+
+/**
+ * Known swap provider discriminators. Backend may emit other slugs
+ * (Squid returns "squid", "squid-router", historically also protocol-
+ * specific tags). Type keeps the string fallback so wallet does not
+ * fail hard on unknown providers — the discriminator is only used to
+ * pick the execution branch (uniswap-v4 -> Permit2 flow, everything
+ * else -> current Squid flow).
+ */
+export type SwapProvider = 'squid' | 'uniswap-v4' | (string & {})
+
 export interface FetchQuoteResponse {
   unvalidatedSwapTransaction: SwapTransaction
   details: {
-    swapProvider: string
+    /**
+     * Discriminator for the route. Historical values are provider slugs
+     * from Squid ("squid", "squid-router", ...). "uniswap-v4" indicates
+     * the wallet-side Permit2 -> build-tx -> execute path documented in
+     * UniswapV4Permit2Metadata above.
+     */
+    swapProvider: SwapProvider
     /**
      * Backend flag introduced with the Uniswap V4 fallback initiative. When
      * present, its value ('squid' | 'uniswap_v4' | ...) reflects the actual
@@ -99,7 +185,35 @@ export interface FetchQuoteResponse {
      * backend responses that only carry swapProvider.
      */
     source?: string
+    /**
+     * Present only when swapProvider === "uniswap-v4". See
+     * UniswapV4Permit2Metadata for the full shape + wallet-side flow.
+     */
+    permit2?: UniswapV4Permit2Metadata
   }
+}
+
+/**
+ * Wallet-side literal for the Uniswap V4 branch. Compare against this
+ * instead of hardcoding the string in each callsite — the backend has
+ * been inconsistent about hyphens (uniswap-v4 vs uniswap_v4) in past
+ * responses and normalizing at one point keeps flexibility if it flips.
+ */
+export const UNISWAP_V4_PROVIDER = 'uniswap-v4'
+
+/** True iff the response should follow the Uniswap V4 Permit2 flow. */
+export function isUniswapV4Quote(response: FetchQuoteResponse): boolean {
+  return response.details.swapProvider === UNISWAP_V4_PROVIDER && !!response.details.permit2
+}
+
+/**
+ * The backend build-tx endpoint returns a plain {to, data, value} that
+ * the wallet feeds into prepareTransactions like any other EVM call.
+ */
+export interface UniswapV4BuildTxResponse {
+  to: string
+  data: string
+  value: string
 }
 
 export interface SwapFeeAmount {

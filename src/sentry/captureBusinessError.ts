@@ -22,6 +22,7 @@ export type BusinessProvider =
   | 'neeru'
   | 'marranitos'
   | 'squid'
+  | 'uniswap-v4'
   | 'allbridge'
   | 'jumpstart'
   | 'buckspay'

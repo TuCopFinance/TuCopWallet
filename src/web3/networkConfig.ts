@@ -38,6 +38,13 @@ interface NetworkConfig {
   fetchExchangesUrl: string
   nftsAppUrl: string
   getSwapQuoteUrl: string
+  /**
+   * Base URL of the TuCop backend proxy. Used to resolve the relative
+   * `permit2.buildTxUrl` returned by the Uniswap V4 fallback quote
+   * response (e.g. "/api/swap/build-tx"). Never used directly by
+   * feature code otherwise — prefer the fully-qualified `*Url` fields.
+   */
+  tucopBackendBaseUrl: string
   verifyPhoneNumberUrl: string
   resolvePhoneNumberUrl: string
   verifySmsCodeUrl: string
@@ -363,6 +370,7 @@ const networkConfig: NetworkConfig = {
   fetchExchangesUrl: FETCH_EXCHANGES_URL_MAINNET,
   nftsAppUrl: NFTS_APP_URL,
   getSwapQuoteUrl: GET_SWAP_QUOTE_URL,
+  tucopBackendBaseUrl: TUCOP_BACKEND_BASE_URL,
   verifyPhoneNumberUrl: VERIFY_PHONE_NUMBER_MAINNET,
   verifySmsCodeUrl: VERIFY_SMS_CODE_MAINNET,
   resolvePhoneNumberUrl: RESOLVE_PHONE_NUMBER_MAINNET,
