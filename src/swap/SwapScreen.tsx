@@ -630,6 +630,7 @@ export function SwapScreen({ route }: Props) {
               estimatedPriceImpact,
               allowanceTarget,
               swapType: quote.swapType,
+              permit2: quote.permit2,
             },
             userInput,
             areSwapTokensShuffled,

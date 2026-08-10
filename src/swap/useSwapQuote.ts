@@ -10,6 +10,8 @@ import {
   ParsedSwapAmount,
   SwapTransaction,
   SwapType,
+  UNISWAP_V4_PROVIDER,
+  UniswapV4Permit2Metadata,
 } from 'src/swap/types'
 import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
@@ -266,6 +268,12 @@ interface BaseQuoteResult {
   allowanceTarget: string
   appFeePercentageIncludedInPrice: string | undefined
   sellAmount: string
+  /**
+   * Present ONLY when `provider === "uniswap-v4"`. SwapScreen forwards
+   * this into the SwapInfo dispatched with swapStart so the wallet-side
+   * uniswap-v4 saga can sign the Permit2 typed data + POST /build-tx.
+   */
+  permit2?: UniswapV4Permit2Metadata
 }
 
 interface SameChainQuoteResult extends BaseQuoteResult {
@@ -334,6 +342,19 @@ async function createBaseSwapTransactions(
         data,
       }
       baseTransactions.push(approveTx)
+    }
+  }
+
+  // Uniswap V4 fallback: backend emits the sentinel data: "0x" and the
+  // real calldata is fetched later via POST /api/swap/build-tx after the
+  // wallet signs the Permit2 typed data. Do NOT push a swap tx here —
+  // submitting "0x" as swap data burns gas without executing anything.
+  // The uniswap-v4 saga rehydrates + submits the real tx after the
+  // approve (if any) confirms.
+  if (data === '0x') {
+    return {
+      amountToApprove,
+      baseTransactions,
     }
   }
 
@@ -490,6 +511,7 @@ function useSwapQuote({
           quote.unvalidatedSwapTransaction.appFeePercentageIncludedInPrice,
         allowanceTarget: quote.unvalidatedSwapTransaction.allowanceTarget,
         sellAmount: quote.unvalidatedSwapTransaction.sellAmount,
+        permit2: quote.details.permit2,
       }
 
       if (quote.unvalidatedSwapTransaction.swapType === 'cross-chain') {
@@ -537,6 +559,16 @@ export interface FetchSwapQuoteForExecutionResult extends FetchSwapQuoteResult {
   allowanceTarget: string
   sellAmount: string
   swapType: SwapType
+  /**
+   * Present ONLY when `provider === "uniswap-v4"`. The wallet-side flow
+   * follows the Permit2 -> build-tx -> execute path documented in
+   * UniswapV4Permit2Metadata + spec section 12. When present, the
+   * returned `preparedTransactions.transactions` contains at most the
+   * ERC20 approve to Permit2; the swap tx itself is NOT prebuilt (data
+   * is the sentinel "0x"). The uniswap-v4 saga rehydrates the real
+   * calldata via /api/swap/build-tx after signing.
+   */
+  permit2?: UniswapV4Permit2Metadata
 }
 
 // Heavy variant: fetches a quote AND builds approve + swap transactions.
@@ -585,12 +617,20 @@ export async function fetchSwapQuoteForExecution(
     throw new Error(NO_QUOTE_ERROR_MESSAGE)
   }
 
+  tagSwapSource(quote)
+
   const tx = quote.unvalidatedSwapTransaction
   // Defensive: a planning quote (quoteOnly=true) returns empty to/data/from
   // and is NOT executable. This branch should only ever see a commit quote
   // (quoteOnly=false). If we somehow got a planning response here it means
   // a caller wired the wrong endpoint and we'd silently broadcast garbage.
-  if (!tx.from || !tx.to || !tx.data) {
+  //
+  // For uniswap-v4 responses, `data` is the sentinel "0x" by design — the
+  // real calldata is fetched via /api/swap/build-tx AFTER the wallet
+  // signs the Permit2 typed data. In that branch we require `to` +
+  // `from` + a valid permit2 bundle instead of `data`.
+  const isUniswapV4 = quote.details.swapProvider === UNISWAP_V4_PROVIDER && !!quote.details.permit2
+  if (!tx.from || !tx.to || (!isUniswapV4 && !tx.data)) {
     throw new Error(
       `fetchSwapQuoteForExecution received a non-executable quote (likely a planning quoteOnly=true response). Refusing to build transactions.`
     )
@@ -619,6 +659,7 @@ export async function fetchSwapQuoteForExecution(
     allowanceTarget: tx.allowanceTarget,
     sellAmount: tx.sellAmount,
     swapType: tx.swapType,
+    permit2: quote.details.permit2,
   }
 }
 
