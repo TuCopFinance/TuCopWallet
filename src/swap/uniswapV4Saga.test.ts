@@ -1,5 +1,12 @@
 import { __TESTING__, postBuildTx, isUniswapV4SwapInfo } from 'src/swap/uniswapV4Saga'
-import { SwapInfo, UNISWAP_V4_PROVIDER } from 'src/swap/types'
+import {
+  FetchQuoteResponse,
+  SwapInfo,
+  UNISWAP_V4_PROVIDER,
+  isBatchCallsQuote,
+  isPermit2Quote,
+  isUniswapV4Quote,
+} from 'src/swap/types'
 import networkConfig from 'src/web3/networkConfig'
 
 jest.mock('src/utils/fetchWithTimeout', () => ({
@@ -179,5 +186,81 @@ describe('isUniswapV4SwapInfo', () => {
       buildTxRequest,
     }
     expect(isUniswapV4SwapInfo(info)).toBe(true)
+  })
+
+  it('returns true when provider is uniswap-v4 AND batchCalls metadata is present', () => {
+    const info = baseSwapInfo()
+    info.quote.provider = UNISWAP_V4_PROVIDER
+    info.quote.batchCalls = [
+      {
+        to: '0x000000000022d473030f116ddee9f6b43ac78ba3',
+        data: '0x87517c45',
+        value: '0',
+      },
+      {
+        to: '0x8b844f885672f333bc0042cb669255f93a4c1e6b',
+        data: '0x3593564c',
+        value: '0',
+      },
+    ]
+    expect(isUniswapV4SwapInfo(info)).toBe(true)
+  })
+})
+
+// Shared minimal FetchQuoteResponse fixture — only the fields the guards
+// actually inspect. Any missing field cast via `as unknown as` is
+// deliberately unspecified because the guards ignore it.
+const mkQuote = (overrides: Partial<FetchQuoteResponse['details']>): FetchQuoteResponse =>
+  ({
+    unvalidatedSwapTransaction: {} as any,
+    details: {
+      swapProvider: UNISWAP_V4_PROVIDER,
+      ...overrides,
+    },
+  }) as FetchQuoteResponse
+
+describe('quote-shape guards', () => {
+  const permit2Bundle = {
+    typedData: { domain: {}, types: {}, primaryType: 'PermitSingle', message: {} },
+    existingAllowance: { amount: '0', expiration: 0, nonce: 0 },
+    buildTxUrl: '/api/swap/build-tx',
+    buildTxRequest,
+  }
+  const batchBundle = [
+    { to: '0x000000000022d473030f116ddee9f6b43ac78ba3', data: '0x87517c45', value: '0' },
+    { to: '0x8b844f885672f333bc0042cb669255f93a4c1e6b', data: '0x3593564c', value: '0' },
+  ]
+
+  it('isUniswapV4Quote is true for permit2 OR batchCalls', () => {
+    expect(isUniswapV4Quote(mkQuote({ permit2: permit2Bundle }))).toBe(true)
+    expect(isUniswapV4Quote(mkQuote({ batchCalls: batchBundle }))).toBe(true)
+  })
+
+  it('isUniswapV4Quote is false when uniswap-v4 provider has NEITHER bundle (contract violation)', () => {
+    expect(isUniswapV4Quote(mkQuote({}))).toBe(false)
+  })
+
+  it('isPermit2Quote is true only when permit2 is present AND batchCalls absent', () => {
+    expect(isPermit2Quote(mkQuote({ permit2: permit2Bundle }))).toBe(true)
+    expect(isPermit2Quote(mkQuote({ batchCalls: batchBundle }))).toBe(false)
+    expect(isPermit2Quote(mkQuote({ permit2: permit2Bundle, batchCalls: batchBundle }))).toBe(false)
+  })
+
+  it('isBatchCallsQuote is true only when batchCalls is present AND permit2 absent', () => {
+    expect(isBatchCallsQuote(mkQuote({ batchCalls: batchBundle }))).toBe(true)
+    expect(isBatchCallsQuote(mkQuote({ permit2: permit2Bundle }))).toBe(false)
+    expect(isBatchCallsQuote(mkQuote({ permit2: permit2Bundle, batchCalls: batchBundle }))).toBe(
+      false
+    )
+  })
+
+  it('all guards return false for non-uniswap-v4 providers', () => {
+    const squidQuote = {
+      unvalidatedSwapTransaction: {} as any,
+      details: { swapProvider: 'squid' as any, batchCalls: batchBundle },
+    } as FetchQuoteResponse
+    expect(isUniswapV4Quote(squidQuote)).toBe(false)
+    expect(isPermit2Quote(squidQuote)).toBe(false)
+    expect(isBatchCallsQuote(squidQuote)).toBe(false)
   })
 })
