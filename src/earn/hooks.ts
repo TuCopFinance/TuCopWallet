@@ -24,13 +24,29 @@ import { Address } from 'viem'
 
 const TAG = 'earn/hooks'
 
+// Fallback display names for providers when the backend positions registry
+// has not loaded yet (or the tx's providerId does not appear there because
+// the pool was hidden/rotated). Feed items would otherwise render as
+// "Fondos depositados en la pool" with an empty provider name. Keep in
+// sync with the appId values dispatched by the earn sagas (src/earn/saga.ts
+// via pool.appId and src/earn/neeru/saga.ts with the hardcoded literals).
+const PROVIDER_FALLBACK_NAMES: Record<string, string> = {
+  'neeru-vaults': 'Neeru',
+  neeru: 'Neeru',
+  beefy: 'Beefy',
+  aave: 'Aave',
+  allbridge: 'Allbridge',
+}
+
 export function useEarnPositionProviderName(providerId: string) {
   const pools = useSelector(earnPositionsSelector)
   const providerName = pools.find((pool) => pool.appId === providerId)?.appName
-  if (!providerName) {
+  if (providerName) return providerName
+  const fallback = PROVIDER_FALLBACK_NAMES[providerId]
+  if (!fallback) {
     Logger.warn(TAG, 'providerName not found', providerId)
   }
-  return providerName
+  return fallback
 }
 
 export function useDepositEntrypointInfo({
