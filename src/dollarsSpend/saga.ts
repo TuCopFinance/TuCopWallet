@@ -406,6 +406,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         allowanceTarget: freshQuote.allowanceTarget,
         swapType: freshQuote.swapType,
         permit2: freshQuote.permit2,
+        batchCalls: freshQuote.batchCalls,
       },
       areSwapTokensShuffled: false,
       // Multi-swap orchestrates the success screen itself once all legs

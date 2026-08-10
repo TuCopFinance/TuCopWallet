@@ -631,6 +631,7 @@ export function SwapScreen({ route }: Props) {
               allowanceTarget,
               swapType: quote.swapType,
               permit2: quote.permit2,
+              batchCalls: quote.batchCalls,
             },
             userInput,
             areSwapTokensShuffled,
