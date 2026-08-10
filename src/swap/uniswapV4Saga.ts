@@ -58,7 +58,8 @@ import networkConfig from 'src/web3/networkConfig'
 import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import { Address, Hex, TypedDataDefinition } from 'viem'
+import { Address, encodeFunctionData, Hex, TypedDataDefinition } from 'viem'
+import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
 
 const TAG = 'swap/uniswapV4Saga'
 
@@ -331,12 +332,35 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     let followerBaseTxs: { from: Address; to: Address; data: Hex; value: bigint }[]
 
     if (batchCalls) {
-      followerBaseTxs = batchCalls.map((c: UniswapV4BatchCall) => ({
-        from: userAddress,
-        to: c.to as Address,
-        data: c.data as Hex,
+      // Wrap the prebuilt calls in a single BatchExecutor.execute() self-call.
+      // Submitting them as N separate txs would revert at eth_estimateGas on
+      // the second one (UniversalRouter.execute), because Permit2's internal
+      // allowance is not yet set at LATEST state — batchCalls[0]
+      // (Permit2.approve) has not landed yet. Atomic execution via the
+      // BatchExecutor delegated to the user's own EOA (EIP-7702) runs both
+      // calls in one tx so estimateGas sees the post-approve state and the
+      // swap prices correctly. Non-delegated users never reach this branch
+      // (backend routes them through permit2 typedData instead).
+      const innerCalls = batchCalls.map((c: UniswapV4BatchCall) => ({
+        target: c.to as Address,
         value: BigInt(c.value || '0'),
+        data: c.data as Hex,
       }))
+      const executeCalldata = encodeFunctionData({
+        abi: BATCH_EXECUTOR_ABI,
+        functionName: 'execute',
+        args: [innerCalls],
+      })
+      followerBaseTxs = [
+        {
+          from: userAddress,
+          // Self-call: user's own EOA. EIP-7702 delegation runs BatchExecutor
+          // bytecode in this address's context.
+          to: userAddress,
+          data: executeCalldata,
+          value: BigInt(0),
+        },
+      ]
     } else if (permit2) {
       // Re-unlock the keychain before signing. `sendPreparedTransactions`
       // in Phase A held the pin cache with `pinTransactional` but releases
