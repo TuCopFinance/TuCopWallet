@@ -53,7 +53,7 @@ import {
 import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { currentSwapSelector, priceImpactWarningThresholdSelector } from 'src/swap/selectors'
 import { swapStart } from 'src/swap/slice'
-import { AppFeeAmount, Field, SwapAmount, SwapFeeAmount } from 'src/swap/types'
+import { AppFeeAmount, Field, SwapAmount, SwapFeeAmount, UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import useFilterChips from 'src/swap/useFilterChips'
 import useSwapQuote, {
   NO_QUOTE_ERROR_MESSAGE,
@@ -853,7 +853,16 @@ export function SwapScreen({ route }: Props) {
         (quote?.estimatedPriceImpact
           ? new BigNumber(quote.estimatedPriceImpact).gte(priceImpactWarningThreshold)
           : false),
-      showMissingPriceImpactWarning: !quoteUpdatePending && quote && !quote.estimatedPriceImpact,
+      // Uniswap V4 quotes always come with `estimatedPriceImpact: null`
+      // because the V4 Quoter does not expose price impact. The V4 response
+      // does include `guaranteedPrice` (slippage-adjusted floor rate) which
+      // is a firm bound. Suppress the "no podemos estimar el valor" warning
+      // for this provider so users are not scared off a legitimate swap.
+      showMissingPriceImpactWarning:
+        !quoteUpdatePending &&
+        quote &&
+        !quote.estimatedPriceImpact &&
+        quote.provider !== UNISWAP_V4_PROVIDER,
     }
 
     // Only ever show a single warning, according to precedence as above.
