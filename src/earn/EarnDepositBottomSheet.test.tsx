@@ -334,7 +334,9 @@ describe('EarnDepositBottomSheet', () => {
         EarnEvents.earn_deposit_terms_and_conditions_press,
         { type: 'appTermsAndConditions', ...expectedAnalyticsProperties, providerId: 'beefy' }
       )
-      expect(store.getActions()).toEqual([openUrl('https://valora.xyz/terms', true)])
+      expect(store.getActions()).toEqual([
+        openUrl('https://tucop.xyz/terminos-y-condiciones/', true),
+      ])
     })
 
     it('shows loading state and buttons are disabled when deposit is submitted', () => {
