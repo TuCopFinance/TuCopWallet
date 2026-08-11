@@ -8,6 +8,11 @@ export enum StatsigDynamicConfigs {
   EARN_STABLECOIN_CONFIG = 'earn_stablecoin_config',
   APP_CONFIG = 'app_config',
   EARN_CONFIG = 'earn_config',
+  // Copy + destination address + preset amounts + social links for the
+  // 2026-08-10 Colombia earthquake donation campaign. Server-side so we
+  // can retarget cities, tune the match copy, rotate the Safe destination,
+  // or extend the campaign without shipping a wallet release.
+  EARTHQUAKE_DONATION_CONFIG = 'earthquake_donation_config',
 }
 
 // Separating into different enum from StatsigDynamicConfigs to allow for more strict typing
@@ -52,6 +57,12 @@ export enum StatsigFeatureGates {
   // their dollar balances. Decoupled from the feed flag — bootstrap is a
   // wallet-only action with no feed dependency.
   WRI_COPM_FEE_BOOTSTRAP_V1 = 'wri_copm_fee_bootstrap_v1',
+  // Kill-switch for the 2026-08-10 Colombia earthquake donation feature.
+  // When ON, the wallet shows the donation popup once per app-open session
+  // AND renders a permanent card in the TabHome entrypoint list. When OFF
+  // (default), neither surface renders — safe to keep this always ready
+  // to enable/disable server-side without a release.
+  SHOW_EARTHQUAKE_DONATION_2026_08 = 'show_earthquake_donation_2026_08',
 }
 
 export enum StatsigExperiments {

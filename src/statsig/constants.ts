@@ -110,6 +110,29 @@ export const DynamicConfigs = {
       },
     },
   },
+  [StatsigDynamicConfigs.EARTHQUAKE_DONATION_CONFIG]: {
+    configName: StatsigDynamicConfigs.EARTHQUAKE_DONATION_CONFIG,
+    defaultValues: {
+      // ReFi Colombia Gnosis Safe (Celo mainnet), dedicated to the
+      // earthquake donation campaign. Multi-sig, verified on-chain
+      // 2026-08-11: 342-byte SafeProxy bytecode, balance 0 CELO / 0 COPm
+      // at wire time (fresh Safe spun up specifically for the campaign,
+      // separate from any pre-existing ReFi Colombia treasury).
+      destinationAddress: '0x8c5F869e1a5A39F378612d69c32E84d0114ab7C5',
+      // 20% match: for every 100 pesos donated by the user, ReFi Colombia
+      // contributes an additional 20 pesos out of the campaign fund.
+      matchPercentage: 20,
+      // Amounts in whole COPm (Pesos digitales). Preset chips render as
+      // 10.000 / 50.000 / 100.000 / 250.000 / 500.000 pesos in es-419.
+      presetAmounts: [10000, 50000, 100000, 250000, 500000] as number[],
+      // Social + on-chain verification links. Update Statsig-side when the
+      // real handles / Safe explorer are confirmed by ReFi Colombia.
+      refiInstagramUrl: 'https://www.instagram.com/reficolombia/',
+      refiTwitterUrl: 'https://x.com/ReFiColombia',
+      safeExplorerUrl:
+        'https://app.safe.global/home?safe=celo:0x8c5F869e1a5A39F378612d69c32E84d0114ab7C5',
+    },
+  },
   [StatsigDynamicConfigs.EARN_CONFIG]: {
     configName: StatsigDynamicConfigs.EARN_CONFIG,
     defaultValues: {
