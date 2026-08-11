@@ -146,14 +146,10 @@ export function* executeEarthquakeDonationSaga(
     vibrateSuccess()
     Logger.info(TAG, `Donation success (${source}) tx=${receiptHash} amount=${amountWhole} COPm`)
 
-    navigate(Screens.TransactionSuccessScreen, {
-      fromTokenId: tokenId,
-      toTokenId: tokenId,
-      fromAmount: amountBn.toString(),
-      toAmount: amountBn.toString(),
+    navigate(Screens.EarthquakeDonationSuccessScreen, {
+      amountWhole: amountBn.toString(),
       transactionHash: receiptHash,
       networkId,
-      type: 'send' as const,
     })
   } catch (err) {
     vibrateError()

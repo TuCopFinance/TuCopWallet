@@ -97,6 +97,7 @@ export enum Screens {
   TokenImport = 'TokenImport',
   TransactionDetailsScreen = 'TransactionDetailsScreen',
   TransactionSuccessScreen = 'TransactionSuccessScreen',
+  EarthquakeDonationSuccessScreen = 'EarthquakeDonationSuccessScreen',
   UpgradeScreen = 'UpgradeScreen',
   ValidateRecipientAccount = 'ValidateRecipientAccount',
   ValidateRecipientIntro = 'ValidateRecipientIntro',
