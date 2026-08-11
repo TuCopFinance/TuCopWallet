@@ -1,5 +1,8 @@
 import * as Sentry from '@sentry/react-native'
-import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import {
+  _resetCaptureBusinessErrorThrottleForTests,
+  captureBusinessError,
+} from 'src/sentry/captureBusinessError'
 import * as config from 'src/config'
 
 jest.mock('@sentry/react-native', () => ({
@@ -16,6 +19,7 @@ const mockScope = {
 describe('captureBusinessError', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    _resetCaptureBusinessErrorThrottleForTests()
     ;(config as any).SENTRY_ENABLED = true
   })
 
@@ -123,5 +127,44 @@ describe('captureBusinessError', () => {
       errorCode: 502 as any,
     })
     expect(mockScope.setTags).toHaveBeenCalledWith(expect.objectContaining({ errorCode: '502' }))
+  })
+
+  it('throttles repeat captures with the same fingerprint (only fires once per window)', () => {
+    // Simulates the gold-price poller firing every 30s while the device is
+    // offline: circuit closed once, then hundreds of calls hitting the same
+    // (feature, provider, action, errorCode) tuple. Only the first should
+    // reach Sentry; the rest are suppressed so the issue does not balloon
+    // with dozens of events per user in a single offline window.
+    for (let i = 0; i < 50; i++) {
+      captureBusinessError(new Error(`fetch failed ${i}`), {
+        feature: 'gold',
+        provider: 'internal',
+        action: 'fetch_gold_price_backend',
+        errorCode: 'network_error',
+      })
+    }
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT throttle captures with different fingerprints', () => {
+    captureBusinessError(new Error('a'), {
+      feature: 'gold',
+      provider: 'internal',
+      action: 'fetch_gold_price_backend',
+      errorCode: 'network_error',
+    })
+    captureBusinessError(new Error('b'), {
+      feature: 'gold',
+      provider: 'internal',
+      action: 'fetch_gold_price_backend',
+      errorCode: 'http_5xx',
+    })
+    captureBusinessError(new Error('c'), {
+      feature: 'earn',
+      provider: 'neeru',
+      action: 'close_position',
+      errorCode: 'LOW_POOL',
+    })
+    expect(Sentry.captureException).toHaveBeenCalledTimes(3)
   })
 })

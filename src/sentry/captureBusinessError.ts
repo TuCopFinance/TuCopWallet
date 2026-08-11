@@ -66,10 +66,36 @@ function normalizeErrorCode(errorCode: unknown): string | undefined {
   }
 }
 
+// In-memory throttle for identical fingerprints. Prevents pollers (gold
+// price fetch every 30s, positions refresh, etc.) from firing hundreds of
+// Sentry events per user session when the underlying condition is
+// persistent (device offline, backend circuit open). Same fingerprint fires
+// at most once per THROTTLE_WINDOW_MS. Sentry-side grouping already
+// collapses events into ONE issue; throttling reduces event volume so
+// count/rate dashboards stay readable and we do not blow through the
+// event quota during a Railway incident. Reset on app restart is
+// intentional: each fresh session should still surface at least one
+// event so persistent problems are visible.
+const THROTTLE_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
+const lastFiredByFingerprint = new Map<string, number>()
+
 export function captureBusinessError(error: unknown, context: BusinessContext): void {
   if (!SENTRY_ENABLED) return
   const err = error instanceof Error ? error : new Error(String(error))
   const normalizedErrorCode = normalizeErrorCode(context.errorCode)
+  const fingerprint = [
+    context.feature,
+    context.provider,
+    context.action,
+    normalizedErrorCode ?? 'unclassified',
+  ]
+  const key = fingerprint.join('|')
+  const now = Date.now()
+  const last = lastFiredByFingerprint.get(key)
+  if (last !== undefined && now - last < THROTTLE_WINDOW_MS) {
+    return
+  }
+  lastFiredByFingerprint.set(key, now)
   Sentry.withScope((scope) => {
     scope.setTags({
       feature: context.feature,
@@ -78,12 +104,13 @@ export function captureBusinessError(error: unknown, context: BusinessContext): 
       ...(normalizedErrorCode ? { errorCode: normalizedErrorCode } : {}),
     })
     if (context.extra) scope.setContext('business', context.extra)
-    scope.setFingerprint([
-      context.feature,
-      context.provider,
-      context.action,
-      normalizedErrorCode ?? 'unclassified',
-    ])
+    scope.setFingerprint(fingerprint)
     Sentry.captureException(err)
   })
+}
+
+// Test-only: reset the throttle table so unit tests can assert firing
+// behavior across "sessions" without needing to wait 5 minutes.
+export function _resetCaptureBusinessErrorThrottleForTests(): void {
+  lastFiredByFingerprint.clear()
 }
