@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Firebase stub resources — see Sentry TUCOPWALLET-8 crash chain.
+
+  The wallet's package.json pulls @react-native-firebase/app + analytics
+  transitively via @segment/analytics-react-native-plugin-firebase, which
+  brings the Android FirebaseInitProvider ContentProvider into the merged
+  manifest. On app startup that provider tries to read `google_app_id`
+  from res/values/; when it is missing FirebaseApp stays uninitialized,
+  and any later native module (e.g. @react-native-firebase/dynamic-links
+  onNewIntent, messaging listener, remote-config early access) that calls
+  FirebaseApp.getInstance() throws
+    IllegalStateException: Default FirebaseApp is not initialized in this process
+  — a fatal native crash that surfaced as Sentry TUCOPWALLET-8 (19 users
+  affected in the 1.118.10 rollout window, PENDING.md 2026-08-01 entry).
+
+  Providing a syntactically valid but placeholder `google_app_id` here
+  makes FirebaseInitProvider register a "default" FirebaseApp so
+  getInstance() returns an app object instead of throwing. Any JS-side
+  Firebase call that ends up hitting the network (dynamic links resolve,
+  remote-config fetch, etc) will fail with a JS-catchable 401/403
+  instead of a native uncaught IllegalStateException — the wallet's
+  FirebaseDisabledError guards (src/firebase/dynamicLinks.ts) already
+  handle those cases.
+
+  This is the Option C hotfix from PENDING.md — cheapest fix that stops
+  the crash bleed today. The strategic follow-up (Option A: wire real
+  Firebase project, or Option B: remove @react-native-firebase modules
+  outright since Firebase Dynamic Links is deprecated by Google in 2025)
+  stays open and is tracked in the same PENDING entry. Do not treat this
+  file as authorization to start using Firebase features from the app.
+
+  The format of `google_app_id` is the standard Firebase mobile app id:
+  `<project_number>:<platform_id>:<platform_short>:<app_hash>`. The
+  values below are 0-filled placeholders; they satisfy the parser but
+  do not point at any real Google project.
+-->
+<resources>
+    <string name="google_app_id" translatable="false">1:000000000000:android:0000000000000000000000</string>
+</resources>
