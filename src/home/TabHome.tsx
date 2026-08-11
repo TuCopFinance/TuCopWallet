@@ -268,6 +268,34 @@ function TabHome(_props: Props) {
           sides={{ bottom: false }} // Add this to specifically disable bottom shadow
         >
           <View style={[styles.containerShadow, styles.noBottomShadow]}>
+            {earthquakeDonationEnabled && (
+              // Donation card first so it is the very first entrypoint users
+              // see under the balance / quick actions. Placed above the swap
+              // card intentionally: pinning the campaign to the top of the
+              // list is the whole point of the always-visible surface (the
+              // popup is one-per-session, but the card has to earn a look
+              // every time someone scrolls Home).
+              <FlatCard
+                testID="FlatCard/EarthquakeDonation"
+                onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
+              >
+                <View style={styles.cardRow}>
+                  <View style={styles.cardIconBox}>
+                    <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+                  </View>
+                  <View style={styles.cardTextBox}>
+                    <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
+                    <Text style={styles.cardSubText}>
+                      {t('tabHome.earthquakeDonation.subtitle')}
+                    </Text>
+                    <Text style={styles.donationHighlight}>
+                      {t('tabHome.earthquakeDonation.highlight')}
+                    </Text>
+                  </View>
+                </View>
+              </FlatCard>
+            )}
+
             <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
               <View style={styles.cardRow}>
                 <View style={styles.cardIconBox}>
@@ -320,25 +348,6 @@ function TabHome(_props: Props) {
                 </View>
               </View>
             </FlatCard>
-
-            {earthquakeDonationEnabled && (
-              <FlatCard
-                testID="FlatCard/EarthquakeDonation"
-                onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
-              >
-                <View style={styles.cardRow}>
-                  <View style={styles.cardIconBox}>
-                    <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
-                  </View>
-                  <View style={styles.cardTextBox}>
-                    <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
-                    <Text style={styles.cardSubText}>
-                      {t('tabHome.earthquakeDonation.subtitle')}
-                    </Text>
-                  </View>
-                </View>
-              </FlatCard>
-            )}
 
             {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
               <View style={styles.row}>
@@ -648,6 +657,11 @@ const styles = StyleSheet.create({
     color: Colors.gray3,
     textAlign: 'right',
     marginTop: 2,
+  },
+  donationHighlight: {
+    ...typeScale.bodyXXSmall,
+    color: Colors.gray3,
+    textAlign: 'right',
   },
 })
 
