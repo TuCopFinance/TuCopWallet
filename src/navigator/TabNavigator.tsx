@@ -3,6 +3,7 @@ import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigatio
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TabActivity from 'src/home/TabActivity'
 import TabHome from 'src/home/TabHome'
 import Activity from 'src/icons/features/Activity'
@@ -13,17 +14,28 @@ import { StackParamList } from 'src/navigator/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import variables from 'src/styles/variables'
 import TabWallet from 'src/tokens/TabWallet'
 import HomeIcon from './HomeIcon.svg'
 
 const Tab = createBottomTabNavigator()
+
+// Base tab-bar height without accounting for the device's bottom safe area.
+// The full rendered height becomes TAB_BAR_BASE_HEIGHT + insets.bottom, so
+// on devices with an edge-to-edge display + gesture bar or 3-button nav
+// (Xiaomi 14T Pro, most modern Android, iPhones with the home indicator)
+// the labels stay above the system navigation area instead of overlapping.
+const TAB_BAR_BASE_HEIGHT = 56
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabNavigator>
 
 export default function TabNavigator({ route }: Props) {
   const initialScreen = route.params?.initialScreen ?? Screens.TabHome
   const { t } = useTranslation()
+  // Safe-area-aware bottom padding so the tab bar never sits under the
+  // system nav (Android edge-to-edge or iOS home indicator). Prior versions
+  // hardcoded 12/20 which overlapped the system nav on Xiaomi 14T Pro and
+  // felt tight on iPhones with the home indicator on smaller screens.
+  const insets = useSafeAreaInsets()
 
   return (
     <Tab.Navigator
@@ -38,10 +50,10 @@ export default function TabNavigator({ route }: Props) {
         tabBarItemStyle: styles.tabBarItem,
         tabBarAllowFontScaling: false,
         tabBarStyle: {
-          height: Platform.select({ ios: variables.height * 0.1, android: 65 }),
+          height: TAB_BAR_BASE_HEIGHT + insets.bottom,
           borderTopWidth: 0,
           backgroundColor: Colors.white,
-          paddingBottom: Platform.select({ ios: 20, android: 12 }),
+          paddingBottom: insets.bottom,
           elevation: 0,
           shadowOpacity: 0,
         },
