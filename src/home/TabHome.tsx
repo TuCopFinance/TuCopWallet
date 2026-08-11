@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -12,6 +12,8 @@ import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
 import Touchable from 'src/components/Touchable'
+import EarthquakeDonationSheet from 'src/donation/earthquake/EarthquakeDonationSheet'
+import { isEarthquakeDonationEnabled } from 'src/donation/earthquake/config'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
@@ -40,6 +42,13 @@ import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TabHome>
 
+// Module-level flag so the earthquake donation popup shows exactly ONCE
+// per JS session. Reset happens on native process kill (prod) and on JS
+// reload (dev), matching "cada apertura de la app" campaign spec. Any
+// remount of TabHome within the same session (tab switch, navigation
+// pop) does NOT re-trigger the popup.
+let earthquakeDonationShownThisSession = false
+
 function TabHome(_props: Props) {
   const { t } = useTranslation()
 
@@ -49,6 +58,18 @@ function TabHome(_props: Props) {
 
   const dispatch = useDispatch()
   const addCOPmBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const earthquakeDonationPopupRef = useRef<BottomSheetModalRefType>(null)
+  const earthquakeDonationCardRef = useRef<BottomSheetModalRefType>(null)
+  // Statsig gate is checked once on mount so a flag flip mid-session does
+  // not surprise a user with a sudden popup. Card visibility follows the
+  // same snapshot for consistency between the two surfaces.
+  const earthquakeDonationEnabled = useMemo(() => {
+    try {
+      return isEarthquakeDonationEnabled()
+    } catch {
+      return false
+    }
+  }, [])
 
   const [refreshing, setRefreshing] = React.useState(false)
 
@@ -85,6 +106,24 @@ function TabHome(_props: Props) {
       dispatch(refreshAllBalances())
     }
   }, [appState])
+
+  // Auto-open the Colombia earthquake donation popup once per app-open
+  // session. The module-level flag lives in this component's ref so it
+  // resets on JS reload (dev) + on native process kill (prod) — i.e.
+  // every fresh app start shows it again, per campaign copy. If the user
+  // dismisses or donates, the sheet closes and does not reappear until
+  // the app is killed and reopened.
+  useEffect(() => {
+    if (!earthquakeDonationEnabled) return
+    if (earthquakeDonationShownThisSession) return
+    earthquakeDonationShownThisSession = true
+    // Small delay so the sheet slides up after the tab's first render,
+    // otherwise it can collide with the initial layout animation.
+    const t = setTimeout(() => {
+      earthquakeDonationPopupRef.current?.snapToIndex(0)
+    }, 800)
+    return () => clearTimeout(t)
+  }, [earthquakeDonationEnabled])
 
   const COPmToken: any = useCOPm()
   const USDTToken = useUSDT()
@@ -282,6 +321,25 @@ function TabHome(_props: Props) {
               </View>
             </FlatCard>
 
+            {earthquakeDonationEnabled && (
+              <FlatCard
+                testID="FlatCard/EarthquakeDonation"
+                onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
+              >
+                <View style={styles.cardRow}>
+                  <View style={styles.cardIconBox}>
+                    <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+                  </View>
+                  <View style={styles.cardTextBox}>
+                    <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
+                    <Text style={styles.cardSubText}>
+                      {t('tabHome.earthquakeDonation.subtitle')}
+                    </Text>
+                  </View>
+                </View>
+              </FlatCard>
+            )}
+
             {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
               <View style={styles.row}>
                 <Withdraw />
@@ -293,6 +351,12 @@ function TabHome(_props: Props) {
       </ScrollView>
 
       <AddCOPmBottomSheet forwardedRef={addCOPmBottomSheetRef} />
+      {earthquakeDonationEnabled && (
+        <>
+          <EarthquakeDonationSheet forwardedRef={earthquakeDonationPopupRef} source="popup" />
+          <EarthquakeDonationSheet forwardedRef={earthquakeDonationCardRef} source="card" />
+        </>
+      )}
     </SafeAreaView>
   )
 }
