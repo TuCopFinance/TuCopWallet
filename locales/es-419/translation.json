@@ -3126,8 +3126,9 @@
       "subtitle": "Programa de ReFi Colombia"
     },
     "earthquakeDonation": {
-      "button": "Ayuda al terremoto en Colombia",
-      "subtitle": "Gestionado por ReFi Colombia — 0% comisión"
+      "button": "Dona al terremoto",
+      "subtitle": "Gestionado por ReFi Colombia",
+      "highlight": "0% comisión"
     },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
@@ -3137,20 +3138,28 @@
     }
   },
   "earthquakeDonation": {
-    "title": "Ayudemos a los damnificados del terremoto en Colombia",
-    "body": "El 10 de agosto de 2026 un sismo de magnitud 7.4 sacudió Colombia con epicentro en el Chocó. Miles de familias en Pereira, Cali, Manizales, Quibdó y otras ciudades perdieron sus hogares. Tus Pesos digitales llegan sin comisión (0%) y evitan el 4x1000. Los fondos son gestionados por ReFi Colombia.",
+    "title": "Ayuda a los damnificados de Colombia 🇨🇴",
     "matchHighlight": "Por cada 100 Pesos que dones, ReFi Colombia agrega {{percent}} Pesos más",
     "amountLabel": "Monto a donar",
     "yourDonation": "Tu donación",
     "refiMatch": "Match ReFi Colombia ({{percent}}%)",
     "totalImpact": "Impacto total",
     "insufficientBalance": "Saldo insuficiente. Tienes {{balance}}.",
-    "disclaimer": "0% de comisión, sin 4x1000. Verifica los fondos on-chain vía la Safe de ReFi Colombia.",
+    "disclaimer": "0% de comisión, sin 4x1000.\nVerificación on-chain en la Safe de ReFi Colombia.",
     "linkInstagram": "Instagram",
     "linkX": "X",
     "linkSafe": "Verificar Safe",
     "donateCta": "Donar",
     "notNow": "Ahora no"
+  },
+  "earthquakeDonationSuccess": {
+    "title": "¡Gracias por tu donación!",
+    "subtitle": "Tu ayuda ya está en camino a las familias afectadas.",
+    "amountLabel": "Donaste",
+    "followPrompt": "Síguenos en redes sociales para ver el avance de las ayudas.",
+    "followInstagram": "Instagram",
+    "followX": "X",
+    "continueCta": "Volver al inicio"
   },
   "reFiColombiaSubsidies": {
     "title": "Reclama tu Subsidio",
