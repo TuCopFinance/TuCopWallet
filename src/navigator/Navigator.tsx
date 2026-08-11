@@ -126,6 +126,7 @@ import TokenDetailsScreen from 'src/tokens/TokenDetails'
 import TokenImportScreen from 'src/tokens/TokenImport'
 import TransactionDetailsScreen from 'src/transactions/feed/TransactionDetailsScreen'
 import TransactionSuccessScreen from 'src/transactions/TransactionSuccessScreen'
+import EarthquakeDonationSuccessScreen from 'src/donation/earthquake/EarthquakeDonationSuccessScreen'
 import Logger from 'src/utils/Logger'
 import { ExtractProps } from 'src/utils/typescript'
 import VerificationCodeInputScreen from 'src/verify/VerificationCodeInputScreen'
@@ -514,6 +515,11 @@ const generalScreens = (Navigator: typeof Stack) => (
       name={Screens.TransactionSuccessScreen}
       component={TransactionSuccessScreen}
       options={TransactionSuccessScreen.navigationOptions}
+    />
+    <Navigator.Screen
+      name={Screens.EarthquakeDonationSuccessScreen}
+      component={EarthquakeDonationSuccessScreen}
+      options={EarthquakeDonationSuccessScreen.navigationOptions}
     />
     <Navigator.Screen
       name={Screens.GoldEducation}

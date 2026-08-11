@@ -3125,12 +3125,41 @@
       "button": "Reclama tu Subsidio",
       "subtitle": "Programa de ReFi Colombia"
     },
+    "earthquakeDonation": {
+      "button": "Dona al terremoto",
+      "subtitle": "Gestionado por ReFi Colombia",
+      "highlight": "0% comisión"
+    },
     "addCKESBottomSheet": {
       "addCKESFromCUSD": "Desde mi saldo USDT",
       "bySwapping": "Recargar tu billetara intercambiando desde tu USDT",
       "purchase": "Comprar COPm",
       "purchaseDescription": "Recargar tu billetara comprando a través de uno de nuestros proveedores de confianza"
     }
+  },
+  "earthquakeDonation": {
+    "title": "Ayuda a los damnificados de Colombia 🇨🇴",
+    "matchHighlight": "Por cada 100 Pesos que dones, ReFi Colombia agrega {{percent}} Pesos más",
+    "amountLabel": "Monto a donar",
+    "yourDonation": "Tu donación",
+    "refiMatch": "Match ReFi Colombia ({{percent}}%)",
+    "totalImpact": "Impacto total",
+    "insufficientBalance": "Saldo insuficiente. Tienes {{balance}}.",
+    "disclaimer": "0% de comisión, sin 4x1000.\nVerificación on-chain en la Safe de ReFi Colombia.",
+    "linkInstagram": "Instagram",
+    "linkX": "X",
+    "linkSafe": "Verificar Safe",
+    "donateCta": "Donar",
+    "notNow": "Ahora no"
+  },
+  "earthquakeDonationSuccess": {
+    "title": "¡Gracias por tu donación!",
+    "subtitle": "Tu ayuda ya está en camino a las familias afectadas.",
+    "amountLabel": "Donaste",
+    "followPrompt": "Síguenos en redes sociales para ver el avance de las ayudas.",
+    "followInstagram": "Instagram",
+    "followX": "X",
+    "continueCta": "Volver al inicio"
   },
   "reFiColombiaSubsidies": {
     "title": "Reclama tu Subsidio",
