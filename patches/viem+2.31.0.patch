@@ -1,5 +1,5 @@
 diff --git a/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js b/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
-index aa510c6..ec3e749 100644
+index aa510c6..814941b 100644
 --- a/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
 +++ b/node_modules/viem/_cjs/actions/public/waitForTransactionReceipt.js
 @@ -23,8 +23,8 @@ async function waitForTransactionReceipt(client, { confirmations = 1, hash, onRe
@@ -13,8 +13,20 @@ index aa510c6..ec3e749 100644
              reject(new transaction_js_1.WaitForTransactionReceiptTimeoutError({ hash }));
          }, timeout)
          : undefined;
+@@ -37,9 +37,9 @@ async function waitForTransactionReceipt(client, { confirmations = 1, hash, onRe
+             async onBlockNumber(blockNumber_) {
+                 const done = (fn) => {
+                     clearTimeout(timer);
+-                    _unwatch();
++                    if (typeof _unwatch === 'function') _unwatch();
+                     fn();
+-                    _unobserve();
++                    if (typeof _unobserve === 'function') _unobserve();
+                 };
+                 let blockNumber = blockNumber_;
+                 if (retrying)
 diff --git a/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js b/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
-index 166c4a5..579c248 100644
+index 166c4a5..66ccc35 100644
 --- a/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
 +++ b/node_modules/viem/_esm/actions/public/waitForTransactionReceipt.js
 @@ -60,8 +60,8 @@ timeout = 180_000, }) {
@@ -28,3 +40,15 @@ index 166c4a5..579c248 100644
              reject(new WaitForTransactionReceiptTimeoutError({ hash }));
          }, timeout)
          : undefined;
+@@ -74,9 +74,9 @@ timeout = 180_000, }) {
+             async onBlockNumber(blockNumber_) {
+                 const done = (fn) => {
+                     clearTimeout(timer);
+-                    _unwatch();
++                    if (typeof _unwatch === 'function') _unwatch();
+                     fn();
+-                    _unobserve();
++                    if (typeof _unobserve === 'function') _unobserve();
+                 };
+                 let blockNumber = blockNumber_;
+                 if (retrying)
