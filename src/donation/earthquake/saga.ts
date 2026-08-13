@@ -74,13 +74,41 @@ export function* executeEarthquakeDonationSaga(
       throw new Error('COPm token not present in feeCurrencies')
     }
 
-    const prepared = yield* call(prepareERC20TransferTransaction, {
+    let prepared = yield* call(prepareERC20TransferTransaction, {
       fromWalletAddress: walletAddress,
       toWalletAddress: destinationAddress,
       sendToken: copmToken as any,
       amount: amountWei,
       feeCurrencies,
     })
+
+    // When the user tries to donate their full COPm balance, prepare returns
+    // `need-decrease-spend-amount-for-gas` because the fee (paid in the same
+    // token via CIP-64) wouldn't leave room. Re-prepare with the reduced
+    // amount so the donation still goes through, just slightly smaller. The
+    // success screen shows the actual amount sent so the user sees the
+    // adjusted value on the receipt. Prior version threw generic "Prepared
+    // transactions not possible" and the sheet dead-ended with an error
+    // toast, dropping donations (TUCOPWALLET-11).
+    let effectiveAmountBn = amountBn
+    let effectiveAmountWei = amountWei
+    if (prepared.type === 'need-decrease-spend-amount-for-gas') {
+      effectiveAmountBn = prepared.decreasedSpendAmount
+      effectiveAmountWei = BigInt(
+        effectiveAmountBn.shiftedBy(18).integerValue(BigNumber.ROUND_DOWN).toFixed(0)
+      )
+      Logger.info(
+        TAG,
+        `Adjusted donation amount to leave room for gas: ${amountWhole} -> ${effectiveAmountBn.toString()} COPm`
+      )
+      prepared = yield* call(prepareERC20TransferTransaction, {
+        fromWalletAddress: walletAddress,
+        toWalletAddress: destinationAddress,
+        sendToken: copmToken as any,
+        amount: effectiveAmountWei,
+        feeCurrencies,
+      })
+    }
 
     if (prepared.type !== 'possible') {
       throw new Error(`Prepared transactions not possible: ${prepared.type}`)
@@ -99,7 +127,7 @@ export function* executeEarthquakeDonationSaga(
       networkId,
       type: TokenTransactionTypeV2.Sent,
       amount: {
-        value: amountBn.negated().toString(),
+        value: effectiveAmountBn.negated().toString(),
         tokenAddress: copmToken.address ?? undefined,
         tokenId,
       },
@@ -144,10 +172,13 @@ export function* executeEarthquakeDonationSaga(
     // silent transfer. Standard Sent + standby already covers this,
     // no extra dispatch needed here.
     vibrateSuccess()
-    Logger.info(TAG, `Donation success (${source}) tx=${receiptHash} amount=${amountWhole} COPm`)
+    Logger.info(
+      TAG,
+      `Donation success (${source}) tx=${receiptHash} amount=${effectiveAmountBn.toString()} COPm (requested ${amountWhole})`
+    )
 
     navigate(Screens.EarthquakeDonationSuccessScreen, {
-      amountWhole: amountBn.toString(),
+      amountWhole: effectiveAmountBn.toString(),
       transactionHash: receiptHash,
       networkId,
     })
