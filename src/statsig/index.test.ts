@@ -26,12 +26,14 @@ jest.mock('src/redux/store', () => ({ store: { getState: jest.fn() } }))
 jest.mock('src/utils/Logger')
 
 const mockCheckGate = jest.fn()
+const mockGetFeatureGate = jest.fn()
 const mockGetExperiment = jest.fn()
 const mockGetDynamicConfig = jest.fn()
 const mockUpdateUserAsync = jest.fn()
 
 const mockClient = {
   checkGate: mockCheckGate,
+  getFeatureGate: mockGetFeatureGate,
   getExperiment: mockGetExperiment,
   getDynamicConfig: mockGetDynamicConfig,
   updateUserAsync: mockUpdateUserAsync,
@@ -118,18 +120,33 @@ describe('Statsig helpers', () => {
 
   describe('getFeatureGate', () => {
     it('returns false if getting statsig feature gate throws error', () => {
-      mockCheckGate.mockImplementation(() => {
+      mockGetFeatureGate.mockImplementation(() => {
         throw new Error('mock error')
       })
       const output = getFeatureGate(StatsigFeatureGates.APP_REVIEW)
       expect(Logger.warn).toHaveBeenCalled()
       expect(output).toEqual(false)
     })
-    it('returns Statsig values if no error is thrown', () => {
-      mockCheckGate.mockImplementation(() => true)
+    it('returns Statsig value when SDK is initialized', () => {
+      mockGetFeatureGate.mockImplementation(() => ({
+        value: true,
+        details: { reason: 'Network' },
+      }))
       const output = getFeatureGate(StatsigFeatureGates.APP_REVIEW)
       expect(Logger.warn).not.toHaveBeenCalled()
       expect(output).toEqual(true)
+    })
+    it('returns default value when SDK is still Uninitialized (avoids freezing false at call sites)', () => {
+      mockGetFeatureGate.mockImplementation(() => ({
+        value: true,
+        details: { reason: 'Uninitialized' },
+      }))
+      // APP_REVIEW defaults to false, so we should get false even though
+      // the SDK returned true (because the reason is Uninitialized, meaning
+      // the SDK hasn't fetched real values yet).
+      const output = getFeatureGate(StatsigFeatureGates.APP_REVIEW)
+      expect(Logger.warn).not.toHaveBeenCalled()
+      expect(output).toEqual(false)
     })
   })
 

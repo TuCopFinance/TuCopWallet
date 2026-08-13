@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -13,7 +13,8 @@ import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
 import Touchable from 'src/components/Touchable'
 import EarthquakeDonationSheet from 'src/donation/earthquake/EarthquakeDonationSheet'
-import { isEarthquakeDonationEnabled } from 'src/donation/earthquake/config'
+import { useFeatureGate } from 'src/statsig/hooks'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
@@ -60,16 +61,15 @@ function TabHome(_props: Props) {
   const addCOPmBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const earthquakeDonationPopupRef = useRef<BottomSheetModalRefType>(null)
   const earthquakeDonationCardRef = useRef<BottomSheetModalRefType>(null)
-  // Statsig gate is checked once on mount so a flag flip mid-session does
-  // not surprise a user with a sudden popup. Card visibility follows the
-  // same snapshot for consistency between the two surfaces.
-  const earthquakeDonationEnabled = useMemo(() => {
-    try {
-      return isEarthquakeDonationEnabled()
-    } catch {
-      return false
-    }
-  }, [])
+  // Statsig gate is reactive so the popup + card become visible as soon as
+  // Statsig finishes loading its bundle, not stuck on the initial
+  // Uninitialized default. Prior version used useMemo([]) which froze the
+  // false value returned during SDK boot, so any gate created server-side
+  // AFTER the last cached bundle stayed hidden for the whole session even
+  // if the user force-closed and reopened.
+  const earthquakeDonationEnabled = useFeatureGate(
+    StatsigFeatureGates.SHOW_EARTHQUAKE_DONATION_2026_08
+  )
 
   const [refreshing, setRefreshing] = React.useState(false)
 

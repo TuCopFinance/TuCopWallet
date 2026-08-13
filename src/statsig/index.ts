@@ -166,7 +166,18 @@ export function getFeatureGate(featureGateName: StatsigFeatureGates) {
     if (!statsigClient) {
       return defaultValue
     }
-    return statsigClient.checkGate(featureGateName)
+    // Use the object form + check details.reason for 'Uninitialized' the same
+    // way getExperimentParams and _getDynamicConfigParams do. Prior version
+    // called .checkGate() which silently returned false while the SDK bundle
+    // was still fetching — combined with useMemo([]) at call sites, this
+    // froze the false value for the entire JS session, so any gate created
+    // after the last cached bundle stayed hidden until the user killed and
+    // reopened the app AND the fetch finished before TabHome mounted.
+    const gate = statsigClient.getFeatureGate(featureGateName)
+    if (!isE2EEnv && gate.details.reason === 'Uninitialized') {
+      return defaultValue
+    }
+    return gate.value
   } catch (error) {
     Logger.warn(TAG, `Error getting feature gate: ${featureGateName}`, error)
     return defaultValue
