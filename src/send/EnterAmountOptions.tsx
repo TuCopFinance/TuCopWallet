@@ -8,7 +8,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import Touchable from 'src/components/Touchable'
-import { captureUxSignalOnce } from 'src/sentry/captureUxSignal'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -106,25 +105,7 @@ export default function EnterAmountOptions({
     >
       <View style={styles.contentContainer} testID={testID}>
         {amountOptions.map(({ amount, label }) => (
-          <Touchable
-            borderRadius={100}
-            key={label}
-            onPress={() => {
-              // Post-release verification signal (see captureUxSignalOnce).
-              // Fires once per (flow, percentage) per session so we can query
-              // Sentry to confirm real users are hitting these chips on
-              // Android + iOS after the KeyboardAwareScrollView layout fix
-              // (PR #299). No PII, no amounts, no addresses. Percentage is
-              // encoded as an integer (25, 50, 75, 100) for readable tags.
-              const percentageTag = String(Math.round(amount * 100))
-              captureUxSignalOnce(
-                `ux.percentage_chip:${flow}:${percentageTag}`,
-                'percentage_chip_tap',
-                { flow, percentage: percentageTag }
-              )
-              onPressAmount(amount)
-            }}
-          >
+          <Touchable borderRadius={100} key={label} onPress={() => onPressAmount(amount)}>
             <View
               style={[
                 styles.chip,
