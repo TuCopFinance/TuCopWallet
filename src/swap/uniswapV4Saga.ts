@@ -47,6 +47,7 @@ import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import { safely } from 'src/utils/safely'
 import { publicClient } from 'src/viem'
+import { extractRevertReason } from 'src/viem/extractRevertSelector'
 import { prepareTransactions, PreparedTransactionsResult } from 'src/viem/prepareTransactions'
 import {
   getPreparedTransactions,
@@ -58,7 +59,7 @@ import networkConfig from 'src/web3/networkConfig'
 import { getConnectedUnlockedAccount } from 'src/web3/saga'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import { Address, encodeFunctionData, Hex, TypedDataDefinition } from 'viem'
+import { Address, encodeFunctionData, Hash, Hex, TypedDataDefinition } from 'viem'
 import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
 
 const TAG = 'swap/uniswapV4Saga'
@@ -311,7 +312,16 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
         })
         trackedTxs[trackedTxs.length - 1].txReceipt = receipt
         if (receipt.status !== 'success') {
-          throw new Error(`approve reverted: ${receipt.transactionHash}`)
+          // Tag the revert with the tx hash + block so the catch handler
+          // can replay via extractRevertReason for the 4-byte selector.
+          // Same pattern as gold/saga.ts (TUCOPWALLET-14 fix).
+          const revertError = new Error(`approve reverted: ${receipt.transactionHash}`) as Error & {
+            swapRevertedTxHash?: string
+            swapRevertedBlock?: string
+          }
+          revertError.swapRevertedTxHash = receipt.transactionHash
+          revertError.swapRevertedBlock = receipt.blockNumber?.toString()
+          throw revertError
         }
       }
     }
@@ -470,7 +480,15 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
 
     const swapTxReceipt = trackedTxs[trackedTxs.length - 1].txReceipt
     if (swapTxReceipt?.status !== 'success') {
-      throw new Error(`swap tx reverted: ${swapTxReceipt?.transactionHash}`)
+      const revertError = new Error(
+        `swap tx reverted: ${swapTxReceipt?.transactionHash}`
+      ) as Error & {
+        swapRevertedTxHash?: string
+        swapRevertedBlock?: string
+      }
+      revertError.swapRevertedTxHash = swapTxReceipt?.transactionHash
+      revertError.swapRevertedBlock = swapTxReceipt?.blockNumber?.toString()
+      throw revertError
     }
 
     yield* put(
@@ -537,12 +555,35 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
       ...getSwapTxsReceiptAnalyticsProperties(trackedTxs, networkId, tokensById),
       error: error.message,
     })
+    // Enrich the Sentry event with the on-chain revert selector when the
+    // failure landed on-chain (TUCOPWALLET-Y). Backend can map selectors
+    // like 0x39d35496 (V3TooLittleReceived) or 0x8b063d73 (V4Slippage) to
+    // named errors without needing every Uniswap ABI bundled here.
+    const revertTx = (error as Error & { swapRevertedTxHash?: string }).swapRevertedTxHash
+    const revertBlock = (error as Error & { swapRevertedBlock?: string }).swapRevertedBlock
+    let revertSelector: string | undefined
+    let revertReason: string | undefined
+    if (revertTx) {
+      const decoded = yield* call(extractRevertReason, revertTx as Hash)
+      if (decoded) {
+        revertSelector = decoded.selector
+        revertReason = decoded.reason
+      }
+    }
+    const errorCode = revertTx ? 'reverted_onchain' : classifyError(error).kind
     captureBusinessError(error, {
       feature: 'swap',
       provider: 'uniswap-v4',
       action: 'execute',
-      errorCode: classifyError(error).kind,
-      extra: { swapType, submitted },
+      errorCode,
+      extra: {
+        swapType,
+        submitted,
+        ...(revertTx ? { revertedTxHash: revertTx } : {}),
+        ...(revertBlock ? { revertedBlock: revertBlock } : {}),
+        ...(revertSelector ? { revertSelector } : {}),
+        ...(revertReason ? { revertReason } : {}),
+      },
     })
   }
 }
