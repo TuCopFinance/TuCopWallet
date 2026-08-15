@@ -317,9 +317,16 @@ export const lastKnownTokenBalancesSelector = createSelector(
 export const tokensWithUsdValueSelector = createSelector(
   (state: RootState, networkIds: NetworkId[]) => tokensListSelector(state, networkIds),
   (tokens) => {
-    return tokens.filter((tokenInfo) =>
-      tokenInfo.balance.multipliedBy(tokenInfo.priceUsd ?? 0).gt(STABLE_TRANSACTION_MIN_AMOUNT)
-    ) as TokenBalanceWithPriceUsd[]
+    return tokens.filter((tokenInfo) => {
+      // Fall back to lastKnownPriceUsd when the fresh priceUsd is null (backend
+      // /api/prices fetch flaked or the value is stale). Prior version filtered
+      // tokens out entirely when the current price was missing, so users with
+      // real on-chain balance saw an empty wallet whenever the price service
+      // hiccupped (Oppo Reno 14F user report 2026-08-14 on 1.118.11 —
+      // dollars invisible in the balance card AND in TabWallet).
+      const effectivePrice = tokenInfo.priceUsd ?? tokenInfo.lastKnownPriceUsd ?? new BigNumber(0)
+      return tokenInfo.balance.multipliedBy(effectivePrice).gt(STABLE_TRANSACTION_MIN_AMOUNT)
+    }) as TokenBalanceWithPriceUsd[]
   }
 )
 

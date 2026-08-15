@@ -264,11 +264,19 @@ export function useDollarTokensWithBalance(): Array<{
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const filtered = tokens.filter((t) => {
     if (!DOLLAR_TOKEN_IDS.has(t.tokenId)) return false
-    const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+    // Stablecoins are 1:1 USD by design. If the fresh price is missing
+    // (backend price fetch flaked) fall back to lastKnownPriceUsd and then
+    // to 1.0. Prior version filtered dollar tokens out entirely when the
+    // fresh price was null, so users with real on-chain balance saw no
+    // dollar card and no dollar row in wallet (Oppo Reno 14F user report
+    // 2026-08-14 on 1.118.11).
+    const effectivePrice = t.priceUsd ?? t.lastKnownPriceUsd ?? new BigNumber(1)
+    const usdValue = t.balance.multipliedBy(effectivePrice)
     return usdValue.gt(STABLE_TRANSACTION_MIN_AMOUNT)
   })
   return sortDollarTokensForPicker(filtered).map((t) => {
-    const usdValue = t.balance.multipliedBy(t.priceUsd ?? 0)
+    const effectivePrice = t.priceUsd ?? t.lastKnownPriceUsd ?? new BigNumber(1)
+    const usdValue = t.balance.multipliedBy(effectivePrice)
     const localValue = usdToLocalRate ? usdValue.multipliedBy(usdToLocalRate) : new BigNumber(0)
     return { tokenInfo: t, usdValue, localValue }
   })

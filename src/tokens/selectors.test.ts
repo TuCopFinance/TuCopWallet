@@ -436,7 +436,11 @@ describe('tokensByUsdBalanceSelector', () => {
 })
 
 describe('tokensWithUsdValueSelector', () => {
-  it('returns only the tokens that have a USD balance', () => {
+  it('returns tokens with USD balance including those with stale priceUsd (uses lastKnownPriceUsd as fallback)', () => {
+    // The 0x5 token has fresh priceUsd=null but lastKnownPriceUsd=500 in the
+    // fixture, so it's included at 50 * 500 = 25000 USD. Prior behavior
+    // filtered it out entirely, hiding real user balance whenever the price
+    // service was flaky. See tokensWithUsdValueSelector.
     const tokens = tokensWithUsdValueSelector(state, [NetworkId['celo-mainnet']])
     expect(tokens).toMatchInlineSnapshot(`
       [
@@ -467,6 +471,17 @@ describe('tokensWithUsdValueSelector', () => {
           "priceFetchedAt": 1588200517518,
           "priceUsd": "10",
           "tokenId": "celo-mainnet:0x1",
+        },
+        {
+          "address": "0x5",
+          "balance": "50",
+          "lastKnownPriceUsd": "500",
+          "minimumAppVersionToSwap": "1.10.0",
+          "name": "0x5 token",
+          "networkId": "celo-mainnet",
+          "priceFetchedAt": 1588027717518,
+          "priceUsd": null,
+          "tokenId": "celo-mainnet:0x5",
         },
       ]
     `)
