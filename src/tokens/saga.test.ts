@@ -108,19 +108,28 @@ describe('getTokensInfo', () => {
   beforeEach(() => {
     mockFetch.resetMocks()
   })
-  it('returns only CKES and CUSD payload if response OK', async () => {
+  it('filters to allowed token IDs and overrides null/NaN priceUsd to 1 for USD stablecoins', async () => {
     mockFetch.mockResponseOnce(
       JSON.stringify({
-        [networkConfig.copmTokenId]: 'COPm token info',
-        [networkConfig.usdtTokenId]: 'USDT token info',
-        'celo-mainnet:native': 'CELO token info',
+        [networkConfig.copmTokenId]: { symbol: 'COPm', priceUsd: null },
+        [networkConfig.usdtTokenId]: { symbol: 'USDT', priceUsd: null },
+        [networkConfig.usdcTokenId]: { symbol: 'USDC', priceUsd: '1' },
+        [networkConfig.usdmTokenId]: { symbol: 'USDm', priceUsd: 'NaN' },
+        'celo-mainnet:native': { symbol: 'CELO', priceUsd: '0.5' },
       })
     )
 
     const result = await getTokensInfo([NetworkId['celo-mainnet']])
+    // USDT/USDm had null/NaN priceUsd upstream: overridden to '1'.
+    // USDC had '1' already: passes through unchanged.
+    // COPm is NOT in the dollar-peg override list (COP-pegged, not USD),
+    // so its null priceUsd stays null; UI derives its "Pesos" value from
+    // balance directly, not USD price.
     expect(result).toEqual({
-      [networkConfig.copmTokenId]: 'COPm token info',
-      [networkConfig.usdtTokenId]: 'USDT token info',
+      [networkConfig.copmTokenId]: { symbol: 'COPm', priceUsd: null },
+      [networkConfig.usdtTokenId]: { symbol: 'USDT', priceUsd: '1' },
+      [networkConfig.usdcTokenId]: { symbol: 'USDC', priceUsd: '1' },
+      [networkConfig.usdmTokenId]: { symbol: 'USDm', priceUsd: '1' },
     })
   })
   it('throws if request does not complete within timeout', async () => {

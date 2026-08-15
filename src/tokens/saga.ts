@@ -81,17 +81,39 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
       return acc
     }, {} as StoredTokenBalances)
 
-  // USAT priceUsd override: the upstream Valora backend has USAT metadata but
-  // returns priceUsd as "NaN" (no oracle hooked up). USAT is 1:1 USD pegged
-  // by design (Anchorage Digital, GENIUS Act, 100% T-bills + cash). Real spot
-  // ~$0.998, rounding error <0.2% for a wallet display.
-  // TODO: remove this block once api.mainnet.valora.xyz publishes a real priceUsd.
-  const usatTokenId = networkConfig.usatTokenId
-  if (usatTokenId && filtered[usatTokenId]) {
-    const usat = filtered[usatTokenId]!
-    const priceUsdNum = Number(usat.priceUsd)
-    if (!Number.isFinite(priceUsdNum)) {
-      filtered[usatTokenId] = { ...usat, priceUsd: '1' }
+  // Dollar stablecoin priceUsd override: the upstream Valora backend at
+  // api.mainnet.valora.xyz has been intermittently returning priceUsd as
+  // null (or "NaN") for all Celo stablecoins including USDT, USDC, USDm/cUSD,
+  // USAT. When that happens the wallet displays "Precio no disponible" and
+  // hides every dollar balance from the balance card + wallet list, so users
+  // with real on-chain funds see nothing (Oppo Reno 14F + iPhone user reports
+  // 2026-08-14 on 1.118.11).
+  //
+  // Every listed token here is 1:1 USD by design so a hardcoded fallback of
+  // 1.0 is safe (max drift <0.2% for USDT / USDC, Mento stables track by
+  // design). Only fires when the upstream price is missing or non-finite so
+  // a real market rate always wins.
+  //
+  // COPm/cCOP is NOT in this list because it's pegged to Colombian peso,
+  // not USD. Its "Pesos" display comes from the balance directly, so a null
+  // priceUsd doesn't hide the card the same way.
+  //
+  // TODO: remove this block once the upstream backend publishes real prices.
+  const dollarPegTokenIds = [
+    networkConfig.usatTokenId,
+    networkConfig.usdtTokenId,
+    networkConfig.usdcTokenId,
+    networkConfig.usdmTokenId,
+  ].filter(Boolean) as string[]
+  for (const tokenId of dollarPegTokenIds) {
+    const token = filtered[tokenId]
+    if (!token) continue
+    // null/undefined + "NaN" both need the override. Number(null) is 0
+    // (finite) so a plain isFinite check would miss the common case where
+    // the upstream returned a JSON null.
+    const priceUsdNum = token.priceUsd == null ? NaN : Number(token.priceUsd)
+    if (!Number.isFinite(priceUsdNum) || priceUsdNum <= 0) {
+      filtered[tokenId] = { ...token, priceUsd: '1' }
     }
   }
 
