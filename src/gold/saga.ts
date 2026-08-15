@@ -46,11 +46,12 @@ import { ensureError } from 'src/utils/ensureError'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { safely } from 'src/utils/safely'
 import { publicClient } from 'src/viem'
+import { extractRevertReason } from 'src/viem/extractRevertSelector'
 import { getPreparedTransactions } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { getNetworkFromNetworkId } from 'src/web3/utils'
 import { call, put, select, takeEvery, takeLeading } from 'typed-redux-saga'
-import { decodeFunctionData, erc20Abi } from 'viem'
+import { Hash, decodeFunctionData, erc20Abi } from 'viem'
 
 const TAG = 'gold/saga'
 
@@ -343,6 +344,20 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     // block without parsing message strings that go through piiScrub.
     const revertTx = (error as Error & { goldRevertedTxHash?: string }).goldRevertedTxHash
     const revertBlock = (error as Error & { goldRevertedBlock?: string }).goldRevertedBlock
+    // When we have a reverted tx hash, replay it via eth_call at the same
+    // block to recover the 4-byte custom-error selector (or a short revert
+    // reason for plain revert strings). Ships to Sentry as structured
+    // extras so backend can map the selector to a contract error name
+    // (Squid, Uniswap, ERC20) without needing every ABI on the wallet.
+    let revertSelector: string | undefined
+    let revertReason: string | undefined
+    if (revertTx) {
+      const decoded = yield* call(extractRevertReason, revertTx as Hash)
+      if (decoded) {
+        revertSelector = decoded.selector
+        revertReason = decoded.reason
+      }
+    }
     const errorCode = revertTx ? 'reverted_onchain' : classifyError(error).kind
     captureBusinessError(error, {
       feature: 'gold',
@@ -354,6 +369,8 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
         fromTokenId,
         ...(revertTx ? { revertedTxHash: revertTx } : {}),
         ...(revertBlock ? { revertedBlock: revertBlock } : {}),
+        ...(revertSelector ? { revertSelector } : {}),
+        ...(revertReason ? { revertReason } : {}),
       },
     })
   }
@@ -563,6 +580,15 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     // sell reverts by hash + block from Sentry extras.
     const revertTx = (error as Error & { goldRevertedTxHash?: string }).goldRevertedTxHash
     const revertBlock = (error as Error & { goldRevertedBlock?: string }).goldRevertedBlock
+    let revertSelector: string | undefined
+    let revertReason: string | undefined
+    if (revertTx) {
+      const decoded = yield* call(extractRevertReason, revertTx as Hash)
+      if (decoded) {
+        revertSelector = decoded.selector
+        revertReason = decoded.reason
+      }
+    }
     const errorCode = revertTx ? 'reverted_onchain' : classifyError(error).kind
     captureBusinessError(error, {
       feature: 'gold',
@@ -574,6 +600,8 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
         toTokenId,
         ...(revertTx ? { revertedTxHash: revertTx } : {}),
         ...(revertBlock ? { revertedBlock: revertBlock } : {}),
+        ...(revertSelector ? { revertSelector } : {}),
+        ...(revertReason ? { revertReason } : {}),
       },
     })
   }
