@@ -16,10 +16,19 @@ const HASH_RE = /\b0x[a-fA-F0-9]{64}\b/g
 // (e.g. "large deposit") can still be attached explicitly via context tags.
 const LARGE_NUMBER_RE = /\b\d{15,}\b/g
 
+// Tx / block hashes are public on-chain. Preserving prefix + suffix lets
+// support paste the shortened form into Celoscan search (which matches on
+// prefix) or look up the tx by suffix if they already know a range, while
+// still preventing casual correlation to a wallet address. Format matches
+// the wallet's own UI convention (0xABCD...WXYZ).
+function shortenHash(match: string): string {
+  return `${match.slice(0, 6)}...${match.slice(-4)}`
+}
+
 export function scrubString(input: string): string {
   return input
     .replace(ADDRESS_RE, '<addr>')
-    .replace(HASH_RE, '<hash>')
+    .replace(HASH_RE, shortenHash)
     .replace(LARGE_NUMBER_RE, '<amount>')
 }
 

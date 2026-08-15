@@ -11,11 +11,15 @@ describe('scrubString', () => {
 
   it('replaces every EVM address in a sentence', () => {
     const line = `${ADDR} -> ${ADDR.toLowerCase()} on tx ${TX_HASH}`
-    expect(scrubString(line)).toBe('<addr> -> <addr> on tx <hash>')
+    expect(scrubString(line)).toBe(
+      `<addr> -> <addr> on tx ${TX_HASH.slice(0, 6)}...${TX_HASH.slice(-4)}`
+    )
   })
 
-  it('replaces a 64-char tx hash without falsely matching the 40-char address inside it', () => {
-    expect(scrubString(`hash=${TX_HASH}`)).toBe('hash=<hash>')
+  it('shortens a 64-char tx hash to prefix..suffix so support can look it up on-chain', () => {
+    expect(scrubString(`hash=${TX_HASH}`)).toBe(
+      `hash=${TX_HASH.slice(0, 6)}...${TX_HASH.slice(-4)}`
+    )
   })
 
   it('replaces large wei amounts', () => {
@@ -46,7 +50,7 @@ describe('scrubDeep', () => {
     }
     const out = scrubDeep(input)
     expect(out.message).toBe('deposit from <addr>')
-    expect(out.breadcrumbs[0].data.txHash).toBe('<hash>')
+    expect(out.breadcrumbs[0].data.txHash).toBe(`${TX_HASH.slice(0, 6)}...${TX_HASH.slice(-4)}`)
     expect(out.breadcrumbs[0].data.amount).toBe('<amount>')
     expect(out.breadcrumbs[1].data.addressList).toEqual(['<addr>', '<addr>'])
     expect(out.tags.user).toBe('<addr>')
@@ -90,7 +94,7 @@ describe('scrubSensitiveStrings', () => {
     }
     const scrubbed = scrubSensitiveStrings(event) as typeof event
     expect(scrubbed.exception.values[0].value).toBe(
-      'send failed for <addr>, tx <hash>, amount <amount>'
+      `send failed for <addr>, tx ${TX_HASH.slice(0, 6)}...${TX_HASH.slice(-4)}, amount <amount>`
     )
     expect(scrubbed.breadcrumbs[0].message).toBe('dispatched from <addr>')
     expect(scrubbed.extra.originalAmount).toBe('<amount>')
