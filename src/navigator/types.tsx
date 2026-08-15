@@ -304,6 +304,11 @@ export type StackParamList = {
       transactionHash: string
     }>
   }
+  [Screens.EarthquakeDonationSuccessScreen]: {
+    amountWhole: string
+    transactionHash: string
+    networkId: NetworkId
+  }
   [Screens.UpgradeScreen]: undefined
   [Screens.ValidateRecipientIntro]: ValidateRecipientParams
   [Screens.ValidateRecipientAccount]: ValidateRecipientParams
