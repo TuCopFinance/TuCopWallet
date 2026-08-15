@@ -3,7 +3,7 @@ import { useLogger } from '@react-navigation/devtools'
 import { NavigationContainer, NavigationState } from '@react-navigation/native'
 import * as React from 'react'
 import { useMemo } from 'react'
-import { Linking, Platform, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import SplashScreen from 'react-native-splash-screen'
 import ShakeForSupport from 'src/account/ShakeForSupport'
@@ -14,7 +14,7 @@ import UpgradeScreen from 'src/app/UpgradeScreen'
 import { activeScreenChanged } from 'src/app/actions'
 import { getAppLocked } from 'src/app/selectors'
 import { useDeepLinks } from 'src/app/useDeepLinks'
-import { APP_STORE_ID, DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
+import { DEV_RESTORE_NAV_STATE_ON_RELOAD } from 'src/config'
 import { useAppUpdateChecker } from 'src/hooks/useAppUpdateChecker'
 import {
   navigateClearingStack,
@@ -31,6 +31,7 @@ import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs } from 'src/statsig/types'
 import appTheme from 'src/styles/appTheme'
 import Logger from 'src/utils/Logger'
+import { navigateToAppStore } from 'src/utils/appUpdateChecker'
 import { userInSanctionedCountrySelector } from 'src/utils/countryFeatures'
 import { isVersionBelowMinimum } from 'src/utils/versionCheck'
 
@@ -103,17 +104,6 @@ export const NavigatorWrapper = () => {
       })
     }
   }, [updateInfo])
-
-  // URL de actualización para fallback (mover fuera de la condición)
-  const upgradeUrl = React.useMemo(() => {
-    // Usar la misma lógica que en appUpdateChecker para consistencia
-    if (Platform.OS === 'ios') {
-      return `https://apps.apple.com/app/id${APP_STORE_ID}`
-    } else {
-      const bundleId = DeviceInfo.getBundleId()
-      return `https://play.google.com/store/apps/details?id=${bundleId}`
-    }
-  }, [])
 
   // Force upgrade only when device version is below Statsig minRequiredVersion.
   // The local Statsig check is a fallback for when the store-version fetch fails.
@@ -218,15 +208,12 @@ export const NavigatorWrapper = () => {
     // Navigation container ready
   }
 
-  // Función para navegar a la tienda de aplicaciones
-  const navigateToAppStore = () => {
-    if (updateInfo?.downloadUrl) {
-      void Linking.openURL(updateInfo.downloadUrl)
-    } else {
-      // Fallback al sistema existente
-      void Linking.openURL(upgradeUrl)
-    }
-  }
+  // Upgrade taps route through the imported navigateToAppStore helper (see
+  // src/utils/appUpdateChecker.ts) which uses itms-apps:// on iOS +
+  // play.google.com on Android with proper fallbacks. The previous local
+  // wrapper called raw Linking.openURL on the classic apps.apple.com URL,
+  // which iOS 26 rejects (TUCOPWALLET-V/T) and Android would open in a
+  // browser instead of Play Store.
 
   if (shouldForceUpgrade) {
     // The MainStackScreen effect that normally calls SplashScreen.hide() never
@@ -237,8 +224,7 @@ export const NavigatorWrapper = () => {
       <UpgradeScreen
         updateInfo={updateInfo || undefined}
         onUpdate={() => {
-          // Usar función de navegación del nuevo sistema
-          navigateToAppStore()
+          void navigateToAppStore()
         }}
       />
     )
@@ -262,8 +248,7 @@ export const NavigatorWrapper = () => {
               <UpgradeScreen
                 updateInfo={updateInfo || undefined}
                 onUpdate={() => {
-                  // Usar función de navegación del nuevo sistema
-                  navigateToAppStore()
+                  void navigateToAppStore()
                 }}
               />
             ) : (
