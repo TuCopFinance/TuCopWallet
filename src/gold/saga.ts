@@ -267,7 +267,22 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
     })
 
     if (txReceipt.status !== 'success') {
-      throw new Error(`Gold buy transaction reverted: ${swapTxHash}`)
+      // Tag the error with the tx hash + block on the error itself so the
+      // catch handler can extract them and pass to captureBusinessError as
+      // explicit extras. The generic string form gets scrubbed to
+      // prefix..suffix by piiScrub, which is OK for support lookup, but the
+      // .goldRevertedTxHash / .goldRevertedBlock tags survive the scrub as
+      // structured fields and let backend classify reverts without parsing
+      // messages (TUCOPWALLET-14 root-cause requires cross-referencing the
+      // reverted tx on-chain to know if it was slippage, liquidity, or a
+      // stale approval).
+      const revertError = new Error(`Gold buy transaction reverted: ${swapTxHash}`) as Error & {
+        goldRevertedTxHash?: string
+        goldRevertedBlock?: string
+      }
+      revertError.goldRevertedTxHash = swapTxHash
+      revertError.goldRevertedBlock = txReceipt.blockNumber?.toString()
+      throw revertError
     }
 
     yield* put(buyGoldSuccess({ txHash: swapTxHash }))
@@ -323,12 +338,23 @@ function* buyGoldSaga(action: PayloadAction<GoldBuyInfo>) {
       amount: fromAmount,
       error: error.message,
     })
+    // Extract on-chain revert tags added by the throw above; keep them as
+    // structured extras so backend can look up the reverted tx by hash +
+    // block without parsing message strings that go through piiScrub.
+    const revertTx = (error as Error & { goldRevertedTxHash?: string }).goldRevertedTxHash
+    const revertBlock = (error as Error & { goldRevertedBlock?: string }).goldRevertedBlock
+    const errorCode = revertTx ? 'reverted_onchain' : classifyError(error).kind
     captureBusinessError(error, {
       feature: 'gold',
       provider: 'squid',
       action: 'buy_gold_execute',
-      errorCode: classifyError(error).kind,
-      extra: { fromAmount, fromTokenId },
+      errorCode,
+      extra: {
+        fromAmount,
+        fromTokenId,
+        ...(revertTx ? { revertedTxHash: revertTx } : {}),
+        ...(revertBlock ? { revertedBlock: revertBlock } : {}),
+      },
     })
   }
 }
@@ -484,7 +510,16 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
     })
 
     if (txReceipt.status !== 'success') {
-      throw new Error(`Gold sell transaction reverted: ${swapTxHash}`)
+      // See buyGoldSaga above: attach revert tags so the catch handler can
+      // surface them as structured Sentry extras (survives piiScrub as
+      // first-class fields, not just parsed from a scrubbed message string).
+      const revertError = new Error(`Gold sell transaction reverted: ${swapTxHash}`) as Error & {
+        goldRevertedTxHash?: string
+        goldRevertedBlock?: string
+      }
+      revertError.goldRevertedTxHash = swapTxHash
+      revertError.goldRevertedBlock = txReceipt.blockNumber?.toString()
+      throw revertError
     }
 
     yield* put(sellGoldSuccess({ txHash: swapTxHash }))
@@ -524,12 +559,22 @@ function* sellGoldSaga(action: PayloadAction<GoldSellInfo>) {
       amount: xautAmount,
       error: error.message,
     })
+    // Same revert-tag extraction as buyGoldSaga so backend can classify
+    // sell reverts by hash + block from Sentry extras.
+    const revertTx = (error as Error & { goldRevertedTxHash?: string }).goldRevertedTxHash
+    const revertBlock = (error as Error & { goldRevertedBlock?: string }).goldRevertedBlock
+    const errorCode = revertTx ? 'reverted_onchain' : classifyError(error).kind
     captureBusinessError(error, {
       feature: 'gold',
       provider: 'squid',
       action: 'sell_gold_execute',
-      errorCode: classifyError(error).kind,
-      extra: { xautAmount, toTokenId },
+      errorCode,
+      extra: {
+        xautAmount,
+        toTokenId,
+        ...(revertTx ? { revertedTxHash: revertTx } : {}),
+        ...(revertBlock ? { revertedBlock: revertBlock } : {}),
+      },
     })
   }
 }
