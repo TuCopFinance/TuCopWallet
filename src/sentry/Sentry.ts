@@ -52,6 +52,39 @@ export const sentryRoutingInstrumentation: ReturnType<typeof Sentry.reactNavigat
     },
   })
 
+// Drops transient network / timeout events that reached the global handler
+// without a business tag. captureBusinessError sets feature/provider/action
+// tags, so an event without any of them is either an unhandled rejection or
+// something wrapped by the RN error boundary. AbortError and network-request-
+// failed under those conditions is user-cancelled or offline noise, already
+// surfaced to the user via a toast, and pollutes Sentry with tens of events
+// per user per session.
+function isUntaggedTransientNoise(event: {
+  exception?: { values?: Array<{ type?: string; value?: string }> }
+  tags?: Record<string, unknown> | null
+}): boolean {
+  const values = event.exception?.values
+  if (!values || values.length === 0) return false
+  const tags = event.tags ?? {}
+  const hasBusinessTag =
+    typeof tags === 'object' &&
+    (tags.feature != null || tags.provider != null || tags.action != null)
+  if (hasBusinessTag) return false
+  return values.some((v) => {
+    const type = v.type ?? ''
+    const value = v.value ?? ''
+    if (type === 'AbortError' || value.includes('AbortError') || value === 'Aborted') return true
+    if (
+      value.includes('Network request failed') ||
+      value.includes('The network connection was lost') ||
+      value.includes('The Internet connection appears to be offline')
+    ) {
+      return true
+    }
+    return false
+  })
+}
+
 // Initialize Sentry early, before App component mounts
 // This prevents the "Sentry.wrap called before Sentry.init" warning
 export function initializeSentryEarly() {
@@ -105,6 +138,17 @@ export function initializeSentryEarly() {
     ],
     tracesSampleRate: 0.2, // Default sample rate, can be updated later
     beforeSend: (event) => {
+      // Drop noise-only events that leaked to the global handler instead of
+      // being intentionally captured via captureBusinessError (which adds
+      // feature/provider/action tags). These are user-cancelled fetches
+      // (AbortError from AbortController.abort()) or offline blips
+      // ("Network request failed" / "The network connection was lost"),
+      // both of which are already handled at the UI layer with a toast and
+      // do not represent a bug. Filter is scoped tightly to un-tagged events
+      // so we do not accidentally drop captureBusinessError'd timeouts.
+      if (isUntaggedTransientNoise(event)) {
+        return null
+      }
       const scrubbed = scrubSensitiveStrings(event)
       if (!scrubbed) return null
       // Belt-and-suspenders: even with sendDefaultPii=false the SDK can attach
