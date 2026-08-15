@@ -180,7 +180,13 @@ describe('gold/api', () => {
       expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'fallback_hardcoded')
     })
 
-    it('captures a business error with the classified HTTP error code when backend returns 5xx', async () => {
+    it('does NOT capture a business error when backend fails but DIA fallback succeeds', async () => {
+      // Behaviour change (2026-08-15): the primary error is only surfaced
+      // to Sentry when the DIA fallback ALSO fails. Firing on every
+      // primary-only failure produced hundreds of events per user per day
+      // during backend outages even though the end-to-end flow recovered.
+      // A breadcrumb is added instead (not asserted here since Sentry is
+      // mocked, but see src/gold/api.ts for the addBreadcrumb call).
       mockFetchWithTimeout
         .mockResolvedValueOnce(jsonResponse({}, false, 502))
         .mockResolvedValueOnce(
@@ -196,12 +202,31 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
+      expect(mockCaptureBusinessError).not.toHaveBeenCalled()
+    })
+
+    it('captures both backend and DIA errors only when the fallback also fails', async () => {
+      mockFetchWithTimeout
+        .mockResolvedValueOnce(jsonResponse({}, false, 502))
+        .mockResolvedValueOnce(jsonResponse({}, false, 503))
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await expect(fetchGoldPriceFromApi()).rejects.toThrow('All XAUt price APIs failed')
+
       expect(mockCaptureBusinessError).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
           feature: 'transactions',
           provider: 'internal',
           action: 'fetch_gold_price_backend',
+        })
+      )
+      expect(mockCaptureBusinessError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          feature: 'transactions',
+          provider: 'internal',
+          action: 'fetch_gold_price_dia',
         })
       )
     })

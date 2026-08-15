@@ -185,6 +185,7 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   }
 
   // Try TuCop backend proxy first
+  let primaryError: any = null
   try {
     const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
@@ -205,16 +206,28 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
       staleAgeSeconds: priceData.staleAgeSeconds ?? 0,
     })
     return priceData
-  } catch (primaryError: any) {
-    Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
-    captureBusinessError(primaryError, {
-      feature: 'transactions',
-      provider: 'internal',
-      action: 'fetch_gold_price_backend',
-      errorCode: isCircuitBreakerError(primaryError)
-        ? 'circuit_open'
-        : classifyHttpError(primaryError),
-    })
+  } catch (err: any) {
+    primaryError = err
+    Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', err.message)
+    // Only add a breadcrumb here. Firing captureBusinessError before we know
+    // whether the DIA fallback will succeed sends a Sentry event per user
+    // per poll cycle for a completely recovered flow. We defer to the end:
+    // fire only when the fallback ALSO fails (real user-visible failure).
+    if (SENTRY_ENABLED) {
+      try {
+        Sentry.addBreadcrumb({
+          category: 'gold_price',
+          level: 'warning',
+          message: 'TuCop backend gold price failed, trying DIA',
+          data: {
+            error: err.message,
+            errorCode: isCircuitBreakerError(err) ? 'circuit_open' : classifyHttpError(err),
+          },
+        })
+      } catch {
+        // Sentry not initialized (tests); ignore.
+      }
+    }
   }
 
   // Fallback to DIA Data
@@ -226,6 +239,19 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
     return priceData
   } catch (fallbackError: any) {
     Logger.error(TAG, 'DIA API also failed', fallbackError.message)
+    // Both sources failed: only NOW is it a real user-visible degradation
+    // (the app will render the hardcoded price). Fire both so the dashboard
+    // can distinguish "backend down + DIA down" from "backend down + DIA ok".
+    if (primaryError) {
+      captureBusinessError(primaryError, {
+        feature: 'transactions',
+        provider: 'internal',
+        action: 'fetch_gold_price_backend',
+        errorCode: isCircuitBreakerError(primaryError)
+          ? 'circuit_open'
+          : classifyHttpError(primaryError),
+      })
+    }
     captureBusinessError(fallbackError, {
       feature: 'transactions',
       provider: 'internal',
