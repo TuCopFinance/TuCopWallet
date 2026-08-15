@@ -5,7 +5,8 @@ import { dynamic, throwError } from 'redux-saga-test-plan/providers'
 import { call, select } from 'redux-saga/effects'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AppEvents } from 'src/analytics/Events'
-import { getMultichainFeatures } from 'src/statsig'
+import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import {
   fetchImportedTokenBalances,
@@ -107,6 +108,7 @@ const fetchBalancesResponse = {
 describe('getTokensInfo', () => {
   beforeEach(() => {
     mockFetch.resetMocks()
+    ;(getFeatureGate as jest.Mock).mockReset()
   })
   it('filters to allowed token IDs and overrides null/NaN priceUsd to 1 for USD stablecoins', async () => {
     mockFetch.mockResponseOnce(
@@ -142,6 +144,28 @@ describe('getTokensInfo', () => {
     )
     expect(Logger.error).toHaveBeenCalledTimes(1)
     jest.useFakeTimers()
+  })
+  it('routes to legacy Valora cloud function when USE_TUCOP_BACKEND_TOKENS_INFO gate is OFF', async () => {
+    ;(getFeatureGate as jest.Mock).mockImplementation((gate: StatsigFeatureGates) =>
+      gate === StatsigFeatureGates.USE_TUCOP_BACKEND_TOKENS_INFO ? false : false
+    )
+    mockFetch.mockResponseOnce(JSON.stringify({}))
+    await getTokensInfo([NetworkId['celo-mainnet']])
+    const calledUrl = mockFetch.mock.calls[0][0] as string
+    expect(calledUrl).toContain('api.mainnet.valora.xyz/getTokensInfoWithPrices')
+    expect(calledUrl).not.toContain('tucop-backend')
+    expect(calledUrl).toContain('networkIds=celo-mainnet')
+  })
+  it('routes to TuCop backend when USE_TUCOP_BACKEND_TOKENS_INFO gate is ON', async () => {
+    ;(getFeatureGate as jest.Mock).mockImplementation(
+      (gate: StatsigFeatureGates) => gate === StatsigFeatureGates.USE_TUCOP_BACKEND_TOKENS_INFO
+    )
+    mockFetch.mockResponseOnce(JSON.stringify({}))
+    await getTokensInfo([NetworkId['celo-mainnet']])
+    const calledUrl = mockFetch.mock.calls[0][0] as string
+    expect(calledUrl).toContain('tucop-backend-production.up.railway.app/api/tokens/info')
+    expect(calledUrl).not.toContain('valora.xyz')
+    expect(calledUrl).toContain('networkIds=celo-mainnet')
   })
 })
 describe(fetchTokenBalancesSaga, () => {

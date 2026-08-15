@@ -22,7 +22,7 @@ import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import { publicClient } from 'src/viem'
-import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
+import networkConfig, { networkIdToNetwork, resolveTokensInfoUrl } from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { call, put, select, spawn, take } from 'typed-redux-saga'
 import { Address, erc20Abi, getContract } from 'viem'
@@ -64,8 +64,12 @@ export async function fetchTokenBalancesForAddressByTokenId(address: string) {
 }
 
 export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<StoredTokenBalances> {
+  // resolveTokensInfoUrl reads Statsig at call time so the source can be
+  // flipped between the legacy Valora cloud function and the TuCop backend
+  // replacement without a wallet release. Gate default OFF keeps Valora as
+  // the source until backend soak completes.
   const response = await fetchWithTimeout(
-    `${networkConfig.getTokensInfoUrl}?networkIds=${supportedNetworks.join(',')}`
+    `${resolveTokensInfoUrl()}?networkIds=${supportedNetworks.join(',')}`
   )
   if (!response.ok) {
     Logger.error(TAG, `Failure response fetching token info: ${response}`)

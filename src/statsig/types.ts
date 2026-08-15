@@ -63,6 +63,15 @@ export enum StatsigFeatureGates {
   // (default), neither surface renders — safe to keep this always ready
   // to enable/disable server-side without a release.
   SHOW_EARTHQUAKE_DONATION_2026_08 = 'show_earthquake_donation_2026_08',
+  // Runtime switch for the token catalog + price source. When ON, the wallet
+  // reads /api/tokens/info from the TuCop backend (multi-source stack: DIA
+  // -> CoinGecko -> Mento oracle -> hardcoded 1.0). When OFF (default), the
+  // wallet keeps hitting the legacy Valora cloud function inherited from the
+  // fork (api.mainnet.valora.xyz/getTokensInfoWithPrices) which has been
+  // returning priceUsd: null for all Celo stablecoins as of 2026-08-14.
+  // Kept as a gate + default OFF so backend can validate the new endpoint
+  // in prod with individual overrides / ramp % before flipping to 100%.
+  USE_TUCOP_BACKEND_TOKENS_INFO = 'use_tucop_backend_tokens_info',
 }
 
 export enum StatsigExperiments {

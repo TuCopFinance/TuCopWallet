@@ -195,6 +195,10 @@ const ALLOWED_MTW_IMPLEMENTATIONS_MAINNET: Address[] = [
 const CURRENT_MTW_IMPLEMENTATION_ADDRESS_MAINNET: Address =
   '0x6511FB5DBfe95859d8759AdAd5503D656E2555d7'
 
+// Legacy token catalog + prices from api.mainnet.valora.xyz. Inherited from
+// the pre-fork Valora cloud function stack. Still the default because the
+// TuCop backend replacement is under validation. See resolveTokensInfoUrl
+// below for the runtime switch.
 const GET_TOKENS_INFO_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getTokensInfoWithPrices`
 
 const FETCH_EXCHANGES_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getExchanges`
@@ -244,6 +248,31 @@ const TUCOP_BACKEND_BASE_URL =
 const GET_SWAP_QUOTE_URL = `${TUCOP_BACKEND_BASE_URL}/api/swap/quote`
 
 const HOOKS_API_URL_MAINNET = `${TUCOP_BACKEND_BASE_URL}/hooks-api`
+
+// TuCop backend replacement for the Valora legacy getTokensInfoWithPrices.
+// Same response shape (Record<tokenId, StoredTokenBalance>). Backend
+// multi-source stack (DIA -> CoinGecko -> Mento oracle -> hardcoded 1.0)
+// fixes the upstream null-priceUsd bug that hid dollar cards on 1.118.11.
+// Wire is live but gated OFF by default (USE_TUCOP_BACKEND_TOKENS_INFO)
+// until backend confirms XAUt0 address and stables are stable across a
+// soak window. Consumers must call resolveTokensInfoUrl() at runtime; do
+// NOT read either URL directly from new call sites.
+const GET_TUCOP_TOKENS_INFO_URL = `${TUCOP_BACKEND_BASE_URL}/api/tokens/info`
+
+// Runtime resolver: reads the Statsig gate at call time so backend can
+// flip the source without a wallet release. Kept out of the exported
+// NetworkConfig struct (which is a build-time snapshot) so the gate value
+// is always fresh on every call.
+export function resolveTokensInfoUrl(): string {
+  // Lazy require here to break the import cycle: statsig/index imports
+  // networkConfig for BATCH_EXECUTOR_ADDRESS_CELO / networkIdToNetwork, so
+  // pulling getFeatureGate at the top of this file would loop at bundle
+  // time and leave one side undefined at module init.
+  const { getFeatureGate } = require('src/statsig')
+  const { StatsigFeatureGates } = require('src/statsig/types')
+  const useTucopBackend = getFeatureGate(StatsigFeatureGates.USE_TUCOP_BACKEND_TOKENS_INFO)
+  return useTucopBackend ? GET_TUCOP_TOKENS_INFO_URL : GET_TOKENS_INFO_URL_MAINNET
+}
 
 const GET_NFTS_BY_OWNER_ADDRESS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getNfts`
 
