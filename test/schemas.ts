@@ -3663,6 +3663,7 @@ export const v244Schema = {
     goldPriceFetchedAt: null,
     goldPriceIsStale: false,
     goldPriceStaleAgeSeconds: 0,
+    goldPriceProviderSource: undefined,
     buyStatus: 'idle',
     sellStatus: 'idle',
     priceFetchStatus: 'idle',

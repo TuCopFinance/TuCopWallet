@@ -69,6 +69,21 @@ export const goldPriceIsStaleSelector = (state: RootState) => state.gold.goldPri
 export const goldPriceStaleAgeSecondsSelector = (state: RootState) =>
   state.gold.goldPriceStaleAgeSeconds
 
+// Provider that produced the last successful backend price fetch. Populated
+// from the backend response's x-provider-source header (fallback body.source)
+// as of 2026-08-16 (backend main sha ecc931d). UI treats `hardcoded` and
+// `stale-cache` as degraded signals worth badging even when isStale itself
+// is not set (backend flags a degraded response via provider source alone
+// when it did not have to hit the 24h post-waterfall cache).
+export const goldPriceProviderSourceSelector = (state: RootState) =>
+  state.gold.goldPriceProviderSource
+export const goldPriceIsDegradedSelector = (state: RootState) => {
+  const source = state.gold.goldPriceProviderSource
+  if (source === 'hardcoded' || source === 'stale-cache') return true
+  if (state.gold.goldPriceIsStale && state.gold.goldPriceStaleAgeSeconds > 300) return true
+  return false
+}
+
 // Operation status selectors
 export const goldBuyStatusSelector = (state: RootState) => state.gold.buyStatus
 
