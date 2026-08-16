@@ -301,6 +301,80 @@ describe('gold/api', () => {
       expect(mockSetTag).toHaveBeenCalledWith('gold_price_stale_age_bucket', expectedBucket)
     })
 
+    it('parses the x-provider-source header when backend serves a healthy fresh price', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'dia',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('dia')
+    })
+
+    it('falls back to body.source when x-provider-source header is absent', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({
+          symbol: 'XAUT0',
+          vs: 'usd',
+          priceUsd: 4355.31,
+          asOf: 'x',
+          source: 'mento',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('mento')
+    })
+
+    it('leaves providerSource undefined when both header and body field are absent', async () => {
+      // Backwards compatibility with older backends that predate the
+      // 2026-08-16 provider-source signal (main sha ecc931d).
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBeUndefined()
+    })
+
+    it('ignores unknown provider source values and leaves providerSource undefined', async () => {
+      // If backend adds a new provider without coordinating the wallet
+      // change, the raw string must never reach the UI or Sentry as a
+      // tag. Fall back to undefined; a Logger.warn is emitted alongside
+      // (not asserted here because jest.isolateModules gives the module a
+      // fresh Logger instance the outer spy cannot see).
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'unknown-provider',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBeUndefined()
+    })
+
+    it('recognises the stale-cache provider source as a degraded signal', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'stale-cache',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('stale-cache')
+    })
+
     it('tags errorCode=circuit_open when the wallet circuit breaker short-circuits the request', async () => {
       // The circuit breaker in fetchWithTimeout returns a synthetic 503 whose
       // statusText contains 'Service Unavailable (circuit open)'. The code

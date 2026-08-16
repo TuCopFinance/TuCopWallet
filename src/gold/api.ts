@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native'
 import { SENTRY_ENABLED } from 'src/config'
-import { GoldPriceData } from 'src/gold/types'
+import { GoldPriceData, GoldPriceProviderSource } from 'src/gold/types'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -30,12 +30,40 @@ const FALLBACK_GOLD_PRICE: GoldPriceData = {
   timestamp: Date.now(),
 }
 
-// TuCop backend price endpoint response format
+// TuCop backend price endpoint response format. Backend added `source` +
+// the parallel `x-provider-source` header on 2026-08-16 (backend main sha
+// ecc931d, PRs #205/#206) so the wallet can distinguish healthy fresh
+// (dia/coingecko/cmc/mento) from degraded (hardcoded/stale-cache). Older
+// backends omit both, in which case parseProviderSource returns undefined.
 export interface TucopXautPriceResponse {
   symbol: string
   vs: string
   priceUsd: number
   asOf: string
+  source?: string
+}
+
+// Locked to the 6 values backend documents. New backend values fall
+// through to undefined + a Logger.warn so an unrecognised source never
+// leaks to Sentry tags or the UI as a raw string. Update this list in
+// lockstep with backend when they add a provider.
+const KNOWN_PROVIDER_SOURCES: readonly GoldPriceProviderSource[] = [
+  'dia',
+  'coingecko',
+  'cmc',
+  'mento',
+  'hardcoded',
+  'stale-cache',
+]
+
+function parseProviderSource(raw: string | null | undefined): GoldPriceProviderSource | undefined {
+  if (raw == null || raw === '') return undefined
+  const normalized = raw.toLowerCase().trim()
+  if ((KNOWN_PROVIDER_SOURCES as readonly string[]).includes(normalized)) {
+    return normalized as GoldPriceProviderSource
+  }
+  Logger.warn(TAG, `Unknown gold price provider source "${raw}"; ignoring`)
+  return undefined
 }
 
 // DIA Data response format
@@ -133,12 +161,23 @@ async function fetchFromTucopBackend(): Promise<GoldPriceData> {
   const isStale = response.headers.get('X-Stale') === 'true'
   const staleAgeSeconds = isStale ? Number(response.headers.get('X-Stale-Age') ?? 0) : 0
 
+  // Backend confirms header + body.source carry the same value (main sha
+  // ecc931d, 2026-08-16); the duplication is a "pick per parsing
+  // preference" convenience for clients that lean on headers vs body.
+  // We prefer the header (fetch spec makes it case-insensitive on both
+  // ends, and it survives JSON schema drift) and fall back to body.source
+  // as a defensive guard if a future CDN hop ever strips the header.
+  const providerSource =
+    parseProviderSource(response.headers.get('x-provider-source')) ??
+    parseProviderSource(data.source)
+
   return {
     priceUsd: data.priceUsd,
     price24hChange: 0,
     timestamp: Date.now(),
     isStale,
     staleAgeSeconds,
+    providerSource,
   }
 }
 
