@@ -18,6 +18,20 @@ async function requestPhoneNumber() {
   let phoneNumber
   try {
     if (Platform.OS === 'android') {
+      // react-native-sms-retriever@1.1.1 wraps the deprecated Google Play
+      // Services Auth Credentials API. That API creates a PendingIntent
+      // without FLAG_IMMUTABLE / FLAG_MUTABLE, which crashes with
+      // IllegalArgumentException on Android 12+ (SDK 31+, "S+").
+      // See TUCOPWALLET-10: 13 events / 6 users, native crash in
+      // me.furtado.smsretriever -> Auth.CredentialsApi -> PendingIntent
+      // .getActivity. Library is unmaintained (last release 2019) and the
+      // fix would require porting to the new Identity API. Guard here
+      // instead: skip auto-fill on Android 12+ and let the user type the
+      // number manually (the field is still editable, we just do not
+      // pre-populate). Android <=11 keeps the historical auto-fill path.
+      if (typeof Platform.Version === 'number' && Platform.Version >= 31) {
+        return
+      }
       phoneNumber = await SmsRetriever.requestPhoneNumber()
     } else {
       // eslint-disable-next-line no-console
