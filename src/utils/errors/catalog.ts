@@ -27,14 +27,14 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
   {
     test: (e) => includes(e, 'not-enough-balance-for-amount'),
     publicMessageKey: 'errors.public.insufficient_balance',
-    publicMessageFallback: 'Saldo insuficiente para esta operacion',
+    publicMessageFallback: 'Saldo insuficiente para esta operación',
     severity: 'warning',
   },
   {
     test: (e) =>
       includes(e, 'not-enough-balance-for-gas') || includes(e, 'insufficient funds for gas'),
     publicMessageKey: 'errors.public.insufficient_gas',
-    publicMessageFallback: 'Saldo insuficiente para la comision de red',
+    publicMessageFallback: 'Saldo insuficiente para la comisión de red',
     severity: 'warning',
   },
   {
@@ -44,7 +44,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'user denied') ||
       includes(e, 'cancelled by user'),
     publicMessageKey: 'errors.public.user_rejected',
-    publicMessageFallback: 'Operacion cancelada',
+    publicMessageFallback: 'Operación cancelada',
     severity: 'info',
   },
   {
@@ -54,7 +54,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'fetch failed') ||
       includes(e, 'econnrefused'),
     publicMessageKey: 'errors.public.network_error',
-    publicMessageFallback: 'Sin conexion a internet',
+    publicMessageFallback: 'Sin conexión a internet',
     severity: 'warning',
   },
   {
@@ -73,7 +73,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'execution reverted') ||
       includes(e, 'contract revert'),
     publicMessageKey: 'errors.public.contract_revert',
-    publicMessageFallback: 'La operacion fue rechazada por la red',
+    publicMessageFallback: 'La operación fue rechazada por la red',
     severity: 'error',
   },
   {
@@ -82,7 +82,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'signing failed') ||
       includes(e, 'failed to sign'),
     publicMessageKey: 'errors.public.signing_failed',
-    publicMessageFallback: 'No pudimos firmar la transaccion',
+    publicMessageFallback: 'No pudimos firmar la transacción',
     severity: 'error',
   },
   {
@@ -91,7 +91,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'invalid address') ||
       includes(e, 'invalid checksum'),
     publicMessageKey: 'errors.public.invalid_address',
-    publicMessageFallback: 'Direccion invalida',
+    publicMessageFallback: 'Dirección inválida',
     severity: 'warning',
   },
   {
@@ -103,7 +103,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
   {
     test: (e) => includes(e, 'slippage') && (includes(e, 'exceeded') || includes(e, 'too high')),
     publicMessageKey: 'errors.public.slippage_exceeded',
-    publicMessageFallback: 'El precio cambio demasiado, intenta de nuevo',
+    publicMessageFallback: 'El precio cambió demasiado, intenta de nuevo',
     severity: 'warning',
   },
   {
@@ -113,7 +113,7 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'unauthorized') ||
       includes(e, 'http 401'),
     publicMessageKey: 'errors.public.session_expired',
-    publicMessageFallback: 'Sesion expirada, vuelve a iniciar',
+    publicMessageFallback: 'Sesión expirada, vuelve a iniciar',
     severity: 'warning',
   },
   {
@@ -122,26 +122,26 @@ export const ERROR_CATALOG: ErrorMatcher[] = [
       includes(e, 'camera permission') ||
       includes(e, 'contacts permission'),
     publicMessageKey: 'errors.public.permission_required',
-    publicMessageFallback: 'Permisos del telefono requeridos',
+    publicMessageFallback: 'Permisos del teléfono requeridos',
     severity: 'warning',
   },
   {
     test: (e) => includes(e, 'qr') && (includes(e, 'invalid') || includes(e, 'parse')),
     publicMessageKey: 'errors.public.invalid_qr',
-    publicMessageFallback: 'QR invalido',
+    publicMessageFallback: 'QR inválido',
     severity: 'warning',
   },
   {
     test: (e) =>
       includes(e, 'failed to load') || includes(e, 'could not fetch') || includes(e, 'http 500'),
     publicMessageKey: 'errors.public.load_failed',
-    publicMessageFallback: 'No pudimos cargar tu informacion',
+    publicMessageFallback: 'No pudimos cargar tu información',
     severity: 'warning',
   },
 ]
 
 export const GENERIC_FALLBACK: Omit<ClassifiedError, 'technical'> = {
   publicMessageKey: 'errors.public.generic',
-  publicMessageFallback: 'Algo no salio como esperabamos',
+  publicMessageFallback: 'Algo no salió como esperábamos',
   severity: 'error',
 }
