@@ -82,7 +82,7 @@
     "copy": "Copiar al portapapeles",
     "mnemonicCopied": "Frase de recuperación copiada",
     "bottomSheet": {
-      "title": "Cómo guardar la frase de recuparación",
+      "title": "Cómo guardar la frase de recuperación",
       "writeDownPhrase": "Anotar la frase de recuperación en un papel y almacenarla en un lugar seguro es una de las opciones más segura para resguardar tu wallet.",
       "phraseLocation": "El mejor lugar para guardarla es junto a otra documentación importante, de modo que no se pierda o te la roben fácilmente. ¡Tú eliges!"
     }
@@ -523,7 +523,7 @@
   "missingFullName": "El nombre no puede estar vacío",
   "invalidPhone": "Número de teléfono inválido",
   "needMoreFundsToSend": "Debes tener {{amountNeeded}} {{currencySymbol}} para realizar esta transacción. Agrega fondos a tu cuenta o intenta enviar un monto menor.",
-  "invalidAmount": "Monto invalido",
+  "invalidAmount": "Monto inválido",
   "invalidCode": "Código inválido",
   "confirm": "Confirmar",
   "readCodesAuto": "Leer códigos automáticamente",
@@ -594,7 +594,7 @@
   "unknown": "Desconocido",
   "emptyList": "Vaciar lista",
   "timeframes": {
-    "30d": "30 dias"
+    "30d": "30 días"
   },
   "message": "Mensaje",
   "addressLookupFailure": "Error al buscar la dirección del número de teléfono",
@@ -1286,7 +1286,7 @@
   },
   "noTransactionActivity": "Aquí verás tu actividad",
   "noExchangeActivity": "Aquí verás tu actividad",
-  "maybeLater": "Quizas mas tarde",
+  "maybeLater": "Quizás más tarde",
   "balanceNeedUpdating": "Es necesario actualizar el saldo",
   "refreshBalances": "Actualizar saldos",
   "escrowedPaymentReminder": "Invitaciones pendientes",
@@ -1927,7 +1927,7 @@
       "infoDismissButton": "Entendido",
       "fees": "Tarifas",
       "feePaidIn": "Pagada en",
-      "serviceFee": "Tarifa de operacion ({{percentage}}%)",
+      "serviceFee": "Tarifa de operación ({{percentage}}%)",
       "feesCalculationError": "No es posible calcular las tarifas",
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",
@@ -2954,15 +2954,15 @@
   "neeruVaults": {
     "categories": {
       "flexible": "Flexible",
-      "thirtyDays": "30 dias",
-      "sixtyDays": "60 dias",
-      "ninetyDays": "90 dias"
+      "thirtyDays": "30 días",
+      "sixtyDays": "60 días",
+      "ninetyDays": "90 días"
     },
     "cardSubtitle": {
       "flexible": "Flexible",
-      "thirtyDays": "Deposito a 30 dias",
-      "sixtyDays": "Deposito a 60 dias",
-      "ninetyDays": "Deposito a 90 dias"
+      "thirtyDays": "Depósito a 30 días",
+      "sixtyDays": "Depósito a 60 días",
+      "ninetyDays": "Depósito a 90 días"
     },
     "explainer": {
       "close": "Cerrar",
@@ -2984,33 +2984,33 @@
       }
     },
     "detail": {
-      "header": "Tus depositos {{categoryLabel}}",
+      "header": "Tus depósitos {{categoryLabel}}",
       "aggregateBalance": "Total en {{categoryLabel}}: {{amount}} Pesos",
       "monthlyRate": "{{rate, number(maximumFractionDigits: 2)}}% mensual",
       "depositCta": "Depositar",
       "descriptionByCategory": {
-        "flexible": "Retira en cualquier momento, sin tiempo minimo",
-        "thirtyDays": "Bloquea tus Pesos 30 dias a una tasa mas alta",
-        "sixtyDays": "Bloquea tus Pesos 60 dias a una tasa mas alta",
-        "ninetyDays": "Bloquea tus Pesos 90 dias a la tasa mas alta"
+        "flexible": "Retira en cualquier momento, sin tiempo mínimo",
+        "thirtyDays": "Bloquea tus Pesos 30 días a una tasa más alta",
+        "sixtyDays": "Bloquea tus Pesos 60 días a una tasa más alta",
+        "ninetyDays": "Bloquea tus Pesos 90 días a la tasa más alta"
       },
       "emptyState": {
         "rateEyebrow": "Tasa estimada",
-        "rateValueEa": "{{percentage}}% al ano",
+        "rateValueEa": "{{percentage}}% al año",
         "rateEquivalentMv": "Equivale a {{percentage}}% al mes",
-        "howItWorksHeader": "Como funciona",
+        "howItWorksHeader": "Cómo funciona",
         "step1": "Depositas tus Pesos desde tu wallet.",
-        "step2": "Empieza a generar intereses 24 horas despues del deposito.",
+        "step2": "Empieza a generar intereses 24 horas después del depósito.",
         "step3Flexible": "Retiras cuando quieras, sin costo.",
         "step3Fixed": "Retiras al vencimiento del plazo. Retiro anticipado disponible con penalidad sobre los intereses.",
-        "trustNote": "Sin bancos ni empresas de por medio. Solo tu controlas tu deposito."
+        "trustNote": "Sin bancos ni empresas de por medio. Sólo tú controlas tu depósito."
       }
     },
     "positionRow": {
       "amount": "Depositado: {{amount}} Pesos",
       "interest": "Ganado: {{amount}} Pesos",
       "availableAt": "Disponible el {{date}}",
-      "flexible": "Sin tiempo minimo",
+      "flexible": "Sin tiempo mínimo",
       "depositedAt": "Depositado el {{date}}",
       "manageCta": "Administrar",
       "processingBadge": "Procesando",
@@ -3020,59 +3020,59 @@
     },
     "positionCard": {
       "capital": "Capital",
-      "interestEarned": "Interes ganado",
+      "interestEarned": "Interés ganado",
       "pesosAmount": "{{amount}} Pesos",
       "rate": "Tasa",
       "annualRate": "{{percentage}}% E.A.",
       "monthlyRate": "Equivale a {{percentage}}% M.V.",
       "maturity": "Disponible",
       "maturityFlexible": "En cualquier momento",
-      "maturityDays_one": "En {{count}} dia ({{date}})",
-      "maturityDays_other": "En {{count}} dias ({{date}})"
+      "maturityDays_one": "En {{count}} día ({{date}})",
+      "maturityDays_other": "En {{count}} días ({{date}})"
     },
     "myPoolsSections": {
       "flexible": "Pesos Flexible",
-      "thirtyDays": "Pesos a 30 dias",
-      "sixtyDays": "Pesos a 60 dias",
-      "ninetyDays": "Pesos a 90 dias"
+      "thirtyDays": "Pesos a 30 días",
+      "sixtyDays": "Pesos a 60 días",
+      "ninetyDays": "Pesos a 90 días"
     },
     "closeSheet": {
-      "title": "Retira tu deposito",
-      "currentPayout": "Recibiras",
+      "title": "Retira tu depósito",
+      "currentPayout": "Recibirás",
       "amountLabel": "Depositado",
       "interestLabel": "Intereses ganados",
-      "penaltyLabel": "Comision por retiro temprano ({{percentage}}% sobre los intereses)",
+      "penaltyLabel": "Comisión por retiro temprano ({{percentage}}% sobre los intereses)",
       "totalLabel": "Total",
-      "earlyWarning": "Estas retirando antes del {{date}}. La comision se aplica solo al interes, nunca al deposito.",
-      "flexUnder24hWarning_one": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} hora mas para completar tu primer dia.",
-      "flexUnder24hWarning_other": "Si retiras ahora no ganas intereses (el fondo Flexible paga por dias completos). Espera aproximadamente {{count}} horas mas para completar tu primer dia.",
+      "earlyWarning": "Estás retirando antes del {{date}}. La comisión se aplica sólo al interés, nunca al depósito.",
+      "flexUnder24hWarning_one": "Si retiras ahora no ganas intereses (el fondo Flexible paga por días completos). Espera aproximadamente {{count}} hora más para completar tu primer día.",
+      "flexUnder24hWarning_other": "Si retiras ahora no ganas intereses (el fondo Flexible paga por días completos). Espera aproximadamente {{count}} horas más para completar tu primer día.",
       "confirmCta": "Confirmar retiro",
-      "amountOnlyCta": "Retirar solo mi deposito (sin intereses)",
-      "depositMoreCta": "Haz otro deposito"
+      "amountOnlyCta": "Retirar sólo mi depósito (sin intereses)",
+      "depositMoreCta": "Haz otro depósito"
     },
     "emergencyCloseSheet": {
       "title": "Retiro de emergencia",
       "subtitle": "El fondo no puede pagar intereses en este momento",
-      "explanation": "Puedes recuperar tu deposito de {{amount}} Pesos ahora, pero perderas los {{interest}} Pesos de interes que generaste. Esta accion no se puede revertir.",
+      "explanation": "Puedes recuperar tu depósito de {{amount}} Pesos ahora, pero perderás los {{interest}} Pesos de interés que generaste. Esta acción no se puede revertir.",
       "alternative": "Si puedes esperar, el fondo se recupera generalmente en unas horas.",
-      "primaryCta": "Esperar e intentar despues",
-      "secondaryCta": "Retirar solo el deposito",
+      "primaryCta": "Esperar e intentar después",
+      "secondaryCta": "Retirar sólo el depósito",
       "confirmAgain": "Toca de nuevo para confirmar"
     },
     "errors": {
-      "fetchPositionsFailed": "No pudimos cargar tus depositos. Desliza hacia abajo para reintentar.",
+      "fetchPositionsFailed": "No pudimos cargar tus depósitos. Desliza hacia abajo para reintentar.",
       "closeFailed": "No pudimos procesar el retiro. Intenta de nuevo.",
-      "unknown": "Algo salio mal. Intenta de nuevo.",
-      "invalidCategory": "Categoria invalida.",
-      "invalidAmount": "Monto invalido.",
+      "unknown": "Algo salió mal. Intenta de nuevo.",
+      "invalidCategory": "Categoría inválida.",
+      "invalidAmount": "Monto inválido.",
       "amountBelowMin": "El monto es menor al mínimo permitido para este depósito.",
-      "depositsPaused": "Los depositos estan temporalmente pausados.",
-      "globalCapExceeded": "El fondo esta lleno. Intenta mas tarde.",
-      "categoryCapExceeded": "Esta opcion esta llena. Prueba otra o intenta mas tarde.",
-      "rateNotSet": "Esta opcion no esta disponible en este momento.",
-      "positionStale": "Actualiza tus depositos y reintenta.",
-      "positionAlreadyClosed": "Este deposito ya fue cerrado.",
-      "serviceUnavailable": "El servicio no esta disponible en este momento. Intenta mas tarde."
+      "depositsPaused": "Los depósitos están temporalmente pausados.",
+      "globalCapExceeded": "El fondo está lleno. Intenta más tarde.",
+      "categoryCapExceeded": "Esta opción está llena. Prueba otra o intenta más tarde.",
+      "rateNotSet": "Esta opción no está disponible en este momento.",
+      "positionStale": "Actualiza tus depósitos y reintenta.",
+      "positionAlreadyClosed": "Este depósito ya fue cerrado.",
+      "serviceUnavailable": "El servicio no está disponible en este momento. Intenta más tarde."
     }
   },
   "global": {
@@ -3284,7 +3284,7 @@
       "youReceive": "Recibes",
       "goldPrice": "Precio del Oro",
       "networkFee": "Tarifa de Red",
-      "serviceFee": "Tarifa de operacion ({{percentage}}%)",
+      "serviceFee": "Tarifa de operación ({{percentage}}%)",
       "swapProvider": "Proveedor",
       "estimatingFee": "Estimando...",
       "confirm": "Confirmar Compra",
@@ -3306,7 +3306,7 @@
       "youReceive": "Recibes",
       "goldPrice": "Precio del Oro",
       "networkFee": "Tarifa de Red",
-      "serviceFee": "Tarifa de operacion ({{percentage}}%)",
+      "serviceFee": "Tarifa de operación ({{percentage}}%)",
       "swapProvider": "Proveedor",
       "estimatingFee": "Estimando...",
       "confirm": "Confirmar Venta",
@@ -3429,25 +3429,25 @@
   },
   "errors": {
     "public": {
-      "insufficient_balance": "Saldo insuficiente para esta operacion",
-      "insufficient_gas": "Saldo insuficiente para la comision de red",
-      "user_rejected": "Operacion cancelada",
-      "network_error": "Sin conexion a internet",
+      "insufficient_balance": "Saldo insuficiente para esta operación",
+      "insufficient_gas": "Saldo insuficiente para la comisión de red",
+      "user_rejected": "Operación cancelada",
+      "network_error": "Sin conexión a internet",
       "rpc_timeout": "El servidor no responde, intenta en unos segundos",
-      "contract_revert": "La operacion fue rechazada por la red",
-      "signing_failed": "No pudimos firmar la transaccion",
-      "invalid_address": "Direccion invalida",
+      "contract_revert": "La operación fue rechazada por la red",
+      "signing_failed": "No pudimos firmar la transacción",
+      "invalid_address": "Dirección inválida",
       "unsupported_token": "Token no soportado",
-      "slippage_exceeded": "El precio cambio demasiado, intenta de nuevo",
-      "session_expired": "Sesion expirada, vuelve a iniciar",
-      "permission_required": "Permisos del telefono requeridos",
-      "invalid_qr": "QR invalido",
-      "load_failed": "No pudimos cargar tu informacion",
-      "generic": "Algo no salio como esperabamos"
+      "slippage_exceeded": "El precio cambió demasiado, intenta de nuevo",
+      "session_expired": "Sesión expirada, vuelve a iniciar",
+      "permission_required": "Permisos del teléfono requeridos",
+      "invalid_qr": "QR inválido",
+      "load_failed": "No pudimos cargar tu información",
+      "generic": "Algo no salió como esperábamos"
     },
     "sheet": {
       "title": "Detalle del error",
-      "techDetailsToggle": "Detalles tecnicos",
+      "techDetailsToggle": "Detalles técnicos",
       "copyButton": "Copiar",
       "copyConfirmation": "Copiado",
       "shareButton": "Compartir",
@@ -3455,29 +3455,29 @@
     }
   },
   "preflight": {
-    "advisory": "Estamos por iniciar tu {{noun}}. No cierres la app y asegurate de tener buena conexion."
+    "advisory": "Estamos por iniciar tu {{noun}}. No cierres la app y asegúrate de tener buena conexión."
   },
   "result": {
-    "succeeded": "Tu {{noun}} se completo correctamente.",
-    "connectivity": "Se te fue la conexion a mitad de tu {{noun}} y por eso no se completo. Lo intentamos de nuevo?",
-    "appBackgrounded": "Cerraste la app mientras tu {{noun}} estaba en curso. Quieres retomarlo?",
-    "gasInsufficient": "No alcanzo el saldo para pagar la comision de red. Recarga un poquito mas y volvemos a intentar.",
-    "slippage": "El precio se movio mas de lo permitido y cancelamos tu {{noun}} para protegerte. Lo intentamos de nuevo?",
-    "revert": "La red rechazo tu {{noun}}. No se cobro nada. Lo intentamos de nuevo?",
-    "rpcTimeout": "La red blockchain no respondio a tiempo. Lo intentamos de nuevo?",
-    "unknown": "Algo no salio como esperabamos. Lo intentamos de nuevo o nos contactas?"
+    "succeeded": "Tu {{noun}} se completó correctamente.",
+    "connectivity": "Se te fue la conexión a mitad de tu {{noun}} y por eso no se completó. ¿Lo intentamos de nuevo?",
+    "appBackgrounded": "Cerraste la app mientras tu {{noun}} estaba en curso. ¿Quieres retomarlo?",
+    "gasInsufficient": "No alcanzó el saldo para pagar la comisión de red. Recarga un poquito más y volvemos a intentar.",
+    "slippage": "El precio se movió más de lo permitido y cancelamos tu {{noun}} para protegerte. ¿Lo intentamos de nuevo?",
+    "revert": "La red rechazó tu {{noun}}. No se cobró nada. ¿Lo intentamos de nuevo?",
+    "rpcTimeout": "La red blockchain no respondió a tiempo. ¿Lo intentamos de nuevo?",
+    "unknown": "Algo no salió como esperábamos. ¿Lo intentamos de nuevo o nos contactas?"
   },
   "progress": {
     "preparing": "Preparando tu {{noun}}...",
     "awaitingPin": "Confirma tu PIN para continuar",
     "submitting": "Enviando tu {{noun}} a la red...",
-    "pendingConfirmation": "Esperando confirmacion de la red...",
+    "pendingConfirmation": "Esperando confirmación de la red...",
     "multiStep": "Paso {{currentStep}} de {{total}}",
-    "succeeded": "Listo. Tu {{noun}} se completo.",
-    "connectivityLost": "Perdimos la conexion. Tu {{noun}} sigue en curso; esperando que vuelvas a tener conexion."
+    "succeeded": "Listo. Tu {{noun}} se completó.",
+    "connectivityLost": "Perdimos la conexión. Tu {{noun}} sigue en curso; esperando que vuelvas a tener conexión."
   },
   "recovery": {
-    "banner": "Tu transferencia se quedo a medias, ver detalles.",
-    "staleBanner": "Tienes una operacion sin completar desde hace mas de un dia. Revisala."
+    "banner": "Tu transferencia se quedó a medias, ver detalles.",
+    "staleBanner": "Tienes una operación sin completar desde hace más de un día. Revísala."
   }
 }
