@@ -31,6 +31,7 @@ import { importContacts } from 'src/identity/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
+import { positionsByBalanceUsdSelector } from 'src/positions/selectors'
 import { phoneRecipientCacheSelector } from 'src/recipients/reducer'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
@@ -184,6 +185,17 @@ function TabHome(_props: Props) {
 
   const bucksPayFlowStatus = useSelector(bucksPayFlowStatusSelector)
 
+  // Hide the "Haz crecer tu dinero" CTA card once the user has at least one
+  // open investment (Neeru vault or Allbridge pool). The "Otras inversiones"
+  // row in the Tus inversiones section already surfaces the growing money,
+  // so the CTA becomes redundant + noisy for returning investors. Same
+  // filter as BalanceCard's SUPPORTED_INVESTMENT_APP_IDS so both surfaces
+  // stay in sync.
+  const investmentPositions = useSelector(positionsByBalanceUsdSelector)
+  const hasOpenInvestments = investmentPositions.some(
+    (p) => p.appId === 'neeru-vaults' || p.appId === 'allbridge'
+  )
+
   function onPressWithdraw() {
     if (bucksPayFlowStatus === 'tracking' || bucksPayFlowStatus === 'submitting-to-api') {
       navigate(Screens.BucksPayStatus)
@@ -318,17 +330,19 @@ function TabHome(_props: Props) {
               </View>
             </FlatCard> */}
 
-            <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={styles.cardRow}>
-                <View style={styles.cardIconBox}>
-                  <Grow size={25} />
+            {!hasOpenInvestments && (
+              <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
+                <View style={styles.cardRow}>
+                  <View style={styles.cardIconBox}>
+                    <Grow size={25} />
+                  </View>
+                  <View style={styles.cardTextBox}>
+                    <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                    <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
+                  </View>
                 </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
-                  <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
-                </View>
-              </View>
-            </FlatCard>
+              </FlatCard>
+            )}
 
             <GoldEntrypoint />
 
