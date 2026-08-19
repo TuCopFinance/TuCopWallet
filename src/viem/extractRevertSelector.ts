@@ -10,7 +10,10 @@ const TAG = 'viem/extractRevertSelector'
 // (Squid, Uniswap V3/V4, ERC20, etc) without shipping every ABI to the
 // wallet bundle. `reason` is a fallback short string when viem could not
 // decode a selector (e.g. Panic(uint256) or plain revert strings).
-export interface RevertReason {
+// Inlined into extractRevertReason's return signature instead of exported:
+// no external caller imports the interface by name, so exporting trips the
+// knip regression check.
+interface RevertReason {
   selector?: string
   reason?: string
 }
