@@ -213,20 +213,28 @@ function TabWallet() {
                 )}
               </View>
 
-              <View style={{ marginHorizontal: 20 }}>
-                <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
-                  <View style={[styles.row, { paddingVertical: 8 }]}>
-                    <Grow size={25} />
-                    <Text style={styles.ctaText}>
-                      <Trans
-                        i18n={i18n}
-                        i18nKey="tabHome.earn"
-                        components={[<Text key={0} style={{ fontWeight: '700' }} />]}
-                      />
-                    </Text>
-                  </View>
-                </FlatCard>
-              </View>
+              {/* Hide the "Haz crecer tu dinero" CTA when the user already
+                  has an open external investment. The "Otras inversiones"
+                  row above (rendered on the same gt(0) condition) already
+                  surfaces the balance, so the CTA is redundant + noisy for
+                  returning investors. Reappears automatically once all
+                  positions close (otherInvestmentsLocalValue back to 0). */}
+              {otherInvestmentsLocalValue.isZero() && (
+                <View style={{ marginHorizontal: 20 }}>
+                  <FlatCard type="scrollmenu" testID="FlatCard/Earn" onPress={onPressEarn}>
+                    <View style={[styles.row, { paddingVertical: 8 }]}>
+                      <Grow size={25} />
+                      <Text style={styles.ctaText}>
+                        <Trans
+                          i18n={i18n}
+                          i18nKey="tabHome.earn"
+                          components={[<Text key={0} style={{ fontWeight: '700' }} />]}
+                        />
+                      </Text>
+                    </View>
+                  </FlatCard>
+                </View>
+              )}
             </Shadow>
           </View>
         </ScrollView>

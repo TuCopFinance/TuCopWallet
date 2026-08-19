@@ -6,6 +6,7 @@ import {
   GoldIconVariant,
   GoldOperationStatus,
   GoldPriceData,
+  GoldPriceProviderSource,
   GoldSellInfo,
   PriceAlert,
 } from 'src/gold/types'
@@ -22,6 +23,16 @@ export interface State {
   // goldPriceStaleAgeSeconds > 300 (5min).
   goldPriceIsStale: boolean
   goldPriceStaleAgeSeconds: number
+  // Which upstream produced the price on the last successful fetch.
+  // Populated from the backend response's x-provider-source header
+  // (fallback body.source) — see gold/api.ts. Values documented by
+  // backend as of 2026-08-16 (main sha ecc931d): dia | coingecko | cmc
+  // | mento are healthy fresh; hardcoded | stale-cache are degraded
+  // signals worth surfacing to the user. Optional (not `| undefined`)
+  // so the persist schema treats missing values from older builds as
+  // absent instead of required-with-undefined, which would fail the
+  // schema check that validates rehydrated state.
+  goldPriceProviderSource?: GoldPriceProviderSource
 
   // Operation status
   buyStatus: GoldOperationStatus
@@ -51,6 +62,7 @@ const initialState: State = {
   goldPriceFetchedAt: null,
   goldPriceIsStale: false,
   goldPriceStaleAgeSeconds: 0,
+  goldPriceProviderSource: undefined,
   buyStatus: 'idle',
   sellStatus: 'idle',
   priceFetchStatus: 'idle',
@@ -76,6 +88,7 @@ export const slice = createSlice({
       state.goldPriceFetchedAt = action.payload.timestamp
       state.goldPriceIsStale = action.payload.isStale ?? false
       state.goldPriceStaleAgeSeconds = action.payload.staleAgeSeconds ?? 0
+      state.goldPriceProviderSource = action.payload.providerSource
       state.priceFetchStatus = 'success'
     },
     fetchGoldPriceError: (state, action: PayloadAction<string>) => {
@@ -179,6 +192,10 @@ export const slice = createSlice({
         goldPriceUsd: persisted.goldPriceUsd ?? null,
         goldPrice24hChange: persisted.goldPrice24hChange ?? null,
         goldPriceFetchedAt: persisted.goldPriceFetchedAt ?? null,
+        // Not persisted intentionally: providerSource reflects the last
+        // fetch outcome, which is stale by definition after a restart.
+        // Next fetchGoldPriceSaga run resets it.
+        goldPriceProviderSource: undefined,
         priceAlerts: persisted.priceAlerts ?? [],
         hasSeenGoldInfo: persisted.hasSeenGoldInfo ?? false,
         preferredIconVariant: persisted.preferredIconVariant ?? 'bar',

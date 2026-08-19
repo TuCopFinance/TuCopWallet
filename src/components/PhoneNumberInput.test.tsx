@@ -87,6 +87,40 @@ describe('PhoneNumberInput', () => {
       })
       expect(onChange).toHaveBeenCalledWith('030 111111', '+49')
     })
+
+    it('skips the native phone picker on Android 12+ (TUCOPWALLET-10 crash guard)', async () => {
+      // See PhoneNumberInput.tsx requestPhoneNumber(): the underlying
+      // library crashes with IllegalArgumentException on SDK 31+ because
+      // its GPS Auth call creates a PendingIntent without FLAG_IMMUTABLE.
+      // Guard skips the call entirely on Android 12+; user types manually.
+      requestPhoneNumber.mockClear() // sibling tests share the module-scope mock
+      const originalVersion = Platform.Version
+      Object.defineProperty(Platform, 'Version', { value: 33, configurable: true })
+      try {
+        const onChange = jest.fn()
+        const { getByTestId } = render(
+          <PhoneNumberInput
+            label="Phone number"
+            country={undefined}
+            internationalPhoneNumber=""
+            onChange={onChange}
+            onPressCountry={jest.fn()}
+          />
+        )
+
+        await act(() => {
+          fireEvent(getByTestId('PhoneNumberField'), 'focus')
+        })
+
+        expect(requestPhoneNumber).not.toHaveBeenCalled()
+        expect(onChange).not.toHaveBeenCalled()
+      } finally {
+        Object.defineProperty(Platform, 'Version', {
+          value: originalVersion,
+          configurable: true,
+        })
+      }
+    })
   })
 
   it("doesn't trigger the native phone picker if there's data in the form", async () => {

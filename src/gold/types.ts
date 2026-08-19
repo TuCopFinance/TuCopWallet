@@ -18,6 +18,25 @@ export interface PriceAlert {
   triggeredAt?: number
 }
 
+// Which upstream produced the price on the last successful fetch. Populated
+// from the backend response's `x-provider-source` header (preferred) or the
+// `source` body field (fallback). `hardcoded` and `stale-cache` are
+// degraded states: hardcoded is the last-resort constant (should never fire
+// for XAUt since it is USD-pegged-only, defensive only), stale-cache is
+// served from the 24h post-waterfall cache. `undefined` means we could not
+// determine the source (older backend that predates the header, or the
+// non-backend fallback paths in the wallet). Kept as a discriminated union
+// of known values so any new provider backend adds later without wallet
+// coordination degrades to undefined + a Logger.warn instead of leaking a
+// raw string to Sentry / UI.
+export type GoldPriceProviderSource =
+  | 'dia'
+  | 'coingecko'
+  | 'cmc'
+  | 'mento'
+  | 'hardcoded'
+  | 'stale-cache'
+
 export interface GoldPriceData {
   priceUsd: number // Price per troy ounce in USD
   price24hChange: number // Percentage change
@@ -28,6 +47,7 @@ export interface GoldPriceData {
   // hardcoded fallback leave both undefined.
   isStale?: boolean
   staleAgeSeconds?: number
+  providerSource?: GoldPriceProviderSource
 }
 
 export interface GoldSwapQuote {

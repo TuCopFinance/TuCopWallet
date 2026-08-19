@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native'
 import { SENTRY_ENABLED } from 'src/config'
-import { GoldPriceData } from 'src/gold/types'
+import { GoldPriceData, GoldPriceProviderSource } from 'src/gold/types'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -30,12 +30,40 @@ const FALLBACK_GOLD_PRICE: GoldPriceData = {
   timestamp: Date.now(),
 }
 
-// TuCop backend price endpoint response format
+// TuCop backend price endpoint response format. Backend added `source` +
+// the parallel `x-provider-source` header on 2026-08-16 (backend main sha
+// ecc931d, PRs #205/#206) so the wallet can distinguish healthy fresh
+// (dia/coingecko/cmc/mento) from degraded (hardcoded/stale-cache). Older
+// backends omit both, in which case parseProviderSource returns undefined.
 export interface TucopXautPriceResponse {
   symbol: string
   vs: string
   priceUsd: number
   asOf: string
+  source?: string
+}
+
+// Locked to the 6 values backend documents. New backend values fall
+// through to undefined + a Logger.warn so an unrecognised source never
+// leaks to Sentry tags or the UI as a raw string. Update this list in
+// lockstep with backend when they add a provider.
+const KNOWN_PROVIDER_SOURCES: readonly GoldPriceProviderSource[] = [
+  'dia',
+  'coingecko',
+  'cmc',
+  'mento',
+  'hardcoded',
+  'stale-cache',
+]
+
+function parseProviderSource(raw: string | null | undefined): GoldPriceProviderSource | undefined {
+  if (raw == null || raw === '') return undefined
+  const normalized = raw.toLowerCase().trim()
+  if ((KNOWN_PROVIDER_SOURCES as readonly string[]).includes(normalized)) {
+    return normalized as GoldPriceProviderSource
+  }
+  Logger.warn(TAG, `Unknown gold price provider source "${raw}"; ignoring`)
+  return undefined
 }
 
 // DIA Data response format
@@ -133,12 +161,23 @@ async function fetchFromTucopBackend(): Promise<GoldPriceData> {
   const isStale = response.headers.get('X-Stale') === 'true'
   const staleAgeSeconds = isStale ? Number(response.headers.get('X-Stale-Age') ?? 0) : 0
 
+  // Backend confirms header + body.source carry the same value (main sha
+  // ecc931d, 2026-08-16); the duplication is a "pick per parsing
+  // preference" convenience for clients that lean on headers vs body.
+  // We prefer the header (fetch spec makes it case-insensitive on both
+  // ends, and it survives JSON schema drift) and fall back to body.source
+  // as a defensive guard if a future CDN hop ever strips the header.
+  const providerSource =
+    parseProviderSource(response.headers.get('x-provider-source')) ??
+    parseProviderSource(data.source)
+
   return {
     priceUsd: data.priceUsd,
     price24hChange: 0,
     timestamp: Date.now(),
     isStale,
     staleAgeSeconds,
+    providerSource,
   }
 }
 
@@ -185,6 +224,7 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
   }
 
   // Try TuCop backend proxy first
+  let primaryError: any = null
   try {
     const priceData = await fetchFromTucopBackend()
     cachedGoldPrice = priceData
@@ -205,16 +245,28 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
       staleAgeSeconds: priceData.staleAgeSeconds ?? 0,
     })
     return priceData
-  } catch (primaryError: any) {
-    Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', primaryError.message)
-    captureBusinessError(primaryError, {
-      feature: 'transactions',
-      provider: 'internal',
-      action: 'fetch_gold_price_backend',
-      errorCode: isCircuitBreakerError(primaryError)
-        ? 'circuit_open'
-        : classifyHttpError(primaryError),
-    })
+  } catch (err: any) {
+    primaryError = err
+    Logger.warn(TAG, 'TuCop backend failed, trying DIA fallback', err.message)
+    // Only add a breadcrumb here. Firing captureBusinessError before we know
+    // whether the DIA fallback will succeed sends a Sentry event per user
+    // per poll cycle for a completely recovered flow. We defer to the end:
+    // fire only when the fallback ALSO fails (real user-visible failure).
+    if (SENTRY_ENABLED) {
+      try {
+        Sentry.addBreadcrumb({
+          category: 'gold_price',
+          level: 'warning',
+          message: 'TuCop backend gold price failed, trying DIA',
+          data: {
+            error: err.message,
+            errorCode: isCircuitBreakerError(err) ? 'circuit_open' : classifyHttpError(err),
+          },
+        })
+      } catch {
+        // Sentry not initialized (tests); ignore.
+      }
+    }
   }
 
   // Fallback to DIA Data
@@ -226,6 +278,19 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
     return priceData
   } catch (fallbackError: any) {
     Logger.error(TAG, 'DIA API also failed', fallbackError.message)
+    // Both sources failed: only NOW is it a real user-visible degradation
+    // (the app will render the hardcoded price). Fire both so the dashboard
+    // can distinguish "backend down + DIA down" from "backend down + DIA ok".
+    if (primaryError) {
+      captureBusinessError(primaryError, {
+        feature: 'transactions',
+        provider: 'internal',
+        action: 'fetch_gold_price_backend',
+        errorCode: isCircuitBreakerError(primaryError)
+          ? 'circuit_open'
+          : classifyHttpError(primaryError),
+      })
+    }
     captureBusinessError(fallbackError, {
       feature: 'transactions',
       provider: 'internal',

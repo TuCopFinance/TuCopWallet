@@ -373,7 +373,7 @@ export class ReFiColombiaSubsidiesContract {
           return { success: false, error: 'Fondos insuficientes para pagar las tarifas de gas' }
         } else if (errorMessage.includes('User rejected') || errorMessage.includes('cancelled')) {
           Logger.info(TAG, 'Transaction cancelled by user')
-          return { success: false, error: 'Transaccion cancelada por el usuario' }
+          return { success: false, error: 'Transacción cancelada por el usuario' }
         }
       }
 

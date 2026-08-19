@@ -968,10 +968,19 @@ describe('SwapScreen', () => {
 
       fireEvent.press(within(getByTestId('SwapEnterAmount/AmountOptions')).getByText(amountLabel))
 
-      await waitFor(() =>
-        expect(getByTestId('SwapTransactionDetails/ExchangeRate')).toHaveTextContent(
-          '1 CELO ≈ 1.23456 cUSD'
-        )
+      // Explicit 10s waitFor timeout instead of the 4.5s default: the chip
+      // press triggers a saga that fetches a swap quote and rerenders the
+      // exchange rate. Under full-suite load (parallel workers + 600 test
+      // suites running concurrently), the async chain can exceed the
+      // default and flake randomly on one of the 4 chip cases. In isolation
+      // and on CI it fits well under 1s, so 10s is comfortable headroom
+      // without dragging happy-path runs.
+      await waitFor(
+        () =>
+          expect(getByTestId('SwapTransactionDetails/ExchangeRate')).toHaveTextContent(
+            '1 CELO ≈ 1.23456 cUSD'
+          ),
+        { timeout: 10_000 }
       )
       expect(within(swapFromContainer).getByTestId('SwapAmountInput/Input').props.value).toBe(
         expectedFromAmount

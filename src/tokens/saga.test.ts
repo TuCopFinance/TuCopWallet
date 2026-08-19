@@ -122,17 +122,25 @@ describe('getTokensInfo', () => {
     )
 
     const result = await getTokensInfo([NetworkId['celo-mainnet']])
-    // USDT/USDm had null/NaN priceUsd upstream: overridden to '1'.
-    // USDC had '1' already: passes through unchanged.
-    // COPm is NOT in the dollar-peg override list (COP-pegged, not USD),
-    // so its null priceUsd stays null; UI derives its "Pesos" value from
-    // balance directly, not USD price.
-    expect(result).toEqual({
-      [networkConfig.copmTokenId]: { symbol: 'COPm', priceUsd: null },
-      [networkConfig.usdtTokenId]: { symbol: 'USDT', priceUsd: '1' },
-      [networkConfig.usdcTokenId]: { symbol: 'USDC', priceUsd: '1' },
-      [networkConfig.usdmTokenId]: { symbol: 'USDm', priceUsd: '1' },
-    })
+    // USDT/USDm had null/NaN priceUsd upstream: overridden to '1', with
+    // priceFetchedAt = Date.now() so the tokensByIdSelector stale check
+    // does not immediately null the override back out. USDC had '1'
+    // already but its upstream shape lacked priceFetchedAt too, so it
+    // ALSO gets the timestamp injection (priceUsdNum <= 0 check does
+    // not trigger for '1', so USDC keeps its shape unchanged — verified
+    // separately below). COPm is NOT in the dollar-peg override list
+    // (COP-pegged, not USD), so its null priceUsd stays null; UI derives
+    // its "Pesos" value from balance directly, not USD price.
+    expect(result[networkConfig.copmTokenId]).toEqual({ symbol: 'COPm', priceUsd: null })
+    expect(result[networkConfig.usdcTokenId]).toEqual({ symbol: 'USDC', priceUsd: '1' })
+    expect(result[networkConfig.usdtTokenId]).toEqual(
+      expect.objectContaining({ symbol: 'USDT', priceUsd: '1' })
+    )
+    expect(result[networkConfig.usdtTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
+    expect(result[networkConfig.usdmTokenId]).toEqual(
+      expect.objectContaining({ symbol: 'USDm', priceUsd: '1' })
+    )
+    expect(result[networkConfig.usdmTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
   })
   it('throws if request does not complete within timeout', async () => {
     // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers

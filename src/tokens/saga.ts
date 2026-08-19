@@ -117,7 +117,14 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     // the upstream returned a JSON null.
     const priceUsdNum = token.priceUsd == null ? NaN : Number(token.priceUsd)
     if (!Number.isFinite(priceUsdNum) || priceUsdNum <= 0) {
-      filtered[tokenId] = { ...token, priceUsd: '1' }
+      // MUST set priceFetchedAt alongside priceUsd. Without it the
+      // downstream tokensByIdSelector treats the price as stale (its
+      // check is `(priceFetchedAt ?? 0) < Date.now() - TTL`) and nulls
+      // it out again, defeating the fallback and rendering "Precio no
+      // disponible" on Swap / Send / TokenDetails screens even though
+      // we intentionally forced priceUsd = 1. The Valora upstream never
+      // ships priceFetchedAt on these entries so we synthesize it.
+      filtered[tokenId] = { ...token, priceUsd: '1', priceFetchedAt: Date.now() }
     }
   }
 

@@ -42,7 +42,7 @@ export function ConfirmationSheet(props: ConfirmationSheetProps) {
 
   const advisoryText = t('preflight.advisory', {
     defaultValue:
-      'Estamos por iniciar tu {{noun}}. No cierres la app y asegurate de tener buena conexion.',
+      'Estamos por iniciar tu {{noun}}. No cierres la app y asegúrate de tener buena conexión.',
     noun: props.noun,
   })
 

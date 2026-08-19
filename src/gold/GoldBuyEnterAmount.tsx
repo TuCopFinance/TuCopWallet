@@ -18,8 +18,7 @@ import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
 import {
   goldPriceFetchStatusSelector,
-  goldPriceIsStaleSelector,
-  goldPriceStaleAgeSecondsSelector,
+  goldPriceIsDegradedSelector,
   goldPriceUsdSelector,
   xaut0TokenSelector,
 } from 'src/gold/selectors'
@@ -76,8 +75,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   const goldPriceUsdFromStore = useSelector(goldPriceUsdSelector)
   const goldPriceFetchStatus = useSelector(goldPriceFetchStatusSelector)
-  const goldPriceIsStale = useSelector(goldPriceIsStaleSelector)
-  const goldPriceStaleAgeSeconds = useSelector(goldPriceStaleAgeSecondsSelector)
+  const goldPriceIsDegraded = useSelector(goldPriceIsDegradedSelector)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const xaut0Token = useSelector(xaut0TokenSelector)
@@ -425,12 +423,19 @@ export default function GoldBuyEnterAmount({ route }: Props) {
             </View>
           )}
 
-          {/* Stale-price badge. Only shows when the backend served the price
-              from its 24h stale cache AND the value is more than 5 minutes
-              old. Sub-5min stale is common at fresh-cache eviction boundaries
-              and would flap the badge for essentially fresh data; the 5min
-              threshold matches the fresh TTL headroom. */}
-          {goldPriceIsStale && goldPriceStaleAgeSeconds > 300 && (
+          {/* Degraded-price badge. Fires in either of two cases (see
+              goldPriceIsDegradedSelector):
+                1. Backend served the price from the 24h stale cache AND the
+                   value is more than 5min old (isStale + staleAge > 300).
+                2. The provider source landed on `hardcoded` or `stale-cache`
+                   (backend signal added 2026-08-16, main sha ecc931d). The
+                   `hardcoded` bucket should never fire for XAUt in practice
+                   (that constant is USD-pegged-only) but a defensive badge
+                   there flags a backend bug over silently rendering a
+                   wrong-scale price.
+              Copy stays generic ("cotización desactualizada") — the user
+              doesn't need to know which upstream degraded. */}
+          {goldPriceIsDegraded && (
             <View style={styles.stalePriceBadgeContainer}>
               <Text style={styles.stalePriceBadge}>{t('goldFlow.stalePriceBadge')}</Text>
             </View>

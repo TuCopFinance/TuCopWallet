@@ -6437,6 +6437,17 @@
                 "goldPriceIsStale": {
                     "type": "boolean"
                 },
+                "goldPriceProviderSource": {
+                    "enum": [
+                        "cmc",
+                        "coingecko",
+                        "dia",
+                        "hardcoded",
+                        "mento",
+                        "stale-cache"
+                    ],
+                    "type": "string"
+                },
                 "goldPriceStaleAgeSeconds": {
                     "type": "number"
                 },

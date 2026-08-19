@@ -180,7 +180,13 @@ describe('gold/api', () => {
       expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'fallback_hardcoded')
     })
 
-    it('captures a business error with the classified HTTP error code when backend returns 5xx', async () => {
+    it('does NOT capture a business error when backend fails but DIA fallback succeeds', async () => {
+      // Behaviour change (2026-08-15): the primary error is only surfaced
+      // to Sentry when the DIA fallback ALSO fails. Firing on every
+      // primary-only failure produced hundreds of events per user per day
+      // during backend outages even though the end-to-end flow recovered.
+      // A breadcrumb is added instead (not asserted here since Sentry is
+      // mocked, but see src/gold/api.ts for the addBreadcrumb call).
       mockFetchWithTimeout
         .mockResolvedValueOnce(jsonResponse({}, false, 502))
         .mockResolvedValueOnce(
@@ -196,12 +202,31 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
+      expect(mockCaptureBusinessError).not.toHaveBeenCalled()
+    })
+
+    it('captures both backend and DIA errors only when the fallback also fails', async () => {
+      mockFetchWithTimeout
+        .mockResolvedValueOnce(jsonResponse({}, false, 502))
+        .mockResolvedValueOnce(jsonResponse({}, false, 503))
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      await expect(fetchGoldPriceFromApi()).rejects.toThrow('All XAUt price APIs failed')
+
       expect(mockCaptureBusinessError).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
           feature: 'transactions',
           provider: 'internal',
           action: 'fetch_gold_price_backend',
+        })
+      )
+      expect(mockCaptureBusinessError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          feature: 'transactions',
+          provider: 'internal',
+          action: 'fetch_gold_price_dia',
         })
       )
     })
@@ -274,6 +299,80 @@ describe('gold/api', () => {
       await fetchGoldPriceFromApi()
 
       expect(mockSetTag).toHaveBeenCalledWith('gold_price_stale_age_bucket', expectedBucket)
+    })
+
+    it('parses the x-provider-source header when backend serves a healthy fresh price', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'dia',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('dia')
+    })
+
+    it('falls back to body.source when x-provider-source header is absent', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({
+          symbol: 'XAUT0',
+          vs: 'usd',
+          priceUsd: 4355.31,
+          asOf: 'x',
+          source: 'mento',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('mento')
+    })
+
+    it('leaves providerSource undefined when both header and body field are absent', async () => {
+      // Backwards compatibility with older backends that predate the
+      // 2026-08-16 provider-source signal (main sha ecc931d).
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBeUndefined()
+    })
+
+    it('ignores unknown provider source values and leaves providerSource undefined', async () => {
+      // If backend adds a new provider without coordinating the wallet
+      // change, the raw string must never reach the UI or Sentry as a
+      // tag. Fall back to undefined; a Logger.warn is emitted alongside
+      // (not asserted here because jest.isolateModules gives the module a
+      // fresh Logger instance the outer spy cannot see).
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'unknown-provider',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBeUndefined()
+    })
+
+    it('recognises the stale-cache provider source as a degraded signal', async () => {
+      mockFetchWithTimeout.mockResolvedValueOnce(
+        jsonResponse({ symbol: 'XAUT0', vs: 'usd', priceUsd: 4355.31, asOf: 'x' }, true, 200, {
+          'x-provider-source': 'stale-cache',
+        })
+      )
+
+      const { fetchGoldPriceFromApi } = loadApi()
+      const result = await fetchGoldPriceFromApi()
+
+      expect(result.providerSource).toBe('stale-cache')
     })
 
     it('tags errorCode=circuit_open when the wallet circuit breaker short-circuits the request', async () => {

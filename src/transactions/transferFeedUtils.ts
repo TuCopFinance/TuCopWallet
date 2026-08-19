@@ -4,6 +4,7 @@ import * as _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CELO_LOGO_URL, SUPERCHARGE_LOGO_URL } from 'src/config'
+import { neeruMetaSelector } from 'src/earn/neeru/configSelectors'
 import { FIATCONNECT_CURRENCY_TO_WALLET_CURRENCY } from 'src/fiatconnect/consts'
 import {
   cachedFiatAccountUsesSelector,
@@ -73,8 +74,18 @@ export function useTransferFeedDetails(transfer: TokenTransfer) {
   const txHashToFeedInfo = useSelector(txHashToFeedInfoSelector)
   const coinbasePaySenders = useSelector(coinbasePaySendersSelector)
   const fcTransferDisplayInfo = useFiatConnectTransferDisplayInfo(transfer)
+  // Detect when the transfer counterparty is a Neeru address so the feed
+  // labels the row as an investment deposit/withdrawal instead of a
+  // generic "Enviado a 0x..." / "Recibido de 0x..." (which also leaks a
+  // truncated hex to a non-technical user per the no-onchain-detail
+  // policy). Address is resolved through configSelectors and never
+  // rendered; only used for this equality check.
+  const neeruMeta = useSelector(neeruMetaSelector)
+  const neeruAddress = neeruMeta.meta.proxyAddress
 
   const { type, address } = transfer
+
+  const isNeeruCounterparty = address?.toLowerCase() === neeruAddress
 
   const recipient = useTransactionRecipient(transfer)
 
@@ -87,6 +98,10 @@ export function useTransferFeedDetails(transfer: TokenTransfer) {
     case TokenTransactionTypeV2.Sent: {
       if (fcTransferDisplayInfo) {
         ;({ title, subtitle, localAmount: customLocalAmount } = fcTransferDisplayInfo)
+      } else if (isNeeruCounterparty) {
+        // Sent to a Neeru address = deposit into the user's investment.
+        title = t('feedItemNeeruDepositTitle')
+        subtitle = t('feedItemNeeruDepositInfo')
       } else {
         title = t('feedItemSentTitle')
         subtitle = t('feedItemSentInfo', { displayName })
@@ -103,7 +118,14 @@ export function useTransferFeedDetails(transfer: TokenTransfer) {
       const providerInfo = txHashToFeedInfo[transfer.transactionHash]
       const isCoinbasePaySender = coinbasePaySenders.includes(address)
 
-      if (isCeloRewardSender) {
+      if (isNeeruCounterparty) {
+        // Received from a Neeru address = withdrawal from the user's
+        // investment. Fires the same Neeru-branded label as the deposit
+        // direction so the row is instantly recognisable in the feed
+        // instead of reading as a generic "Recibido de 0x...".
+        title = t('feedItemNeeruWithdrawTitle')
+        subtitle = t('feedItemNeeruWithdrawInfo')
+      } else if (isCeloRewardSender) {
         title = t('feedItemCeloRewardReceivedTitle')
         subtitle = t('feedItemRewardReceivedInfo')
       } else if (isRewardSender) {
