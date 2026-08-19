@@ -61,13 +61,10 @@ export const goldPriceFetchedAtSelector = (state: RootState) => state.gold.goldP
 
 export const goldPriceFetchStatusSelector = (state: RootState) => state.gold.priceFetchStatus
 
-// True when the last successful backend price fetch was served from the
-// 24h stale cache. See setGoldPrice in slice + fetchFromTucopBackend in
-// gold/api. UI uses this + the stale age threshold to decide whether to
-// show the "cotización desactualizada" badge.
-export const goldPriceIsStaleSelector = (state: RootState) => state.gold.goldPriceIsStale
-export const goldPriceStaleAgeSecondsSelector = (state: RootState) =>
-  state.gold.goldPriceStaleAgeSeconds
+// The individual isStale + staleAgeSeconds selectors were replaced by the
+// composed goldPriceIsDegradedSelector below (which reads both fields
+// inline together with the provider-source signal) — no external consumer
+// left, so exporting them just fails the knip regression check.
 
 // UI treats `hardcoded` and `stale-cache` provider-source values as degraded
 // signals worth badging even when isStale itself is not set (backend flags a
