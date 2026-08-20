@@ -62,13 +62,15 @@ const tokenBalances = {
   [mockPoofTokenId]: { ...mockTokenBalances[mockPoofTokenId], balance: '0' }, // filtered out for no balance
   [mockCeurTokenId]: { ...mockTokenBalances[mockCeurTokenId], balance: '100' },
 }
-// Post Bug E fix: EnterAmount applies reorderForBugE so CELO slides to the
-// end of the list passed to refreshPreparedTransactions. Stables keep their
-// selector priority order (cUSD < cEUR), CELO trails.
+// Post Bug-E-reversal (2026-08-20): the selector returns CELO first for
+// celo-mainnet and EnterAmount passes the list unchanged to
+// refreshPreparedTransactions. prepareTransactions iterates top-to-bottom
+// so CELO is the default fee currency, with visible stables (cUSD, cEUR)
+// as the cascade alternatives.
 const feeCurrencies = [
+  tokenBalances[mockCeloTokenId],
   tokenBalances[mockCusdTokenId],
   tokenBalances[mockCeurTokenId],
-  tokenBalances[mockCeloTokenId],
 ]
 const store = createMockStore({
   tokens: {

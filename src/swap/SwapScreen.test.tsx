@@ -226,16 +226,16 @@ const defaultQuote: FetchQuoteResponse = {
 }
 const defaultQuoteResponse = JSON.stringify(defaultQuote)
 
-// Per Bug E fix (pickFeeCurrency in useSwapQuote): when the user swaps CELO,
-// the picker promotes any visible stable above CELO. In these fixtures cUSD is
-// available with a non-zero balance, so the prepared swap tx is built with
-// feeCurrency = cUSD address (CIP-64 type 0x7b) instead of native CELO. Gas is
-// 50000 higher than the eip1559-native path because CIP-64 adds a small
-// pre-tx-fee debit overhead.
+// Post Bug-E-reversal (2026-08-20): the fee-currency selector returns CELO
+// first for celo-mainnet, and prepareTransactions allows CELO as fee-currency
+// for a CELO swap as long as spendAmount + gas fits inside the balance. So
+// when the swap sells CELO, the prepared txs pay gas in native CELO (no
+// feeCurrency field, no CIP-64 overhead). This gives a cheaper tx (1_800_000
+// swap gas instead of 2_300_000 with the CIP-64 overhead the pre-reversal
+// path incurred paying with cUSD).
 const preparedTransactions: SerializableTransactionRequest[] = [
   {
     data: '0x095ea7b3000000000000000000000000000000000000000000000000000000000000012300000000000000000000000000000000000000000000000011200c7644d50000',
-    feeCurrency: mockCusdAddress as `0x${string}`,
     from: '0x0000000000000000000000000000000000007E57',
     gas: '21000',
     // 21000 * 60 / 100 = 12600 (matches the calibration added in
@@ -249,14 +249,9 @@ const preparedTransactions: SerializableTransactionRequest[] = [
   },
   {
     data: '0x0',
-    feeCurrency: mockCusdAddress as `0x${string}`,
     from: '0x0000000000000000000000000000000000007E57',
-    // Swap tx base gas = 1_800_000. On CIP-64 (non-native fee currency) the
-    // wallet adds STATIC_GAS_PADDING (50_000) + SHORTCUT_NON_NATIVE_BUFFER_BPS
-    // (25% of 1_800_000 = 450_000) = 2_300_000 total. The buffer landed with
-    // the fix for the 2026-07-14 Neeru OOG so shortcut-supplied gas retains
-    // real headroom over CIP-64 overhead + real-world variance.
-    gas: '2300000',
+    // Swap tx base gas = 1_800_000 (no CIP-64 overhead since native CELO).
+    gas: '1800000',
     // The swap (second) tx has no fresh estimateGas call in this fixture so
     // _estimatedGasUse stays undefined, matching the actual saga output.
     _estimatedGasUse: undefined,
@@ -1313,25 +1308,27 @@ describe('SwapScreen', () => {
       price: defaultQuote.unvalidatedSwapTransaction.price,
       provider: defaultQuote.details.swapProvider,
       web3Library: 'viem',
-      // Per Bug E fix: pickFeeCurrency promotes cUSD ahead of CELO whenever
-      // the user has any cUSD balance. The fixture token mock has cUSD
-      // priceUsd = 1 and uses 18 decimals (same as CELO), so the gas math is:
-      //   swap base gas:   1_800_000
-      //   CIP-64 overhead: STATIC_GAS_PADDING (50_000) + 25% shortcut buffer
-      //                    (450_000) = 500_000  -> total swap gas 2_300_000
-      //   gas:             21_000 (approval) + 2_300_000 (swap) = 2_321_000
-      //   maxGasFee:       2_321_000 * 12 Gwei = 0.027852 assets.dollars
-      //   estimatedGasFee: (12_600 calibrated approval + 2_300_000 swap) * 8 Gwei
-      //                                                              = 0.0185008 assets.dollars
-      //   ...USD = same numeric value since cUSD priceUsd = 1.
-      gas: 2321000,
-      maxGasFee: 0.027852,
-      maxGasFeeUsd: 0.027852,
-      estimatedGasFee: 0.0185008,
-      estimatedGasFeeUsd: 0.0185008,
+      // Post Bug-E-reversal (2026-08-20): the selector returns CELO first for
+      // celo-mainnet, and prepareTransactions allows CELO as fee-currency for
+      // a CELO swap when max-amount leaves enough to cover gas. Native CELO
+      // gas has no CIP-64 overhead so the total gas is lower than the pre-
+      // reversal value (previously the picker skipped CELO and paid gas in a
+      // Mento stable with the extra 500_000 gas of CIP-64 overhead). Math:
+      //   approval gas: 21_000
+      //   swap gas:     1_800_000 (no CIP-64 overhead)
+      //   total gas:    1_821_000
+      //   maxGasFee:    1_821_000 * 12 Gwei = 0.021852 CELO
+      //   estimatedGasFee: (12_600 calibrated approval + 1_800_000 swap) * 8 Gwei
+      //                                                              = 0.0145008 CELO
+      // CELO priceUsd from the fixture ~ 13.05, so USD values scale.
+      gas: 1821000,
+      maxGasFee: 0.021852,
+      maxGasFeeUsd: 0.28529642665785426,
+      estimatedGasFee: 0.0145008,
+      estimatedGasFeeUsd: 0.1893202646750967,
       appFeePercentageIncludedInPrice: undefined,
-      feeCurrency: mockCusdAddress,
-      feeCurrencySymbol: 'USDm',
+      feeCurrency: undefined,
+      feeCurrencySymbol: 'CELO',
       txCount: 2,
       swapType: 'same-chain',
     })
@@ -1407,11 +1404,11 @@ describe('SwapScreen', () => {
 
     const transactionDetails = getByTestId('SwapTransactionDetails')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.fee')
-    // Per Bug E fix, useSwapQuote now picks cUSD over CELO when both have
-    // balance, so the displayed fee is 0.0149 assets.dollars ≈ COP$0.02 (cUSD priceUsd=1
-    // and mock COP rate is 1.3x) instead of 0.0145 CELO ≈ COP$0.25 (CELO
-    // priceUsd ≈ 13).
-    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.02')
+    // Post Bug-E-reversal (2026-08-20): the swap sells CELO but the picker
+    // still picks CELO as fee-currency (spend + gas fits inside the balance
+    // so prepareTransactions does not skip). Native CELO gas is
+    // 0.0145 CELO * priceUsd 13.05 * COP rate 1.3 ≈ COP$0.25.
+    expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent('≈ COP$0.25')
     expect(transactionDetails).toHaveTextContent('swapScreen.transactionDetails.slippagePercentage')
     expect(getByTestId('SwapTransactionDetails/Slippage')).toHaveTextContent('0.3%')
   })
@@ -1604,7 +1601,7 @@ describe('SwapScreen', () => {
 
     expect(
       getByText(
-        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"USDm, EURm, CELO"}'
+        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, USDm, EURm"}'
       )
     ).toBeTruthy()
   })
@@ -1626,13 +1623,14 @@ describe('SwapScreen', () => {
 
     expect(getByText('swapScreen.confirmSwap')).toBeDisabled()
 
-    // Per Bug E fix, useSwapQuote calls reorderForBugE which only pushes
-    // CELO to the end (no filtering). cEUR stays in the warning even with 0
-    // balance because the warning enumerates every currency the user could
-    // top up. Order: stables (selector priority) first, CELO last.
+    // Post Bug-E-reversal (2026-08-20): selector returns CELO first for
+    // celo-mainnet, then stables. The warning enumerates every currency the
+    // user could top up in that same selector order (cEUR stays in the list
+    // even with 0 balance because the warning is a suggestion, not a
+    // requirement).
     expect(
       getByText(
-        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"USDm, EURm, CELO"}'
+        'swapScreen.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, USDm, EURm"}'
       )
     ).toBeTruthy()
   })

@@ -1,11 +1,9 @@
 import BigNumber from 'bignumber.js'
-import { useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { goldPriceUsdSelector } from 'src/gold/selectors'
 import { GoldSwapQuote } from 'src/gold/types'
 import { useSelector } from 'src/redux/hooks'
 import { FetchQuoteResponse, SwapTransaction } from 'src/swap/types'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -265,12 +263,9 @@ async function createSwapTransactionsFromQuote(
 export function useGoldQuote() {
   const walletAddress = useSelector(walletAddressSelector)
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
-  const rawFeeCurrencies = useSelector((state) =>
+  const feeCurrencies = useSelector((state) =>
     feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
   )
-  // Bug E: stables ahead of CELO for Oro buy/sell so gas doesn't drain hidden
-  // CELO. Same memo pattern as useSwapQuote.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
 
   const getQuote = useAsyncCallback(
     async (params: GoldQuoteParams): Promise<GoldQuoteResult | null> => {

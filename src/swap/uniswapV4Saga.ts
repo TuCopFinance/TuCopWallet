@@ -28,7 +28,6 @@ import {
   UniswapV4BuildTxResponse,
 } from 'src/swap/types'
 import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
@@ -336,8 +335,7 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // Branch B2: permit2 — undelegated EOA, wallet signs the Permit2
     // PermitSingle typedData, POSTs /build-tx to receive the real
     // UniversalRouter calldata, and submits that. Same as before.
-    const rawFeeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
-    const feeCurrencies = reorderForBugE(rawFeeCurrencies)
+    const feeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
 
     let followerBaseTxs: { from: Address; to: Address; data: Hex; value: bigint }[]
 

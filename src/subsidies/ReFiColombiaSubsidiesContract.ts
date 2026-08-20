@@ -2,7 +2,6 @@ import { showMessage } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { showErrorMessage } from 'src/components/ErrorMessage'
 import { store } from 'src/redux/store'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
@@ -235,10 +234,9 @@ export class ReFiColombiaSubsidiesContract {
         args: [],
       })
 
-      // Bug E: stables ahead of CELO so the ReFi Colombia subsidies claim
-      // doesn't burn hidden CELO on gas.
-      const feeCurrencies = reorderForBugE(
-        feeCurrenciesSelector(store.getState() as any, NetworkId['celo-mainnet'])
+      const feeCurrencies = feeCurrenciesSelector(
+        store.getState() as any,
+        NetworkId['celo-mainnet']
       )
 
       Logger.debug(
