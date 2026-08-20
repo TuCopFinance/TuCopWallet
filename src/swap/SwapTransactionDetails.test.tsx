@@ -206,7 +206,7 @@ describe('SwapTransactionDetails', () => {
     )
   })
 
-  describe('feePaidIn (Bug E surface)', () => {
+  describe('feePaidIn (fee-currency display)', () => {
     const mockNetworkFee: SwapFeeAmount = {
       amount: new BigNumber(0.01),
       token: mockCusdTokenBalance,
@@ -234,8 +234,11 @@ describe('SwapTransactionDetails', () => {
           />
         </Provider>
       )
-      // CELO is not in the Pesos / Dólares / Oro mapping; raw symbol survives
-      // so the user can tell when the last-resort CELO fallback fired.
+      // CELO is not in the Pesos / Dolares / Oro mapping; the raw symbol
+      // survives. Post Bug-E-reversal (2026-08-20) CELO is the default
+      // first-choice fee currency for celo-mainnet, so this row will read
+      // "CELO" for most users - which is fine because CELO is otherwise
+      // hidden from the app and this is the only place its symbol surfaces.
       expect(getByTestId('SwapTransactionDetails/FeePaidIn')).toHaveTextContent('CELO')
     })
 

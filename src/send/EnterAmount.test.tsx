@@ -103,13 +103,14 @@ const mockStoreBalancesToTokenBalances = (storeBalances: StoredTokenBalance[]): 
   )
 }
 const mockFeeCurrencies = mockStoreBalancesToTokenBalances([
-  // Post Bug E fix: EnterAmount applies reorderForBugE to the selector output
-  // so CELO slides to the end. Inside each group the selector priority is
-  // preserved: cUSD (2) > cEUR (99) > cREAL (99) > CELO (was 0, now last).
+  // Post Bug-E-reversal (2026-08-20): selector returns CELO first for
+  // celo-mainnet, then stables in priority order. EnterAmount passes the
+  // list unchanged to prepareTransactions, so CELO wins whenever it has
+  // balance and stables are the cascade alternatives.
+  mockStoreTokenBalances[mockCeloTokenId],
   mockStoreTokenBalances[mockCusdTokenId],
   mockStoreTokenBalances[mockCeurTokenId],
   mockStoreTokenBalances[mockCrealTokenId],
-  mockStoreTokenBalances[mockCeloTokenId],
 ])
 const onClearPreparedTransactionsSpy = jest.fn()
 const onRefreshPreparedTransactionsSpy = jest.fn()

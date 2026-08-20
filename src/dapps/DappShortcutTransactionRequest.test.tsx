@@ -95,9 +95,10 @@ describe('DappShortcutTransactionRequest', () => {
     )
     expect(
       getByText(
-        // Per Bug E migration: reorderForBugE pushes CELO to the end so the
-        // warning lists visible stables first; CELO is the last-resort fallback.
-        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"USDm, EURm, CELO"}'
+        // Post Bug-E-reversal (2026-08-20) + Mento rebrand (2026-08-20 PR #327):
+        // selector returns CELO first for celo-mainnet, then rebranded Mento
+        // stables (USDm/EURm). The warning lists candidates in that order.
+        'walletConnectRequest.notEnoughBalanceForGas.description, {"feeCurrencies":"CELO, USDm, EURm"}'
       )
     ).toBeTruthy()
     expect(queryByText('allow')).toBeFalsy()

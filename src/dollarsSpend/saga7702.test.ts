@@ -53,6 +53,26 @@ const mockFromTokenUsat = {
   address: '0xd2ab00000000000000000000000000000000abcd',
 } as any
 
+// Post Bug-E-reversal (2026-08-20) the CELO synthesis for fee-currency
+// selection lives in feeCurrenciesByNetworkIdSelector, not inline in
+// saga7702. Every test that exercises the saga's fee-currency picking must
+// include CELO in its feeCurrenciesSelector provider mock (previously the
+// saga fetched CELO via publicClient.celo.getBalance and prepended it
+// inline; that inline synthesis was removed).
+const mockCeloNative = {
+  tokenId: 'celo-mainnet:native',
+  address: null,
+  networkId: 'celo-mainnet',
+  symbol: 'CELO',
+  name: 'Celo',
+  decimals: 18,
+  balance: new BigNumber(1),
+  priceUsd: null,
+  lastKnownPriceUsd: null,
+  priceFetchedAt: 0,
+  isNative: true,
+} as any
+
 const mockTokensById = {
   'celo-mainnet:usat': mockFromTokenUsat,
 }
@@ -137,7 +157,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         [matchers.call.fn(getFeatureGate), false],
         [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
         [matchers.select.selector(tokensByIdSelector), mockTokensById],
-        [matchers.select.selector(feeCurrenciesSelector), []],
+        [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
         [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
         // The legacy saga waits on swap success via race(take(...)); stub it.
         {
@@ -166,7 +186,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
       .provide([
         [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
         [matchers.select.selector(tokensByIdSelector), mockTokensById],
-        [matchers.select.selector(feeCurrenciesSelector), []],
+        [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
         [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
@@ -205,7 +225,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         .provide([
           [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
           [matchers.select.selector(tokensByIdSelector), mockTokensById],
-          [matchers.select.selector(feeCurrenciesSelector), []],
+          [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
           [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
           [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         ])
@@ -217,10 +237,12 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
     }
   })
 
-  it('prefers a stable fee currency over CELO when both are available (Bug E)', async () => {
-    // Both CELO (synthetic from chain getBalance) AND a stable Mento fee
-    // currency are usable. The Bug-E-aware picker must pick the stable so the
-    // user's hidden CELO balance is not silently drained.
+  it('prefers CELO over a stable when both are available (post Bug-E-reversal)', async () => {
+    // Both CELO (from selector-synthesized nativeCeloBalance) AND a stable
+    // are usable. The picker walks the selector-supplied order top-to-bottom;
+    // the selector puts CELO first for celo-mainnet because CELO is hidden
+    // from the user and paying gas in an invisible token is better UX than
+    // draining a visible stable. See project_bug_e_reversed_20260820.
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
     const wallet = mockWallet()
@@ -244,7 +266,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
       .provide([
         [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
         [matchers.select.selector(tokensByIdSelector), mockTokensById],
-        [matchers.select.selector(feeCurrenciesSelector), [mockCopm]],
+        [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative, mockCopm]],
         [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
@@ -254,14 +276,15 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
 
     expect(wallet.sendTransaction).toHaveBeenCalledTimes(1)
     const sendArg = wallet.sendTransaction.mock.calls[0][0]
-    // Stable preferred over CELO -> feeCurrency is the COPm address, not undefined.
-    expect(sendArg.feeCurrency).toBe(mockCopm.address)
+    // CELO picked first -> feeCurrency omitted (type 0x02 eip1559 native gas).
+    expect(sendArg.feeCurrency).toBeUndefined()
   })
 
   it('cascades to the next alternative when sendTransaction reverts with a fee-currency error', async () => {
-    // First attempt (USDm) reverts with "insufficient funds for gas" — a
-    // fee-currency-shaped failure. The cascade re-tries with the next
-    // alternative (CELO native). Second attempt succeeds.
+    // First attempt (CELO native, picked first per new policy) reverts with
+    // "insufficient funds for gas" — a fee-currency-shaped failure. The
+    // cascade re-tries with the next alternative (USDm stable). Second
+    // attempt succeeds.
     jest.mocked(getFeatureGate).mockReturnValue(true)
     jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
     const sendTx = jest
@@ -289,7 +312,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
       .provide([
         [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
         [matchers.select.selector(tokensByIdSelector), mockTokensById],
-        [matchers.select.selector(feeCurrenciesSelector), [mockUsdm]],
+        [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative, mockUsdm]],
         [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
@@ -297,10 +320,11 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
       .put(multiSwapCompleted())
       .silentRun()
 
-    // sendTransaction called twice: once with USDm, once with CELO native.
+    // sendTransaction called twice: once with CELO native (undefined
+    // feeCurrency), once with USDm as the cascade alternative.
     expect(sendTx).toHaveBeenCalledTimes(2)
-    expect(sendTx.mock.calls[0][0].feeCurrency).toBe(mockUsdm.address)
-    expect(sendTx.mock.calls[1][0].feeCurrency).toBeUndefined()
+    expect(sendTx.mock.calls[0][0].feeCurrency).toBeUndefined()
+    expect(sendTx.mock.calls[1][0].feeCurrency).toBe(mockUsdm.address)
   })
 
   it('does not cascade on non-fee-currency errors (user-rejected, slippage, RPC)', async () => {
@@ -320,7 +344,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         .provide([
           [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
           [matchers.select.selector(tokensByIdSelector), mockTokensById],
-          [matchers.select.selector(feeCurrenciesSelector), []],
+          [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
           [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
           [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
           [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
@@ -350,7 +374,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         .provide([
           [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
           [matchers.select.selector(tokensByIdSelector), mockTokensById],
-          [matchers.select.selector(feeCurrenciesSelector), []],
+          [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
           [matchers.call.fn(fetchSwapQuoteForExecution), throwError(quoteError)],
         ])
         .put.actionType(multiSwapStepFailed.type)
