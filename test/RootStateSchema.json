@@ -5795,6 +5795,9 @@
                 "error": {
                     "type": "boolean"
                 },
+                "nativeCeloBalance": {
+                    "type": "string"
+                },
                 "tokenBalances": {
                     "$ref": "#/definitions/StoredTokenBalances"
                 }
