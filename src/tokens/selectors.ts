@@ -518,7 +518,8 @@ export const sortedTokensWithBalanceSelector = createSelector(
 
 const feeCurrenciesByNetworkIdSelector = createSelector(
   (state: RootState) => tokensByIdSelector(state, Object.values(NetworkId)),
-  (tokens) => {
+  (state: RootState) => state.tokens.nativeCeloBalance,
+  (tokens, nativeCeloBalance) => {
     const feeCurrenciesByNetworkId: { [key in NetworkId]?: TokenBalance[] } = {}
     // collect fee currencies
     Object.values(tokens).forEach((token) => {
@@ -530,25 +531,65 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
       }
     })
 
+    // Synthesize a CELO entry for celo-mainnet from the wallet's native
+    // balance. CELO is deliberately excluded from ALLOWED_TOKEN_IDS (kept
+    // out of tokenBalances) so it stays invisible in the portfolio, send,
+    // receive and swap-picker screens. The fee-currency layer, however,
+    // needs CELO as the first-choice payer for gas: paying gas with an
+    // invisible token means the user's visible stables (Dolares/Pesos) stay
+    // intact for their real usage. Only when CELO runs out does the cascade
+    // fall to the next candidate. Without this synthesis, flipping the
+    // catalog source (Statsig gate `use_tucop_backend_tokens_info`) to a
+    // provider that omits CELO leaves the fee cascade with no last-resort
+    // candidate, and the swap preview surfaces "not enough balance for gas"
+    // even when the wallet has CELO on chain.
+    const celoMainnet = NetworkId['celo-mainnet']
+    const existingCelo = feeCurrenciesByNetworkId[celoMainnet]?.find(
+      (t) => t.tokenId === networkConfig.celoTokenId
+    )
+    if (!existingCelo && nativeCeloBalance) {
+      const balance = new BigNumber(nativeCeloBalance).shiftedBy(-18)
+      const syntheticCelo: TokenBalance = {
+        tokenId: networkConfig.celoTokenId,
+        address: null,
+        networkId: celoMainnet,
+        symbol: 'CELO',
+        name: 'Celo',
+        decimals: 18,
+        balance,
+        priceUsd: null,
+        lastKnownPriceUsd: null,
+        priceFetchedAt: Date.now(),
+        isNative: true,
+      }
+      feeCurrenciesByNetworkId[celoMainnet] = [
+        ...(feeCurrenciesByNetworkId[celoMainnet] ?? []),
+        syntheticCelo,
+      ]
+    }
+
     // Priority order for TuCop fee currencies: CELO > COPm > USDm > USDC > USDT
     // Current names (Mento rebranding): COPm, USDm
     // Fallback old names (Valora API): cCOP, cUSD
     //
-    // NOTE: this preserves the historical CELO-first priority for the legacy
-    // callers (swap, send, earn, dapps, gold, walletConnect, buckspay,
-    // subsidies, neeru). The Bug-E stables-first preference is
-    // applied inside `pickFeeCurrency` (src/tokens/feeCurrencyPicker.ts), used
-    // only by the migrated flows (dollarsSpend legacy + 7702). Migrating the
-    // remaining callers to `pickFeeCurrency` removes their dependency on this
-    // ordering and lets us flip CELO to last-resort globally in a future PR.
+    // CELO is FIRST-choice for TuCop: the token is invisible in the portfolio,
+    // so paying gas in CELO does not touch any balance the user can see.
+    // Stables are only used when CELO is exhausted. This inverts the earlier
+    // Bug-E "stables-first" policy (PR #227, 2026-06-30) because that policy
+    // was motivated by protecting a user mental model of CELO that TuCop's UI
+    // never exposes in the first place - if the user cannot see CELO, its
+    // silent depletion is not a UX cost, and the alternative (draining
+    // visible stables) is what actually surprises users. The `reorderForBugE`
+    // wrapper and the CELO-deprioritization branch in `pickFeeCurrency` were
+    // removed together with this change.
     const FEE_CURRENCY_PRIORITY: Record<string, number> = {
-      CELO: 0,
-      COPm: 1, // Colombian Peso (current)
-      cCOP: 1, // Fallback old name
-      USDm: 2, // US Dollar (current)
-      cUSD: 2, // Fallback old name
-      USDC: 3,
-      USDT: 4,
+      CELO: 1,
+      COPm: 2, // Colombian Peso (current)
+      cCOP: 2, // Fallback old name
+      USDm: 3, // US Dollar (current)
+      cUSD: 3, // Fallback old name
+      USDC: 4,
+      USDT: 5,
     }
 
     // Sort fee currencies by priority, then by USD balance

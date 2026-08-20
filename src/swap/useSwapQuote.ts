@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/react-native'
 import BigNumber from 'bignumber.js'
-import { useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { SENTRY_ENABLED } from 'src/config'
 import { useSelector } from 'src/redux/hooks'
@@ -14,7 +13,6 @@ import {
   UniswapV4BatchCall,
   UniswapV4Permit2Metadata,
 } from 'src/swap/types'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -439,13 +437,7 @@ function useSwapQuote({
   enableAppFee: boolean
 }) {
   const walletAddress = useSelector(walletAddressSelector)
-  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
-  // Bug E: the shared selector returns CELO at index 0, and prepareTransactions
-  // (called inside prepareSwapTransactions below) locks in the first viable
-  // entry. Demote CELO to the end of the array so any visible stable is
-  // preferred. CELO remains in the list as a last-resort fallback for the
-  // rare case where every stable fails the gas check.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
 
   const refreshQuote = useAsyncCallback(
     async (

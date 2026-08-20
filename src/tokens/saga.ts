@@ -14,10 +14,11 @@ import {
   StoredTokenBalances,
   TokenBalance,
   fetchTokenBalancesFailure,
+  setNativeCeloBalance,
   setTokenBalances,
 } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
-import { NetworkId } from 'src/transactions/types'
+import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -181,6 +182,25 @@ export function* fetchTokenBalancesSaga() {
         ...supportedTokens,
       })
     )
+
+    // Fetch native CELO balance so feeCurrenciesByNetworkIdSelector can
+    // synthesize a CELO entry in the fee-currency list. CELO is deliberately
+    // excluded from ALLOWED_TOKEN_IDS (kept out of tokenBalances) so it stays
+    // invisible in the portfolio, but the fee-currency cascade still needs it
+    // as the first-choice payer. A getBalance() failure must not block the
+    // regular token-balance flow, so it's wrapped in its own try/catch and
+    // logged silently.
+    if (supportedNetworks.includes(NetworkId['celo-mainnet'])) {
+      try {
+        const celoNativeBalance = yield* call(() =>
+          publicClient[Network.Celo].getBalance({ address: address as Address })
+        )
+        yield* put(setNativeCeloBalance(celoNativeBalance.toString()))
+      } catch (nativeErr) {
+        Logger.warn(TAG, 'failed to fetch native CELO balance', ensureError(nativeErr).message)
+      }
+    }
+
     AppAnalytics.track(AppEvents.fetch_balance, {})
   } catch (err) {
     const error = ensureError(err)

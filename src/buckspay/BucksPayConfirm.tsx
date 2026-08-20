@@ -15,7 +15,6 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useCOPm } from 'src/tokens/hooks'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
@@ -31,12 +30,9 @@ function BucksPayConfirm({ route }: Props) {
 
   const walletAddress = useSelector(walletAddressSelector)
   const copmToken = useCOPm()
-  const rawFeeCurrencies = useSelector((state) =>
+  const feeCurrencies = useSelector((state) =>
     feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
   )
-  // Bug E: stables ahead of CELO so the COPm -> COP offramp doesn't burn a
-  // hidden CELO balance to pay gas.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
 
   const {
     prepareTransactionsResult,

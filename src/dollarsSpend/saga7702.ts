@@ -344,6 +344,10 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     //
     // We never pay gas in a token that's in the spending set: gas would race
     // the capped-to-balance swap input and the outer tx would revert.
+    // feeCurrenciesSelector now synthesizes CELO for celo-mainnet from
+    // state.tokens.nativeCeloBalance (populated by fetchTokenBalancesSaga),
+    // so this list already contains CELO at priority 1 whenever the wallet
+    // has any on chain. No need for an inline synthetic entry.
     const feeCurrencyCandidates = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
 
     // 1e30 wei: ~1T units of an 18-decimal token, far above any single tx's
@@ -375,34 +379,10 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       }
     }
 
-    // CELO is excluded from ALLOWED_TOKEN_IDS so the Redux fee-currency list
-    // never contains it. Read native balance from chain and synthesize a
-    // minimal TokenBalance so the picker can rank CELO as a last-resort
-    // fallback alongside the stables.
-    const celoNativeBalance = yield* call(() =>
-      publicClient[Network.Celo].getBalance({ address: walletAddress as Address })
-    )
-    const syntheticCelo: TokenBalance | null =
-      celoNativeBalance > BigInt(0)
-        ? ({
-            tokenId: 'celo-mainnet:native',
-            address: null,
-            networkId: NetworkId['celo-mainnet'],
-            symbol: 'CELO',
-            name: 'Celo',
-            decimals: 18,
-            balance: new BigNumber(celoNativeBalance.toString()).shiftedBy(-18),
-            priceUsd: null,
-            lastKnownPriceUsd: null,
-            priceFetchedAt: Date.now(),
-            isNative: true,
-          } as unknown as TokenBalance)
-        : null
-
     const spendingTokenAddresses = steps.map((s) => s.tokenId.split(':')[1])
 
     const choice = pickFeeCurrency({
-      available: syntheticCelo ? [...feeCurrencyCandidates, syntheticCelo] : feeCurrencyCandidates,
+      available: feeCurrencyCandidates,
       excludeTokenIds: spendingTokenAddresses,
       adapterAllowanceMissing,
     })
@@ -482,16 +462,14 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // that landed on a stable still counts as preferred-stable; one that
     // landed on CELO is celo-fallback. cascadeAttempts tells the team whether
     // the first try worked (0) or how many alternatives were burned through.
-    const finalReason: 'preferred-stable' | 'celo-fallback' =
-      finalCandidate.symbol === 'CELO' ? 'celo-fallback' : 'preferred-stable'
     Logger.info(
       TAG,
-      `picked fee currency: ${finalCandidate.symbol} (reason=${finalReason}, declined=${choice.declined.length}, alternatives=${choice.alternatives.length}, cascadeAttempts=${cascadeAttempts})`
+      `picked fee currency: ${finalCandidate.symbol} (declined=${choice.declined.length}, alternatives=${choice.alternatives.length}, cascadeAttempts=${cascadeAttempts})`
     )
     AppAnalytics.track(FeeEvents.fee_currency_picked, {
       context: 'dollarsSpend_7702',
       chosenSymbol: finalCandidate.symbol,
-      reason: finalReason,
+      reason: 'first-viable',
       declinedCount: choice.declined.length,
       alternativesCount: choice.alternatives.length,
       cascadeAttempts,

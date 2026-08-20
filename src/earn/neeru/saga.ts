@@ -31,7 +31,6 @@ import { hooksApiUrlSelector } from 'src/positions/selectors'
 import { RawShortcutTransaction } from 'src/positions/slice'
 import { triggerShortcutRequest } from 'src/positions/saga'
 import { rawShortcutTransactionsToTransactionRequests } from 'src/positions/transactions'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
@@ -319,11 +318,7 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
   }
   const hooksApiUrl = yield* select(hooksApiUrlSelector)
   const { meta } = yield* select(neeruMetaSelector)
-  // Bug E: stables ahead of CELO so the Neeru open/close path doesn't burn a
-  // hidden CELO balance to pay gas.
-  const feeCurrencies = reorderForBugE(
-    yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
-  )
+  const feeCurrencies = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
 
   try {
     const response: TriggerShortcutResponseData = yield* call(triggerShortcutRequest, hooksApiUrl, {
@@ -447,11 +442,7 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
     return
   }
   const hooksApiUrl = yield* select(hooksApiUrlSelector)
-  // Bug E: stables ahead of CELO so the Neeru open/close path doesn't burn a
-  // hidden CELO balance to pay gas.
-  const feeCurrencies = reorderForBugE(
-    yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
-  )
+  const feeCurrencies = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
 
   try {
     // If the close saga already received a pre-built amount-only fallback

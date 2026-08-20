@@ -27,7 +27,6 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -68,12 +67,7 @@ export default function EarnConfirmationScreen({ route }: Props) {
 
   const isGasSubsidized = isGasSubsidizedForNetwork(depositToken.networkId)
 
-  const rawFeeCurrencies = useSelector((state) =>
-    feeCurrenciesSelector(state, depositToken.networkId)
-  )
-  // Bug E: stables ahead of CELO so an earn withdraw/claim doesn't silently
-  // burn the user's hidden CELO balance on gas.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, depositToken.networkId))
 
   const withdrawAmountInDepositToken = useMemo(
     () =>

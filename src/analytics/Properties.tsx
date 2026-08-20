@@ -644,7 +644,11 @@ interface FeeEventsProperties {
   [FeeEvents.fee_currency_picked]: {
     context: 'dollarsSpend_7702' | 'dollarsSpend_legacy' | 'swap' | 'send'
     chosenSymbol: string
-    reason: 'preferred-stable' | 'celo-fallback'
+    // Post Bug-E-reversal (2026-08-20) there is a single reason: the picker
+    // returns the first candidate that passes every check in selector order,
+    // which is CELO first for celo-mainnet. Keep the field so we can group by
+    // context/chosenSymbol without breaking downstream dashboards.
+    reason: 'first-viable'
     declinedCount: number
     alternativesCount: number
     // 0 when the initial pick succeeded on first sendTransaction. >0 when the

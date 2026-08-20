@@ -99,6 +99,14 @@ export interface TokenBalancesWithAddress {
 interface State {
   tokenBalances: StoredTokenBalances
   error: boolean
+  // Native CELO balance (wei as string) for celo-mainnet. Populated by
+  // fetchTokenBalancesSaga via an on-chain getBalance() call. Kept out of
+  // tokenBalances on purpose: CELO is excluded from ALLOWED_TOKEN_IDS so it
+  // stays invisible in the portfolio, send/receive, swap picker, etc.
+  // Consumed by feeCurrenciesByNetworkIdSelector to synthesize a CELO entry
+  // in the fee-currency list so the fee cascade always has CELO available
+  // as the first-choice payer (invisible to the user).
+  nativeCeloBalance?: string
 }
 
 export function tokenBalanceHasAddress(
@@ -149,6 +157,10 @@ const slice = createSlice({
         },
       }
     },
+    setNativeCeloBalance: (state, action: PayloadAction<string>) => ({
+      ...state,
+      nativeCeloBalance: action.payload,
+    }),
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
@@ -163,6 +175,7 @@ export const {
   fetchTokenBalancesSuccess,
   fetchTokenBalancesFailure,
   importToken,
+  setNativeCeloBalance,
 } = slice.actions
 
 export default slice.reducer
