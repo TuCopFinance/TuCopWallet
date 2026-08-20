@@ -28,7 +28,7 @@ import {
   getSupportedNetworkIdsForTokenBalances,
 } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL, resolveCurrency } from 'src/utils/currencies'
 import { deterministicShuffle } from 'src/utils/random'
 import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
@@ -204,10 +204,27 @@ export function useTokensInfo(tokenIds: string[]): (TokenBalance | undefined)[] 
 
 /**
  * @deprecated
+ * Legacy symbol-based token lookup. Post the Mento rebrand deploy on
+ * 2026-08-20 the on-chain `symbol()` returns 'USDm'/'EURm' for the cUSD /
+ * cEUR contracts, but historical callers (FiatConnect cached quotes,
+ * legacy deeplinks) still pass 'cUSD' / 'cEUR' / 'cREAL'. Normalize via
+ * resolveCurrency + CURRENCY_TO_CHAIN_SYMBOL before the direct symbol
+ * match so those legacy inputs keep resolving.
  */
 export function useTokenInfoWithAddressBySymbol(symbol: string) {
   const tokens = useSelector(tokensListWithAddressSelector)
-  return tokens.find((tokenInfo) => tokenInfo.symbol === symbol)
+  const currency = symbol ? resolveCurrency(symbol) : undefined
+  const resolvedSymbol = currency ? CURRENCY_TO_CHAIN_SYMBOL[currency] : symbol
+  // Try the current on-chain symbol first (post 2026-08-20 Mento rebrand:
+  // 'USDm' for the cUSD contract, 'EURm' for cEUR). Fall back to the raw
+  // input symbol so legacy state (or tests) that still store 'cUSD' /
+  // 'cEUR' on the token entry keep resolving.
+  return (
+    tokens.find((tokenInfo) => tokenInfo.symbol === resolvedSymbol) ??
+    (resolvedSymbol !== symbol
+      ? tokens.find((tokenInfo) => tokenInfo.symbol === symbol)
+      : undefined)
+  )
 }
 
 export function useTokenInfoByCurrency(currency: Currency) {

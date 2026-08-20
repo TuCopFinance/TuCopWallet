@@ -100,10 +100,10 @@ describe(PointsHistoryBottomSheet, () => {
       tree.getByText('points.history.cards.depositEarn.subtitle, {"network":"Celo"}')
     ).toBeTruthy()
     expect(
-      tree.getByText('points.history.cards.swap.subtitle, {"fromToken":"CELO","toToken":"cUSD"}')
+      tree.getByText('points.history.cards.swap.subtitle, {"fromToken":"CELO","toToken":"USDm"}')
     ).toBeTruthy()
     expect(
-      tree.getByText('points.history.cards.swap.subtitle, {"fromToken":"cUSD","toToken":"CELO"}')
+      tree.getByText('points.history.cards.swap.subtitle, {"fromToken":"USDm","toToken":"CELO"}')
     ).toBeTruthy()
     expect(tree.getByText('points.history.cards.createWallet.subtitle')).toBeTruthy()
 

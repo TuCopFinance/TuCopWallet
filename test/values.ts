@@ -435,10 +435,14 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     address: mockCeurAddress,
     tokenId: mockCeurTokenId,
     networkId: NetworkId['celo-mainnet'],
-    symbol: 'cEUR',
+    // Post Mento rebrand deploy 2026-08-20 the contract at mockCeurAddress
+    // returns 'EURm' from symbol(); backend /api/tokens/info reflects this
+    // now that use_tucop_backend_tokens_info is at 100%. Fixture mirrors
+    // production so tokensByCurrencySelector matches CURRENCY_TO_CHAIN_SYMBOL.
+    symbol: 'EURm',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cEUR.png',
-    name: 'Celo Euro',
+    name: 'Mento Euro',
     decimals: 18,
     balance: '0',
     isFeeCurrency: true,
@@ -453,10 +457,14 @@ export const mockTokenBalances: Record<string, StoredTokenBalance> = {
     address: mockCusdAddress,
     tokenId: mockCusdTokenId,
     networkId: NetworkId['celo-mainnet'],
-    symbol: 'cUSD',
+    // Post Mento rebrand deploy 2026-08-20 the contract at mockCusdAddress
+    // returns 'USDm' from symbol(); backend /api/tokens/info reflects this
+    // now that use_tucop_backend_tokens_info is at 100%. Fixture mirrors
+    // production so tokensByCurrencySelector matches CURRENCY_TO_CHAIN_SYMBOL.
+    symbol: 'USDm',
     imageUrl:
       'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_cUSD.png',
-    name: 'Celo Dollar',
+    name: 'Mento Dollar',
     decimals: 18,
     balance: '0',
     isFeeCurrency: true,

@@ -16,7 +16,7 @@ import { TransactionDataInput } from 'src/send/types'
 import { tokensListSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { convertLocalToTokenAmount, getSupportedNetworkIdsForSend } from 'src/tokens/utils'
-import { Currency, CURRENCY_TO_CHAIN_SYMBOL } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL, resolveCurrency } from 'src/utils/currencies'
 import Logger from 'src/utils/Logger'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -52,13 +52,19 @@ export function* handleSendPaymentData({
   const tokens: TokenBalance[] = yield* select((state) =>
     tokensListSelector(state, supportedNetworkIds)
   )
-  // Match against the on-chain token symbol. Currency.Dollar value is 'USDm'
-  // (new internal naming) but the cUSD Mento stable still has on-chain symbol
-  // 'cUSD' (contract was rebranded but not redeployed). data.token from a
-  // deeplink may still send the legacy symbol, which is also accepted here.
-  const tokenInfo = tokens.find(
-    (token) => token?.symbol === (data.token ?? CURRENCY_TO_CHAIN_SYMBOL[Currency.Dollar])
-  )
+  // Match against the on-chain token symbol. The Mento rebrand deploy on
+  // 2026-08-20 propagated the new symbol() return to Celo mainnet (e.g.
+  // 0x765de816...1282a returns 'USDm', was 'cUSD'; same contract). Historical
+  // deeplinks in the wild still carry the legacy symbol 'cUSD'/'cEUR', so we
+  // route `data.token` through resolveCurrency (accepts both legacy and new
+  // codes) and then look up the current on-chain symbol via
+  // CURRENCY_TO_CHAIN_SYMBOL before the pattern-match. When `data.token`
+  // is absent the default is Currency.Dollar (-> 'USDm').
+  const requestedCurrency = data.token ? resolveCurrency(data.token) : Currency.Dollar
+  const requestedSymbol = requestedCurrency
+    ? CURRENCY_TO_CHAIN_SYMBOL[requestedCurrency]
+    : data.token
+  const tokenInfo = tokens.find((token) => token?.symbol === requestedSymbol)
 
   if (!tokenInfo?.priceUsd) {
     navigate(Screens.SendEnterAmount, {

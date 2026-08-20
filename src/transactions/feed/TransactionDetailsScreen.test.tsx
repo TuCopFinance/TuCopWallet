@@ -336,7 +336,7 @@ describe('TransactionDetailsScreen', () => {
     expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$0.04') // the localAmount in the fee data is used
 
     expect(getByText('amountSent')).toBeTruthy()
-    expect(getByTestId('TransferSent/AmountSentValue')).toHaveTextContent('10.00 cUSD')
+    expect(getByTestId('TransferSent/AmountSentValue')).toHaveTextContent('10.00 assets.dollars')
     expect(getByTestId('TransferSent/TransferTokenExchangeRate')).toHaveTextContent('COP$1.08') // the localAmount in the amount data is used
     expect(getByTestId('TransferSent/AmountSentValueFiat')).toHaveTextContent('COP$9.26')
   })
@@ -387,16 +387,16 @@ describe('TransactionDetailsScreen', () => {
     })
 
     const swapTo = getByTestId('SwapContent/swapTo')
-    expect(getElementText(swapTo)).toEqual('34.00 cEUR')
+    expect(getElementText(swapTo)).toEqual('34.00 EURm')
 
     const swapFrom = getByTestId('SwapContent/swapFrom')
-    expect(getElementText(swapFrom)).toEqual('17.00 cUSD')
+    expect(getElementText(swapFrom)).toEqual('17.00 assets.dollars')
 
     const rate = getByTestId('SwapContent/rate')
-    expect(getElementText(rate)).toEqual('1 cUSD ≈ 2.00 cEUR')
+    expect(getElementText(rate)).toEqual('1 USDm ≈ 2.00 EURm')
 
     // Includes the fee
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.10 cUSD')
+    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.10 assets.dollars')
     expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$0.13')
   })
 
@@ -674,7 +674,7 @@ describe('TransactionDetailsScreen', () => {
       })
 
       expect(
-        getByText('transactionDetails.depositSubtitle, {"txAppName":"Aave","tokenSymbol":"cUSD"}')
+        getByText('transactionDetails.depositSubtitle, {"txAppName":"Aave","tokenSymbol":"USDm"}')
       ).toBeTruthy()
     })
 
@@ -690,7 +690,7 @@ describe('TransactionDetailsScreen', () => {
 
       expect(
         getByText(
-          'transactionDetails.depositSubtitle, {"context":"noTxAppName","tokenSymbol":"cUSD"}'
+          'transactionDetails.depositSubtitle, {"context":"noTxAppName","tokenSymbol":"USDm"}'
         )
       ).toBeTruthy()
     })
@@ -893,7 +893,7 @@ describe('TransactionDetailsScreen', () => {
     expect(getByText('transactionStatus.transactionIsCompleted')).toBeTruthy()
 
     expect(getByText('swapTransactionDetailPage.swapFrom')).toBeTruthy()
-    expect(getByTestId('SwapContent/swapFrom')).toHaveTextContent('0.099 cUSD')
+    expect(getByTestId('SwapContent/swapFrom')).toHaveTextContent('0.099 assets.dollars')
     expect(getByText('swapTransactionDetailPage.swapTo')).toBeTruthy()
     expect(getByTestId('SwapContent/swapTo')).toHaveTextContent('0.00003 ETH')
     expect(getByText('swapTransactionDetailPage.network')).toBeTruthy()
@@ -904,14 +904,14 @@ describe('TransactionDetailsScreen', () => {
     ).toBeTruthy()
 
     expect(getByText('swapTransactionDetailPage.rate')).toBeTruthy()
-    expect(getByTestId('SwapContent/rate')).toHaveTextContent('1 cUSD ≈ 0.0003 ETH')
+    expect(getByTestId('SwapContent/rate')).toHaveTextContent('1 USDm ≈ 0.0003 ETH')
 
     const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
     expect(networkFee).toHaveTextContent('transactionFeed.networkFee')
     expect(networkFee).toHaveTextContent('0.0033 CELO')
     expect(networkFee).toHaveTextContent('COP$0.059')
     expect(appFee).toHaveTextContent('transactionFeed.appFee')
-    expect(appFee).toHaveTextContent('0.0006 cUSD')
+    expect(appFee).toHaveTextContent('0.0006 assets.dollars')
     expect(appFee).toHaveTextContent('COP$0.0008')
     expect(crossChainFee).toHaveTextContent('transactionFeed.crossChainFee')
     expect(crossChainFee).toHaveTextContent('0.38 CELO')
@@ -940,7 +940,7 @@ describe('TransactionDetailsScreen', () => {
     const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
     expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} 0.0033 CELO`)
     expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} COP$0.059`)
-    expect(appFee).toHaveTextContent('0.0006 cUSD') // app fee is always known
+    expect(appFee).toHaveTextContent('0.0006 assets.dollars') // app fee is always known
     expect(appFee).toHaveTextContent('COP$0.0008')
     expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} 0.38 CELO`)
     expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} COP$6.74`)

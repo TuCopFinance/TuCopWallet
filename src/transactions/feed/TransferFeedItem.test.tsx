@@ -140,7 +140,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemFailedTransaction'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -187,7 +187,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -200,7 +200,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemReceivedTitle'],
       expectedSubtitleSections: ['feedItemReceivedInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -220,7 +220,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', mockName],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -235,7 +235,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', MOCK_E164_NUMBER],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -254,7 +254,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', mockName],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -270,7 +270,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', 'a title'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -292,7 +292,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', 'Simplex'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -316,7 +316,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemCeloRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemRewardReceivedInfo'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -334,7 +334,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemRewardReceivedInfo'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -352,7 +352,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemInviteRewardReceivedTitle'],
       expectedSubtitleSections: ['feedItemInviteRewardReceivedInfo'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -375,7 +375,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemReceivedTitle'],
       expectedSubtitleSections: ['feedItemReceivedInfo', 'Simplex'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -397,7 +397,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemSentTitle'],
       expectedSubtitleSections: ['feedItemSentInfo', formatShortenedAddress(MOCK_ADDRESS)],
       expectedAmount: '+COP$40,000.00',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
 
@@ -470,7 +470,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemDepositTitle'],
       expectedSubtitleSections: ['feedItemReceivedInfo'],
       expectedAmount: '+COP$13.30',
-      expectedTokenAmount: '10.00 cUSD',
+      expectedTokenAmount: '10.00 assets.dollars',
     })
   })
   it('renders correctly for transfers to FiatConnect Providers', async () => {
@@ -519,7 +519,7 @@ describe('TransferFeedItem', () => {
       expectedTitleSections: ['feedItemFcTransferWithdraw'],
       expectedSubtitleSections: ['feedItemFcTransferBankAccount'],
       expectedAmount: `-US$${transferOutFcQuote.quote.quote.fiatAmount}.00`,
-      expectedTokenAmount: `${transferTotalCost}.00 cUSD`,
+      expectedTokenAmount: `${transferTotalCost}.00 assets.dollars`,
     })
   })
 })

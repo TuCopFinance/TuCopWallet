@@ -566,7 +566,7 @@ describe('showActionRequest', () => {
       supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
+      feeCurrenciesSymbols: ['USDm', 'EURm', 'CELO'],
       preparedTransaction: mockPreparedTransactions.transactions[0],
       prepareTransactionErrorMessage: undefined,
     })
@@ -601,7 +601,7 @@ describe('showActionRequest', () => {
       supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
+      feeCurrenciesSymbols: ['USDm', 'EURm', 'CELO'],
       preparedTransaction: undefined,
       prepareTransactionErrorMessage: 'Some error',
     })
@@ -636,7 +636,7 @@ describe('showActionRequest', () => {
       supportedChains: ['eip155:42220'],
       version: 2,
       hasInsufficientGasFunds: false,
-      feeCurrenciesSymbols: ['cUSD', 'cEUR', 'CELO'],
+      feeCurrenciesSymbols: ['USDm', 'EURm', 'CELO'],
       preparedTransaction: undefined,
       prepareTransactionErrorMessage: 'viem short message',
     })
