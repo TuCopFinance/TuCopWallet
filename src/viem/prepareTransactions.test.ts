@@ -1170,6 +1170,19 @@ describe('prepareTransactions module', () => {
     it('returns the fee currency adapter address when not native and not a direct fee currency', () => {
       expect(getFeeCurrencyAddress(mockFeeCurrencyWithAdapter)).toEqual('0xfee3adapter')
     })
+    // Backend `/api/tokens/info` returns `isFeeCurrency: true` alongside a
+    // `feeCurrencyAdapterAddress` for USDC on Celo mainnet. Only the adapter
+    // is registered in FeeCurrencyDirectory, so passing the raw token address
+    // to eth_gasPrice reverts with "unregistered fee-currency address".
+    // Adapter must win.
+    it('prefers the adapter address when both isFeeCurrency and adapter are set', () => {
+      expect(
+        getFeeCurrencyAddress({
+          ...mockFeeCurrencyWithAdapter,
+          isFeeCurrency: true,
+        })
+      ).toEqual('0xfee3adapter')
+    })
     it('throws if the fee currency is not native and does not have an address', () => {
       expect(() => getFeeCurrencyAddress({ ...mockErc20FeeCurrency, address: null })).toThrowError(
         'Fee currency address is missing for fee currency celo-mainnet:0xfee2'

@@ -99,18 +99,26 @@ export function getFeeCurrencyAddress(feeCurrency: TokenBalance): Address | unde
     return undefined
   }
 
-  // Direct fee currency
+  // Adapter takes precedence: when a token exposes a fee-currency adapter,
+  // that adapter is what FeeCurrencyDirectory registers on chain. Passing
+  // the raw token address to eth_gasPrice fails with "unregistered
+  // fee-currency address" for tokens whose native ERC-20 is not itself in
+  // the directory (USDC pattern on Celo mainnet: only the adapter
+  // 0x2f25deb3... is registered, not the token 0xceba9300...). Since the
+  // TuCop backend catalog started sending `isFeeCurrency: true` alongside
+  // `feeCurrencyAdapterAddress` for the same token, this branch must run
+  // before the direct-fee-currency branch below.
+  if (feeCurrency.feeCurrencyAdapterAddress) {
+    return feeCurrency.feeCurrencyAdapterAddress
+  }
+
+  // Direct fee currency (registered at the token address, no adapter needed).
   if (feeCurrency.isFeeCurrency) {
     if (!feeCurrency.address) {
       // This should never happen
       throw new Error(`Fee currency address is missing for fee currency ${feeCurrency.tokenId}`)
     }
     return feeCurrency.address as Address
-  }
-
-  // Fee currency adapter
-  if (feeCurrency.feeCurrencyAdapterAddress) {
-    return feeCurrency.feeCurrencyAdapterAddress
   }
 
   // This should never happen
