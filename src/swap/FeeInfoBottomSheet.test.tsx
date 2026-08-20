@@ -75,12 +75,12 @@ describe('FeeInfoBottomSheet', () => {
 
     expect(getByText('swapScreen.transactionDetails.estimatedNetworkFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/EstimatedNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.013","tokenAmount":"0.01","tokenSymbol":"cUSD"}'
+      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.013","tokenAmount":"0.01","tokenSymbol":"USDm"}'
     )
 
     expect(getByText('swapScreen.transactionDetails.maxNetworkFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/MaxNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.027","tokenAmount":"0.02","tokenSymbol":"cUSD"}'
+      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.027","tokenAmount":"0.02","tokenSymbol":"USDm"}'
     )
 
     expect(getByText('swapScreen.transactionDetails.appFee')).toBeTruthy()
@@ -130,10 +130,10 @@ describe('FeeInfoBottomSheet', () => {
     )
 
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/EstimatedNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.01","tokenSymbol":"cUSD"}'
+      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.01","tokenSymbol":"USDm"}'
     )
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/MaxNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.02","tokenSymbol":"cUSD"}'
+      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.02","tokenSymbol":"USDm"}'
     )
   })
 

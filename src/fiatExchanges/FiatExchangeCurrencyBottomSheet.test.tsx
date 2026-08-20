@@ -84,9 +84,11 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
       </Provider>
     )
     expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
-    ;['ETH', 'CELO', 'cUSD', 'cEUR', 'cREAL', 'POOF', 'USDC', 'cKES'].forEach((token, index) => {
-      expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
-    })
+    ;['ETH', 'CELO', 'Mento Dollar', 'Mento Euro', 'cREAL', 'POOF', 'USDC', 'cKES'].forEach(
+      (token, index) => {
+        expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
+      }
+    )
   })
   it('shows the correct tokens for cash out', () => {
     const { getAllByTestId } = render(
@@ -133,8 +135,10 @@ describe(FiatExchangeCurrencyBottomSheet, () => {
       </Provider>
     )
     expect(getAllByTestId('TokenBalanceItem')).toHaveLength(8)
-    ;['cUSD', 'cREAL', 'cEUR', 'CELO', 'POOF', 'ETH', 'USDC', 'cKES'].forEach((token, index) => {
-      expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
-    })
+    ;['Mento Dollar', 'cREAL', 'Mento Euro', 'CELO', 'POOF', 'ETH', 'USDC', 'cKES'].forEach(
+      (token, index) => {
+        expect(getAllByTestId('TokenBalanceItem')[index]).toHaveTextContent(token)
+      }
+    )
   })
 })

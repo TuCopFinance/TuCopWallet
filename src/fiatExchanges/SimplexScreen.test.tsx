@@ -7,7 +7,6 @@ import { FiatExchangeEvents } from 'src/analytics/Events'
 import SimplexScreen from 'src/fiatExchanges/SimplexScreen'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { Screens } from 'src/navigator/Screens'
-import { CiCoCurrency } from 'src/utils/currencies'
 import { createMockStore, getMockStackScreenProps } from 'test/utils'
 import { mockAccount, mockCusdTokenId, mockE164Number } from 'test/values'
 import { v4 as uuidv4 } from 'uuid'
@@ -101,7 +100,10 @@ describe('SimplexScreen', () => {
     fireEvent.press(tree.getByText(/continueToProvider/))
     expect(AppAnalytics.track).toHaveBeenCalledWith(FiatExchangeEvents.cico_simplex_open_webview, {
       amount: 25,
-      cryptoCurrency: CiCoCurrency.cUSD,
+      // Post Mento rebrand 2026-08-20 CURRENCY_TO_CHAIN_SYMBOL[Currency.Dollar]
+      // is 'USDm' (was 'cUSD'), which is what SimplexScreen forwards to the
+      // analytics event now that the on-chain symbol changed.
+      cryptoCurrency: 'USDm',
       feeInFiat: 7,
       fiatCurrency: 'USD',
     })

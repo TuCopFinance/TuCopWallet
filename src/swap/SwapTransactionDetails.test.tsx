@@ -39,7 +39,7 @@ describe('SwapTransactionDetails', () => {
 
     expect(getByText('swapScreen.transactionDetails.exchangeRate')).toBeTruthy()
     expect(getByTestId('SwapTransactionDetails/ExchangeRate')).toHaveTextContent(
-      '1 cUSD ≈ 0.58370 CELO'
+      '1 assets.dollars ≈ 0.58370 CELO'
     )
     expect(getByTestId('SwapTransactionDetails/ExchangeRate/MoreInfo/Icon')).toBeTruthy()
     expect(getByTestId('SwapTransactionDetails/ExchangeRate/MoreInfo')).not.toBeDisabled()
@@ -177,7 +177,7 @@ describe('SwapTransactionDetails', () => {
       )
 
       expect(getByTestId('SwapTransactionDetails/Fees')).toHaveTextContent(
-        '≈ 1.37 CELO + 0.01 cUSD'
+        '≈ 1.37 CELO + 0.01 USDm'
       )
     })
 

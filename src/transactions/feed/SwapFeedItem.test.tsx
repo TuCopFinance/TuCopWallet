@@ -56,10 +56,10 @@ describe('SwapFeedItem', () => {
 
     expect(getByTestId('SwapFeedItem/title')).toHaveTextContent('feedItemSwapTitle')
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Celo Euros"}'
+      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Mento Euro"}'
     )
-    expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 cEUR')
-    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+    expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 EURm')
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 assets.dollars')
 
     fireEvent.press(getByTestId('SwapFeedItem'))
     expect(navigate).toHaveBeenCalledTimes(1)
@@ -86,7 +86,7 @@ describe('SwapFeedItem', () => {
       'transactionFeed.crossChainSwapTransactionLabel'
     )
     expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+0.000002 ETH')
-    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 assets.dollars')
 
     fireEvent.press(getByTestId('SwapFeedItem'))
     expect(navigate).toHaveBeenCalledTimes(1)
@@ -108,9 +108,9 @@ describe('SwapFeedItem', () => {
     )
 
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Celo Euros"}'
+      'feedItemSwapPath, {"token1":"assets.dollars (USDm)","token2":"Mento Euro"}'
     )
-    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 assets.dollars')
   })
 
   it('renders multi-leg subtitle when fromTokenAmounts has length > 1 (atomic 7702 batch)', () => {
@@ -131,10 +131,10 @@ describe('SwapFeedItem', () => {
 
     // Subtitle collapses to the multi-token count + destination
     expect(getByTestId('SwapFeedItem/subtitle')).toHaveTextContent(
-      'feedItemSwapPathMulti, {"count":3,"token2":"Celo Euros"}'
+      'feedItemSwapPathMulti, {"count":3,"token2":"Mento Euro"}'
     )
     // Outgoing amount still shows the largest-value leg (outAmount unchanged)
-    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 assets.dollars')
   })
 
   it('renders failed subtitle and grays the incoming amount when the swap reverted', () => {
@@ -148,7 +148,7 @@ describe('SwapFeedItem', () => {
     expect(getByTestId('SwapFeedItem/subtitle')).not.toHaveTextContent('feedItemSwapPath')
     // Incoming amount still rendered so users can see what would have arrived, but styling
     // switches to gray so it does not read as a real inbound movement.
-    expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 cEUR')
+    expect(getByTestId('SwapFeedItem/incomingAmount')).toHaveTextContent('+2.93 EURm')
   })
 
   it('renders failed subtitle for a reverted cross-chain swap regardless of route text', () => {
@@ -191,6 +191,6 @@ describe('SwapFeedItem', () => {
       'transactionFeed.crossChainSwapTransactionLabel'
     )
     expect(queryByTestId('SwapFeedItem/incomingAmount')).toBeFalsy()
-    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 cUSD')
+    expect(getByTestId('SwapFeedItem/outgoingAmount')).toHaveTextContent('-2.87 assets.dollars')
   })
 })

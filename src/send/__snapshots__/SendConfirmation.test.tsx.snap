@@ -257,7 +257,7 @@ exports[`SendConfirmation renders correctly 1`] = `
               testID="SendAmount"
             >
               1.00
-               cUSD
+               assets.dollars
             </Text>
             <Text
               style={
@@ -488,7 +488,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           >
             ≈ 
             1.05
-             cUSD
+             assets.dollars
           </Text>
         </Text>
       </View>
@@ -546,7 +546,7 @@ exports[`SendConfirmation renders correctly 1`] = `
               }
               testID="TotalLineItem/ExchangeRate"
             >
-              tokenExchangeRateApprox, {"symbol":"cUSD"}
+              tokenExchangeRateApprox, {"symbol":"USDm"}
               <Text>
                 COP$
                 1.33

@@ -54,12 +54,12 @@ describe(BidaliScreen, () => {
     expect(window.walletApp).toMatchInlineSnapshot(`
       {
         "balances": {
-          "CEUR": "5",
-          "CUSD": "10",
+          "EURM": "5",
+          "USDM": "10",
         },
         "onPaymentRequest": [Function],
         "openUrl": [Function],
-        "paymentCurrency": "CUSD",
+        "paymentCurrency": "USDM",
         "phoneNumber": null,
       }
     `)
@@ -94,12 +94,12 @@ describe(BidaliScreen, () => {
     expect(window.walletApp).toMatchInlineSnapshot(`
       {
         "balances": {
-          "CEUR": "5",
-          "CUSD": "10",
+          "EURM": "5",
+          "USDM": "10",
         },
         "onPaymentRequest": [Function],
         "openUrl": [Function],
-        "paymentCurrency": "CUSD",
+        "paymentCurrency": "USDM",
         "phoneNumber": "+14155556666",
       }
     `)
@@ -135,16 +135,17 @@ describe(BidaliScreen, () => {
     expect(webView).toBeDefined()
     // eslint-disable-next-line no-eval
     expect(eval(webView.props.injectedJavaScriptBeforeContentLoaded)).toBe(true)
-    // `paymentCurrency` is CEUR here because it has the highest balance in the local currency
+    // `paymentCurrency` is EURM here because it has the highest balance in the local currency
+    // (post Mento rebrand deploy 2026-08-20 the on-chain symbol is EURm, not cEUR)
     expect(window.walletApp).toMatchInlineSnapshot(`
       {
         "balances": {
-          "CEUR": "9",
-          "CUSD": "10",
+          "EURM": "9",
+          "USDM": "10",
         },
         "onPaymentRequest": [Function],
         "openUrl": [Function],
-        "paymentCurrency": "CEUR",
+        "paymentCurrency": "EURM",
         "phoneNumber": "+14155556666",
       }
     `)
