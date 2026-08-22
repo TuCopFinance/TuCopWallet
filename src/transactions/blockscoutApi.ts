@@ -6,6 +6,8 @@ import {
   TokenTransfer,
   TransactionStatus,
 } from 'src/transactions/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -163,7 +165,16 @@ export async function fetchAllBlockscoutTransfers({
       nextCursor,
     }
   } catch (error) {
-    Logger.error(TAG, 'Error fetching from Blockscout', error)
+    // Silent fallback to empty result; user sees fewer tx rows but no error.
+    // Fingerprint tx_feed/blockscout/fetch_transfers so ops can see when
+    // the Blockscout proxy at backend is degraded.
+    Logger.warn(TAG, 'Error fetching from Blockscout')
+    captureBusinessError(error, {
+      feature: 'tx_feed',
+      provider: 'blockscout',
+      action: 'fetch_transfers',
+      errorCode: classifyHttpError(error),
+    })
     return { transactions: [], nextCursor: null }
   }
 }

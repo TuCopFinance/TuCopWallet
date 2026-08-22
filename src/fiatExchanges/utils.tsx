@@ -5,6 +5,8 @@ import NormalizedQuote from 'src/fiatExchanges/quotes/NormalizedQuote'
 import { ProviderSelectionAnalyticsData } from 'src/fiatExchanges/types'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { UserLocationData } from 'src/networkInfo/saga'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { getDynamicConfigParams } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
 import { StatsigDynamicConfigs } from 'src/statsig/types'
@@ -177,7 +179,13 @@ export const fetchProviders = async (
     }
     return response.json()
   } catch (error) {
-    Logger.error(`${TAG}:fetchProviders`, 'Failed to fetch providers', error)
+    Logger.warn(`${TAG}:fetchProviders`, 'Failed to fetch providers')
+    captureBusinessError(error, {
+      feature: 'cico',
+      provider: 'internal',
+      action: 'fetch_providers',
+      errorCode: classifyHttpError(error),
+    })
     throw error
   }
 }
@@ -221,7 +229,13 @@ export const fetchSimplexPaymentData = async (
     const simplexPaymentData: SimplexPaymentData = simplexPaymentDataResponse
     return simplexPaymentData
   } catch (error) {
-    Logger.error(`${TAG}:fetchSimplexPaymentData`, 'Failed to fetch simplex payment data', error)
+    Logger.warn(`${TAG}:fetchSimplexPaymentData`, 'Failed to fetch simplex payment data')
+    captureBusinessError(error, {
+      feature: 'cico',
+      provider: 'simplex',
+      action: 'fetch_payment_data',
+      errorCode: classifyHttpError(error),
+    })
     throw error
   }
 }
@@ -287,7 +301,13 @@ export async function fetchExchanges(
 
     return data
   } catch (error) {
-    Logger.error(TAG, 'Failure fetching available exchanges', error)
+    Logger.warn(TAG, 'Failure fetching available exchanges')
+    captureBusinessError(error, {
+      feature: 'cico',
+      provider: 'internal',
+      action: 'fetch_exchanges',
+      errorCode: classifyHttpError(error),
+    })
     throw error
   }
 }
