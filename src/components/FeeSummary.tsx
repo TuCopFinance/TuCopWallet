@@ -3,13 +3,15 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleProp, StyleSheet, Text, TextStyle, View } from 'react-native'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
 import { useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
-import { useTokenInfo } from 'src/tokens/hooks'
+import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { convertTokenToLocalAmount } from 'src/tokens/utils'
+import { NetworkId } from 'src/transactions/types'
 
 /**
  * One fee component. Either pass a fully-hydrated `token` (from the
@@ -80,16 +82,6 @@ function FeeSummary({
     )
   }
 
-  // Render each component through a sub-component so useTokenInfo can be
-  // called once per row (hook count stable across renders). Sub-component
-  // reconciles caller-supplied token vs store token: store wins for the
-  // local-currency conversion so the summary agrees with TokenDisplay
-  // everywhere else. Aggregates the local totals via the same hook so we
-  // can render "amt1 sym1 + amt2 sym2 ≈ COP$sum" without recomputing.
-  const rows = valid.map((c) => (
-    <FeeRow key={`${c.token.tokenId}-${c.amount.toString()}`} component={c} />
-  ))
-
   return (
     <FeeSummaryLayout
       layout={layout}
@@ -100,9 +92,7 @@ function FeeSummary({
       secondaryStyle={secondaryStyle}
       testID={testID}
       t={t}
-    >
-      {rows}
-    </FeeSummaryLayout>
+    />
   )
 }
 
@@ -114,7 +104,6 @@ interface FeeSummaryLayoutProps {
   primaryStyle?: StyleProp<TextStyle>
   secondaryStyle?: StyleProp<TextStyle>
   testID?: string
-  children: React.ReactNode
   t: (k: string) => string
 }
 
@@ -129,7 +118,15 @@ function FeeSummaryLayout({
   t,
 }: FeeSummaryLayoutProps) {
   const tokenParts = components.map((c) => {
-    const symbol = getTokenSymbol(t, c.token.symbol, c.token.tokenId) ?? c.token.symbol ?? ''
+    // Fees always show the CONCRETE token ticker (USDT / USDC / USDm /
+    // USAT) rather than the aggregate "Dolares" label, so the user
+    // knows exactly which balance covers each fee component. The
+    // aggregate label is only appropriate for balance-view contexts
+    // (Home cards, virtual Dolares picker default), not for fee lines
+    // where identifying the specific paying token matters.
+    const specificTicker = getDollarTokenTicker(c.token.tokenId)
+    const symbol =
+      specificTicker ?? getTokenSymbol(t, c.token.symbol, c.token.tokenId) ?? c.token.symbol ?? ''
     return `${formatValueToDisplay(c.amount)} ${symbol}`
   })
   const tokenString = tokenParts.join(' + ')
@@ -175,9 +172,13 @@ function FeeSummaryLayout({
   )
 }
 
-// Helper render-prop that computes the local total using each component's
-// store-hydrated token info (via useTokenInfo). Keeps hook invocation count
-// stable by iterating a fixed-length array.
+// Helper render-prop that computes the local total. Uses tokensByIdSelector
+// (single hook call at the parent, no per-row hooks — respects the
+// rules-of-hooks) and reconciles caller-supplied token vs store token:
+// store wins for priceUsd/local conversion so the summary agrees with
+// TokenDisplay everywhere else; caller-supplied `token` is a fallback for
+// the synthesized CELO entry (excluded from ALLOWED_TOKEN_IDS, absent
+// from tokensById).
 function _LocalTotal({
   components,
   localCurrencySymbol,
@@ -189,12 +190,15 @@ function _LocalTotal({
   usdToLocalRate: string | null
   children: (localString: string) => React.ReactElement
 }) {
-  const resolvedTokens = components.map((c) => useTokenInfoWithFallback(c.token))
+  const networkIds = Array.from(new Set(components.map((c) => c.token.networkId as NetworkId)))
+  const tokensById = useSelector((state) => tokensByIdSelector(state, networkIds))
+
   let totalLocal: BigNumber | null = null
-  for (let i = 0; i < components.length; i++) {
-    const tokenInfo = resolvedTokens[i]
+  for (const c of components) {
+    const fromStore = tokensById[c.token.tokenId]
+    const tokenInfo = fromStore ?? c.token
     const local = convertTokenToLocalAmount({
-      tokenAmount: components[i].amount,
+      tokenAmount: c.amount,
       tokenInfo,
       usdToLocalRate,
     })
@@ -207,17 +211,6 @@ function _LocalTotal({
       ? `${localCurrencySymbol}${formatValueToDisplay(totalLocal)}`
       : ''
   return children(localString)
-}
-
-function useTokenInfoWithFallback(fallback: TokenBalance): TokenBalance {
-  const fromStore = useTokenInfo(fallback.tokenId)
-  return fromStore ?? fallback
-}
-
-// Deprecated — kept as an alias for a future refactor if any callsite
-// wants per-row rendering. Currently unused.
-function FeeRow(_props: { component: FeeComponent }) {
-  return null
 }
 
 const styles = StyleSheet.create({

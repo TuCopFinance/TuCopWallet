@@ -743,42 +743,49 @@ export function getFeeCurrencyToken(
   // synthesized-CELO entry: CELO is excluded from ALLOWED_TOKEN_IDS so
   // tokensById does NOT contain it, but after PR #326 (Bug E reversal) CELO
   // is the first-choice fee currency and any tx that pays gas in CELO has
-  // NO `feeCurrency` field (native gas). Without this override the lookup
-  // returns undefined and the fee-display layer falls back to raw amounts.
+  // NO `feeCurrency` field (native gas).
   nativeFeeCurrency?: TokenBalance
 ): TokenBalance | undefined {
   const feeCurrencyAdapterOrAddress = getFeeCurrency(preparedTransactions)
 
-  // Native gas (no feeCurrency field). Use the supplied synthesized entry
-  // when the caller provided one; otherwise fall through to the missing-data
-  // branch below.
-  if (!feeCurrencyAdapterOrAddress) {
-    if (nativeFeeCurrency && nativeFeeCurrency.networkId === networkId) {
-      return nativeFeeCurrency
-    }
-  }
-
-  // First try to find the fee currency token by its address (most common case)
+  // First try store lookup (matches for both native-gas via
+  // `celo-mainnet:native` and for ERC20 fee currencies via their address).
   const feeCurrencyToken = tokensById[getTokenId(networkId, feeCurrencyAdapterOrAddress)]
   if (feeCurrencyToken) {
     return feeCurrencyToken
   }
 
-  // Then try finding the fee currency token by its fee currency adapter address
+  // Then adapter-address lookup (CIP-64 adapters register under a different
+  // address than the underlying token; scan the store for a match).
   if (feeCurrencyAdapterOrAddress) {
-    return Object.values(tokensById).find(
+    const byAdapter = Object.values(tokensById).find(
       (token) =>
         token &&
         token.networkId === networkId &&
         token.feeCurrencyAdapterAddress === feeCurrencyAdapterOrAddress
     )
+    if (byAdapter) {
+      return byAdapter
+    }
+
+    // Non-native fee currency address that we still can't resolve — real
+    // missing data. Log for visibility.
+    Logger.error(
+      TAG,
+      `Could not find fee currency token for prepared transactions with feeCurrency set to '${feeCurrencyAdapterOrAddress}' in network ${networkId}`
+    )
+    return undefined
   }
 
-  // This indicates we're missing some data
-  Logger.error(
-    TAG,
-    `Could not find fee currency token for prepared transactions with feeCurrency set to '${feeCurrencyAdapterOrAddress}' in network ${networkId}`
-  )
+  // Native gas (no feeCurrency field on the prepared tx) and no store hit
+  // (CELO is excluded from ALLOWED_TOKEN_IDS post PR #326 Bug E reversal).
+  // Use the synthesized entry if the caller passed one; otherwise return
+  // undefined SILENTLY (no error log). Callers that only need the token
+  // for optional analytics enrichment don't always have easy access to the
+  // synthesized entry and undefined is a valid state, not a bug.
+  if (nativeFeeCurrency && nativeFeeCurrency.networkId === networkId) {
+    return nativeFeeCurrency
+  }
   return undefined
 }
 
