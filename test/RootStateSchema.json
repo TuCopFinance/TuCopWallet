@@ -5798,6 +5798,9 @@
                 "nativeCeloBalance": {
                     "type": "string"
                 },
+                "nativeCeloPriceUsd": {
+                    "type": "string"
+                },
                 "tokenBalances": {
                     "$ref": "#/definitions/StoredTokenBalances"
                 }
