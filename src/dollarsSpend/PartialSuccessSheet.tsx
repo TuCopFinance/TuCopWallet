@@ -22,6 +22,37 @@ export default function PartialSuccessSheet({ onRetry, onCancel }: Props) {
     return null
   }
 
+  // Atomic 7702 batch: either all legs go through or none do (single tx).
+  // The "Completaste N de M pasos" partial-progress copy from the legacy
+  // multi-tx path is misleading here — it implied some legs succeeded when
+  // in reality the whole batch aborted (typically because a quote fetch
+  // failed before submit, e.g. Squid upstream 502 for one leg). Show a
+  // dedicated failure copy that names the actual cause (provider unavailable)
+  // and offers Retry / Cancel without the "restante" partial-completion
+  // framing.
+  if (inFlight.isAtomic) {
+    return (
+      <View style={styles.container} testID="PartialSuccessSheet">
+        <Text style={styles.title}>{t('dollarsSpend.atomicFailure.title')}</Text>
+        <Text style={styles.body}>{t('dollarsSpend.atomicFailure.body')}</Text>
+        <Button
+          text={t('dollarsSpend.atomicFailure.retry')}
+          onPress={onRetry}
+          type={BtnTypes.PRIMARY}
+          size={BtnSizes.FULL}
+          testID="PartialSuccessSheet/Retry"
+        />
+        <Button
+          text={t('dollarsSpend.atomicFailure.cancel')}
+          onPress={onCancel}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          testID="PartialSuccessSheet/Cancel"
+        />
+      </View>
+    )
+  }
+
   const total = inFlight.plannedSteps.length
   const completed = inFlight.completedSteps
   const remainingUsd = inFlight.plannedSteps

@@ -3215,6 +3215,12 @@
       "retry": "Reintentar restante",
       "cancel": "Dejar pendiente"
     },
+    "atomicFailure": {
+      "title": "Couldn't complete the exchange",
+      "body": "The provider service is unavailable right now. Try again in a few minutes.",
+      "retry": "Retry",
+      "cancel": "Cancel"
+    },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
