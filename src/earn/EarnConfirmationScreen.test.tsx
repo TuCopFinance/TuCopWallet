@@ -146,8 +146,8 @@ describe('EarnConfirmationScreen', () => {
       expect(queryByTestId('EarnConfirmation/GasLoading')).toBeFalsy()
     })
 
-    expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
+    expect(getByTestId('EarnConfirmation/GasFee/Token')).toHaveTextContent('0.06 ETH')
+    expect(getByTestId('EarnConfirmation/GasFee/Local')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareWithdrawAndClaimTransactions).toHaveBeenCalledWith({
@@ -192,8 +192,8 @@ describe('EarnConfirmationScreen', () => {
     await waitFor(() => {
       expect(queryByTestId('EarnConfirmation/GasLoading')).toBeFalsy()
     })
-    expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
+    expect(getByTestId('EarnConfirmation/GasFee/Token')).toHaveTextContent('0.06 ETH')
+    expect(getByTestId('EarnConfirmation/GasFee/Local')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareWithdrawTransactions).toHaveBeenCalledWith({
@@ -238,8 +238,8 @@ describe('EarnConfirmationScreen', () => {
       expect(queryByTestId('EarnConfirmation/GasLoading')).toBeFalsy()
     })
 
-    expect(getByTestId('EarnConfirmation/GasFeeCryptoAmount')).toHaveTextContent('0.06 ETH')
-    expect(getByTestId('EarnConfirmation/GasFeeFiatAmount')).toHaveTextContent('COP$119.70')
+    expect(getByTestId('EarnConfirmation/GasFee/Token')).toHaveTextContent('0.06 ETH')
+    expect(getByTestId('EarnConfirmation/GasFee/Local')).toHaveTextContent('COP$119.70')
     expect(queryByTestId('EarnConfirmation/GasSubsidized')).toBeFalsy()
     expect(getByTestId('EarnConfirmationScreen/CTA')).toBeEnabled()
     expect(prepareClaimTransactions).toHaveBeenCalledWith({

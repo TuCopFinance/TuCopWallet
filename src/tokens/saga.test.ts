@@ -121,7 +121,7 @@ describe('getTokensInfo', () => {
       })
     )
 
-    const result = await getTokensInfo([NetworkId['celo-mainnet']])
+    const { filtered, celoPriceUsd } = await getTokensInfo([NetworkId['celo-mainnet']])
     // USDT/USDm had null/NaN priceUsd upstream: overridden to '1', with
     // priceFetchedAt = Date.now() so the tokensByIdSelector stale check
     // does not immediately null the override back out. USDC had '1'
@@ -131,16 +131,20 @@ describe('getTokensInfo', () => {
     // separately below). COPm is NOT in the dollar-peg override list
     // (COP-pegged, not USD), so its null priceUsd stays null; UI derives
     // its "Pesos" value from balance directly, not USD price.
-    expect(result[networkConfig.copmTokenId]).toEqual({ symbol: 'COPm', priceUsd: null })
-    expect(result[networkConfig.usdcTokenId]).toEqual({ symbol: 'USDC', priceUsd: '1' })
-    expect(result[networkConfig.usdtTokenId]).toEqual(
+    expect(filtered[networkConfig.copmTokenId]).toEqual({ symbol: 'COPm', priceUsd: null })
+    expect(filtered[networkConfig.usdcTokenId]).toEqual({ symbol: 'USDC', priceUsd: '1' })
+    expect(filtered[networkConfig.usdtTokenId]).toEqual(
       expect.objectContaining({ symbol: 'USDT', priceUsd: '1' })
     )
-    expect(result[networkConfig.usdtTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
-    expect(result[networkConfig.usdmTokenId]).toEqual(
+    expect(filtered[networkConfig.usdtTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
+    expect(filtered[networkConfig.usdmTokenId]).toEqual(
       expect.objectContaining({ symbol: 'USDm', priceUsd: '1' })
     )
-    expect(result[networkConfig.usdmTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
+    expect(filtered[networkConfig.usdmTokenId]?.priceFetchedAt).toEqual(expect.any(Number))
+    // CELO priceUsd is extracted BEFORE the ALLOWED_TOKEN_IDS filter drops
+    // the entry, so it flows to the caller for the synthesized CELO fee
+    // currency (see tokens/selectors feeCurrenciesByNetworkIdSelector).
+    expect(celoPriceUsd).toBe('0.5')
   })
   it('throws if request does not complete within timeout', async () => {
     // fetchWithTimeout now retries 3x on 5xx with real backoff; need real timers
@@ -226,7 +230,10 @@ describe(fetchTokenBalancesSaga, () => {
       .provide([
         [select(importedTokensSelector, supportedNetworks), []],
         [select(networksIconSelector), {}],
-        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
+        [
+          call(getTokensInfo, supportedNetworks),
+          { filtered: mockBlockchainApiTokenInfo, celoPriceUsd: undefined },
+        ],
         [select(walletAddressSelector), mockAccount],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
@@ -238,7 +245,10 @@ describe(fetchTokenBalancesSaga, () => {
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
         [select(walletAddressSelector), null],
-        [call(getTokensInfo, [NetworkId['celo-mainnet']]), mockBlockchainApiTokenInfo],
+        [
+          call(getTokensInfo, [NetworkId['celo-mainnet']]),
+          { filtered: mockBlockchainApiTokenInfo, celoPriceUsd: undefined },
+        ],
         [call(fetchTokenBalancesForAddressByTokenId, mockAccount), fetchBalancesResponse],
       ])
       .not.call(getTokensInfo)
@@ -256,7 +266,10 @@ describe(fetchTokenBalancesSaga, () => {
       .provide([
         [select(importedTokensSelector, supportedNetworks), []],
         [select(networksIconSelector), {}],
-        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
+        [
+          call(getTokensInfo, supportedNetworks),
+          { filtered: mockBlockchainApiTokenInfo, celoPriceUsd: undefined },
+        ],
         [select(walletAddressSelector), mockAccount],
         [
           call(fetchTokenBalancesForAddressByTokenId, mockAccount),
@@ -295,7 +308,10 @@ describe(fetchTokenBalancesSaga, () => {
 
     await expectSaga(fetchTokenBalancesSaga)
       .provide([
-        [call(getTokensInfo, supportedNetworks), mockBlockchainApiTokenInfo],
+        [
+          call(getTokensInfo, supportedNetworks),
+          { filtered: mockBlockchainApiTokenInfo, celoPriceUsd: undefined },
+        ],
         [select(importedTokensSelector, supportedNetworks), importedTokens],
         [
           select(networksIconSelector),
@@ -710,10 +726,10 @@ describe('getTokensInfo USAT priceUsd override', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[networkConfig.usatTokenId]?.priceUsd).toBe('1')
     // sanity: other tokens untouched
-    expect(result[networkConfig.usdtTokenId]?.priceUsd).toBe('1.0')
+    expect(filtered[networkConfig.usdtTokenId]?.priceUsd).toBe('1.0')
   })
 
   it('overrides USAT priceUsd to "1" when backend returns undefined', async () => {
@@ -732,8 +748,8 @@ describe('getTokensInfo USAT priceUsd override', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('1')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[networkConfig.usatTokenId]?.priceUsd).toBe('1')
   })
 
   it('leaves USAT priceUsd untouched when backend returns a real number', async () => {
@@ -752,8 +768,8 @@ describe('getTokensInfo USAT priceUsd override', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[networkConfig.usatTokenId]?.priceUsd).toBe('0.998')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[networkConfig.usatTokenId]?.priceUsd).toBe('0.998')
   })
 })
 
@@ -801,8 +817,8 @@ describe('getTokensInfo USAT priceUsd override - forced mainnet env', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[fakeUsatTokenId]?.priceUsd).toBe('1')
   })
 
   it('overrides USAT priceUsd to "1" when backend returns no priceUsd field', async () => {
@@ -820,8 +836,8 @@ describe('getTokensInfo USAT priceUsd override - forced mainnet env', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[fakeUsatTokenId]?.priceUsd).toBe('1')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[fakeUsatTokenId]?.priceUsd).toBe('1')
   })
 
   it('leaves USAT priceUsd untouched when backend returns a real finite number', async () => {
@@ -839,7 +855,7 @@ describe('getTokensInfo USAT priceUsd override - forced mainnet env', () => {
       })
     )
 
-    const result = await getTokensInfo(['celo-mainnet'] as any)
-    expect(result[fakeUsatTokenId]?.priceUsd).toBe('0.998')
+    const { filtered } = await getTokensInfo(['celo-mainnet'] as any)
+    expect(filtered[fakeUsatTokenId]?.priceUsd).toBe('0.998')
   })
 })

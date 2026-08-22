@@ -73,29 +73,34 @@ describe('FeeInfoBottomSheet', () => {
       )
     ).toBeTruthy()
 
+    // Post FeeSummary refactor (2026-08-22): row renders inline via
+    // FeeSummary as `{amt} {sym} ≈ COP$X`. Symbol resolved via canonical
+    // getTokenSymbol so USDm surfaces as "Dolares" (via assets.dollars
+    // i18n key), CELO stays raw. No more parenthetical token / fiat-first
+    // format from the old Trans component.
     expect(getByText('swapScreen.transactionDetails.estimatedNetworkFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/EstimatedNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.013","tokenAmount":"0.01","tokenSymbol":"USDm"}'
+      '0.01 assets.dollars ≈ COP$0.013'
     )
 
     expect(getByText('swapScreen.transactionDetails.maxNetworkFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/MaxNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.027","tokenAmount":"0.02","tokenSymbol":"USDm"}'
+      '0.02 assets.dollars ≈ COP$0.027'
     )
 
     expect(getByText('swapScreen.transactionDetails.appFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/AppFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.047","tokenAmount":"0.07","tokenSymbol":"CELO"}'
+      '0.07 CELO ≈ COP$0.047'
     )
 
     expect(getByText('swapScreen.transactionDetails.estimatedCrossChainFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/EstimatedCrossChainFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"0.86","tokenAmount":"1.30","tokenSymbol":"CELO"}'
+      '1.30 CELO ≈ COP$0.86'
     )
 
     expect(getByText('swapScreen.transactionDetails.maxCrossChainFee')).toBeTruthy()
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/MaxCrossChainFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"localCurrencySymbol":"COP$","feeAmountInLocalCurrency":"1.13","tokenAmount":"1.70","tokenSymbol":"CELO"}'
+      '1.70 CELO ≈ COP$1.13'
     )
   })
 
@@ -129,11 +134,14 @@ describe('FeeInfoBottomSheet', () => {
       </Provider>
     )
 
+    // priceUsd=null on the fee token means FeeSummary drops the "≈ COP$X"
+    // tail entirely (nothing to sum in local currency) but keeps the
+    // token amount + symbol.
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/EstimatedNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.01","tokenSymbol":"USDm"}'
+      '0.01 assets.dollars'
     )
     expect(getByTestId('SwapScreen/FeeInfoBottomSheet/MaxNetworkFee')).toHaveTextContent(
-      'swapScreen.transactionDetails.feeAmount, {"context":"noFiatPrice","localCurrencySymbol":"COP$","tokenAmount":"0.02","tokenSymbol":"USDm"}'
+      '0.02 assets.dollars'
     )
   })
 

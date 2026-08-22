@@ -1,5 +1,5 @@
 import { SwapTxsProperties } from 'src/analytics/Properties'
-import { TokenBalances } from 'src/tokens/slice'
+import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 import {
   TransactionRequest,
@@ -13,13 +13,19 @@ import {
 export function getSwapTxsAnalyticsProperties(
   preparedTransactions: TransactionRequest[] | undefined,
   networkId: NetworkId,
-  tokensById: TokenBalances
+  tokensById: TokenBalances,
+  nativeFeeCurrency?: TokenBalance
 ): SwapTxsProperties | null {
   if (!preparedTransactions) {
     return null
   }
 
-  const feeCurrencyToken = getFeeCurrencyToken(preparedTransactions, networkId, tokensById)
+  const feeCurrencyToken = getFeeCurrencyToken(
+    preparedTransactions,
+    networkId,
+    tokensById,
+    nativeFeeCurrency
+  )
   const feeDecimals = feeCurrencyToken
     ? getFeeDecimals(preparedTransactions, feeCurrencyToken)
     : undefined

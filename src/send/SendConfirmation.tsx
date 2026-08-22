@@ -9,6 +9,7 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { showErrorMessage } from 'src/components/ErrorMessage'
 import BackButton from 'src/components/BackButton'
 import ContactCircle from 'src/components/ContactCircle'
+import FeeSummary from 'src/components/FeeSummary'
 import LineItemRow from 'src/components/LineItemRow'
 import ReviewFrame from 'src/components/ReviewFrame'
 import ShortenedAddress from 'src/components/ShortenedAddress'
@@ -105,30 +106,15 @@ function SendConfirmation(props: Props) {
           title={t('feeEstimate')}
           textStyle={typeScale.bodyMedium}
           amount={
-            maxFeeAmount && (
-              <TokenDisplay
-                amount={maxFeeAmount}
-                tokenId={feeTokenInfo?.tokenId}
-                showLocalAmount={false}
+            maxFeeAmount && feeTokenInfo ? (
+              <FeeSummary
+                layout="inline"
+                components={[{ amount: maxFeeAmount, token: feeTokenInfo }]}
+                testID="SendConfirmation/FeeSummary"
               />
-            )
+            ) : undefined
           }
           isLoading={!maxFeeAmount}
-        />
-        <LineItemRow
-          testID="SendConfirmation/localFee"
-          title=""
-          style={styles.subHeading}
-          textStyle={styles.subHeadingText}
-          amount={
-            maxFeeAmount && (
-              <TokenDisplay
-                amount={maxFeeAmount}
-                tokenId={feeTokenInfo?.tokenId}
-                showLocalAmount={true}
-              />
-            )
-          }
         />
         <TokenTotalLineItem
           tokenAmount={tokenAmount}
@@ -290,13 +276,6 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: colors.gray5,
     paddingBottom: 16,
-  },
-  subHeading: {
-    marginVertical: 0,
-  },
-  subHeadingText: {
-    ...typeScale.labelSmall,
-    color: colors.gray4,
   },
 })
 

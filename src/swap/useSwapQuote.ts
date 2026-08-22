@@ -300,24 +300,19 @@ async function createBaseSwapTransactions(
   updatedField: Field,
   unvalidatedSwapTransaction: SwapTransaction,
   walletAddress: string,
-  worstCaseSellAmount: string | undefined
+  worstCaseSellAmount: string
 ) {
   const baseTransactions: TransactionRequest[] = []
 
-  const { sellAmount, allowanceTarget, from, to, value, data, gas, estimatedGasUse } =
+  const { allowanceTarget, from, to, value, data, gas, estimatedGasUse } =
     unvalidatedSwapTransaction
 
   // Approve amount comes from the backend-computed `worstCaseSellAmount`
-  // (introduced by backend PR #220), denominated in sellToken's native
-  // units. The old client-side calc `buyAmount * guaranteedPrice` for
-  // buy-mode was decimal-blind and produced a wrong-sized number for
-  // cross-decimal pairs (e.g. buy USDm with USDT: buyAmount is 18-dec
-  // but the approve target is a 6-dec USDT allowance). Falling back to
-  // `sellAmount` when the field is absent is safe for sell-mode (they
-  // are equal on both provider paths verified live) and still wrong for
-  // buy-mode on stale backend responses; the fallback is intentionally
-  // conservative rather than reintroducing the buggy formula.
-  const amountToApprove = BigInt(worstCaseSellAmount ?? sellAmount)
+  // (backend PR #220, 2026-08-21), in wei of sellToken. Backend-authoritative
+  // across Squid + V4 Permit2 + V4 batchCalls. Replaces the old dimensionally
+  // broken `buyAmount * guaranteedPrice` client-side formula that produced
+  // approvals off by up to 10^12x on cross-decimal buy-mode swaps.
+  const amountToApprove = BigInt(worstCaseSellAmount)
 
   // If the sell token is ERC-20, we need to check the allowance and add an
   // approval transaction if necessary
@@ -387,7 +382,7 @@ async function prepareSwapTransactions(
   unvalidatedSwapTransaction: SwapTransaction,
   feeCurrencies: TokenBalance[],
   walletAddress: string,
-  worstCaseSellAmount: string | undefined
+  worstCaseSellAmount: string
 ): Promise<PreparedTransactionsResult> {
   const { amountToApprove, baseTransactions } = await createBaseSwapTransactions(
     fromToken,

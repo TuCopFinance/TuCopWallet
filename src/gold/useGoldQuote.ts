@@ -98,7 +98,7 @@ interface BackendQuoteResult {
    * high-slippage / cross-decimal quotes don't under-approve. Same fix
    * shipped in swap flow; mirrored here so gold buy/sell also benefits.
    */
-  worstCaseSellAmount: string | undefined
+  worstCaseSellAmount: string
 }
 
 /**
@@ -214,17 +214,15 @@ async function createSwapTransactionsFromQuote(
   fromToken: TokenBalance,
   swapTransaction: SwapTransaction,
   walletAddress: string,
-  worstCaseSellAmount: string | undefined
+  worstCaseSellAmount: string
 ): Promise<{ baseTransactions: TransactionRequest[]; amountToApprove: bigint }> {
   const baseTransactions: TransactionRequest[] = []
 
-  const { allowanceTarget, from, to, value, data, gas, estimatedGasUse, sellAmount } =
-    swapTransaction
+  const { allowanceTarget, from, to, value, data, gas, estimatedGasUse } = swapTransaction
 
-  // Prefer backend-computed worstCaseSellAmount (PR #220); fall back to
-  // sellAmount for cached responses that predate the field. Both are in
-  // sellToken's native units so no decimal shifting needed.
-  const amountToApprove = BigInt(worstCaseSellAmount ?? sellAmount)
+  // backend-computed worstCaseSellAmount (PR #220), in wei of sellToken.
+  // Same authoritative field the swap flow uses (see useSwapQuote).
+  const amountToApprove = BigInt(worstCaseSellAmount)
 
   // Check if approval is needed for ERC-20 tokens
   if (allowanceTarget !== zeroAddress && fromToken.address) {

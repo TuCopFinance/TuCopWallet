@@ -6,8 +6,10 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import FeeSummary from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
+import { buildGoldFeeComponents } from 'src/gold/GoldBuyConfirmation'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { goldSellStatusSelector, xaut0TokenSelector } from 'src/gold/selectors'
@@ -266,57 +268,25 @@ export default function GoldSellConfirmation({ route }: Props) {
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('goldFlow.sell.networkFee')}</Text>
+            <Text style={styles.detailLabel}>{t('goldFlow.sell.fees')}</Text>
             {isGettingQuote ? (
               <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
-            ) : parsedGasFee && gasFeeToken ? (
-              <View style={styles.detailValueGroup}>
-                <TokenDisplay
-                  amount={parsedGasFee}
-                  tokenId={gasFeeToken.tokenId}
-                  showLocalAmount={false}
-                  style={styles.detailValue}
-                  testID="GoldSellConfirmation/NetworkFee/Token"
-                />
-                <TokenDisplay
-                  amount={parsedGasFee}
-                  tokenId={gasFeeToken.tokenId}
-                  showLocalAmount={true}
-                  showApprox={true}
-                  style={styles.detailValueSecondary}
-                  testID="GoldSellConfirmation/NetworkFee/Local"
-                />
-              </View>
             ) : (
-              <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
+              <FeeSummary
+                layout="stacked"
+                components={buildGoldFeeComponents({
+                  appFee: parsedAppFee?.amount,
+                  appFeeToken: xaut0Token ?? undefined,
+                  networkFee: parsedGasFee,
+                  networkFeeToken: gasFeeToken ?? undefined,
+                })}
+                fallbackText={t('goldFlow.sell.estimatingFee')}
+                primaryStyle={styles.detailValue}
+                secondaryStyle={styles.detailValueSecondary}
+                testID="GoldSellConfirmation/Fees"
+              />
             )}
           </View>
-          {!!parsedAppFee && xaut0Token && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>
-                {t('goldFlow.sell.serviceFee', {
-                  percentage: parsedAppFee.percentage.toFormat(),
-                })}
-              </Text>
-              <View style={styles.detailValueGroup}>
-                <TokenDisplay
-                  amount={parsedAppFee.amount}
-                  tokenId={xaut0Token.tokenId}
-                  showLocalAmount={false}
-                  style={styles.detailValue}
-                  testID="GoldSellConfirmation/ServiceFee/Token"
-                />
-                <TokenDisplay
-                  amount={parsedAppFee.amount}
-                  tokenId={xaut0Token.tokenId}
-                  showLocalAmount={true}
-                  showApprox={true}
-                  style={styles.detailValueSecondary}
-                  testID="GoldSellConfirmation/ServiceFee/Local"
-                />
-              </View>
-            </View>
-          )}
         </View>
 
         {/* Quote Error */}
@@ -451,9 +421,6 @@ const styles = StyleSheet.create({
   detailValue: {
     ...typeScale.bodyMedium,
     color: Colors.black,
-  },
-  detailValueGroup: {
-    alignItems: 'flex-end',
   },
   detailValueSecondary: {
     ...typeScale.bodySmall,

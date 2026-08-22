@@ -15,6 +15,7 @@ import {
   TokenBalance,
   fetchTokenBalancesFailure,
   setNativeCeloBalance,
+  setNativeCeloPriceUsd,
   setTokenBalances,
 } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
@@ -64,7 +65,16 @@ export async function fetchTokenBalancesForAddressByTokenId(address: string) {
   return fetchedBalancesByTokenId
 }
 
-export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<StoredTokenBalances> {
+export interface TokensInfoResult {
+  filtered: StoredTokenBalances
+  // CELO is intentionally excluded from ALLOWED_TOKEN_IDS so it stays out of
+  // the portfolio, but its priceUsd IS needed by the fee-display layer to
+  // convert CELO gas amounts into the display currency (COP). Extracted from
+  // the raw backend response before the filter drops it.
+  celoPriceUsd: string | undefined
+}
+
+export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<TokensInfoResult> {
   // resolveTokensInfoUrl reads Statsig at call time so the source can be
   // flipped between the legacy Valora cloud function and the TuCop backend
   // replacement without a wallet release. Gate default OFF keeps Valora as
@@ -79,6 +89,14 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     )
   }
   const rawTokens = await response.json()
+
+  // Grab CELO priceUsd BEFORE the ALLOWED_TOKEN_IDS filter drops the entry.
+  const rawCelo = rawTokens[networkConfig.celoTokenId]
+  const celoPriceUsdRaw = rawCelo?.priceUsd
+  const celoPriceUsdNum = celoPriceUsdRaw == null ? NaN : Number(celoPriceUsdRaw)
+  const celoPriceUsd =
+    Number.isFinite(celoPriceUsdNum) && celoPriceUsdNum > 0 ? String(celoPriceUsdRaw) : undefined
+
   const filtered = Object.keys(rawTokens)
     .filter((tokenId) => ALLOWED_TOKEN_IDS.has(tokenId))
     .reduce((acc, tokenId) => {
@@ -129,7 +147,7 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     }
   }
 
-  return filtered
+  return { filtered, celoPriceUsd }
 }
 
 export function* fetchTokenBalancesSaga() {
@@ -144,7 +162,10 @@ export function* fetchTokenBalancesSaga() {
     const importedTokens = yield* select(importedTokensSelector, supportedNetworks)
     const networkIconByNetworkId = yield* select(networksIconSelector)
 
-    const supportedTokens = yield* call(getTokensInfo, supportedNetworks)
+    const { filtered: supportedTokens, celoPriceUsd } = yield* call(
+      getTokensInfo,
+      supportedNetworks
+    )
     const fetchedBalancesByTokenId = yield* call(fetchTokenBalancesForAddressByTokenId, address)
 
     for (const token of Object.values(supportedTokens) as StoredTokenBalance[]) {
@@ -182,6 +203,10 @@ export function* fetchTokenBalancesSaga() {
         ...supportedTokens,
       })
     )
+
+    if (celoPriceUsd) {
+      yield* put(setNativeCeloPriceUsd(celoPriceUsd))
+    }
 
     // Fetch native CELO balance so feeCurrenciesByNetworkIdSelector can
     // synthesize a CELO entry in the fee-currency list. CELO is deliberately

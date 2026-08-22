@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { trackPointsEvent } from 'src/points/slice'
-import { tokensByIdSelector } from 'src/tokens/selectors'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { BaseToken } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSend, getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { pendingStandbyTransactionsSelector } from 'src/transactions/selectors'
@@ -156,8 +156,21 @@ function* handleTransactionReceiptReceived({
   overrideStatus?: TransactionStatus
 }) {
   const tokensById = yield* select((state) => tokensByIdSelector(state, [networkId]))
+  const nativeFeeCurrency = yield* select((state) => nativeFeeCurrencySelector(state, networkId))
 
-  const feeTokenInfo = feeCurrencyId && tokensById[feeCurrencyId]
+  // Reconcile fee-currency token lookup: store first (tokensById), then
+  // native-fee-currency fallback for CELO/native gas (excluded from
+  // ALLOWED_TOKEN_IDS post PR #326 Bug E reversal, so absent from
+  // tokensById). Missing after both means we really have no info.
+  let feeTokenInfo = feeCurrencyId ? tokensById[feeCurrencyId] : undefined
+  if (
+    !feeTokenInfo &&
+    feeCurrencyId &&
+    nativeFeeCurrency &&
+    nativeFeeCurrency.tokenId === feeCurrencyId
+  ) {
+    feeTokenInfo = nativeFeeCurrency
+  }
 
   if (!!feeCurrencyId && !feeTokenInfo) {
     Logger.error(
