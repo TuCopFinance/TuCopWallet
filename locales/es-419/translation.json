@@ -3224,6 +3224,12 @@
       "retry": "Reintentar restante",
       "cancel": "Dejar pendiente"
     },
+    "atomicFailure": {
+      "title": "No se pudo completar el intercambio",
+      "body": "El servicio del proveedor no está disponible en este momento. Intenta de nuevo en unos minutos.",
+      "retry": "Reintentar",
+      "cancel": "Cancelar"
+    },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
