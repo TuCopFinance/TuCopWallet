@@ -37,8 +37,6 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
-import { TokenBalance } from 'src/tokens/slice'
-import { getDisplayDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -66,33 +64,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   const fromToken = useTokenInfo(fromTokenId)
 
-  // Get user-friendly display name for tokens (same pattern as TokenBalanceItem)
-  // Uses tokenId first, then symbol as fallback for different USDT variants
-  const getTokenName = (token: TokenBalance | null) => {
-    if (!token) return ''
-    // Check by tokenId first (most reliable)
-    if (token.tokenId === networkConfig.copmTokenId) {
-      return t('assets.pesos')
-    }
-    if (token.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
-    }
-    if (token.tokenId === networkConfig.xaut0TokenId) {
-      return t('goldFlow.gold')
-    }
-    // Fallback: check by symbol for different token variants
-    const symbol = token.symbol?.toLowerCase() || ''
-    if (symbol === 'ccop' || symbol === 'copm') {
-      return t('assets.pesos')
-    }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
-      return t('assets.dollars')
-    }
-    if (symbol === 'xaut0' || symbol === 'xaut') {
-      return t('goldFlow.gold')
-    }
-    return token.name
-  }
   const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
@@ -201,9 +172,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const parsedXautAmount = useMemo(() => new BigNumber(xautAmount), [xautAmount])
   const parsedPricePerOz = useMemo(() => new BigNumber(pricePerOz), [pricePerOz])
 
-  // Tokens always show 2 decimals for readability
-  const tokenDisplayDecimals = 2
-
   // Calculate local currency values
   const localPricePerOz = useMemo(() => {
     if (!usdToLocalRate) return null
@@ -239,27 +207,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
       percentage,
     }
   }, [appFeePercentageIncludedInPrice, fromToken, parsedFromAmount])
-
-  // Format gas fee display name (same pattern as getTokenName)
-  const getGasFeeTokenName = () => {
-    if (!gasFeeToken) return ''
-    // Check by tokenId first
-    if (gasFeeToken.tokenId === networkConfig.copmTokenId) {
-      return t('assets.pesos')
-    }
-    if (gasFeeToken.tokenId === networkConfig.usdtTokenId) {
-      return t('assets.dollars')
-    }
-    // Fallback: check by symbol
-    const symbol = gasFeeToken.symbol?.toLowerCase() || ''
-    if (symbol === 'ccop' || symbol === 'copm') {
-      return t('assets.pesos')
-    }
-    if (symbol === 'usdt' || symbol === 'usdt0' || symbol === 'usd₮') {
-      return t('assets.dollars')
-    }
-    return gasFeeToken.name
-  }
 
   // getProviderDisplayName removed 2026-08-09 (zero-tech-leak policy in
   // feedback_no_tech_leak_in_user_copy.md). The old function exposed
@@ -361,10 +308,12 @@ export default function GoldBuyConfirmation({ route }: Props) {
             <View style={styles.tokenRow}>
               <TokenIcon token={fromToken!} size={IconSize.MEDIUM} />
               <View style={styles.tokenInfo}>
-                <Text style={styles.tokenAmount}>
-                  {parsedFromAmount.toFormat(tokenDisplayDecimals)}{' '}
-                  {getTokenName(fromToken ?? null)}
-                </Text>
+                <TokenDisplay
+                  tokenId={fromTokenId}
+                  amount={parsedFromAmount}
+                  showLocalAmount={false}
+                  style={styles.tokenAmount}
+                />
                 <TokenDisplay
                   tokenId={fromTokenId}
                   amount={parsedFromAmount}
@@ -416,12 +365,26 @@ export default function GoldBuyConfirmation({ route }: Props) {
               <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
               {isGettingQuote ? (
                 <ActivityIndicator size="small" color={Colors.primary} />
+              ) : parsedGasFee && gasFeeToken ? (
+                <View style={styles.detailValueGroup}>
+                  <TokenDisplay
+                    amount={parsedGasFee}
+                    tokenId={gasFeeToken.tokenId}
+                    showLocalAmount={false}
+                    style={styles.detailValue}
+                    testID="GoldBuyConfirmation/NetworkFee/Token"
+                  />
+                  <TokenDisplay
+                    amount={parsedGasFee}
+                    tokenId={gasFeeToken.tokenId}
+                    showLocalAmount={true}
+                    showApprox={true}
+                    style={styles.detailValueSecondary}
+                    testID="GoldBuyConfirmation/NetworkFee/Local"
+                  />
+                </View>
               ) : (
-                <Text style={styles.detailValue}>
-                  {parsedGasFee && gasFeeToken
-                    ? `${parsedGasFee.toFormat(getDisplayDecimalsForToken(gasFeeToken))} ${getGasFeeTokenName()}`
-                    : t('goldFlow.buy.estimatingFee')}
-                </Text>
+                <Text style={styles.detailValue}>{t('goldFlow.buy.estimatingFee')}</Text>
               )}
             </View>
             {!!parsedAppFee && !!fromToken && (
@@ -431,9 +394,23 @@ export default function GoldBuyConfirmation({ route }: Props) {
                     percentage: parsedAppFee.percentage.toFormat(),
                   })}
                 </Text>
-                <Text style={styles.detailValue}>
-                  {`${parsedAppFee.amount.toFormat(getDisplayDecimalsForToken(fromToken))} ${getTokenName(fromToken)}`}
-                </Text>
+                <View style={styles.detailValueGroup}>
+                  <TokenDisplay
+                    amount={parsedAppFee.amount}
+                    tokenId={fromToken.tokenId}
+                    showLocalAmount={false}
+                    style={styles.detailValue}
+                    testID="GoldBuyConfirmation/ServiceFee/Token"
+                  />
+                  <TokenDisplay
+                    amount={parsedAppFee.amount}
+                    tokenId={fromToken.tokenId}
+                    showLocalAmount={true}
+                    showApprox={true}
+                    style={styles.detailValueSecondary}
+                    testID="GoldBuyConfirmation/ServiceFee/Local"
+                  />
+                </View>
               </View>
             )}
           </View>
@@ -562,6 +539,13 @@ const styles = StyleSheet.create({
   detailValue: {
     ...typeScale.bodyMedium,
     color: Colors.black,
+  },
+  detailValueGroup: {
+    alignItems: 'flex-end',
+  },
+  detailValueSecondary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   infoNotice: {
     marginTop: Spacing.Regular16,
