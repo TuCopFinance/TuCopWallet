@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useReducer, useRef } from 'react'
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -59,6 +59,7 @@ import useSwapQuote, {
   NO_QUOTE_ERROR_MESSAGE,
   QuoteResult,
   SWAP_UPSTREAM_TRANSIENT_ERROR,
+  extractSquidEnvelope,
 } from 'src/swap/useSwapQuote'
 import { useSwappableTokens, useTokenInfo } from 'src/tokens/hooks'
 import {
@@ -486,6 +487,36 @@ export function SwapScreen({ route }: Props) {
   const isTransientUpstreamError =
     !!fetchSwapQuoteError?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR) ||
     !!multiSwapQuote.error?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR)
+
+  // Enriched Squid degradation envelope (backend PR #228, 2026-08-22).
+  // When present, drives the banner variant + optional retry countdown.
+  // Falls back to the generic "servicio no disponible" copy when the
+  // response was a legacy 429/502 without an envelope. extractSquidEnvelope
+  // handles both the class-based path and the message-tail fallback so
+  // module-boundary quirks in tests don't break the derivation.
+  const squidEnvelope =
+    extractSquidEnvelope(fetchSwapQuoteError) ?? extractSquidEnvelope(multiSwapQuote.error)
+
+  // Rate-limit countdown: when Squid forwards a Retry-After header, backend
+  // surfaces it as `retry_after_seconds`. Tick down once per second so the
+  // banner reads "Intenta en Ns" and hits 0 for a plain retry copy.
+  const [rateLimitCountdown, setRateLimitCountdown] = useState<number | null>(null)
+  useEffect(() => {
+    if (
+      squidEnvelope?.error === 'squid_rate_limited' &&
+      typeof squidEnvelope.retry_after_seconds === 'number' &&
+      squidEnvelope.retry_after_seconds > 0
+    ) {
+      setRateLimitCountdown(squidEnvelope.retry_after_seconds)
+    } else {
+      setRateLimitCountdown(null)
+    }
+  }, [squidEnvelope])
+  useEffect(() => {
+    if (rateLimitCountdown === null || rateLimitCountdown <= 0) return
+    const id = setTimeout(() => setRateLimitCountdown((n) => (n === null ? null : n - 1)), 1000)
+    return () => clearTimeout(id)
+  }, [rateLimitCountdown])
 
   useEffect(() => {
     if (fetchSwapQuoteError) {
@@ -1334,9 +1365,28 @@ export function SwapScreen({ route }: Props) {
           {isTransientUpstreamError && (
             <InLineNotification
               variant={NotificationVariant.Warning}
-              title={t('swapScreen.upstreamUnavailableWarning.title')}
-              description={t('swapScreen.upstreamUnavailableWarning.body')}
+              title={
+                squidEnvelope?.error === 'squid_rate_limited'
+                  ? t('swapScreen.errorRateLimited.title')
+                  : squidEnvelope?.error === 'squid_unavailable' &&
+                      squidEnvelope.fallback_hint === 'USDT'
+                    ? t('swapScreen.errorUnavailableFallbackUsdt.title')
+                    : t('swapScreen.errorGeneric.title')
+              }
+              description={
+                squidEnvelope?.error === 'squid_rate_limited'
+                  ? rateLimitCountdown && rateLimitCountdown > 0
+                    ? t('swapScreen.errorRateLimited.bodyWithCountdown', {
+                        seconds: rateLimitCountdown,
+                      })
+                    : t('swapScreen.errorRateLimited.body')
+                  : squidEnvelope?.error === 'squid_unavailable' &&
+                      squidEnvelope.fallback_hint === 'USDT'
+                    ? t('swapScreen.errorUnavailableFallbackUsdt.body')
+                    : t('swapScreen.errorGeneric.body')
+              }
               style={styles.warning}
+              testID="SwapScreen/UpstreamErrorBanner"
             />
           )}
           {confirmSwapFailed && (

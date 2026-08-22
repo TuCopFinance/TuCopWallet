@@ -259,6 +259,57 @@ export interface FetchQuoteResponse {
 export const UNISWAP_V4_PROVIDER = 'uniswap-v4'
 
 /**
+ * Enriched error envelope backend returns on /api/swap/quote when Squid
+ * degrades (PR #228, 2026-08-22). Discriminated union on `error`:
+ *
+ * - `squid_unavailable` (HTTP 502): Squid upstream returned 5xx.
+ *   `retry_after_seconds` is always null for this branch — retrying
+ *   immediately is fine.
+ * - `squid_rate_limited` (HTTP 429): Squid throttled us. When Squid
+ *   forwards a Retry-After header, backend surfaces it as
+ *   `retry_after_seconds`; otherwise the field is null and the wallet
+ *   can retry after its usual backoff.
+ *
+ * `fallback_hint` is `"USDT"` when the failing pair is COPm<->USDC or
+ * COPm<->USDm (backend audited: only USDT<->COPm has a viable Uniswap
+ * V4 pool on Celo, so USDT is the only escape route when Squid drops).
+ * `null` for every other pair — the wallet should show a generic
+ * unavailable message instead of a fallback hint.
+ *
+ * `route` is diagnostic-only (e.g. "USDC->COPm") and MUST NOT be
+ * rendered to end users — it leaks token tickers into copy in a way
+ * that violates the Dolares convention (aggregate label vs specific
+ * ticker context). Sentry tag only.
+ */
+export type SquidDegradationError =
+  | {
+      error: 'squid_unavailable'
+      message: string
+      route: string
+      fallback_hint: 'USDT' | null
+      retry_after_seconds: null
+    }
+  | {
+      error: 'squid_rate_limited'
+      message: string
+      route: string
+      fallback_hint: 'USDT' | null
+      retry_after_seconds: number | null
+    }
+
+/**
+ * Type guard for the enriched envelope. Legacy 502/429 responses
+ * without an envelope (older backend versions, non-Squid-derived 5xx)
+ * fall through to generic handling — do not hard-fail on missing
+ * optional fields.
+ */
+export function isSquidDegradationError(body: unknown): body is SquidDegradationError {
+  if (typeof body !== 'object' || body === null) return false
+  const code = (body as Record<string, unknown>).error
+  return code === 'squid_unavailable' || code === 'squid_rate_limited'
+}
+
+/**
  * True iff the response is any variant of the Uniswap V4 route. Wallet
  * MUST NOT submit `unvalidatedSwapTransaction` directly in this case —
  * either the Permit2 flow or the batchCalls flow needs to run instead.
