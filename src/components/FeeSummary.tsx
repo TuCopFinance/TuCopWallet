@@ -142,12 +142,21 @@ function FeeSummaryLayout({
       usdToLocalRate={usdToLocalRate}
     >
       {(localString) => {
+        // numberOfLines={1} + adjustsFontSizeToFit lets long fee strings
+        // (e.g. "17.50 Pesos + 0.0063 CELO ≈ COP$17.50" or
+        // "0.0055 USDm + 0.04 USDm ≈ COP$139.67") shrink to fit ONE line
+        // instead of wrapping to two. minimumFontScale=0.7 stops the text
+        // from becoming illegible when the string is very long. All fee
+        // rows across swap/gold/subsidies now render on a single line.
         if (layout === 'stacked') {
           return (
             <View testID={testID}>
               <Text
                 style={[styles.primary, primaryStyle]}
                 testID={testID ? `${testID}/Token` : undefined}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
               >
                 {tokenString}
               </Text>
@@ -155,6 +164,9 @@ function FeeSummaryLayout({
                 <Text
                   style={[styles.secondary, secondaryStyle]}
                   testID={testID ? `${testID}/Local` : undefined}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.7}
                 >
                   {`≈ ${localString}`}
                 </Text>
@@ -163,7 +175,13 @@ function FeeSummaryLayout({
           )
         }
         return (
-          <Text style={[styles.primary, primaryStyle]} testID={testID}>
+          <Text
+            style={[styles.primary, primaryStyle]}
+            testID={testID}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+          >
             {localString ? `${tokenString} ≈ ${localString}` : tokenString}
           </Text>
         )
