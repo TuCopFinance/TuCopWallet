@@ -19,6 +19,9 @@ export type BusinessFeature =
   | 'deep_link' // universal / custom-scheme link dispatch
   | 'keyless_backup' // OTP / backup code / recovery flow
   | 'fee_currency' // fee-currency selection cascade itself
+  | 'cico' // cash-in / cash-out (Ramp, Transak, Moonpay, Simplex)
+  | 'dollars_spend' // Dolares virtual multi-swap flow
+  | 'tx_feed' // transaction feed fetch + receipt polling
 
 // Provider / integration behind the feature. Kept small on purpose; add
 // values as the wallet integrates new backends. 'internal' covers wallet-
@@ -38,6 +41,11 @@ export type BusinessProvider =
   | 'wallet-connect'
   | 'wri-relay'
   | 'bridge'
+  | 'ramp'
+  | 'transak'
+  | 'moonpay'
+  | 'simplex'
+  | 'blockscout'
 
 export interface BusinessContext {
   feature: BusinessFeature

@@ -4,6 +4,8 @@ import { call, delay, put, select } from 'typed-redux-saga'
 import { Address, encodeFunctionData, erc20Abi, Hex, TypedDataDefinition } from 'viem'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { FeeEvents } from 'src/analytics/Events'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
 import { ExecuteMultiSwapPayload } from 'src/dollarsSpend/saga'
 import {
@@ -603,6 +605,15 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     Logger.warn(TAG, `7702 batch failed: ${message}`)
+    // Terminal failure of the atomic EIP-7702 batch. Distinct action tag
+    // from the non-7702 step-by-step failure so the Sentry dashboard can
+    // separate atomic-batch regressions from legacy-cascade regressions.
+    captureBusinessError(err, {
+      feature: 'dollars_spend',
+      provider: 'internal',
+      action: 'atomic_batch_7702',
+      errorCode: classifyHttpError(err),
+    })
     yield* put(multiSwapStepFailed({ index: 0, errorMessage: message }))
     yield* delay(50)
     yield* put(multiSwapTransitionComplete())

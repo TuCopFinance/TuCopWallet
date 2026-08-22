@@ -14,6 +14,7 @@ import {
 import { DOLARES_VIRTUAL_TOKEN_ID, SpendStep } from 'src/dollarsSpend/types'
 import { classifyError } from 'src/lib/errors'
 import { navigate } from 'src/navigator/NavigationService'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { Screens } from 'src/navigator/Screens'
 import {
   inFlightAdvance,
@@ -447,6 +448,19 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       )
     } else if (error) {
       Logger.warn(TAG, `Swap failed at step ${index} (${step.symbol})`)
+      // Terminal failure of one leg of the multi-swap: the flow bails out
+      // and the user sees the PartialSuccessSheet ("N de M pasos") so this
+      // IS user-visible. Fingerprint groups all step-N failures together
+      // regardless of the token so ops can see spikes per position; the
+      // symbol lives in extra. `error` here is a swapError payload (not an
+      // Error), so wrap in Error for the SDK.
+      captureBusinessError(new Error(`multi_swap_step_failed`), {
+        feature: 'dollars_spend',
+        provider: 'internal',
+        action: 'multi_swap_step',
+        errorCode: 'step_failed',
+        extra: { stepIndex: index, stepSymbol: step.symbol },
+      })
       yield* put(
         multiSwapStepFailed({
           index,

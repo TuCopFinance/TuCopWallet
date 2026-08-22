@@ -173,7 +173,11 @@ function* handleTransactionReceiptReceived({
   }
 
   if (!!feeCurrencyId && !feeTokenInfo) {
-    Logger.error(
+    // Downgrade to warn: this legitimately fires for CELO (excluded from
+    // ALLOWED_TOKEN_IDS on TuCop) plus the synthesized native fallback.
+    // A Sentry event per tx would be noise. Real "unknown token" cases
+    // are already captured via captureBusinessError at the callers.
+    Logger.warn(
       TAG,
       `No information found for fee currency ${feeCurrencyId} in network ${networkId} for transaction ${txId}`
     )
