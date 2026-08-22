@@ -176,10 +176,10 @@ describe('TabHome', () => {
     })
   })
 
-  it('Tapping swap to USD opens the swap screen with the aggregated Dolares virtual as TO', async () => {
+  it('Tapping the Swap card opens the swap screen with the aggregated Dolares virtual as TO', async () => {
     const { getByTestId } = renderScreen()
 
-    fireEvent.press(getByTestId('FlatCard/swapToUSD'))
+    fireEvent.press(getByTestId('FlatCard/Swap'))
     // Virtual Dolares so the swap card shows the user's full dollar balance
     // (multi-token aggregation). SwapScreen translates virtual back to USDT
     // for the actual quote/settlement.

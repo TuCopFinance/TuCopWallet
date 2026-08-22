@@ -17,15 +17,11 @@ import { useFeatureGate } from 'src/statsig/hooks'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
+import HomeQuickActions from 'src/home/HomeQuickActions'
 import Add from 'src/icons/quick-actions/Add'
-import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
 import SwapArrows from 'src/icons/actions/SwapArrows'
-import Receive from 'src/icons/tab-home/Receive'
-import Recharge from 'src/icons/tab-home/Recharge'
-import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
 import Grow from 'src/icons/tab-home/Grow'
-import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import { importContacts } from 'src/identity/actions'
 import { navigate } from 'src/navigator/NavigationService'
@@ -37,7 +33,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCOPm, useUSDT } from 'src/tokens/hooks'
+import { useCOPm } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
@@ -126,46 +122,15 @@ function TabHome(_props: Props) {
   }, [earthquakeDonationEnabled])
 
   const COPmToken: any = useCOPm()
-  const USDTToken = useUSDT()
 
-  const onPressRecharge = React.useCallback(() => {
-    // Go directly to USDT (Dólares) - no token selection needed for recharge
-    if (USDTToken) {
-      navigate(Screens.FiatExchangeAmount, {
-        tokenId: USDTToken.tokenId,
-        flow: CICOFlow.CashIn,
-        tokenSymbol: USDTToken.symbol,
-      })
-    }
-  }, [USDTToken])
-
-  function onPressSendMoney() {
-    AppAnalytics.track(TabHomeEvents.send_money)
-    navigate(Screens.SendSelectRecipient, {
-      defaultTokenIdOverride: COPmToken.tokenId,
-    })
-  }
-
-  // function goToSpend() {
-  //   navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
-  //   AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
-  //     flow: FiatExchangeFlow.Spend,
-  //   })
-  // }
-
-  function onPressRecieveMoney() {
-    AppAnalytics.track(TabHomeEvents.receive_money)
-    navigate(Screens.QRNavigator, {
-      screen: Screens.QRCode,
-    })
-  }
-
-  function onPressHoldUSD() {
+  function onPressSwap() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
-    // Pre-select the aggregated "Dolares" virtual on the TO side so the swap
-    // card shows the user's full dollar balance (4.67 across USDT/USDC/USDm)
-    // instead of just one concrete token. The swap layer translates virtual
-    // back to USDT for the actual settlement (see SwapScreen.quoteToToken).
+    // Today the only cross-currency route available is Pesos <-> Dolares, so
+    // we pre-select COPm on FROM and the aggregated "Dolares" virtual on TO
+    // (the swap layer translates virtual back to USDT for actual settlement,
+    // see SwapScreen.quoteToToken). When new pairs land (Oro, other stables)
+    // this handler can drop the pre-selection and just navigate to
+    // SwapScreenWithBack with no params.
     !!COPmToken &&
       navigate(Screens.SwapScreenWithBack, {
         fromTokenId: COPmToken.tokenId,
@@ -180,16 +145,6 @@ function TabHome(_props: Props) {
   function onPressReFiColombiaSubsidies() {
     AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
     navigate(Screens.ReFiColombiaSubsidies)
-  }
-
-  const bucksPayFlowStatus = useSelector(bucksPayFlowStatusSelector)
-
-  function onPressWithdraw() {
-    if (bucksPayFlowStatus === 'tracking' || bucksPayFlowStatus === 'submitting-to-api') {
-      navigate(Screens.BucksPayStatus)
-    } else {
-      navigate(Screens.SelectOfframpProvider)
-    }
   }
 
   return (
@@ -208,57 +163,7 @@ function TabHome(_props: Props) {
       >
         <BalanceCard testID="TabHome/BalanceCard" />
 
-        <View style={styles.totalBalanceContainer}>
-          <View style={styles.row}>
-            <View style={[styles.flex, { alignItems: 'center' }]}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.actionButtonsContainer}
-              >
-                <FlatCard type="scrollmenu" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
-                  <View style={styles.actionButton}>
-                    <Send />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.sendMoney')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard
-                  type="scrollmenu"
-                  testID="FlatCard/ReceiveMoney"
-                  onPress={onPressRecieveMoney}
-                >
-                  <View style={styles.actionButton}>
-                    <Receive />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.receiveMoney')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard type="scrollmenu" testID="FlatCard/AddCOPm" onPress={onPressRecharge}>
-                  <View style={styles.actionButton}>
-                    <Recharge />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.addCOPm')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard type="scrollmenu" testID="FlatCard/spendMoney" onPress={onPressWithdraw}>
-                  <View style={styles.actionButton}>
-                    <QuickActionsWithdraw color={Colors.primary} />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.spendMoney')}
-                  </Text>
-                </FlatCard>
-              </ScrollView>
-            </View>
-          </View>
-        </View>
+        <HomeQuickActions />
 
         <Shadow
           style={styles.shadow2}
@@ -296,27 +201,17 @@ function TabHome(_props: Props) {
               </FlatCard>
             )}
 
-            <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
+            <FlatCard testID="FlatCard/Swap" onPress={onPressSwap}>
               <View style={styles.cardRow}>
                 <View style={styles.cardIconBox}>
                   <Swap />
                 </View>
                 <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.swapToUSD')}</Text>
+                  <Text style={styles.cardText}>{t('tabHome.swap')}</Text>
                   <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
                 </View>
               </View>
             </FlatCard>
-
-            {/* <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
-              <View style={styles.row}>
-                <Swap />
-                <View style={styles.flex}>
-                  <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
-                  <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
-                </View>
-              </View>
-            </FlatCard> */}
 
             <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
               <View style={styles.cardRow}>
@@ -539,24 +434,6 @@ const styles = StyleSheet.create({
     height: 124,
     width: 124,
   },
-  textPrimary: { color: Colors.primary },
-  // column: {
-  //   flexDirection: 'column',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   gap: Spacing.Smallest8,
-  // },
-  // ctaText: {
-  //   ...typeScale.bodySmall,
-  //   color: Colors.gray6,
-  //   letterSpacing: -0.16,
-  // },
-  // ctaSubText: {
-  //   ...typeScale.bodySmall,
-  //   color: Colors.gray6,
-  //   letterSpacing: -0.16,
-  //   fontFamily: Inter.Regular,
-  // },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -577,12 +454,6 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.black,
   },
-  totalBalanceContainer: {
-    marginTop: 18,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-
   shadow: {
     width: '100%',
     borderRadius: 15,
@@ -590,29 +461,6 @@ const styles = StyleSheet.create({
   shadow2: {
     width: '100%',
   },
-  actionButtonsContainer: {
-    gap: Spacing.Thick24,
-    marginTop: Spacing.Large32,
-    alignSelf: 'center',
-  },
-  actionButton: {
-    flexDirection: 'column',
-    backgroundColor: '#EEEFFF',
-    padding: 16,
-    marginBottom: Spacing.Smallest8,
-    borderRadius: 12,
-  },
-  actionButtonText: {
-    ...typeScale.bodyXSmall,
-    textAlign: 'center',
-    lineHeight: 20,
-    letterSpacing: -0.12,
-  },
-  // iconContainer: {
-  //   width: 56,
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  // },
   refiLogo: {
     width: 40,
     height: 40,

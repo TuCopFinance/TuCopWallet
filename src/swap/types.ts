@@ -229,6 +229,25 @@ export interface FetchQuoteResponse {
      * Mutually exclusive with `permit2`.
      */
     batchCalls?: UniswapV4BatchCall[]
+    /**
+     * Backend-computed upper bound on the amount of `sellToken` that will
+     * be spent for this quote, denominated in sellToken's native units
+     * (matches `unvalidatedSwapTransaction.sellAmount`'s decimals).
+     *
+     * Wallet uses this as the ERC20 approve amount instead of computing
+     * `buyAmount * guaranteedPrice` client-side. That old formula was
+     * decimal-blind: for a cross-decimal buy-mode swap (e.g. buy USDm
+     * with USDT), buyAmount is 18-decimal but the approve target is a
+     * 6-decimal USDT allowance, so multiplying by a ratio produced a
+     * wrong-sized number in the wrong asset's decimals.
+     *
+     * Backend PR #220 shipped this field on both Squid + Uniswap V4
+     * provider paths. Optional in the type for backward compat with
+     * older cached responses; consumers should prefer it when present
+     * and fall back to `sellAmount` (never the old buyAmount * price
+     * formula) when absent.
+     */
+    worstCaseSellAmount?: string
   }
 }
 

@@ -23,10 +23,7 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import { useTokenInfo } from 'src/tokens/hooks'
-import { TokenBalance } from 'src/tokens/slice'
-import { getDisplayDecimalsForToken } from 'src/utils/formatting'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
@@ -45,27 +42,6 @@ export default function GoldSellConfirmation({ route }: Props) {
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
   const sellStatus = useSelector(goldSellStatusSelector)
-
-  // Get user-friendly display name for tokens. For the four dollar
-  // stablecoins the brand-specific label (Tether USD / USD Coin / Dolar
-  // Mento / Tether America USD) wins so the user can see which concrete
-  // token is settling - the previous fallback to `token.name` exposed
-  // legacy values like "Celo Dollar" for USDm.
-  const getTokenName = (token: TokenBalance | null) => {
-    if (!token) return ''
-    if (token.tokenId === networkConfig.copmTokenId) {
-      return t('assets.pesos')
-    }
-    const ticker = getDollarTokenTicker(token.tokenId)
-    if (ticker) {
-      return ticker
-    }
-    const symbol = token.symbol?.toLowerCase() || ''
-    if (symbol === 'ccop' || symbol === 'copm') {
-      return t('assets.pesos')
-    }
-    return token.name
-  }
 
   // State for quote
   const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(undefined)
@@ -264,15 +240,12 @@ export default function GoldSellConfirmation({ route }: Props) {
           <View style={styles.tokenRow}>
             <TokenIcon token={toToken} size={IconSize.MEDIUM} />
             <View style={styles.tokenInfo}>
-              <Text style={styles.tokenAmount}>
-                {(() => {
-                  const displayDecimals = getDisplayDecimalsForToken(toToken)
-                  return parsedToAmount
-                    .decimalPlaces(displayDecimals, BigNumber.ROUND_DOWN)
-                    .toFormat(displayDecimals)
-                })()}{' '}
-                {getTokenName(toToken)}
-              </Text>
+              <TokenDisplay
+                tokenId={toTokenId}
+                amount={parsedToAmount}
+                showLocalAmount={false}
+                style={styles.tokenAmount}
+              />
               <TokenDisplay
                 tokenId={toTokenId}
                 amount={parsedToAmount}
@@ -294,24 +267,54 @@ export default function GoldSellConfirmation({ route }: Props) {
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('goldFlow.sell.networkFee')}</Text>
-            <Text style={styles.detailValue}>
-              {isGettingQuote
-                ? t('goldFlow.sell.estimatingFee')
-                : parsedGasFee && gasFeeToken
-                  ? `${parsedGasFee.toFormat(getDisplayDecimalsForToken(gasFeeToken))} ${getTokenName(gasFeeToken)}`
-                  : t('goldFlow.sell.estimatingFee')}
-            </Text>
+            {isGettingQuote ? (
+              <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
+            ) : parsedGasFee && gasFeeToken ? (
+              <View style={styles.detailValueGroup}>
+                <TokenDisplay
+                  amount={parsedGasFee}
+                  tokenId={gasFeeToken.tokenId}
+                  showLocalAmount={false}
+                  style={styles.detailValue}
+                  testID="GoldSellConfirmation/NetworkFee/Token"
+                />
+                <TokenDisplay
+                  amount={parsedGasFee}
+                  tokenId={gasFeeToken.tokenId}
+                  showLocalAmount={true}
+                  showApprox={true}
+                  style={styles.detailValueSecondary}
+                  testID="GoldSellConfirmation/NetworkFee/Local"
+                />
+              </View>
+            ) : (
+              <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
+            )}
           </View>
-          {!!parsedAppFee && (
+          {!!parsedAppFee && xaut0Token && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>
                 {t('goldFlow.sell.serviceFee', {
                   percentage: parsedAppFee.percentage.toFormat(),
                 })}
               </Text>
-              <Text style={styles.detailValue}>
-                {`${parsedAppFee.amount.toFormat(XAUT0_DECIMALS)} ${t('goldFlow.gold')}`}
-              </Text>
+              <View style={styles.detailValueGroup}>
+                <TokenDisplay
+                  amount={parsedAppFee.amount}
+                  tokenId={xaut0Token.tokenId}
+                  showLocalAmount={false}
+                  style={styles.detailValue}
+                  testID="GoldSellConfirmation/ServiceFee/Token"
+                />
+                <TokenDisplay
+                  amount={parsedAppFee.amount}
+                  tokenId={xaut0Token.tokenId}
+                  showLocalAmount={true}
+                  showApprox={true}
+                  style={styles.detailValueSecondary}
+                  testID="GoldSellConfirmation/ServiceFee/Local"
+                />
+              </View>
             </View>
           )}
         </View>
@@ -448,6 +451,13 @@ const styles = StyleSheet.create({
   detailValue: {
     ...typeScale.bodyMedium,
     color: Colors.black,
+  },
+  detailValueGroup: {
+    alignItems: 'flex-end',
+  },
+  detailValueSecondary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   infoNotice: {
     marginTop: Spacing.Regular16,

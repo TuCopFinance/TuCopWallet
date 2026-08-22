@@ -92,6 +92,13 @@ interface BackendQuoteResult {
   transaction: SwapTransaction
   swapProvider: string
   appFeePercentageIncludedInPrice: string | undefined
+  /**
+   * Backend-computed upper bound on sellToken spend (backend PR #220).
+   * Wallet uses it as the ERC20 approve amount instead of `sellAmount` so
+   * high-slippage / cross-decimal quotes don't under-approve. Same fix
+   * shipped in swap flow; mirrored here so gold buy/sell also benefits.
+   */
+  worstCaseSellAmount: string | undefined
 }
 
 /**
@@ -174,6 +181,7 @@ async function fetchBackendQuote(
     swapProvider: quote.details.swapProvider,
     appFeePercentageIncludedInPrice:
       quote.unvalidatedSwapTransaction.appFeePercentageIncludedInPrice,
+    worstCaseSellAmount: quote.details.worstCaseSellAmount,
   }
 }
 
@@ -205,14 +213,18 @@ async function fetchSwapQuote(
 async function createSwapTransactionsFromQuote(
   fromToken: TokenBalance,
   swapTransaction: SwapTransaction,
-  walletAddress: string
+  walletAddress: string,
+  worstCaseSellAmount: string | undefined
 ): Promise<{ baseTransactions: TransactionRequest[]; amountToApprove: bigint }> {
   const baseTransactions: TransactionRequest[] = []
 
   const { allowanceTarget, from, to, value, data, gas, estimatedGasUse, sellAmount } =
     swapTransaction
 
-  const amountToApprove = BigInt(sellAmount)
+  // Prefer backend-computed worstCaseSellAmount (PR #220); fall back to
+  // sellAmount for cached responses that predate the field. Both are in
+  // sellToken's native units so no decimal shifting needed.
+  const amountToApprove = BigInt(worstCaseSellAmount ?? sellAmount)
 
   // Check if approval is needed for ERC-20 tokens
   if (allowanceTarget !== zeroAddress && fromToken.address) {
@@ -304,13 +316,15 @@ export function useGoldQuote() {
           transaction: swapTransaction,
           swapProvider,
           appFeePercentageIncludedInPrice,
+          worstCaseSellAmount,
         } = await fetchSwapQuote(fromToken, toToken, amount, walletAddress)
 
         // Create transactions from the quote
         const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
           fromToken,
           swapTransaction,
-          walletAddress
+          walletAddress,
+          worstCaseSellAmount
         )
 
         // Determine transaction origin based on direction
@@ -446,7 +460,7 @@ export async function estimateGoldSwapGas(
 ): Promise<{ estimatedGasFee: string; gasFeeTokenId: string } | null> {
   try {
     // Fetch quote from backend API to get accurate gas estimation
-    const { transaction: swapTransaction } = await fetchSwapQuote(
+    const { transaction: swapTransaction, worstCaseSellAmount } = await fetchSwapQuote(
       fromToken,
       toToken,
       amount,
@@ -457,7 +471,8 @@ export async function estimateGoldSwapGas(
     const { baseTransactions, amountToApprove } = await createSwapTransactionsFromQuote(
       fromToken,
       swapTransaction,
-      walletAddress
+      walletAddress,
+      worstCaseSellAmount
     )
 
     // Prepare transactions with fee estimation
