@@ -2193,6 +2193,9 @@
                 "completedSteps": {
                     "type": "number"
                 },
+                "destinationLabel": {
+                    "type": "string"
+                },
                 "failedAtIndex": {
                     "type": [
                         "null",
@@ -2217,6 +2220,7 @@
             },
             "required": [
                 "completedSteps",
+                "destinationLabel",
                 "failedAtIndex",
                 "isAtomic",
                 "lastError",
