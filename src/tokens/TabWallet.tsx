@@ -94,10 +94,10 @@ function TabWallet() {
 
   return (
     <View style={styles.container} testID="TabWallet">
+      <HomeQuickActions />
       <View style={styles.balanceCardWrapper}>
         <BalanceCard testID="TabWallet/BalanceCard" />
       </View>
-      <HomeQuickActions />
       <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 28 }}>
         <ScrollView
           contentContainerStyle={[styles.contentContainerStyle, { flexGrow: 1 }]}

@@ -100,19 +100,19 @@ function HomeQuickActions() {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginTop: Spacing.Regular16,
-    marginBottom: Spacing.Regular16,
+    marginTop: Spacing.Smallest8,
+    marginBottom: Spacing.Smallest8,
     alignItems: 'center',
   },
   actionButtonsContainer: {
-    gap: Spacing.Thick24,
+    gap: Spacing.Regular16,
     alignSelf: 'center',
     paddingHorizontal: Spacing.Regular16,
   },
   actionButton: {
     flexDirection: 'column',
     backgroundColor: '#EEEFFF',
-    padding: 16,
+    padding: 12,
     marginBottom: Spacing.Smallest8,
     borderRadius: 12,
   },
