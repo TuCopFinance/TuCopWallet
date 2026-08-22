@@ -6,6 +6,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
@@ -37,10 +38,38 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
+import { TokenBalance } from 'src/tokens/slice'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
+
+/**
+ * Build the fee components array shared by Gold Buy + Sell confirmation
+ * screens. Skips a component when its amount or token is missing so the
+ * summary shows only what backend actually returned (e.g. some routes have
+ * no app fee).
+ */
+export function buildGoldFeeComponents({
+  appFee,
+  appFeeToken,
+  networkFee,
+  networkFeeToken,
+}: {
+  appFee: BigNumber | null | undefined
+  appFeeToken: TokenBalance | null | undefined
+  networkFee: BigNumber | null | undefined
+  networkFeeToken: TokenBalance | null | undefined
+}): FeeComponent[] {
+  const components: FeeComponent[] = []
+  if (appFee && appFeeToken && appFee.gt(0)) {
+    components.push({ amount: appFee, token: appFeeToken })
+  }
+  if (networkFee && networkFeeToken && networkFee.gt(0)) {
+    components.push({ amount: networkFee, token: networkFeeToken })
+  }
+  return components
+}
 
 export default function GoldBuyConfirmation({ route }: Props) {
   const { t } = useTranslation()
@@ -362,57 +391,25 @@ export default function GoldBuyConfirmation({ route }: Props) {
               </Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('goldFlow.buy.networkFee')}</Text>
+              <Text style={styles.detailLabel}>{t('goldFlow.buy.fees')}</Text>
               {isGettingQuote ? (
                 <ActivityIndicator size="small" color={Colors.primary} />
-              ) : parsedGasFee && gasFeeToken ? (
-                <View style={styles.detailValueGroup}>
-                  <TokenDisplay
-                    amount={parsedGasFee}
-                    tokenId={gasFeeToken.tokenId}
-                    showLocalAmount={false}
-                    style={styles.detailValue}
-                    testID="GoldBuyConfirmation/NetworkFee/Token"
-                  />
-                  <TokenDisplay
-                    amount={parsedGasFee}
-                    tokenId={gasFeeToken.tokenId}
-                    showLocalAmount={true}
-                    showApprox={true}
-                    style={styles.detailValueSecondary}
-                    testID="GoldBuyConfirmation/NetworkFee/Local"
-                  />
-                </View>
               ) : (
-                <Text style={styles.detailValue}>{t('goldFlow.buy.estimatingFee')}</Text>
+                <FeeSummary
+                  layout="stacked"
+                  components={buildGoldFeeComponents({
+                    appFee: parsedAppFee?.amount,
+                    appFeeToken: fromToken ?? undefined,
+                    networkFee: parsedGasFee,
+                    networkFeeToken: gasFeeToken ?? undefined,
+                  })}
+                  fallbackText={t('goldFlow.buy.estimatingFee')}
+                  primaryStyle={styles.detailValue}
+                  secondaryStyle={styles.detailValueSecondary}
+                  testID="GoldBuyConfirmation/Fees"
+                />
               )}
             </View>
-            {!!parsedAppFee && !!fromToken && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>
-                  {t('goldFlow.buy.serviceFee', {
-                    percentage: parsedAppFee.percentage.toFormat(),
-                  })}
-                </Text>
-                <View style={styles.detailValueGroup}>
-                  <TokenDisplay
-                    amount={parsedAppFee.amount}
-                    tokenId={fromToken.tokenId}
-                    showLocalAmount={false}
-                    style={styles.detailValue}
-                    testID="GoldBuyConfirmation/ServiceFee/Token"
-                  />
-                  <TokenDisplay
-                    amount={parsedAppFee.amount}
-                    tokenId={fromToken.tokenId}
-                    showLocalAmount={true}
-                    showApprox={true}
-                    style={styles.detailValueSecondary}
-                    testID="GoldBuyConfirmation/ServiceFee/Local"
-                  />
-                </View>
-              </View>
-            )}
           </View>
         )}
 
@@ -539,9 +536,6 @@ const styles = StyleSheet.create({
   detailValue: {
     ...typeScale.bodyMedium,
     color: Colors.black,
-  },
-  detailValueGroup: {
-    alignItems: 'flex-end',
   },
   detailValueSecondary: {
     ...typeScale.bodySmall,
