@@ -161,9 +161,9 @@ function TabHome(_props: Props) {
           />
         }
       >
-        <BalanceCard testID="TabHome/BalanceCard" />
-
         <HomeQuickActions />
+
+        <BalanceCard testID="TabHome/BalanceCard" />
 
         <Shadow
           style={styles.shadow2}
@@ -382,15 +382,15 @@ const styles = StyleSheet.create({
   containerShadow: {
     flex: 1,
     borderTopRightRadius: 33,
-    padding: 22,
-    paddingTop: 30,
+    padding: 16,
+    paddingTop: 20,
     borderColor: 'rgba(190, 201, 255, 0.33)',
     borderWidth: 1,
     marginLeft: -17,
     marginRight: -17,
     backgroundColor: 'white',
     borderBottomWidth: 0,
-    gap: 17,
+    gap: 12,
   },
   noBottomShadow: {
     shadowOffset: { width: 0, height: 0 },
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: variables.contentPadding,
     paddingTop: variables.contentPadding,
     position: 'relative',
-    gap: Spacing.Regular16,
+    gap: Spacing.Small12,
     backgroundColor: 'white',
   },
   flatCard: {
@@ -478,18 +478,18 @@ const styles = StyleSheet.create({
   cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingLeft: 40,
-    paddingRight: 40,
+    paddingVertical: 4,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   cardIconBox: {
-    width: 57,
-    height: 57,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     backgroundColor: '#EEEFFF',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   cardTextBox: {
     flex: 1,
