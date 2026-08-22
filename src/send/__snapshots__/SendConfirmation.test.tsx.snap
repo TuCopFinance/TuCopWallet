@@ -347,78 +347,21 @@ exports[`SendConfirmation renders correctly 1`] = `
           }
           testID="LineItemRow/SendConfirmation/fee"
         >
-          <Text>
-            0.01
-             CELO
-          </Text>
-        </Text>
-      </View>
-      <View
-        style={
-          [
-            {
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "space-between",
-              "marginVertical": 5,
-            },
-            {
-              "marginVertical": 0,
-            },
-          ]
-        }
-      >
-        <View
-          style={
-            {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "marginRight": 5,
-            }
-          }
-        >
           <Text
             style={
               [
                 {
                   "color": "#2E3338",
-                  "fontFamily": "RedHatDisplayMedium",
+                  "fontFamily": "RedHatDisplayRegular",
                   "fontSize": 12,
                   "lineHeight": 24,
                 },
-                {
-                  "color": "#666666",
-                  "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 14,
-                  "lineHeight": 20,
-                },
+                undefined,
               ]
             }
-            testID="LineItemRowTitle/SendConfirmation/localFee"
-          />
-        </View>
-        <Text
-          style={
-            [
-              {
-                "color": "#2E3338",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
-                "lineHeight": 24,
-              },
-              {
-                "color": "#666666",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 14,
-                "lineHeight": 20,
-              },
-            ]
-          }
-          testID="LineItemRow/SendConfirmation/localFee"
-        >
-          <Text>
-            COP$
-            0.067
+            testID="SendConfirmation/FeeSummary"
+          >
+            0.01 CELO ≈ COP$0.067
           </Text>
         </Text>
       </View>
