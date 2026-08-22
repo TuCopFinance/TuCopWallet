@@ -1205,11 +1205,25 @@ export function SwapScreen({ route }: Props) {
             // multi-step path skips refreshQuote). Synthesize an effective
             // rate from the aggregated multi-swap result so the rate row
             // shows a meaningful value instead of returning null.
+            //
+            // Bug fix (2026-08-22): denominator MUST be the delivered USD
+            // (`totalInUsd - unquotedUsd`), not the raw requested amount.
+            // When one leg fails (e.g. Squid returns 502 for COPm<->USDC,
+            // COPm<->USDm during the ongoing upstream outage), the numerator
+            // sums only successful legs' output while the old denominator
+            // still included the failed leg's USD, producing rates like
+            // "1 Dolares ≈ 1385 Pesos" when reality is ~4200 COP/USD - the
+            // user saw a rate that made the delivered COP look tiny per
+            // requested USD, when actually the delivered COP is proportional
+            // to the SPENT USD only.
             exchangeRatePrice={
               isVirtualDolares
-                ? multiSwapQuote.totalInUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
-                  ? multiSwapQuote.totalOutToken.dividedBy(multiSwapQuote.totalInUsd).toString()
-                  : undefined
+                ? (() => {
+                    const deliveredUsd = multiSwapQuote.totalInUsd.minus(multiSwapQuote.unquotedUsd)
+                    return deliveredUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
+                      ? multiSwapQuote.totalOutToken.dividedBy(deliveredUsd).toString()
+                      : undefined
+                  })()
                 : quote?.price
             }
             exchangeRateInfoBottomSheetRef={exchangeRateInfoBottomSheetRef}
