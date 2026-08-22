@@ -14,6 +14,7 @@ import CancelButton from 'src/components/CancelButton'
 import { FormatType } from 'src/components/CurrencyDisplay'
 import Dialog from 'src/components/Dialog'
 import LineItemRow from 'src/components/LineItemRow'
+import { getTokenSymbol } from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import { CryptoAmount, FiatAmount } from 'src/fiatExchanges/amount'
 import FiatConnectQuote from 'src/fiatExchanges/quotes/FiatConnectQuote'
@@ -488,29 +489,12 @@ function TransactionDetails({
       tokenInfo,
     })
   const { t } = useTranslation()
-  let tokenDisplay: string
-  switch (tokenInfo?.name) {
-    case 'cUSD':
-      tokenDisplay = t('celoDollar')
-      break
-    case 'cEUR':
-      tokenDisplay = t('celoEuro')
-      break
-    case 'cREAL':
-      tokenDisplay = t('celoReal')
-      break
-    case 'Celo':
-      tokenDisplay = 'CELO'
-      break
-    case 'USDT':
-      tokenDisplay = 'USDT'
-      break
-    case 'COPm':
-      tokenDisplay = 'COPm'
-      break
-    default:
-      tokenDisplay = t('total')
-  }
+  // Delegate to the canonical TokenDisplay helper so COPm renders as
+  // "Pesos", USDT/USDC/USDm/USAT as "Dolares", XAUt0 as "Oro" (Colombia
+  // scoped, per feedback memory `feedback_dolares_label_convention.md`).
+  // Falls back to the token's symbol for anything unmapped, and to the
+  // generic "total" label when tokenInfo itself is missing.
+  const tokenDisplay = getTokenSymbol(t, tokenInfo?.symbol, tokenInfo?.tokenId) ?? t('total')
   // Network fee is only relevant for Cash Out
   const feeHasError = flow === CICOFlow.CashOut && hasError
   const feeIsLoading = flow === CICOFlow.CashOut && isLoading
