@@ -324,15 +324,16 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       args: [innerCalls],
     })
 
-    // Pick a fee currency via the Bug-E-aware central picker.
+    // Pick a fee currency via the central picker.
     //
-    // Stables-first: paying gas in CELO silently shrinks a balance the user
-    // can't see in the app (CELO is excluded from ALLOWED_TOKEN_IDS). We
-    // route through `pickFeeCurrency` which deprioritizes CELO so any visible
-    // stable wins. CELO remains as the last-resort fallback when no stable
-    // qualifies.
+    // Post Bug-E-reversal (2026-08-20): CELO is preferred first. CELO is
+    // invisible in the app (excluded from ALLOWED_TOKEN_IDS) so silently
+    // draining it beats draining a visible stable (Dolares/Pesos) that the
+    // user is counting on. `pickFeeCurrency` is order-preserving and
+    // `feeCurrenciesSelector` returns CELO at index 0 whenever the wallet
+    // has any on chain, so we just iterate the supplied list.
     //
-    // Two kinds of CIP-64 fee currency:
+    // Two kinds of CIP-64 fee currency (both still handled by the picker):
     //   - Native (isFeeCurrency=true): Mento stables registered with the
     //     protocol. Gas debited natively, no allowance required.
     //   - Adapter-based (feeCurrencyAdapterAddress set): protocol pulls the
@@ -344,10 +345,8 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     //
     // We never pay gas in a token that's in the spending set: gas would race
     // the capped-to-balance swap input and the outer tx would revert.
-    // feeCurrenciesSelector now synthesizes CELO for celo-mainnet from
-    // state.tokens.nativeCeloBalance (populated by fetchTokenBalancesSaga),
-    // so this list already contains CELO at priority 1 whenever the wallet
-    // has any on chain. No need for an inline synthetic entry.
+    // feeCurrenciesSelector synthesizes CELO for celo-mainnet from
+    // state.tokens.nativeCeloBalance (populated by fetchTokenBalancesSaga).
     const feeCurrencyCandidates = yield* select(feeCurrenciesSelector, NetworkId['celo-mainnet'])
 
     // 1e30 wei: ~1T units of an 18-decimal token, far above any single tx's

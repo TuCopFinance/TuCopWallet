@@ -315,10 +315,12 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
 
     const rawFeeCurrencies = yield* select(feeCurrenciesSelector, fromToken.networkId as NetworkId)
 
-    // Bug E: the shared selector returns CELO at index 0, so
-    // prepareTransactions silently uses it whenever the user has any CELO.
-    // Reorder via the picker so stables win; CELO drops to last alternative
-    // and only gets used if every stable fails its gas check.
+    // Post Bug-E-reversal (2026-08-20): the selector returns CELO at index 0
+    // and pickFeeCurrency preserves that order (first-viable). We still call
+    // pickFeeCurrency here so the telemetry event below fires with the
+    // resolved choice + decline reasons for observability; the resulting
+    // `feeCurrencies` array is functionally equivalent to `rawFeeCurrencies`
+    // minus the current step's spend token.
     const choice = pickFeeCurrency({
       available: rawFeeCurrencies,
       excludeTokenIds: [step.tokenId],
