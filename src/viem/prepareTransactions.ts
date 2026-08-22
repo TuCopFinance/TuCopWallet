@@ -3,6 +3,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
+import { addFeeCurrencyBreadcrumb } from 'src/sentry/breadcrumbs'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -521,6 +522,7 @@ export async function prepareTransactions({
     }
 
     // This is the one we can use
+    addFeeCurrencyBreadcrumb(feeCurrency, { origin, stage: 'prepared' })
     return {
       type: 'possible',
       transactions: estimatedTransactions,

@@ -110,7 +110,7 @@ function tagSquidDegradation(envelope: SquidDegradationError, status: number): v
  * Error with the legacy SWAP_UPSTREAM_TRANSIENT prefix so downstream
  * pattern-matching keeps working.
  */
-function throwTransientError(status: number, bodyText: string): never {
+export function throwTransientError(status: number, bodyText: string): never {
   const envelope = parseSquidEnvelope(bodyText)
   if (envelope) {
     tagSquidDegradation(envelope, status)

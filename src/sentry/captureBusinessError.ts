@@ -13,6 +13,12 @@ export type BusinessFeature =
   | 'buckspay' // COPm to COP off-ramp
   | 'jumpstart' // send-via-link
   | 'positions' // hooks-api positions fetch / trigger
+  | 'subsidies' // ReFi Colombia UBI claim flow
+  | 'send' // send-money screen (recipient, review, submit)
+  | 'wallet_connect' // dapp connection + session request handling
+  | 'deep_link' // universal / custom-scheme link dispatch
+  | 'keyless_backup' // OTP / backup code / recovery flow
+  | 'fee_currency' // fee-currency selection cascade itself
 
 // Provider / integration behind the feature. Kept small on purpose; add
 // values as the wallet integrates new backends. 'internal' covers wallet-
@@ -28,6 +34,10 @@ export type BusinessProvider =
   | 'buckspay'
   | 'wri'
   | 'internal'
+  | 'refi-colombia-subsidies'
+  | 'wallet-connect'
+  | 'wri-relay'
+  | 'bridge'
 
 export interface BusinessContext {
   feature: BusinessFeature

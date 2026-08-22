@@ -3204,7 +3204,8 @@
       "benefitDescription": "Como beneficiario registrado del programa de ReFi Colombia, puedes reclamar tu subsidio de forma segura y directa a tu wallet.",
       "claimButton": "Reclamar Mi Subsidio",
       "claimingButton": "Reclamando...",
-      "processingText": "Procesando transacción..."
+      "processingText": "Procesando transacción...",
+      "networkFeeLabel": "Tarifa de red"
     },
     "alreadyClaimed": {
       "title": "¡Ya reclamaste tu subsidio!",

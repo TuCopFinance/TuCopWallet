@@ -23,6 +23,7 @@ import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { buyGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
+import { describeGoldQuoteError } from 'src/gold/errorDisplay'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
 import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -160,13 +161,17 @@ export default function GoldBuyConfirmation({ route }: Props) {
         } else {
           setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Check if component is still mounted before updating state
         if (!isMountedRef.current) {
           return
         }
-        Logger.error('GoldBuyConfirmation', 'Failed to fetch quote', error)
-        setQuoteError(error.message || t('goldFlow.buy.quoteErrorDescription'))
+        Logger.warn('GoldBuyConfirmation', 'Failed to fetch quote')
+        // Never surface raw error.message: it may carry the enriched
+        // squid_unavailable / squid_rate_limited envelope JSON body.
+        // describeGoldQuoteError yields safe i18n copy (envelope-aware or
+        // generic fallback) that the InLineNotification can render.
+        setQuoteError(describeGoldQuoteError(error, t, 'buy').body)
       }
     }
 

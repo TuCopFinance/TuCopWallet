@@ -34,6 +34,8 @@ import { KeylessBackupFlow } from 'src/keylessBackup/types'
 import { getTorusPrivateKey } from 'src/keylessBackup/web3auth'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { privateKeyToAddress } from 'src/utils/address'
 import { calculateSha256Hash } from 'src/utils/random'
@@ -104,7 +106,18 @@ export function* handleAppKeyshareIssued({
       })
     }
   } catch (error) {
-    Logger.error(TAG, `Error handling keyless backup ${keylessBackupFlow}`, error)
+    Logger.warn(TAG, `Error handling keyless backup ${keylessBackupFlow}`)
+    // Two distinct failure modes converge here: Torus/Web3Auth keyshare
+    // fetch (network / auth) and encryption setup (crypto / storage).
+    // classifyHttpError buckets by network family; the flow (setup vs
+    // restore) rides on the action tag so setup-side and restore-side
+    // regressions fingerprint separately without polluting the errorCode.
+    captureBusinessError(error, {
+      feature: 'keyless_backup',
+      provider: 'internal',
+      action: `handle_${keylessBackupFlow}`,
+      errorCode: classifyHttpError(error),
+    })
     AppAnalytics.track(KeylessBackupEvents.cab_handle_keyless_backup_failed, {
       keylessBackupFlow,
       origin,
@@ -161,7 +174,13 @@ function* handleKeylessBackupSetup({
 
     yield* put(keylessBackupCompleted())
   } catch (error) {
-    Logger.error(TAG, 'Error in handleKeylessBackupSetup', error)
+    Logger.warn(TAG, 'Error in handleKeylessBackupSetup')
+    captureBusinessError(error, {
+      feature: 'keyless_backup',
+      provider: 'internal',
+      action: 'setup_encrypt_store',
+      errorCode: classifyHttpError(error),
+    })
     yield* put(keylessBackupFailed())
   }
 }
@@ -264,7 +283,13 @@ export function* handleAuth0SignInCompleted({
     })
     yield* put(torusKeyshareIssued({ keyshare: torusPrivateKey }))
   } catch (error) {
-    Logger.error(TAG, 'Error getting Torus private key from auth0 jwt', error)
+    Logger.warn(TAG, 'Error getting Torus private key from auth0 jwt')
+    captureBusinessError(error, {
+      feature: 'keyless_backup',
+      provider: 'internal',
+      action: 'get_torus_keyshare',
+      errorCode: classifyHttpError(error),
+    })
     AppAnalytics.track(KeylessBackupEvents.cab_get_torus_keyshare_failed)
     yield* put(keylessBackupFailed()) // this just updates state for now. when the user reaches the
     // KeylessBackupProgress screen (after phone verification), they will see the failure UI
@@ -278,7 +303,13 @@ export function* handleDeleteKeylessBackup() {
     yield* call(deleteEncryptedMnemonic, secp256k1PrivateKey)
     yield* put(deleteKeylessBackupCompleted())
   } catch (error) {
-    Logger.error(TAG, 'Error deleting keyless backup', error)
+    Logger.warn(TAG, 'Error deleting keyless backup')
+    captureBusinessError(error, {
+      feature: 'keyless_backup',
+      provider: 'internal',
+      action: 'delete_backup',
+      errorCode: classifyHttpError(error),
+    })
     yield* put(deleteKeylessBackupFailed())
   }
 }
