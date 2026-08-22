@@ -1,15 +1,15 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
+import FeeSummary from 'src/components/FeeSummary'
 import SkeletonPlaceholder from 'src/components/SkeletonPlaceholder'
-import TokenDisplay from 'src/components/TokenDisplay'
 import { useSelector } from 'src/redux/hooks'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { tokensByIdSelector } from 'src/tokens/selectors'
-import { TokenBalances } from 'src/tokens/slice'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import {
@@ -33,11 +33,17 @@ interface Props {
 function getNetworkFee(
   transactions: SerializableTransactionRequest[],
   networkId: NetworkId,
-  tokensById: TokenBalances
+  tokensById: TokenBalances,
+  nativeFeeCurrency: TokenBalance | undefined
 ) {
   try {
     const preparedTransactions = transactions.map(getPreparedTransaction)
-    const feeCurrency = getFeeCurrencyToken(preparedTransactions, networkId, tokensById)
+    const feeCurrency = getFeeCurrencyToken(
+      preparedTransactions,
+      networkId,
+      tokensById,
+      nativeFeeCurrency
+    )
     if (!feeCurrency) {
       Logger.warn(TAG, 'No fee token info found', { transactions, networkId })
       return null
@@ -58,7 +64,8 @@ export default function EstimatedNetworkFee({ isLoading, networkId, transactions
   const { t } = useTranslation()
 
   const tokensById = useSelector((state) => tokensByIdSelector(state, [networkId]))
-  const networkFee = getNetworkFee(transactions, networkId, tokensById)
+  const nativeFeeCurrency = useSelector((state) => nativeFeeCurrencySelector(state, networkId))
+  const networkFee = getNetworkFee(transactions, networkId, tokensById, nativeFeeCurrency)
 
   const networkName = NETWORK_NAMES[networkId]
 
@@ -77,23 +84,12 @@ export default function EstimatedNetworkFee({ isLoading, networkId, transactions
       </Text>
       <View>
         <View style={isLoading ? styles.contentLoading : undefined}>
-          <TokenDisplay
-            style={styles.amountPrimaryText}
-            amount={networkFee.amount}
-            tokenId={networkFee.token.tokenId}
-            showLocalAmount={false}
-            showSymbol={true}
-            hideSign={true}
+          <FeeSummary
+            layout="stacked"
+            components={[{ amount: networkFee.amount, token: networkFee.token }]}
+            primaryStyle={styles.amountPrimaryText}
+            secondaryStyle={styles.amountSecondaryText}
             testID="EstimatedNetworkFee/Amount"
-          />
-          <TokenDisplay
-            style={styles.amountSecondaryText}
-            amount={networkFee.amount}
-            tokenId={networkFee.token.tokenId}
-            showLocalAmount={true}
-            showSymbol={true}
-            hideSign={true}
-            testID="EstimatedNetworkFee/AmountLocal"
           />
         </View>
         {!!isLoading && (
