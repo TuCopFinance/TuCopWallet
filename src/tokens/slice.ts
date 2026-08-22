@@ -107,6 +107,14 @@ interface State {
   // in the fee-currency list so the fee cascade always has CELO available
   // as the first-choice payer (invisible to the user).
   nativeCeloBalance?: string
+  // USD price of CELO as a decimal string. Sourced from the backend
+  // `/api/tokens/info` response before ALLOWED_TOKEN_IDS filters CELO out.
+  // Needed by feeCurrenciesByNetworkIdSelector so the synthesized CELO fee
+  // currency has a real priceUsd; without it, any tx that pays gas in CELO
+  // (which is now the first-choice picker after PR #326 Bug E reversal)
+  // renders its network-fee amount as raw "0.0066 CELO" instead of being
+  // convertible to the display currency (COP).
+  nativeCeloPriceUsd?: string
 }
 
 export function tokenBalanceHasAddress(
@@ -161,6 +169,10 @@ const slice = createSlice({
       ...state,
       nativeCeloBalance: action.payload,
     }),
+    setNativeCeloPriceUsd: (state, action: PayloadAction<string>) => ({
+      ...state,
+      nativeCeloPriceUsd: action.payload,
+    }),
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
@@ -176,6 +188,7 @@ export const {
   fetchTokenBalancesFailure,
   importToken,
   setNativeCeloBalance,
+  setNativeCeloPriceUsd,
 } = slice.actions
 
 export default slice.reducer

@@ -519,7 +519,8 @@ export const sortedTokensWithBalanceSelector = createSelector(
 const feeCurrenciesByNetworkIdSelector = createSelector(
   (state: RootState) => tokensByIdSelector(state, Object.values(NetworkId)),
   (state: RootState) => state.tokens.nativeCeloBalance,
-  (tokens, nativeCeloBalance) => {
+  (state: RootState) => state.tokens.nativeCeloPriceUsd,
+  (tokens, nativeCeloBalance, nativeCeloPriceUsd) => {
     const feeCurrenciesByNetworkId: { [key in NetworkId]?: TokenBalance[] } = {}
     // collect fee currencies
     Object.values(tokens).forEach((token) => {
@@ -549,6 +550,13 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
     )
     if (!existingCelo && nativeCeloBalance) {
       const balance = new BigNumber(nativeCeloBalance).shiftedBy(-18)
+      // priceUsd sourced from backend /api/tokens/info (extracted before the
+      // ALLOWED_TOKEN_IDS filter drops CELO). Without a real price the fee
+      // display layer cannot convert CELO gas amounts to the local currency
+      // and the swap detail row renders "≈ COP$X + Y CELO" (mixed format)
+      // instead of a single "≈ COP$Z" total. See tokens/saga.ts +
+      // slice.nativeCeloPriceUsd.
+      const priceUsd = nativeCeloPriceUsd ? new BigNumber(nativeCeloPriceUsd) : null
       const syntheticCelo: TokenBalance = {
         tokenId: networkConfig.celoTokenId,
         address: null,
@@ -557,8 +565,8 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
         name: 'Celo',
         decimals: 18,
         balance,
-        priceUsd: null,
-        lastKnownPriceUsd: null,
+        priceUsd,
+        lastKnownPriceUsd: priceUsd,
         priceFetchedAt: Date.now(),
         isNative: true,
       }
@@ -632,6 +640,20 @@ export const feeCurrenciesSelector = createSelector(
   (feeCurrencies, networkId) => {
     return feeCurrencies[networkId] ?? []
   }
+)
+
+/**
+ * The native fee currency for a network (CELO on celo-mainnet). Used by
+ * fee-display callsites that receive a prepared transaction with no
+ * `feeCurrency` field (native gas). Because CELO is deliberately excluded
+ * from ALLOWED_TOKEN_IDS, it does NOT live in tokensById, so downstream
+ * lookups (getFeeCurrencyToken) would return undefined without this
+ * fallback. Returns the same synthesized entry the fee-currency picker
+ * consumes, keeping the source-of-truth single (nativeCeloBalance +
+ * nativeCeloPriceUsd in state.tokens).
+ */
+export const nativeFeeCurrencySelector = createSelector(feeCurrenciesSelector, (feeCurrencies) =>
+  feeCurrencies.find((tok) => tok.isNative)
 )
 
 export const allFeeCurrenciesSelector = createSelector(

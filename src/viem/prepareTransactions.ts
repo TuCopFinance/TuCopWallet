@@ -737,9 +737,26 @@ function _getFeeCurrency(prepareTransaction: TransactionRequest): Address | unde
 export function getFeeCurrencyToken(
   preparedTransactions: TransactionRequest[],
   networkId: NetworkId,
-  tokensById: TokenBalances
+  tokensById: TokenBalances,
+  // Optional synthesized native fee-currency token (typically CELO on
+  // celo-mainnet). Passed by callers that use the fee-currency selector's
+  // synthesized-CELO entry: CELO is excluded from ALLOWED_TOKEN_IDS so
+  // tokensById does NOT contain it, but after PR #326 (Bug E reversal) CELO
+  // is the first-choice fee currency and any tx that pays gas in CELO has
+  // NO `feeCurrency` field (native gas). Without this override the lookup
+  // returns undefined and the fee-display layer falls back to raw amounts.
+  nativeFeeCurrency?: TokenBalance
 ): TokenBalance | undefined {
   const feeCurrencyAdapterOrAddress = getFeeCurrency(preparedTransactions)
+
+  // Native gas (no feeCurrency field). Use the supplied synthesized entry
+  // when the caller provided one; otherwise fall through to the missing-data
+  // branch below.
+  if (!feeCurrencyAdapterOrAddress) {
+    if (nativeFeeCurrency && nativeFeeCurrency.networkId === networkId) {
+      return nativeFeeCurrency
+    }
+  }
 
   // First try to find the fee currency token by its address (most common case)
   const feeCurrencyToken = tokensById[getTokenId(networkId, feeCurrencyAdapterOrAddress)]
