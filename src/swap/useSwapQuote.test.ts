@@ -111,18 +111,6 @@ describe('createBaseSwapTransactions', () => {
     expect(amountToApprove).toBe(BigInt('1000000'))
   })
 
-  it('falls back to sellAmount when backend omits worstCaseSellAmount', async () => {
-    const tx = buildTx({ sellAmount: '1234567' })
-    const { amountToApprove } = await createBaseSwapTransactions(
-      usdt,
-      Field.FROM,
-      tx,
-      walletAddress,
-      undefined
-    )
-    expect(amountToApprove).toBe(BigInt('1234567'))
-  })
-
   it('skips the approve tx when allowance already covers worstCaseSellAmount', async () => {
     readContract.mockResolvedValue(BigInt('2000000'))
     const tx = buildTx({ sellAmount: '1000000' })

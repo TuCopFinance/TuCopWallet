@@ -222,6 +222,7 @@ const defaultQuote: FetchQuoteResponse = {
   },
   details: {
     swapProvider: 'someProvider',
+    worstCaseSellAmount: '1234000000000000000',
   },
 }
 const defaultQuoteResponse = JSON.stringify(defaultQuote)
@@ -620,6 +621,10 @@ describe('SwapScreen', () => {
           swapType: 'cross-chain',
           sellAmount: new BigNumber(10).times(new BigNumber(10).pow(18)).toString(),
           maxCrossChainFee: new BigNumber(10).pow(18).toString(),
+        },
+        details: {
+          ...defaultQuote.details,
+          worstCaseSellAmount: new BigNumber(10).times(new BigNumber(10).pow(18)).toString(),
         },
       })
     )
@@ -1659,13 +1664,20 @@ describe('SwapScreen', () => {
     const confirmDecrease = getByText('swapScreen.decreaseSwapAmountForGasWarning.cta')
     expect(confirmDecrease).toBeTruthy()
 
-    // Mock next call with the decreased amount
+    // Mock next call with the decreased amount. worstCaseSellAmount is
+    // required post PR #220 hardening; keep it in sync with sellAmount so
+    // the fresh quote is valid (backend contract: worstCaseSellAmount
+    // equals sellAmount for both Squid + V4 paths in sell-mode).
     mockFetch.mockResponse(
       JSON.stringify({
         ...defaultQuote,
         unvalidatedSwapTransaction: {
           ...defaultQuote.unvalidatedSwapTransaction,
           sellAmount: '1207057600000000000',
+        },
+        details: {
+          ...defaultQuote.details,
+          worstCaseSellAmount: '1207057600000000000',
         },
       })
     )
@@ -1692,6 +1704,10 @@ describe('SwapScreen', () => {
         unvalidatedSwapTransaction: {
           ...defaultQuote.unvalidatedSwapTransaction,
           sellAmount: '1233000000000000000', // 1.233
+        },
+        details: {
+          ...defaultQuote.details,
+          worstCaseSellAmount: '1233000000000000000',
         },
       })
     )
@@ -1720,6 +1736,10 @@ describe('SwapScreen', () => {
           ...defaultQuote.unvalidatedSwapTransaction,
           sellAmount: '1207057600000000000',
         },
+        details: {
+          ...defaultQuote.details,
+          worstCaseSellAmount: '1207057600000000000',
+        },
       })
     )
 
@@ -1745,6 +1765,10 @@ describe('SwapScreen', () => {
         unvalidatedSwapTransaction: {
           ...defaultQuote.unvalidatedSwapTransaction,
           sellAmount: '1000000000000000000', // 1
+        },
+        details: {
+          ...defaultQuote.details,
+          worstCaseSellAmount: '1000000000000000000',
         },
       })
     )
