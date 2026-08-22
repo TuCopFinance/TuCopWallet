@@ -7,6 +7,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import Button, { BtnSizes } from 'src/components/Button'
+import FeeSummary from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
@@ -319,24 +320,13 @@ function GasFee({
   isGasSubsidized: Boolean
 }) {
   return (
-    <>
-      <TokenDisplay
-        style={[styles.apyText, isGasSubsidized && { textDecorationLine: 'line-through' }]}
-        tokenId={feeCurrency.tokenId}
-        amount={maxFeeAmount}
-        showLocalAmount={false}
-        testID="EarnConfirmation/GasFeeCryptoAmount"
-      />
-      {!isGasSubsidized && (
-        <TokenDisplay
-          style={styles.gasFeeFiat}
-          tokenId={feeCurrency.tokenId}
-          amount={maxFeeAmount}
-          showLocalAmount={true}
-          testID="EarnConfirmation/GasFeeFiatAmount"
-        />
-      )}
-    </>
+    <FeeSummary
+      layout="stacked"
+      components={[{ amount: maxFeeAmount, token: feeCurrency }]}
+      primaryStyle={[styles.apyText, isGasSubsidized && { textDecorationLine: 'line-through' }]}
+      secondaryStyle={styles.gasFeeFiat}
+      testID="EarnConfirmation/GasFee"
+    />
   )
 }
 
