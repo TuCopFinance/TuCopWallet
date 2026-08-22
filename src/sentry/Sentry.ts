@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react-native'
 import { getClient } from '@sentry/core'
 import DeviceInfo from 'react-native-device-info'
 import { sentryTracesSampleRateSelector } from 'src/app/selectors'
-import { APP_BUNDLE_ID, SENTRY_CLIENT_URL, SENTRY_ENABLED } from 'src/config'
+import { APP_BUNDLE_ID, SENTRY_CLIENT_URL, SENTRY_ENABLED, SENTRY_ENVIRONMENT } from 'src/config'
 import Logger from 'src/utils/Logger'
 import { opaqueAccountId, scrubSensitiveStrings } from 'src/sentry/piiScrub'
 import networkConfig from 'src/web3/networkConfig'
@@ -122,7 +122,14 @@ export function initializeSentryEarly() {
 
   Sentry.init({
     dsn: SENTRY_CLIENT_URL,
-    environment: DeviceInfo.getBundleId(),
+    // `environment` split so events from dev builds (yarn dev:ios /
+    // TuCop-mainnetdev-DO-NOT-SHIP scheme) never mix with events from
+    // real users' prod builds. Bundle ID is `org.tucop` for both, so
+    // relying on it alone (previous behavior) landed all events in one
+    // bucket. `SENTRY_ENVIRONMENT` comes from the env file; defaults to
+    // 'production' when unset so any misconfigured build still shows up
+    // as prod rather than as anonymous noise.
+    environment: SENTRY_ENVIRONMENT,
     enableAutoSessionTracking: true,
     // Never send PII by default. beforeSend below strips wallet addresses,
     // tx hashes and large numeric amounts from every payload; the SDK will
