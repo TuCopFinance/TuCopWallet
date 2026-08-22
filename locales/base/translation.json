@@ -1863,6 +1863,19 @@
       "title": "Service temporarily unavailable",
       "body": "We couldn't get a quote. Please try again in a few seconds."
     },
+    "errorRateLimited": {
+      "title": "Service busy",
+      "body": "Try again in a moment.",
+      "bodyWithCountdown": "Try again in {{seconds}}s."
+    },
+    "errorUnavailableFallbackUsdt": {
+      "title": "Route unavailable",
+      "body": "This route is not available right now. Try switching to USDT."
+    },
+    "errorGeneric": {
+      "title": "Swap unavailable",
+      "body": "Swap is not available right now. Try again later."
+    },
     "confirmSwapFailedWarning": {
       "title": "Something went wrong",
       "body": "The network speed is slow or there is an unknown error. Please try again later"

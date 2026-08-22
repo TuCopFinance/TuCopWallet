@@ -1,11 +1,15 @@
-import { __TESTING__ } from 'src/swap/useSwapQuote'
+import {
+  SWAP_UPSTREAM_TRANSIENT_ERROR,
+  SquidDegradationErr,
+  __TESTING__,
+} from 'src/swap/useSwapQuote'
 import { Field, SwapTransaction } from 'src/swap/types'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
 import { publicClient } from 'src/viem'
 import { erc20Abi } from 'viem'
 
-const { createBaseSwapTransactions } = __TESTING__
+const { createBaseSwapTransactions, parseSquidEnvelope, throwTransientError } = __TESTING__
 
 jest.mock('src/viem', () => ({
   publicClient: {
@@ -32,6 +36,15 @@ const usdt: TokenBalance = {
   imageUrl: '',
   priceFetchedAt: Date.now(),
 } as unknown as TokenBalance
+
+function captureThrown(fn: () => void): unknown {
+  try {
+    fn()
+    return null
+  } catch (e) {
+    return e
+  }
+}
 
 function buildTx(overrides: Partial<SwapTransaction> = {}): SwapTransaction {
   return {
@@ -123,5 +136,105 @@ describe('createBaseSwapTransactions', () => {
     )
     expect(baseTransactions).toHaveLength(1)
     expect(baseTransactions[0].data).toBe('0xdeadbeef')
+  })
+})
+
+describe('parseSquidEnvelope', () => {
+  it('parses the enriched squid_unavailable envelope', () => {
+    const body = JSON.stringify({
+      error: 'squid_unavailable',
+      message: 'squid upstream unavailable',
+      route: 'USDC->COPm',
+      fallback_hint: 'USDT',
+      retry_after_seconds: null,
+    })
+    const parsed = parseSquidEnvelope(body)
+    expect(parsed).toEqual({
+      error: 'squid_unavailable',
+      message: 'squid upstream unavailable',
+      route: 'USDC->COPm',
+      fallback_hint: 'USDT',
+      retry_after_seconds: null,
+    })
+  })
+
+  it('parses the enriched squid_rate_limited envelope with retry_after_seconds', () => {
+    const body = JSON.stringify({
+      error: 'squid_rate_limited',
+      message: 'rate limited by squid, retry',
+      route: 'USDm->COPm',
+      fallback_hint: 'USDT',
+      retry_after_seconds: 7,
+    })
+    const parsed = parseSquidEnvelope(body)
+    expect(parsed?.error).toBe('squid_rate_limited')
+    expect(parsed?.retry_after_seconds).toBe(7)
+    expect(parsed?.fallback_hint).toBe('USDT')
+  })
+
+  it('returns null for the LEGACY 502 body (no envelope)', () => {
+    // Older backend versions + non-Squid-derived 5xx return a plain shape.
+    // The parser must NOT hard-fail — caller falls through to generic
+    // SWAP_UPSTREAM_TRANSIENT handling in that case.
+    const body = JSON.stringify({ error: 'squid upstream unavailable' })
+    expect(parseSquidEnvelope(body)).toBeNull()
+  })
+
+  it('returns null for non-JSON body', () => {
+    expect(parseSquidEnvelope('<html>bad gateway</html>')).toBeNull()
+  })
+
+  it('returns null for JSON without the discriminated error field', () => {
+    expect(parseSquidEnvelope(JSON.stringify({ foo: 'bar' }))).toBeNull()
+  })
+})
+
+describe('throwTransientError', () => {
+  it('throws SquidDegradationErr when the body is an enriched envelope', () => {
+    const body = JSON.stringify({
+      error: 'squid_unavailable',
+      message: 'squid upstream unavailable',
+      route: 'USDC->COPm',
+      fallback_hint: 'USDT',
+      retry_after_seconds: null,
+    })
+    const captured = captureThrown(() => throwTransientError(502, body))
+    expect(captured).toBeInstanceOf(SquidDegradationErr)
+    const err = captured as SquidDegradationErr
+    expect(err.status).toBe(502)
+    expect(err.envelope.error).toBe('squid_unavailable')
+    expect(err.envelope.fallback_hint).toBe('USDT')
+    // Preserves the legacy SWAP_UPSTREAM_TRANSIENT:{status}:{body} shape
+    // in message so existing pattern-matchers keep working.
+    expect(err.message).toContain(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:502:`)
+  })
+
+  it('throws a plain Error with the legacy prefix for a legacy 502 body', () => {
+    const body = JSON.stringify({ error: 'squid upstream unavailable' })
+    const captured = captureThrown(() => throwTransientError(502, body))
+    expect(captured).not.toBeInstanceOf(SquidDegradationErr)
+    expect((captured as Error).message).toContain(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:502:`)
+  })
+
+  it('propagates retry_after_seconds on rate-limited envelopes', () => {
+    const body = JSON.stringify({
+      error: 'squid_rate_limited',
+      message: 'rate limited by squid, retry',
+      route: 'USDm->COPm',
+      fallback_hint: 'USDT',
+      retry_after_seconds: 7,
+    })
+    const captured = captureThrown(() => throwTransientError(429, body))
+    expect(captured).toBeInstanceOf(SquidDegradationErr)
+    const err = captured as SquidDegradationErr
+    expect(err.status).toBe(429)
+    expect(err.envelope.error).toBe('squid_rate_limited')
+    // TS narrows retry_after_seconds to number|null on the rate-limited
+    // branch. Since we asserted `error` above, the cast is safe.
+    const rateLimited = err.envelope as Extract<
+      typeof err.envelope,
+      { error: 'squid_rate_limited' }
+    >
+    expect(rateLimited.retry_after_seconds).toBe(7)
   })
 })

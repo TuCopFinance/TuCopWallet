@@ -21,7 +21,7 @@ import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import SwapScreen from 'src/swap/SwapScreen'
 import { swapStart } from 'src/swap/slice'
 import { FetchQuoteResponse, Field } from 'src/swap/types'
-import { NO_QUOTE_ERROR_MESSAGE } from 'src/swap/useSwapQuote'
+import { NO_QUOTE_ERROR_MESSAGE, SWAP_UPSTREAM_TRANSIENT_ERROR } from 'src/swap/useSwapQuote'
 import { NetworkId } from 'src/transactions/types'
 import { publicClient } from 'src/viem'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
@@ -1113,6 +1113,102 @@ describe('SwapScreen', () => {
         variant: 'sheet',
       })
     )
+  })
+
+  describe('enriched squid degradation envelope banner (backend PR #228)', () => {
+    it('renders the USDT-fallback banner when backend returns squid_unavailable + fallback_hint=USDT', async () => {
+      // Reject directly with the SquidDegradationErr instead of mocking a
+      // 502 response: the wallet's fetchSwapQuoteWithBackoff retries 502
+      // once with a 1s delay (SWAP_QUOTE_502_MAX_RETRIES) and the mock's
+      // response promise + fake-timer interaction can leave the error
+      // dangling. Rejecting shortcuts the retry loop; the branch under
+      // test is the SwapScreen banner selection, not the retry policy.
+      const err = new Error(
+        `${SWAP_UPSTREAM_TRANSIENT_ERROR}:502:${JSON.stringify({
+          error: 'squid_unavailable',
+          message: 'squid upstream unavailable',
+          route: 'USDC->COPm',
+          fallback_hint: 'USDT',
+          retry_after_seconds: null,
+        })}`
+      )
+      mockFetch.mockReject(err)
+      const { swapFromContainer, getByText, swapScreen } = renderScreen({})
+      selectSwapTokens('CELO', 'USDm', swapScreen)
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '1')
+      await act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() =>
+        expect(getByText('swapScreen.errorUnavailableFallbackUsdt.title')).toBeTruthy()
+      )
+      expect(getByText('swapScreen.errorUnavailableFallbackUsdt.body')).toBeTruthy()
+    })
+
+    it('renders the generic banner when backend returns squid_unavailable with no fallback hint', async () => {
+      mockFetch.mockReject(
+        new Error(
+          `${SWAP_UPSTREAM_TRANSIENT_ERROR}:502:${JSON.stringify({
+            error: 'squid_unavailable',
+            message: 'squid upstream unavailable',
+            route: 'POOF->CELO',
+            fallback_hint: null,
+            retry_after_seconds: null,
+          })}`
+        )
+      )
+      const { swapFromContainer, getByText, swapScreen } = renderScreen({})
+      selectSwapTokens('CELO', 'USDm', swapScreen)
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '1')
+      await act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      expect(getByText('swapScreen.errorGeneric.title')).toBeTruthy()
+      expect(getByText('swapScreen.errorGeneric.body')).toBeTruthy()
+    })
+
+    it('renders the rate-limited banner with countdown when retry_after_seconds is set', async () => {
+      mockFetch.mockReject(
+        new Error(
+          `${SWAP_UPSTREAM_TRANSIENT_ERROR}:429:${JSON.stringify({
+            error: 'squid_rate_limited',
+            message: 'rate limited by squid, retry',
+            route: 'USDm->COPm',
+            fallback_hint: 'USDT',
+            retry_after_seconds: 5,
+          })}`
+        )
+      )
+      const { swapFromContainer, getByText, swapScreen } = renderScreen({})
+      selectSwapTokens('CELO', 'USDm', swapScreen)
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '1')
+      await act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      expect(getByText('swapScreen.errorRateLimited.title')).toBeTruthy()
+      // Body renders countdown variant when retry_after_seconds > 0.
+      expect(getByText('swapScreen.errorRateLimited.bodyWithCountdown, {"seconds":5}')).toBeTruthy()
+    })
+
+    it('falls back to generic banner for a legacy 502 body without envelope', async () => {
+      // Older backend versions + non-Squid 5xx return unenriched bodies.
+      // The wallet must NOT crash and must show the generic banner
+      // (no fallback hint, no countdown, no tech vocabulary).
+      mockFetch.mockReject(
+        new Error(
+          `${SWAP_UPSTREAM_TRANSIENT_ERROR}:502:${JSON.stringify({
+            error: 'squid upstream unavailable',
+          })}`
+        )
+      )
+      const { swapFromContainer, getByText, swapScreen } = renderScreen({})
+      selectSwapTokens('CELO', 'USDm', swapScreen)
+      fireEvent.changeText(within(swapFromContainer).getByTestId('SwapAmountInput/Input'), '1')
+      await act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      expect(getByText('swapScreen.errorGeneric.title')).toBeTruthy()
+    })
   })
 
   it('should display an unsupported notification if quote is not available', async () => {

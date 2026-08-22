@@ -1868,6 +1868,19 @@
       "title": "Servicio temporalmente no disponible",
       "body": "No pudimos obtener una cotización. Vuelve a intentarlo en unos segundos."
     },
+    "errorRateLimited": {
+      "title": "Servicio saturado",
+      "body": "Intenta de nuevo en unos segundos.",
+      "bodyWithCountdown": "Intenta de nuevo en {{seconds}}s."
+    },
+    "errorUnavailableFallbackUsdt": {
+      "title": "Ruta no disponible",
+      "body": "Esta ruta no está disponible ahora. Prueba cambiando a USDT."
+    },
+    "errorGeneric": {
+      "title": "Cambio no disponible",
+      "body": "El cambio no está disponible ahora. Intenta más tarde."
+    },
     "confirmSwapFailedWarning": {
       "title": "Algo salió mal",
       "body": "La velocidad de la red es lenta o hay un error desconocido. Vuelve a intentarlo más tarde"
