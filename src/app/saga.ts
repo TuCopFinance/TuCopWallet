@@ -51,6 +51,7 @@ import { handlePaymentDeeplink } from 'src/send/utils'
 import { getFeatureGate, patchUpdateStatsigUser, setupOverridesFromLaunchArgs } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { swapSuccess } from 'src/swap/slice'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { SentryTransactionHub } from 'src/sentry/SentryTransactionHub'
 import { SentryTransaction } from 'src/sentry/SentryTransactions'
 import Logger from 'src/utils/Logger'
@@ -229,66 +230,96 @@ export function* handleDeepLink(action: OpenDeepLink) {
 
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {
-    Logger.error(TAG, 'No wallet address found in store. This should never happen.')
-    return
-  }
-
-  Logger.debug(TAG, '🔍 Verificando si es WalletConnect deep link:', deepLink)
-  const isWCDeepLink = isWalletConnectDeepLink(deepLink)
-  Logger.debug(TAG, '🔍 Es WalletConnect deep link?', isWCDeepLink)
-
-  if (isWCDeepLink) {
-    Logger.debug(TAG, '✅ Procesando WalletConnect deep link')
-    yield* call(handleWalletConnectDeepLink, deepLink)
-    return
-  }
-
-  Logger.debug(TAG, '📝 Procesando deep link regular')
-  const rawParams = parse(deepLink)
-  if (rawParams.path) {
-    const pathParts = rawParams.path.split('/')
-    const pathStartsWith = pathParts[1].split('?')[0]
-    // Only log detailed paramters (fullPath and query) for allowed paths. This is a security precaution so we
-    // don't accidentally log sensitive information on new deeplinks. 'jumpstart' is specifically excluded
-    const pathStartsWithAllowList = [
-      'pay',
-      'cashIn',
-      'bidali',
-      'cash-in-success',
-      'cash-in-failure',
-      'openScreen',
-      'share',
-      'hooks',
-    ]
-    AppAnalytics.track(AppEvents.handle_deeplink, {
-      pathStartsWith: pathParts[1].split('?')[0],
-      fullPath: pathStartsWithAllowList.includes(pathStartsWith) ? rawParams.pathname : null,
-      query: pathStartsWithAllowList.includes(pathStartsWith) ? rawParams.query : null,
+    Logger.warn(TAG, 'No wallet address found in store; ignoring deep link')
+    captureBusinessError(new Error('no_wallet_address_for_deep_link'), {
+      feature: 'deep_link',
+      provider: 'internal',
+      action: 'dispatch',
+      errorCode: 'no_wallet',
     })
-    if (rawParams.path.startsWith('/pay')) {
-      yield* call(handlePaymentDeeplink, deepLink)
-    } else if (rawParams.path === '/cashIn') {
-      navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
-    } else if (rawParams.pathname === '/bidali') {
-      navigate(Screens.BidaliScreen, { currency: undefined })
-    } else if (rawParams.path.startsWith('/cash-in-success')) {
-      // Some providers append transaction information to the redirect links so can't check for strict equality
-      const cicoSuccessParam = (rawParams.pathname?.match(/cash-in-success\/(.+)/) || [])[1]
-      navigate(Screens.CashInSuccess, { provider: cicoSuccessParam.split('/')[0] })
-      // Some providers append transaction information to the redirect links so can't check for strict equality
-    } else if (rawParams.path.startsWith('/cash-in-failure')) {
-      navigateHome()
-    } else if (isSecureOrigin && rawParams.pathname === '/openScreen' && rawParams.query) {
-      // The isSecureOrigin is important. We don't want it to be possible to fire this deep link from outside
-      // of our own notifications for security reasons.
-      const params = convertQueryToScreenParams(rawParams.query)
-      navigate(params.screen as keyof StackParamList, params)
-    } else if (
-      (yield* select(allowHooksPreviewSelector)) &&
-      rawParams.pathname === '/hooks/enablePreview'
-    ) {
-      yield* call(handleEnableHooksPreviewDeepLink, deepLink, HooksEnablePreviewOrigin.Deeplink)
+    return
+  }
+
+  try {
+    Logger.debug(TAG, '🔍 Verificando si es WalletConnect deep link:', deepLink)
+    const isWCDeepLink = isWalletConnectDeepLink(deepLink)
+    Logger.debug(TAG, '🔍 Es WalletConnect deep link?', isWCDeepLink)
+
+    if (isWCDeepLink) {
+      Logger.debug(TAG, '✅ Procesando WalletConnect deep link')
+      yield* call(handleWalletConnectDeepLink, deepLink)
+      return
     }
+
+    Logger.debug(TAG, '📝 Procesando deep link regular')
+    const rawParams = parse(deepLink)
+    if (rawParams.path) {
+      const pathParts = rawParams.path.split('/')
+      const pathStartsWith = pathParts[1].split('?')[0]
+      // Only log detailed paramters (fullPath and query) for allowed paths. This is a security precaution so we
+      // don't accidentally log sensitive information on new deeplinks. 'jumpstart' is specifically excluded
+      const pathStartsWithAllowList = [
+        'pay',
+        'cashIn',
+        'bidali',
+        'cash-in-success',
+        'cash-in-failure',
+        'openScreen',
+        'share',
+        'hooks',
+      ]
+      AppAnalytics.track(AppEvents.handle_deeplink, {
+        pathStartsWith: pathParts[1].split('?')[0],
+        fullPath: pathStartsWithAllowList.includes(pathStartsWith) ? rawParams.pathname : null,
+        query: pathStartsWithAllowList.includes(pathStartsWith) ? rawParams.query : null,
+      })
+      if (rawParams.path.startsWith('/pay')) {
+        yield* call(handlePaymentDeeplink, deepLink)
+      } else if (rawParams.path === '/cashIn') {
+        navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.CashIn })
+      } else if (rawParams.pathname === '/bidali') {
+        navigate(Screens.BidaliScreen, { currency: undefined })
+      } else if (rawParams.path.startsWith('/cash-in-success')) {
+        // Some providers append transaction information to the redirect links so can't check for strict equality
+        const cicoSuccessParam = (rawParams.pathname?.match(/cash-in-success\/(.+)/) || [])[1]
+        navigate(Screens.CashInSuccess, { provider: cicoSuccessParam.split('/')[0] })
+        // Some providers append transaction information to the redirect links so can't check for strict equality
+      } else if (rawParams.path.startsWith('/cash-in-failure')) {
+        navigateHome()
+      } else if (isSecureOrigin && rawParams.pathname === '/openScreen' && rawParams.query) {
+        // The isSecureOrigin is important. We don't want it to be possible to fire this deep link from outside
+        // of our own notifications for security reasons.
+        const params = convertQueryToScreenParams(rawParams.query)
+        navigate(params.screen as keyof StackParamList, params)
+      } else if (
+        (yield* select(allowHooksPreviewSelector)) &&
+        rawParams.pathname === '/hooks/enablePreview'
+      ) {
+        yield* call(handleEnableHooksPreviewDeepLink, deepLink, HooksEnablePreviewOrigin.Deeplink)
+      }
+    }
+  } catch (error) {
+    // safely() at the takeLatest layer would swallow this silently. Ship it
+    // to Sentry so unroutable / malformed / handler-crashing deep links
+    // surface, tagged by the first path segment (jumpstart, pay, cashIn,
+    // etc.) so the fingerprint groups by dispatch target instead of by
+    // dapp URL. The path itself is on the analytics event; no PII beyond
+    // that lands in Sentry via the extra field.
+    Logger.warn(TAG, 'Deep link dispatch failed')
+    let pathHint = 'unknown'
+    try {
+      const parsed = parse(deepLink)
+      if (parsed.path) pathHint = parsed.path.split('/')[1] ?? 'unknown'
+    } catch {
+      // parse can throw on malformed URLs; leave pathHint = 'unknown'
+    }
+    captureBusinessError(error, {
+      feature: 'deep_link',
+      provider: 'internal',
+      action: 'dispatch',
+      errorCode: `path_${pathHint}`,
+      extra: { pathHint },
+    })
   }
 }
 

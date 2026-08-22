@@ -15,6 +15,7 @@ import CustomHeader from 'src/components/header/CustomHeader'
 import { goldSellStatusSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { sellGoldStart } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
+import { describeGoldQuoteError } from 'src/gold/errorDisplay'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
 import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { LocalCurrencySymbol } from 'src/localCurrency/consts'
@@ -105,13 +106,15 @@ export default function GoldSellConfirmation({ route }: Props) {
         } else {
           setQuoteError(t('goldFlow.sell.quoteErrorDescription'))
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Check if component is still mounted before updating state
         if (!isMountedRef.current) {
           return
         }
-        Logger.error('GoldSellConfirmation', 'Failed to get quote', err)
-        setQuoteError(err.message || t('goldFlow.sell.quoteErrorDescription'))
+        Logger.warn('GoldSellConfirmation', 'Failed to get quote')
+        // Never surface raw err.message: it may carry the enriched squid
+        // envelope JSON. describeGoldQuoteError returns safe i18n copy.
+        setQuoteError(describeGoldQuoteError(err, t, 'sell').body)
       }
     }
 

@@ -3164,7 +3164,8 @@
       "benefitDescription": "As a registered beneficiary of the ReFi Colombia program, you can claim your subsidy safely and directly to your wallet.",
       "claimButton": "Claim My Subsidy",
       "claimingButton": "Claiming...",
-      "processingText": "Processing transaction..."
+      "processingText": "Processing transaction...",
+      "networkFeeLabel": "Network fee"
     },
     "alreadyClaimed": {
       "title": "You have already claimed your subsidy!",

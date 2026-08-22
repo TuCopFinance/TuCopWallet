@@ -24,6 +24,7 @@ import {
 } from 'src/gold/selectors'
 import { fetchGoldPrice } from 'src/gold/slice'
 import { XAUT0_DECIMALS } from 'src/gold/types'
+import { describeGoldQuoteError } from 'src/gold/errorDisplay'
 import { calculateGoldAmount, useGoldQuote } from 'src/gold/useGoldQuote'
 import { useDispatch } from 'react-redux'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
@@ -528,12 +529,8 @@ export default function GoldBuyEnterAmount({ route }: Props) {
         {quoteError && (
           <InLineNotification
             variant={NotificationVariant.Error}
-            title={t('goldFlow.buy.quoteErrorTitle')}
-            description={
-              quoteError instanceof Error && quoteError.message
-                ? quoteError.message
-                : t('goldFlow.buy.quoteErrorDescription')
-            }
+            title={describeGoldQuoteError(quoteError, t, 'buy').title}
+            description={describeGoldQuoteError(quoteError, t, 'buy').body}
             style={styles.warning}
             testID="GoldBuyEnterAmount/QuoteError"
           />

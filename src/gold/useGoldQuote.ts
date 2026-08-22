@@ -3,6 +3,13 @@ import { useAsyncCallback } from 'react-async-hook'
 import { goldPriceUsdSelector } from 'src/gold/selectors'
 import { GoldSwapQuote } from 'src/gold/types'
 import { useSelector } from 'src/redux/hooks'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
+import {
+  extractSquidEnvelope,
+  SquidDegradationErr,
+  throwTransientError,
+} from 'src/swap/useSwapQuote'
 import { FetchQuoteResponse, SwapTransaction } from 'src/swap/types'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
@@ -149,8 +156,16 @@ async function fetchBackendQuote(
 
   if (!response.ok) {
     const errorText = await response.text()
-    Logger.error(TAG, `Backend swap quote API error: ${response.status} - ${errorText}`)
-    throw new Error(`Failed to get swap quote: ${errorText}`)
+    Logger.warn(TAG, `Backend swap quote API error: ${response.status}`)
+    // Same envelope handling as the swap flow: 429/502 that carry the
+    // enriched squid_unavailable / squid_rate_limited envelope throw a
+    // typed SquidDegradationErr; the caller (GoldBuy screen) can extract
+    // the envelope with extractSquidEnvelope and render the same banner
+    // variants as SwapScreen instead of leaking raw JSON to the user.
+    if (response.status === 429 || response.status === 502) {
+      throwTransientError(response.status, errorText)
+    }
+    throw new Error(`Failed to get swap quote: ${response.status}`)
   }
 
   const responseText = await response.text()
@@ -200,9 +215,31 @@ async function fetchSwapQuote(
   try {
     const backendQuote = await fetchBackendQuote(fromToken, toToken, amount, walletAddress)
     return backendQuote
-  } catch (backendError: any) {
-    Logger.error(TAG, `Backend quote failed: ${backendError.message}`)
-    throw new Error(`No swap route available: ${backendError.message}`)
+  } catch (backendError: unknown) {
+    // Report to Sentry with a stable business tag. Prefer the envelope's
+    // error code when the backend sent one (squid_unavailable /
+    // squid_rate_limited); fall back to classifyHttpError for network /
+    // 5xx / parse failures. The raw body is NOT included in the thrown
+    // message so the UI does not render JSON to the user (see
+    // GoldBuyEnterAmount which renders quoteError.message verbatim).
+    const envelope = extractSquidEnvelope(backendError)
+    const errorCode = envelope?.error ?? classifyHttpError(backendError)
+    captureBusinessError(backendError, {
+      feature: 'gold',
+      provider: 'squid',
+      action: 'fetch_quote',
+      errorCode,
+      extra: envelope
+        ? { route: envelope.route, fallback_hint: envelope.fallback_hint }
+        : undefined,
+    })
+    // Preserve the typed error for the UI banner (SquidDegradationErr) so
+    // downstream extractSquidEnvelope keeps working from outside.
+    if (backendError instanceof SquidDegradationErr) {
+      throw backendError
+    }
+    const message = backendError instanceof Error ? backendError.message : String(backendError)
+    throw new Error(`No swap route available: ${message}`)
   }
 }
 
