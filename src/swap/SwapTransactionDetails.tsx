@@ -7,13 +7,11 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SwapEvents } from 'src/analytics/Events'
 import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
-import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
+import { getTokenSymbol } from 'src/components/TokenDisplay'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
-import { convertTokenToLocalAmount, getTokenDisplayName } from 'src/tokens/utils'
 import Touchable from 'src/components/Touchable'
 import InfoIcon from 'src/icons/status/InfoIcon'
-import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
-import { useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -60,70 +58,6 @@ interface Props {
   // executed the swap can see it, without pushing tech names into the
   // primary confirm screen copy.
   swapProvider?: string
-}
-
-function getEstimatedTotalFees({
-  usdToLocalCurrencyRate,
-  localCurrencySymbol,
-  feeComponents,
-  errorFallback,
-}: {
-  usdToLocalCurrencyRate: string | null
-  localCurrencySymbol: string | null
-  feeComponents: (SwapFeeAmount | undefined)[]
-  errorFallback: string
-}) {
-  let estimatedFeeInLocalCurrency = new BigNumber(0)
-  const estimatedFeeWithoutFiatPrice: { [tokenId: string]: { amount: BigNumber; symbol: string } } =
-    {}
-
-  for (const feeComponent of feeComponents) {
-    if (feeComponent) {
-      if (!feeComponent.token) {
-        // if any fee component is missing token info, we cannot display the
-        // token symbol or fiat value. In this case it's better to return an
-        // error, rather than showing a total fee that is cheaper due to missing
-        // components.
-        return errorFallback
-      }
-
-      // Route through convertTokenToLocalAmount so COPm fees render 1:1 with
-      // COP instead of drifting through priceUsd * usdToLocalRate.
-      const feeInLocal =
-        localCurrencySymbol &&
-        convertTokenToLocalAmount({
-          tokenAmount: feeComponent.amount,
-          tokenInfo: feeComponent.token,
-          usdToLocalRate: usdToLocalCurrencyRate,
-        })
-      if (feeInLocal) {
-        estimatedFeeInLocalCurrency = estimatedFeeInLocalCurrency.plus(feeInLocal)
-      } else {
-        const existingFeeComponentForToken =
-          estimatedFeeWithoutFiatPrice[feeComponent.token.tokenId]
-        if (existingFeeComponentForToken) {
-          const existingFeeAmount = existingFeeComponentForToken.amount
-          estimatedFeeWithoutFiatPrice[feeComponent.token.tokenId].amount =
-            feeComponent.amount.plus(existingFeeAmount)
-        } else {
-          estimatedFeeWithoutFiatPrice[feeComponent.token.tokenId] = {
-            amount: feeComponent.amount,
-            symbol: feeComponent.token.symbol,
-          }
-        }
-      }
-    }
-  }
-
-  const fiatFeeString = estimatedFeeInLocalCurrency.gt(0)
-    ? `${localCurrencySymbol}${formatValueToDisplay(estimatedFeeInLocalCurrency)}`
-    : ''
-  const tokenFeeString = Object.values(estimatedFeeWithoutFiatPrice)
-    .map((fee) => `${formatValueToDisplay(fee.amount)} ${fee.symbol}`)
-    .join(' + ')
-  return fiatFeeString || tokenFeeString
-    ? `≈ ${fiatFeeString}${fiatFeeString && tokenFeeString ? ' + ' : ''}${tokenFeeString}`
-    : undefined
 }
 
 function LabelWithInfo({
@@ -189,14 +123,15 @@ export function SwapTransactionDetails({
   const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
   const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
   const hasSpendSteps = !!spendSteps && spendSteps.length > 0
-  const usdToLocalCurrencyRate = useSelector(usdToLocalCurrencyRateSelector)
-  const localCurrencySymbol = useSelector(getLocalCurrencySymbol)
-  const estimatedFeesString = getEstimatedTotalFees({
-    usdToLocalCurrencyRate,
-    localCurrencySymbol,
-    feeComponents: [appFee, crossChainFee, networkFee],
-    errorFallback: t('swapScreen.transactionDetails.feesCalculationError'),
-  })
+
+  // Assemble fee components for the unified summary row: swap fee
+  // (app-fee, integrator's cut) + cross-chain fee (only present on
+  // cross-chain routes) + network fee (gas). Each entry stays in its
+  // paying token so the user sees exactly which balance covers what;
+  // FeeSummary sums them into COP for the aggregate ≈ figure.
+  const feeSummaryComponents: FeeComponent[] = [appFee, crossChainFee, networkFee]
+    .filter((c): c is SwapFeeAmount | AppFeeAmount => !!c && !!c.token && c.amount.gt(0))
+    .map((c) => ({ amount: c.amount, token: c.token as TokenBalance }))
 
   const placeholder = '-'
 
@@ -299,40 +234,29 @@ export function SwapTransactionDetails({
           label={t('swapScreen.transactionDetails.fees')}
           testID="SwapTransactionDetails/Fees/MoreInfo"
         />
-        <ValueWithLoading
-          isLoading={fetchingSwapQuote}
-          value={estimatedFeesString ?? placeholder}
-        />
+        <View style={styles.valueContainer}>
+          <View style={{ opacity: fetchingSwapQuote ? 0 : 1 }}>
+            <FeeSummary
+              layout="stacked"
+              components={feeSummaryComponents}
+              fallbackText={placeholder}
+              primaryStyle={styles.value}
+              testID="SwapTransactionDetails/Fees/Summary"
+            />
+          </View>
+          {fetchingSwapQuote && (
+            <View style={styles.loaderContainer}>
+              <SkeletonPlaceholder
+                borderRadius={100}
+                backgroundColor={colors.gray2}
+                highlightColor={colors.white}
+              >
+                <View style={styles.loader} />
+              </SkeletonPlaceholder>
+            </View>
+          )}
+        </View>
       </View>
-      {!!appFee && appFee.percentage.gt(0) && !!appFee.token && !fetchingSwapQuote && (
-        // Integrator fee already discounted from the effective price by the
-        // backend proxy. Rendered as a separate line so the user sees it
-        // explicitly instead of only inside the aggregated "Tarifas" total.
-        // Matches the copy used on the gold buy/sell confirmation screens so
-        // the user reads the same "Tarifa de operacion" label across surfaces.
-        <View style={styles.row} testID="SwapTransactionDetails/ServiceFee">
-          <Text style={styles.label}>
-            {t('swapScreen.transactionDetails.serviceFee', {
-              percentage: appFee.percentage.toFormat(),
-            })}
-          </Text>
-          <Text style={styles.value}>
-            {`${formatValueToDisplay(appFee.amount)} ${getTokenDisplayName(appFee.token.symbol)}`}
-          </Text>
-        </View>
-      )}
-      {!!networkFee?.token?.symbol && !fetchingSwapQuote && !hideFeePaidInRow && (
-        // Bug E UX surface: the user can see which of their visible balances
-        // covers the network fee. Was added so a tx paid in Pesos / Dólares no
-        // longer looks like an unexplained CELO debit. Uses getTokenDisplayName
-        // so the user reads "Pesos" / "Dólares" / "Oro" instead of the chain
-        // symbols (COPm, USDm, XAUt0). CELO falls through to its raw symbol so
-        // the user still sees something if the last-resort fallback fires.
-        <View style={styles.row} testID="SwapTransactionDetails/FeePaidIn">
-          <Text style={styles.label}>{t('swapScreen.transactionDetails.feePaidIn')}</Text>
-          <Text style={styles.value}>{getTokenDisplayName(networkFee.token.symbol)}</Text>
-        </View>
-      )}
       {!!estimatedDurationInSeconds && (
         <View style={styles.row} testID="SwapTransactionDetails/EstimatedDuration">
           <LabelWithInfo
