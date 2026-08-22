@@ -81,6 +81,13 @@ export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
 
 // FEATURE FLAGS
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
+// Sentry `environment` tag. Set explicitly via env file so dev builds and
+// prod builds land in separate Sentry environments even though they share
+// bundle ID + DSN. Fallback to 'production' is the safe default: an env
+// file that forgets to set this shows up as production, not as untagged
+// noise (matches the pre-existing behavior of shipping ALL events to
+// what was effectively one bucket).
+export const SENTRY_ENVIRONMENT = Config.SENTRY_ENVIRONMENT || 'production'
 
 // SECRETS
 export const WEB3AUTH_CLIENT_ID =
