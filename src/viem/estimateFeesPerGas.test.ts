@@ -208,9 +208,13 @@ describe(estimateFeesPerGas, () => {
     const expectedPriorityFee = BigInt('1500000000') // 1.5 Gwei fallback
     const expectedAdjustedPriorityFee = BigInt(Math.floor(Number(expectedPriorityFee) * 1.05))
 
-    // Calculate expected maxFeePerGas using current multipliers
+    // Calculate expected maxFeePerGas using current multipliers.
+    // maxFee multiplier bumped from 1.02 -> 2.0 (2026-08-21) to survive
+    // Celo baseFee spikes during load bursts (Squid batch quotes, Neeru
+    // deposits, gold sells) that were repeatedly tripping op-reth's
+    // maxFeePerGas < baseFeePerGas rejection at include time.
     const baseMaxFee = baseFeePerGas + expectedAdjustedPriorityFee
-    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 1.02))
+    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 2.0))
     const safetyBuffer = baseFeePerGas / BigInt(10)
     const expectedMaxFee = multipliedMaxFee + safetyBuffer
 

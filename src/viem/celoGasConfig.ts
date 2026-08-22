@@ -9,8 +9,15 @@ export const CELO_GAS_MULTIPLIERS = {
   gasLimit: 1.05,
   // Priority fee multiplier (5% buffer - L2 has stable fees)
   priorityFee: 1.05,
-  // Max fee multiplier (2% buffer since L2 has very predictable fees)
-  maxFee: 1.02,
+  // Max fee multiplier: 2x. Only caps how much the WALLET is willing to
+  // pay per gas unit; EIP-1559-style fee markets still only charge
+  // (baseFee + effectiveTip), so a generous cap is free. Prior value
+  // (1.02) produced ~12% total baseFee headroom which repeatedly lost
+  // to Celo baseFee spikes during load bursts (Squid batch quotes,
+  // Neeru deposit sagas, gold flow), causing op-reth to reject with
+  // "maxFeePerGas < baseFeePerGas" at include time and surfacing the
+  // "Tarifa insuficiente" error to users on TestFlight 1.118.12.
+  maxFee: 2.0,
 } as const
 
 // Minimum gas prices for different fee currencies (in wei) - L2 optimized
