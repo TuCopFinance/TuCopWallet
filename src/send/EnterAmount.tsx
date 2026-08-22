@@ -26,7 +26,7 @@ import TokenBottomSheet, {
   TokenBottomSheetProps,
   TokenPickerOrigin,
 } from 'src/components/TokenBottomSheet'
-import TokenDisplay from 'src/components/TokenDisplay'
+import TokenDisplay, { getTokenSymbol } from 'src/components/TokenDisplay'
 import TokenEnterAmount, {
   FETCH_UPDATED_TRANSACTIONS_DEBOUNCE_TIME_MS,
   useEnterAmount,
@@ -289,7 +289,11 @@ export default function EnterAmount({
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.maxAmountWarning.title')}
             description={t('sendEnterAmountScreen.maxAmountWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrency.symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrency.symbol,
+                prepareTransactionsResult.feeCurrency.tokenId
+              ),
             })}
             style={styles.warning}
             testID="SendEnterAmount/MaxAmountWarning"
@@ -299,10 +303,18 @@ export default function EnterAmount({
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.notEnoughBalanceForGasWarning.title', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrencies[0].symbol,
+                prepareTransactionsResult.feeCurrencies[0].tokenId
+              ),
             })}
             description={t('sendEnterAmountScreen.notEnoughBalanceForGasWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrencies[0].symbol,
+                prepareTransactionsResult.feeCurrencies[0].tokenId
+              ),
             })}
             style={styles.warning}
             testID="SendEnterAmount/NotEnoughForGasWarning"
