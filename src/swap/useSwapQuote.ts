@@ -299,29 +299,25 @@ async function createBaseSwapTransactions(
   fromToken: TokenBalance,
   updatedField: Field,
   unvalidatedSwapTransaction: SwapTransaction,
-  walletAddress: string
+  walletAddress: string,
+  worstCaseSellAmount: string | undefined
 ) {
   const baseTransactions: TransactionRequest[] = []
 
-  const {
-    guaranteedPrice,
-    buyAmount,
-    sellAmount,
-    allowanceTarget,
-    from,
-    to,
-    value,
-    data,
-    gas,
-    estimatedGasUse,
-  } = unvalidatedSwapTransaction
-  const amountType: string =
-    updatedField === Field.TO ? ('buyAmount' as const) : ('sellAmount' as const)
+  const { sellAmount, allowanceTarget, from, to, value, data, gas, estimatedGasUse } =
+    unvalidatedSwapTransaction
 
-  const amountToApprove =
-    amountType === 'buyAmount'
-      ? BigInt(new BigNumber(buyAmount).times(guaranteedPrice).toFixed(0, 0))
-      : BigInt(sellAmount)
+  // Approve amount comes from the backend-computed `worstCaseSellAmount`
+  // (introduced by backend PR #220), denominated in sellToken's native
+  // units. The old client-side calc `buyAmount * guaranteedPrice` for
+  // buy-mode was decimal-blind and produced a wrong-sized number for
+  // cross-decimal pairs (e.g. buy USDm with USDT: buyAmount is 18-dec
+  // but the approve target is a 6-dec USDT allowance). Falling back to
+  // `sellAmount` when the field is absent is safe for sell-mode (they
+  // are equal on both provider paths verified live) and still wrong for
+  // buy-mode on stale backend responses; the fallback is intentionally
+  // conservative rather than reintroducing the buggy formula.
+  const amountToApprove = BigInt(worstCaseSellAmount ?? sellAmount)
 
   // If the sell token is ERC-20, we need to check the allowance and add an
   // approval transaction if necessary
@@ -390,13 +386,15 @@ async function prepareSwapTransactions(
   updatedField: Field,
   unvalidatedSwapTransaction: SwapTransaction,
   feeCurrencies: TokenBalance[],
-  walletAddress: string
+  walletAddress: string,
+  worstCaseSellAmount: string | undefined
 ): Promise<PreparedTransactionsResult> {
   const { amountToApprove, baseTransactions } = await createBaseSwapTransactions(
     fromToken,
     updatedField,
     unvalidatedSwapTransaction,
-    walletAddress
+    walletAddress,
+    worstCaseSellAmount
   )
   // Uniswap V4 + user already approved Permit2: baseTransactions is empty
   // because the sentinel swap tx is skipped and no ERC20 approve is needed.
@@ -511,7 +509,8 @@ function useSwapQuote({
         updatedField,
         quote.unvalidatedSwapTransaction,
         feeCurrencies,
-        walletAddress
+        walletAddress,
+        quote.details.worstCaseSellAmount
       )
 
       const baseQuoteResult: BaseQuoteResult = {
@@ -669,7 +668,8 @@ export async function fetchSwapQuoteForExecution(
     Field.FROM,
     tx,
     feeCurrencies,
-    walletAddress
+    walletAddress,
+    quote.details.worstCaseSellAmount
   )
 
   return {
@@ -694,3 +694,7 @@ export async function fetchSwapQuoteForExecution(
 }
 
 export default useSwapQuote
+
+export const __TESTING__ = {
+  createBaseSwapTransactions,
+}
