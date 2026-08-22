@@ -3230,7 +3230,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
-    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "atomicProgress": "Cambiando tus Dolares a {{destination}}...",
     "transitioning": "Finalizando tu cambio...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",
@@ -3309,8 +3309,8 @@
       "swapProvider": "Proveedor",
       "estimatingFee": "Estimando...",
       "confirm": "Confirmar Compra",
-      "infoTitle": "Sobre XAUt0",
-      "infoDescription": "Los tokens XAUt0 representan oro físico. Los precios pueden fluctuar según las condiciones del mercado.",
+      "infoTitle": "Sobre el Oro Digital",
+      "infoDescription": "Cada unidad de Oro Digital representa oro físico almacenado en bóvedas seguras. El precio puede variar según las condiciones del mercado.",
       "errorTitle": "Transacción Fallida",
       "error": "No se pudo completar la compra. Por favor intenta de nuevo.",
       "successMessage": "¡Compra de oro exitosa!"

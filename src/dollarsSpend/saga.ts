@@ -240,7 +240,12 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     // Fall through to legacy when not delegated and relay didn't deliver.
   }
 
-  yield* put(multiSwapStarted({ steps }))
+  yield* put(
+    multiSwapStarted({
+      steps,
+      destinationLabel: toTokenId === networkConfig.xaut0TokenId ? 'Oro' : 'Pesos',
+    })
+  )
 
   // Per-step leg record we'll pass to TransactionSuccessScreen at the end
   // so the user sees a single success screen for the whole Dolares -> Pesos

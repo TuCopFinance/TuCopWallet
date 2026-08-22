@@ -166,7 +166,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
           }),
         },
       ])
-      .put(multiSwapStarted({ steps: [stepUsat] }))
+      .put(multiSwapStarted({ steps: [stepUsat], destinationLabel: 'Pesos' }))
       .silentRun()
 
     expect(wallet.signAuthorization).not.toHaveBeenCalled()
@@ -191,7 +191,7 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
         [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
         [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
       ])
-      .put(multiSwapStarted({ steps: [stepUsat], isAtomic: true }))
+      .put(multiSwapStarted({ steps: [stepUsat], isAtomic: true, destinationLabel: 'Pesos' }))
       .put(multiSwapStepSucceeded({ index: 0 }))
       .put(multiSwapCompleted())
       .not.put.actionType(multiSwapStepFailed.type)

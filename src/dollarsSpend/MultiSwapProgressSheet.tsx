@@ -23,7 +23,9 @@ export default function MultiSwapProgressSheet() {
     return (
       <StateCard
         variant="loading"
-        title={t('dollarsSpend.atomicProgress')}
+        title={t('dollarsSpend.atomicProgress', {
+          destination: inFlight.destinationLabel,
+        })}
         testID="MultiSwapProgressSheet"
       />
     )

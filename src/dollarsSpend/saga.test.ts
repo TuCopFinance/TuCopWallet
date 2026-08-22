@@ -117,7 +117,7 @@ describe('executeMultiSwapSaga', () => {
       executeMultiSwap({ steps: [stepUsat, stepUsdm], toTokenId: 'celo-mainnet:copm' })
     )
       .provide(providers)
-      .put(multiSwapStarted({ steps: [stepUsat, stepUsdm] }))
+      .put(multiSwapStarted({ steps: [stepUsat, stepUsdm], destinationLabel: 'Pesos' }))
       .put(multiSwapStepSucceeded({ index: 0 }))
       .put(multiSwapStepSucceeded({ index: 1 }))
       .put(multiSwapCompleted())

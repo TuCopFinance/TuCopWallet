@@ -69,7 +69,13 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     return
   }
 
-  yield* put(multiSwapStarted({ steps, isAtomic: true }))
+  yield* put(
+    multiSwapStarted({
+      steps,
+      isAtomic: true,
+      destinationLabel: toTokenId === networkConfig.xaut0TokenId ? 'Oro' : 'Pesos',
+    })
+  )
 
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {

@@ -10,6 +10,12 @@ interface InFlight {
   // The progress sheet hides the "Paso X de N" counter and shows a single
   // "Procesando tu cambio" copy because the per-step granularity is meaningless.
   isAtomic: boolean
+  // User-facing label of the destination token (e.g. "Pesos" for COPm swaps,
+  // "Oro" for XAUt0 gold buys). Rendered by MultiSwapProgressSheet in the
+  // atomic-progress copy ("Cambiando tus Dolares a {{destination}}...") so
+  // the same multi-swap infrastructure serves both Dolares -> Pesos and
+  // Dolares -> Oro flows without lying about the direction.
+  destinationLabel: string
 }
 
 export interface State {
@@ -29,13 +35,19 @@ const slice = createSlice({
   name: 'dollarsSpend',
   initialState,
   reducers: {
-    multiSwapStarted(state, action: PayloadAction<{ steps: SpendStep[]; isAtomic?: boolean }>) {
+    multiSwapStarted(
+      state,
+      action: PayloadAction<{ steps: SpendStep[]; isAtomic?: boolean; destinationLabel?: string }>
+    ) {
       state.inFlight = {
         plannedSteps: action.payload.steps,
         completedSteps: 0,
         failedAtIndex: null,
         lastError: null,
         isAtomic: action.payload.isAtomic ?? false,
+        // Default to 'Pesos' preserves legacy Dolares -> Pesos behaviour when
+        // a caller predates this field. Gold flows now pass 'Oro' explicitly.
+        destinationLabel: action.payload.destinationLabel ?? 'Pesos',
       }
       state.transitioning = false
     },

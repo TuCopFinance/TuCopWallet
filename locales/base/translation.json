@@ -3221,7 +3221,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
-    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "atomicProgress": "Cambiando tus Dolares a {{destination}}...",
     "transitioning": "Finishing your operation...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",
@@ -3300,8 +3300,8 @@
       "swapProvider": "Provider",
       "estimatingFee": "Estimating...",
       "confirm": "Confirm Purchase",
-      "infoTitle": "About XAUt0",
-      "infoDescription": "XAUt0 tokens represent physical gold. Prices may fluctuate based on market conditions.",
+      "infoTitle": "About Digital Gold",
+      "infoDescription": "Each unit of Digital Gold represents physical gold stored in secure vaults. Prices may fluctuate based on market conditions.",
       "errorTitle": "Transaction Failed",
       "error": "Failed to complete purchase. Please try again.",
       "successMessage": "Gold purchase successful!"
