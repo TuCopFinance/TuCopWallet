@@ -329,8 +329,8 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
 
     // Branch B1: batchCalls — user is EIP-7702 delegated, backend gives us
     // prebuilt calls to submit directly. Skip Permit2 sign + POST /build-tx
-    // (no signature involved; Permit2.approve inside batchCalls[0] sets
-    // the internal allowance on-chain).
+    // (no signature involved; the inner Permit2.approve inside batchCalls
+    // sets the internal allowance on-chain atomically with the swap).
     //
     // Branch B2: permit2 — undelegated EOA, wallet signs the Permit2
     // PermitSingle typedData, POSTs /build-tx to receive the real

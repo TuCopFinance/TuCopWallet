@@ -184,10 +184,14 @@ export type SwapProvider = 'squid' | 'uniswap-v4' | (string & {})
  * atomic tx. No Permit2 typedData signature is involved.
  *
  * Layout returned by backend (order is significant):
- *   [0] Permit2.approve(sellToken, UniversalRouter, amount, expiration)
- *   [1] UniversalRouter.execute(commands, inputs, deadline)
+ *   [0] sellToken.approve(Permit2, amount)
+ *   [1] Permit2.approve(UniversalRouter, amount, expiration)
+ *   [2] UniversalRouter.execute(commands, inputs, deadline)
  *
- * See wallet-consumer-spec.md section 12 for the wire contract.
+ * The wallet is length-agnostic: it maps every entry into a
+ * BatchExecutor.execute() inner call, so if backend ever adds or removes
+ * a step no client change is required. See wallet-consumer-spec.md
+ * section 12 for the wire contract.
  */
 export interface UniswapV4BatchCall {
   to: string
