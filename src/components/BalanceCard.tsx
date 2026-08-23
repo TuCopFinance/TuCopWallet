@@ -36,9 +36,12 @@ interface Props {
 // CARD_BEHIND_HEIGHT: fixed height of a back card.
 // PEEK: visible strip of each back card (label + amount fit here).
 // OVERLAP: how much the next card eats into the previous card.
-const CARD_BEHIND_HEIGHT = 96
-const PEEK = 60
-const OVERLAP = CARD_BEHIND_HEIGHT - PEEK // 36px
+// Trimmed 2026-08-22 (96->76 / 60->48) after user reported the stack
+// was consuming too much vertical space on Home. Same proportions
+// (OVERLAP still = HEIGHT - PEEK = 28px), just a more compact stack.
+const CARD_BEHIND_HEIGHT = 64
+const PEEK = 40
+const OVERLAP = CARD_BEHIND_HEIGHT - PEEK // 24px
 
 // Investments card surfaces only positions from apps integrated in the
 // wallet (Allbridge, Neeru vaults). Random hooks-detected positions are
@@ -461,7 +464,9 @@ const styles = StyleSheet.create({
     height: CARD_BEHIND_HEIGHT,
     borderRadius: Spacing.Regular16,
     paddingHorizontal: Spacing.Thick24,
-    paddingTop: Spacing.Regular16 + 2,
+    // Trimmed with the height reduction so the label sits centered in the
+    // shorter card instead of hugging the top edge.
+    paddingTop: Spacing.Small12,
   },
   behindRow: {
     flexDirection: 'row',
@@ -486,8 +491,10 @@ const styles = StyleSheet.create({
   cardFront: {
     borderRadius: Spacing.Regular16,
     paddingHorizontal: Spacing.Thick24,
-    paddingTop: Spacing.Thick24,
-    paddingBottom: Spacing.Regular16,
+    // Compact front card. Tight but the number still has room to breathe
+    // thanks to titleLarge's built-in line-height.
+    paddingTop: Spacing.Small12,
+    paddingBottom: Spacing.Smallest8,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.gray2,
   },

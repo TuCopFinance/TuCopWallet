@@ -4,7 +4,6 @@ import * as React from 'react'
 import { Provider } from 'react-redux'
 import TabHome from 'src/home/TabHome'
 import { navigate } from 'src/navigator/NavigationService'
-import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
@@ -147,34 +146,12 @@ describe('TabHome', () => {
     )
   })
 
-  it('Tapping add COPm navigates to the cash in screen', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/AddCOPm'))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
-      tokenId: 'celo-mainnet:0xd077a400968890eacc75cdc901f0356c943e4fdb',
-      flow: 'CashIn',
-      tokenSymbol: 'USDT',
-    })
-  })
-
-  it('Tapping send money opens the send flow', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/SendMoney'))
-    expect(navigate).toHaveBeenCalledWith('SendSelectRecipient', {
-      defaultTokenIdOverride: copmTokenId,
-    })
-  })
-
-  it('Tapping receive money opens the QR code screen', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/ReceiveMoney'))
-    expect(navigate).toHaveBeenCalledWith('QRNavigator', {
-      screen: 'QRCode',
-    })
-  })
+  // Quick-action tap tests moved to src/home/HeaderQuickActions.test.tsx
+  // after PR (this branch) promoted the 4 quick actions (Envia / Recibe /
+  // Recarga / Gasta) out of TabHome and into tabHeader.headerLeft. The
+  // buttons are no longer part of TabHome's render tree so testing them
+  // here would require booting the whole navigator stack; the dedicated
+  // test file renders HeaderQuickActions directly.
 
   it('Tapping the Swap card opens the swap screen with the aggregated Dolares virtual as TO', async () => {
     const { getByTestId } = renderScreen()
@@ -187,12 +164,5 @@ describe('TabHome', () => {
       fromTokenId: copmTokenId,
       toTokenId: 'virtual:dolares',
     })
-  })
-
-  it('Tapping spend money opens the offramp provider screen', async () => {
-    const { getByTestId } = renderScreen()
-
-    fireEvent.press(getByTestId('FlatCard/spendMoney'))
-    expect(navigate).toHaveBeenCalledWith(Screens.SelectOfframpProvider)
   })
 })

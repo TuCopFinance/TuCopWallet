@@ -17,7 +17,6 @@ import { useFeatureGate } from 'src/statsig/hooks'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
-import HomeQuickActions from 'src/home/HomeQuickActions'
 import Add from 'src/icons/quick-actions/Add'
 import SwapArrows from 'src/icons/actions/SwapArrows'
 import Swap from 'src/icons/tab-home/Swap'
@@ -149,6 +148,12 @@ function TabHome(_props: Props) {
 
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
+      {/* BalanceCard rendered OUTSIDE the ScrollView so it stays fixed at
+          the top of Home while the user scrolls through the feature
+          cards below. Matches TabWallet where the balance carousel is
+          also fixed. */}
+      <BalanceCard testID="TabHome/BalanceCard" />
+
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContainer}
@@ -161,97 +166,84 @@ function TabHome(_props: Props) {
           />
         }
       >
-        <HomeQuickActions />
-
-        <BalanceCard testID="TabHome/BalanceCard" />
-
-        <Shadow
-          style={styles.shadow2}
-          offset={[0, 0]}
-          distance={10} // Add this to remove bottom shadow
-          startColor="rgba(190, 201, 255, 0.28)"
-          sides={{ bottom: false }} // Add this to specifically disable bottom shadow
-        >
-          <View style={[styles.containerShadow, styles.noBottomShadow]}>
-            {earthquakeDonationEnabled && (
-              // Donation card first so it is the very first entrypoint users
-              // see under the balance / quick actions. Placed above the swap
-              // card intentionally: pinning the campaign to the top of the
-              // list is the whole point of the always-visible surface (the
-              // popup is one-per-session, but the card has to earn a look
-              // every time someone scrolls Home).
-              <FlatCard
-                testID="FlatCard/EarthquakeDonation"
-                onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
-              >
-                <View style={styles.cardRow}>
-                  <View style={styles.cardIconBox}>
-                    <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
-                  </View>
-                  <View style={styles.cardTextBox}>
-                    <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
-                    <Text style={styles.cardSubText}>
-                      {t('tabHome.earthquakeDonation.subtitle')}
-                    </Text>
-                    <Text style={styles.donationHighlight}>
-                      {t('tabHome.earthquakeDonation.highlight')}
-                    </Text>
-                  </View>
-                </View>
-              </FlatCard>
-            )}
-
-            <FlatCard testID="FlatCard/Swap" onPress={onPressSwap}>
-              <View style={styles.cardRow}>
-                <View style={styles.cardIconBox}>
-                  <Swap />
-                </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.swap')}</Text>
-                  <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
-                </View>
-              </View>
-            </FlatCard>
-
-            <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={styles.cardRow}>
-                <View style={styles.cardIconBox}>
-                  <Grow size={25} />
-                </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
-                  <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
-                </View>
-              </View>
-            </FlatCard>
-
-            <GoldEntrypoint />
-
+        {/* Wrapper container without its own border/shadow so balance and
+            feature cards read as one continuous stack. Individual feature
+            cards (FlatCard) still carry their own shadow so each row keeps
+            visible affordance. */}
+        <View style={styles.featureCardsWrap}>
+          {earthquakeDonationEnabled && (
+            // Donation card first so it is the very first entrypoint users
+            // see under the balance / quick actions. Placed above the swap
+            // card intentionally: pinning the campaign to the top of the
+            // list is the whole point of the always-visible surface (the
+            // popup is one-per-session, but the card has to earn a look
+            // every time someone scrolls Home).
             <FlatCard
-              testID="FlatCard/ReFiColombiaSubsidies"
-              onPress={onPressReFiColombiaSubsidies}
+              testID="FlatCard/EarthquakeDonation"
+              onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
             >
               <View style={styles.cardRow}>
                 <View style={styles.cardIconBox}>
                   <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
                 </View>
                 <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
-                  <Text style={styles.cardSubText}>
-                    {t('tabHome.reFiColombiaSubsidies.subtitle')}
+                  <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.earthquakeDonation.subtitle')}</Text>
+                  <Text style={styles.donationHighlight}>
+                    {t('tabHome.earthquakeDonation.highlight')}
                   </Text>
                 </View>
               </View>
             </FlatCard>
+          )}
 
-            {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+          <FlatCard testID="FlatCard/Swap" onPress={onPressSwap}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Swap />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.swap')}</Text>
+                <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Grow size={25} />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          <GoldEntrypoint />
+
+          <FlatCard testID="FlatCard/ReFiColombiaSubsidies" onPress={onPressReFiColombiaSubsidies}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
+                <Text style={styles.cardSubText}>
+                  {t('tabHome.reFiColombiaSubsidies.subtitle')}
+                </Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
               <View style={styles.row}>
                 <Withdraw />
                 <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
               </View>
             </FlatCard> */}
-          </View>
-        </Shadow>
+        </View>
       </ScrollView>
 
       <AddCOPmBottomSheet forwardedRef={addCOPmBottomSheetRef} />
@@ -379,29 +371,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: variables.contentPadding,
   },
-  containerShadow: {
-    flex: 1,
-    borderTopRightRadius: 33,
-    padding: 16,
-    paddingTop: 20,
-    borderColor: 'rgba(190, 201, 255, 0.33)',
-    borderWidth: 1,
-    marginLeft: -17,
-    marginRight: -17,
-    backgroundColor: 'white',
-    borderBottomWidth: 0,
+  featureCardsWrap: {
+    // Vertical stack of feature cards under the balance carousel. No
+    // border, no wrap-level shadow: the earlier Shadow + border created a
+    // visible seam. Now the two sections read as one continuous surface,
+    // and each FlatCard owns its own shadow.
+    // marginTop needed because BalanceCard + this wrap are siblings inside
+    // a ScrollView (not the outer SafeAreaView), so the outer
+    // container.gap does NOT put space between them. Without this margin
+    // the first feature card visually touched the balance-front bottom.
+    marginTop: 32,
     gap: 12,
-  },
-  noBottomShadow: {
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0, // For Android
   },
   container: {
     flex: 1,
     paddingHorizontal: variables.contentPadding,
     paddingTop: variables.contentPadding,
     position: 'relative',
-    gap: Spacing.Small12,
+    // gap between QuickActions, BalanceCard, and the containerShadow that
+    // wraps feature cards. Must be >= Shadow distance (10) + a comfortable
+    // clearance so the containerShadow drop-shadow does not almost overlap
+    // the balance card above it. Small12 (12) left only 2px clearance and
+    // read as visually stuck to the balance card.
+    gap: Spacing.Thick24,
     backgroundColor: 'white',
   },
   flatCard: {
@@ -457,9 +449,6 @@ const styles = StyleSheet.create({
   shadow: {
     width: '100%',
     borderRadius: 15,
-  },
-  shadow2: {
-    width: '100%',
   },
   refiLogo: {
     width: 40,

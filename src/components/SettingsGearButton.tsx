@@ -1,6 +1,7 @@
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import GearIcon from 'src/icons/settings/GearIcon'
+import Colors from 'src/styles/colors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { TopBarIconButtonV2 } from 'src/navigator/TopBarIconButtonV2'
@@ -19,7 +20,7 @@ export default function SettingsGearButton({ testID, size, style }: Props) {
 
   return (
     <TopBarIconButtonV2
-      icon={<GearIcon size={size} />}
+      icon={<GearIcon size={size} color={Colors.primary} />}
       testID={testID}
       onPress={onPress}
       style={style}

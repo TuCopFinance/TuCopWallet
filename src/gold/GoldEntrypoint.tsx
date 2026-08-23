@@ -112,8 +112,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    paddingLeft: 40,
-    paddingRight: 40,
+    // Matched to TabHome.cardRow (paddingLeft/Right = 16) so the icons of
+    // the gold entrypoint align vertically with the ReFi / Swap / Earn /
+    // Subsidies rows below it. Previously 40/40 which pushed the icon in
+    // and made the gold icon box appear wider than the others.
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   cardInnerContent: {
     flexDirection: 'row',
@@ -122,13 +126,15 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   cardIconContainer: {
-    width: 57,
-    height: 57,
+    // Matched to TabHome.cardIconBox (44x44, borderRadius 10) for icon
+    // parity across all Home feature cards.
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     backgroundColor: '#EEEFFF',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   cardTextContainer: {
     flex: 1,
