@@ -10,7 +10,6 @@ import Touchable from 'src/components/Touchable'
 import GoldIconSelector from 'src/gold/GoldIconSelector'
 import { useXaut0Balance } from 'src/gold/useXaut0Balance'
 import { refreshAllBalances } from 'src/home/actions'
-import HomeQuickActions from 'src/home/HomeQuickActions'
 import { FlatCard } from 'src/home/TabHome'
 import i18n from 'src/i18n'
 import { getLocalCurrencySymbol, usdToLocalCurrencyRateSelector } from 'src/localCurrency/selectors'
@@ -94,7 +93,6 @@ function TabWallet() {
 
   return (
     <View style={styles.container} testID="TabWallet">
-      <HomeQuickActions />
       <View style={styles.balanceCardWrapper}>
         <BalanceCard testID="TabWallet/BalanceCard" />
       </View>

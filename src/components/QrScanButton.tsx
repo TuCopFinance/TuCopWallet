@@ -3,6 +3,7 @@ import { StyleProp, ViewStyle } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { QrScreenEvents } from 'src/analytics/Events'
 import ScanIcon from 'src/icons/actions/ScanIcon'
+import Colors from 'src/styles/colors'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { TopBarIconButtonV2 } from 'src/navigator/TopBarIconButtonV2'
@@ -21,7 +22,7 @@ export default function QrScanButton({ testID, size, style }: Props) {
 
   return (
     <TopBarIconButtonV2
-      icon={<ScanIcon size={size} />}
+      icon={<ScanIcon size={size} color={Colors.primary} />}
       testID={testID}
       onPress={onPress}
       style={style}
