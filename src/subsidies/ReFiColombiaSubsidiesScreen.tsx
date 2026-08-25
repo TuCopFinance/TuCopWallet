@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { TabHomeEvents } from 'src/analytics/Events'
+import { SubsidiesEvents, TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import DebugInfoPanel from 'src/components/DebugInfoPanel'
 import { ErrorMessage } from 'src/components/ErrorMessage'
@@ -143,6 +143,12 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       }
 
       setUbiStatus(status)
+      // Fires once per successful status check so we can measure how many
+      // Colombians reach the screen + break down by eligibility state.
+      AppAnalytics.track(SubsidiesEvents.subsidies_screen_view, {
+        claimableAmountCopm: status.isBeneficiary && !status.hasClaimedThisWeek ? 'claimable' : '0',
+        hasHistory: !!status.lastClaimTimestamp,
+      })
 
       Logger.debug(TAG, 'UBI Status:', status)
 
@@ -172,11 +178,18 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const handleClaimSubsidy = async () => {
     if (!walletAddress || !ubiStatus) return
 
+    AppAnalytics.track(SubsidiesEvents.subsidies_claim_press, {
+      claimableAmountCopm: 'claimable',
+    })
+
     let flowId: string | undefined
     try {
       setIsLoading(true)
       Logger.debug(TAG, 'Starting claim process with biometric authentication')
 
+      AppAnalytics.track(SubsidiesEvents.subsidies_claim_start, {
+        claimableAmountCopm: 'claimable',
+      })
       flowId = start({
         flowKind: 'subsidy',
         steps: 1,
@@ -200,6 +213,10 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       if (result.success) {
         // Analitica
         AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
+        AppAnalytics.track(SubsidiesEvents.subsidies_claim_success, {
+          claimableAmountCopm: 'claimable',
+          transactionHash: result.txHash ?? '',
+        })
         advance(flowId, 'succeeded')
 
         // Actualizar el estado despues del exito
@@ -209,12 +226,21 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         navigation.goBack()
       } else {
         Logger.warn(TAG, 'Claim failed:', result.error)
+        AppAnalytics.track(SubsidiesEvents.subsidies_claim_error, {
+          claimableAmountCopm: 'claimable',
+          error: result.error ?? 'unknown',
+        })
         fail(flowId, classifyError(new Error(result.error ?? 'Subsidy claim failed')))
         // El error ya se mostro en el contrato, solo actualizamos el estado
         await checkUBIStatus()
       }
     } catch (error) {
       Logger.error(TAG, 'Error in claim process', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      AppAnalytics.track(SubsidiesEvents.subsidies_claim_error, {
+        claimableAmountCopm: 'claimable',
+        error: errorMessage,
+      })
       if (flowId) {
         if (error instanceof Error && error.message?.includes('cancel')) {
           abort(flowId)

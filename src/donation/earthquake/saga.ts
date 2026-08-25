@@ -1,5 +1,7 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
+import AppAnalytics from 'src/analytics/AppAnalytics'
+import { EarthquakeDonationEvents } from 'src/analytics/Events'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
@@ -41,6 +43,9 @@ export function* executeEarthquakeDonationSaga(
   action: PayloadAction<ExecuteEarthquakeDonationPayload>
 ) {
   const { amountWhole, source } = action.payload
+  AppAnalytics.track(EarthquakeDonationEvents.earthquake_donation_start, {
+    amountUsd: amountWhole,
+  })
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {
     Logger.warn(TAG, 'No wallet address available; aborting donation')
@@ -177,6 +182,10 @@ export function* executeEarthquakeDonationSaga(
       `Donation success (${source}) tx=${receiptHash} amount=${effectiveAmountBn.toString()} COPm (requested ${amountWhole})`
     )
 
+    AppAnalytics.track(EarthquakeDonationEvents.earthquake_donation_success, {
+      amountUsd: effectiveAmountBn.toString(),
+      transactionHash: receiptHash,
+    })
     navigate(Screens.EarthquakeDonationSuccessScreen, {
       amountWhole: effectiveAmountBn.toString(),
       transactionHash: receiptHash,
@@ -186,6 +195,10 @@ export function* executeEarthquakeDonationSaga(
     vibrateError()
     const error = ensureError(err)
     Logger.error(TAG, 'Donation failed', error)
+    AppAnalytics.track(EarthquakeDonationEvents.earthquake_donation_error, {
+      amountUsd: amountWhole,
+      error: error.message,
+    })
     captureBusinessError(error, {
       feature: 'transactions',
       provider: 'internal',
