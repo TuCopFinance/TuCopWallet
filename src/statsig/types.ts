@@ -72,6 +72,12 @@ export enum StatsigFeatureGates {
   // Kept as a gate + default OFF so backend can validate the new endpoint
   // in prod with individual overrides / ramp % before flipping to 100%.
   USE_TUCOP_BACKEND_TOKENS_INFO = 'use_tucop_backend_tokens_info',
+  // PostHog product analytics rollout switch. When ON, AppAnalytics.init
+  // initializes the PostHog RN SDK and every existing track() / identify()
+  // / page() callsite fans out to PostHog. When OFF (default), the SDK
+  // stays uninitialized so events short-circuit before hitting any network.
+  // Server-side ramp so we can go 5% -> 25% -> 100% without a release.
+  POSTHOG_TRACKING_ENABLED = 'posthog_tracking_enabled',
 }
 
 export enum StatsigExperiments {

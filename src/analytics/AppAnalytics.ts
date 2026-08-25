@@ -1,15 +1,27 @@
 import { SegmentClient } from '@segment/analytics-react-native'
 import { StatsigClientRN } from '@statsig/react-native-bindings'
 import _ from 'lodash'
+import PostHog from 'posthog-react-native'
 import { Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import { AppEvents } from 'src/analytics/Events'
 import { AnalyticsPropertiesList } from 'src/analytics/Properties'
 import { getCurrentUserTraits } from 'src/analytics/selectors'
-import { E2E_TEST_STATSIG_ID, isE2EEnv, STATSIG_API_KEY, STATSIG_ENV } from 'src/config'
+import {
+  E2E_TEST_STATSIG_ID,
+  isE2EEnv,
+  POSTHOG_API_KEY,
+  POSTHOG_ENABLED,
+  POSTHOG_ENVIRONMENT,
+  POSTHOG_HOST,
+  STATSIG_API_KEY,
+  STATSIG_ENV,
+} from 'src/config'
 import { store } from 'src/redux/store'
+import { getFeatureGate } from 'src/statsig'
 import { getDefaultStatsigUser, localGateOverrides, setStatsigClient } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { ensureError } from 'src/utils/ensureError'
 import Logger from 'src/utils/Logger'
@@ -84,6 +96,11 @@ class AppAnalytics {
   private currentScreenId: string | undefined
   private prevScreenId: string | undefined
   private segmentClient: SegmentClient | undefined
+  // PostHog RN SDK client. Initialized lazily inside init() only when the
+  // POSTHOG_TRACKING_ENABLED Statsig gate is on AND the build has a real
+  // `phc_` project token. Left undefined on E2E, dev opt-out, and gate-off
+  // rollouts so track/identify/page short-circuit before any network I/O.
+  private posthogClient: PostHog | undefined
 
   async init() {
     let uniqueID
@@ -157,6 +174,50 @@ class AppAnalytics {
     } catch (error) {
       Logger.warn(TAG, `Statsig setup error`, error)
     }
+
+    // PostHog init - runs AFTER Statsig so the rollout gate is readable.
+    // Silent no-op when the gate is off, when the env-level POSTHOG_ENABLED
+    // flag is false, when no project token is baked in, or under E2E. Each
+    // guard is checked explicitly (instead of a single boolean) so an ops
+    // page reading these logs can tell which lever gated the init.
+    try {
+      if (isE2EEnv) {
+        Logger.debug(TAG, 'PostHog skipped: E2E environment')
+      } else if (!POSTHOG_ENABLED) {
+        Logger.debug(TAG, 'PostHog skipped: POSTHOG_ENABLED=false in env file')
+      } else if (!POSTHOG_API_KEY) {
+        Logger.warn(TAG, 'PostHog skipped: POSTHOG_API_KEY missing from secrets.json')
+      } else if (!getFeatureGate(StatsigFeatureGates.POSTHOG_TRACKING_ENABLED)) {
+        Logger.info(TAG, 'PostHog skipped: posthog_tracking_enabled gate OFF')
+      } else {
+        this.posthogClient = new PostHog(POSTHOG_API_KEY, {
+          host: POSTHOG_HOST,
+          // Auto capture app-open / install / update. Cheap, matches Sentry
+          // release tracking and lets funnels start at first-open without
+          // needing an explicit AppAnalytics.track() at every entry point.
+          captureAppLifecycleEvents: true,
+          // Session replay stays off until we do the masking pass for PIN,
+          // balances, and address text (see roadmap). Enabling here without
+          // masking would ship sensitive frames.
+          enableSessionReplay: false,
+          // Feature flags live in Statsig; disabling PostHog's own flag
+          // system avoids two competing sources of truth + one extra
+          // network round-trip on init.
+          preloadFeatureFlags: false,
+          sendFeatureFlagEvent: false,
+        })
+        this.posthogClient.register({
+          environment: POSTHOG_ENVIRONMENT,
+          app_version: DeviceInfo.getReadableVersion(),
+          build_number: DeviceInfo.getBuildNumber(),
+          platform: Platform.OS,
+        })
+        Logger.info(TAG, 'PostHog initialized', { host: POSTHOG_HOST, env: POSTHOG_ENVIRONMENT })
+      }
+    } catch (error) {
+      Logger.warn(TAG, 'PostHog setup error', error)
+      this.posthogClient = undefined
+    }
   }
 
   isEnabled() {
@@ -194,11 +255,6 @@ class AppAnalytics {
       return
     }
 
-    if (!this.segmentClient) {
-      Logger.debug(TAG, `segmentClient undefined, not tracking event ${eventName}`)
-      return
-    }
-
     const props: {} = {
       ...this.getSuperProps(),
       ...eventProperties,
@@ -210,9 +266,23 @@ class AppAnalytics {
       Logger.info(TAG, `Tracking event ${eventName}`)
     }
 
-    this.segmentClient.track(eventName, props).catch((err) => {
-      Logger.error(TAG, `Failed to track event ${eventName}`, err)
-    })
+    if (this.segmentClient) {
+      this.segmentClient.track(eventName, props).catch((err) => {
+        Logger.error(TAG, `Failed to track event ${eventName} to Segment`, err)
+      })
+    }
+
+    if (this.posthogClient) {
+      try {
+        this.posthogClient.capture(eventName, props)
+      } catch (err) {
+        Logger.error(TAG, `Failed to track event ${eventName} to PostHog`, err)
+      }
+    }
+
+    if (!this.segmentClient && !this.posthogClient) {
+      Logger.debug(TAG, `No analytics client configured, not tracking event ${eventName}`)
+    }
   }
 
   identify(userID: string | null, traits: {}) {
@@ -226,27 +296,32 @@ class AppAnalytics {
       return
     }
 
-    if (!this.segmentClient) {
-      Logger.debug(TAG, `segmentClient is undefined, not tracking user ${userID}`)
-      return
-    }
     // The firebase segment plugin can't handle null or undefined values
     const safeTraits = _.omitBy(traits, _.isNil)
 
-    this.segmentClient.identify(userID, safeTraits).catch((err) => {
-      Logger.error(TAG, `Failed to identify user ${userID}`, err)
-      throw err
-    })
+    if (this.segmentClient) {
+      this.segmentClient.identify(userID, safeTraits).catch((err) => {
+        Logger.error(TAG, `Failed to identify user ${userID} to Segment`, err)
+        throw err
+      })
+    }
+
+    if (this.posthogClient) {
+      try {
+        this.posthogClient.identify(userID, safeTraits)
+      } catch (err) {
+        Logger.error(TAG, `Failed to identify user ${userID} to PostHog`, err)
+      }
+    }
+
+    if (!this.segmentClient && !this.posthogClient) {
+      Logger.debug(TAG, `No analytics client configured, not identifying user ${userID}`)
+    }
   }
 
   page(screenId: string, eventProperties = {}) {
     if (!this.isEnabled()) {
       Logger.debug(TAG, `Analytics is disabled, not tracking screen ${screenId}`)
-      return
-    }
-
-    if (!this.segmentClient) {
-      Logger.debug(TAG, `segmentClient is undefined, not tracking screen ${screenId}`)
       return
     }
 
@@ -260,21 +335,38 @@ class AppAnalytics {
       ...eventProperties,
     }
 
-    this.segmentClient.screen(screenId, props).catch((err) => {
-      Logger.error(TAG, 'Error tracking page', err)
-    })
+    if (this.segmentClient) {
+      this.segmentClient.screen(screenId, props).catch((err) => {
+        Logger.error(TAG, 'Error tracking page to Segment', err)
+      })
+    }
+
+    if (this.posthogClient) {
+      try {
+        this.posthogClient.screen(screenId, props)
+      } catch (err) {
+        Logger.error(TAG, 'Error tracking page to PostHog', err)
+      }
+    }
   }
 
   async reset() {
-    if (!this.segmentClient) {
-      Logger.debug(TAG, `segmentClient is undefined, not resetting`)
-      return
+    if (this.segmentClient) {
+      try {
+        await this.segmentClient.flush()
+        await this.segmentClient.reset()
+      } catch (error) {
+        Logger.error(TAG, 'Error resetting Segment analytics', error)
+      }
     }
-    try {
-      await this.segmentClient.flush()
-      await this.segmentClient.reset()
-    } catch (error) {
-      Logger.error(TAG, 'Error resetting analytics', error)
+
+    if (this.posthogClient) {
+      try {
+        await this.posthogClient.flush()
+        this.posthogClient.reset()
+      } catch (error) {
+        Logger.error(TAG, 'Error resetting PostHog analytics', error)
+      }
     }
   }
 
