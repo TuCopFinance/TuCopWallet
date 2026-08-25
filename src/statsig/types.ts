@@ -93,6 +93,19 @@ export enum StatsigFeatureGates {
 
 export enum StatsigExperiments {
   ONBOARDING_TERMS_AND_CONDITIONS = 'onboarding_terms_and_conditions',
+  // Onboarding: prompt phone verification upfront (control) vs deferred
+  // until first-send (variant). Hypothesis: deferring lifts D1 retention.
+  // Wire needed in the onboarding flow when we run this — parameter name
+  // is `promptTiming` with values 'upfront' | 'deferred_until_send'.
+  ONBOARDING_PHONE_VERIFY_TIMING = 'onboarding_phone_verify_timing',
+  // Gold confirm screen layout: compact (control, only "Recibes" card +
+  // details) vs verbose (variant, from-to cards + arrow + details).
+  // Parameter name is `layout` with values 'compact' | 'verbose'.
+  GOLD_CONFIRM_LAYOUT = 'gold_confirm_layout',
+  // Swap confirm CTA copy: neutral "Confirmar" (control) vs action
+  // "Cambiar ahora" (variant). Parameter name is `cta` with values
+  // 'confirmar' | 'cambiar_ahora'. Wired in SwapScreen submit button.
+  SWAP_CONFIRM_CTA_COPY = 'swap_confirm_cta_copy',
 }
 
 export type StatsigParameter =
