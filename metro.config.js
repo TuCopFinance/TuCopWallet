@@ -37,6 +37,24 @@ const config = {
       fs: require.resolve('react-native-fs'),
     },
     sourceExts: [...defaultSourceExts, 'svg'],
+    // Targeted resolver override so posthog-react-native's subpath imports
+    // (`@posthog/core/surveys`, `@posthog/core/utils`, etc) resolve to the
+    // built CJS files inside node_modules/@posthog/core/dist/*. Metro on RN
+    // 0.77 does NOT honor the package.json `exports` field, and enabling
+    // `unstable_enablePackageExports` globally breaks web3-utils' ESM
+    // namespace re-exports. Keeping the override tightly scoped to the
+    // PostHog subpaths is the minimum surface change that unblocks the
+    // SDK import without regressing web3.
+    resolveRequest: (context, moduleName, platform) => {
+      if (moduleName.startsWith('@posthog/core/') && moduleName !== '@posthog/core') {
+        const subpath = moduleName.slice('@posthog/core/'.length)
+        return {
+          type: 'sourceFile',
+          filePath: path.join(root, 'node_modules/@posthog/core/dist', subpath, 'index.js'),
+        }
+      }
+      return context.resolveRequest(context, moduleName, platform)
+    },
   },
   watchFolders: [root],
 }
