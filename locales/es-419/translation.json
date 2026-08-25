@@ -2336,7 +2336,7 @@
     "approvalTransactionTitle": "Aprobación",
     "estimatedNetworkFee": "Estimación de la tarifa de red",
     "networkFee": "Tarifa de red",
-    "appFee": "Tarifa de la app",
+    "appFee": "Tarifa del proveedor",
     "estimatedCrossChainFee": "Tarifa cross-chain estimada",
     "crossChainFee": "Tarifa cross-chain",
     "finiteApprovalDescription": "{{approvedAmount}} {{tokenSymbol}} aprobados para operar",
