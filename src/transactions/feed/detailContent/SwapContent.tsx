@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
-import { formatValueToDisplay } from 'src/components/TokenDisplay'
+import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -45,21 +45,27 @@ export default function SwapContent({ transaction }: Props) {
     !!fromToken &&
     !!toToken
 
-  // If the upstream feed already surfaced a network fee (SecurityFee), skip
-  // the receipt fetch and use it. Otherwise fall back to reading the receipt
-  // off-chain and synthesizing a Fee entry — this covers atomic 7702 batches
-  // that the Valora legacy feed does not classify, and wallets that are not
-  // in the TuCop backend indexer's watched-address set.
-  const hasIndexerNetworkFee = transaction.fees.some((f) => f.type === FeeType.SecurityFee)
+  // Fall back to reading the receipt off-chain whenever the upstream feed
+  // either omits the SecurityFee entirely OR ships it with a zero value or
+  // an unresolvable token (Valora legacy feed does this for atomic 7702
+  // batches; TuCop backend indexer does it for wallets outside its watched
+  // set + while its RPC lags). Any of those cases would otherwise render
+  // as "Tarifa de red -" on the detail screen even after this row was wired.
+  const indexerNetworkFee = transaction.fees.find((f) => f.type === FeeType.SecurityFee)
+  const indexerNetworkFeeIsUsable =
+    !!indexerNetworkFee && new BigNumber(indexerNetworkFee.amount.value).gt(0)
   const { fee: receiptNetworkFee } = useReceiptNetworkFee({
     transactionHash: transaction.transactionHash,
     networkId: transaction.networkId,
-    skip: hasIndexerNetworkFee || transaction.status !== TransactionStatus.Complete,
+    skip: indexerNetworkFeeIsUsable || transaction.status !== TransactionStatus.Complete,
   })
   const feesForDisplay = useMemo(() => {
-    if (hasIndexerNetworkFee || !receiptNetworkFee) return transaction.fees
-    return [...transaction.fees, receiptNetworkFee]
-  }, [transaction.fees, hasIndexerNetworkFee, receiptNetworkFee])
+    if (indexerNetworkFeeIsUsable || !receiptNetworkFee) return transaction.fees
+    // Drop the stale zero/broken SecurityFee (if any) before appending the
+    // synthesized one so FeeRowItem does not pick the placeholder first.
+    const withoutBadFee = transaction.fees.filter((f) => f.type !== FeeType.SecurityFee)
+    return [...withoutBadFee, receiptNetworkFee]
+  }, [transaction.fees, indexerNetworkFeeIsUsable, receiptNetworkFee])
 
   return (
     <View style={styles.contentContainer}>
@@ -116,9 +122,9 @@ export default function SwapContent({ transaction }: Props) {
         <View style={styles.row}>
           <Text style={styles.bodyText}>{t('swapTransactionDetailPage.rate')}</Text>
           <Text testID="SwapContent/rate" style={styles.currencyAmountPrimaryText}>
-            {`1 ${fromToken.symbol} ≈ ${formatValueToDisplay(
+            {`1 ${getTokenSymbol(t, fromToken.symbol, fromToken.tokenId)} ≈ ${formatValueToDisplay(
               new BigNumber(transaction.inAmount.value).dividedBy(transaction.outAmount.value)
-            )} ${toToken.symbol}`}
+            )} ${getTokenSymbol(t, toToken.symbol, toToken.tokenId)}`}
           </Text>
         </View>
       )}

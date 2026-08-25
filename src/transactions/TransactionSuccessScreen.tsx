@@ -17,6 +17,7 @@ import { StackParamList } from 'src/navigator/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
 import { blockExplorerUrls } from 'src/web3/networkConfig'
 
 type RouteProps = NativeStackScreenProps<StackParamList, Screens.TransactionSuccessScreen>
@@ -38,6 +39,16 @@ function TransactionSuccessScreen({ route }: Props) {
     legs,
   } = route.params
   const hasLegs = Array.isArray(legs) && legs.length > 0
+
+  // Pull the on-chain network fee off the receipt so the immediate success
+  // screen shows the actual gas paid — the tx-details screen has the same
+  // fix but the user hits this one first, right after Confirm. Guarded to
+  // skip when the tx params are missing (edge cases: legacy nav callers).
+  const { fee: networkFee } = useReceiptNetworkFee({
+    transactionHash: transactionHash ?? '',
+    networkId: networkId!,
+    skip: !transactionHash || !networkId,
+  })
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -151,6 +162,29 @@ function TransactionSuccessScreen({ route }: Props) {
               </>
             )}
 
+            {networkFee && (
+              <View style={styles.detailRow} testID="TransactionSuccess/NetworkFee">
+                <Text style={styles.detailLabel}>{t('transactionFeed.networkFee')}</Text>
+                <TokenDisplay
+                  amount={networkFee.amount.value}
+                  tokenId={networkFee.amount.tokenId}
+                  showLocalAmount={false}
+                  hideSign={true}
+                  showSymbol={true}
+                  style={styles.tokenDisplay}
+                  testID="TransactionSuccess/NetworkFee/Crypto"
+                />
+                <TokenDisplay
+                  amount={networkFee.amount.value}
+                  tokenId={networkFee.amount.tokenId}
+                  showLocalAmount={true}
+                  hideSign={true}
+                  style={styles.feeLocalAmount}
+                  testID="TransactionSuccess/NetworkFee/Local"
+                />
+              </View>
+            )}
+
             {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
               <Touchable
                 style={styles.explorerLink}
@@ -236,6 +270,10 @@ const styles = StyleSheet.create({
   tokenDisplay: {
     ...typeScale.labelMedium,
     color: Colors.black,
+  },
+  feeLocalAmount: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   recipientText: {
     ...typeScale.labelMedium,
