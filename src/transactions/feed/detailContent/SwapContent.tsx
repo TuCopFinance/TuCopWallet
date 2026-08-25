@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
@@ -11,6 +12,7 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokensList } from 'src/tokens/hooks'
 import FeeRowItem from 'src/transactions/feed/detailContent/FeeRowItem'
+import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
 import {
   FeeType,
   TokenExchange,
@@ -42,6 +44,22 @@ export default function SwapContent({ transaction }: Props) {
     !new BigNumber(transaction.inAmount.value).isNaN() &&
     !!fromToken &&
     !!toToken
+
+  // If the upstream feed already surfaced a network fee (SecurityFee), skip
+  // the receipt fetch and use it. Otherwise fall back to reading the receipt
+  // off-chain and synthesizing a Fee entry — this covers atomic 7702 batches
+  // that the Valora legacy feed does not classify, and wallets that are not
+  // in the TuCop backend indexer's watched-address set.
+  const hasIndexerNetworkFee = transaction.fees.some((f) => f.type === FeeType.SecurityFee)
+  const { fee: receiptNetworkFee } = useReceiptNetworkFee({
+    transactionHash: transaction.transactionHash,
+    networkId: transaction.networkId,
+    skip: hasIndexerNetworkFee || transaction.status !== TransactionStatus.Complete,
+  })
+  const feesForDisplay = useMemo(() => {
+    if (hasIndexerNetworkFee || !receiptNetworkFee) return transaction.fees
+    return [...transaction.fees, receiptNetworkFee]
+  }, [transaction.fees, hasIndexerNetworkFee, receiptNetworkFee])
 
   return (
     <View style={styles.contentContainer}>
@@ -92,7 +110,7 @@ export default function SwapContent({ transaction }: Props) {
         </View>
       )}
 
-      {(showExchangeRate || transaction.fees.length > 0) && <RowDivider />}
+      {(showExchangeRate || feesForDisplay.length > 0) && <RowDivider />}
 
       {showExchangeRate && (
         <View style={styles.row}>
@@ -106,17 +124,17 @@ export default function SwapContent({ transaction }: Props) {
       )}
 
       <FeeRowItem
-        fees={transaction.fees}
+        fees={feesForDisplay}
         feeType={FeeType.SecurityFee}
         transactionStatus={transaction.status}
       />
       <FeeRowItem
-        fees={transaction.fees}
+        fees={feesForDisplay}
         feeType={FeeType.AppFee}
         transactionStatus={transaction.status}
       />
       <FeeRowItem
-        fees={transaction.fees}
+        fees={feesForDisplay}
         feeType={FeeType.CrossChainFee}
         transactionStatus={transaction.status}
       />
