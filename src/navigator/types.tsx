@@ -302,7 +302,13 @@ export type StackParamList = {
       fromAmount: string
       toAmount: string
       transactionHash: string
+      appFeeUsd?: string
     }>
+    // Squid integrator fee in USD (already deducted from the delivered
+    // amount by Squid at quote time). Passed so the success screen can
+    // render a separate "Tarifa de app" row instead of hiding the ~1% cut
+    // inside the delivered amount. Aggregated across legs for multi-swap.
+    appFeeUsd?: string
   }
   [Screens.EarthquakeDonationSuccessScreen]: {
     amountWhole: string

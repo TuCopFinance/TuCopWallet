@@ -104,6 +104,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     outAmountTokenWhole: BigNumber
     inAmountTokenWhole: BigNumber
     usd: BigNumber
+    appFeePercentageIncludedInPrice?: string
   }
   const stepOutcomes: StepOutcome[] = []
   for (let index = 0; index < steps.length; index++) {
@@ -293,6 +294,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       outAmountTokenWhole: outAmountWhole,
       inAmountTokenWhole: inAmountWhole,
       usd: usdContribution,
+      appFeePercentageIncludedInPrice: freshQuote.appFeePercentageIncludedInPrice,
     })
   }
 
@@ -588,12 +590,21 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // amounts under the aggregate. Single-leg batches keep the concrete
     // tokenId so the header just shows "1.04 USDm" with no breakdown.
     const isMultiLeg = stepOutcomes.length > 1
+    // Squid integrator fee per leg + aggregate. Same pattern as
+    // dollarsSpend/saga.ts (non-7702 path) so both flows surface the ~1%
+    // Squid cut on the success screen the same way.
+    const legAppFees = stepOutcomes.map((o) => {
+      const pct = new BigNumber(o.appFeePercentageIncludedInPrice ?? 0).dividedBy(100)
+      return o.outAmountTokenWhole.multipliedBy(pct)
+    })
+    const appFeeUsdTotal = legAppFees.reduce((sum, u) => sum.plus(u), new BigNumber(0)).toString()
     const successLegs = isMultiLeg
-      ? stepOutcomes.map((o) => ({
+      ? stepOutcomes.map((o, i) => ({
           fromTokenId: o.tokenId,
           fromAmount: o.outAmountTokenWhole.toFixed(),
           toAmount: o.inAmountTokenWhole.toFixed(),
           transactionHash: hash,
+          appFeeUsd: legAppFees[i].toString(),
         }))
       : undefined
     navigate(Screens.TransactionSuccessScreen, {
@@ -606,6 +617,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       transactionHash: hash,
       networkId: NetworkId['celo-mainnet'],
       type: 'swap' as const,
+      appFeeUsd: new BigNumber(appFeeUsdTotal).gt(0) ? appFeeUsdTotal : undefined,
       ...(successLegs && { legs: successLegs }),
     })
   } catch (err) {

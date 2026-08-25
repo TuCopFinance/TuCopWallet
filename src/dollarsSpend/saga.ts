@@ -255,6 +255,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     fromAmount: string
     toAmount: string
     transactionHash: string
+    appFeeUsd: string
   }> = []
 
   const flowId = `dollarsSpend-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
@@ -441,11 +442,20 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       // the untyped `Action`; we know the shape by construction (we only
       // take swapSuccess in this branch).
       const successAction = success as unknown as { payload: { transactionHash: string } }
+      // Squid integrator fee: deducted internally from the delivered amount,
+      // never visible on-chain. `appFeePercentageIncludedInPrice` is a string
+      // decimal like "1.0". `step.amountUsd` is the USD-equivalent input to
+      // this leg. Product across all legs surfaces on the success screen as
+      // "Tarifa de app ≈ COP $X" so the user sees the ~1% cut Squid took.
+      const legAppFeeUsd = new BigNumber(step.amountUsd).multipliedBy(
+        new BigNumber(freshQuote.appFeePercentageIncludedInPrice ?? 0).dividedBy(100)
+      )
       legs.push({
         fromTokenId: step.tokenId,
         fromAmount: step.amountTokenWhole.toString(),
         toAmount: freshQuote.swapAmount.TO.shiftedBy(-toTokenDecimals).toString(),
         transactionHash: successAction.payload.transactionHash,
+        appFeeUsd: legAppFeeUsd.toString(),
       })
       yield* put(multiSwapStepSucceeded({ index }))
       yield* put(
@@ -500,6 +510,12 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     const toAmountTotal = legs
       .reduce((sum, l) => sum.plus(new BigNumber(l.toAmount)), new BigNumber(0))
       .toString()
+    // Aggregate Squid integrator fee in USD across all legs. Displayed as
+    // "Tarifa de app ≈ COP $X" on the success screen so the ~1% cut is
+    // visible instead of hidden inside the delivered amount.
+    const appFeeUsdTotal = legs
+      .reduce((sum, l) => sum.plus(new BigNumber(l.appFeeUsd)), new BigNumber(0))
+      .toString()
     navigate(Screens.TransactionSuccessScreen, {
       // Use the virtual Dolares tokenId so the aggregate row renders as
       // "3.00 Dolares" (the sum across USDm + USDC + USDT legs) instead of
@@ -513,6 +529,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
       transactionHash: legs[legs.length - 1].transactionHash,
       networkId,
       type: 'swap' as const,
+      appFeeUsd: appFeeUsdTotal,
       legs,
     })
   }

@@ -411,6 +411,11 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // navigate once at the end with the aggregated leg breakdown so the user
     // does not see the sheet flash for each step.
     if (!suppressSuccessNavigation) {
+      // Squid integrator fee: (pct/100) * sold-token USD value. Already
+      // deducted from delivered amount by Squid at quote time; surfaced here
+      // as an explicit row on the success screen so the ~1% cut is visible.
+      const appFeeUsd =
+        (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
         toTokenId,
@@ -419,6 +424,7 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         transactionHash: swapTxReceipt.transactionHash,
         networkId,
         type: 'swap' as const,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : undefined,
       })
     }
 

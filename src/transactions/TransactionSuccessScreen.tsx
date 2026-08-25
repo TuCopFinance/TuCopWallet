@@ -1,4 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import BigNumber from 'bignumber.js'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
@@ -10,10 +11,17 @@ import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
+import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
+import {
+  getLocalCurrencyCode,
+  getLocalCurrencySymbol,
+  usdToLocalCurrencyRateSelector,
+} from 'src/localCurrency/selectors'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
+import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -37,6 +45,7 @@ function TransactionSuccessScreen({ route }: Props) {
     recipientName,
     poolName,
     legs,
+    appFeeUsd,
   } = route.params
   const hasLegs = Array.isArray(legs) && legs.length > 0
 
@@ -48,6 +57,23 @@ function TransactionSuccessScreen({ route }: Props) {
     networkId: networkId!,
     skip: !transactionHash || !networkId,
   })
+
+  // Squid integrator fee arrives from the saga as an absolute USD amount
+  // (already deducted from the delivered token by Squid at quote time; no
+  // separate on-chain transfer). Convert to local currency for display so
+  // the user reads "≈ COP $X" without doing the mental USD math themselves.
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const localCurrencyCode = useSelector(getLocalCurrencyCode)
+  const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
+  const appFeeLocalLabel = (() => {
+    if (!appFeeUsd) return null
+    const parsed = new BigNumber(appFeeUsd)
+    if (!parsed.isFinite() || parsed.lte(0)) return null
+    if (!usdToLocalRate) return `≈ $${parsed.toFormat(2)}` // fallback: raw USD
+    const localAmount = parsed.multipliedBy(usdToLocalRate)
+    const decimals = localCurrencyCode === LocalCurrencyCode.COP ? 0 : 2
+    return `≈ ${localCurrencySymbol}${localAmount.toFormat(decimals)}`
+  })()
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -181,6 +207,15 @@ function TransactionSuccessScreen({ route }: Props) {
                   style={styles.feeLocalAmount}
                   testID="TransactionSuccess/NetworkFee/Local"
                 />
+              </View>
+            )}
+
+            {appFeeLocalLabel && (
+              <View style={styles.detailRow} testID="TransactionSuccess/AppFee">
+                <Text style={styles.detailLabel}>{t('transactionFeed.appFee')}</Text>
+                <Text style={styles.tokenDisplay} testID="TransactionSuccess/AppFee/Local">
+                  {appFeeLocalLabel}
+                </Text>
               </View>
             )}
 

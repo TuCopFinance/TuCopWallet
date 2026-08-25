@@ -501,6 +501,11 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
     if (!suppressSuccessNavigation) {
+      // Same as the Squid path in swap/saga.ts: surface Squid's ~1% integrator
+      // cut as an explicit success-screen row instead of hiding it inside the
+      // delivered amount.
+      const appFeeUsd =
+        (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
         toTokenId,
@@ -509,6 +514,7 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
         transactionHash: swapTxReceipt.transactionHash,
         networkId,
         type: 'swap' as const,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : undefined,
       })
     }
 
