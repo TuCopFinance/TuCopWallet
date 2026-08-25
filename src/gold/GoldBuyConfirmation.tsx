@@ -5,19 +5,22 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import BackButton from 'src/components/BackButton'
+import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
+import { FeeComponent } from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
 import {
   DOLARES_VIRTUAL_TOKEN_ID,
-  DolaresMultiStepSummary,
+  buildDolaresVirtualToken,
   executeMultiSwap,
+  MULTI_SWAP_SLIPPAGE_PERCENTAGE,
   multiSwapCleared,
   planSpend,
   useDollarBalanceSnapshots,
+  useMultiSwapQuote,
 } from 'src/dollarsSpend'
 import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
@@ -35,15 +38,28 @@ import {
 import { StackParamList } from 'src/navigator/types'
 import { Screens } from 'src/navigator/Screens'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import FeeInfoBottomSheet from 'src/swap/FeeInfoBottomSheet'
+import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
+import { AppFeeAmount, SwapFeeAmount } from 'src/swap/types'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
+import { tokensByIdSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldBuyConfirmation>
+
+// USD-per-leg estimate + max-buffer used to synthesize an aggregated network
+// fee for the virtual-Dolares path (multi-swap has no upfront per-step gas
+// number; we surface a coarse estimate rather than a "-" placeholder).
+// Mirrors the SwapScreen constants so both flows agree on the same number.
+const NETWORK_FEE_USD_PER_STEP_ESTIMATE = new BigNumber(0.02)
+const NETWORK_FEE_MAX_MULTIPLIER = 1.5
 
 /**
  * Build the fee components array shared by Gold Buy + Sell confirmation
@@ -97,6 +113,10 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const localCurrencyCode = useSelector(getLocalCurrencyCode)
   const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
   const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const tokensById = useSelector((state) =>
+    tokensByIdSelector(state, [networkConfig.defaultNetworkId])
+  )
+  const usdmTokenForFeeDisplay = useMemo(() => tokensById[networkConfig.usdmTokenId], [tokensById])
 
   // State for quote that may be fetched on this screen
   const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(initialGasFee)
@@ -193,10 +213,16 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return planSpend({ requestedUsd, balances: dollarSnapshots })
   }, [isVirtualDolares, requestedUsd, dollarSnapshots])
 
+  // Virtual-Dolares aggregate quote: drives real fee + rate rows in the
+  // consolidated details panel (matches SwapScreen's virtual path).
+  const multiSwapQuote = useMultiSwapQuote(
+    isVirtualDolares ? (multiSwapPlan?.steps ?? []) : [],
+    xaut0Token?.tokenId ?? '',
+    XAUT0_DECIMALS
+  )
+
   const isSubmitting = buyStatus === 'loading'
   const error = goldError || quoteError
-
-  // Note: Success navigation and message are handled by the saga
 
   // COP doesn't use decimals
   const isLocalCurrencyCop = localCurrencyCode === LocalCurrencyCode.COP
@@ -205,12 +231,6 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const parsedFromAmount = useMemo(() => new BigNumber(fromAmount), [fromAmount])
   const parsedXautAmount = useMemo(() => new BigNumber(xautAmount), [xautAmount])
   const parsedPricePerOz = useMemo(() => new BigNumber(pricePerOz), [pricePerOz])
-
-  // Calculate local currency values
-  const localPricePerOz = useMemo(() => {
-    if (!usdToLocalRate) return null
-    return parsedPricePerOz.multipliedBy(usdToLocalRate)
-  }, [parsedPricePerOz, usdToLocalRate])
 
   const totalValueUsd = useMemo(
     () => parsedXautAmount.multipliedBy(parsedPricePerOz),
@@ -222,7 +242,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
     return totalValueUsd.multipliedBy(usdToLocalRate)
   }, [totalValueUsd, usdToLocalRate])
 
-  // Parse gas fee if available
+  // Parse gas fee if available (single-token path)
   const parsedGasFee = useMemo(() => {
     if (!estimatedGasFee || !gasFeeToken) return null
     return new BigNumber(estimatedGasFee).shiftedBy(-gasFeeToken.decimals)
@@ -231,7 +251,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
   // Integrator fee already discounted from the effective price by the backend
   // proxy. Rendered as a separate line so the user sees it explicitly. Only
   // meaningful on the single-token buy path (virtual-Dolares aggregates legs
-  // and is handled by DolaresMultiStepSummary elsewhere).
+  // via useMultiSwapQuote below).
   const parsedAppFee = useMemo(() => {
     if (!appFeePercentageIncludedInPrice || !fromToken) return null
     const percentage = new BigNumber(appFeePercentageIncludedInPrice)
@@ -242,14 +262,110 @@ export default function GoldBuyConfirmation({ route }: Props) {
     }
   }, [appFeePercentageIncludedInPrice, fromToken, parsedFromAmount])
 
-  // getProviderDisplayName removed 2026-08-09 (zero-tech-leak policy in
-  // feedback_no_tech_leak_in_user_copy.md). The old function exposed
-  // "Squid Router" / "Uniswap" / "0x Protocol" verbatim under the visible
-  // "Proveedor" row of the confirmation screen. The row itself is removed
-  // below. `swapProvider` state and its analytics logging are intentionally
-  // kept so a later iteration can surface the source inside a collapsable
-  // "detalles" panel (see Uniswap V4 fallback wallet plan) without leaking
-  // vendor names into the default view.
+  // Synthetic Dolares fromToken for the virtual path so SwapTransactionDetails
+  // (which requires a fromToken) can render its rate and receiving-in rows.
+  const virtualDolaresToken = useMemo(() => {
+    if (!isVirtualDolares) return null
+    return buildDolaresVirtualToken({
+      snapshots: dollarSnapshots,
+      networkId: NetworkId['celo-mainnet'],
+    })
+  }, [isVirtualDolares, dollarSnapshots])
+
+  const fromTokenForDetails: TokenBalance | undefined = isVirtualDolares
+    ? (virtualDolaresToken ?? undefined)
+    : (fromToken ?? undefined)
+
+  // Aggregated network fee for the virtual-Dolares path. USD placeholder
+  // (paid per-step from whatever CIP-64 fee currency ends up cheapest) so
+  // the user sees a real number instead of "-". Hidden "Pagada en" row via
+  // hideFeePaidInRow because the token here is a display stand-in.
+  const detailsNetworkFee: SwapFeeAmount | undefined = useMemo(() => {
+    if (isVirtualDolares) {
+      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      const stepCount = multiSwapPlan?.steps.length ?? 0
+      if (stepCount === 0) return undefined
+      const estimateUsd = NETWORK_FEE_USD_PER_STEP_ESTIMATE.multipliedBy(stepCount)
+      return {
+        token: usdmTokenForFeeDisplay,
+        amount: estimateUsd,
+        maxAmount: estimateUsd.multipliedBy(NETWORK_FEE_MAX_MULTIPLIER),
+      }
+    }
+    if (!parsedGasFee || !gasFeeToken) return undefined
+    return {
+      token: gasFeeToken,
+      amount: parsedGasFee,
+      maxAmount: parsedGasFee,
+    }
+  }, [
+    isVirtualDolares,
+    multiSwapQuote.loading,
+    multiSwapPlan,
+    usdmTokenForFeeDisplay,
+    parsedGasFee,
+    gasFeeToken,
+  ])
+
+  const detailsAppFee: AppFeeAmount | undefined = useMemo(() => {
+    if (isVirtualDolares) {
+      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      const fulfilledWithFee = multiSwapQuote.perStepQuotes.filter(
+        (q) => q.appFeePercentageIncludedInPrice
+      )
+      const avgPercentage = fulfilledWithFee.length
+        ? fulfilledWithFee
+            .reduce((sum, q) => sum.plus(q.appFeePercentageIncludedInPrice ?? 0), new BigNumber(0))
+            .dividedBy(fulfilledWithFee.length)
+        : new BigNumber(0)
+      return {
+        amount: multiSwapQuote.aggregateAppFeeUsd,
+        token: usdmTokenForFeeDisplay,
+        percentage: avgPercentage,
+      }
+    }
+    if (!parsedAppFee || !fromToken) return undefined
+    return {
+      amount: parsedAppFee.amount,
+      token: fromToken,
+      percentage: parsedAppFee.percentage,
+    }
+  }, [
+    isVirtualDolares,
+    multiSwapQuote.loading,
+    multiSwapQuote.perStepQuotes,
+    multiSwapQuote.aggregateAppFeeUsd,
+    usdmTokenForFeeDisplay,
+    parsedAppFee,
+    fromToken,
+  ])
+
+  // Exchange rate row: 1 fromToken ≈ N Oro.
+  // Virtual: derive from aggregate deliveredUsd (only successful legs).
+  // Single: xautAmount / fromAmount.
+  const detailsExchangeRate: string | undefined = useMemo(() => {
+    if (isVirtualDolares) {
+      const deliveredUsd = multiSwapQuote.totalInUsd.minus(multiSwapQuote.unquotedUsd)
+      return deliveredUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
+        ? multiSwapQuote.totalOutToken.dividedBy(deliveredUsd).toString()
+        : undefined
+    }
+    if (parsedFromAmount.lte(0) || parsedXautAmount.lte(0)) return undefined
+    return parsedXautAmount.dividedBy(parsedFromAmount).toString()
+  }, [
+    isVirtualDolares,
+    multiSwapQuote.totalInUsd,
+    multiSwapQuote.unquotedUsd,
+    multiSwapQuote.totalOutToken,
+    parsedFromAmount,
+    parsedXautAmount,
+  ])
+
+  // Bottom-sheet refs for the info modals on the details panel rows.
+  const exchangeRateInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const feeInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const slippageInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const estimatedDurationBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   const onPressConfirm = () => {
     if (isVirtualDolares) {
@@ -302,69 +418,43 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <TransactionFlowShell
-        onRetry={() => {
-          const remaining = planSpend({ requestedUsd, balances: dollarSnapshots })
-          if (remaining.shortfall.gt(0)) return
-          dispatch(
-            executeMultiSwap({ steps: remaining.steps, toTokenId: networkConfig.xaut0TokenId })
-          )
-        }}
-        onCancel={() => dispatch(multiSwapCleared())}
-      />
       <CustomHeader
         style={{ paddingHorizontal: Spacing.Thick24 }}
         left={<BackButton />}
         title={t('goldFlow.buy.confirmTitle')}
       />
       <ScrollView contentContainerStyle={[styles.scrollContent, insetsStyle]}>
-        {/* Virtual Dolares multi-step summary */}
-        {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.lte(0) && (
-          <DolaresMultiStepSummary steps={multiSwapPlan.steps} />
-        )}
-        {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.gt(0) && (
-          <InLineNotification
-            variant={NotificationVariant.Warning}
-            title={t('dollarsSpend.shortfall.title')}
-            description={t('dollarsSpend.shortfall.body', {
-              availableUsd: `$${dollarSnapshots
-                .reduce((sum, s) => sum.plus(s.balance.multipliedBy(s.priceUsd)), new BigNumber(0))
-                .toFormat(2)}`,
-            })}
-            style={styles.warning}
-            testID="GoldBuyConfirmation/Shortfall"
-          />
-        )}
-        {/* Swap Summary (single-token path) */}
+        {/* You Pay card (single-token path only; virtual-Dolares shows the
+            aggregate + per-token breakdown inside SwapTransactionDetails). */}
         {!isVirtualDolares && (
-          <View style={styles.summaryCard}>
-            <Text style={styles.cardLabel}>{t('goldFlow.buy.youPay')}</Text>
-            <View style={styles.tokenRow}>
-              <TokenIcon token={fromToken!} size={IconSize.MEDIUM} />
-              <View style={styles.tokenInfo}>
-                <TokenDisplay
-                  tokenId={fromTokenId}
-                  amount={parsedFromAmount}
-                  showLocalAmount={false}
-                  style={styles.tokenAmount}
-                />
-                <TokenDisplay
-                  tokenId={fromTokenId}
-                  amount={parsedFromAmount}
-                  showLocalAmount
-                  style={styles.tokenLocalValue}
-                />
+          <>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>{t('goldFlow.buy.youPay')}</Text>
+              <View style={styles.tokenRow}>
+                <TokenIcon token={fromToken!} size={IconSize.MEDIUM} />
+                <View style={styles.tokenInfo}>
+                  <TokenDisplay
+                    tokenId={fromTokenId}
+                    amount={parsedFromAmount}
+                    showLocalAmount={false}
+                    style={styles.tokenAmount}
+                  />
+                  <TokenDisplay
+                    tokenId={fromTokenId}
+                    amount={parsedFromAmount}
+                    showLocalAmount
+                    style={styles.tokenLocalValue}
+                  />
+                </View>
               </View>
             </View>
-          </View>
+            <View style={styles.arrowContainer}>
+              <Text style={styles.arrowText}>↓</Text>
+            </View>
+          </>
         )}
 
-        {!isVirtualDolares && (
-          <View style={styles.arrowContainer}>
-            <Text style={styles.arrowText}>↓</Text>
-          </View>
-        )}
-
+        {/* You Receive card (always shown) */}
         <View style={styles.summaryCard}>
           <Text style={styles.cardLabel}>{t('goldFlow.buy.youReceive')}</Text>
           <View style={styles.tokenRow}>
@@ -383,38 +473,43 @@ export default function GoldBuyConfirmation({ route }: Props) {
           </View>
         </View>
 
-        {/* Transaction Details (single-token path only) */}
-        {!isVirtualDolares && (
-          <View style={styles.detailsCard}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('goldFlow.buy.goldPrice')}</Text>
-              <Text style={styles.detailValue}>
-                {localCurrencySymbol}
-                {localPricePerOz?.toFormat(localPriceDecimals) ??
-                  parsedPricePerOz.toFormat(localPriceDecimals)}{' '}
-                / oz
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('goldFlow.buy.fees')}</Text>
-              {isGettingQuote ? (
-                <ActivityIndicator size="small" color={Colors.primary} />
-              ) : (
-                <FeeSummary
-                  layout="stacked"
-                  components={buildGoldFeeComponents({
-                    appFee: parsedAppFee?.amount,
-                    appFeeToken: fromToken ?? undefined,
-                    networkFee: parsedGasFee,
-                    networkFeeToken: gasFeeToken ?? undefined,
-                  })}
-                  fallbackText={t('goldFlow.buy.estimatingFee')}
-                  primaryStyle={styles.detailValue}
-                  secondaryStyle={styles.detailValueSecondary}
-                  testID="GoldBuyConfirmation/Fees"
-                />
-              )}
-            </View>
+        {/* Virtual-Dolares shortfall warning (rendered above the details
+            panel so the user sees it before the fee/rate rows). */}
+        {isVirtualDolares && multiSwapPlan && multiSwapPlan.shortfall.gt(0) && (
+          <InLineNotification
+            variant={NotificationVariant.Warning}
+            title={t('dollarsSpend.shortfall.title')}
+            description={t('dollarsSpend.shortfall.body', {
+              availableUsd: `$${dollarSnapshots
+                .reduce((sum, s) => sum.plus(s.balance.multipliedBy(s.priceUsd)), new BigNumber(0))
+                .toFormat(2)}`,
+            })}
+            style={styles.warning}
+            testID="GoldBuyConfirmation/Shortfall"
+          />
+        )}
+
+        {/* Consolidated details panel: rate, per-token breakdown, fees,
+            slippage, route. Matches the shape used on SwapScreen so both
+            flows read identically. */}
+        {fromTokenForDetails && xaut0Token && (
+          <View style={styles.detailsWrapper}>
+            <SwapTransactionDetails
+              feeInfoBottomSheetRef={feeInfoBottomSheetRef}
+              slippageInfoBottomSheetRef={slippageInfoBottomSheetRef}
+              estimatedDurationBottomSheetRef={estimatedDurationBottomSheetRef}
+              exchangeRateInfoBottomSheetRef={exchangeRateInfoBottomSheetRef}
+              slippagePercentage={MULTI_SWAP_SLIPPAGE_PERCENTAGE}
+              fromToken={fromTokenForDetails}
+              toToken={xaut0Token}
+              spendSteps={isVirtualDolares ? multiSwapPlan?.steps : undefined}
+              exchangeRatePrice={detailsExchangeRate}
+              swapAmount={parsedFromAmount}
+              fetchingSwapQuote={isVirtualDolares ? multiSwapQuote.loading : isGettingQuote}
+              appFee={detailsAppFee}
+              networkFee={detailsNetworkFee}
+              hideFeePaidInRow={isVirtualDolares}
+            />
           </View>
         )}
 
@@ -462,6 +557,66 @@ export default function GoldBuyConfirmation({ route }: Props) {
           />
         </View>
       </ScrollView>
+
+      {/* Info bottom sheets for the details panel rows. Copy-parallel to
+          SwapScreen so the same modal content shows in both flows. */}
+      <BottomSheet
+        forwardedRef={exchangeRateInfoBottomSheetRef}
+        title={t('swapScreen.transactionDetails.exchangeRate')}
+        description={t('swapScreen.transactionDetails.exchangeRateInfoV1_90', {
+          context: detailsAppFee?.percentage?.isGreaterThan(0) ? 'withAppFee' : '',
+          networkName:
+            NETWORK_NAMES[fromTokenForDetails?.networkId || networkConfig.defaultNetworkId],
+          slippagePercentage: MULTI_SWAP_SLIPPAGE_PERCENTAGE,
+          appFeePercentage: detailsAppFee?.percentage?.toFormat(),
+        })}
+        testId="ExchangeRateInfoBottomSheet"
+      >
+        <Button
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          style={styles.bottomSheetButton}
+          onPress={() => {
+            exchangeRateInfoBottomSheetRef.current?.close()
+          }}
+          text={t('swapScreen.transactionDetails.infoDismissButton')}
+        />
+      </BottomSheet>
+      <BottomSheet
+        forwardedRef={slippageInfoBottomSheetRef}
+        title={t('swapScreen.transactionDetails.slippagePercentage')}
+        description={t('swapScreen.transactionDetails.slippageToleranceInfoV1_90')}
+        testId="SlippageInfoBottomSheet"
+      >
+        <Button
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          style={styles.bottomSheetButton}
+          onPress={() => {
+            slippageInfoBottomSheetRef.current?.close()
+          }}
+          text={t('swapScreen.transactionDetails.infoDismissButton')}
+        />
+      </BottomSheet>
+      <FeeInfoBottomSheet
+        forwardedRef={feeInfoBottomSheetRef}
+        networkFee={detailsNetworkFee}
+        appFee={detailsAppFee}
+        fetchingSwapQuote={isVirtualDolares ? multiSwapQuote.loading : isGettingQuote}
+      />
+      {/* In-flight / partial-success shell. Rendered at the bottom of the
+          SafeAreaView (same slot as SwapScreen) so it stacks below the form
+          when a multi-swap is running and never appears at the top. */}
+      <TransactionFlowShell
+        onRetry={() => {
+          const remaining = planSpend({ requestedUsd, balances: dollarSnapshots })
+          if (remaining.shortfall.gt(0)) return
+          dispatch(
+            executeMultiSwap({ steps: remaining.steps, toTokenId: networkConfig.xaut0TokenId })
+          )
+        }}
+        onCancel={() => dispatch(multiSwapCleared())}
+      />
     </SafeAreaView>
   )
 }
@@ -521,30 +676,8 @@ const styles = StyleSheet.create({
     ...typeScale.titleMedium,
     color: Colors.gray3,
   },
-  detailsCard: {
+  detailsWrapper: {
     marginTop: Spacing.Regular16,
-    padding: Spacing.Regular16,
-    borderWidth: 1,
-    borderColor: Colors.gray2,
-    borderRadius: Spacing.Small12,
-    gap: Spacing.Smallest8,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  detailLabel: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray4,
-  },
-  detailValue: {
-    ...typeScale.bodyMedium,
-    color: Colors.black,
-  },
-  detailValueSecondary: {
-    ...typeScale.bodySmall,
-    color: Colors.gray4,
   },
   infoNotice: {
     marginTop: Spacing.Regular16,
@@ -554,6 +687,9 @@ const styles = StyleSheet.create({
   },
   warning: {
     marginTop: Spacing.Regular16,
+  },
+  bottomSheetButton: {
+    marginTop: Spacing.Thick24,
   },
   buttonContainer: {
     marginTop: 'auto',
