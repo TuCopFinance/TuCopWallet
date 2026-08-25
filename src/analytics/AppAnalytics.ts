@@ -225,6 +225,18 @@ class AppAnalytics {
     return !__DEV__ && !isE2EEnv && store.getState().app.analyticsEnabled
   }
 
+  // PostHog dispatch predicate. Deliberately does NOT gate on `!__DEV__`,
+  // unlike isEnabled(): dev builds route to the same project but the
+  // POSTHOG_ENVIRONMENT super-property tags them so prod dashboards can
+  // filter them out. That way we can smoke-test the pipeline from a mainnetdev
+  // sim without shipping a release. The other gates (POSTHOG_ENABLED env,
+  // secret presence, Statsig rollout gate, E2E) are already checked at
+  // init() and reflected in posthogClient presence; here we only enforce
+  // the OS-level analytics opt-out.
+  private isPostHogSendable(): boolean {
+    return !isE2EEnv && store.getState().app.analyticsEnabled
+  }
+
   startSession(
     eventName: typeof AppEvents.app_launched,
     eventProperties: AnalyticsPropertiesList[AppEvents.app_launched]
@@ -250,8 +262,11 @@ class AppAnalytics {
   ) {
     const [eventName, eventProperties] = args
 
-    if (!this.isEnabled()) {
-      Logger.debug(TAG, `Analytics is disabled, not tracking event ${eventName}`, eventProperties)
+    const segmentEnabled = this.isEnabled()
+    const posthogEnabled = this.isPostHogSendable()
+
+    if (!segmentEnabled && !posthogEnabled) {
+      Logger.debug(TAG, `Analytics disabled everywhere, not tracking ${eventName}`, eventProperties)
       return
     }
 
@@ -266,62 +281,60 @@ class AppAnalytics {
       Logger.info(TAG, `Tracking event ${eventName}`)
     }
 
-    if (this.segmentClient) {
+    if (segmentEnabled && this.segmentClient) {
       this.segmentClient.track(eventName, props).catch((err) => {
         Logger.error(TAG, `Failed to track event ${eventName} to Segment`, err)
       })
     }
 
-    if (this.posthogClient) {
+    if (posthogEnabled && this.posthogClient) {
       try {
         this.posthogClient.capture(eventName, props)
       } catch (err) {
         Logger.error(TAG, `Failed to track event ${eventName} to PostHog`, err)
       }
     }
-
-    if (!this.segmentClient && !this.posthogClient) {
-      Logger.debug(TAG, `No analytics client configured, not tracking event ${eventName}`)
-    }
   }
 
   identify(userID: string | null, traits: {}) {
-    if (!this.isEnabled()) {
-      Logger.debug(TAG, `Analytics is disabled, not tracking user ${userID}`)
+    // Only identify user if userID (walletAddress) is set
+    if (!userID) {
       return
     }
 
-    // Only identify user if userID (walletAddress) is set
-    if (!userID) {
+    const segmentEnabled = this.isEnabled()
+    const posthogEnabled = this.isPostHogSendable()
+
+    if (!segmentEnabled && !posthogEnabled) {
+      Logger.debug(TAG, `Analytics disabled everywhere, not identifying user ${userID}`)
       return
     }
 
     // The firebase segment plugin can't handle null or undefined values
     const safeTraits = _.omitBy(traits, _.isNil)
 
-    if (this.segmentClient) {
+    if (segmentEnabled && this.segmentClient) {
       this.segmentClient.identify(userID, safeTraits).catch((err) => {
         Logger.error(TAG, `Failed to identify user ${userID} to Segment`, err)
         throw err
       })
     }
 
-    if (this.posthogClient) {
+    if (posthogEnabled && this.posthogClient) {
       try {
         this.posthogClient.identify(userID, safeTraits)
       } catch (err) {
         Logger.error(TAG, `Failed to identify user ${userID} to PostHog`, err)
       }
     }
-
-    if (!this.segmentClient && !this.posthogClient) {
-      Logger.debug(TAG, `No analytics client configured, not identifying user ${userID}`)
-    }
   }
 
   page(screenId: string, eventProperties = {}) {
-    if (!this.isEnabled()) {
-      Logger.debug(TAG, `Analytics is disabled, not tracking screen ${screenId}`)
+    const segmentEnabled = this.isEnabled()
+    const posthogEnabled = this.isPostHogSendable()
+
+    if (!segmentEnabled && !posthogEnabled) {
+      Logger.debug(TAG, `Analytics disabled everywhere, not tracking screen ${screenId}`)
       return
     }
 
@@ -335,13 +348,13 @@ class AppAnalytics {
       ...eventProperties,
     }
 
-    if (this.segmentClient) {
+    if (segmentEnabled && this.segmentClient) {
       this.segmentClient.screen(screenId, props).catch((err) => {
         Logger.error(TAG, 'Error tracking page to Segment', err)
       })
     }
 
-    if (this.posthogClient) {
+    if (posthogEnabled && this.posthogClient) {
       try {
         this.posthogClient.screen(screenId, props)
       } catch (err) {
