@@ -1,4 +1,5 @@
 import Clipboard from '@react-native-clipboard/clipboard'
+import { PostHogMaskView } from 'posthog-react-native'
 import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
@@ -115,18 +116,23 @@ export default function QRCodeDisplay(props: Props) {
         )}
       </View>
 
-      <View testID="QRCode" style={styles.qrContainer}>
-        <StyledQRCode qrSvgRef={qrSvgRef} />
-      </View>
+      {/* The QR image encodes the wallet address; the text below shows it in
+          plain hex. Both mask together so session replay never captures a
+          reproducible identifier of this user's on-chain identity. */}
+      <PostHogMaskView>
+        <View testID="QRCode" style={styles.qrContainer}>
+          <StyledQRCode qrSvgRef={qrSvgRef} />
+        </View>
 
-      {!!displayName && (
-        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
-          {displayName}
+        {!!displayName && (
+          <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
+            {displayName}
+          </Text>
+        )}
+        <Text testID="address" style={styles.address}>
+          {address}
         </Text>
-      )}
-      <Text testID="address" style={styles.address}>
-        {address}
-      </Text>
+      </PostHogMaskView>
 
       <Button
         text={t('fiatExchangeFlow.exchange.copyAddress')}

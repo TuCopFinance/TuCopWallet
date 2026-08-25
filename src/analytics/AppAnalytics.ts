@@ -190,16 +190,39 @@ class AppAnalytics {
       } else if (!getFeatureGate(StatsigFeatureGates.POSTHOG_TRACKING_ENABLED)) {
         Logger.info(TAG, 'PostHog skipped: posthog_tracking_enabled gate OFF')
       } else {
+        // Independent gate: session replay + mobile heatmaps are much
+        // heavier + more sensitive than plain event tracking, so they
+        // ramp on their own Statsig switch. When ON the SDK enters replay
+        // mode with defensive defaults (mask every TextInput, every image,
+        // every sandboxed system view). Per-view masking on high-risk
+        // components — balance cards, mnemonic screens, address strings —
+        // is enforced separately by wrapping those components in
+        // <PostHogMaskView>. Heatmaps on the PostHog dashboard aggregate
+        // from replay tap coordinates; enabling replay unlocks that
+        // surface without a separate config knob.
+        const sessionReplayEnabled = getFeatureGate(
+          StatsigFeatureGates.POSTHOG_SESSION_REPLAY_ENABLED
+        )
         this.posthogClient = new PostHog(POSTHOG_API_KEY, {
           host: POSTHOG_HOST,
           // Auto capture app-open / install / update. Cheap, matches Sentry
           // release tracking and lets funnels start at first-open without
           // needing an explicit AppAnalytics.track() at every entry point.
           captureAppLifecycleEvents: true,
-          // Session replay stays off until we do the masking pass for PIN,
-          // balances, and address text (see roadmap). Enabling here without
-          // masking would ship sensitive frames.
-          enableSessionReplay: false,
+          // Session replay: gated. Config defaults are already conservative
+          // (mask all inputs + images + sandboxed views); we pin them
+          // explicitly here so a future SDK bump that changes defaults
+          // does not silently unmask a wallet screen.
+          enableSessionReplay: sessionReplayEnabled,
+          sessionReplayConfig: {
+            maskAllTextInputs: true,
+            maskAllImages: true,
+            maskAllSandboxedViews: true,
+            // console.log capture would ship every Logger.debug/info line
+            // to PostHog. TuCop logs occasionally contain token IDs and
+            // wallet addresses in dev/prod builds; keep off to be safe.
+            captureLog: false,
+          },
           // Feature flags live in Statsig; disabling PostHog's own flag
           // system avoids two competing sources of truth + one extra
           // network round-trip on init.
@@ -212,7 +235,11 @@ class AppAnalytics {
           build_number: DeviceInfo.getBuildNumber(),
           platform: Platform.OS,
         })
-        Logger.info(TAG, 'PostHog initialized', { host: POSTHOG_HOST, env: POSTHOG_ENVIRONMENT })
+        Logger.info(TAG, 'PostHog initialized', {
+          host: POSTHOG_HOST,
+          env: POSTHOG_ENVIRONMENT,
+          sessionReplay: sessionReplayEnabled,
+        })
       }
     } catch (error) {
       Logger.warn(TAG, 'PostHog setup error', error)

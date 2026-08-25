@@ -8,6 +8,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
 import { appStateSelector, phoneNumberVerifiedSelector } from 'src/app/selectors'
+import { PostHogMaskView } from 'posthog-react-native'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
@@ -151,8 +152,13 @@ function TabHome(_props: Props) {
       {/* BalanceCard rendered OUTSIDE the ScrollView so it stays fixed at
           the top of Home while the user scrolls through the feature
           cards below. Matches TabWallet where the balance carousel is
-          also fixed. */}
-      <BalanceCard testID="TabHome/BalanceCard" />
+          also fixed. Wrapped in PostHogMaskView because the card is the
+          headline balance display — Pesos / Dolares / Oro amounts should
+          never land in a session replay upload even when the replay gate
+          is on. Layout is unaffected (masking uses accessibilityLabel). */}
+      <PostHogMaskView>
+        <BalanceCard testID="TabHome/BalanceCard" />
+      </PostHogMaskView>
 
       <ScrollView
         style={styles.scrollStyle}

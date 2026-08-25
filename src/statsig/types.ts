@@ -78,6 +78,17 @@ export enum StatsigFeatureGates {
   // stays uninitialized so events short-circuit before hitting any network.
   // Server-side ramp so we can go 5% -> 25% -> 100% without a release.
   POSTHOG_TRACKING_ENABLED = 'posthog_tracking_enabled',
+  // PostHog session replay + mobile heatmap rollout. Independent of
+  // POSTHOG_TRACKING_ENABLED so we can run product analytics broadly
+  // without replay (data-heavy, privacy-sensitive) or vice versa. When ON,
+  // the SDK initializes with sessionReplayConfig.maskAllTextInputs +
+  // maskAllImages + maskAllSandboxedViews (defensive defaults) and screens
+  // known to render financial data (balances, addresses, mnemonics) opt in
+  // to per-view masking via <PostHogMaskView>. Heatmaps on the PostHog
+  // dashboard are aggregated from replay tap events — enabling replay
+  // also unlocks the heatmap surface. Default OFF; ramp per-cohort once
+  // the masking pass covers every surface.
+  POSTHOG_SESSION_REPLAY_ENABLED = 'posthog_session_replay_enabled',
 }
 
 export enum StatsigExperiments {

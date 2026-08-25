@@ -12340,6 +12340,11 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.npmjs.org/posix-character-classes/-/posix-character-classes-0.1.1.tgz"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
 
+posthog-react-native-session-replay@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/posthog-react-native-session-replay/-/posthog-react-native-session-replay-1.6.0.tgz#ff1534253d249d7cb45c6d2144da014a78a3669c"
+  integrity sha512-OCaei77mtgg7JT+TgHSCgpWeKq2XXENUOPNxGbjhXZa/aJpptOW5VsBqjtH4BPzM2c1veS1DK4/Fb/uV4Rb3cg==
+
 posthog-react-native@^4.64.1:
   version "4.64.1"
   resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-4.64.1.tgz#b358dc53fcf80ecaff4010326227def578953bdb"

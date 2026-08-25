@@ -127,6 +127,7 @@
     "lodash": "^4.17.21",
     "lottie-react-native": "^5.1.6",
     "posthog-react-native": "^4.64.1",
+    "posthog-react-native-session-replay": "^1.6.0",
     "react": "18.3.1",
     "react-async-hook": "^4.0.0",
     "react-i18next": "^15.0.3",

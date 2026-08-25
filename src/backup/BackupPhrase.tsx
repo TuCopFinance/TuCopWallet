@@ -1,5 +1,6 @@
 import Clipboard from '@react-native-clipboard/clipboard'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { PostHogMaskView } from 'posthog-react-native'
 import * as React from 'react'
 import { useTranslation, WithTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -135,11 +136,19 @@ class BackupPhrase extends React.Component<Props, State> {
           right={<HeaderRight />}
         />
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <BackupPhraseContainer
-            value={mnemonic}
-            mode={BackupPhraseContainerMode.READONLY}
-            type={BackupPhraseType.BACKUP_KEY}
-          />
+          {/* Recovery mnemonic MUST NOT leak into session replay. Even if
+              the SDK-level maskAllTextInputs is on, the phrase is
+              rendered as <Text>, not <TextInput>, so we mask this whole
+              container explicitly. Anything else in the screen — the
+              "Guarda esto" copy, the copy button, the warning — is fine
+              to record. */}
+          <PostHogMaskView>
+            <BackupPhraseContainer
+              value={mnemonic}
+              mode={BackupPhraseContainerMode.READONLY}
+              type={BackupPhraseType.BACKUP_KEY}
+            />
+          </PostHogMaskView>
           <Touchable borderless onPress={this.onPressCopy} testID="BackupPhrase/Copy">
             <View style={styles.copyButton}>
               <CopyIcon color={colors.accent} size={20} />
