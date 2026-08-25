@@ -39,6 +39,7 @@ import FeeInfoBottomSheet from 'src/swap/FeeInfoBottomSheet'
 import SwapAmountInput from 'src/swap/SwapAmountInput'
 import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
 import getCrossChainFee from 'src/swap/getCrossChainFee'
+import { pickDisplayFeeCurrency } from 'src/swap/getDisplayFeeCurrency'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
 import {
   buildDolaresVirtualToken,
@@ -982,30 +983,47 @@ export function SwapScreen({ route }: Props) {
   // never pays more on-chain than the max anyway.
   const NETWORK_FEE_USD_PER_STEP_ESTIMATE = new BigNumber(0.02)
   const NETWORK_FEE_MAX_MULTIPLIER = 1.5 // matches Celo L2 maxFee buffer
-  const usdmTokenForFeeDisplay = useMemo(() => {
+  const usdmTokenForFallback = useMemo(() => {
     return tokensById[networkConfig.usdmTokenId]
   }, [tokensById])
+  // Pre-confirm placeholder for the fee token in the virtual-Dolares path.
+  // Mirrors the on-chain CIP-64 picker order (CELO, COPm, USDm, USDC, USDT)
+  // + excludes tokens being spent so the display matches the actual outcome
+  // in the common case. Previously hard-coded USDm produced misleading rows
+  // like "0.025 USDm" when the tx actually paid 0.19 CELO of gas.
+  const availableFeeCurrenciesForDisplay = useSelector((state) =>
+    feeCurrenciesSelector(state, fromToken?.networkId || networkConfig.defaultNetworkId)
+  )
+  const feeDisplayToken = useMemo(() => {
+    if (!isVirtualDolares) return undefined
+    const spendingIds = (multiSwapPlan?.steps ?? []).map((s) => s.tokenId)
+    return pickDisplayFeeCurrency({
+      availableFeeCurrencies: availableFeeCurrenciesForDisplay,
+      excludedTokenIds: spendingIds,
+      fallbackToken: usdmTokenForFallback,
+    })
+  }, [isVirtualDolares, multiSwapPlan, availableFeeCurrenciesForDisplay, usdmTokenForFallback])
 
   const networkFee: SwapFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       const stepCount = multiSwapPlan?.steps.length ?? 0
       if (stepCount === 0) return undefined
       const estimateUsd = NETWORK_FEE_USD_PER_STEP_ESTIMATE.multipliedBy(stepCount)
       return {
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         amount: estimateUsd,
         maxAmount: estimateUsd.multipliedBy(NETWORK_FEE_MAX_MULTIPLIER),
       }
     }
     return getNetworkFee(quote)
-  }, [isVirtualDolares, multiSwapQuote.loading, multiSwapPlan, usdmTokenForFeeDisplay, quote])
+  }, [isVirtualDolares, multiSwapQuote.loading, multiSwapPlan, feeDisplayToken, quote])
 
   const feeToken = networkFee?.token ? tokensById[networkFee.token.tokenId] : undefined
 
   const appFee: AppFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       // Average percentage across the legs that contributed to the aggregate.
       const fulfilledWithFee = multiSwapQuote.perStepQuotes.filter(
         (q) => q.appFeePercentageIncludedInPrice
@@ -1017,7 +1035,7 @@ export function SwapScreen({ route }: Props) {
         : new BigNumber(0)
       return {
         amount: multiSwapQuote.aggregateAppFeeUsd,
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         percentage: avgPercentage,
       }
     }
@@ -1037,7 +1055,7 @@ export function SwapScreen({ route }: Props) {
     multiSwapQuote.loading,
     multiSwapQuote.perStepQuotes,
     multiSwapQuote.aggregateAppFeeUsd,
-    usdmTokenForFeeDisplay,
+    feeDisplayToken,
     quote,
     parsedSwapAmount,
     fromToken,

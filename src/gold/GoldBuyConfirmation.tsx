@@ -45,9 +45,10 @@ import { Spacing } from 'src/styles/styles'
 import FeeInfoBottomSheet from 'src/swap/FeeInfoBottomSheet'
 import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
 import { AppFeeAmount, SwapFeeAmount } from 'src/swap/types'
+import { pickDisplayFeeCurrency } from 'src/swap/getDisplayFeeCurrency'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
-import { tokensByIdSelector } from 'src/tokens/selectors'
+import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
@@ -116,7 +117,13 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const tokensById = useSelector((state) =>
     tokensByIdSelector(state, [networkConfig.defaultNetworkId])
   )
-  const usdmTokenForFeeDisplay = useMemo(() => tokensById[networkConfig.usdmTokenId], [tokensById])
+  // Ordered CELO, COPm, USDm, USDC, USDT (see tokens/feeCurrencyPicker.ts)
+  // so a plain `.find(balance>0)` walk mirrors what the on-chain picker
+  // will pick when the swap actually runs.
+  const availableFeeCurrencies = useSelector((state) =>
+    feeCurrenciesSelector(state, networkConfig.defaultNetworkId)
+  )
+  const usdmTokenForFallback = useMemo(() => tokensById[networkConfig.usdmTokenId], [tokensById])
 
   // State for quote that may be fetched on this screen
   const [estimatedGasFee, setEstimatedGasFee] = useState<string | undefined>(initialGasFee)
@@ -276,18 +283,33 @@ export default function GoldBuyConfirmation({ route }: Props) {
     ? (virtualDolaresToken ?? undefined)
     : (fromToken ?? undefined)
 
+  // Pre-confirm placeholder for the fee token in the virtual-Dolares path.
+  // Mirrors the on-chain CIP-64 picker order (CELO, COPm, USDm, USDC, USDT)
+  // + excludes tokens being spent so the display matches the actual outcome
+  // in the common case. Previously hard-coded USDm produced misleading rows
+  // like "0.025 USDm" when the tx actually paid 0.19 CELO of gas.
+  const feeDisplayToken = useMemo(() => {
+    if (!isVirtualDolares) return undefined
+    const spendingIds = (multiSwapPlan?.steps ?? []).map((s) => s.tokenId)
+    return pickDisplayFeeCurrency({
+      availableFeeCurrencies,
+      excludedTokenIds: spendingIds,
+      fallbackToken: usdmTokenForFallback,
+    })
+  }, [isVirtualDolares, multiSwapPlan, availableFeeCurrencies, usdmTokenForFallback])
+
   // Aggregated network fee for the virtual-Dolares path. USD placeholder
   // (paid per-step from whatever CIP-64 fee currency ends up cheapest) so
   // the user sees a real number instead of "-". Hidden "Pagada en" row via
   // hideFeePaidInRow because the token here is a display stand-in.
   const detailsNetworkFee: SwapFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       const stepCount = multiSwapPlan?.steps.length ?? 0
       if (stepCount === 0) return undefined
       const estimateUsd = NETWORK_FEE_USD_PER_STEP_ESTIMATE.multipliedBy(stepCount)
       return {
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         amount: estimateUsd,
         maxAmount: estimateUsd.multipliedBy(NETWORK_FEE_MAX_MULTIPLIER),
       }
@@ -302,14 +324,14 @@ export default function GoldBuyConfirmation({ route }: Props) {
     isVirtualDolares,
     multiSwapQuote.loading,
     multiSwapPlan,
-    usdmTokenForFeeDisplay,
+    feeDisplayToken,
     parsedGasFee,
     gasFeeToken,
   ])
 
   const detailsAppFee: AppFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       const fulfilledWithFee = multiSwapQuote.perStepQuotes.filter(
         (q) => q.appFeePercentageIncludedInPrice
       )
@@ -320,7 +342,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
         : new BigNumber(0)
       return {
         amount: multiSwapQuote.aggregateAppFeeUsd,
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         percentage: avgPercentage,
       }
     }
@@ -335,7 +357,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
     multiSwapQuote.loading,
     multiSwapQuote.perStepQuotes,
     multiSwapQuote.aggregateAppFeeUsd,
-    usdmTokenForFeeDisplay,
+    feeDisplayToken,
     parsedAppFee,
     fromToken,
   ])
