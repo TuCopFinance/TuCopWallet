@@ -21,6 +21,18 @@ interface SwapResult {
   networkId: NetworkId
 }
 
+export interface SwapFeeMetadata {
+  // Squid integrator ("provider") fee in USD, already deducted from the
+  // delivered token by Squid at quote time. Sagas persist this on every
+  // successful swap so the tx-details 'Cambiar' screen can render the
+  // same 'Tarifa del proveedor' row the immediate success screen shows.
+  // Without this the backend indexer's tx entry lacks AppFee for these
+  // paths and the row disappears once the pending tx settles.
+  appFeeUsd: string
+  // Wall-clock timestamp for FIFO eviction (see MAX_FEE_METADATA_ENTRIES).
+  recordedAt: number
+}
+
 export interface State {
   currentSwap: SwapTask | null
   /**
@@ -28,12 +40,22 @@ export interface State {
    */
   priceImpactWarningThreshold: number
   lastSwapped: string[]
+  // Wallet-local overlay for tx metadata the backend indexer does not emit
+  // (Squid integrator fee). Keyed by lowercase txHash. Bounded to
+  // MAX_FEE_METADATA_ENTRIES with FIFO eviction so it does not grow
+  // unbounded across the user's lifetime.
+  feeMetadataByTxHash: { [txHash: string]: SwapFeeMetadata }
 }
+
+// Cap: 500 swaps of metadata per user. A power user doing 5 swaps/day
+// hits this in ~100 days; older entries eviction is FIFO on write.
+const MAX_FEE_METADATA_ENTRIES = 500
 
 const initialState: State = {
   currentSwap: null,
   priceImpactWarningThreshold: 4, // 4% by default
   lastSwapped: [],
+  feeMetadataByTxHash: {},
 }
 
 function updateCurrentSwapStatus(currentSwap: SwapTask | null, swapId: string, status: SwapStatus) {
@@ -84,6 +106,27 @@ export const slice = createSlice({
     swapCancel: (state, action: PayloadAction<string>) => {
       updateCurrentSwapStatus(state.currentSwap, action.payload, 'idle')
     },
+    // Sagas call this on every successful swap that reports a positive
+    // integrator fee. Kept in a dedicated action (rather than tucked inside
+    // swapSuccess) so the aggregated multi-swap flow — which fires one
+    // parent success + N per-leg records — can dispatch it independently
+    // for each leg without doubling other side effects.
+    recordSwapFeeMetadata: (
+      state,
+      action: PayloadAction<{ txHash: string; appFeeUsd: string }>
+    ) => {
+      const key = action.payload.txHash.toLowerCase()
+      state.feeMetadataByTxHash[key] = {
+        appFeeUsd: action.payload.appFeeUsd,
+        recordedAt: Date.now(),
+      }
+      const entries = Object.entries(state.feeMetadataByTxHash)
+      if (entries.length > MAX_FEE_METADATA_ENTRIES) {
+        entries.sort((a, b) => a[1].recordedAt - b[1].recordedAt)
+        const trimmed = entries.slice(entries.length - MAX_FEE_METADATA_ENTRIES)
+        state.feeMetadataByTxHash = Object.fromEntries(trimmed)
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -101,6 +144,7 @@ export const slice = createSlice({
   },
 })
 
-export const { swapStart, swapSuccess, swapError, swapCancel } = slice.actions
+export const { swapStart, swapSuccess, swapError, swapCancel, recordSwapFeeMetadata } =
+  slice.actions
 
 export default slice.reducer

@@ -18,6 +18,7 @@ import {
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { recordSwapFeeMetadata } from 'src/swap/slice'
 import { postBuildTx } from 'src/swap/uniswapV4Saga'
 import { UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
@@ -598,6 +599,13 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       return o.outAmountTokenWhole.multipliedBy(pct)
     })
     const appFeeUsdTotal = legAppFees.reduce((sum, u) => sum.plus(u), new BigNumber(0)).toString()
+    // Persist the aggregate under the batch txHash. Atomic 7702 batches
+    // land as a single tx on-chain, so one metadata entry suffices — the
+    // per-leg amounts already sum into it and the tx-details screen only
+    // has one hash to look up.
+    if (new BigNumber(appFeeUsdTotal).gt(0)) {
+      yield* put(recordSwapFeeMetadata({ txHash: hash, appFeeUsd: appFeeUsdTotal }))
+    }
     const successLegs = isMultiLeg
       ? stepOutcomes.map((o, i) => ({
           fromTokenId: o.tokenId,

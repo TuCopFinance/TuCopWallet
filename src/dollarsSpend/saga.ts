@@ -23,7 +23,7 @@ import {
 } from 'src/lib/useTransactionInFlight/actions'
 import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
-import { swapStart, swapSuccess, swapError } from 'src/swap/slice'
+import { recordSwapFeeMetadata, swapStart, swapSuccess, swapError } from 'src/swap/slice'
 import { Field, SwapInfo } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
@@ -516,6 +516,15 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     const appFeeUsdTotal = legs
       .reduce((sum, l) => sum.plus(new BigNumber(l.appFeeUsd)), new BigNumber(0))
       .toString()
+    // Persist per-leg fee metadata so the tx-details 'Cambiar' screen can
+    // render the same 'Tarifa del proveedor' row later, even after the
+    // pending tx is replaced by the indexer's version (which doesn't emit
+    // AppFee for these paths).
+    for (const l of legs) {
+      if (new BigNumber(l.appFeeUsd).gt(0)) {
+        yield* put(recordSwapFeeMetadata({ txHash: l.transactionHash, appFeeUsd: l.appFeeUsd }))
+      }
+    }
     navigate(Screens.TransactionSuccessScreen, {
       // Use the virtual Dolares tokenId so the aggregate row renders as
       // "3.00 Dolares" (the sum across USDm + USDC + USDT legs) instead of

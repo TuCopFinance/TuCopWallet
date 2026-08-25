@@ -8,7 +8,13 @@ import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
-import { swapCancel, swapError, swapStart, swapSuccess } from 'src/swap/slice'
+import {
+  recordSwapFeeMetadata,
+  swapCancel,
+  swapError,
+  swapStart,
+  swapSuccess,
+} from 'src/swap/slice'
 import { Field, SwapInfo, UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
@@ -410,12 +416,23 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // not to (see SwapInfo.suppressSuccessNavigation). The orchestrator will
     // navigate once at the end with the aggregated leg breakdown so the user
     // does not see the sheet flash for each step.
+    // Squid integrator fee: (pct/100) * sold-token USD value. Already
+    // deducted from delivered amount by Squid at quote time; surfaced on
+    // the success screen + persisted for the deferred tx-details screen
+    // (see swap/slice.feeMetadataByTxHash) so the fee row is uniform on
+    // every surface, not just the immediate post-Confirm one.
+    const appFeeUsd =
+      (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
+    if (appFeeUsd > 0) {
+      yield* put(
+        recordSwapFeeMetadata({
+          txHash: swapTxReceipt.transactionHash,
+          appFeeUsd: appFeeUsd.toString(),
+        })
+      )
+    }
+
     if (!suppressSuccessNavigation) {
-      // Squid integrator fee: (pct/100) * sold-token USD value. Already
-      // deducted from delivered amount by Squid at quote time; surfaced here
-      // as an explicit row on the success screen so the ~1% cut is visible.
-      const appFeeUsd =
-        (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
         toTokenId,

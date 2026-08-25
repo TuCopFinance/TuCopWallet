@@ -6086,6 +6086,12 @@
                         }
                     ]
                 },
+                "feeMetadataByTxHash": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/SwapFeeMetadata"
+                    },
+                    "type": "object"
+                },
                 "lastSwapped": {
                     "items": {
                         "type": "string"
@@ -6099,6 +6105,7 @@
             },
             "required": [
                 "currentSwap",
+                "feeMetadataByTxHash",
                 "lastSwapped",
                 "priceImpactWarningThreshold"
             ],
@@ -7160,6 +7167,22 @@
                 "createdAt",
                 "metadata",
                 "pointsAmount"
+            ],
+            "type": "object"
+        },
+        "SwapFeeMetadata": {
+            "additionalProperties": false,
+            "properties": {
+                "appFeeUsd": {
+                    "type": "string"
+                },
+                "recordedAt": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "appFeeUsd",
+                "recordedAt"
             ],
             "type": "object"
         },

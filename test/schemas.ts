@@ -3848,6 +3848,18 @@ export const v253Schema = {
   },
 }
 
+export const v254Schema = {
+  ...v253Schema,
+  _persist: {
+    ...v253Schema._persist,
+    version: 254,
+  },
+  swap: {
+    ...v253Schema.swap,
+    feeMetadataByTxHash: {},
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v253Schema as Partial<RootState>
+  return v254Schema as Partial<RootState>
 }

@@ -2147,4 +2147,18 @@ export const migrations = {
     const { jumpstart: _jumpstart, ...rest } = state
     return rest
   },
+  254: (state: any) => {
+    // swap.feeMetadataByTxHash added so the tx-details 'Cambiar' screen can
+    // render 'Tarifa del proveedor' on any tx we recorded on completion,
+    // uniformly with the immediate success screen. Backfill an empty map
+    // for users upgrading from a persisted state that predates the field;
+    // sagas will populate it as new swaps happen.
+    return {
+      ...state,
+      swap: {
+        ...(state.swap ?? {}),
+        feeMetadataByTxHash: state.swap?.feeMetadataByTxHash ?? {},
+      },
+    }
+  },
 }

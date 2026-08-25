@@ -18,7 +18,13 @@ import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
-import { swapCancel, swapError, swapStart, swapSuccess } from 'src/swap/slice'
+import {
+  recordSwapFeeMetadata,
+  swapCancel,
+  swapError,
+  swapStart,
+  swapSuccess,
+} from 'src/swap/slice'
 import {
   Field,
   SwapInfo,
@@ -500,12 +506,21 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     )
     yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
+    // Same as the Squid path in swap/saga.ts: surface Squid's ~1% integrator
+    // cut on the success screen AND persist it for the deferred tx-details
+    // screen (see swap/slice.feeMetadataByTxHash) so the row is uniform.
+    const appFeeUsd =
+      (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
+    if (appFeeUsd > 0) {
+      yield* put(
+        recordSwapFeeMetadata({
+          txHash: swapTxReceipt.transactionHash,
+          appFeeUsd: appFeeUsd.toString(),
+        })
+      )
+    }
+
     if (!suppressSuccessNavigation) {
-      // Same as the Squid path in swap/saga.ts: surface Squid's ~1% integrator
-      // cut as an explicit success-screen row instead of hiding it inside the
-      // delivered amount.
-      const appFeeUsd =
-        (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
         toTokenId,

@@ -187,33 +187,42 @@ function TransactionSuccessScreen({ route }: Props) {
               </>
             )}
 
+            {/* Fee rows follow the same layout convention as FeeRowItem in
+                src/transactions/feed/detailContent — single row with label
+                left + crypto/local amounts stacked right — so the immediate
+                success screen and the deferred tx-details screen read
+                identically. Complementary info: bodyMedium for both label
+                and primary value, bodySmall + gray3 for the secondary
+                local-currency line. */}
             {networkFee && (
-              <View style={styles.detailRow} testID="TransactionSuccess/NetworkFee">
-                <Text style={styles.detailLabel}>{t('transactionFeed.networkFee')}</Text>
-                <TokenDisplay
-                  amount={networkFee.amount.value}
-                  tokenId={networkFee.amount.tokenId}
-                  showLocalAmount={false}
-                  hideSign={true}
-                  showSymbol={true}
-                  style={styles.tokenDisplay}
-                  testID="TransactionSuccess/NetworkFee/Crypto"
-                />
-                <TokenDisplay
-                  amount={networkFee.amount.value}
-                  tokenId={networkFee.amount.tokenId}
-                  showLocalAmount={true}
-                  hideSign={true}
-                  style={styles.feeLocalAmount}
-                  testID="TransactionSuccess/NetworkFee/Local"
-                />
+              <View style={styles.feeRow} testID="TransactionSuccess/NetworkFee">
+                <Text style={styles.feeLabel}>{t('transactionFeed.networkFee')}</Text>
+                <View style={styles.feeValueColumn}>
+                  <TokenDisplay
+                    amount={networkFee.amount.value}
+                    tokenId={networkFee.amount.tokenId}
+                    showLocalAmount={false}
+                    hideSign={true}
+                    showSymbol={true}
+                    style={styles.feeValuePrimary}
+                    testID="TransactionSuccess/NetworkFee/Crypto"
+                  />
+                  <TokenDisplay
+                    amount={networkFee.amount.value}
+                    tokenId={networkFee.amount.tokenId}
+                    showLocalAmount={true}
+                    hideSign={true}
+                    style={styles.feeValueSecondary}
+                    testID="TransactionSuccess/NetworkFee/Local"
+                  />
+                </View>
               </View>
             )}
 
             {appFeeLocalLabel && (
-              <View style={styles.detailRow} testID="TransactionSuccess/AppFee">
-                <Text style={styles.detailLabel}>{t('transactionFeed.appFee')}</Text>
-                <Text style={styles.tokenDisplay} testID="TransactionSuccess/AppFee/Local">
+              <View style={styles.feeRow} testID="TransactionSuccess/AppFee">
+                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.appFee')}</Text>
+                <Text style={styles.feeValuePrimary} testID="TransactionSuccess/AppFee/Local">
                   {appFeeLocalLabel}
                 </Text>
               </View>
@@ -308,6 +317,35 @@ const styles = StyleSheet.create({
   feeLocalAmount: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
+  },
+  // Fee-row styles mirror src/transactions/feed/detailContent/FeeRowItem so
+  // the immediate success screen and the deferred tx-details 'Cambiar'
+  // screen read identically. Any change here should propagate to
+  // FeeRowItem.styles (or vice versa) to keep both surfaces uniform.
+  feeRow: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.Regular16,
+    marginTop: Spacing.Smallest8,
+  },
+  feeLabel: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    flex: 1,
+  },
+  feeValueColumn: {
+    alignItems: 'flex-end',
+  },
+  feeValuePrimary: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    textAlign: 'right',
+  },
+  feeValueSecondary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray3,
+    textAlign: 'right',
   },
   recipientText: {
     ...typeScale.labelMedium,

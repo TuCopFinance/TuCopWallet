@@ -6,6 +6,13 @@ import { StyleSheet, Text, View } from 'react-native'
 import RowDivider from 'src/components/RowDivider'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
+import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
+import {
+  getLocalCurrencyCode,
+  getLocalCurrencySymbol,
+  usdToLocalCurrencyRateSelector,
+} from 'src/localCurrency/selectors'
+import { useSelector } from 'src/redux/hooks'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -59,6 +66,32 @@ export default function SwapContent({ transaction }: Props) {
     networkId: transaction.networkId,
     skip: indexerNetworkFeeIsUsable || transaction.status !== TransactionStatus.Complete,
   })
+  // Swap slice records the Squid integrator fee per-txHash at completion
+  // time (see swap/slice.feeMetadataByTxHash + the 4 sagas that dispatch
+  // recordSwapFeeMetadata). This lets the tx-details 'Cambiar' screen
+  // render 'Tarifa del proveedor' consistently with the immediate success
+  // screen — the backend indexer doesn't emit AppFee for these paths and
+  // the row would otherwise disappear once the pending tx settles.
+  const feeMetadata = useSelector(
+    (state) => state.swap.feeMetadataByTxHash[transaction.transactionHash.toLowerCase()]
+  )
+  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
+  const localCurrencyCode = useSelector(getLocalCurrencyCode)
+  const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
+  const appFeeLocalLabel = useMemo(() => {
+    const indexerAppFee = transaction.fees.find((f) => f.type === FeeType.AppFee)
+    // Indexer-supplied AppFee (already rendered by the FeeRowItem below via
+    // feesForDisplay) takes precedence to avoid duplicating the row.
+    if (indexerAppFee) return null
+    if (!feeMetadata) return null
+    const parsed = new BigNumber(feeMetadata.appFeeUsd)
+    if (!parsed.isFinite() || parsed.lte(0)) return null
+    if (!usdToLocalRate) return `≈ $${parsed.toFormat(2)}`
+    const localAmount = parsed.multipliedBy(usdToLocalRate)
+    const decimals = localCurrencyCode === LocalCurrencyCode.COP ? 0 : 2
+    return `≈ ${localCurrencySymbol}${localAmount.toFormat(decimals)}`
+  }, [transaction.fees, feeMetadata, usdToLocalRate, localCurrencyCode, localCurrencySymbol])
+
   const feesForDisplay = useMemo(() => {
     if (indexerNetworkFeeIsUsable || !receiptNetworkFee) return transaction.fees
     // Drop the zero/broken SecurityFee (if any) before appending the
@@ -139,6 +172,12 @@ export default function SwapContent({ transaction }: Props) {
         feeType={FeeType.AppFee}
         transactionStatus={transaction.status}
       />
+      {appFeeLocalLabel && (
+        <View style={styles.row} testID="SwapContent/AppFee/FromMetadata">
+          <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.appFee')}</Text>
+          <Text style={styles.currencyAmountPrimaryText}>{appFeeLocalLabel}</Text>
+        </View>
+      )}
       <FeeRowItem
         fees={feesForDisplay}
         feeType={FeeType.CrossChainFee}
