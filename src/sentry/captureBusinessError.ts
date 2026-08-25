@@ -22,6 +22,8 @@ export type BusinessFeature =
   | 'cico' // cash-in / cash-out (Ramp, Transak, Moonpay, Simplex)
   | 'dollars_spend' // Dolares virtual multi-swap flow
   | 'tx_feed' // transaction feed fetch + receipt polling
+  | 'home' // home screen aggregate fetches (balances, positions, shortcuts)
+  | 'backup' // recovery-phrase reveal + backup flow (mnemonic decrypt failures)
 
 // Provider / integration behind the feature. Kept small on purpose; add
 // values as the wallet integrates new backends. 'internal' covers wallet-

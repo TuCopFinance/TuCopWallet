@@ -5,6 +5,7 @@ import { OnboardingEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { getPassword } from 'src/pincode/authentication'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { removeStoredItem, retrieveStoredItem, storeItem } from 'src/storage/keychain'
 import Logger from 'src/utils/Logger'
 import { CELO_DERIVATION_PATH_BASE, generateKeys } from 'src/utils/account'
@@ -59,6 +60,16 @@ export async function getStoredMnemonic(
     return decryptMnemonic(encryptedMnemonic, passwordToUse)
   } catch (error) {
     Logger.error(TAG, 'Failed to retrieve mnemonic', error)
+    // Recovery-phrase fetch failing is a hard blocker for backup +
+    // account-removal flows — the user cannot see their words to write
+    // them down. Ship a business error so we can measure prevalence and
+    // correlate with keychain / OS-permission issues.
+    captureBusinessError(error, {
+      feature: 'backup',
+      provider: 'internal',
+      action: 'get_stored_mnemonic',
+      errorCode: 'decrypt_or_keychain_failed',
+    })
     return null
   }
 }
