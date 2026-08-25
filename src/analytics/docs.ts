@@ -13,6 +13,7 @@ import {
   DappExplorerEvents,
   DappShortcutsEvents,
   EarnEvents,
+  EarthquakeDonationEvents,
   FeeEvents,
   FiatExchangeEvents,
   GoldEvents,
@@ -28,6 +29,7 @@ import {
   QrScreenEvents,
   SendEvents,
   SettingsEvents,
+  SubsidiesEvents,
   SwapEvents,
   TabHomeEvents,
   TokenBottomSheetEvents,
@@ -656,4 +658,23 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [GoldEvents.gold_price_alert_triggered]: `When a price alert is triggered`,
   [GoldEvents.gold_price_fetch_success]: `When gold price is successfully fetched`,
   [GoldEvents.gold_price_fetch_error]: `When gold price fetch fails`,
+
+  // Earthquake donation (2026-08 Colombia campaign, gated by
+  // SHOW_EARTHQUAKE_DONATION_2026_08).
+  [EarthquakeDonationEvents.earthquake_donation_sheet_impression]: `Bottom sheet was shown to the user (fires once per mount, gated by the SHOW_EARTHQUAKE_DONATION_2026_08 Statsig flag).`,
+  [EarthquakeDonationEvents.earthquake_donation_sheet_dismiss]: `Bottom sheet was dismissed. variant tags which action closed it.`,
+  [EarthquakeDonationEvents.earthquake_donation_amount_press]: `User tapped a preset amount chip in the donation sheet.`,
+  [EarthquakeDonationEvents.earthquake_donation_donate_press]: `User pressed the Donate CTA. source tags whether the tap came from the popup sheet or the persistent card.`,
+  [EarthquakeDonationEvents.earthquake_donation_start]: `Donation saga started (post-CTA). Amount already validated + wallet address available.`,
+  [EarthquakeDonationEvents.earthquake_donation_success]: `Donation tx mined successfully. amountUsd matches the effective amount sent (post gas-fit cap).`,
+  [EarthquakeDonationEvents.earthquake_donation_error]: `Donation failed (prepare, submit or revert). Error is a short human-readable message.`,
+  [EarthquakeDonationEvents.earthquake_donation_share_press]: `User tapped Share on the donation success screen.`,
+
+  // ReFi Colombia subsidies (UBI-style periodic disbursements in COPm).
+  [SubsidiesEvents.subsidies_screen_view]: `ReFi Colombia subsidies screen loaded and status check completed. claimableAmountCopm is 'claimable' when the user can claim now, '0' otherwise.`,
+  [SubsidiesEvents.subsidies_claim_press]: `User pressed the Reclamar CTA. Fires before the biometric prompt.`,
+  [SubsidiesEvents.subsidies_claim_start]: `Claim flow started post-authentication (about to submit the on-chain claim).`,
+  [SubsidiesEvents.subsidies_claim_success]: `Subsidy claim tx confirmed on-chain. transactionHash carries the tx.`,
+  [SubsidiesEvents.subsidies_claim_error]: `Subsidy claim failed. Error is a short human-readable message (contract revert or user cancel).`,
+  [SubsidiesEvents.subsidies_history_view]: `User viewed their claim history.`,
 }

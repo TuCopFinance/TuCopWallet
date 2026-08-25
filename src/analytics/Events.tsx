@@ -693,3 +693,30 @@ export enum GoldEvents {
   gold_price_fetch_success = 'gold_price_fetch_success',
   gold_price_fetch_error = 'gold_price_fetch_error',
 }
+
+// 2026-08-10 Colombia earthquake donation feature. Kill-switch gated by
+// SHOW_EARTHQUAKE_DONATION_2026_08 Statsig gate. Events cover both the
+// popup sheet (fires once per app-open when the gate is on) and the
+// permanent card entrypoint in TabHome.
+export enum EarthquakeDonationEvents {
+  earthquake_donation_sheet_impression = 'earthquake_donation_sheet_impression',
+  earthquake_donation_sheet_dismiss = 'earthquake_donation_sheet_dismiss',
+  earthquake_donation_amount_press = 'earthquake_donation_amount_press',
+  earthquake_donation_donate_press = 'earthquake_donation_donate_press',
+  earthquake_donation_start = 'earthquake_donation_start',
+  earthquake_donation_success = 'earthquake_donation_success',
+  earthquake_donation_error = 'earthquake_donation_error',
+  earthquake_donation_share_press = 'earthquake_donation_share_press',
+}
+
+// ReFi Colombia subsidies: users receive UBI-style periodic disbursements
+// in COPm. Screen shows current balance, next drop date, and a claim CTA
+// when a batch is claimable.
+export enum SubsidiesEvents {
+  subsidies_screen_view = 'subsidies_screen_view',
+  subsidies_claim_press = 'subsidies_claim_press',
+  subsidies_claim_start = 'subsidies_claim_start',
+  subsidies_claim_success = 'subsidies_claim_success',
+  subsidies_claim_error = 'subsidies_claim_error',
+  subsidies_history_view = 'subsidies_history_view',
+}

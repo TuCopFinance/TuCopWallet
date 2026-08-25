@@ -17,6 +17,7 @@ import {
   DappExplorerEvents,
   DappShortcutsEvents,
   EarnEvents,
+  EarthquakeDonationEvents,
   FeeEvents,
   FiatExchangeEvents,
   GoldEvents,
@@ -32,6 +33,7 @@ import {
   QrScreenEvents,
   SendEvents,
   SettingsEvents,
+  SubsidiesEvents,
   SwapEvents,
   TabHomeEvents,
   TokenBottomSheetEvents,
@@ -1628,6 +1630,46 @@ interface GoldEventsProperties {
   [GoldEvents.gold_price_fetch_error]: { error: string }
 }
 
+interface EarthquakeDonationEventsProperties {
+  [EarthquakeDonationEvents.earthquake_donation_sheet_impression]: undefined
+  [EarthquakeDonationEvents.earthquake_donation_sheet_dismiss]: {
+    variant: 'close' | 'backdrop' | 'cta_later'
+  }
+  [EarthquakeDonationEvents.earthquake_donation_amount_press]: { amountUsd: string }
+  [EarthquakeDonationEvents.earthquake_donation_donate_press]: {
+    amountUsd: string
+    source: 'sheet' | 'card'
+  }
+  [EarthquakeDonationEvents.earthquake_donation_start]: { amountUsd: string }
+  [EarthquakeDonationEvents.earthquake_donation_success]: {
+    amountUsd: string
+    transactionHash: string
+  }
+  [EarthquakeDonationEvents.earthquake_donation_error]: {
+    amountUsd: string
+    error: string
+  }
+  [EarthquakeDonationEvents.earthquake_donation_share_press]: undefined
+}
+
+interface SubsidiesEventsProperties {
+  [SubsidiesEvents.subsidies_screen_view]: {
+    claimableAmountCopm: string
+    hasHistory: boolean
+  }
+  [SubsidiesEvents.subsidies_claim_press]: { claimableAmountCopm: string }
+  [SubsidiesEvents.subsidies_claim_start]: { claimableAmountCopm: string }
+  [SubsidiesEvents.subsidies_claim_success]: {
+    claimableAmountCopm: string
+    transactionHash: string
+  }
+  [SubsidiesEvents.subsidies_claim_error]: {
+    claimableAmountCopm: string
+    error: string
+  }
+  [SubsidiesEvents.subsidies_history_view]: { itemCount: number }
+}
+
 export type AnalyticsPropertiesList = AppEventsProperties &
   HomeEventsProperties &
   SettingsEventsProperties &
@@ -1661,6 +1703,8 @@ export type AnalyticsPropertiesList = AppEventsProperties &
   PointsEventsProperties &
   EarnEventsProperties &
   GoldEventsProperties &
+  EarthquakeDonationEventsProperties &
+  SubsidiesEventsProperties &
   TabHomeEventsProperties
 
 export type AnalyticsEventType = keyof AnalyticsPropertiesList
