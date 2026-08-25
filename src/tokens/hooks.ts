@@ -7,6 +7,7 @@ import { useSelector } from 'src/redux/hooks'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import {
+  allFeeCurrenciesSelector,
   cashInTokensByNetworkIdSelector,
   cashOutTokensByNetworkIdSelector,
   spendTokensByNetworkIdSelector,
@@ -191,7 +192,20 @@ export function useTokenInfo(tokenId?: string): TokenBalance | undefined {
   const tokens = useSelector((state) =>
     tokensByIdSelector(state, { networkIds, includePositionTokens: true })
   )
-  return tokenId ? tokens[tokenId] : undefined
+  // Native fee currencies (CELO, ETH on other chains) are intentionally
+  // absent from tokensById so they stay invisible in portfolio / send /
+  // receive / swap-picker lists. They ARE synthesized inside
+  // feeCurrenciesSelector for the fee cascade. Anyone asking useTokenInfo
+  // for a specific tokenId that happens to be a native gas token — fee
+  // rows, tx-detail screens — should get a resolvable TokenBalance back
+  // instead of undefined, otherwise every fee display has to special-case
+  // native tokens inline. Fallback stays after the portfolio lookup so
+  // real portfolio tokens keep priority (never happens in practice — the
+  // two sets are disjoint by construction — but preserves the order-of-
+  // preference contract).
+  const feeCurrencies = useSelector(allFeeCurrenciesSelector)
+  if (!tokenId) return undefined
+  return tokens[tokenId] ?? feeCurrencies.find((c) => c.tokenId === tokenId)
 }
 
 export function useTokensInfo(tokenIds: string[]): (TokenBalance | undefined)[] {
@@ -199,7 +213,10 @@ export function useTokensInfo(tokenIds: string[]): (TokenBalance | undefined)[] 
   const tokens = useSelector((state) =>
     tokensByIdSelector(state, { networkIds, includePositionTokens: true })
   )
-  return tokenIds.map((tokenId) => tokens[tokenId])
+  const feeCurrencies = useSelector(allFeeCurrenciesSelector)
+  return tokenIds.map(
+    (tokenId) => tokens[tokenId] ?? feeCurrencies.find((c) => c.tokenId === tokenId)
+  )
 }
 
 /**

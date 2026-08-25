@@ -42,8 +42,7 @@ function TransactionSuccessScreen({ route }: Props) {
 
   // Pull the on-chain network fee off the receipt so the immediate success
   // screen shows the actual gas paid — the tx-details screen has the same
-  // fix but the user hits this one first, right after Confirm. Guarded to
-  // skip when the tx params are missing (edge cases: legacy nav callers).
+  // fix but the user hits this one first, right after Confirm.
   const { fee: networkFee } = useReceiptNetworkFee({
     transactionHash: transactionHash ?? '',
     networkId: networkId!,

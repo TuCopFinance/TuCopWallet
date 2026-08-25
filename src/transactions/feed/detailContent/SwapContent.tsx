@@ -61,7 +61,7 @@ export default function SwapContent({ transaction }: Props) {
   })
   const feesForDisplay = useMemo(() => {
     if (indexerNetworkFeeIsUsable || !receiptNetworkFee) return transaction.fees
-    // Drop the stale zero/broken SecurityFee (if any) before appending the
+    // Drop the zero/broken SecurityFee (if any) before appending the
     // synthesized one so FeeRowItem does not pick the placeholder first.
     const withoutBadFee = transaction.fees.filter((f) => f.type !== FeeType.SecurityFee)
     return [...withoutBadFee, receiptNetworkFee]
