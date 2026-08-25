@@ -66,7 +66,7 @@ export function useReceiptNetworkFee({
     }
 
     let cancelled = false
-    ;(async () => {
+    void (async () => {
       try {
         const [receipt, tx] = await Promise.all([
           client.getTransactionReceipt({

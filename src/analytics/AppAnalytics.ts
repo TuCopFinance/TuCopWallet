@@ -229,7 +229,7 @@ class AppAnalytics {
           preloadFeatureFlags: false,
           sendFeatureFlagEvent: false,
         })
-        this.posthogClient.register({
+        void this.posthogClient.register({
           environment: POSTHOG_ENVIRONMENT,
           app_version: DeviceInfo.getReadableVersion(),
           build_number: DeviceInfo.getBuildNumber(),
@@ -383,7 +383,7 @@ class AppAnalytics {
 
     if (posthogEnabled && this.posthogClient) {
       try {
-        this.posthogClient.screen(screenId, props)
+        void this.posthogClient.screen(screenId, props)
       } catch (err) {
         Logger.error(TAG, 'Error tracking page to PostHog', err)
       }

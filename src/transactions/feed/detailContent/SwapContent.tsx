@@ -172,7 +172,7 @@ export default function SwapContent({ transaction }: Props) {
         feeType={FeeType.AppFee}
         transactionStatus={transaction.status}
       />
-      {appFeeLocalLabel && (
+      {!!appFeeLocalLabel && (
         <View style={styles.row} testID="SwapContent/AppFee/FromMetadata">
           <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.appFee')}</Text>
           <Text style={styles.currencyAmountPrimaryText}>{appFeeLocalLabel}</Text>

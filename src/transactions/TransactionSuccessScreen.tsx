@@ -219,7 +219,7 @@ function TransactionSuccessScreen({ route }: Props) {
               </View>
             )}
 
-            {appFeeLocalLabel && (
+            {!!appFeeLocalLabel && (
               <View style={styles.feeRow} testID="TransactionSuccess/AppFee">
                 <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.appFee')}</Text>
                 <Text style={styles.feeValuePrimary} testID="TransactionSuccess/AppFee/Local">
@@ -313,10 +313,6 @@ const styles = StyleSheet.create({
   tokenDisplay: {
     ...typeScale.labelMedium,
     color: Colors.black,
-  },
-  feeLocalAmount: {
-    ...typeScale.bodySmall,
-    color: Colors.gray4,
   },
   // Fee-row styles mirror src/transactions/feed/detailContent/FeeRowItem so
   // the immediate success screen and the deferred tx-details 'Cambiar'
