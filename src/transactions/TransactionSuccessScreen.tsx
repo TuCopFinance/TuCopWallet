@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -26,8 +26,10 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { formatSwapProvider } from 'src/swap/formatSwapProvider'
-import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
-import { blockExplorerUrls } from 'src/web3/networkConfig'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
+import Logger from 'src/utils/Logger'
+import { publicClient } from 'src/viem'
+import { blockExplorerUrls, networkIdToNetwork } from 'src/web3/networkConfig'
 
 type RouteProps = NativeStackScreenProps<StackParamList, Screens.TransactionSuccessScreen>
 type Props = RouteProps
@@ -51,30 +53,89 @@ function TransactionSuccessScreen({ route }: Props) {
   const hasLegs = Array.isArray(legs) && legs.length > 0
 
   // Provider + saga-computed network fee — recorded by the saga into
-  // swap.feeMetadata at completion so this row shows the same value the
-  // tx-details 'Cambiar' screen shows later. Preferred over the receipt
-  // hook because the saga already had the receipt in scope and did NOT
-  // race React render + reselect identity churn + CIP-64 adapter lookup.
+  // swap.feeMetadata at completion.
   const feeMetadata = useSelector((state) =>
     transactionHash ? state.swap.feeMetadataByTxHash[transactionHash.toLowerCase()] : undefined
   )
 
-  // Fallback: if the saga didn't persist a fee (older path or the tx
-  // wasn't a swap saga we hooked yet), still try to fetch off the receipt.
-  const hookSkip = !transactionHash || !networkId || !!feeMetadata?.networkFeeValue
-  const { fee: hookNetworkFee } = useReceiptNetworkFee({
-    transactionHash: transactionHash ?? '',
-    networkId: networkId!,
-    skip: hookSkip,
-  })
+  // Inline receipt fetch as the absolute fallback: if the saga did not
+  // persist a fee (any of the many upstream failure modes we've iterated
+  // through), fetch the receipt directly here. Guaranteed to produce a
+  // value as long as viem can reach Forno + the tx is on chain. Runs
+  // exactly once per screen mount (no reselect churn).
+  const nativeFeeCurrency = useSelector((state) =>
+    networkId ? nativeFeeCurrencySelector(state, networkId) : undefined
+  )
+  const tokensByIdRaw = useSelector((state) =>
+    networkId ? tokensByIdSelector(state, [networkId]) : {}
+  )
+  const [inlineFee, setInlineFee] = useState<{ value: string; tokenId: string } | null>(null)
+  useEffect(() => {
+    if (!transactionHash || !networkId) return
+    if (feeMetadata?.networkFeeValue) return // saga already persisted it
+    const network = networkIdToNetwork[networkId]
+    if (!network) return
+    const client = publicClient[network]
+    if (!client) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const [receipt, tx] = await Promise.all([
+          client.getTransactionReceipt({ hash: transactionHash as `0x${string}` }),
+          client.getTransaction({ hash: transactionHash as `0x${string}` }),
+        ])
+        if (cancelled) return
+        const feeWei = new BigNumber(receipt.gasUsed.toString()).multipliedBy(
+          receipt.effectiveGasPrice.toString()
+        )
+        const feeCurrencyAddress = (tx as { feeCurrency?: string | null }).feeCurrency
+        if (feeCurrencyAddress) {
+          const lookup = feeCurrencyAddress.toLowerCase()
+          const match = Object.values(tokensByIdRaw).find(
+            (t) =>
+              t?.feeCurrencyAdapterAddress?.toLowerCase() === lookup ||
+              t?.address?.toLowerCase() === lookup
+          )
+          if (match) {
+            const decimals = match.feeCurrencyAdapterDecimals ?? match.decimals
+            setInlineFee({ value: feeWei.shiftedBy(-decimals).toString(), tokenId: match.tokenId })
+            return
+          }
+        }
+        // Native CELO gas OR unresolved CIP-64: display against synthesized
+        // CELO entry so at least SOMETHING renders.
+        if (nativeFeeCurrency) {
+          setInlineFee({
+            value: feeWei.shiftedBy(-nativeFeeCurrency.decimals).toString(),
+            tokenId: nativeFeeCurrency.tokenId,
+          })
+        }
+      } catch (err) {
+        Logger.warn('TransactionSuccessScreen', 'inline fee fetch failed', err)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // networkId + transactionHash + feeMetadata.networkFeeValue are primitives;
+    // nativeFeeCurrency + tokensByIdRaw read via closure inside effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactionHash, networkId, feeMetadata?.networkFeeValue])
 
-  // Prefer the saga-computed value; fall back to the hook result.
   const networkFee =
     feeMetadata?.networkFeeValue && feeMetadata?.networkFeeTokenId
       ? {
           amount: { value: feeMetadata.networkFeeValue, tokenId: feeMetadata.networkFeeTokenId },
         }
-      : hookNetworkFee
+      : inlineFee
+        ? { amount: { value: inlineFee.value, tokenId: inlineFee.tokenId } }
+        : null
+
+  // Provider fallback: if the saga didn't dispatch (metadata missing) but
+  // this is a 'swap' type success, assume Squid — that's the default venue
+  // for TuCop swaps. The Uniswap V4 path always dispatches so no risk of
+  // mislabelling that one.
+  const provider = feeMetadata?.provider ?? (type === 'swap' ? 'squid' : undefined)
 
   // Squid integrator fee arrives from the saga as an absolute USD amount
   // (already deducted from the delivered token by Squid at quote time; no
@@ -246,11 +307,11 @@ function TransactionSuccessScreen({ route }: Props) {
               </View>
             )}
 
-            {!!feeMetadata?.provider && (
+            {!!provider && (
               <View style={styles.feeRow} testID="TransactionSuccess/Provider">
                 <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.provider')}</Text>
                 <Text style={styles.feeValuePrimary} testID="TransactionSuccess/Provider/Value">
-                  {formatSwapProvider(feeMetadata.provider)}
+                  {formatSwapProvider(provider)}
                 </Text>
               </View>
             )}
