@@ -1,25 +1,20 @@
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { LayoutAnimation, StyleSheet, Text, View } from 'react-native'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
 import RowDivider from 'src/components/RowDivider'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import { formatValueToDisplay, getTokenSymbol } from 'src/components/TokenDisplay'
-import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
-import {
-  getLocalCurrencyCode,
-  getLocalCurrencySymbol,
-  usdToLocalCurrencyRateSelector,
-} from 'src/localCurrency/selectors'
+import Touchable from 'src/components/Touchable'
 import { useSelector } from 'src/redux/hooks'
 import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { formatSwapProvider } from 'src/swap/formatSwapProvider'
-import { useTokensList } from 'src/tokens/hooks'
-import FeeRowItem from 'src/transactions/feed/detailContent/FeeRowItem'
+import { useTokenInfo, useTokensList } from 'src/tokens/hooks'
 import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
 import {
   FeeType,
@@ -35,6 +30,7 @@ export interface Props {
 export default function SwapContent({ transaction }: Props) {
   const { t } = useTranslation()
   const tokensList = useTokensList()
+  const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
 
   const fromToken = tokensList.find((token) => token.tokenId === transaction.outAmount.tokenId)
   const toToken = tokensList.find((token) => token.tokenId === transaction.inAmount.tokenId)
@@ -76,30 +72,65 @@ export default function SwapContent({ transaction }: Props) {
   const feeMetadata = useSelector(
     (state) => state.swap.feeMetadataByTxHash[transaction.transactionHash.toLowerCase()]
   )
-  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
-  const localCurrencyCode = useSelector(getLocalCurrencyCode)
-  const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
-  const appFeeLocalLabel = useMemo(() => {
-    const indexerAppFee = transaction.fees.find((f) => f.type === FeeType.AppFee)
-    // Indexer-supplied AppFee (already rendered by the FeeRowItem below via
-    // feesForDisplay) takes precedence to avoid duplicating the row.
-    if (indexerAppFee) return null
-    if (!feeMetadata) return null
-    const parsed = new BigNumber(feeMetadata.appFeeUsd)
-    if (!parsed.isFinite() || parsed.lte(0)) return null
-    if (!usdToLocalRate) return `≈ $${parsed.toFormat(2)}`
-    const localAmount = parsed.multipliedBy(usdToLocalRate)
-    const decimals = localCurrencyCode === LocalCurrencyCode.COP ? 0 : 2
-    return `≈ ${localCurrencySymbol}${localAmount.toFormat(decimals)}`
-  }, [transaction.fees, feeMetadata, usdToLocalRate, localCurrencyCode, localCurrencySymbol])
 
+  // Fees for the aggregate FeeSummary row (mirrors SwapTransactionDetails +
+  // TransactionSuccessScreen): pick the best network fee source (indexer
+  // wins when non-zero, receipt fallback otherwise), then pool any indexer
+  // AppFee OR the slice-persisted Squid integrator fee alongside it. The
+  // cross-chain fee (if any) also folds into the aggregate.
   const feesForDisplay = useMemo(() => {
     if (indexerNetworkFeeIsUsable || !receiptNetworkFee) return transaction.fees
-    // Drop the zero/broken SecurityFee (if any) before appending the
-    // synthesized one so FeeRowItem does not pick the placeholder first.
     const withoutBadFee = transaction.fees.filter((f) => f.type !== FeeType.SecurityFee)
     return [...withoutBadFee, receiptNetworkFee]
   }, [transaction.fees, indexerNetworkFeeIsUsable, receiptNetworkFee])
+
+  const securityFee = feesForDisplay.find((f) => f.type === FeeType.SecurityFee)
+  const indexerAppFee = feesForDisplay.find((f) => f.type === FeeType.AppFee)
+  const crossChainFee = feesForDisplay.find((f) => f.type === FeeType.CrossChainFee)
+  const securityFeeToken = useTokenInfo(securityFee?.amount.tokenId)
+  const indexerAppFeeToken = useTokenInfo(indexerAppFee?.amount.tokenId)
+  const crossChainFeeToken = useTokenInfo(crossChainFee?.amount.tokenId)
+  // Slice-persisted Squid integrator fee, denominated in USD. Rendered
+  // against USDm so FeeSummary can convert to local; skipped entirely when
+  // the indexer already supplied AppFee to avoid double-counting.
+  const usdmToken = useTokenInfo('celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a')
+
+  const feeSummaryComponents = useMemo((): FeeComponent[] => {
+    const components: FeeComponent[] = []
+    if (securityFee && securityFeeToken) {
+      components.push({
+        amount: new BigNumber(securityFee.amount.value),
+        token: securityFeeToken,
+      })
+    }
+    if (indexerAppFee && indexerAppFeeToken) {
+      components.push({
+        amount: new BigNumber(indexerAppFee.amount.value),
+        token: indexerAppFeeToken,
+      })
+    } else if (feeMetadata?.appFeeUsd && usdmToken) {
+      const parsed = new BigNumber(feeMetadata.appFeeUsd)
+      if (parsed.isFinite() && parsed.gt(0)) {
+        components.push({ amount: parsed, token: usdmToken })
+      }
+    }
+    if (crossChainFee && crossChainFeeToken) {
+      components.push({
+        amount: new BigNumber(crossChainFee.amount.value),
+        token: crossChainFeeToken,
+      })
+    }
+    return components
+  }, [
+    securityFee,
+    securityFeeToken,
+    indexerAppFee,
+    indexerAppFeeToken,
+    crossChainFee,
+    crossChainFeeToken,
+    feeMetadata,
+    usdmToken,
+  ])
 
   return (
     <View style={styles.contentContainer}>
@@ -163,35 +194,50 @@ export default function SwapContent({ transaction }: Props) {
         </View>
       )}
 
-      <FeeRowItem
-        fees={feesForDisplay}
-        feeType={FeeType.SecurityFee}
-        transactionStatus={transaction.status}
-      />
-      <FeeRowItem
-        fees={feesForDisplay}
-        feeType={FeeType.AppFee}
-        transactionStatus={transaction.status}
-      />
-      {!!appFeeLocalLabel && (
-        <View style={styles.row} testID="SwapContent/AppFee/FromMetadata">
-          <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.appFee')}</Text>
-          <Text style={styles.currencyAmountPrimaryText}>{appFeeLocalLabel}</Text>
+      {feeSummaryComponents.length > 0 && (
+        <View style={styles.row} testID="SwapContent/Fees">
+          <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.fees')}</Text>
+          <View style={styles.feeValueColumn}>
+            <FeeSummary
+              layout="stacked"
+              components={feeSummaryComponents}
+              primaryStyle={styles.feeValuePrimary}
+              secondaryStyle={styles.feeValueSecondary}
+              testID="SwapContent/Fees/Summary"
+            />
+          </View>
         </View>
       )}
       {!!feeMetadata?.provider && (
-        <View style={styles.row} testID="SwapContent/Provider">
-          <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.provider')}</Text>
-          <Text style={styles.currencyAmountPrimaryText}>
-            {formatSwapProvider(feeMetadata.provider)}
-          </Text>
+        <View testID="SwapContent/RouteReveal">
+          <Touchable
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+              setRouteDetailExpanded((v) => !v)
+            }}
+            testID="SwapContent/RouteReveal/Toggle"
+          >
+            <View style={styles.row}>
+              <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.routeDetail')}</Text>
+              <Text style={styles.currencyAmountPrimaryText}>
+                {routeDetailExpanded
+                  ? t('swapScreen.transactionDetails.routeDetailCollapse')
+                  : t('swapScreen.transactionDetails.routeDetailExpand')}
+              </Text>
+            </View>
+          </Touchable>
+          {routeDetailExpanded && (
+            <View style={[styles.row, styles.routeSubRow]}>
+              <Text style={styles.routeSubLabel}>
+                {t('swapScreen.transactionDetails.routeLabel')}
+              </Text>
+              <Text style={styles.currencyAmountPrimaryText}>
+                {formatSwapProvider(feeMetadata.provider)}
+              </Text>
+            </View>
+          )}
         </View>
       )}
-      <FeeRowItem
-        fees={feesForDisplay}
-        feeType={FeeType.CrossChainFee}
-        transactionStatus={transaction.status}
-      />
     </View>
   )
 }
@@ -214,5 +260,29 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: Colors.black,
     textAlign: 'right',
+  },
+  // Fee row typography mirrors SwapTransactionDetails + TransactionSuccessScreen:
+  // fees are complementary info, so primary uses bodySmall/gray4 and the
+  // ≈ COP conversion goes bodyXSmall/gray4.
+  feeValueColumn: {
+    alignItems: 'flex-end',
+  },
+  feeValuePrimary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+  },
+  feeValueSecondary: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+  },
+  routeSubRow: {
+    paddingLeft: Spacing.Regular16,
+  },
+  routeSubLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    flex: 1,
   },
 })
