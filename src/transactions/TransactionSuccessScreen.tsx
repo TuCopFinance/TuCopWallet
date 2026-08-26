@@ -134,19 +134,15 @@ function TransactionSuccessScreen({ route }: Props) {
   // mislabelling that one.
   const provider = feeMetadata?.provider ?? (type === 'swap' ? 'squid' : undefined)
 
-  // Build the FeeSummary components (mirrors the pre-confirm SwapTransactionDetails):
-  //   - Network fee: use the resolved fee token via useTokenInfo so FeeSummary
-  //     shows both the token amount + the ≈ COP conversion.
-  //   - App fee: Squid integrator cut in USD, converted to USDm equivalent so
-  //     FeeSummary can sum it into the same aggregate line. The pre-confirm
-  //     shows the same "X CELO + Y USDm ≈ COP$Z" pattern.
+  // Aggregate 'Tarifas' row, mirroring the pre-confirm SwapTransactionDetails
+  // exactly: network fee token amount + Squid integrator fee expressed in
+  // the fromToken (same denomination pre-confirm uses via
+  // `fromAmount × percentage / 100`). Post-tx we don't persist the
+  // percentage, so recompute from the USD estimate the saga stored:
+  // `usd / fromToken.priceUsd`. Comes out to the same numeric result as
+  // long as the priceUsd hasn't moved.
   const networkFeeToken = useTokenInfo(networkFee?.amount.tokenId)
-  const usdmToken = useTokenInfo(
-    // Look up USDm to use as the display token for the app fee. Absent on
-    // fresh install; when missing we simply drop the app fee from the
-    // aggregate row rather than mislabelling it against another token.
-    'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a'
-  )
+  const fromToken = useTokenInfo(fromTokenId)
   const feeSummaryComponents = ((): FeeComponent[] => {
     const components: FeeComponent[] = []
     if (networkFee && networkFeeToken) {
@@ -155,10 +151,13 @@ function TransactionSuccessScreen({ route }: Props) {
         token: networkFeeToken,
       })
     }
-    if (appFeeUsd) {
-      const parsed = new BigNumber(appFeeUsd)
-      if (parsed.isFinite() && parsed.gt(0) && usdmToken) {
-        components.push({ amount: parsed, token: usdmToken })
+    if (appFeeUsd && fromToken?.priceUsd) {
+      const usd = new BigNumber(appFeeUsd)
+      if (usd.isFinite() && usd.gt(0)) {
+        const asFromToken = usd.dividedBy(fromToken.priceUsd)
+        if (asFromToken.isFinite() && asFromToken.gt(0)) {
+          components.push({ amount: asFromToken, token: fromToken })
+        }
       }
     }
     return components

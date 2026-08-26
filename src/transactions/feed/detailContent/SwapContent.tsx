@@ -90,11 +90,15 @@ export default function SwapContent({ transaction }: Props) {
   const securityFeeToken = useTokenInfo(securityFee?.amount.tokenId)
   const indexerAppFeeToken = useTokenInfo(indexerAppFee?.amount.tokenId)
   const crossChainFeeToken = useTokenInfo(crossChainFee?.amount.tokenId)
-  // Slice-persisted Squid integrator fee, denominated in USD. Rendered
-  // against USDm so FeeSummary can convert to local; skipped entirely when
-  // the indexer already supplied AppFee to avoid double-counting.
-  const usdmToken = useTokenInfo('celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a')
-
+  // Aggregate 'Tarifas' row mirrors the pre-confirm SwapTransactionDetails
+  // scheme: network + cross-chain + provider (Squid integrator) fees all
+  // rendered as token amounts inside a single FeeSummary. Provider fee
+  // priority: (1) indexer's AppFee if present (real on-chain amount +
+  // token); (2) fall back to the slice USD estimate divided by the
+  // fromToken's priceUsd — the same denomination the pre-confirm uses via
+  // `fromAmount × percentage / 100`. Skip silently when the fromToken has
+  // no priceUsd (virtual Dolares, fresh install pre-hydration) rather
+  // than mislabelling against USDm.
   const feeSummaryComponents = useMemo((): FeeComponent[] => {
     const components: FeeComponent[] = []
     if (securityFee && securityFeeToken) {
@@ -108,10 +112,13 @@ export default function SwapContent({ transaction }: Props) {
         amount: new BigNumber(indexerAppFee.amount.value),
         token: indexerAppFeeToken,
       })
-    } else if (feeMetadata?.appFeeUsd && usdmToken) {
-      const parsed = new BigNumber(feeMetadata.appFeeUsd)
-      if (parsed.isFinite() && parsed.gt(0)) {
-        components.push({ amount: parsed, token: usdmToken })
+    } else if (feeMetadata?.appFeeUsd && fromToken?.priceUsd) {
+      const usd = new BigNumber(feeMetadata.appFeeUsd)
+      if (usd.isFinite() && usd.gt(0)) {
+        const asFromToken = usd.dividedBy(fromToken.priceUsd)
+        if (asFromToken.isFinite() && asFromToken.gt(0)) {
+          components.push({ amount: asFromToken, token: fromToken })
+        }
       }
     }
     if (crossChainFee && crossChainFeeToken) {
@@ -129,7 +136,7 @@ export default function SwapContent({ transaction }: Props) {
     crossChainFee,
     crossChainFeeToken,
     feeMetadata,
-    usdmToken,
+    fromToken,
   ])
 
   return (
