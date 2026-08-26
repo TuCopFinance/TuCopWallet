@@ -46,10 +46,24 @@ export function useReceiptNetworkFee({
   const nativeFeeCurrency = useSelector((state) => nativeFeeCurrencySelector(state, networkId))
   const tokensById = useSelector((state) => tokensByIdSelector(state, tokenNetworkIds))
 
-  // Read selector output through refs inside the effect so the effect only
-  // depends on the truly-reactive inputs (skip / hash / networkId). The
-  // async fetch only reads them once at settle time; re-firing on selector
-  // identity churn was the bug we're fixing here, not a feature.
+  // Stable primitives that reflect the identity of what we actually consume
+  // (avoids the object-identity churn from reselect while still triggering
+  // one effect re-run when the underlying token becomes available for the
+  // first time — that's the difference between "we fired too early" and
+  // "we never fire again"). tokensByIdKey = space-delimited addresses so a
+  // late-arriving CIP-64 fee currency triggers a single re-fetch.
+  const nativeFeeTokenId = nativeFeeCurrency?.tokenId ?? null
+  const nativeFeeDecimals = nativeFeeCurrency?.decimals ?? null
+  const tokensByIdKey = useMemo(
+    () =>
+      Object.values(tokensById)
+        .map((t) => t?.address?.toLowerCase() ?? '')
+        .join('|'),
+    [tokensById]
+  )
+
+  // Keep the latest selector output in refs so the async fetch reads current
+  // values without adding the whole (unstable) object to the effect deps.
   const nativeFeeCurrencyRef = useRef(nativeFeeCurrency)
   const tokensByIdRef = useRef(tokensById)
   useEffect(() => {
@@ -151,7 +165,7 @@ export function useReceiptNetworkFee({
     return () => {
       cancelled = true
     }
-  }, [skip, transactionHash, networkId])
+  }, [skip, transactionHash, networkId, nativeFeeTokenId, nativeFeeDecimals, tokensByIdKey])
 
   return { fee, loading, error }
 }
