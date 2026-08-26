@@ -131,7 +131,8 @@ export default function PoolCard({
     if (pool.appId !== 'neeru-vaults') return new BigNumber(0)
     const categoryId = categoryIdFromPositionId(pool.positionId)
     if (categoryId === null) return new BigNumber(0)
-    return neeruByCategory[categoryId].reduce(
+    const positions = neeruByCategory[categoryId] ?? []
+    return positions.reduce(
       (sum, pos) => sum.plus(new BigNumber(pos.accruedInterest || 0)),
       new BigNumber(0)
     )

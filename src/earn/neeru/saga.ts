@@ -553,7 +553,7 @@ function buildOptimisticPosition({
   return {
     positionId: `optimistic:${txHash}`,
     category,
-    categoryLabel: NEERU_CATEGORY_LABEL_KEYS[category],
+    categoryLabel: NEERU_CATEGORY_LABEL_KEYS[category] ?? `category-${category}`,
     amount: amountDecimal,
     accruedInterest: '0',
     rateValue,

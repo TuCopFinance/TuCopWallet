@@ -38,7 +38,10 @@ export default function NeeruPositionCard({ position, pool, testID = 'NeeruPosit
   const { t } = useTranslation()
   const categoryId: NeeruCategoryId = position.category
   const isFlexible = categoryId === 0
-  const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
+  // Falls back to backend displayProps.title when a newly-launched category
+  // (Neeru extended past 90d on 2026-08-25) is missing a hardcoded label key.
+  const categoryLabelKey = NEERU_CATEGORY_LABEL_KEYS[categoryId]
+  const categoryLabel = categoryLabelKey ? t(categoryLabelKey) : (pool.displayProps?.title ?? '')
 
   const catalogueCategory = useSelector((state) =>
     neeruCatalogueCategoryByIdSelector(state, categoryId)
