@@ -266,6 +266,30 @@ function TransactionSuccessScreen({ route }: Props) {
               </>
             )}
 
+            {/* DEBUG: bright unconditional row so we can see if this component
+                actually runs my code. Shows the actual runtime values of
+                the vars that drive the fee/provider rows. Remove after we
+                figure out what's going on. */}
+            <View
+              style={{
+                marginTop: 8,
+                padding: 8,
+                backgroundColor: 'red',
+                borderRadius: 4,
+              }}
+              testID="DEBUG/Success"
+            >
+              <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                {`DEBUG type=${type} txHash=${transactionHash ? String(transactionHash).slice(0, 10) + '…' : 'null'}`}
+                {'\n'}
+                {`provider=${provider ?? 'null'} networkFee=${networkFee ? 'set' : 'null'}`}
+                {'\n'}
+                {`feeMetaKeys=${feeMetadata ? Object.keys(feeMetadata).join(',') : 'noMeta'}`}
+                {'\n'}
+                {`inlineFee=${inlineFee ? 'set' : 'null'} nativeFC=${nativeFeeCurrency ? nativeFeeCurrency.tokenId : 'null'}`}
+              </Text>
+            </View>
+
             {/* Fee rows follow the same layout convention as FeeRowItem in
                 src/transactions/feed/detailContent — single row with label
                 left + crypto/local amounts stacked right — so the immediate
