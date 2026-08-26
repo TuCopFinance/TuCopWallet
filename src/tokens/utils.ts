@@ -195,7 +195,12 @@ export function convertTokenToLocalAmount({
   if (isCopmPeggedToLocal(tokenInfo)) {
     return tokenAmount
   }
-  const tokenPriceUsd = tokenInfo?.priceUsd
+  // Fall back to lastKnownPriceUsd so a transient upstream degradation
+  // (backend temporarily returns null for CELO / a fee currency) does not
+  // hide the "≈ COP$X" line — the FeeSummary would render the CELO amount
+  // alone and drop the local equivalent otherwise. Mirrors the pattern the
+  // portfolio balance selectors already use in tokens/selectors.ts.
+  const tokenPriceUsd = tokenInfo?.priceUsd ?? tokenInfo?.lastKnownPriceUsd
   if (!tokenPriceUsd || !usdToLocalRate) {
     return null
   }
