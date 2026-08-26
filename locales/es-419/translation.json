@@ -1951,7 +1951,8 @@
       "feesInfo_sameChain": "La tarifa de red es requerida por la red para procesar la transacción.",
       "feesInfo_crossChain": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas.",
       "feesInfo_sameChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa del proveedor de {{appFeePercentage}}% es cobrada por el proveedor del intercambio.",
-      "feesInfo_crossChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas. La tarifa del proveedor de {{appFeePercentage}}% es cobrada por el proveedor del intercambio."
+      "feesInfo_crossChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas. La tarifa del proveedor de {{appFeePercentage}}% es cobrada por el proveedor del intercambio.",
+      "provider": "Proveedor"
     },
     "fundYourWalletBottomSheet": {
       "title": "Agregar fondos a tu billetera",
@@ -2997,15 +2998,15 @@
       },
       "ninetyDays": {
         "title": "Depósito a 90 días",
-        "body": "Tus Pesos quedan guardados 90 días. Los intereses se acumulan día a día durante el plazo. Suele ser la opción con mejor rendimiento.\n\nAl cumplirse los 90 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 90 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+        "body": "Tus Pesos quedan guardados 90 días. Los intereses se acumulan día a día durante el plazo.\n\nAl cumplirse los 90 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 90 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
       },
       "oneEightyDays": {
         "title": "Depósito a 180 días",
-        "body": "Tus Pesos quedan guardados 180 días. Los intereses se acumulan día a día durante el plazo. Suele ser la opción con mejor rendimiento.\n\nAl cumplirse los 180 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 180 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+        "body": "Tus Pesos quedan guardados 180 días. Los intereses se acumulan día a día durante el plazo. La tasa es mayor que en 30 / 60 / 90 días.\n\nAl cumplirse los 180 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 180 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
       },
       "threeSixtyFiveDays": {
         "title": "Depósito a 365 días",
-        "body": "Tus Pesos quedan guardados 365 días. Los intereses se acumulan día a día durante el plazo. Suele ser la opción con mejor rendimiento.\n\nAl cumplirse los 365 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 365 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+        "body": "Tus Pesos quedan guardados 365 días. Los intereses se acumulan día a día durante el plazo. Es la tasa más alta que ofrece Neeru.\n\nAl cumplirse los 365 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 365 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
       }
     },
     "detail": {
