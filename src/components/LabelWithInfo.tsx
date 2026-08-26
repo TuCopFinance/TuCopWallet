@@ -14,6 +14,7 @@ export function LabelWithInfo({
   iconSize = 16,
   testID,
   style,
+  numberOfLines,
 }: {
   label: string
   onPress?: () => void
@@ -21,6 +22,10 @@ export function LabelWithInfo({
   iconSize?: number
   testID?: string
   style?: StyleProp<ViewStyle>
+  // Default is unlimited (wrap) so short labels never truncate to "Depós..."
+  // when the value column pushes the label narrow. Callers that must keep a
+  // single line can pass `numberOfLines={1}` explicitly.
+  numberOfLines?: number
 }) {
   return (
     <Touchable
@@ -30,7 +35,7 @@ export function LabelWithInfo({
       disabled={!onPress}
     >
       <>
-        <Text style={[styles.labelText, labelStyle]} numberOfLines={1}>
+        <Text style={[styles.labelText, labelStyle]} numberOfLines={numberOfLines}>
           {label}
         </Text>
         {onPress && <InfoIcon size={iconSize} color={Colors.gray3} />}

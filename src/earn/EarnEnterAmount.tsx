@@ -10,6 +10,7 @@ import { EarnEvents, SendEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import KeyboardAwareScrollView from 'src/components/KeyboardAwareScrollView'
 import { LabelWithInfo } from 'src/components/LabelWithInfo'
@@ -709,12 +710,13 @@ function TransactionWithdrawDetails({
             }}
             testID="LabelWithInfo/FeeLabel"
           />
-          <View style={styles.txDetailsValue}>
-            <TokenDisplay
+          <View style={styles.txDetailsFeeValue}>
+            <FeeSummary
+              layout="stacked"
+              components={[{ amount: maxFeeAmount, token: feeCurrency }] as FeeComponent[]}
+              primaryStyle={styles.txDetailsFeePrimary}
+              secondaryStyle={styles.txDetailsFeeSecondary}
               testID="EarnEnterAmount/Fees"
-              tokenId={feeCurrency.tokenId}
-              amount={maxFeeAmount.toString()}
-              style={styles.txDetailsValueText}
             />
           </View>
         </View>
@@ -1160,6 +1162,24 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: Colors.black,
     flexWrap: 'wrap',
+    textAlign: 'right',
+  },
+  // Fee value column mirrors swap SwapTransactionDetails (bodySmall/gray for
+  // the token breakdown, bodyXSmall/gray for the ≈ COP conversion) so the
+  // fee row on the Neeru deposit / withdraw enter-amount screen reads
+  // identically to the fee row on the swap confirm screen.
+  txDetailsFeeValue: {
+    flexShrink: 1,
+    alignItems: 'flex-end',
+  },
+  txDetailsFeePrimary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+  },
+  txDetailsFeeSecondary: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
     textAlign: 'right',
   },
   gray4: {
