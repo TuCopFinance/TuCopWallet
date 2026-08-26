@@ -33,7 +33,12 @@ import {
   UniswapV4BuildTxRequest,
   UniswapV4BuildTxResponse,
 } from 'src/swap/types'
-import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import {
+  feeCurrenciesSelector,
+  nativeFeeCurrencySelector,
+  tokensByIdSelector,
+} from 'src/tokens/selectors'
+import { computeReceiptNetworkFee } from 'src/swap/computeReceiptNetworkFee'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
@@ -511,13 +516,25 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // screen (see swap/slice.feeMetadataByTxHash) so the row is uniform.
     const appFeeUsd =
       (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
-    // Provider always recorded so the 'Proveedor' row renders on every
-    // swap, even when the integrator fee is 0. See swap/saga.ts comment.
+    // Provider + saga-computed network fee always recorded so both the
+    // 'Proveedor' and 'Tarifa de red' rows render on every swap. See
+    // computeReceiptNetworkFee for the CIP-64 adapter matching logic.
+    const nativeFeeCurrencyForSaga = yield* select((s) => nativeFeeCurrencySelector(s, networkId))
+    const tokensByIdForSaga = yield* select((s) => tokensByIdSelector(s, [networkId]))
+    const computedNetworkFee = yield* call(computeReceiptNetworkFee, {
+      publicClient: publicClient[network],
+      receipt: swapTxReceipt,
+      networkId,
+      nativeFeeCurrency: nativeFeeCurrencyForSaga,
+      tokensById: tokensByIdForSaga,
+    })
     yield* put(
       recordSwapFeeMetadata({
         txHash: swapTxReceipt.transactionHash,
         appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
         provider: 'uniswap-v4',
+        networkFeeValue: computedNetworkFee?.value,
+        networkFeeTokenId: computedNetworkFee?.tokenId,
       })
     )
 

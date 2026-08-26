@@ -7167,6 +7167,12 @@
                 "appFeeUsd": {
                     "type": "string"
                 },
+                "networkFeeTokenId": {
+                    "type": "string"
+                },
+                "networkFeeValue": {
+                    "type": "string"
+                },
                 "provider": {
                     "type": "string"
                 },

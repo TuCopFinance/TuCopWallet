@@ -50,21 +50,31 @@ function TransactionSuccessScreen({ route }: Props) {
   } = route.params
   const hasLegs = Array.isArray(legs) && legs.length > 0
 
-  // Pull the on-chain network fee off the receipt so the immediate success
-  // screen shows the actual gas paid — the tx-details screen has the same
-  // fix but the user hits this one first, right after Confirm.
-  const { fee: networkFee } = useReceiptNetworkFee({
-    transactionHash: transactionHash ?? '',
-    networkId: networkId!,
-    skip: !transactionHash || !networkId,
-  })
-
-  // Provider ("Proveedor") — recorded by the saga into swap.feeMetadata at
-  // completion so this row shows the same value the tx-details 'Cambiar'
-  // screen shows later. Only Swap-family types render it.
+  // Provider + saga-computed network fee — recorded by the saga into
+  // swap.feeMetadata at completion so this row shows the same value the
+  // tx-details 'Cambiar' screen shows later. Preferred over the receipt
+  // hook because the saga already had the receipt in scope and did NOT
+  // race React render + reselect identity churn + CIP-64 adapter lookup.
   const feeMetadata = useSelector((state) =>
     transactionHash ? state.swap.feeMetadataByTxHash[transactionHash.toLowerCase()] : undefined
   )
+
+  // Fallback: if the saga didn't persist a fee (older path or the tx
+  // wasn't a swap saga we hooked yet), still try to fetch off the receipt.
+  const hookSkip = !transactionHash || !networkId || !!feeMetadata?.networkFeeValue
+  const { fee: hookNetworkFee } = useReceiptNetworkFee({
+    transactionHash: transactionHash ?? '',
+    networkId: networkId!,
+    skip: hookSkip,
+  })
+
+  // Prefer the saga-computed value; fall back to the hook result.
+  const networkFee =
+    feeMetadata?.networkFeeValue && feeMetadata?.networkFeeTokenId
+      ? {
+          amount: { value: feeMetadata.networkFeeValue, tokenId: feeMetadata.networkFeeTokenId },
+        }
+      : hookNetworkFee
 
   // Squid integrator fee arrives from the saga as an absolute USD amount
   // (already deducted from the delivered token by Squid at quote time; no

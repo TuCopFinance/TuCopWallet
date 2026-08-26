@@ -16,7 +16,8 @@ import {
   swapSuccess,
 } from 'src/swap/slice'
 import { Field, SwapInfo, UNISWAP_V4_PROVIDER } from 'src/swap/types'
-import { tokensByIdSelector } from 'src/tokens/selectors'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { computeReceiptNetworkFee } from 'src/swap/computeReceiptNetworkFee'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
@@ -423,6 +424,19 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // every surface, not just the immediate post-Confirm one.
     const appFeeUsd =
       (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
+    // Compute the network fee off the receipt here (saga side) so the
+    // success screen renders 'Tarifa de red' from route params without a
+    // React hook that races state hydration. See computeReceiptNetworkFee
+    // for the CIP-64 adapter matching logic.
+    const nativeFeeCurrencyForSaga = yield* select((s) => nativeFeeCurrencySelector(s, networkId))
+    const tokensByIdForSaga = yield* select((s) => tokensByIdSelector(s, [networkId]))
+    const computedNetworkFee = yield* call(computeReceiptNetworkFee, {
+      publicClient: publicClient[network],
+      receipt: swapTxReceipt,
+      networkId,
+      nativeFeeCurrency: nativeFeeCurrencyForSaga,
+      tokensById: tokensByIdForSaga,
+    })
     // Always record the provider (even when the integrator fee is 0) so the
     // success + tx-details 'Proveedor' row renders on every swap. Renderers
     // read appFeeUsd separately to decide whether to draw the 'Tarifa del
@@ -432,6 +446,8 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         txHash: swapTxReceipt.transactionHash,
         appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
         provider: 'squid',
+        networkFeeValue: computedNetworkFee?.value,
+        networkFeeTokenId: computedNetworkFee?.tokenId,
       })
     )
 

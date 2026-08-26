@@ -35,6 +35,17 @@ export interface SwapFeeMetadata {
   // release. Optional so pre-existing persisted entries stay readable
   // (undefined -> the 'Proveedor' row simply hides for that tx).
   provider?: string
+  // On-chain network fee, computed by the saga at receipt time
+  // (gasUsed * effectiveGasPrice) so the success + tx-details screen
+  // renders the Tarifa de red row without depending on an async React
+  // hook that races the render + can silently bail on CIP-64 adapter
+  // resolution. Value is the whole-unit token amount (already shifted
+  // by decimals). Optional to keep existing persisted entries valid.
+  networkFeeValue?: string
+  // TokenId for the fee currency. Matches state.tokens.tokenBalances keys
+  // for stables paid via adapter (`celo-mainnet:<address>`) OR the
+  // synthetic native CELO id (`celo-mainnet:native`) for gas paid in CELO.
+  networkFeeTokenId?: string
   // Wall-clock timestamp for FIFO eviction (see MAX_FEE_METADATA_ENTRIES).
   recordedAt: number
 }
@@ -119,12 +130,20 @@ export const slice = createSlice({
     // for each leg without doubling other side effects.
     recordSwapFeeMetadata: (
       state,
-      action: PayloadAction<{ txHash: string; appFeeUsd: string; provider?: string }>
+      action: PayloadAction<{
+        txHash: string
+        appFeeUsd: string
+        provider?: string
+        networkFeeValue?: string
+        networkFeeTokenId?: string
+      }>
     ) => {
       const key = action.payload.txHash.toLowerCase()
       state.feeMetadataByTxHash[key] = {
         appFeeUsd: action.payload.appFeeUsd,
         provider: action.payload.provider,
+        networkFeeValue: action.payload.networkFeeValue,
+        networkFeeTokenId: action.payload.networkFeeTokenId,
         recordedAt: Date.now(),
       }
       const entries = Object.entries(state.feeMetadataByTxHash)

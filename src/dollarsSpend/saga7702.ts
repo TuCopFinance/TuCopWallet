@@ -24,7 +24,12 @@ import { UNISWAP_V4_PROVIDER } from 'src/swap/types'
 import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { addStandbyTransaction } from 'src/transactions/slice'
 import { newTransactionContext, TokenTransactionTypeV2 } from 'src/transactions/types'
-import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import {
+  feeCurrenciesSelector,
+  nativeFeeCurrencySelector,
+  tokensByIdSelector,
+} from 'src/tokens/selectors'
+import { computeReceiptNetworkFee } from 'src/swap/computeReceiptNetworkFee'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { pickFeeCurrency } from 'src/tokens/feeCurrencyPicker'
 import type { TokenBalance } from 'src/tokens/slice'
@@ -603,6 +608,37 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // land as a single tx on-chain, so one metadata entry suffices — the
     // per-leg amounts already sum into it and the tx-details screen only
     // has one hash to look up.
+    // Wait for the receipt so we can compute the on-chain network fee
+    // (gasUsed * effectiveGasPrice) and persist it alongside the Squid
+    // integrator fee. Otherwise the success + tx-details screen would show
+    // no 'Tarifa de red' row for this batch since the standby record has
+    // no fees array populated yet at navigation time. Try/catch so a slow
+    // Forno does not delay the success screen — the row simply hides if
+    // the receipt is not ready.
+    let batchNetworkFee: { value: string; tokenId: string } | null = null
+    try {
+      const batchReceipt = yield* call([publicClient[Network.Celo], 'waitForTransactionReceipt'], {
+        hash,
+      })
+      const nativeFeeCurrencyForSaga = yield* select((s) =>
+        nativeFeeCurrencySelector(s, NetworkId['celo-mainnet'])
+      )
+      const tokensByIdForSaga = yield* select((s) =>
+        tokensByIdSelector(s, [NetworkId['celo-mainnet']])
+      )
+      batchNetworkFee = yield* call(computeReceiptNetworkFee, {
+        publicClient: publicClient[Network.Celo],
+        receipt: batchReceipt,
+        networkId: NetworkId['celo-mainnet'],
+        nativeFeeCurrency: nativeFeeCurrencyForSaga,
+        tokensById: tokensByIdForSaga,
+      })
+    } catch (err) {
+      Logger.warn(TAG, 'Failed to fetch batch receipt for fee compute', {
+        err: err instanceof Error ? err.message : String(err),
+      })
+    }
+
     // Always dispatch (even when the aggregate integrator fee is 0) so the
     // success + tx-details Proveedor row renders for every atomic 7702
     // batch. Amount kept as '0' when no fee so the renderer skips the
@@ -612,6 +648,8 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         txHash: hash,
         appFeeUsd: new BigNumber(appFeeUsdTotal).gt(0) ? appFeeUsdTotal : '0',
         provider: 'squid',
+        networkFeeValue: batchNetworkFee?.value,
+        networkFeeTokenId: batchNetworkFee?.tokenId,
       })
     )
     const successLegs = isMultiLeg
