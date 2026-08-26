@@ -2,21 +2,16 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { LayoutAnimation, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes } from 'src/components/Button'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
-import { LocalCurrencyCode, LocalCurrencySymbol } from 'src/localCurrency/consts'
-import {
-  getLocalCurrencyCode,
-  getLocalCurrencySymbol,
-  usdToLocalCurrencyRateSelector,
-} from 'src/localCurrency/selectors'
 import { noHeaderGestureDisabled } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -26,6 +21,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { formatSwapProvider } from 'src/swap/formatSwapProvider'
+import { useTokenInfo } from 'src/tokens/hooks'
 import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
@@ -51,6 +47,7 @@ function TransactionSuccessScreen({ route }: Props) {
     appFeeUsd,
   } = route.params
   const hasLegs = Array.isArray(legs) && legs.length > 0
+  const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
 
   // Provider + saga-computed network fee — recorded by the saga into
   // swap.feeMetadata at completion.
@@ -137,21 +134,34 @@ function TransactionSuccessScreen({ route }: Props) {
   // mislabelling that one.
   const provider = feeMetadata?.provider ?? (type === 'swap' ? 'squid' : undefined)
 
-  // Squid integrator fee arrives from the saga as an absolute USD amount
-  // (already deducted from the delivered token by Squid at quote time; no
-  // separate on-chain transfer). Convert to local currency for display so
-  // the user reads "≈ COP $X" without doing the mental USD math themselves.
-  const usdToLocalRate = useSelector(usdToLocalCurrencyRateSelector)
-  const localCurrencyCode = useSelector(getLocalCurrencyCode)
-  const localCurrencySymbol = useSelector(getLocalCurrencySymbol) ?? LocalCurrencySymbol.USD
-  const appFeeLocalLabel = (() => {
-    if (!appFeeUsd) return null
-    const parsed = new BigNumber(appFeeUsd)
-    if (!parsed.isFinite() || parsed.lte(0)) return null
-    if (!usdToLocalRate) return `≈ $${parsed.toFormat(2)}` // fallback: raw USD
-    const localAmount = parsed.multipliedBy(usdToLocalRate)
-    const decimals = localCurrencyCode === LocalCurrencyCode.COP ? 0 : 2
-    return `≈ ${localCurrencySymbol}${localAmount.toFormat(decimals)}`
+  // Build the FeeSummary components (mirrors the pre-confirm SwapTransactionDetails):
+  //   - Network fee: use the resolved fee token via useTokenInfo so FeeSummary
+  //     shows both the token amount + the ≈ COP conversion.
+  //   - App fee: Squid integrator cut in USD, converted to USDm equivalent so
+  //     FeeSummary can sum it into the same aggregate line. The pre-confirm
+  //     shows the same "X CELO + Y USDm ≈ COP$Z" pattern.
+  const networkFeeToken = useTokenInfo(networkFee?.amount.tokenId)
+  const usdmToken = useTokenInfo(
+    // Look up USDm to use as the display token for the app fee. Absent on
+    // fresh install; when missing we simply drop the app fee from the
+    // aggregate row rather than mislabelling it against another token.
+    'celo-mainnet:0x765de816845861e75a25fca122bb6898b8b1282a'
+  )
+  const feeSummaryComponents = ((): FeeComponent[] => {
+    const components: FeeComponent[] = []
+    if (networkFee && networkFeeToken) {
+      components.push({
+        amount: new BigNumber(networkFee.amount.value),
+        token: networkFeeToken,
+      })
+    }
+    if (appFeeUsd) {
+      const parsed = new BigNumber(appFeeUsd)
+      if (parsed.isFinite() && parsed.gt(0) && usdmToken) {
+        components.push({ amount: parsed, token: usdmToken })
+      }
+    }
+    return components
   })()
 
   const handleViewOnExplorer = () => {
@@ -266,53 +276,55 @@ function TransactionSuccessScreen({ route }: Props) {
               </>
             )}
 
-            {/* Fee rows follow the same layout convention as FeeRowItem in
-                src/transactions/feed/detailContent — single row with label
-                left + crypto/local amounts stacked right — so the immediate
-                success screen and the deferred tx-details screen read
-                identically. Complementary info: bodyMedium for both label
-                and primary value, bodySmall + gray3 for the secondary
-                local-currency line. */}
-            {networkFee && (
-              <View style={styles.feeRow} testID="TransactionSuccess/NetworkFee">
-                <Text style={styles.feeLabel}>{t('transactionFeed.networkFee')}</Text>
+            {/* Fee + route pattern mirrors src/swap/SwapTransactionDetails so
+                the confirm sheet and the success screen read identically:
+                ONE 'Tarifas' row summing network fee + integrator fee with
+                FeeSummary (stacked, bodySmall gray4 primary + bodyXSmall
+                gray4 secondary), and ONE 'Ruta del intercambio' expand /
+                collapse toggle revealing 'Ejecutado por Squid' as a sub-row. */}
+            {feeSummaryComponents.length > 0 && (
+              <View style={styles.feeRow} testID="TransactionSuccess/Fees">
+                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.fees')}</Text>
                 <View style={styles.feeValueColumn}>
-                  <TokenDisplay
-                    amount={networkFee.amount.value}
-                    tokenId={networkFee.amount.tokenId}
-                    showLocalAmount={false}
-                    hideSign={true}
-                    showSymbol={true}
-                    style={styles.feeValuePrimary}
-                    testID="TransactionSuccess/NetworkFee/Crypto"
-                  />
-                  <TokenDisplay
-                    amount={networkFee.amount.value}
-                    tokenId={networkFee.amount.tokenId}
-                    showLocalAmount={true}
-                    hideSign={true}
-                    style={styles.feeValueSecondary}
-                    testID="TransactionSuccess/NetworkFee/Local"
+                  <FeeSummary
+                    layout="stacked"
+                    components={feeSummaryComponents}
+                    primaryStyle={styles.feeValuePrimary}
+                    secondaryStyle={styles.feeValueSecondary}
+                    testID="TransactionSuccess/Fees/Summary"
                   />
                 </View>
               </View>
             )}
 
-            {!!appFeeLocalLabel && (
-              <View style={styles.feeRow} testID="TransactionSuccess/AppFee">
-                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.appFee')}</Text>
-                <Text style={styles.feeValuePrimary} testID="TransactionSuccess/AppFee/Local">
-                  {appFeeLocalLabel}
-                </Text>
-              </View>
-            )}
-
             {!!provider && (
-              <View style={styles.feeRow} testID="TransactionSuccess/Provider">
-                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.provider')}</Text>
-                <Text style={styles.providerValue} testID="TransactionSuccess/Provider/Value">
-                  {formatSwapProvider(provider)}
-                </Text>
+              <View testID="TransactionSuccess/RouteReveal">
+                <Touchable
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+                    setRouteDetailExpanded((v) => !v)
+                  }}
+                  testID="TransactionSuccess/RouteReveal/Toggle"
+                >
+                  <View style={styles.feeRow}>
+                    <Text style={styles.feeLabel}>
+                      {t('swapScreen.transactionDetails.routeDetail')}
+                    </Text>
+                    <Text style={styles.providerValue}>
+                      {routeDetailExpanded
+                        ? t('swapScreen.transactionDetails.routeDetailCollapse')
+                        : t('swapScreen.transactionDetails.routeDetailExpand')}
+                    </Text>
+                  </View>
+                </Touchable>
+                {routeDetailExpanded && (
+                  <View style={[styles.feeRow, styles.routeSubRow]}>
+                    <Text style={styles.routeSubLabel}>
+                      {t('swapScreen.transactionDetails.routeLabel')}
+                    </Text>
+                    <Text style={styles.providerValue}>{formatSwapProvider(provider)}</Text>
+                  </View>
+                )}
               </View>
             )}
 
@@ -439,6 +451,14 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.black,
     textAlign: 'right',
+  },
+  routeSubRow: {
+    paddingLeft: Spacing.Regular16,
+  },
+  routeSubLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    flex: 1,
   },
   recipientText: {
     ...typeScale.labelMedium,
