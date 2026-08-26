@@ -91,7 +91,15 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Tok
   const rawTokens = await response.json()
 
   // Grab CELO priceUsd BEFORE the ALLOWED_TOKEN_IDS filter drops the entry.
-  const rawCelo = rawTokens[networkConfig.celoTokenId]
+  // Backend keys CELO by its ERC-20 address (`celo-mainnet:0x471ece...`) while
+  // the wallet's internal celoTokenId is `celo-mainnet:native` (a synthetic
+  // identifier). Look up under the address form the backend actually uses,
+  // falling back to the legacy synthetic key so older feeds still resolve.
+  // Without this fallback the price never dispatched -> nativeCeloPriceUsd
+  // stayed null -> the fee bottom sheet on the swap / earn screens rendered
+  // "≈ - (0.052 CELO)" and the "Tarifas" row lost its COP equivalent.
+  const celoAddressKey = `${NetworkId['celo-mainnet']}:${networkConfig.celoTokenAddress.toLowerCase()}`
+  const rawCelo = rawTokens[celoAddressKey] ?? rawTokens[networkConfig.celoTokenId]
   const celoPriceUsdRaw = rawCelo?.priceUsd
   const celoPriceUsdNum = celoPriceUsdRaw == null ? NaN : Number(celoPriceUsdRaw)
   const celoPriceUsd =
