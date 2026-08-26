@@ -8,6 +8,7 @@ import { SwapEvents } from 'src/analytics/Events'
 import { SwapShowInfoType } from 'src/analytics/Properties'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
+import { formatSwapProvider } from 'src/swap/formatSwapProvider'
 import { getTokenSymbol } from 'src/components/TokenDisplay'
 import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import Touchable from 'src/components/Touchable'
@@ -325,23 +326,6 @@ export function SwapTransactionDetails({
       )}
     </View>
   )
-}
-
-// Map backend swapProvider slugs to short user-facing labels. Kept as a
-// dedicated helper so the mapping stays in one place; unrecognized values
-// fall through as-is (uppercased first letter) instead of hiding behind
-// a generic 'unknown'.
-function formatSwapProvider(provider: string): string {
-  const map: Record<string, string> = {
-    squid: 'Squid',
-    'squid-router': 'Squid',
-    'uniswap-v4': 'Uniswap',
-    uniswap_v4: 'Uniswap',
-    uniswap: 'Uniswap',
-  }
-  const key = provider.toLowerCase()
-  if (map[key]) return map[key]
-  return provider.charAt(0).toUpperCase() + provider.slice(1)
 }
 
 const styles = StyleSheet.create({

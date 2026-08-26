@@ -604,7 +604,13 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // per-leg amounts already sum into it and the tx-details screen only
     // has one hash to look up.
     if (new BigNumber(appFeeUsdTotal).gt(0)) {
-      yield* put(recordSwapFeeMetadata({ txHash: hash, appFeeUsd: appFeeUsdTotal }))
+      yield* put(
+        recordSwapFeeMetadata({
+          txHash: hash,
+          appFeeUsd: appFeeUsdTotal,
+          provider: 'squid',
+        })
+      )
     }
     const successLegs = isMultiLeg
       ? stepOutcomes.map((o, i) => ({

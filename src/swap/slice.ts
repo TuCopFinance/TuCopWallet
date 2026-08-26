@@ -29,6 +29,12 @@ export interface SwapFeeMetadata {
   // Without this the backend indexer's tx entry lacks AppFee for these
   // paths and the row disappears once the pending tx settles.
   appFeeUsd: string
+  // Which venue actually executed the swap (squid / uniswap-v4 / etc).
+  // Stored as the raw saga-level slug; the UI maps it to a display label
+  // via formatSwapProvider so future venues surface without a wallet
+  // release. Optional so pre-existing persisted entries stay readable
+  // (undefined -> the 'Proveedor' row simply hides for that tx).
+  provider?: string
   // Wall-clock timestamp for FIFO eviction (see MAX_FEE_METADATA_ENTRIES).
   recordedAt: number
 }
@@ -113,11 +119,12 @@ export const slice = createSlice({
     // for each leg without doubling other side effects.
     recordSwapFeeMetadata: (
       state,
-      action: PayloadAction<{ txHash: string; appFeeUsd: string }>
+      action: PayloadAction<{ txHash: string; appFeeUsd: string; provider?: string }>
     ) => {
       const key = action.payload.txHash.toLowerCase()
       state.feeMetadataByTxHash[key] = {
         appFeeUsd: action.payload.appFeeUsd,
+        provider: action.payload.provider,
         recordedAt: Date.now(),
       }
       const entries = Object.entries(state.feeMetadataByTxHash)

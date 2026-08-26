@@ -17,6 +17,7 @@ import { NETWORK_NAMES } from 'src/shared/conts'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { formatSwapProvider } from 'src/swap/formatSwapProvider'
 import { useTokensList } from 'src/tokens/hooks'
 import FeeRowItem from 'src/transactions/feed/detailContent/FeeRowItem'
 import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
@@ -176,6 +177,14 @@ export default function SwapContent({ transaction }: Props) {
         <View style={styles.row} testID="SwapContent/AppFee/FromMetadata">
           <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.appFee')}</Text>
           <Text style={styles.currencyAmountPrimaryText}>{appFeeLocalLabel}</Text>
+        </View>
+      )}
+      {!!feeMetadata?.provider && (
+        <View style={styles.row} testID="SwapContent/Provider">
+          <Text style={styles.bodyText}>{t('swapScreen.transactionDetails.provider')}</Text>
+          <Text style={styles.currencyAmountPrimaryText}>
+            {formatSwapProvider(feeMetadata.provider)}
+          </Text>
         </View>
       )}
       <FeeRowItem

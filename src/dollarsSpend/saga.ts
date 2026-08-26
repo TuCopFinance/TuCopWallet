@@ -522,7 +522,13 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     // AppFee for these paths).
     for (const l of legs) {
       if (new BigNumber(l.appFeeUsd).gt(0)) {
-        yield* put(recordSwapFeeMetadata({ txHash: l.transactionHash, appFeeUsd: l.appFeeUsd }))
+        yield* put(
+          recordSwapFeeMetadata({
+            txHash: l.transactionHash,
+            appFeeUsd: l.appFeeUsd,
+            provider: 'squid',
+          })
+        )
       }
     }
     navigate(Screens.TransactionSuccessScreen, {

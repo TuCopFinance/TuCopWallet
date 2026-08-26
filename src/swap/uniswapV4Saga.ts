@@ -516,6 +516,7 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
         recordSwapFeeMetadata({
           txHash: swapTxReceipt.transactionHash,
           appFeeUsd: appFeeUsd.toString(),
+          provider: 'uniswap-v4',
         })
       )
     }

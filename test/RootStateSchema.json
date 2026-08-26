@@ -7167,6 +7167,9 @@
                 "appFeeUsd": {
                     "type": "string"
                 },
+                "provider": {
+                    "type": "string"
+                },
                 "recordedAt": {
                     "type": "number"
                 }

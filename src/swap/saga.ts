@@ -428,6 +428,7 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         recordSwapFeeMetadata({
           txHash: swapTxReceipt.transactionHash,
           appFeeUsd: appFeeUsd.toString(),
+          provider: 'squid',
         })
       )
     }

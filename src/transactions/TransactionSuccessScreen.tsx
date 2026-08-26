@@ -25,6 +25,7 @@ import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { formatSwapProvider } from 'src/swap/formatSwapProvider'
 import { useReceiptNetworkFee } from 'src/transactions/useReceiptNetworkFee'
 import { blockExplorerUrls } from 'src/web3/networkConfig'
 
@@ -57,6 +58,13 @@ function TransactionSuccessScreen({ route }: Props) {
     networkId: networkId!,
     skip: !transactionHash || !networkId,
   })
+
+  // Provider ("Proveedor") — recorded by the saga into swap.feeMetadata at
+  // completion so this row shows the same value the tx-details 'Cambiar'
+  // screen shows later. Only Swap-family types render it.
+  const feeMetadata = useSelector((state) =>
+    transactionHash ? state.swap.feeMetadataByTxHash[transactionHash.toLowerCase()] : undefined
+  )
 
   // Squid integrator fee arrives from the saga as an absolute USD amount
   // (already deducted from the delivered token by Squid at quote time; no
@@ -224,6 +232,15 @@ function TransactionSuccessScreen({ route }: Props) {
                 <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.appFee')}</Text>
                 <Text style={styles.feeValuePrimary} testID="TransactionSuccess/AppFee/Local">
                   {appFeeLocalLabel}
+                </Text>
+              </View>
+            )}
+
+            {!!feeMetadata?.provider && (
+              <View style={styles.feeRow} testID="TransactionSuccess/Provider">
+                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.provider')}</Text>
+                <Text style={styles.feeValuePrimary} testID="TransactionSuccess/Provider/Value">
+                  {formatSwapProvider(feeMetadata.provider)}
                 </Text>
               </View>
             )}
