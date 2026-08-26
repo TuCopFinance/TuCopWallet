@@ -266,30 +266,6 @@ function TransactionSuccessScreen({ route }: Props) {
               </>
             )}
 
-            {/* DEBUG: bright unconditional row so we can see if this component
-                actually runs my code. Shows the actual runtime values of
-                the vars that drive the fee/provider rows. Remove after we
-                figure out what's going on. */}
-            <View
-              style={{
-                marginTop: 8,
-                padding: 8,
-                backgroundColor: 'red',
-                borderRadius: 4,
-              }}
-              testID="DEBUG/Success"
-            >
-              <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
-                {`DEBUG type=${type} txHash=${transactionHash ? String(transactionHash).slice(0, 10) + '…' : 'null'}`}
-                {'\n'}
-                {`provider=${provider ?? 'null'} networkFee=${networkFee ? 'set' : 'null'}`}
-                {'\n'}
-                {`feeMetaKeys=${feeMetadata ? Object.keys(feeMetadata).join(',') : 'noMeta'}`}
-                {'\n'}
-                {`inlineFee=${inlineFee ? 'set' : 'null'} nativeFC=${nativeFeeCurrency ? nativeFeeCurrency.tokenId : 'null'}`}
-              </Text>
-            </View>
-
             {/* Fee rows follow the same layout convention as FeeRowItem in
                 src/transactions/feed/detailContent — single row with label
                 left + crypto/local amounts stacked right — so the immediate
@@ -334,7 +310,7 @@ function TransactionSuccessScreen({ route }: Props) {
             {!!provider && (
               <View style={styles.feeRow} testID="TransactionSuccess/Provider">
                 <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.provider')}</Text>
-                <Text style={styles.feeValuePrimary} testID="TransactionSuccess/Provider/Value">
+                <Text style={styles.providerValue} testID="TransactionSuccess/Provider/Value">
                   {formatSwapProvider(provider)}
                 </Text>
               </View>
@@ -426,33 +402,42 @@ const styles = StyleSheet.create({
     ...typeScale.labelMedium,
     color: Colors.black,
   },
-  // Fee-row styles mirror src/transactions/feed/detailContent/FeeRowItem so
-  // the immediate success screen and the deferred tx-details 'Cambiar'
-  // screen read identically. Any change here should propagate to
-  // FeeRowItem.styles (or vice versa) to keep both surfaces uniform.
+  // Fee-row styles mirror src/swap/SwapTransactionDetails so the success
+  // screen reads identically to the confirm sheet: bodySmall gray4 for the
+  // label + primary line (fees are complementary info), bodyXSmall gray4
+  // for the ≈ COP secondary line. Provider row reuses feeLabel + a black
+  // bodySmall value (identity, not fee amount).
+  // NB: NO `flex: 1` on the row — detailsContainer is a column with no
+  // fixed height, so flex:1 on a row would collapse it to height 0 and
+  // the Tarifa / Proveedor block silently disappeared.
   feeRow: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: Spacing.Regular16,
     marginTop: Spacing.Smallest8,
   },
   feeLabel: {
-    ...typeScale.bodyMedium,
-    color: Colors.black,
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
     flex: 1,
   },
   feeValueColumn: {
     alignItems: 'flex-end',
   },
   feeValuePrimary: {
-    ...typeScale.bodyMedium,
-    color: Colors.black,
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
     textAlign: 'right',
   },
   feeValueSecondary: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+  },
+  providerValue: {
     ...typeScale.bodySmall,
-    color: Colors.gray3,
+    color: Colors.black,
     textAlign: 'right',
   },
   recipientText: {
