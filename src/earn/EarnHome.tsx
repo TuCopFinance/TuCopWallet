@@ -65,12 +65,16 @@ export const NEERU_POSITION_TYPE = 'neeruPosition'
 // MyPools tab per-category ordering. User rule: Flexible first (no maturity,
 // always withdrawable), then plazos sorted by earliest maturity so the
 // deposits about to mature bubble to the top.
-const NEERU_MYPOOLS_CATEGORY_ORDER: NeeruCategoryId[] = [0, 1, 2, 3]
-const NEERU_MYPOOLS_SECTION_TITLE_KEYS: Record<NeeruCategoryId, string> = {
+// Backend expanded to 6 categories (Flexible + 30/60/90/180/365 dias) on
+// 2026-08-25; keep this list explicit so section ordering is deterministic.
+const NEERU_MYPOOLS_CATEGORY_ORDER: NeeruCategoryId[] = [0, 1, 2, 3, 4, 5]
+const NEERU_MYPOOLS_SECTION_TITLE_KEYS: Record<number, string> = {
   0: 'neeruVaults.myPoolsSections.flexible',
   1: 'neeruVaults.myPoolsSections.thirtyDays',
   2: 'neeruVaults.myPoolsSections.sixtyDays',
   3: 'neeruVaults.myPoolsSections.ninetyDays',
+  4: 'neeruVaults.myPoolsSections.oneEightyDays',
+  5: 'neeruVaults.myPoolsSections.threeSixtyFiveDays',
 }
 
 // Fixed section order for the "haz crecer tu dinero" list. Keeps the layout

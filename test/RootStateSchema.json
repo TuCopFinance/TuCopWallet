@@ -2357,15 +2357,6 @@
             ],
             "type": "object"
         },
-        "NeeruCategoryId": {
-            "enum": [
-                0,
-                1,
-                2,
-                3
-            ],
-            "type": "number"
-        },
         "NeeruCloseStatus": {
             "enum": [
                 "error",
@@ -2469,7 +2460,7 @@
                     "type": "string"
                 },
                 "category": {
-                    "$ref": "#/definitions/NeeruCategoryId"
+                    "type": "number"
                 },
                 "categoryLabel": {
                     "type": "string"

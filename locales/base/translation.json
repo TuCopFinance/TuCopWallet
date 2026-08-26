@@ -2956,13 +2956,17 @@
       "flexible": "Flexible",
       "thirtyDays": "30 days",
       "sixtyDays": "60 days",
-      "ninetyDays": "90 days"
+      "ninetyDays": "90 days",
+      "oneEightyDays": "180 days",
+      "threeSixtyFiveDays": "365 days"
     },
     "cardSubtitle": {
       "flexible": "Flexible",
       "thirtyDays": "30-day deposit",
       "sixtyDays": "60-day deposit",
-      "ninetyDays": "90-day deposit"
+      "ninetyDays": "90-day deposit",
+      "oneEightyDays": "180-day deposit",
+      "threeSixtyFiveDays": "365-day deposit"
     },
     "explainer": {
       "close": "Close",
@@ -2981,6 +2985,14 @@
       "ninetyDays": {
         "title": "90-day deposit",
         "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term. Usually the best rate.\n\nOnce the 90 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
+      },
+      "oneEightyDays": {
+        "title": "180-day deposit",
+        "body": "Your Pesos are locked for 180 days. Interest builds up day by day during the term.\n\nOnce the 180 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 180 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
+      },
+      "threeSixtyFiveDays": {
+        "title": "365-day deposit",
+        "body": "Your Pesos are locked for 365 days. Interest builds up day by day during the term.\n\nOnce the 365 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 365 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
       }
     },
     "detail": {
@@ -2992,7 +3004,9 @@
         "flexible": "Withdraw anytime with no minimum lock",
         "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
         "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
-        "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
+        "ninetyDays": "Lock your Pesos for 90 days at the highest rate",
+        "oneEightyDays": "Lock your Pesos for 180 days at a higher rate",
+        "threeSixtyFiveDays": "Lock your Pesos for 365 days at the top rate"
       },
       "emptyState": {
         "rateEyebrow": "Estimated rate",
@@ -3034,7 +3048,9 @@
       "flexible": "Pesos Flexible",
       "thirtyDays": "Pesos 30 days",
       "sixtyDays": "Pesos 60 days",
-      "ninetyDays": "Pesos 90 days"
+      "ninetyDays": "Pesos 90 days",
+      "oneEightyDays": "Pesos 180 days",
+      "threeSixtyFiveDays": "Pesos 365 days"
     },
     "closeSheet": {
       "title": "Withdraw your deposit",
