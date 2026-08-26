@@ -1259,7 +1259,15 @@ export function SwapScreen({ route }: Props) {
             // cheapest available fee currency). Hide the "Pagada en" row to
             // avoid promising a specific token that the picker may not honor.
             hideFeePaidInRow={isVirtualDolares}
-            swapProvider={quote?.provider}
+            swapProvider={
+              // For Dolares multi-swap, quote is empty (each leg has its own
+              // quote via useMultiSwapQuote). Pick the first resolved leg's
+              // provider so the pre-confirm "Ruta del intercambio" reveal
+              // still renders. All legs typically share a provider (Squid);
+              // if any leg falls back to Uniswap V4 it usually happens across
+              // legs together.
+              isVirtualDolares ? multiSwapQuote.perStepQuotes[0]?.provider : quote?.provider
+            }
           />
           {showCrossChainFeeWarning && (
             <InLineNotification

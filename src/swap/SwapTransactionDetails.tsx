@@ -122,7 +122,6 @@ export function SwapTransactionDetails({
 }: Props) {
   const { t } = useTranslation()
   const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
-  const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
   const hasSpendSteps = !!spendSteps && spendSteps.length > 0
 
   // Assemble fee components for the unified summary row: swap fee
@@ -294,34 +293,13 @@ export function SwapTransactionDetails({
       </View>
 
       {!!swapProvider && (
-        // Route reveal — hidden behind a toggle so the main confirm copy
-        // stays banking-language (no "Uniswap" / "Squid" upfront). Users
-        // who want to know which venue executed the swap can expand it.
-        // Kept as a leaf row (no nested BottomSheet) to avoid a modal
-        // stack on a screen that already has 4+ info sheets attached.
-        <View testID="SwapTransactionDetails/RouteReveal">
-          <Touchable
-            onPress={() => {
-              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-              setRouteDetailExpanded((v) => !v)
-            }}
-            testID="SwapTransactionDetails/RouteReveal/Toggle"
-          >
-            <View style={styles.row}>
-              <Text style={styles.label}>{t('swapScreen.transactionDetails.routeDetail')}</Text>
-              <Text style={styles.value}>
-                {routeDetailExpanded
-                  ? t('swapScreen.transactionDetails.routeDetailCollapse')
-                  : t('swapScreen.transactionDetails.routeDetailExpand')}
-              </Text>
-            </View>
-          </Touchable>
-          {routeDetailExpanded && (
-            <View style={[styles.row, styles.subRow]}>
-              <Text style={styles.subLabel}>{t('swapScreen.transactionDetails.routeLabel')}</Text>
-              <Text style={styles.value}>{formatSwapProvider(swapProvider)}</Text>
-            </View>
-          )}
+        // Always-visible provider row. Previously hidden behind a "Ver / Ocultar"
+        // toggle so the confirm sheet stayed banking-language, but users
+        // reasonably want to know upfront which venue will execute the swap.
+        // formatSwapProvider maps saga slugs to short labels (Squid / Uniswap).
+        <View style={styles.row} testID="SwapTransactionDetails/Provider">
+          <Text style={styles.label}>{t('swapScreen.transactionDetails.provider')}</Text>
+          <Text style={styles.value}>{formatSwapProvider(swapProvider)}</Text>
         </View>
       )}
     </View>

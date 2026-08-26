@@ -133,6 +133,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
     string | undefined
   >(initialAppFeePercentageIncludedInPrice)
+  const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -184,6 +185,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
           setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
+          setSwapProvider(quoteResult.quote.swapProvider)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.buy.quoteErrorDescription'))
@@ -531,6 +533,9 @@ export default function GoldBuyConfirmation({ route }: Props) {
               appFee={detailsAppFee}
               networkFee={detailsNetworkFee}
               hideFeePaidInRow={isVirtualDolares}
+              swapProvider={
+                isVirtualDolares ? multiSwapQuote.perStepQuotes[0]?.provider : swapProvider
+              }
             />
           </View>
         )}
