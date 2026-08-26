@@ -603,15 +603,17 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // land as a single tx on-chain, so one metadata entry suffices — the
     // per-leg amounts already sum into it and the tx-details screen only
     // has one hash to look up.
-    if (new BigNumber(appFeeUsdTotal).gt(0)) {
-      yield* put(
-        recordSwapFeeMetadata({
-          txHash: hash,
-          appFeeUsd: appFeeUsdTotal,
-          provider: 'squid',
-        })
-      )
-    }
+    // Always dispatch (even when the aggregate integrator fee is 0) so the
+    // success + tx-details Proveedor row renders for every atomic 7702
+    // batch. Amount kept as '0' when no fee so the renderer skips the
+    // 'Tarifa del proveedor' row while still surfacing the venue.
+    yield* put(
+      recordSwapFeeMetadata({
+        txHash: hash,
+        appFeeUsd: new BigNumber(appFeeUsdTotal).gt(0) ? appFeeUsdTotal : '0',
+        provider: 'squid',
+      })
+    )
     const successLegs = isMultiLeg
       ? stepOutcomes.map((o, i) => ({
           fromTokenId: o.tokenId,

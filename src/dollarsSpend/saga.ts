@@ -520,16 +520,17 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     // render the same 'Tarifa del proveedor' row later, even after the
     // pending tx is replaced by the indexer's version (which doesn't emit
     // AppFee for these paths).
+    // Persist provider + fee per leg unconditionally so the tx-details
+    // 'Cambiar' screen renders the Proveedor row for every leg, even when
+    // Squid's integrator take on that hop was 0.
     for (const l of legs) {
-      if (new BigNumber(l.appFeeUsd).gt(0)) {
-        yield* put(
-          recordSwapFeeMetadata({
-            txHash: l.transactionHash,
-            appFeeUsd: l.appFeeUsd,
-            provider: 'squid',
-          })
-        )
-      }
+      yield* put(
+        recordSwapFeeMetadata({
+          txHash: l.transactionHash,
+          appFeeUsd: new BigNumber(l.appFeeUsd).gt(0) ? l.appFeeUsd : '0',
+          provider: 'squid',
+        })
+      )
     }
     navigate(Screens.TransactionSuccessScreen, {
       // Use the virtual Dolares tokenId so the aggregate row renders as

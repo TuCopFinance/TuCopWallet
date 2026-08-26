@@ -423,15 +423,17 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // every surface, not just the immediate post-Confirm one.
     const appFeeUsd =
       (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
-    if (appFeeUsd > 0) {
-      yield* put(
-        recordSwapFeeMetadata({
-          txHash: swapTxReceipt.transactionHash,
-          appFeeUsd: appFeeUsd.toString(),
-          provider: 'squid',
-        })
-      )
-    }
+    // Always record the provider (even when the integrator fee is 0) so the
+    // success + tx-details 'Proveedor' row renders on every swap. Renderers
+    // read appFeeUsd separately to decide whether to draw the 'Tarifa del
+    // proveedor' row; provider identity is orthogonal to that.
+    yield* put(
+      recordSwapFeeMetadata({
+        txHash: swapTxReceipt.transactionHash,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
+        provider: 'squid',
+      })
+    )
 
     if (!suppressSuccessNavigation) {
       navigate(Screens.TransactionSuccessScreen, {

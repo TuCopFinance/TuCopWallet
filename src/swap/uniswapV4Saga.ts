@@ -511,15 +511,15 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // screen (see swap/slice.feeMetadataByTxHash) so the row is uniform.
     const appFeeUsd =
       (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
-    if (appFeeUsd > 0) {
-      yield* put(
-        recordSwapFeeMetadata({
-          txHash: swapTxReceipt.transactionHash,
-          appFeeUsd: appFeeUsd.toString(),
-          provider: 'uniswap-v4',
-        })
-      )
-    }
+    // Provider always recorded so the 'Proveedor' row renders on every
+    // swap, even when the integrator fee is 0. See swap/saga.ts comment.
+    yield* put(
+      recordSwapFeeMetadata({
+        txHash: swapTxReceipt.transactionHash,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
+        provider: 'uniswap-v4',
+      })
+    )
 
     if (!suppressSuccessNavigation) {
       navigate(Screens.TransactionSuccessScreen, {
