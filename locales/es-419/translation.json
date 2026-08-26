@@ -2662,7 +2662,7 @@
     "enterAmount": {
       "title": "¿Cuánto quieres depositar?",
       "titleWithdraw": "¿Cuánto quieres retirar?",
-      "deposit": "Depositar",
+      "deposit": "Depósito",
       "fees": "Tarifas",
       "available": "Disponible",
       "swap": "Cambio",
