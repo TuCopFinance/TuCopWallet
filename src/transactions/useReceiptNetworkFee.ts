@@ -107,22 +107,35 @@ export function useReceiptNetworkFee({
         const feeWei = gasUsed.multipliedBy(effectiveGasPrice)
 
         // CIP-64 tx (type 0x7b) has a `feeCurrency` field pointing at the
-        // adapter address for the stable used to pay gas. Native gas leaves
-        // it null/undefined.
+        // ADAPTER address for the stable used to pay gas — a distinct
+        // contract from the underlying ERC-20 (e.g. USDm adapter, not USDm
+        // itself). Match by adapter address FIRST, then fall back to raw
+        // token contract for older / non-adapter fee currencies. Previous
+        // implementation only checked tok.address, silently bailed on every
+        // CIP-64 gas payment (USDm/COPm/USDC/USDT), which is why the
+        // "Tarifa de red" row never rendered on Squid swaps that paid gas
+        // in stables. Fee amount is denominated in ADAPTER decimals when
+        // paid via adapter.
         const feeCurrencyAddress = (tx as { feeCurrency?: string | null }).feeCurrency
         let feeToken = nativeFeeCurrencyRef.current
         let decimals = 18
         if (feeCurrencyAddress) {
-          const matched = Object.values(tokensByIdRef.current).find(
-            (tok) => tok?.address?.toLowerCase() === feeCurrencyAddress.toLowerCase()
+          const lookup = feeCurrencyAddress.toLowerCase()
+          const values = Object.values(tokensByIdRef.current)
+          const matchedByAdapter = values.find(
+            (tok) => tok?.feeCurrencyAdapterAddress?.toLowerCase() === lookup
           )
+          const matchedByToken = matchedByAdapter
+            ? undefined
+            : values.find((tok) => tok?.address?.toLowerCase() === lookup)
+          const matched = matchedByAdapter ?? matchedByToken
           if (matched) {
             feeToken = matched
-            decimals = matched.decimals
+            decimals = matchedByAdapter?.feeCurrencyAdapterDecimals ?? matched.decimals
           } else {
-            // Unknown CIP-64 fee currency (never in the app's token list).
-            // Bail rather than mislabel — a phantom "Unknown" row is worse
-            // than no row.
+            // Unknown CIP-64 fee currency (never in the app's token list
+            // AND not registered as an adapter). Bail rather than mislabel
+            // — a phantom "Unknown" row is worse than no row.
             Logger.warn(TAG, 'Unknown CIP-64 fee currency address', {
               feeCurrencyAddress,
               transactionHash,
