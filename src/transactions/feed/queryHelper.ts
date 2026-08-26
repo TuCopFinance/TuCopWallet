@@ -181,14 +181,45 @@ export function useFetchTransactions(): QueryHookResult {
 
       if (result.transactions.length > 0) {
         Logger.info(TAG, `Blockscout returned ${result.transactions.length} transactions`)
+        // Blockscout returns raw ERC-20 transfers, so a Neeru / Aave withdraw
+        // shows up as a plain Received COPm transfer to the user's wallet.
+        // If the primary feed already classified the same tx hash as a
+        // Deposit/Withdraw/Swap/Approval/Exchange, keep the richer record
+        // and drop the Blockscout duplicate. Without this guard the raw
+        // Transfer entry would clobber the classified one (dedupe keeps the
+        // last-written value) and users saw "Pago recibido" instead of
+        // "Fondos retirados".
+        const classifiedHashes = new Set(
+          fetchedResult.transactions
+            .filter((tx) =>
+              [
+                TokenTransactionTypeV2.Deposit,
+                TokenTransactionTypeV2.Withdraw,
+                TokenTransactionTypeV2.SwapTransaction,
+                TokenTransactionTypeV2.CrossChainSwapTransaction,
+                TokenTransactionTypeV2.Exchange,
+                TokenTransactionTypeV2.Approval,
+                TokenTransactionTypeV2.EarnDeposit,
+                TokenTransactionTypeV2.EarnWithdraw,
+                TokenTransactionTypeV2.EarnSwapDeposit,
+                TokenTransactionTypeV2.EarnClaimReward,
+                TokenTransactionTypeV2.ClaimReward,
+              ].includes(tx.type)
+            )
+            .map((tx) => tx.transactionHash)
+        )
+        const nonClobberingBlockscoutTxs = result.transactions.filter(
+          (tx) => !classifiedHashes.has(tx.transactionHash)
+        )
         setFetchedResult((prev) => ({
           ...prev,
-          transactions: deduplicateTransactions(prev.transactions, result.transactions),
+          transactions: deduplicateTransactions(prev.transactions, nonClobberingBlockscoutTxs),
         }))
 
-        // Update Redux with Blockscout transactions
+        // Redux mirror keeps the same non-clobbering slice so the persisted
+        // feed matches the in-memory feed after reboot.
         const networkId = config.defaultNetworkId
-        dispatch(updateTransactions({ networkId, transactions: result.transactions }))
+        dispatch(updateTransactions({ networkId, transactions: nonClobberingBlockscoutTxs }))
       }
 
       setBlockscoutFetched(true)
