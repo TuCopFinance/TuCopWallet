@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'src/redux/hooks'
 import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { Fee, FeeType, NetworkId } from 'src/transactions/types'
@@ -36,14 +36,26 @@ export function useReceiptNetworkFee({
   const [loading, setLoading] = useState<boolean>(!skip)
   const [error, setError] = useState<Error | null>(null)
 
-  // Native fee currency (CELO on Celo mainnet). CELO is deliberately excluded
-  // from ALLOWED_TOKEN_IDS so a plain tokensById lookup would miss it; the
-  // selector synthesizes an entry from state.tokens.nativeCeloBalance for us.
+  // Stabilize the networkIds array passed to tokensByIdSelector; a fresh
+  // `[networkId]` per render would make reselect see a new input each time
+  // and return a new output reference, which — before this memo — cascaded
+  // into the effect below re-running every render and cancelling its own
+  // async fetch. Result: `fee` was permanently stuck at null and the
+  // "Network fee" row on the success screen never rendered.
+  const tokenNetworkIds = useMemo(() => [networkId], [networkId])
   const nativeFeeCurrency = useSelector((state) => nativeFeeCurrencySelector(state, networkId))
-  // CIP-64 fee currencies (USDm, COPm, USDC, USDT, etc). Keyed by address so
-  // we can pair the tx envelope's `feeCurrency` value (a bare address) with a
-  // known TokenBalance for the display.
-  const tokensById = useSelector((state) => tokensByIdSelector(state, [networkId]))
+  const tokensById = useSelector((state) => tokensByIdSelector(state, tokenNetworkIds))
+
+  // Read selector output through refs inside the effect so the effect only
+  // depends on the truly-reactive inputs (skip / hash / networkId). The
+  // async fetch only reads them once at settle time; re-firing on selector
+  // identity churn was the bug we're fixing here, not a feature.
+  const nativeFeeCurrencyRef = useRef(nativeFeeCurrency)
+  const tokensByIdRef = useRef(tokensById)
+  useEffect(() => {
+    nativeFeeCurrencyRef.current = nativeFeeCurrency
+    tokensByIdRef.current = tokensById
+  }, [nativeFeeCurrency, tokensById])
 
   useEffect(() => {
     if (skip) {
@@ -84,10 +96,10 @@ export function useReceiptNetworkFee({
         // adapter address for the stable used to pay gas. Native gas leaves
         // it null/undefined.
         const feeCurrencyAddress = (tx as { feeCurrency?: string | null }).feeCurrency
-        let feeToken = nativeFeeCurrency
+        let feeToken = nativeFeeCurrencyRef.current
         let decimals = 18
         if (feeCurrencyAddress) {
-          const matched = Object.values(tokensById).find(
+          const matched = Object.values(tokensByIdRef.current).find(
             (tok) => tok?.address?.toLowerCase() === feeCurrencyAddress.toLowerCase()
           )
           if (matched) {
@@ -104,8 +116,8 @@ export function useReceiptNetworkFee({
             setLoading(false)
             return
           }
-        } else if (nativeFeeCurrency) {
-          decimals = nativeFeeCurrency.decimals
+        } else if (nativeFeeCurrencyRef.current) {
+          decimals = nativeFeeCurrencyRef.current.decimals
         }
 
         if (!feeToken) {
@@ -139,7 +151,7 @@ export function useReceiptNetworkFee({
     return () => {
       cancelled = true
     }
-  }, [skip, transactionHash, networkId, nativeFeeCurrency, tokensById])
+  }, [skip, transactionHash, networkId])
 
   return { fee, loading, error }
 }
