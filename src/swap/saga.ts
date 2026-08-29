@@ -101,8 +101,14 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     return
   }
   const swapSubmittedAt = Date.now()
-  const { swapId, userInput, quote, areSwapTokensShuffled, suppressSuccessNavigation } =
-    action.payload
+  const {
+    swapId,
+    userInput,
+    quote,
+    areSwapTokensShuffled,
+    suppressSuccessNavigation,
+    suppressStandbyDispatch,
+  } = action.payload
   const { fromTokenId, toTokenId, updatedField, swapAmount } = userInput
   const {
     provider,
@@ -320,6 +326,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // the tail so the swap remains the last one.
     while (createSwapStandbyTxHandlers.length < preparedTransactions.length) {
       createSwapStandbyTxHandlers.splice(createSwapStandbyTxHandlers.length - 1, 0, () => null)
+    }
+
+    // Multi-swap orchestration (2026-08-28): when this swap is a per-leg tx
+    // of a Dolares -> Pesos batch, the orchestrator (dollarsSpend/saga.ts)
+    // dispatches ONE aggregate standby after all legs complete so the feed
+    // shows a single "Dolares > Pesos" row. Overwrite every per-leg
+    // handler with a null-returning stub here to avoid emitting individual
+    // "Intercambio USDm > Pesos" / "USDC > Pesos" / "USDT > Pesos" entries
+    // that would clutter the user's activity feed with N rows for one
+    // logical operation. The txs still SUBMIT and MINE - only the client-
+    // side optimistic standby is skipped for these legs.
+    if (suppressStandbyDispatch) {
+      for (let i = 0; i < createSwapStandbyTxHandlers.length; i++) {
+        createSwapStandbyTxHandlers[i] = () => null
+      }
     }
 
     // Pre-flight simulation (Track B / WRI): when the swap requires a separate

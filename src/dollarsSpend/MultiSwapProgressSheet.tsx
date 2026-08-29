@@ -1,8 +1,12 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+import { StyleSheet, View } from 'react-native'
 import StateCard from 'src/components/StateCard'
+import MultiSwapLegList from 'src/dollarsSpend/MultiSwapLegList'
 import { inFlightSelector } from 'src/dollarsSpend/selectors'
 import { useSelector } from 'src/redux/hooks'
+import Colors from 'src/styles/colors'
+import { Spacing } from 'src/styles/styles'
 
 // Standardized progress sheet for both the legacy multi-step Dolares -> Pesos
 // path (shows "Paso X de N: convirtiendo SYMBOL") and the atomic 7702 path
@@ -11,6 +15,12 @@ import { useSelector } from 'src/redux/hooks'
 // Uses the shared StateCard component with the `loading` variant so the visual
 // language matches every other transaction in-flight surface in the wallet
 // (spinner + card + soft shadow + title typography).
+//
+// Below the StateCard we render MultiSwapLegList for the legacy path so the
+// user sees each leg's live status (pending / executing / succeeded / failed)
+// with an expandable technical-details section per failed leg (copy button
+// included for debug + support). The atomic path stays single-card because
+// its granularity is one on-chain tx.
 export default function MultiSwapProgressSheet() {
   const { t } = useTranslation()
   const inFlight = useSelector(inFlightSelector)
@@ -37,14 +47,29 @@ export default function MultiSwapProgressSheet() {
   if (!currentStep) return null
 
   return (
-    <StateCard
-      variant="loading"
-      title={t('dollarsSpend.stepProgress', {
-        index: currentIndex + 1,
-        total,
-        symbol: currentStep.symbol,
-      })}
-      testID="MultiSwapProgressSheet"
-    />
+    <View style={styles.container} testID="MultiSwapProgressSheet">
+      <StateCard
+        variant="loading"
+        title={t('dollarsSpend.stepProgress', {
+          index: currentIndex + 1,
+          total,
+          symbol: currentStep.symbol,
+        })}
+      />
+      <MultiSwapLegList
+        plannedSteps={inFlight.plannedSteps}
+        legStatuses={inFlight.legStatuses}
+        destinationLabel={inFlight.destinationLabel}
+      />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: Spacing.Thick24,
+    backgroundColor: Colors.white,
+    borderRadius: Spacing.Regular16,
+    gap: Spacing.Regular16,
+  },
+})

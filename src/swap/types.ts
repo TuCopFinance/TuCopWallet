@@ -100,6 +100,15 @@ export interface SwapInfo {
   // sheet flash N times. The multi-swap orchestrator navigates once at the
   // end with the aggregated leg breakdown.
   suppressSuccessNavigation?: boolean
+  // Set to true when this swap is a per-leg tx of a multi-swap and the
+  // orchestrator will dispatch its OWN aggregate addStandbyTransaction
+  // after all legs land. Without this flag, each leg's swap saga emits
+  // an individual standby tx that surfaces as a separate feed row
+  // ("Intercambio USDm > Pesos", "Intercambio USDC > Pesos", ...) instead
+  // of the collapsed "Dolares > Pesos" row the user expects. Only affects
+  // the client-side optimistic feed; on-chain the txs are still separate.
+  // Added 2026-08-28 to match the atomic 7702 path's single-standby UX.
+  suppressStandbyDispatch?: boolean
 }
 
 /**
