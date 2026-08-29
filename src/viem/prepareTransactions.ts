@@ -227,31 +227,38 @@ export async function tryEstimateTransaction({
     // Observability: the return-null branch always emits a Logger.warn,
     // and captureBusinessError fires in the downstream saga catches, so
     // spikes in this fallback are still visible on Sentry.
+    // Detect ERC-20 approve/transfer FIRST because these have deterministic
+    // gas cost (~45-65k) and can safely use a fallback regardless of the
+    // specific estimateGas error the node returned. Op-reth returns bare
+    // "execution reverted" for a broader class of scenarios than the regex
+    // match below covers (observed 2026-08-28: user with 0.024 CELO trying
+    // to approve USDC to Squid router; estimateGas rejected because
+    // gasLimit × maxFeePerGas exceeded native balance, error surfaced as
+    // ExecutionRevertedError with details "execution reverted" - no match
+    // to any specific pattern). Without this widened branch, the whole
+    // multi-swap leg fails at fetchSwapQuoteForExecution and the saga
+    // bails, losing the subsequent legs.
+    const dataHex = tx.data as string | undefined
+    const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
+    // ERC-20 transfer(address,uint256): typically 50-65k gas.
+    const isERC20Transfer = selector === '0xa9059cbb'
+    // ERC-20 approve(address,uint256): typically 45-55k gas.
+    const isERC20Approve = selector === '0x095ea7b3'
+    const isKnownERC20Op = isERC20Transfer || isERC20Approve
+
     const isRecoverableEstimationError =
       e instanceof EstimateGasExecutionError &&
       (e.cause instanceof InsufficientFundsError ||
         (e.cause instanceof ExecutionRevertedError &&
           (/transfer value exceeded balance of sender/.test(e.cause.details) ||
             /transfer amount exceeds balance/.test(e.cause.details))) ||
-        e.cause instanceof InvalidInputRpcError)
+        e.cause instanceof InvalidInputRpcError ||
+        // Widened 2026-08-28: any estimateGas error on a deterministic-cost
+        // ERC-20 op is recoverable via the hardcoded fallback below, so we
+        // do not need to enumerate every possible cause / message wording.
+        isKnownERC20Op)
 
     if (isRecoverableEstimationError) {
-      // Gas estimation failed due to insufficient funds (or, for CIP-64 fee
-      // currencies, a Celo Forno flake that surfaces the same class).
-      // Standard ERC20 ops have well-known gas costs, so use a fallback
-      // instead of rejecting outright.
-      const dataHex = tx.data as string | undefined
-      const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
-      // ERC-20 transfer(address,uint256): typically 50-65k gas.
-      const isERC20Transfer = selector === '0xa9059cbb'
-      // ERC-20 approve(address,uint256): typically 45-55k gas. Same
-      // deterministic cost, and if Forno keeps failing to estimate the
-      // approve (observed live 2026-07-26 with feeCurrency=COPm returning
-      // "Missing or invalid parameters") the whole downstream flow stalls
-      // without this fallback because the approve is the first tx in the
-      // batch and the swap that follows is gated on it.
-      const isERC20Approve = selector === '0x095ea7b3'
-
       if (isERC20Transfer || isERC20Approve) {
         const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
         Logger.warn(
@@ -492,9 +499,24 @@ export async function prepareTransactions({
     const estimatedGasFee = getEstimatedGasFee(estimatedTransactions)
     const estimatedGasFeeInDecimal = estimatedGasFee?.shiftedBy(-feeDecimals)
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
-    // Use estimated gas fee for balance validation (more realistic than max)
-    const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
-    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
+    // Use MAX (not estimated) for the balance-can-cover check. Forno enforces
+    // `gasLimit × maxFeePerGas + value` at submit time and rejects with a raw
+    // "insufficient funds for gas * price + value" if balance is between
+    // estimated and max. When that happens the picker has already committed
+    // to this feeCurrency, so the fee-currency cascade (fall through to the
+    // next candidate: COPm, USDm, USDC, USDT via CIP-64) never runs and the
+    // user sees a cryptic failure instead of the proper 'not-enough-balance-
+    // for-gas' UI path OR the transparent stable-gas payment.
+    // The previous "estimated" comment ("more realistic than max") described
+    // UI display accuracy, but the check here decides whether the tx CAN be
+    // submitted at all, so it must match what the node will actually enforce.
+    // Real-world trigger (2026-08-26): Celo baseFeePerGas spiked to 200 gwei;
+    // maxFeePerGas via wallet 2.0× multiplier hits 400 gwei, so a Squid ~1M
+    // gas swap requires ~0.4 CELO to submit while the estimated (using
+    // `_estimatedGasUse = gas × 0.6` and effective baseFee+priority ≈ 205
+    // gwei) reads ~0.12 CELO. A wallet with 0.246 CELO cleared the estimated
+    // check, then Forno rejected at submit — no fallback to COPm/USDm/etc.
+    if (maxGasFeeInDecimal.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
       // Not enough balance to pay for gas, try next fee currency
       continue
     }
@@ -504,7 +526,7 @@ export async function prepareTransactions({
     if (
       spendToken &&
       spendToken.tokenId === feeCurrency.tokenId &&
-      spendAmountDecimal.plus(gasForValidation).isGreaterThan(spendToken.balance) &&
+      spendAmountDecimal.plus(maxGasFeeInDecimal).isGreaterThan(spendToken.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for amount + gas, try next fee currency
@@ -514,7 +536,7 @@ export async function prepareTransactions({
     // For different-token transactions or when no spend token, check if gas alone exceeds fee currency balance
     if (
       (!spendToken || spendToken.tokenId !== feeCurrency.tokenId) &&
-      gasForValidation.isGreaterThan(feeCurrency.balance) &&
+      maxGasFeeInDecimal.isGreaterThan(feeCurrency.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for gas, try next fee currency

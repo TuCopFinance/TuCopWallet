@@ -516,6 +516,23 @@ export const sortedTokensWithBalanceSelector = createSelector(
   (tokens) => tokens.filter((token) => token.balance.gt(TOKEN_MIN_AMOUNT))
 )
 
+// Defense-in-depth for tokens the backend catalog occasionally forgets to
+// flag as fee currencies. Cross-checked on-chain via
+// FeeCurrencyDirectory.getCurrencies() at 0x15F344B9E6c3Cb6F0376A36A64928b13F62C6276:
+// both entries below are registered as direct fee currencies (feeCurrency
+// field in the CIP-64 tx = token address, no adapter). Same treatment as
+// USDm (which the backend DOES flag today). Trigger for adding COPm:
+// 2026-08-26, backend /api/tokens/info omitted `isFeeCurrency: true` for
+// COPm, filtering it out of the wallet's fee-currency cascade and leaving
+// users with COPm balance unable to swap when CELO was below max-gas
+// threshold. Backend fix requested in parallel; this defensive path keeps
+// the wallet resilient to future backend regressions on the same class of
+// token. Addresses are lowercased for direct .has() lookups.
+const KNOWN_MENTO_DIRECT_FEE_CURRENCIES_CELO: ReadonlySet<string> = new Set([
+  '0x8a567e2ae79ca692bd748ab832081c45de4041ea', // COPm
+  '0x765de816845861e75a25fca122bb6898b8b1282a', // USDm (belt+suspenders, backend flags this today)
+])
+
 const feeCurrenciesByNetworkIdSelector = createSelector(
   (state: RootState) => tokensByIdSelector(state, Object.values(NetworkId)),
   (state: RootState) => state.tokens.nativeCeloBalance,
@@ -524,10 +541,26 @@ const feeCurrenciesByNetworkIdSelector = createSelector(
     const feeCurrenciesByNetworkId: { [key in NetworkId]?: TokenBalance[] } = {}
     // collect fee currencies
     Object.values(tokens).forEach((token) => {
-      if (isFeeCurrency(token)) {
-        feeCurrenciesByNetworkId[token.networkId] = [
-          ...(feeCurrenciesByNetworkId[token.networkId] ?? []),
-          token,
+      if (!token) return
+      // Defensive augmentation: known Mento-native direct fee currencies get
+      // isFeeCurrency:true forced when the backend catalog omits it. Only
+      // applies on celo-mainnet for the hardcoded set. Do NOT try to synth an
+      // adapter-based currency here (USDC/USDT); their adapter decimals are
+      // backend-supplied and we cannot fabricate them safely wallet-side.
+      // Merge is idempotent: if backend already flags the token, the spread
+      // preserves the flag; if not, the wallet adds it.
+      const addrLower = token.address?.toLowerCase() ?? ''
+      const needsAugment =
+        token.networkId === NetworkId['celo-mainnet'] &&
+        !isFeeCurrency(token) &&
+        KNOWN_MENTO_DIRECT_FEE_CURRENCIES_CELO.has(addrLower)
+      const effectiveToken: TokenBalance = needsAugment
+        ? Object.assign({}, token, { isFeeCurrency: true })
+        : token
+      if (isFeeCurrency(effectiveToken)) {
+        feeCurrenciesByNetworkId[effectiveToken.networkId] = [
+          ...(feeCurrenciesByNetworkId[effectiveToken.networkId] ?? []),
+          effectiveToken,
         ]
       }
     })
