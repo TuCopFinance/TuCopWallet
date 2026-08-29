@@ -59,6 +59,13 @@ interface Props {
   // executed the swap can see it, without pushing tech names into the
   // primary confirm screen copy.
   swapProvider?: string
+  // True when the wallet WILL wrap the (possibly multi-leg) swap into an
+  // atomic EIP-7702 batch at submit time. Read by formatSwapProvider to
+  // surface "Squid (7702)" in the preview instead of plain "Squid", matching
+  // the label the saga persists post-tx. Optional; defaults to false so
+  // legacy callers keep the old rendering. Only meaningful for the Squid
+  // provider (formatSwapProvider ignores this flag for non-Squid slugs).
+  isBatched7702?: boolean
 }
 
 function LabelWithInfo({
@@ -119,6 +126,7 @@ export function SwapTransactionDetails({
   networkFee,
   hideFeePaidInRow,
   swapProvider,
+  isBatched7702 = false,
 }: Props) {
   const { t } = useTranslation()
   const [spendDetailExpanded, setSpendDetailExpanded] = useState(false)
@@ -325,7 +333,9 @@ export function SwapTransactionDetails({
           {routeDetailExpanded && (
             <View style={[styles.row, styles.subRow]}>
               <Text style={styles.subLabel}>{t('swapScreen.transactionDetails.routeLabel')}</Text>
-              <Text style={styles.value}>{formatSwapProvider(swapProvider)}</Text>
+              <Text style={styles.value}>
+                {formatSwapProvider(swapProvider, { isBatched: isBatched7702 })}
+              </Text>
             </View>
           )}
         </View>

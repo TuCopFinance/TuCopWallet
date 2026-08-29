@@ -1,13 +1,15 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes } from 'src/components/Button'
 import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
-import StateCard from 'src/components/StateCard'
+import { LabelWithInfo } from 'src/components/LabelWithInfo'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
+import Celebration from 'src/icons/misc/Celebration'
 import TokenAmountWithBrand from 'src/components/TokenAmountWithBrand'
 import TokenDisplay from 'src/components/TokenDisplay'
 import Touchable from 'src/components/Touchable'
@@ -23,6 +25,7 @@ import { Spacing } from 'src/styles/styles'
 import { formatSwapProvider } from 'src/swap/formatSwapProvider'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { TxFeeDetailsBottomSheet } from 'src/transactions/TxFeeDetailsBottomSheet'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import { blockExplorerUrls, networkIdToNetwork } from 'src/web3/networkConfig'
@@ -48,6 +51,7 @@ function TransactionSuccessScreen({ route }: Props) {
   } = route.params
   const hasLegs = Array.isArray(legs) && legs.length > 0
   const [routeDetailExpanded, setRouteDetailExpanded] = useState(false)
+  const feeDetailsBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
   // Provider + saga-computed network fee — recorded by the saga into
   // swap.feeMetadata at completion.
@@ -128,40 +132,45 @@ function TransactionSuccessScreen({ route }: Props) {
         ? { amount: { value: inlineFee.value, tokenId: inlineFee.tokenId } }
         : null
 
-  // Provider fallback: if the saga didn't dispatch (metadata missing) but
-  // this is a 'swap' type success, assume Squid — that's the default venue
-  // for TuCop swaps. The Uniswap V4 path always dispatches so no risk of
-  // mislabelling that one.
-  const provider = feeMetadata?.provider ?? (type === 'swap' ? 'squid' : undefined)
+  // Provider fallback: if the saga didn't dispatch (metadata missing) assume
+  // Squid for any exchange-shaped success type. TuCop's gold buy/sell + swap
+  // all route through Squid by default. The Uniswap V4 path (single-leg
+  // USDT<->COPm) always dispatches so no risk of mislabelling that one.
+  // Types NOT in this set (send, earn) keep provider undefined and the
+  // "Ruta del intercambio" row hides for them.
+  const providerFallbackTypes = new Set(['swap', 'goldBuy', 'goldSell'])
+  const provider =
+    feeMetadata?.provider ?? (providerFallbackTypes.has(type as string) ? 'squid' : undefined)
 
-  // Aggregate 'Tarifas' row, mirroring the pre-confirm SwapTransactionDetails
-  // exactly: network fee token amount + Squid integrator fee expressed in
-  // the fromToken (same denomination pre-confirm uses via
-  // `fromAmount × percentage / 100`). Post-tx we don't persist the
-  // percentage, so recompute from the USD estimate the saga stored:
-  // `usd / fromToken.priceUsd`. Comes out to the same numeric result as
-  // long as the priceUsd hasn't moved.
+  // Two separate FeeComponents (network + provider) so the detail sheet can
+  // show them as their own rows like the pre-confirm 'Desglose' section.
+  // Aggregate FeeSummary in the inline row folds both, matching the
+  // pre-confirm inline row.
   const networkFeeToken = useTokenInfo(networkFee?.amount.tokenId)
   const fromToken = useTokenInfo(fromTokenId)
-  const feeSummaryComponents = ((): FeeComponent[] => {
-    const components: FeeComponent[] = []
-    if (networkFee && networkFeeToken) {
-      components.push({
-        amount: new BigNumber(networkFee.amount.value),
-        token: networkFeeToken,
-      })
-    }
-    if (appFeeUsd && fromToken?.priceUsd) {
-      const usd = new BigNumber(appFeeUsd)
-      if (usd.isFinite() && usd.gt(0)) {
-        const asFromToken = usd.dividedBy(fromToken.priceUsd)
-        if (asFromToken.isFinite() && asFromToken.gt(0)) {
-          components.push({ amount: asFromToken, token: fromToken })
-        }
-      }
-    }
-    return components
+  const networkFeeComponent: FeeComponent | undefined =
+    networkFee && networkFeeToken
+      ? { amount: new BigNumber(networkFee.amount.value), token: networkFeeToken }
+      : undefined
+  // Prefer the saga-persisted `feeMetadata.appFeeUsd` over the route param.
+  // Route param is only populated by the swap saga's multi-leg navigate call
+  // (dollarsSpend legacy loop) and left undefined by every other caller
+  // including gold buy/sell + saga7702 atomic + single-leg swap — those all
+  // rely on the feeMetadata dispatch. Falling back to route param covers the
+  // legacy multi-leg path; missing both means the row hides (correct: fee
+  // truly unknown, e.g. saga bailed before recording).
+  const effectiveAppFeeUsd = feeMetadata?.appFeeUsd ?? appFeeUsd
+  const providerFeeComponent: FeeComponent | undefined = (() => {
+    if (!effectiveAppFeeUsd || !fromToken?.priceUsd) return undefined
+    const usd = new BigNumber(effectiveAppFeeUsd)
+    if (!usd.isFinite() || usd.lte(0)) return undefined
+    const asFromToken = usd.dividedBy(fromToken.priceUsd)
+    if (!asFromToken.isFinite() || asFromToken.lte(0)) return undefined
+    return { amount: asFromToken, token: fromToken }
   })()
+  const feeSummaryComponents: FeeComponent[] = [networkFeeComponent, providerFeeComponent].filter(
+    (c): c is FeeComponent => !!c
+  )
 
   const handleViewOnExplorer = () => {
     if (transactionHash && networkId && blockExplorerUrls[networkId]) {
@@ -188,161 +197,173 @@ function TransactionSuccessScreen({ route }: Props) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <View style={styles.content}>
-        <StateCard variant="success" title={title} subtitle={subtitle}>
-          <View style={styles.detailsContainer}>
-            {isSend ? (
-              <>
+        <View style={styles.hero}>
+          <View style={styles.iconBg}>
+            <Celebration size={64} color={Colors.primary} />
+          </View>
+          <Text style={styles.title}>{title}</Text>
+          {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        </View>
+        <View style={styles.detailsContainer}>
+          {isSend ? (
+            <>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('transactionSuccess.amount')}</Text>
+                <TokenDisplay
+                  amount={fromAmount}
+                  tokenId={fromTokenId}
+                  showLocalAmount={false}
+                  hideSign={true}
+                  style={styles.tokenDisplay}
+                  testID="TransactionSuccess/Amount"
+                />
+              </View>
+              {(!!recipientName || !!recipientAddress) && (
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t('transactionSuccess.amount')}</Text>
-                  <TokenDisplay
-                    amount={fromAmount}
-                    tokenId={fromTokenId}
-                    showLocalAmount={false}
-                    hideSign={true}
-                    style={styles.tokenDisplay}
-                    testID="TransactionSuccess/Amount"
-                  />
+                  <Text style={styles.detailLabel}>{t('transactionSuccess.recipient')}</Text>
+                  <Text style={styles.recipientText} testID="TransactionSuccess/Recipient">
+                    {recipientName || recipientAddress}
+                  </Text>
                 </View>
-                {(!!recipientName || !!recipientAddress) && (
+              )}
+            </>
+          ) : (
+            <>
+              {!!poolName && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>{t('transactionSuccess.pool')}</Text>
+                  <Text style={styles.poolText} testID="TransactionSuccess/Pool">
+                    {poolName}
+                  </Text>
+                </View>
+              )}
+              {showFromToDetails && (
+                <>
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>{t('transactionSuccess.recipient')}</Text>
-                    <Text style={styles.recipientText} testID="TransactionSuccess/Recipient">
-                      {recipientName || recipientAddress}
-                    </Text>
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
+                    <TokenAmountWithBrand
+                      amount={fromAmount}
+                      tokenId={fromTokenId}
+                      testID="TransactionSuccess/FromAmount"
+                      textStyle={styles.tokenDisplay}
+                    />
                   </View>
-                )}
-              </>
-            ) : (
-              <>
-                {!!poolName && (
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>{t('transactionSuccess.pool')}</Text>
-                    <Text style={styles.poolText} testID="TransactionSuccess/Pool">
-                      {poolName}
-                    </Text>
+                    <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
+                    <TokenAmountWithBrand
+                      amount={toAmount}
+                      tokenId={toTokenId}
+                      testID="TransactionSuccess/ToAmount"
+                      textStyle={styles.tokenDisplay}
+                    />
                   </View>
-                )}
-                {showFromToDetails && (
-                  <>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>{t('transactionSuccess.from')}</Text>
-                      <TokenAmountWithBrand
-                        amount={fromAmount}
-                        tokenId={fromTokenId}
-                        testID="TransactionSuccess/FromAmount"
-                        textStyle={styles.tokenDisplay}
-                      />
+                  {hasLegs && (
+                    <View style={styles.breakdownContainer}>
+                      <Text style={styles.breakdownHeader}>
+                        {t('transactionSuccess.breakdownHeader')}
+                      </Text>
+                      {legs!.map((leg, idx) => (
+                        <View
+                          style={styles.breakdownRow}
+                          key={`${leg.transactionHash}-${idx}`}
+                          testID={`TransactionSuccess/Leg${idx}`}
+                        >
+                          <TokenAmountWithBrand
+                            amount={leg.fromAmount}
+                            tokenId={leg.fromTokenId}
+                            testID={`TransactionSuccess/Leg${idx}/From`}
+                            textStyle={styles.breakdownAmount}
+                          />
+                          <ArrowRightThick size={12} color={Colors.gray4} />
+                          <TokenAmountWithBrand
+                            amount={leg.toAmount}
+                            tokenId={toTokenId}
+                            testID={`TransactionSuccess/Leg${idx}/To`}
+                            textStyle={styles.breakdownAmount}
+                          />
+                        </View>
+                      ))}
                     </View>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>{t('transactionSuccess.to')}</Text>
-                      <TokenAmountWithBrand
-                        amount={toAmount}
-                        tokenId={toTokenId}
-                        testID="TransactionSuccess/ToAmount"
-                        textStyle={styles.tokenDisplay}
-                      />
-                    </View>
-                    {hasLegs && (
-                      <View style={styles.breakdownContainer}>
-                        <Text style={styles.breakdownHeader}>
-                          {t('transactionSuccess.breakdownHeader')}
-                        </Text>
-                        {legs!.map((leg, idx) => (
-                          <View
-                            style={styles.breakdownRow}
-                            key={`${leg.transactionHash}-${idx}`}
-                            testID={`TransactionSuccess/Leg${idx}`}
-                          >
-                            <TokenAmountWithBrand
-                              amount={leg.fromAmount}
-                              tokenId={leg.fromTokenId}
-                              testID={`TransactionSuccess/Leg${idx}/From`}
-                              textStyle={styles.breakdownAmount}
-                            />
-                            <ArrowRightThick size={12} color={Colors.gray4} />
-                            <TokenAmountWithBrand
-                              amount={leg.toAmount}
-                              tokenId={toTokenId}
-                              testID={`TransactionSuccess/Leg${idx}/To`}
-                              textStyle={styles.breakdownAmount}
-                            />
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </>
+          )}
 
-            {/* Fee + route pattern mirrors src/swap/SwapTransactionDetails so
+          {/* Fee + route pattern mirrors src/swap/SwapTransactionDetails so
                 the confirm sheet and the success screen read identically:
                 ONE 'Tarifas' row summing network fee + integrator fee with
                 FeeSummary (stacked, bodySmall gray4 primary + bodyXSmall
                 gray4 secondary), and ONE 'Ruta del intercambio' expand /
                 collapse toggle revealing 'Ejecutado por Squid' as a sub-row. */}
-            {feeSummaryComponents.length > 0 && (
-              <View style={styles.feeRow} testID="TransactionSuccess/Fees">
-                <Text style={styles.feeLabel}>{t('swapScreen.transactionDetails.fees')}</Text>
-                <View style={styles.feeValueColumn}>
-                  <FeeSummary
-                    layout="stacked"
-                    components={feeSummaryComponents}
-                    primaryStyle={styles.feeValuePrimary}
-                    secondaryStyle={styles.feeValueSecondary}
-                    testID="TransactionSuccess/Fees/Summary"
-                  />
-                </View>
+          {feeSummaryComponents.length > 0 && (
+            <View style={styles.feeRow} testID="TransactionSuccess/Fees">
+              <LabelWithInfo
+                label={t('swapScreen.transactionDetails.fees')}
+                onPress={() => feeDetailsBottomSheetRef.current?.snapToIndex(0)}
+                labelStyle={styles.feeLabel}
+                style={styles.feeLabelTouchable}
+                numberOfLines={1}
+                testID="TransactionSuccess/Fees/MoreInfo"
+              />
+              <View style={styles.feeValueColumn}>
+                <FeeSummary
+                  layout="stacked"
+                  components={feeSummaryComponents}
+                  primaryStyle={styles.feeValuePrimary}
+                  secondaryStyle={styles.feeValueSecondary}
+                  testID="TransactionSuccess/Fees/Summary"
+                />
               </View>
-            )}
+            </View>
+          )}
 
-            {!!provider && (
-              <View testID="TransactionSuccess/RouteReveal">
-                <Touchable
-                  onPress={() => {
-                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-                    setRouteDetailExpanded((v) => !v)
-                  }}
-                  testID="TransactionSuccess/RouteReveal/Toggle"
-                >
-                  <View style={styles.feeRow}>
-                    <Text style={styles.feeLabel}>
-                      {t('swapScreen.transactionDetails.routeDetail')}
-                    </Text>
-                    <Text style={styles.providerValue}>
-                      {routeDetailExpanded
-                        ? t('swapScreen.transactionDetails.routeDetailCollapse')
-                        : t('swapScreen.transactionDetails.routeDetailExpand')}
-                    </Text>
-                  </View>
-                </Touchable>
-                {routeDetailExpanded && (
-                  <View style={[styles.feeRow, styles.routeSubRow]}>
-                    <Text style={styles.routeSubLabel}>
-                      {t('swapScreen.transactionDetails.routeLabel')}
-                    </Text>
-                    <Text style={styles.providerValue}>{formatSwapProvider(provider)}</Text>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
+          {!!provider && (
+            <View testID="TransactionSuccess/RouteReveal">
               <Touchable
-                style={styles.explorerLink}
-                onPress={handleViewOnExplorer}
-                testID="TransactionSuccess/ViewExplorer"
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+                  setRouteDetailExpanded((v) => !v)
+                }}
+                testID="TransactionSuccess/RouteReveal/Toggle"
               >
-                <View style={styles.explorerLinkContent}>
-                  <Text style={styles.explorerLinkText}>
-                    {t('transactionSuccess.viewOnExplorer')}
+                <View style={styles.feeRow}>
+                  <Text style={styles.feeLabel}>
+                    {t('swapScreen.transactionDetails.routeDetail')}
                   </Text>
-                  <ArrowRightThick size={16} color={Colors.primary} />
+                  <Text style={styles.providerValue}>
+                    {routeDetailExpanded
+                      ? t('swapScreen.transactionDetails.routeDetailCollapse')
+                      : t('swapScreen.transactionDetails.routeDetailExpand')}
+                  </Text>
                 </View>
               </Touchable>
-            )}
-          </View>
-        </StateCard>
+              {routeDetailExpanded && (
+                <View style={[styles.feeRow, styles.routeSubRow]}>
+                  <Text style={styles.routeSubLabel}>
+                    {t('swapScreen.transactionDetails.routeLabel')}
+                  </Text>
+                  <Text style={styles.providerValue}>{formatSwapProvider(provider)}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {!!transactionHash && !!networkId && !!blockExplorerUrls[networkId] && (
+            <Touchable
+              style={styles.explorerLink}
+              onPress={handleViewOnExplorer}
+              testID="TransactionSuccess/ViewExplorer"
+            >
+              <View style={styles.explorerLinkContent}>
+                <Text style={styles.explorerLinkText}>
+                  {t('transactionSuccess.viewOnExplorer')}
+                </Text>
+                <ArrowRightThick size={16} color={Colors.primary} />
+              </View>
+            </Touchable>
+          )}
+        </View>
       </View>
 
       <StickyCtaBottom>
@@ -353,6 +374,12 @@ function TransactionSuccessScreen({ route }: Props) {
           testID="TransactionSuccess/Continue"
         />
       </StickyCtaBottom>
+
+      <TxFeeDetailsBottomSheet
+        forwardedRef={feeDetailsBottomSheetRef}
+        networkFee={networkFeeComponent}
+        providerFee={providerFeeComponent}
+      />
     </SafeAreaView>
   )
 }
@@ -371,13 +398,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.Regular16,
   },
+  hero: {
+    alignItems: 'center',
+    marginBottom: Spacing.Thick24,
+  },
+  iconBg: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.successLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.Thick24,
+  },
+  title: {
+    ...typeScale.labelLarge,
+    color: Colors.black,
+    textAlign: 'center',
+    paddingTop: Spacing.Smallest8,
+    paddingBottom: Spacing.Regular16,
+  },
+  subtitle: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+    textAlign: 'center',
+  },
+  // Detail card matches pre-confirm SwapTransactionDetails.styles.container
+  // (bordered, no shadow, 16px padding, 16px gap).
   detailsContainer: {
     width: '100%',
-    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray2,
     borderRadius: 12,
     padding: Spacing.Regular16,
     gap: Spacing.Regular16,
-    marginTop: Spacing.Regular16,
   },
   detailRow: {
     flexDirection: 'column',
@@ -421,19 +475,29 @@ const styles = StyleSheet.create({
   // NB: NO `flex: 1` on the row — detailsContainer is a column with no
   // fixed height, so flex:1 on a row would collapse it to height 0 and
   // the Tarifa / Proveedor block silently disappeared.
+  // Label has fixed natural width (flexShrink:0 stops the value column
+  // from squeezing "Tarifas" into "Tarifa\ns"); value column takes
+  // remaining space and shrinks its inner content when needed. Mirrors
+  // pre-confirm layout.
   feeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: Spacing.Regular16,
     marginTop: Spacing.Smallest8,
   },
   feeLabel: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
-    flex: 1,
+  },
+  // Override LabelWithInfo's internal touchable flex:1 so the label doesn't
+  // fight the value column for row width. Label stays natural width; value
+  // column takes the remainder.
+  feeLabelTouchable: {
+    flex: 0,
+    flexShrink: 0,
   },
   feeValueColumn: {
+    flex: 1,
     alignItems: 'flex-end',
   },
   feeValuePrimary: {

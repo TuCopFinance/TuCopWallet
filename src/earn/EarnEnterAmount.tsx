@@ -1144,14 +1144,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: Spacing.Smallest8,
   },
+  // Standard row shape: mirrors src/swap/SwapTransactionDetails.tsx `styles.row`
+  // + `styles.valueContainer`. No `flex:1` on the row (children take their
+  // natural widths), value column has `flex:1` so it grows to fill remaining
+  // space and right-aligns. The label side (LabelWithInfo, touchable flex:1
+  // internally) then reserves its intrinsic width without competing against
+  // a sibling flex:1 that would squeeze it into char-by-char wrapping. This
+  // is the pattern working on the swap details, gold buy/sell details, and
+  // tx success screens; keep in sync when adding new row callsites.
   txDetailsLineItem: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: Spacing.Small12,
   },
   txDetailsValue: {
-    flexShrink: 1,
+    flex: 1,
     flexDirection: 'row',
     gap: Spacing.Tiny4,
     alignItems: 'center',

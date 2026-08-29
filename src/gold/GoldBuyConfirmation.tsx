@@ -25,6 +25,8 @@ import {
 import TransactionFlowShell from 'src/dollarsSpend/TransactionFlowShell'
 import { goldBuyStatusSelector, goldErrorSelector, xaut0TokenSelector } from 'src/gold/selectors'
 import { buyGoldStart } from 'src/gold/slice'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { XAUT0_DECIMALS } from 'src/gold/types'
 import { describeGoldQuoteError } from 'src/gold/errorDisplay'
 import { useGoldQuote } from 'src/gold/useGoldQuote'
@@ -103,6 +105,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
     preparedTransactions: initialPreparedTransactions,
     toTokenId,
     appFeePercentageIncludedInPrice: initialAppFeePercentageIncludedInPrice,
+    // GoldBuyEnterAmount forwards the quote's swapProvider slug via route
+    // params (line ~374 of that file). Consume it as initial state so the
+    // "Ruta del intercambio -> Ejecutado por" row shows the provider on
+    // mount instead of waiting for a re-fetch that only runs when
+    // preparedTransactions is missing (typical case: EnterAmount already
+    // fetched, so no re-fetch, and without this pickup swapProvider stays
+    // undefined and the row hides). Same as swap flow: preview reflects
+    // the venue the tx WILL use.
+    swapProvider: initialSwapProvider,
   } = route.params
 
   const buyStatus = useSelector(goldBuyStatusSelector)
@@ -133,7 +144,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
     string | undefined
   >(initialAppFeePercentageIncludedInPrice)
-  const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
+  const [swapProvider, setSwapProvider] = useState<string | undefined>(initialSwapProvider)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -230,7 +241,25 @@ export default function GoldBuyConfirmation({ route }: Props) {
     XAUT0_DECIMALS
   )
 
-  const isSubmitting = buyStatus === 'loading'
+  // Virtual Dolares (multi-leg Dolares -> Oro) dispatches executeMultiSwap, not
+  // buyGoldStart, so `buyStatus` stays idle for the entire batch. Without an
+  // extra signal the Cambiar button re-enables between click and the first
+  // multiSwapStarted put, letting the user double-tap and think the first
+  // tap failed. Same pattern as SwapScreen.tsx. Optimistic click flag closes
+  // the ms-to-seconds gap until the saga transitions inFlight to non-null.
+  const multiSwapInFlight = useSelector((s) => s.dollarsSpend.inFlight !== null)
+  const [multiSwapClickPending, setMultiSwapClickPending] = useState(false)
+  useEffect(() => {
+    if (multiSwapInFlight && multiSwapClickPending) {
+      setMultiSwapClickPending(false)
+    }
+  }, [multiSwapInFlight, multiSwapClickPending])
+  useEffect(() => {
+    if (!multiSwapClickPending) return
+    const t = setTimeout(() => setMultiSwapClickPending(false), 15_000)
+    return () => clearTimeout(t)
+  }, [multiSwapClickPending])
+  const isSubmitting = buyStatus === 'loading' || multiSwapInFlight || multiSwapClickPending
   const error = goldError || quoteError
 
   // COP doesn't use decimals
@@ -394,6 +423,9 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const onPressConfirm = () => {
     if (isVirtualDolares) {
       if (!multiSwapPlan || multiSwapPlan.shortfall.gt(0)) return
+      // Optimistic loading flag BEFORE dispatch, see multiSwapClickPending
+      // block above for why. Dropped by the effect once inFlight goes truthy.
+      setMultiSwapClickPending(true)
       dispatch(
         executeMultiSwap({
           steps: multiSwapPlan.steps,
@@ -420,6 +452,13 @@ export default function GoldBuyConfirmation({ route }: Props) {
           estimatedGasFeeUsd: '0',
           allowanceTarget: '',
           preparedTransactions,
+          // Forward the integrator percentage + provider slug so the saga's
+          // recordSwapFeeMetadata dispatch surfaces the 'Tarifa del proveedor'
+          // row in the success + tx-details bottom sheet (parity with normal
+          // swap flow). Without these, saga sees undefined and defaults to
+          // appFeeUsd='0' → row hides. See src/gold/saga.ts buyGoldSaga.
+          appFeePercentageIncludedInPrice,
+          swapProvider,
         },
       })
     )
@@ -536,6 +575,15 @@ export default function GoldBuyConfirmation({ route }: Props) {
               swapProvider={
                 isVirtualDolares ? multiSwapQuote.perStepQuotes[0]?.provider : swapProvider
               }
+              // Same optimistic 7702 label rule as SwapScreen. See there for
+              // the reasoning; the executeMultiSwap saga is shared, so the
+              // same conditions trigger the atomic path.
+              isBatched7702={
+                isVirtualDolares &&
+                !!multiSwapPlan &&
+                multiSwapPlan.steps.length > 1 &&
+                getFeatureGate(StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1)
+              }
             />
           </View>
         )}
@@ -638,6 +686,10 @@ export default function GoldBuyConfirmation({ route }: Props) {
         onRetry={() => {
           const remaining = planSpend({ requestedUsd, balances: dollarSnapshots })
           if (remaining.shortfall.gt(0)) return
+          // Same optimistic guard as onPressConfirm — the partial-success
+          // retry re-enters the multi-swap saga, close the button race here
+          // too so the user cannot double-tap Reintentar.
+          setMultiSwapClickPending(true)
           dispatch(
             executeMultiSwap({ steps: remaining.steps, toTokenId: networkConfig.xaut0TokenId })
           )

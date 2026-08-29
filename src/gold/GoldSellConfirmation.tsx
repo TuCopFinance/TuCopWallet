@@ -5,11 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import BackButton from 'src/components/BackButton'
+import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import FeeSummary from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
-import { buildGoldFeeComponents } from 'src/gold/GoldBuyConfirmation'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { goldSellStatusSelector, xaut0TokenSelector } from 'src/gold/selectors'
@@ -29,6 +28,10 @@ import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
 import Logger from 'src/utils/Logger'
 import networkConfig from 'src/web3/networkConfig'
+import FeeInfoBottomSheet from 'src/swap/FeeInfoBottomSheet'
+import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
+import { AppFeeAmount, SwapFeeAmount } from 'src/swap/types'
+import { NETWORK_NAMES } from 'src/shared/conts'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldSellConfirmation>
 
@@ -54,6 +57,7 @@ export default function GoldSellConfirmation({ route }: Props) {
   const [appFeePercentageIncludedInPrice, setAppFeePercentageIncludedInPrice] = useState<
     string | undefined
   >(undefined)
+  const [swapProvider, setSwapProvider] = useState<string | undefined>(undefined)
 
   const gasFeeToken = useTokenInfo(gasFeeTokenId ?? '')
 
@@ -102,6 +106,7 @@ export default function GoldSellConfirmation({ route }: Props) {
           }
           setPreparedTransactions(quoteResult.quote.preparedTransactions)
           setAppFeePercentageIncludedInPrice(quoteResult.quote.appFeePercentageIncludedInPrice)
+          setSwapProvider(quoteResult.quote.swapProvider)
           setQuoteError(null)
         } else {
           setQuoteError(t('goldFlow.sell.quoteErrorDescription'))
@@ -129,11 +134,6 @@ export default function GoldSellConfirmation({ route }: Props) {
   const parsedPricePerOz = useMemo(() => new BigNumber(pricePerOz), [pricePerOz])
 
   // Calculate local currency values
-  const localPricePerOz = useMemo(() => {
-    if (!usdToLocalRate) return null
-    return parsedPricePerOz.multipliedBy(usdToLocalRate)
-  }, [parsedPricePerOz, usdToLocalRate])
-
   const totalValueUsd = useMemo(
     () => parsedXautAmount.multipliedBy(parsedPricePerOz),
     [parsedXautAmount, parsedPricePerOz]
@@ -163,6 +163,35 @@ export default function GoldSellConfirmation({ route }: Props) {
     }
   }, [appFeePercentageIncludedInPrice, parsedXautAmount])
 
+  // Details panel shape matches GoldBuyConfirmation + SwapScreen so the sell
+  // preview reads identically to the other flows: exchangeRate + fees (with
+  // info sheet breakdown) + slippage + route reveal with provider label.
+  const detailsNetworkFee: SwapFeeAmount | undefined = useMemo(() => {
+    if (!parsedGasFee || !gasFeeToken) return undefined
+    return { token: gasFeeToken, amount: parsedGasFee, maxAmount: parsedGasFee }
+  }, [parsedGasFee, gasFeeToken])
+
+  const detailsAppFee: AppFeeAmount | undefined = useMemo(() => {
+    if (!parsedAppFee || !xaut0Token) return undefined
+    return {
+      amount: parsedAppFee.amount,
+      token: xaut0Token,
+      percentage: parsedAppFee.percentage,
+    }
+  }, [parsedAppFee, xaut0Token])
+
+  // Exchange rate: 1 Oro ≈ N Pesos (sell direction — inverse of buy).
+  // parsedToAmount / parsedXautAmount, guarded against div by zero.
+  const detailsExchangeRate: string | undefined = useMemo(() => {
+    if (parsedXautAmount.lte(0) || parsedToAmount.lte(0)) return undefined
+    return parsedToAmount.dividedBy(parsedXautAmount).toString()
+  }, [parsedXautAmount, parsedToAmount])
+
+  const exchangeRateInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const feeInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const slippageInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+  const estimatedDurationBottomSheetRef = useRef<BottomSheetModalRefType>(null)
+
   // getProviderDisplayName removed 2026-08-09 (zero-tech-leak policy in
   // feedback_no_tech_leak_in_user_copy.md). See identical removal in
   // GoldBuyConfirmation.tsx for the rationale.
@@ -189,6 +218,13 @@ export default function GoldSellConfirmation({ route }: Props) {
           estimatedGasFeeUsd: '0',
           allowanceTarget: '',
           preparedTransactions,
+          // Forward integrator pct + provider slug so sellGoldSaga's
+          // recordSwapFeeMetadata surfaces 'Tarifa del proveedor' row in
+          // success + tx-details. Without these the saga sees undefined and
+          // defaults appFeeUsd='0' → row hides. See src/gold/saga.ts
+          // sellGoldSaga + buy path fix in GoldBuyConfirmation.
+          appFeePercentageIncludedInPrice,
+          swapProvider,
         },
       })
     )
@@ -261,36 +297,31 @@ export default function GoldSellConfirmation({ route }: Props) {
           </View>
         </View>
 
-        {/* Transaction Details */}
-        <View style={styles.detailsCard}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('goldFlow.sell.goldPrice')}</Text>
-            <Text style={styles.detailValue}>
-              {localCurrencySymbol}
-              {localPricePerOz?.toFormat(2) ?? parsedPricePerOz.toFormat(2)} / oz
-            </Text>
+        {/* Consolidated details panel: exchangeRate + fees (with info sheet
+            breakdown) + slippage + route reveal. Same component the buy path
+            + regular swap use, so all 3 previews read identically per the
+            unification standard. Previous bespoke detailsCard (goldPrice +
+            fees only) was inconsistent — missing tarifa breakdown, no route
+            row, hand-rolled styles. */}
+        {xaut0Token && toToken && (
+          <View style={styles.detailsWrapper}>
+            <SwapTransactionDetails
+              feeInfoBottomSheetRef={feeInfoBottomSheetRef}
+              slippageInfoBottomSheetRef={slippageInfoBottomSheetRef}
+              estimatedDurationBottomSheetRef={estimatedDurationBottomSheetRef}
+              exchangeRateInfoBottomSheetRef={exchangeRateInfoBottomSheetRef}
+              slippagePercentage="1"
+              fromToken={xaut0Token}
+              toToken={toToken}
+              exchangeRatePrice={detailsExchangeRate}
+              fetchingSwapQuote={isGettingQuote}
+              appFee={detailsAppFee}
+              networkFee={detailsNetworkFee}
+              swapProvider={swapProvider}
+              isBatched7702={false}
+            />
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('goldFlow.sell.fees')}</Text>
-            {isGettingQuote ? (
-              <Text style={styles.detailValue}>{t('goldFlow.sell.estimatingFee')}</Text>
-            ) : (
-              <FeeSummary
-                layout="stacked"
-                components={buildGoldFeeComponents({
-                  appFee: parsedAppFee?.amount,
-                  appFeeToken: xaut0Token ?? undefined,
-                  networkFee: parsedGasFee,
-                  networkFeeToken: gasFeeToken ?? undefined,
-                })}
-                fallbackText={t('goldFlow.sell.estimatingFee')}
-                primaryStyle={styles.detailValue}
-                secondaryStyle={styles.detailValueSecondary}
-                testID="GoldSellConfirmation/Fees"
-              />
-            )}
-          </View>
-        </View>
+        )}
 
         {/* Quote Error */}
         {!!quoteError && (
@@ -345,6 +376,48 @@ export default function GoldSellConfirmation({ route }: Props) {
           />
         </View>
       </ScrollView>
+
+      {/* Info bottom sheets for the details panel rows. Same content the
+          GoldBuyConfirmation + SwapScreen render so the copy is uniform. */}
+      <BottomSheet
+        forwardedRef={exchangeRateInfoBottomSheetRef}
+        title={t('swapScreen.transactionDetails.exchangeRate')}
+        description={t('swapScreen.transactionDetails.exchangeRateInfoV1_90', {
+          context: detailsAppFee?.percentage?.isGreaterThan(0) ? 'withAppFee' : '',
+          networkName: NETWORK_NAMES[xaut0Token?.networkId || networkConfig.defaultNetworkId],
+          slippagePercentage: '1',
+          appFeePercentage: detailsAppFee?.percentage?.toFormat(),
+        })}
+        testId="ExchangeRateInfoBottomSheet"
+      >
+        <Button
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          style={styles.bottomSheetButton}
+          onPress={() => exchangeRateInfoBottomSheetRef.current?.close()}
+          text={t('swapScreen.transactionDetails.infoDismissButton')}
+        />
+      </BottomSheet>
+      <BottomSheet
+        forwardedRef={slippageInfoBottomSheetRef}
+        title={t('swapScreen.transactionDetails.slippagePercentage')}
+        description={t('swapScreen.transactionDetails.slippageToleranceInfoV1_90')}
+        testId="SlippageInfoBottomSheet"
+      >
+        <Button
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          style={styles.bottomSheetButton}
+          onPress={() => slippageInfoBottomSheetRef.current?.close()}
+          text={t('swapScreen.transactionDetails.infoDismissButton')}
+        />
+      </BottomSheet>
+      <FeeInfoBottomSheet
+        forwardedRef={feeInfoBottomSheetRef}
+        networkFee={detailsNetworkFee}
+        appFee={detailsAppFee}
+        fetchingSwapQuote={isGettingQuote}
+      />
     </SafeAreaView>
   )
 }
@@ -404,30 +477,18 @@ const styles = StyleSheet.create({
     ...typeScale.titleMedium,
     color: Colors.gray3,
   },
-  detailsCard: {
+  // Wrapper around the shared SwapTransactionDetails panel; keeps the same
+  // spacing + border treatment the previous bespoke detailsCard had so the
+  // sell screen still matches the buy screen visually.
+  detailsWrapper: {
     marginTop: Spacing.Regular16,
     padding: Spacing.Regular16,
     borderWidth: 1,
     borderColor: Colors.gray2,
     borderRadius: Spacing.Small12,
-    gap: Spacing.Smallest8,
   },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  detailLabel: {
-    ...typeScale.bodyMedium,
-    color: Colors.gray4,
-  },
-  detailValue: {
-    ...typeScale.bodyMedium,
-    color: Colors.black,
-  },
-  detailValueSecondary: {
-    ...typeScale.bodySmall,
-    color: Colors.gray4,
+  bottomSheetButton: {
+    marginTop: Spacing.Regular16,
   },
   infoNotice: {
     marginTop: Spacing.Regular16,
