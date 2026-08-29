@@ -153,16 +153,17 @@ describe('TabHome', () => {
   // here would require booting the whole navigator stack; the dedicated
   // test file renders HeaderQuickActions directly.
 
-  it('Tapping the Swap card opens the swap screen with the aggregated Dolares virtual as TO', async () => {
+  it('Tapping the Swap card opens the swap screen with Dolares (virtual) as FROM and Pesos as TO', async () => {
     const { getByTestId } = renderScreen()
 
     fireEvent.press(getByTestId('FlatCard/Swap'))
-    // Virtual Dolares so the swap card shows the user's full dollar balance
-    // (multi-token aggregation). SwapScreen translates virtual back to USDT
-    // for the actual quote/settlement.
+    // Default direction: Dolares (aggregate) -> Pesos. Users spend their
+    // full dollar balance via the multi-swap planner when FROM=virtual,
+    // or a single settlement token (USDT) when they drill into a concrete
+    // dollar. User can reverse the direction inside the swap screen.
     expect(navigate).toHaveBeenCalledWith('SwapScreenWithBack', {
-      fromTokenId: copmTokenId,
-      toTokenId: 'virtual:dolares',
+      fromTokenId: 'virtual:dolares',
+      toTokenId: copmTokenId,
     })
   })
 })

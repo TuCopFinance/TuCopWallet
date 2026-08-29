@@ -125,16 +125,16 @@ function TabHome(_props: Props) {
 
   function onPressSwap() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
-    // Today the only cross-currency route available is Pesos <-> Dolares, so
-    // we pre-select COPm on FROM and the aggregated "Dolares" virtual on TO
-    // (the swap layer translates virtual back to USDT for actual settlement,
-    // see SwapScreen.quoteToToken). When new pairs land (Oro, other stables)
-    // this handler can drop the pre-selection and just navigate to
-    // SwapScreenWithBack with no params.
+    // Default direction: Dolares (aggregate) -> Pesos. The multi-swap saga
+    // consumes the user's full dollar balance via the multi-step planner
+    // (USDT -> USDm -> USDC spend order) when FROM=virtual, or a single
+    // settlement token (USDT) when the user drills into a concrete dollar.
+    // User can reverse the direction inside the swap screen if they want
+    // to buy dollars with pesos.
     !!COPmToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: COPmToken.tokenId,
-        toTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        toTokenId: COPmToken.tokenId,
       })
   }
 
