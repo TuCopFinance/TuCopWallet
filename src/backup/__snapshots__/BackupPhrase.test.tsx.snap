@@ -187,54 +187,60 @@ exports[`BackupPhrase renders correctly with backup completed 1`] = `
     }
   >
     <View>
-      <View>
-        <View
-          style={
-            {
-              "flexDirection": "row",
-              "justifyContent": "space-between",
-              "paddingHorizontal": 2,
-            }
-          }
-        >
+      <View
+        accessibilityLabel="ph-no-capture"
+        collapsable={false}
+        importantForAccessibility="no"
+      >
+        <View>
           <View
             style={
               {
-                "flexDirection": "column",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "paddingHorizontal": 2,
               }
             }
           >
-            <Text
+            <View
               style={
                 {
-                  "fontFamily": "RedHatDisplayBold",
-                  "fontSize": 20,
-                  "lineHeight": 28,
-                  "marginBottom": 16,
+                  "flexDirection": "column",
                 }
               }
             >
-              writeDownKeyExperimental
-            </Text>
+              <Text
+                style={
+                  {
+                    "fontFamily": "RedHatDisplayBold",
+                    "fontSize": 20,
+                    "lineHeight": 28,
+                    "marginBottom": 16,
+                  }
+                }
+              >
+                writeDownKeyExperimental
+              </Text>
+            </View>
           </View>
-        </View>
-        <View
-          accessibilityLabel=""
-          style={
-            {
-              "alignContent": "center",
-              "borderColor": "#2E3338",
-              "borderRadius": 8,
-              "borderWidth": 1,
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "center",
-              "marginTop": 8,
-              "padding": 8,
+          <View
+            accessibilityLabel=""
+            style={
+              {
+                "alignContent": "center",
+                "borderColor": "#2E3338",
+                "borderRadius": 8,
+                "borderWidth": 1,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+                "marginTop": 8,
+                "padding": 8,
+              }
             }
-          }
-          testID="AccountKeyWordsContainer"
-        />
+            testID="AccountKeyWordsContainer"
+          />
+        </View>
       </View>
       <View
         accessibilityState={
@@ -512,54 +518,60 @@ exports[`BackupPhrase renders correctly with backup not completed 1`] = `
     }
   >
     <View>
-      <View>
-        <View
-          style={
-            {
-              "flexDirection": "row",
-              "justifyContent": "space-between",
-              "paddingHorizontal": 2,
-            }
-          }
-        >
+      <View
+        accessibilityLabel="ph-no-capture"
+        collapsable={false}
+        importantForAccessibility="no"
+      >
+        <View>
           <View
             style={
               {
-                "flexDirection": "column",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "paddingHorizontal": 2,
               }
             }
           >
-            <Text
+            <View
               style={
                 {
-                  "fontFamily": "RedHatDisplayBold",
-                  "fontSize": 20,
-                  "lineHeight": 28,
-                  "marginBottom": 16,
+                  "flexDirection": "column",
                 }
               }
             >
-              writeDownKeyExperimental
-            </Text>
+              <Text
+                style={
+                  {
+                    "fontFamily": "RedHatDisplayBold",
+                    "fontSize": 20,
+                    "lineHeight": 28,
+                    "marginBottom": 16,
+                  }
+                }
+              >
+                writeDownKeyExperimental
+              </Text>
+            </View>
           </View>
-        </View>
-        <View
-          accessibilityLabel=""
-          style={
-            {
-              "alignContent": "center",
-              "borderColor": "#2E3338",
-              "borderRadius": 8,
-              "borderWidth": 1,
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "center",
-              "marginTop": 8,
-              "padding": 8,
+          <View
+            accessibilityLabel=""
+            style={
+              {
+                "alignContent": "center",
+                "borderColor": "#2E3338",
+                "borderRadius": 8,
+                "borderWidth": 1,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+                "marginTop": 8,
+                "padding": 8,
+              }
             }
-          }
-          testID="AccountKeyWordsContainer"
-        />
+            testID="AccountKeyWordsContainer"
+          />
+        </View>
       </View>
       <View
         accessibilityState={
@@ -994,54 +1006,60 @@ exports[`BackupPhrase still renders when mnemonic doesnt show up 1`] = `
     }
   >
     <View>
-      <View>
-        <View
-          style={
-            {
-              "flexDirection": "row",
-              "justifyContent": "space-between",
-              "paddingHorizontal": 2,
-            }
-          }
-        >
+      <View
+        accessibilityLabel="ph-no-capture"
+        collapsable={false}
+        importantForAccessibility="no"
+      >
+        <View>
           <View
             style={
               {
-                "flexDirection": "column",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "paddingHorizontal": 2,
               }
             }
           >
-            <Text
+            <View
               style={
                 {
-                  "fontFamily": "RedHatDisplayBold",
-                  "fontSize": 20,
-                  "lineHeight": 28,
-                  "marginBottom": 16,
+                  "flexDirection": "column",
                 }
               }
             >
-              writeDownKeyExperimental
-            </Text>
+              <Text
+                style={
+                  {
+                    "fontFamily": "RedHatDisplayBold",
+                    "fontSize": 20,
+                    "lineHeight": 28,
+                    "marginBottom": 16,
+                  }
+                }
+              >
+                writeDownKeyExperimental
+              </Text>
+            </View>
           </View>
-        </View>
-        <View
-          accessibilityLabel=""
-          style={
-            {
-              "alignContent": "center",
-              "borderColor": "#2E3338",
-              "borderRadius": 8,
-              "borderWidth": 1,
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "center",
-              "marginTop": 8,
-              "padding": 8,
+          <View
+            accessibilityLabel=""
+            style={
+              {
+                "alignContent": "center",
+                "borderColor": "#2E3338",
+                "borderRadius": 8,
+                "borderWidth": 1,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+                "marginTop": 8,
+                "padding": 8,
+              }
             }
-          }
-          testID="AccountKeyWordsContainer"
-        />
+            testID="AccountKeyWordsContainer"
+          />
+        </View>
       </View>
       <View
         accessibilityState={

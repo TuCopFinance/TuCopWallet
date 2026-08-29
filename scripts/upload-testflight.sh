@@ -89,9 +89,13 @@ info "Exporting archive to .ipa..."
 EXPORT_DIR=$(mktemp -d -t tucop_export.XXXXXX)
 trap 'rm -rf "$EXPORT_DIR"' EXIT
 
-# Read the App Store Connect team ID from pbxproj (DEVELOPMENT_TEAM = QZUQHFSF4H)
-TEAM_ID=$(grep -m1 "DEVELOPMENT_TEAM = " ios/TuCop.xcodeproj/project.pbxproj | grep -oE '[A-Z0-9]{10}' | head -1)
-[[ -n "$TEAM_ID" ]] || fail "Could not extract DEVELOPMENT_TEAM from pbxproj"
+# Read the App Store Connect team ID from pbxproj (DEVELOPMENT_TEAM = QZUQHFSF4H;).
+# Grab the value AFTER "DEVELOPMENT_TEAM = " directly. Naive [A-Z0-9]{10} on
+# the whole line matches "DEVELOPMEN" (first 10 chars of DEVELOPMENT) before
+# reaching the real team ID.
+TEAM_ID=$(grep -m1 "DEVELOPMENT_TEAM = " ios/TuCop.xcodeproj/project.pbxproj \
+  | sed -E 's/.*DEVELOPMENT_TEAM = ([A-Z0-9]+);.*/\1/')
+[[ -n "$TEAM_ID" && "$TEAM_ID" != "DEVELOPMEN" ]] || fail "Could not extract DEVELOPMENT_TEAM from pbxproj (got: $TEAM_ID)"
 
 EXPORT_OPTIONS_PLIST=$(mktemp -t export_options.XXXXXX).plist
 cat > "$EXPORT_OPTIONS_PLIST" <<PLIST
@@ -143,8 +147,21 @@ if [[ "$VALIDATE_ONLY" == true ]]; then
   exit 0
 fi
 
-# Upload to App Store Connect (goes to TestFlight, processed async)
+# Upload to App Store Connect (goes to TestFlight, processed async).
+# altool with --apiKey does NOT accept a key-path argument. It looks for the
+# .p8 file at ./private_keys, ~/private_keys, ~/.private_keys, or
+# ~/.appstoreconnect/private_keys, with the fixed name AuthKey_<KEY_ID>.p8.
+# Stage the .p8 at ~/.appstoreconnect/private_keys/ with the required name
+# for the duration of the upload, then clean up.
 info "Uploading to App Store Connect..."
+ALTOOL_KEYS_DIR="$HOME/.appstoreconnect/private_keys"
+mkdir -p "$ALTOOL_KEYS_DIR"
+ALTOOL_KEY_PATH="$ALTOOL_KEYS_DIR/AuthKey_${APPLE_CONNECT_KEY_ID}.p8"
+cp "$APPLE_CONNECT_CERTIFICATE_PATH" "$ALTOOL_KEY_PATH"
+chmod 600 "$ALTOOL_KEY_PATH"
+# Extend the export-dir trap to also remove the staged .p8 when the script exits.
+trap 'rm -rf "$EXPORT_DIR"; rm -f "$ALTOOL_KEY_PATH"' EXIT
+
 xcrun altool --upload-app \
   -f "$IPA_PATH" \
   -t ios \

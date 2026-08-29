@@ -209,12 +209,15 @@ describe(estimateFeesPerGas, () => {
     const expectedAdjustedPriorityFee = BigInt(Math.floor(Number(expectedPriorityFee) * 1.05))
 
     // Calculate expected maxFeePerGas using current multipliers.
-    // maxFee multiplier bumped from 1.02 -> 2.0 (2026-08-21) to survive
-    // Celo baseFee spikes during load bursts (Squid batch quotes, Neeru
-    // deposits, gold sells) that were repeatedly tripping op-reth's
-    // maxFeePerGas < baseFeePerGas rejection at include time.
+    // maxFee multiplier history: 1.02 -> 2.0 (2026-08-21) after Celo
+    // baseFee spikes tripped op-reth's strict `maxFeePerGas < baseFeePerGas`
+    // rejection; then 2.0 -> 3.0 (2026-08-26) after Squid pre-built
+    // multicall submits still rejected during sustained ~200 gwei baseFee.
+    // See CELO_GAS_MULTIPLIERS.maxFee in src/viem/celoGasConfig.ts for the
+    // rationale block. A generous cap is free in EIP-1559: real gas paid
+    // is still (baseFee + effectiveTip) at inclusion.
     const baseMaxFee = baseFeePerGas + expectedAdjustedPriorityFee
-    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 2.0))
+    const multipliedMaxFee = BigInt(Math.floor(Number(baseMaxFee) * 3.0))
     const safetyBuffer = baseFeePerGas / BigInt(10)
     const expectedMaxFee = multipliedMaxFee + safetyBuffer
 

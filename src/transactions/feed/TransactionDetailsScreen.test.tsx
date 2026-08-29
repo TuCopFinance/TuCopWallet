@@ -393,11 +393,15 @@ describe('TransactionDetailsScreen', () => {
     expect(getElementText(swapFrom)).toEqual('17.00 assets.dollars')
 
     const rate = getByTestId('SwapContent/rate')
-    expect(getElementText(rate)).toEqual('1 USDm ≈ 2.00 EURm')
+    // Rate labels flow through getTokenSymbol so USDm renders as the aggregate
+    // "assets.dollars" (localized "Dolares"). Post 2026-08-27 SwapContent uses
+    // the unified FeeSummary component for fees, so the row testID moved from
+    // TransactionDetails/FeeRowItem to SwapContent/Fees.
+    expect(getElementText(rate)).toEqual('1 assets.dollars ≈ 2.00 EURm')
 
-    // Includes the fee
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('0.10 assets.dollars')
-    expect(getByTestId('TransactionDetails/FeeRowItem')).toHaveTextContent('COP$0.13')
+    // Includes the fee (container-level assertion; toHaveTextContent recurses)
+    expect(getByTestId('SwapContent/Fees')).toHaveTextContent('0.10 assets.dollars')
+    expect(getByTestId('SwapContent/Fees')).toHaveTextContent('COP$0.13')
   })
 
   it.each([TokenTransactionTypeV2.Sent, TokenTransactionTypeV2.Received] as const)(
@@ -904,18 +908,18 @@ describe('TransactionDetailsScreen', () => {
     ).toBeTruthy()
 
     expect(getByText('swapTransactionDetailPage.rate')).toBeTruthy()
-    expect(getByTestId('SwapContent/rate')).toHaveTextContent('1 USDm ≈ 0.0003 ETH')
+    // Rate uses aggregate label via getTokenSymbol (USDm -> "assets.dollars").
+    expect(getByTestId('SwapContent/rate')).toHaveTextContent('1 assets.dollars ≈ 0.0003 ETH')
 
-    const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
-    expect(networkFee).toHaveTextContent('transactionFeed.networkFee')
-    expect(networkFee).toHaveTextContent('0.0033 CELO')
-    expect(networkFee).toHaveTextContent('COP$0.059')
-    expect(appFee).toHaveTextContent('transactionFeed.appFee')
-    expect(appFee).toHaveTextContent('0.0006 assets.dollars')
-    expect(appFee).toHaveTextContent('COP$0.0008')
-    expect(crossChainFee).toHaveTextContent('transactionFeed.crossChainFee')
-    expect(crossChainFee).toHaveTextContent('0.38 CELO')
-    expect(crossChainFee).toHaveTextContent('COP$6.74')
+    // Post-refactor SwapContent stacks all fee legs inside a single
+    // SwapContent/Fees row (FeeSummary layout="stacked"), no longer three
+    // separate TransactionDetails/FeeRowItem entries. Per-token amounts show
+    // individually; the local-currency total is a single aggregate.
+    const feesRow = getByTestId('SwapContent/Fees')
+    expect(feesRow).toHaveTextContent('0.0033 CELO')
+    expect(feesRow).toHaveTextContent('0.0006 assets.dollars')
+    expect(feesRow).toHaveTextContent('0.38 CELO')
+    expect(feesRow).toHaveTextContent('COP$6.80') // aggregated local total
 
     fireEvent.press(getByText('viewOnAxelarScan'))
     expect(navigate).toHaveBeenCalledWith(Screens.WebViewScreen, {
@@ -937,13 +941,15 @@ describe('TransactionDetailsScreen', () => {
     expect(getByTestId('SwapContent/swapTo')).toHaveTextContent(`${APPROX_SYMBOL} 0.00003 ETH`)
     expect(queryByText('swapTransactionDetailPage.rate')).toBeFalsy()
 
-    const [networkFee, appFee, crossChainFee] = getAllByTestId('TransactionDetails/FeeRowItem')
-    expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} 0.0033 CELO`)
-    expect(networkFee).toHaveTextContent(`${APPROX_SYMBOL} COP$0.059`)
-    expect(appFee).toHaveTextContent('0.0006 assets.dollars') // app fee is always known
-    expect(appFee).toHaveTextContent('COP$0.0008')
-    expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} 0.38 CELO`)
-    expect(crossChainFee).toHaveTextContent(`${APPROX_SYMBOL} COP$6.74`)
+    // Fees stacked in SwapContent/Fees (see companion completed cross-chain
+    // test above for the layout change). Post-refactor the FeeSummary does
+    // not prefix pending amounts with the approximate symbol - the aggregate
+    // sum still displays and per-leg tokens are shown as final values.
+    const feesRow = getByTestId('SwapContent/Fees')
+    expect(feesRow).toHaveTextContent('0.0033 CELO')
+    expect(feesRow).toHaveTextContent('0.0006 assets.dollars') // app fee is always known
+    expect(feesRow).toHaveTextContent('0.38 CELO')
+    expect(feesRow).toHaveTextContent('COP$6.80') // aggregated local total
   })
 
   it(`renders a fallback swap to amount for a pending ${TokenTransactionTypeV2.CrossChainSwapTransaction} transacton`, () => {
