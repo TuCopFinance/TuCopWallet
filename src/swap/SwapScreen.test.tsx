@@ -427,18 +427,22 @@ describe('SwapScreen', () => {
       switchedNetworkId: false,
       tokenNetworkId: 'celo-mainnet',
     }
+    // Positions shifted +1 after virtual Dolares was added at index 0 of
+    // the swap picker (post-2026-08-28 restore). Dolares aggregate is
+    // always the first row of both FROM and TO pickers regardless of the
+    // user's dollar balance.
     expect(AppAnalytics.track).toHaveBeenCalledWith(SwapEvents.swap_screen_confirm_token, {
       ...commonAnalyticsProps,
       fieldType: 'FROM',
       tokenId: 'celo-mainnet:native',
-      tokenPositionInList: 1,
+      tokenPositionInList: 2,
       tokenSymbol: 'CELO',
     })
     expect(AppAnalytics.track).toHaveBeenCalledWith(SwapEvents.swap_screen_confirm_token, {
       ...commonAnalyticsProps,
       fieldType: 'TO',
       tokenId: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
-      tokenPositionInList: 2,
+      tokenPositionInList: 3,
       tokenSymbol: 'USDm',
       toTokenId: 'celo-mainnet:0x874069fa1eb16d44d622f2e0ca25eea172369bc1',
       toTokenNetworkId: 'celo-mainnet',
@@ -2052,8 +2056,10 @@ describe('SwapScreen', () => {
       expectedCeloTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
       })
+      // Virtual Dolares is a Celo synthetic token always prepended to the
+      // picker, so the Celo-filtered count is expectedCeloTokens.length + 1.
       expect(within(tokenBottomSheet).getAllByTestId('TokenBalanceItem').length).toBe(
-        expectedCeloTokens.length
+        expectedCeloTokens.length + 1
       )
 
       // select eth filter
@@ -2062,6 +2068,7 @@ describe('SwapScreen', () => {
       expectedEthTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
       })
+      // Ethereum filter excludes Celo-only tokens, so virtual Dolares (Celo) is dropped.
       expect(within(tokenBottomSheet).getAllByTestId('TokenBalanceItem').length).toBe(
         expectedEthTokens.length
       )
@@ -2088,8 +2095,9 @@ describe('SwapScreen', () => {
 
       const filteredTokens = within(tokenBottomSheet).getAllByTestId('TokenBalanceItem')
 
-      // only the celo network tokens are displayed
-      expect(filteredTokens.length).toBe(expectedCeloTokens.length)
+      // only the celo network tokens are displayed (+ virtual Dolares which
+      // is a Celo synthetic prepended to every picker).
+      expect(filteredTokens.length).toBe(expectedCeloTokens.length + 1)
       expectedCeloTokens.forEach((token) => {
         expect(within(tokenBottomSheet).getByText(token.name)).toBeTruthy()
       })

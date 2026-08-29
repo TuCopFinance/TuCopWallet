@@ -314,15 +314,51 @@ export function SwapScreen({ route }: Props) {
     [dollarSnapshots]
   )
 
-  // Resolver-only list: keeps the virtual "Dolares" token so navigation
-  // that pre-selects FROM=virtual (from home CTAs, etc) can still find it
-  // when computing the `fromToken` object. The picker itself uses the raw
-  // `swappableFromTokens` and never surfaces the virtual token, because
-  // "Dolares" is the closed-state aggregate — inside the picker the user
-  // is choosing between concrete tokens (USDT, USDC, USDm, Pesos, ...).
-  const fromTokensForResolution = useMemo(() => {
-    return dolaresVirtualToken ? [dolaresVirtualToken, ...swappableFromTokens] : swappableFromTokens
-  }, [swappableFromTokens, dolaresVirtualToken])
+  // Picker fallback: buildDolaresVirtualToken returns null when the user
+  // has zero dollar balance. The swap picker must ALWAYS include Dolares
+  // as a selectable option (users buying dollars from pesos won't have
+  // dollar balance yet). Build a zero-balance synthetic just for the
+  // picker; the balance-aware version above still drives the closed-card
+  // "Saldo" display so nothing shows a fake balance.
+  const dolaresVirtualTokenForPicker = useMemo(
+    (): TokenBalance =>
+      dolaresVirtualToken ??
+      ({
+        tokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        address: null,
+        networkId: networkConfig.defaultNetworkId,
+        symbol: 'Dolares',
+        name: 'Dolares',
+        decimals: 2,
+        balance: new BigNumber(0),
+        priceUsd: new BigNumber(1),
+        lastKnownPriceUsd: new BigNumber(1),
+        priceFetchedAt: Date.now(),
+      } as TokenBalance),
+    [dolaresVirtualToken]
+  )
+
+  // Swap picker list for both FROM and TO. Composition:
+  //   1. Virtual "Dolares" aggregate at TOP (default option; multi-swap
+  //      Dolares -> Pesos uses this to plan the multi-leg spend).
+  //   2. Individual dollar tokens (USDT, USDC, USDm, USAT) so users can
+  //      drill into a single dollar when they want to skip the aggregate.
+  //   3. Pesos (COPm).
+  //   4. Any other swappable non-XAUt0 token.
+  //
+  // XAUt0 (Oro) is intentionally EXCLUDED: gold has its own dedicated
+  // buy/sell saga (src/gold/*) with its own screens; surfacing it in the
+  // generic swap picker leaks the concrete asset into a flow where the
+  // user is thinking about currency exchange, not investment.
+  const pickerFromTokens = useMemo(() => {
+    const filtered = swappableFromTokens.filter((t) => t.tokenId !== networkConfig.xaut0TokenId)
+    return [dolaresVirtualTokenForPicker, ...filtered]
+  }, [swappableFromTokens, dolaresVirtualTokenForPicker])
+
+  const pickerToTokens = useMemo(() => {
+    const filtered = swappableToTokens.filter((t) => t.tokenId !== networkConfig.xaut0TokenId)
+    return [dolaresVirtualTokenForPicker, ...filtered]
+  }, [swappableToTokens, dolaresVirtualTokenForPicker])
 
   const priceImpactWarningThreshold = useSelector(priceImpactWarningThresholdSelector)
 
@@ -352,27 +388,12 @@ export function SwapScreen({ route }: Props) {
   const filterChipsTo = useFilterChips(Field.TO, initialToTokenNetworkId)
 
   const { fromToken, toToken } = useMemo(() => {
-    // Also search fromTokensForResolution so the virtual Dolares token resolves correctly.
-    const fromToken =
-      swappableFromTokens.find((token) => token.tokenId === fromTokenId) ??
-      fromTokensForResolution.find((token) => token.tokenId === fromTokenId)
-    // Virtual "Dolares" is not a real ERC-20 and never lives in the
-    // swappable list; resolve it explicitly from the synthetic builder so
-    // the swap card can render the aggregated balance when callers (home
-    // CTAs, etc.) route into swap with TO=virtual pre-selected.
-    const toToken =
-      toTokenId === DOLARES_VIRTUAL_TOKEN_ID
-        ? (dolaresVirtualToken ?? undefined)
-        : swappableToTokens.find((token) => token.tokenId === toTokenId)
+    // pickerFromTokens/pickerToTokens include the virtual Dolares so both
+    // sides resolve it correctly regardless of which slot holds it.
+    const fromToken = pickerFromTokens.find((token) => token.tokenId === fromTokenId)
+    const toToken = pickerToTokens.find((token) => token.tokenId === toTokenId)
     return { fromToken, toToken }
-  }, [
-    fromTokenId,
-    toTokenId,
-    swappableFromTokens,
-    swappableToTokens,
-    fromTokensForResolution,
-    dolaresVirtualToken,
-  ])
+  }, [fromTokenId, toTokenId, pickerFromTokens, pickerToTokens])
 
   // When the user picks the virtual "Dolares" as destination, the swap router
   // still needs a real ERC-20 to settle into. Default to USDT (highest-liquidity
@@ -478,7 +499,34 @@ export function SwapScreen({ route }: Props) {
         !quote.swapAmount.eq(parsedSwapAmount[Field.FROM]))) ||
     fetchingSwapQuote
 
-  const confirmSwapIsLoading = swapStatus === 'started'
+  // Multi-swap (virtual Dolares) does not dispatch swapStart, it dispatches
+  // executeMultiSwap which the dollarsSpend saga picks up. So the swap slice's
+  // 'started' status never flips for these flows, and confirmSwapIsLoading
+  // alone would leave the Confirmar button clickable while the batch is in
+  // flight. We derive an extra "multi in flight" signal from dollarsSpend and
+  // an optimistic tick that covers the race window between click and the
+  // saga's first put(multiSwapStarted) (the 7702 relay path can take a few
+  // seconds before it dispatches).
+  const multiSwapInFlight = useSelector((s) => s.dollarsSpend.inFlight !== null)
+  const [multiSwapClickPending, setMultiSwapClickPending] = useState(false)
+  useEffect(() => {
+    // Once the saga confirms inFlight, drop the optimistic flag. Once the
+    // batch resolves (inFlight -> null), the optimistic flag is already
+    // false so the button re-enables cleanly.
+    if (multiSwapInFlight && multiSwapClickPending) {
+      setMultiSwapClickPending(false)
+    }
+  }, [multiSwapInFlight, multiSwapClickPending])
+  useEffect(() => {
+    // Safety net: if the saga bails silently (e.g. 7702 gate check throws
+    // before it dispatches multiSwapStarted), release the button after
+    // 15s so the user is not permanently stuck.
+    if (!multiSwapClickPending) return
+    const t = setTimeout(() => setMultiSwapClickPending(false), 15_000)
+    return () => clearTimeout(t)
+  }, [multiSwapClickPending])
+  const confirmSwapIsLoading =
+    swapStatus === 'started' || multiSwapInFlight || multiSwapClickPending
   const confirmSwapFailed = swapStatus === 'error'
 
   useEffect(() => {
@@ -583,6 +631,12 @@ export function SwapScreen({ route }: Props) {
       // gets a real ERC-20 destination, even when TO is the virtual Dolares.
       const settlementTokenId = quoteToToken?.tokenId
       if (!settlementTokenId) return
+      // Flip the optimistic loading flag BEFORE dispatching so the button
+      // shows the spinner immediately, closing the race window until the
+      // saga puts multiSwapStarted (7702 relay path can take a few seconds
+      // before it fires). The dollarsSpend inFlight selector takes over
+      // and the effect above drops the optimistic flag once it does.
+      setMultiSwapClickPending(true)
       dispatch(executeMultiSwap({ steps: multiSwapPlan.steps, toTokenId: settlementTokenId }))
       return
     }
@@ -936,7 +990,8 @@ export function SwapScreen({ route }: Props) {
         !!multiSwapPlan &&
         multiSwapPlan.steps.length > 0 &&
         multiSwapPlan.shortfall.lte(0) &&
-        fromAmountUsd.gt(0)
+        fromAmountUsd.gt(0) &&
+        !confirmSwapIsLoading
       )
     }
     return (
@@ -1100,15 +1155,15 @@ export function SwapScreen({ route }: Props) {
   const tokenBottomSheetsConfig = [
     {
       fieldType: Field.FROM,
-      // Picker shows real tokens only — the virtual "Dolares" aggregate is
-      // the closed-state display, never a picker row. Symmetric with TO.
-      tokens: swappableFromTokens,
+      // Virtual "Dolares" aggregate at top + individual dollars + Pesos,
+      // XAUt0 excluded (gold has its own saga). See pickerFromTokens.
+      tokens: pickerFromTokens,
       filterChips: filterChipsFrom,
       origin: TokenPickerOrigin.SwapFrom,
     },
     {
       fieldType: Field.TO,
-      tokens: swappableToTokens,
+      tokens: pickerToTokens,
       filterChips: filterChipsTo,
       origin: TokenPickerOrigin.SwapTo,
     },
@@ -1267,6 +1322,21 @@ export function SwapScreen({ route }: Props) {
               // if any leg falls back to Uniswap V4 it usually happens across
               // legs together.
               isVirtualDolares ? multiSwapQuote.perStepQuotes[0]?.provider : quote?.provider
+            }
+            // Optimistic 7702 label: virtual Dolares with >1 leg + gate ON
+            // means the wallet WILL invoke executeDollarsSpend7702Saga which
+            // bundles everything into a single BatchExecutor.execute() tx.
+            // Even if the runtime falls back to legacy (edge cases: gate
+            // flips OFF between preview and submit, or delegation bootstrap
+            // fails), the post-tx feed reads the real saga-persisted provider
+            // slug so no lie survives to tx-details. Delegation itself is
+            // NOT checked here: 99% of users are delegated after their first
+            // multi-swap and the saga's relay path handles first-time users.
+            isBatched7702={
+              isVirtualDolares &&
+              !!multiSwapPlan &&
+              multiSwapPlan.steps.length > 1 &&
+              getFeatureGate(StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1)
             }
           />
           {showCrossChainFeeWarning && (
@@ -1576,6 +1646,10 @@ export function SwapScreen({ route }: Props) {
           if (!toTokenId) return
           const remaining = planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
           if (remaining.shortfall.gt(0)) return
+          // Mirror onPressConfirm's optimistic guard so the Reintentar button
+          // shows the spinner during the same race window (dispatch -> first
+          // multiSwapStarted put in the 7702 relay path).
+          setMultiSwapClickPending(true)
           dispatch(executeMultiSwap({ steps: remaining.steps, toTokenId }))
         }}
         onCancel={() => dispatch(multiSwapCleared())}
