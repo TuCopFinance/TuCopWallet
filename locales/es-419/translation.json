@@ -1945,6 +1945,8 @@
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",
       "feesBreakdown": "Desglose",
+      "legsBreakdown": "Desglose por cambio",
+      "sharedGasNote": "La tarifa de red se comparte entre todos los cambios en una sola transacción.",
       "feeAmount": "≈ {{localCurrencySymbol}}{{feeAmountInLocalCurrency}} ({{tokenAmount}} {{tokenSymbol}})",
       "feeAmount_noFiatPrice": "{{tokenAmount}} {{tokenSymbol}}",
       "feesMoreInfoLabel": "Más información",
@@ -3258,12 +3260,20 @@
     "atomicFailure": {
       "title": "No se pudo completar el intercambio",
       "body": "El servicio del proveedor no está disponible en este momento. Intenta de nuevo en unos minutos.",
+      "bodyRateLimited": "El servicio está saturado en este momento. Intenta de nuevo en unos segundos.",
+      "bodyRateLimitedWithCountdown": "El servicio está saturado. Intenta de nuevo en {{seconds}} segundos.",
+      "bodyFallbackUsdt": "Esta ruta no está disponible en este momento. Vuelve a intentarlo usando USDT.",
+      "bodyPriceMoved": "Los precios cambiaron mientras preparabamos el intercambio. Intenta de nuevo, o usa un monto menor.",
       "retry": "Reintentar",
       "cancel": "Cancelar"
     },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    },
+    "legList": {
+      "toggleDetail": "Ver detalles",
+      "retryBadge": "Intento {{attempt}}"
     }
   },
   "goldFlow": {
@@ -3464,7 +3474,10 @@
     "recipient": "Destinatario",
     "pool": "Pool",
     "viewOnExplorer": "Ver en el explorador",
-    "breakdownHeader": "Detalle por moneda"
+    "breakdownHeader": "Detalle por moneda",
+    "feeExplainerWithProvider": "La tarifa de red es lo que pagas a la red Celo por procesar la transaccion. La tarifa del proveedor la cobra {{provider}} por encontrar la mejor tasa. Ambas se muestran en total como Tarifas.",
+    "feeExplainerNetworkOnly": "La tarifa de red es lo que pagas a la red Celo por procesar la transaccion. No hay tarifa del proveedor en esta operacion.",
+    "gotIt": "Entendido"
   },
   "errors": {
     "public": {

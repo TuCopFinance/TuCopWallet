@@ -2211,6 +2211,96 @@
                         "string"
                     ]
                 },
+                "lastErrorEnvelope": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_unavailable",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": "null"
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_rate_limited",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": [
+                                        "null",
+                                        "number"
+                                    ]
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "legStatuses": {
+                    "items": {
+                        "$ref": "#/definitions/LegStatus"
+                    },
+                    "type": "array"
+                },
                 "plannedSteps": {
                     "items": {
                         "$ref": "#/definitions/SpendStep"
@@ -2224,6 +2314,8 @@
                 "failedAtIndex",
                 "isAtomic",
                 "lastError",
+                "lastErrorEnvelope",
+                "legStatuses",
                 "plannedSteps"
             ],
             "type": "object"
@@ -2254,6 +2346,127 @@
                 "PersonalDataAndDocumentsDetailed"
             ],
             "type": "string"
+        },
+        "LegStatus": {
+            "additionalProperties": false,
+            "properties": {
+                "attempt": {
+                    "type": "number"
+                },
+                "errorEnvelope": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_unavailable",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": "null"
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_rate_limited",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": [
+                                        "null",
+                                        "number"
+                                    ]
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorMessage": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "executing",
+                        "failed",
+                        "pending",
+                        "succeeded"
+                    ],
+                    "type": "string"
+                },
+                "txHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "attempt",
+                "errorEnvelope",
+                "errorMessage",
+                "status",
+                "txHash"
+            ],
+            "type": "object"
         },
         "LocalAmount": {
             "additionalProperties": false,
@@ -7166,6 +7379,25 @@
             "properties": {
                 "appFeeUsd": {
                     "type": "string"
+                },
+                "legFees": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "amount": {
+                                "type": "string"
+                            },
+                            "tokenId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "amount",
+                            "tokenId"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
                 },
                 "networkFeeTokenId": {
                     "type": "string"

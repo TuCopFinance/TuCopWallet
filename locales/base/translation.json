@@ -1930,6 +1930,8 @@
       "estimatedCrossChainFee": "Estimated cross-chain fees",
       "maxCrossChainFee": "Max cross-chain fees",
       "feesBreakdown": "Breakdown",
+      "legsBreakdown": "Breakdown per swap",
+      "sharedGasNote": "The network fee is shared across all swaps in a single atomic transaction.",
       "feeAmount": "≈ {{localCurrencySymbol}}{{feeAmountInLocalCurrency}} ({{tokenAmount}} {{tokenSymbol}})",
       "feeAmount_noFiatPrice": "{{tokenAmount}} {{tokenSymbol}}",
       "feesMoreInfoLabel": "More information",
@@ -3249,12 +3251,20 @@
     "atomicFailure": {
       "title": "Couldn't complete the exchange",
       "body": "The provider service is unavailable right now. Try again in a few minutes.",
+      "bodyRateLimited": "The provider is temporarily overloaded. Try again in a few seconds.",
+      "bodyRateLimitedWithCountdown": "The provider is temporarily overloaded. Try again in {{seconds}} seconds.",
+      "bodyFallbackUsdt": "This route is unavailable right now. Try again using USDT.",
+      "bodyPriceMoved": "Prices changed while preparing the exchange. Try again, or use a smaller amount.",
       "retry": "Retry",
       "cancel": "Cancel"
     },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    },
+    "legList": {
+      "toggleDetail": "Ver detalles",
+      "retryBadge": "Intento {{attempt}}"
     }
   },
   "goldFlow": {
