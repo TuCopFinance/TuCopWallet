@@ -8,14 +8,24 @@ export enum Currency {
   USAT = 'USAT',
 }
 
-// Some Currency values differ from the on-chain token symbol for legacy reasons
-// (Mento stables were rebranded cXXX -> XXXm without redeploying the contracts).
-// Use this map whenever you need to compare an on-chain token's `symbol` field
-// against a Currency value.
+// Maps a Currency to the token's on-chain `symbol()` return, as observed live
+// on Celo mainnet. The Mento rebrand deploy on 2026-08-20 propagated to the
+// backend `/api/tokens/info` at ~17:25 UTC (Statsig gate
+// use_tucop_backend_tokens_info is 100%, so every install now sees the new
+// shape), and the contracts `symbol()` at these addresses returns:
+//   0x765de816845861e75a25fca122bb6898b8b1282a -> 'USDm' (was 'cUSD')
+//   0x8a567e2aE79CA692Bd748aB832081C45de4041eA -> 'COPm' (was 'cCOP')
+//   0xd8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73 -> 'EURm' (was 'cEUR', not
+//     currently listed in TuCop but mapping stays honest)
+// The Currency enum values (Currency.Dollar = 'USDm', Currency.Euro = 'EURm')
+// were already updated in a previous rebrand and match this map 1:1.
+// Historical inputs like 'cUSD' / 'cEUR' still resolve via resolveCurrency
+// and resolveCICOCurrency below so deeplinks minted before the rebrand keep
+// working.
 export const CURRENCY_TO_CHAIN_SYMBOL: Record<Currency, string> = {
   [Currency.Celo]: 'CELO',
-  [Currency.Dollar]: 'cUSD',
-  [Currency.Euro]: 'cEUR',
+  [Currency.Dollar]: 'USDm',
+  [Currency.Euro]: 'EURm',
   [Currency.COP]: 'COPm',
   [Currency.USDT]: 'USDT',
   [Currency.USDC]: 'USDC',
@@ -78,7 +88,8 @@ export const CURRENCIES: CurrencyObject = {
   [Currency.Dollar]: {
     symbol: '$',
     displayDecimals: 2,
-    cashTag: 'cUSD',
+    // Post Mento rebrand 2026-08-20 the on-chain symbol is 'USDm'.
+    cashTag: 'USDm',
   },
   [Currency.COP]: {
     symbol: '$',
@@ -88,7 +99,8 @@ export const CURRENCIES: CurrencyObject = {
   [Currency.Euro]: {
     symbol: '€',
     displayDecimals: 2,
-    cashTag: 'cEUR',
+    // Post Mento rebrand 2026-08-20 the on-chain symbol is 'EURm'.
+    cashTag: 'EURm',
   },
 }
 

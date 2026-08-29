@@ -8,11 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
-import {
-  NEERU_CATEGORY_LABEL_KEYS,
-  NeeruCategoryId,
-  categoryIdFromPositionId,
-} from 'src/earn/neeru/constants'
+import { NEERU_CATEGORY_LABEL_KEYS, categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import NeeruPositionRow from 'src/earn/neeru/NeeruPositionRow'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 import {
@@ -32,11 +28,13 @@ import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.NeeruVaultDetail>
 
-const DESCRIPTION_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
+const DESCRIPTION_KEY_BY_CATEGORY: Record<number, string> = {
   0: 'neeruVaults.detail.descriptionByCategory.flexible',
   1: 'neeruVaults.detail.descriptionByCategory.thirtyDays',
   2: 'neeruVaults.detail.descriptionByCategory.sixtyDays',
   3: 'neeruVaults.detail.descriptionByCategory.ninetyDays',
+  4: 'neeruVaults.detail.descriptionByCategory.oneEightyDays',
+  5: 'neeruVaults.detail.descriptionByCategory.threeSixtyFiveDays',
 }
 
 export default function NeeruVaultDetailScreen({ route }: Props) {
@@ -73,9 +71,14 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
     return null
   }
 
-  const positions = byCategory[categoryId]
-  const categoryLabel = t(NEERU_CATEGORY_LABEL_KEYS[categoryId])
-  const description = t(DESCRIPTION_KEY_BY_CATEGORY[categoryId])
+  const positions = byCategory[categoryId] ?? []
+  // Falls back to pool.displayProps for categories the wallet doesn't ship
+  // hardcoded copy for (Neeru extended to 180 / 365 dias on 2026-08-25 with
+  // no wallet release), so a new term is still labelled + described.
+  const labelKey = NEERU_CATEGORY_LABEL_KEYS[categoryId]
+  const categoryLabel = labelKey ? t(labelKey) : (pool.displayProps?.title ?? '')
+  const descriptionKey = DESCRIPTION_KEY_BY_CATEGORY[categoryId]
+  const description = descriptionKey ? t(descriptionKey) : (pool.displayProps?.description ?? '')
   const total = formatValueToDisplay(
     positions.reduce((acc, p) => acc.plus(p.currentPayoutIfClosed.total), new BigNumber(0))
   )

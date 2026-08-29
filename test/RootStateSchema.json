@@ -2193,6 +2193,9 @@
                 "completedSteps": {
                     "type": "number"
                 },
+                "destinationLabel": {
+                    "type": "string"
+                },
                 "failedAtIndex": {
                     "type": [
                         "null",
@@ -2208,6 +2211,96 @@
                         "string"
                     ]
                 },
+                "lastErrorEnvelope": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_unavailable",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": "null"
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_rate_limited",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": [
+                                        "null",
+                                        "number"
+                                    ]
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "legStatuses": {
+                    "items": {
+                        "$ref": "#/definitions/LegStatus"
+                    },
+                    "type": "array"
+                },
                 "plannedSteps": {
                     "items": {
                         "$ref": "#/definitions/SpendStep"
@@ -2217,9 +2310,12 @@
             },
             "required": [
                 "completedSteps",
+                "destinationLabel",
                 "failedAtIndex",
                 "isAtomic",
                 "lastError",
+                "lastErrorEnvelope",
+                "legStatuses",
                 "plannedSteps"
             ],
             "type": "object"
@@ -2250,6 +2346,127 @@
                 "PersonalDataAndDocumentsDetailed"
             ],
             "type": "string"
+        },
+        "LegStatus": {
+            "additionalProperties": false,
+            "properties": {
+                "attempt": {
+                    "type": "number"
+                },
+                "errorEnvelope": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_unavailable",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": "null"
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "error": {
+                                    "const": "squid_rate_limited",
+                                    "type": "string"
+                                },
+                                "fallback_hint": {
+                                    "anyOf": [
+                                        {
+                                            "const": "USDT",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "retry_after_seconds": {
+                                    "type": [
+                                        "null",
+                                        "number"
+                                    ]
+                                },
+                                "route": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "error",
+                                "fallback_hint",
+                                "message",
+                                "retry_after_seconds",
+                                "route"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorMessage": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "executing",
+                        "failed",
+                        "pending",
+                        "succeeded"
+                    ],
+                    "type": "string"
+                },
+                "txHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "attempt",
+                "errorEnvelope",
+                "errorMessage",
+                "status",
+                "txHash"
+            ],
+            "type": "object"
         },
         "LocalAmount": {
             "additionalProperties": false,
@@ -2352,15 +2569,6 @@
                 "symbol"
             ],
             "type": "object"
-        },
-        "NeeruCategoryId": {
-            "enum": [
-                0,
-                1,
-                2,
-                3
-            ],
-            "type": "number"
         },
         "NeeruCloseStatus": {
             "enum": [
@@ -2465,7 +2673,7 @@
                     "type": "string"
                 },
                 "category": {
-                    "$ref": "#/definitions/NeeruCategoryId"
+                    "type": "number"
                 },
                 "categoryLabel": {
                     "type": "string"
@@ -5795,6 +6003,12 @@
                 "error": {
                     "type": "boolean"
                 },
+                "nativeCeloBalance": {
+                    "type": "string"
+                },
+                "nativeCeloPriceUsd": {
+                    "type": "string"
+                },
                 "tokenBalances": {
                     "$ref": "#/definitions/StoredTokenBalances"
                 }
@@ -6076,6 +6290,12 @@
                         }
                     ]
                 },
+                "feeMetadataByTxHash": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/SwapFeeMetadata"
+                    },
+                    "type": "object"
+                },
                 "lastSwapped": {
                     "items": {
                         "type": "string"
@@ -6089,6 +6309,7 @@
             },
             "required": [
                 "currentSwap",
+                "feeMetadataByTxHash",
                 "lastSwapped",
                 "priceImpactWarningThreshold"
             ],
@@ -7150,6 +7371,50 @@
                 "createdAt",
                 "metadata",
                 "pointsAmount"
+            ],
+            "type": "object"
+        },
+        "SwapFeeMetadata": {
+            "additionalProperties": false,
+            "properties": {
+                "appFeeUsd": {
+                    "type": "string"
+                },
+                "legFees": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "amount": {
+                                "type": "string"
+                            },
+                            "tokenId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "amount",
+                            "tokenId"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "networkFeeTokenId": {
+                    "type": "string"
+                },
+                "networkFeeValue": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "recordedAt": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "appFeeUsd",
+                "recordedAt"
             ],
             "type": "object"
         },

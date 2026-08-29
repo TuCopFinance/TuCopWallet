@@ -18,7 +18,13 @@ import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
-import { swapCancel, swapError, swapStart, swapSuccess } from 'src/swap/slice'
+import {
+  recordSwapFeeMetadata,
+  swapCancel,
+  swapError,
+  swapStart,
+  swapSuccess,
+} from 'src/swap/slice'
 import {
   Field,
   SwapInfo,
@@ -27,8 +33,12 @@ import {
   UniswapV4BuildTxRequest,
   UniswapV4BuildTxResponse,
 } from 'src/swap/types'
-import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
+import {
+  feeCurrenciesSelector,
+  nativeFeeCurrencySelector,
+  tokensByIdSelector,
+} from 'src/tokens/selectors'
+import { computeReceiptNetworkFee } from 'src/swap/computeReceiptNetworkFee'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
@@ -330,14 +340,13 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
 
     // Branch B1: batchCalls — user is EIP-7702 delegated, backend gives us
     // prebuilt calls to submit directly. Skip Permit2 sign + POST /build-tx
-    // (no signature involved; Permit2.approve inside batchCalls[0] sets
-    // the internal allowance on-chain).
+    // (no signature involved; the inner Permit2.approve inside batchCalls
+    // sets the internal allowance on-chain atomically with the swap).
     //
     // Branch B2: permit2 — undelegated EOA, wallet signs the Permit2
     // PermitSingle typedData, POSTs /build-tx to receive the real
     // UniversalRouter calldata, and submits that. Same as before.
-    const rawFeeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
-    const feeCurrencies = reorderForBugE(rawFeeCurrencies)
+    const feeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
 
     let followerBaseTxs: { from: Address; to: Address; data: Hex; value: bigint }[]
 
@@ -502,6 +511,33 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
     )
     yield* put(inFlightAdvance({ flowId, toStatus: 'succeeded' }))
 
+    // Same as the Squid path in swap/saga.ts: surface Squid's ~1% integrator
+    // cut on the success screen AND persist it for the deferred tx-details
+    // screen (see swap/slice.feeMetadataByTxHash) so the row is uniform.
+    const appFeeUsd =
+      (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
+    // Provider + saga-computed network fee always recorded so both the
+    // 'Proveedor' and 'Tarifa de red' rows render on every swap. See
+    // computeReceiptNetworkFee for the CIP-64 adapter matching logic.
+    const nativeFeeCurrencyForSaga = yield* select((s) => nativeFeeCurrencySelector(s, networkId))
+    const tokensByIdForSaga = yield* select((s) => tokensByIdSelector(s, [networkId]))
+    const computedNetworkFee = yield* call(computeReceiptNetworkFee, {
+      publicClient: publicClient[network],
+      receipt: swapTxReceipt,
+      networkId,
+      nativeFeeCurrency: nativeFeeCurrencyForSaga,
+      tokensById: tokensByIdForSaga,
+    })
+    yield* put(
+      recordSwapFeeMetadata({
+        txHash: swapTxReceipt.transactionHash,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
+        provider: 'uniswap-v4',
+        networkFeeValue: computedNetworkFee?.value,
+        networkFeeTokenId: computedNetworkFee?.tokenId,
+      })
+    )
+
     if (!suppressSuccessNavigation) {
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
@@ -511,6 +547,7 @@ export function* uniswapV4SwapSubmitSaga(action: PayloadAction<SwapInfo>) {
         transactionHash: swapTxReceipt.transactionHash,
         networkId,
         type: 'swap' as const,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : undefined,
       })
     }
 

@@ -15,6 +15,8 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { AddressRecipient, RecipientType, getDisplayName } from 'src/recipients/recipient'
 import { Actions as SendActions } from 'src/send/actions'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { TransactionDataInput } from 'src/send/types'
 import { CurrencyTokens, tokensByCurrencySelector } from 'src/tokens/selectors'
 import {
@@ -157,7 +159,16 @@ export function* tagTxsWithProviderInfo(action: UpdateTransactionsPayload) {
 
     Logger.debug(`${TAG}@tagTxsWithProviderInfo`, 'Done checking txs')
   } catch (error) {
-    Logger.error(`${TAG}@tagTxsWithProviderInfo`, 'Failed to tag txs with provider info', error)
+    // Non-fatal, users still see the tx, just without the CICO provider
+    // logo attribution. Ship to Sentry so backend can spot outages of
+    // the tx-hash-to-provider mapping endpoint.
+    Logger.warn(`${TAG}@tagTxsWithProviderInfo`, 'Failed to tag txs with provider info')
+    captureBusinessError(error, {
+      feature: 'cico',
+      provider: 'internal',
+      action: 'tag_txs_with_provider_info',
+      errorCode: classifyHttpError(error),
+    })
   }
 }
 

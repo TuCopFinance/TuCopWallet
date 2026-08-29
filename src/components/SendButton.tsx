@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
+import Colors from 'src/styles/colors'
 import Share from 'src/icons/actions/Share'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -24,7 +24,7 @@ export default function SendButton({ testID, size = 23, style }: Props) {
 
   return (
     <TopBarIconButtonV2
-      icon={<Share size={size} color={Colors.black} />}
+      icon={<Share size={size} color={Colors.primary} />}
       testID={testID}
       onPress={onPress}
       style={style}

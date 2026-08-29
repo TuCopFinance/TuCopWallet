@@ -21,13 +21,13 @@ import { Spacing } from 'src/styles/styles'
 import { tokensByIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
-import { NeeruCategoryId, categoryIdFromPositionId } from 'src/earn/neeru/constants'
+import { categoryIdFromPositionId } from 'src/earn/neeru/constants'
 import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import { neeruPositionsByCategorySelector } from 'src/earn/neeru/selectors'
 import { effectiveAnnualPercentFromMonthly } from 'src/earn/neeru/rateConversion'
 import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 
-const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; body: string }> = {
+const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<number, { title: string; body: string }> = {
   0: { title: 'neeruVaults.explainer.flexible.title', body: 'neeruVaults.explainer.flexible.body' },
   1: {
     title: 'neeruVaults.explainer.thirtyDays.title',
@@ -41,13 +41,23 @@ const NEERU_EXPLAINER_KEY_BY_CATEGORY: Record<NeeruCategoryId, { title: string; 
     title: 'neeruVaults.explainer.ninetyDays.title',
     body: 'neeruVaults.explainer.ninetyDays.body',
   },
+  4: {
+    title: 'neeruVaults.explainer.oneEightyDays.title',
+    body: 'neeruVaults.explainer.oneEightyDays.body',
+  },
+  5: {
+    title: 'neeruVaults.explainer.threeSixtyFiveDays.title',
+    body: 'neeruVaults.explainer.threeSixtyFiveDays.body',
+  },
 }
 
-const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<NeeruCategoryId, string> = {
+const NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY: Record<number, string> = {
   0: 'neeruVaults.cardSubtitle.flexible',
   1: 'neeruVaults.cardSubtitle.thirtyDays',
   2: 'neeruVaults.cardSubtitle.sixtyDays',
   3: 'neeruVaults.cardSubtitle.ninetyDays',
+  4: 'neeruVaults.cardSubtitle.oneEightyDays',
+  5: 'neeruVaults.cardSubtitle.threeSixtyFiveDays',
 }
 
 export default function PoolCard({
@@ -121,7 +131,8 @@ export default function PoolCard({
     if (pool.appId !== 'neeru-vaults') return new BigNumber(0)
     const categoryId = categoryIdFromPositionId(pool.positionId)
     if (categoryId === null) return new BigNumber(0)
-    return neeruByCategory[categoryId].reduce(
+    const positions = neeruByCategory[categoryId] ?? []
+    return positions.reduce(
       (sum, pos) => sum.plus(new BigNumber(pos.accruedInterest || 0)),
       new BigNumber(0)
     )
@@ -198,25 +209,35 @@ export default function PoolCard({
     [tokensInfo]
   )
 
-  // For Neeru pools, append a per-category subtitle so the 4 cards are distinguishable.
+  // For Neeru pools, append a per-category subtitle so the cards are
+  // distinguishable. Falls back to pool.displayProps.title so a newly-launched
+  // category (backend added 180 / 365 dias on 2026-08-25) surfaces its term
+  // without a wallet release; hand-tuned Spanish copy (with accents) still
+  // wins for the categories we shipped copy for.
   const cardSubtitle = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
     const categoryId = categoryIdFromPositionId(pool.positionId)
     if (categoryId === null) return null
     const key = NEERU_CARD_SUBTITLE_KEY_BY_CATEGORY[categoryId]
-    return t(key)
+    if (key) return t(key)
+    return pool.displayProps?.title ?? null
   }, [pool, t])
 
   // Per-category explainer sheet. The `?` next to the subtitle fires this so
-  // the user can read how the specific option (Flexible / 30 / 60 / 90 days)
-  // behaves without leaving the Earn tab. Uses native Alert for zero-infra
-  // cost; a designed BottomSheet is a follow-up if we want richer content.
+  // the user can read how the specific option (Flexible / 30 / 60 / 90 / 180
+  // / 365 days) behaves without leaving the Earn tab. Uses native Alert for
+  // zero-infra cost. Same displayProps fallback as the subtitle so newly-
+  // launched terms are readable even before wallet copy catches up.
   const neeruExplainer = useMemo(() => {
     if (pool.appId !== 'neeru-vaults') return null
     const categoryId = categoryIdFromPositionId(pool.positionId)
     if (categoryId === null) return null
     const keys = NEERU_EXPLAINER_KEY_BY_CATEGORY[categoryId]
-    return { title: t(keys.title), body: t(keys.body) }
+    if (keys) return { title: t(keys.title), body: t(keys.body) }
+    const fallbackTitle = pool.displayProps?.title
+    const fallbackBody = pool.displayProps?.description
+    if (!fallbackTitle || !fallbackBody) return null
+    return { title: fallbackTitle, body: fallbackBody }
   }, [pool, t])
 
   const [isExplainerOpen, setExplainerOpen] = useState(false)

@@ -44,15 +44,18 @@ describe('neeru selectors', () => {
   it('returns fetch status', () => {
     expect(neeruFetchStatusSelector(buildState({ fetchStatus: 'loading' }))).toBe('loading')
   })
-  it('groups positions by category', () => {
+  it('groups positions by category (only present categories are keyed)', () => {
     const state = buildState({
       positions: [make('1', 0), make('2', 1), make('3', 1)],
     })
     const grouped = neeruPositionsByCategorySelector(state)
     expect(grouped[0]).toHaveLength(1)
     expect(grouped[1]).toHaveLength(2)
-    expect(grouped[2]).toHaveLength(0)
-    expect(grouped[3]).toHaveLength(0)
+    // Categories with zero positions are absent from the map (consumers
+    // read with `?? []`); this lets the backend grow the ladder past the
+    // wallet's hardcoded 0..3 without either side having to coordinate.
+    expect(grouped[2]).toBeUndefined()
+    expect(grouped[3]).toBeUndefined()
   })
   it('returns closingPositionId', () => {
     expect(neeruClosingPositionIdSelector(buildState({ closingPositionId: '99' }))).toBe('99')
@@ -116,7 +119,9 @@ describe('neeru selectors', () => {
       })
       const grouped = neeruPositionsByCategorySelector(state)
       expect(grouped[2]).toEqual([optimisticOnly])
-      expect(grouped[0]).toEqual([])
+      // Categories with no positions are omitted from the map now that the
+      // selector populates lazily; consumers guard with `?? []`.
+      expect(grouped[0]).toBeUndefined()
     })
   })
 })

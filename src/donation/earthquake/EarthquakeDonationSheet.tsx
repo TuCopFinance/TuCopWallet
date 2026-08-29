@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import AppAnalytics from 'src/analytics/AppAnalytics'
+import { EarthquakeDonationEvents } from 'src/analytics/Events'
 import {
   Image,
   Linking,
@@ -148,8 +150,19 @@ export default function EarthquakeDonationSheet({ forwardedRef, source }: Props)
   const overBalance = parsed.gt(balance)
   const disableDonate = parsed.lte(0) || overBalance
 
+  // Fire once per mount so the impression count matches how many times the
+  // sheet was shown (guarded by the SHOW_EARTHQUAKE_DONATION_2026_08 Statsig
+  // gate + the once-per-app-open flag upstream).
+  useEffect(() => {
+    AppAnalytics.track(EarthquakeDonationEvents.earthquake_donation_sheet_impression)
+  }, [])
+
   const onDonate = () => {
     if (disableDonate) return
+    AppAnalytics.track(EarthquakeDonationEvents.earthquake_donation_donate_press, {
+      amountUsd: parsed.toFixed(),
+      source: source === 'popup' ? 'sheet' : 'card',
+    })
     dispatch(
       executeEarthquakeDonation({
         amountWhole: parsed.toFixed(),

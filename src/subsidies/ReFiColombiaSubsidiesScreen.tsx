@@ -1,13 +1,15 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useState } from 'react'
+import BigNumber from 'bignumber.js'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
-import { TabHomeEvents } from 'src/analytics/Events'
+import { SubsidiesEvents, TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import DebugInfoPanel from 'src/components/DebugInfoPanel'
 import { ErrorMessage } from 'src/components/ErrorMessage'
+import FeeSummary from 'src/components/FeeSummary'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
 import Checkmark from 'src/icons/status/Checkmark'
@@ -19,13 +21,17 @@ import { useTransactionInFlight } from 'src/lib/useTransactionInFlight'
 import { NetworkId } from 'src/transactions/types'
 import { getPassword } from 'src/pincode/authentication'
 import { useSelector } from 'src/redux/hooks'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import ReFiColombiaSubsidiesContract, {
   UBIClaimStatus,
 } from 'src/subsidies/ReFiColombiaSubsidiesContract'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { getShadowStyle, Shadow, Spacing } from 'src/styles/styles'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { TokenBalance } from 'src/tokens/slice'
 import Logger from 'src/utils/Logger'
+import { getEstimatedGasFee, getFeeDecimals } from 'src/viem/prepareTransactions'
 import { walletAddressSelector } from 'src/web3/selectors'
 import { Address } from 'viem'
 
@@ -42,11 +48,73 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const [isCheckingBeneficiary, setIsCheckingBeneficiary] = useState(true)
   const [debugInfo, setDebugInfo] = useState<string>('')
   const [loadError, setLoadError] = useState<Error | null>(null)
+  const [feePreview, setFeePreview] = useState<{
+    token: TokenBalance
+    amount: BigNumber
+  } | null>(null)
+  const feeCurrencies = useSelector((state) =>
+    feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
+  )
+  // Memoize by the ordered symbol list rather than the array reference so
+  // the preview effect does not re-run on every render (feeCurrenciesSelector
+  // returns a new sorted array each time even when contents are identical).
+  const feeCurrenciesKey = useMemo(
+    () => feeCurrencies.map((tok) => `${tok.tokenId}:${tok.balance.toString()}`).join('|'),
+    [feeCurrencies]
+  )
 
   useEffect(() => {
     void checkUBIStatus()
     void runDebugInfo()
   }, [walletAddress])
+
+  // Preview the network fee once the user is confirmed eligible + can claim.
+  // Runs prepareTransactions against the current fee-currency cascade (same
+  // one claimSubsidy uses) so the FeeSummary shown before "Reclamar" is
+  // faithful to what will actually pay gas. Guarded by feeCurrenciesKey so
+  // it only re-runs when balances / order actually change.
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      if (!walletAddress || !ubiStatus?.isBeneficiary || ubiStatus.hasClaimedThisWeek) {
+        setFeePreview(null)
+        return
+      }
+      if (feeCurrencies.length === 0) {
+        setFeePreview(null)
+        return
+      }
+      try {
+        const prepared = await ReFiColombiaSubsidiesContract.prepareClaimTransaction(
+          walletAddress as Address,
+          feeCurrencies
+        )
+        if (cancelled) return
+        if (prepared.type !== 'possible') {
+          setFeePreview(null)
+          return
+        }
+        const feeDecimals = getFeeDecimals(prepared.transactions, prepared.feeCurrency)
+        const amount = getEstimatedGasFee(prepared.transactions).shiftedBy(-feeDecimals)
+        setFeePreview({ token: prepared.feeCurrency, amount })
+      } catch (error) {
+        if (cancelled) return
+        Logger.warn(TAG, 'Fee preview failed')
+        captureBusinessError(error, {
+          feature: 'subsidies',
+          provider: 'refi-colombia-subsidies',
+          action: 'preview_claim_fee',
+          errorCode: 'rpc_error',
+        })
+        setFeePreview(null)
+      }
+    }
+    void run()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress, ubiStatus?.isBeneficiary, ubiStatus?.hasClaimedThisWeek, feeCurrenciesKey])
 
   const runDebugInfo = async () => {
     try {
@@ -75,6 +143,12 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       }
 
       setUbiStatus(status)
+      // Fires once per successful status check so we can measure how many
+      // Colombians reach the screen + break down by eligibility state.
+      AppAnalytics.track(SubsidiesEvents.subsidies_screen_view, {
+        claimableAmountCopm: status.isBeneficiary && !status.hasClaimedThisWeek ? 'claimable' : '0',
+        hasHistory: !!status.lastClaimTimestamp,
+      })
 
       Logger.debug(TAG, 'UBI Status:', status)
 
@@ -104,11 +178,18 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   const handleClaimSubsidy = async () => {
     if (!walletAddress || !ubiStatus) return
 
+    AppAnalytics.track(SubsidiesEvents.subsidies_claim_press, {
+      claimableAmountCopm: 'claimable',
+    })
+
     let flowId: string | undefined
     try {
       setIsLoading(true)
       Logger.debug(TAG, 'Starting claim process with biometric authentication')
 
+      AppAnalytics.track(SubsidiesEvents.subsidies_claim_start, {
+        claimableAmountCopm: 'claimable',
+      })
       flowId = start({
         flowKind: 'subsidy',
         steps: 1,
@@ -132,6 +213,10 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       if (result.success) {
         // Analitica
         AppAnalytics.track(TabHomeEvents.refi_medellin_ubi_pressed)
+        AppAnalytics.track(SubsidiesEvents.subsidies_claim_success, {
+          claimableAmountCopm: 'claimable',
+          transactionHash: result.txHash ?? '',
+        })
         advance(flowId, 'succeeded')
 
         // Actualizar el estado despues del exito
@@ -141,12 +226,21 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         navigation.goBack()
       } else {
         Logger.warn(TAG, 'Claim failed:', result.error)
+        AppAnalytics.track(SubsidiesEvents.subsidies_claim_error, {
+          claimableAmountCopm: 'claimable',
+          error: result.error ?? 'unknown',
+        })
         fail(flowId, classifyError(new Error(result.error ?? 'Subsidy claim failed')))
         // El error ya se mostro en el contrato, solo actualizamos el estado
         await checkUBIStatus()
       }
     } catch (error) {
       Logger.error(TAG, 'Error in claim process', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      AppAnalytics.track(SubsidiesEvents.subsidies_claim_error, {
+        claimableAmountCopm: 'claimable',
+        error: errorMessage,
+      })
       if (flowId) {
         if (error instanceof Error && error.message?.includes('cancel')) {
           abort(flowId)
@@ -328,6 +422,18 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
               <Text style={styles.processingText}>
                 {t('reFiColombiaSubsidies.eligible.processingText')}
               </Text>
+            </View>
+          )}
+
+          {feePreview && (
+            <View style={styles.feeSummaryWrap} testID="ReFiColombiaSubsidies/FeeSummary">
+              <Text style={styles.feeSummaryLabel}>
+                {t('reFiColombiaSubsidies.eligible.networkFeeLabel')}
+              </Text>
+              <FeeSummary
+                layout="stacked"
+                components={[{ amount: feePreview.amount, token: feePreview.token }]}
+              />
             </View>
           )}
 
@@ -559,5 +665,16 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginLeft: Spacing.Smallest8,
     fontWeight: '500',
+  },
+  feeSummaryWrap: {
+    marginTop: Spacing.Regular16,
+    paddingTop: Spacing.Regular16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.gray2,
+  },
+  feeSummaryLabel: {
+    ...typeScale.labelSmall,
+    color: Colors.gray4,
+    marginBottom: Spacing.Smallest8,
   },
 })

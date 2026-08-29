@@ -59,7 +59,7 @@ exports[`SimplexScreen renders correctly 1`] = `
         >
           amount
            (
-          cUSD
+          USDm
           )
         </Text>
         <Text
@@ -117,7 +117,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             ]
           }
         >
-          pricePer, {"coin":"cUSD"}
+          pricePer, {"coin":"USDm"}
         </Text>
         <Text
           style={
@@ -594,7 +594,7 @@ exports[`SimplexScreen renders correctly 2`] = `
         >
           amount
            (
-          cUSD
+          USDm
           )
         </Text>
         <Text
@@ -652,7 +652,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             ]
           }
         >
-          pricePer, {"coin":"cUSD"}
+          pricePer, {"coin":"USDm"}
         </Text>
         <Text
           style={

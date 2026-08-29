@@ -59,6 +59,8 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { useTokenInfo } from 'src/tokens/hooks'
 import { NetworkId } from 'src/transactions/types'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
 import networkConfig, { COPM_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
@@ -173,14 +175,27 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 
       return availableExchanges
     } catch (error) {
-      Logger.error(TAG, 'error fetching exchanges, displaying an empty array')
+      // Caller falls back to an empty exchanges list, so the user just sees
+      // fewer options instead of an error. Ship to Sentry so backend can
+      // spot outages of the exchanges catalog endpoint.
+      Logger.warn(TAG, 'error fetching exchanges, displaying an empty array')
+      captureBusinessError(error, {
+        feature: 'cico',
+        provider: 'internal',
+        action: 'select_provider_fetch_exchanges',
+        errorCode: classifyHttpError(error),
+      })
       return []
     }
   }, [])
 
   const asyncProviders = useAsync(async () => {
     if (!account) {
-      Logger.error(TAG, 'No account set')
+      // Defensive: SelectProvider is reached only after wallet import, so
+      // account should always be set. Downgrade to warn (would indicate a
+      // navigation bug elsewhere; no Sentry event needed as the crash
+      // would surface earlier).
+      Logger.warn(TAG, 'No account set')
       return
     }
     try {

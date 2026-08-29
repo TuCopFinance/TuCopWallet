@@ -8,9 +8,16 @@ import { Screens } from 'src/navigator/Screens'
 import { CANCELLED_PIN_INPUT } from 'src/pincode/authentication'
 import { vibrateError } from 'src/styles/hapticFeedback'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
-import { swapCancel, swapError, swapStart, swapSuccess } from 'src/swap/slice'
+import {
+  recordSwapFeeMetadata,
+  swapCancel,
+  swapError,
+  swapStart,
+  swapSuccess,
+} from 'src/swap/slice'
 import { Field, SwapInfo, UNISWAP_V4_PROVIDER } from 'src/swap/types'
-import { tokensByIdSelector } from 'src/tokens/selectors'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
+import { computeReceiptNetworkFee } from 'src/swap/computeReceiptNetworkFee'
 import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForSwap } from 'src/tokens/utils'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
@@ -94,8 +101,14 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     return
   }
   const swapSubmittedAt = Date.now()
-  const { swapId, userInput, quote, areSwapTokensShuffled, suppressSuccessNavigation } =
-    action.payload
+  const {
+    swapId,
+    userInput,
+    quote,
+    areSwapTokensShuffled,
+    suppressSuccessNavigation,
+    suppressStandbyDispatch,
+  } = action.payload
   const { fromTokenId, toTokenId, updatedField, swapAmount } = userInput
   const {
     provider,
@@ -315,6 +328,21 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
       createSwapStandbyTxHandlers.splice(createSwapStandbyTxHandlers.length - 1, 0, () => null)
     }
 
+    // Multi-swap orchestration (2026-08-28): when this swap is a per-leg tx
+    // of a Dolares -> Pesos batch, the orchestrator (dollarsSpend/saga.ts)
+    // dispatches ONE aggregate standby after all legs complete so the feed
+    // shows a single "Dolares > Pesos" row. Overwrite every per-leg
+    // handler with a null-returning stub here to avoid emitting individual
+    // "Intercambio USDm > Pesos" / "USDC > Pesos" / "USDT > Pesos" entries
+    // that would clutter the user's activity feed with N rows for one
+    // logical operation. The txs still SUBMIT and MINE - only the client-
+    // side optimistic standby is skipped for these legs.
+    if (suppressStandbyDispatch) {
+      for (let i = 0; i < createSwapStandbyTxHandlers.length; i++) {
+        createSwapStandbyTxHandlers[i] = () => null
+      }
+    }
+
     // Pre-flight simulation (Track B / WRI): when the swap requires a separate
     // approve + swap pair, simulate the swap call against the latest state. If
     // the swap would revert for non-allowance reasons (slippage, paused
@@ -410,6 +438,40 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // not to (see SwapInfo.suppressSuccessNavigation). The orchestrator will
     // navigate once at the end with the aggregated leg breakdown so the user
     // does not see the sheet flash for each step.
+    // Squid integrator fee: (pct/100) * sold-token USD value. Already
+    // deducted from delivered amount by Squid at quote time; surfaced on
+    // the success screen + persisted for the deferred tx-details screen
+    // (see swap/slice.feeMetadataByTxHash) so the fee row is uniform on
+    // every surface, not just the immediate post-Confirm one.
+    const appFeeUsd =
+      (Number(appFeePercentageIncludedInPrice) / 100) * Number(estimatedSellTokenUsdValue)
+    // Compute the network fee off the receipt here (saga side) so the
+    // success screen renders 'Tarifa de red' from route params without a
+    // React hook that races state hydration. See computeReceiptNetworkFee
+    // for the CIP-64 adapter matching logic.
+    const nativeFeeCurrencyForSaga = yield* select((s) => nativeFeeCurrencySelector(s, networkId))
+    const tokensByIdForSaga = yield* select((s) => tokensByIdSelector(s, [networkId]))
+    const computedNetworkFee = yield* call(computeReceiptNetworkFee, {
+      publicClient: publicClient[network],
+      receipt: swapTxReceipt,
+      networkId,
+      nativeFeeCurrency: nativeFeeCurrencyForSaga,
+      tokensById: tokensByIdForSaga,
+    })
+    // Always record the provider (even when the integrator fee is 0) so the
+    // success + tx-details 'Proveedor' row renders on every swap. Renderers
+    // read appFeeUsd separately to decide whether to draw the 'Tarifa del
+    // proveedor' row; provider identity is orthogonal to that.
+    yield* put(
+      recordSwapFeeMetadata({
+        txHash: swapTxReceipt.transactionHash,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : '0',
+        provider: 'squid',
+        networkFeeValue: computedNetworkFee?.value,
+        networkFeeTokenId: computedNetworkFee?.tokenId,
+      })
+    )
+
     if (!suppressSuccessNavigation) {
       navigate(Screens.TransactionSuccessScreen, {
         fromTokenId,
@@ -419,6 +481,7 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
         transactionHash: swapTxReceipt.transactionHash,
         networkId,
         type: 'swap' as const,
+        appFeeUsd: appFeeUsd > 0 ? appFeeUsd.toString() : undefined,
       })
     }
 

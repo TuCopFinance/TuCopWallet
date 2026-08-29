@@ -122,10 +122,13 @@ export function selectOptimalFeeCurrency(
     const remainingBalance = currency.balance.minus(maxCostInDecimals)
     const efficiency = remainingBalance.dividedBy(currency.balance).toNumber()
 
-    // Prefer native CELO and stable currencies for better predictability
+    // Prefer native CELO and stable currencies for better predictability.
+    // Mento rebrand deploy 2026-08-20: the cUSD contract now returns 'USDm'
+    // from symbol(); include both spellings so the bonus still applies to
+    // historical state that still carries 'cUSD'.
     let priorityBonus = 0
     if (currency.symbol === 'CELO') priorityBonus = 0.1
-    else if (['cUSD', 'USDC', 'USDT'].includes(currency.symbol)) priorityBonus = 0.05
+    else if (['USDm', 'cUSD', 'USDC', 'USDT'].includes(currency.symbol)) priorityBonus = 0.05
 
     const adjustedEfficiency = efficiency + priorityBonus
 

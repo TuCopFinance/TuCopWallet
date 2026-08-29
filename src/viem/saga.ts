@@ -1,5 +1,5 @@
 import { endTransactional, pinTransactional } from 'src/pincode/PasswordCache'
-import { tokensByIdSelector } from 'src/tokens/selectors'
+import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { BaseStandbyTransaction, addStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
@@ -212,10 +212,14 @@ export function* sendPreparedTransactions(
       yield* call(waitForMempoolCommit, wallet, wallet.account.address, txNonce)
 
       const tokensById = yield* select((state) => tokensByIdSelector(state, [networkId]))
+      const nativeFeeCurrency = yield* select((state) =>
+        nativeFeeCurrencySelector(state, networkId)
+      )
       const feeCurrencyId = getFeeCurrencyToken(
         [preparedTransaction],
         networkId,
-        tokensById
+        tokensById,
+        nativeFeeCurrency
       )?.tokenId
 
       const standByTx = createBaseStandbyTransaction(hash, feeCurrencyId)

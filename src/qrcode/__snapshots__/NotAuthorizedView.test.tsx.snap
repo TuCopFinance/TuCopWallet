@@ -4,87 +4,387 @@ exports[`NotAuthorizedView renders correctly 1`] = `
 <View
   style={
     {
-      "alignItems": "center",
+      "backgroundColor": "#FFFFFF",
       "flex": 1,
       "justifyContent": "center",
       "paddingHorizontal": 16,
     }
   }
 >
-  <Text
-    style={
-      {
-        "color": "#FFFFFF",
-        "fontFamily": "RedHatDisplayBold",
-        "fontSize": 20,
-        "lineHeight": 28,
-        "marginBottom": 8,
-      }
-    }
-  >
-    cameraNotAuthorizedTitle
-  </Text>
-  <Text
-    style={
-      {
-        "color": "#FFFFFF",
-        "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 12,
-        "lineHeight": 24,
-        "marginBottom": 16,
-        "textAlign": "center",
-      }
-    }
-  >
-    cameraNotAuthorizedDescription
-  </Text>
   <View
-    accessibilityState={
+    style={
       {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": undefined,
+        "alignItems": "center",
+        "alignSelf": "stretch",
+        "backgroundColor": "#F8F9F9",
+        "borderColor": "#E6E6E6",
+        "borderRadius": 16,
+        "borderWidth": 1,
+        "elevation": 12,
+        "marginHorizontal": 8,
+        "marginVertical": 8,
+        "padding": 32,
+        "shadowColor": "rgba(156, 164, 169, 0.4)",
+        "shadowOffset": {
+          "height": 2,
+          "width": 0,
+        },
+        "shadowOpacity": 1,
+        "shadowRadius": 12,
       }
     }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    focusable={true}
-    nativeBackgroundAndroid={
-      {
-        "attribute": "selectableItemBackgroundBorderless",
-        "rippleRadius": undefined,
-        "type": "ThemeAttrAndroid",
-      }
-    }
-    onClick={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
+    testID="NotAuthorizedView"
   >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderRadius": 60,
+            "height": 120,
+            "justifyContent": "center",
+            "marginBottom": 24,
+            "width": 120,
+          },
+          {
+            "backgroundColor": "#FFF9EA",
+          },
+        ]
+      }
+    >
+      <svg
+        fill="none"
+        height={64}
+        viewBox="0 0 20 20"
+        width={64}
+      >
+        <path
+          d="M1.27 15.5a.811.811 0 0 1-.708-.417.915.915 0 0 1-.114-.406.749.749 0 0 1 .115-.427L8.27.917a.82.82 0 0 1 .323-.313A.862.862 0 0 1 9 .5c.139 0 .274.035.406.104a.82.82 0 0 1 .323.313l7.709 13.333a.748.748 0 0 1 .114.427.913.913 0 0 1-.114.406.81.81 0 0 1-.709.417H1.271Zm1.438-1.667h12.584L9 3 2.708 13.833ZM9 13c.236 0 .434-.08.594-.24.16-.16.24-.357.24-.593a.806.806 0 0 0-.24-.594.806.806 0 0 0-.594-.24.806.806 0 0 0-.594.24.806.806 0 0 0-.24.594c0 .236.08.434.24.593.16.16.358.24.594.24Zm0-2.5c.236 0 .434-.08.594-.24.16-.16.24-.357.24-.593v-2.5a.806.806 0 0 0-.24-.594.806.806 0 0 0-.594-.24.806.806 0 0 0-.594.24.806.806 0 0 0-.24.594v2.5c0 .236.08.434.24.593.16.16.358.24.594.24Z"
+          fill="#9C6E00"
+        />
+      </svg>
+    </View>
     <Text
       style={
         {
-          "color": "#2F4ACD",
-          "fontFamily": "RedHatDisplaySemiBold",
-          "fontSize": 12,
-          "lineHeight": 24,
+          "color": "#2E3338",
+          "fontFamily": "RedHatDisplayMedium",
+          "fontSize": 18,
+          "lineHeight": 28,
+          "paddingBottom": 16,
+          "paddingTop": 8,
+          "textAlign": "center",
         }
       }
     >
-      cameraSettings
+      cameraNotAuthorizedTitle
     </Text>
+    <Text
+      style={
+        {
+          "color": "#666666",
+          "fontFamily": "RedHatDisplayRegular",
+          "fontSize": 12,
+          "lineHeight": 24,
+          "marginBottom": 32,
+          "textAlign": "center",
+        }
+      }
+    >
+      cameraNotAuthorizedDescription
+    </Text>
+    <View
+      style={
+        {
+          "gap": 12,
+          "width": "100%",
+        }
+      }
+    >
+      <View
+        distance={8}
+        offset={
+          [
+            0,
+            4,
+          ]
+        }
+        startColor="rgba(190, 201, 255, 0.28)"
+        style={
+          {
+            "alignSelf": "stretch",
+            "borderRadius": 15,
+          }
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "flexDirection": "column",
+                "width": "100%",
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "overflow": "hidden",
+                },
+                {
+                  "borderRadius": 100,
+                },
+              ]
+            }
+          >
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              focusable={true}
+              nativeBackgroundAndroid={
+                {
+                  "attribute": "selectableItemBackground",
+                  "rippleRadius": undefined,
+                  "type": "ThemeAttrAndroid",
+                }
+              }
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "#2F4ACD",
+                    "flexDirection": "row",
+                    "flexGrow": 1,
+                    "height": 48,
+                    "justifyContent": "center",
+                    "maxHeight": 56,
+                    "opacity": 1,
+                    "paddingHorizontal": 24,
+                    "paddingVertical": 5,
+                    "width": "100%",
+                  },
+                  undefined,
+                ]
+              }
+              testID="NotAuthorizedView/OpenSettings"
+            >
+              <View
+                style={
+                  {
+                    "bottom": 0,
+                    "left": 0,
+                    "position": "absolute",
+                    "right": 0,
+                    "top": 0,
+                  }
+                }
+              >
+                <BVLinearGradient
+                  borderRadii={
+                    [
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                    ]
+                  }
+                  colors={
+                    [
+                      -13677875,
+                      -15194777,
+                    ]
+                  }
+                  endPoint={
+                    [
+                      1,
+                      0,
+                    ]
+                  }
+                  locations={null}
+                  startPoint={
+                    [
+                      0,
+                      0,
+                    ]
+                  }
+                  style={
+                    {
+                      "bottom": 0,
+                      "left": 0,
+                      "position": "absolute",
+                      "right": 0,
+                      "top": 0,
+                    }
+                  }
+                />
+              </View>
+              <Text
+                maxFontSizeMultiplier={1}
+                style={
+                  {
+                    "color": "#FFFFFF",
+                    "fontFamily": "RedHatDisplaySemiBold",
+                    "fontSize": 12,
+                    "fontWeight": "normal",
+                    "lineHeight": 24,
+                    "marginLeft": 0,
+                    "marginRight": 0,
+                  }
+                }
+              >
+                cameraSettings
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        distance={8}
+        offset={
+          [
+            0,
+            4,
+          ]
+        }
+        startColor="rgba(190, 201, 255, 0.28)"
+        style={
+          {
+            "alignSelf": "stretch",
+            "borderRadius": 15,
+          }
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "flexDirection": "column",
+                "width": "100%",
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "overflow": "hidden",
+                },
+                {
+                  "borderRadius": 100,
+                },
+              ]
+            }
+          >
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              focusable={true}
+              nativeBackgroundAndroid={
+                {
+                  "attribute": "selectableItemBackground",
+                  "rippleRadius": undefined,
+                  "type": "ThemeAttrAndroid",
+                }
+              }
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "#FFFFFF",
+                    "borderColor": "#FFFFFF",
+                    "borderRadius": 100,
+                    "borderWidth": 1,
+                    "flexDirection": "row",
+                    "flexGrow": 1,
+                    "height": 48,
+                    "justifyContent": "center",
+                    "maxHeight": 56,
+                    "opacity": 1,
+                    "paddingHorizontal": 24,
+                    "paddingVertical": 5,
+                    "width": "100%",
+                  },
+                  undefined,
+                ]
+              }
+              testID="NotAuthorizedView/GoBack"
+            >
+              <Text
+                maxFontSizeMultiplier={1}
+                style={
+                  {
+                    "color": "#2F4ACD",
+                    "fontFamily": "RedHatDisplaySemiBold",
+                    "fontSize": 12,
+                    "fontWeight": "normal",
+                    "lineHeight": 24,
+                    "marginLeft": 0,
+                    "marginRight": 0,
+                  }
+                }
+              >
+                goBack
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
   </View>
 </View>
 `;

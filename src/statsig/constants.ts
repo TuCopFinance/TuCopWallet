@@ -15,6 +15,30 @@ export const ExperimentConfigs = {
       variant: 'control' as 'control' | 'colloquial_terms' | 'checkbox',
     },
   },
+  [StatsigExperiments.ONBOARDING_PHONE_VERIFY_TIMING]: {
+    experimentName: StatsigExperiments.ONBOARDING_PHONE_VERIFY_TIMING,
+    defaultValues: {
+      // Control keeps the current upfront prompt during onboarding.
+      // Variant defers the prompt until the user tries their first send.
+      promptTiming: 'upfront' as 'upfront' | 'deferred_until_send',
+    },
+  },
+  [StatsigExperiments.GOLD_CONFIRM_LAYOUT]: {
+    experimentName: StatsigExperiments.GOLD_CONFIRM_LAYOUT,
+    defaultValues: {
+      // Control is the current compact layout (single "Recibes" card +
+      // consolidated details panel). Variant reintroduces separate
+      // from-to cards with an arrow between them.
+      layout: 'compact' as 'compact' | 'verbose',
+    },
+  },
+  [StatsigExperiments.SWAP_CONFIRM_CTA_COPY]: {
+    experimentName: StatsigExperiments.SWAP_CONFIRM_CTA_COPY,
+    defaultValues: {
+      // Control keeps the neutral verb. Variant uses an action phrase.
+      cta: 'confirmar' as 'confirmar' | 'cambiar_ahora',
+    },
+  },
 } satisfies {
   [key in StatsigExperiments]: {
     experimentName: key

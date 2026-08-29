@@ -70,6 +70,29 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - PersonaInquirySDK2 (2.3.9)
+  - PostHog (3.58.3)
+  - posthog-react-native-session-replay (1.6.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - PostHog (~> 3.58.1)
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - QuickCrypto (1.0.18):
     - DoubleConversion
     - glog
@@ -2076,6 +2099,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
+  - posthog-react-native-session-replay (from `../node_modules/posthog-react-native-session-replay`)
   - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2190,6 +2214,7 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - PersonaInquirySDK2
+    - PostHog
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -2223,6 +2248,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/lottie-react-native"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
+  posthog-react-native-session-replay:
+    :path: "../node_modules/posthog-react-native-session-replay"
   QuickCrypto:
     :path: "../node_modules/react-native-quick-crypto"
   RCT-Folly:
@@ -2446,6 +2473,8 @@ SPEC CHECKSUMS:
   lottie-react-native: 5d89c05930d4180a1e39b1757d46e6c0eec90255
   NitroModules: 976940466f7d2496b26b439988b1736703e0b73b
   PersonaInquirySDK2: 8153173c5f6d4e964874c9f0d7b375652c9bb6f9
+  PostHog: f6da05611d29a8facb652f7e2ee8389bc3f96b67
+  posthog-react-native-session-replay: 2042b4aa2c8dd8c759c43a81ad3eab0c5e6099e3
   QuickCrypto: c332806b4e8889c55bed9966154000eadcaec96c
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 6ee92578d332db1d4e03267d3ae98bcf8b780863
@@ -2481,7 +2510,7 @@ SPEC CHECKSUMS:
   react-native-compat: 616af2640dc388c70bb9de7aa0577f26e5e42464
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-contacts: 5eeeb8bff95a0e1680a11329e15653eb73d29a1d
-  react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
+  react-native-cookies: f7772e020f2d61cbbb591cf769ac352b8c1517e6
   react-native-in-app-review: b3d1eed3d1596ebf6539804778272c4c65e4a400
   react-native-launch-arguments: d4759f7591e2766e6c5ec746b7032429edaf7058
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187

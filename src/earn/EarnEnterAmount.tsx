@@ -10,6 +10,7 @@ import { EarnEvents, SendEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import FeeSummary, { FeeComponent } from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import KeyboardAwareScrollView from 'src/components/KeyboardAwareScrollView'
 import { LabelWithInfo } from 'src/components/LabelWithInfo'
@@ -42,7 +43,6 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { SwapTransaction } from 'src/swap/types'
 import { useLocalToTokenAmount, useTokenInfo, useTokenToLocalAmount } from 'src/tokens/hooks'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector, swappableFromTokensByNetworkIdSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getTokenDisplayName } from 'src/tokens/utils'
@@ -253,11 +253,9 @@ function EarnEnterAmount({ route }: Props) {
     [transactionToken, isWithdrawal, pool]
   )
 
-  const rawFeeCurrencies = useSelector((state) =>
+  const feeCurrencies = useSelector((state) =>
     feeCurrenciesSelector(state, transactionToken.networkId)
   )
-  // Bug E: stables ahead of CELO for the earn deposit/withdraw flow.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
 
   useEffect(() => {
     clearPreparedTransactions()
@@ -464,6 +462,14 @@ function EarnEnterAmount({ route }: Props) {
               />
             </View>
           </View>
+          {/* Balance display: separate line under the input box, right-aligned.
+              Matches the Gold buy/sell pattern (src/gold/GoldBuyEnterAmount.tsx
+              balanceText) so the wallet has one consistent "how we show the
+              available balance on an enter-amount screen" convention. */}
+          <Text style={styles.balanceText} testID="EarnEnterAmount/Balance">
+            {t('earnFlow.enterAmount.available')}: {balanceInInputToken.toFormat(2)}{' '}
+            {getTokenDisplayName(inputToken.symbol)}
+          </Text>
           {tokenAmount && prepareTransactionsResult && !isWithdrawal && (
             <TransactionDepositDetails
               pool={pool}
@@ -654,6 +660,8 @@ function TransactionWithdrawDetails({
       <View style={styles.txDetailsLineItem}>
         <LabelWithInfo
           label={t('earnFlow.enterAmount.available')}
+          style={styles.txDetailsLabel}
+          labelStyle={styles.txDetailsLabelText}
           testID="LabelWithInfo/AvailableLabel"
         />
         <View style={styles.txDetailsValue}>
@@ -681,6 +689,8 @@ function TransactionWithdrawDetails({
           <View key={index} style={styles.txDetailsLineItem}>
             <LabelWithInfo
               label={t('earnFlow.enterAmount.claimingReward')}
+              style={styles.txDetailsLabel}
+              labelStyle={styles.txDetailsLabelText}
               testID={`LabelWithInfo/ClaimingReward-${index}`}
             />
             <View style={{ ...styles.txDetailsValue, flex: 1 }}>
@@ -707,17 +717,20 @@ function TransactionWithdrawDetails({
         <View style={styles.txDetailsLineItem}>
           <LabelWithInfo
             label={t('earnFlow.enterAmount.fees')}
+            style={styles.txDetailsLabel}
+            labelStyle={styles.txDetailsLabelText}
             onPress={() => {
               feeDetailsBottomSheetRef?.current?.snapToIndex(0)
             }}
             testID="LabelWithInfo/FeeLabel"
           />
-          <View style={styles.txDetailsValue}>
-            <TokenDisplay
+          <View style={styles.txDetailsFeeValue}>
+            <FeeSummary
+              layout="stacked"
+              components={[{ amount: maxFeeAmount, token: feeCurrency }] as FeeComponent[]}
+              primaryStyle={styles.txDetailsFeePrimary}
+              secondaryStyle={styles.txDetailsFeeSecondary}
               testID="EarnEnterAmount/Fees"
-              tokenId={feeCurrency.tokenId}
-              amount={maxFeeAmount.toString()}
-              style={styles.txDetailsValueText}
             />
           </View>
         </View>
@@ -762,6 +775,8 @@ function TransactionDepositDetails({
           <View style={styles.txDetailsLineItem}>
             <LabelWithInfo
               label={t('earnFlow.enterAmount.swap')}
+              style={styles.txDetailsLabel}
+              labelStyle={styles.txDetailsLabelText}
               onPress={() => {
                 swapDetailsBottomSheetRef?.current?.snapToIndex(0)
               }}
@@ -787,7 +802,11 @@ function TransactionDepositDetails({
           </View>
         )}
         <View style={styles.txDetailsLineItem}>
-          <LabelWithInfo label={t('earnFlow.enterAmount.deposit')} />
+          <LabelWithInfo
+            label={t('earnFlow.enterAmount.deposit')}
+            style={styles.txDetailsLabel}
+            labelStyle={styles.txDetailsLabelText}
+          />
           <View style={styles.txDetailsValue}>
             <TokenDisplay
               tokenId={pool.dataProps.depositTokenId}
@@ -811,6 +830,8 @@ function TransactionDepositDetails({
         <View style={styles.txDetailsLineItem}>
           <LabelWithInfo
             label={t('earnFlow.enterAmount.fees')}
+            style={styles.txDetailsLabel}
+            labelStyle={styles.txDetailsLabelText}
             onPress={() => {
               feeDetailsBottomSheetRef?.current?.snapToIndex(0)
             }}
@@ -1129,6 +1150,16 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.Smallest8,
     color: Colors.black,
   },
+  // "Disponible: X.XX Token" line directly under the input box, right-
+  // aligned. Mirrors src/gold/GoldBuyEnterAmount.tsx.balanceText so both
+  // enter-amount surfaces (Neeru deposit/withdraw + Gold buy/sell) share
+  // the same convention for showing the user's available balance.
+  balanceText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    marginTop: Spacing.Smallest8,
+    textAlign: 'right',
+  },
   localAmount: {
     ...typeScale.labelMedium,
   },
@@ -1137,32 +1168,79 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.Regular16,
     borderRadius: 16,
   },
+  // Details card mirrors src/swap/SwapTransactionDetails.tsx.styles.container
+  // exactly: same padding, radius, border, and row gap. Both cards appear on
+  // adjacent flows (swap confirm, gold buy/sell confirm, earn deposit/withdraw)
+  // so keeping them visually identical is the design intent.
   txDetailsContainer: {
     marginVertical: Spacing.Regular16,
     padding: Spacing.Regular16,
     borderColor: Colors.gray2,
     borderWidth: 1,
     borderRadius: 12,
-    gap: Spacing.Smallest8,
+    gap: Spacing.Regular16,
   },
+  // Standard row shape: label on left (intrinsic width via txDetailsLabel
+  // override), value on right (flex:1 fills remaining space, right-aligned).
+  //
+  // NOTE: the shared LabelWithInfo component ships with `flex:1` on its
+  // touchable which competes with the value column's `flex:1` and splits
+  // the row 50/50 - long numeric values like "10,000.00 Pesos (COP$10,000.00)"
+  // then wrap mid-word inside the cramped value column. We override that
+  // via txDetailsLabel below so the label takes only what "Depósito" /
+  // "Tarifas" / etc need, leaving the whole rest of the row for the value.
   txDetailsLineItem: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: Spacing.Small12,
+  },
+  txDetailsLabel: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  // Label text style matches swap card `styles.label` (bodySmall gray4).
+  // Overrides the LabelWithInfo default (bodyMedium black) so the label
+  // reads as secondary metadata, consistent with the swap confirm sheet.
+  txDetailsLabelText: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
   },
   txDetailsValue: {
-    flexShrink: 1,
+    flex: 1,
     flexDirection: 'row',
     gap: Spacing.Tiny4,
     alignItems: 'center',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
   },
+  // Value text style matches swap card `styles.value` (bodySmall black
+  // right-aligned). Ensures the deposit/withdraw details card reads at
+  // the same visual weight as the swap confirm card.
   txDetailsValueText: {
-    ...typeScale.bodyMedium,
+    ...typeScale.bodySmall,
     color: Colors.black,
     flexWrap: 'wrap',
+    textAlign: 'right',
+  },
+  // Fee value column mirrors swap SwapTransactionDetails (bodySmall/gray for
+  // the token breakdown, bodyXSmall/gray for the ≈ COP conversion) so the
+  // fee row on the Neeru deposit / withdraw enter-amount screen reads
+  // identically to the fee row on the swap confirm screen.
+  txDetailsFeeValue: {
+    flexShrink: 1,
+    alignItems: 'flex-end',
+  },
+  txDetailsFeePrimary: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    textAlign: 'right',
+  },
+  txDetailsFeeSecondary: {
+    ...typeScale.bodyXSmall,
+    color: Colors.gray4,
     textAlign: 'right',
   },
   gray4: {

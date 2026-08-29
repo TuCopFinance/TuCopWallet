@@ -32,16 +32,18 @@ export const neeruPositionsSelector = createSelector(
   }
 )
 
+// Category-indexed map. Populated lazily so a backend that adds a new
+// category (Neeru extended from 4 to 6 categories on 2026-08-25) does not
+// crash a wallet with hardcoded 0..3 keys. Consumers must default the read
+// with `?? []` because a category with zero positions has no entry.
 export const neeruPositionsByCategorySelector = createSelector(
   [neeruPositionsSelector],
   (positions): Record<NeeruCategoryId, NeeruIndividualPosition[]> => {
-    const acc: Record<NeeruCategoryId, NeeruIndividualPosition[]> = {
-      0: [],
-      1: [],
-      2: [],
-      3: [],
+    const acc: Record<NeeruCategoryId, NeeruIndividualPosition[]> = {}
+    for (const p of positions) {
+      if (!acc[p.category]) acc[p.category] = []
+      acc[p.category].push(p)
     }
-    for (const p of positions) acc[p.category].push(p)
     return acc
   }
 )

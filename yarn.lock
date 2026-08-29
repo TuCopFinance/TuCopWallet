@@ -2732,6 +2732,18 @@
     "@pnpm/resolve-workspace-range" "5.0.1"
     ramda "npm:@pnpm/ramda@0.28.1"
 
+"@posthog/core@^1.48.10":
+  version "1.48.10"
+  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.48.10.tgz#efde48f30b7d742b4261c00dbe13b6bee2cabe59"
+  integrity sha512-Y70zhdQFNMwHHZk9MW44MJUR1DyFm0Cn3DOtd+wQYnGv+kX+qc6CA+pBtEmZe2XD0K9uuOKiz2LJwzaq/wz0FA==
+  dependencies:
+    "@posthog/types" "^1.405.2"
+
+"@posthog/types@^1.405.2", "@posthog/types@^1.405.3":
+  version "1.405.3"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.405.3.tgz#38d56ff7b8bf3591e1af07aae8f3fb43018ef47c"
+  integrity sha512-HApKJSYfwo/z2KIVB98E/8XwEL3pTXawBp0AB7FKRVtStz9hizRlaO6n9RR7sjgXLnOLvqj++CGsZb8rQbOS2g==
+
 "@react-native-async-storage/async-storage@^2.0.0":
   version "2.0.0"
   resolved "https://registry.npmjs.org/@react-native-async-storage/async-storage/-/async-storage-2.0.0.tgz"
@@ -12327,6 +12339,19 @@ posix-character-classes@^0.1.0:
   version "0.1.1"
   resolved "https://registry.npmjs.org/posix-character-classes/-/posix-character-classes-0.1.1.tgz"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
+
+posthog-react-native-session-replay@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/posthog-react-native-session-replay/-/posthog-react-native-session-replay-1.6.0.tgz#ff1534253d249d7cb45c6d2144da014a78a3669c"
+  integrity sha512-OCaei77mtgg7JT+TgHSCgpWeKq2XXENUOPNxGbjhXZa/aJpptOW5VsBqjtH4BPzM2c1veS1DK4/Fb/uV4Rb3cg==
+
+posthog-react-native@^4.64.1:
+  version "4.64.1"
+  resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-4.64.1.tgz#b358dc53fcf80ecaff4010326227def578953bdb"
+  integrity sha512-cuVos3AJiCPat40F8hLgyXVDkSWdAYtaTiuGAfcy89r1LE2UakMX7eYDttxx8SZNBasBRnRw1asMCUdsnlYfPg==
+  dependencies:
+    "@posthog/core" "^1.48.10"
+    "@posthog/types" "^1.405.3"
 
 prelude-ls@^1.2.1:
   version "1.2.1"

@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/react-native'
 import BigNumber from 'bignumber.js'
-import { useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { SENTRY_ENABLED } from 'src/config'
 import { useSelector } from 'src/redux/hooks'
@@ -8,13 +7,14 @@ import {
   FetchQuoteResponse,
   Field,
   ParsedSwapAmount,
+  SquidDegradationError,
   SwapTransaction,
   SwapType,
   UNISWAP_V4_PROVIDER,
   UniswapV4BatchCall,
   UniswapV4Permit2Metadata,
+  isSquidDegradationError,
 } from 'src/swap/types'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -40,6 +40,84 @@ export const NO_QUOTE_ERROR_MESSAGE = 'No quote available'
 // prefix and shows a friendlier inline "try again" notification instead of
 // the generic crash sheet.
 export const SWAP_UPSTREAM_TRANSIENT_ERROR = 'SWAP_UPSTREAM_TRANSIENT'
+
+/**
+ * Error subclass thrown when backend returns the enriched Squid-degradation
+ * envelope on /api/swap/quote (backend PR #228, 2026-08-22). Preserves the
+ * legacy `SWAP_UPSTREAM_TRANSIENT:{status}:{body}` message shape so
+ * existing consumers that pattern-match on the message keep working, and
+ * additionally exposes the parsed envelope so the SwapScreen banner can
+ * render the correct variant (rate-limited-with-retry-after,
+ * unavailable-with-USDT-fallback, or generic unavailable).
+ */
+export class SquidDegradationErr extends Error {
+  readonly envelope: SquidDegradationError
+  readonly status: number
+
+  constructor(status: number, envelope: SquidDegradationError, bodyText: string) {
+    super(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:${status}:${bodyText}`)
+    this.name = 'SquidDegradationErr'
+    this.status = status
+    this.envelope = envelope
+  }
+}
+
+/**
+ * Parse a 429/502 response body against the enriched envelope schema.
+ * Returns the typed envelope if the body matches, else null (legacy 502/429
+ * without envelope, or JSON parse error). Caller falls back to generic
+ * SWAP_UPSTREAM_TRANSIENT handling in that case.
+ */
+function parseSquidEnvelope(bodyText: string): SquidDegradationError | null {
+  try {
+    const parsed = JSON.parse(bodyText)
+    return isSquidDegradationError(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Add Sentry breadcrumb + scope tags for the enriched Squid envelope so the
+ * backend dashboard can split swap-error metrics by code / route /
+ * fallback availability. `message` is deliberately NOT logged — it's an
+ * internal English string that could leak tech vocabulary.
+ */
+function tagSquidDegradation(envelope: SquidDegradationError, status: number): void {
+  if (!SENTRY_ENABLED) return
+  Sentry.withScope((scope) => {
+    scope.setTag('swap_error_code', envelope.error)
+    scope.setTag('swap_error_route', envelope.route)
+    scope.setTag('swap_error_fallback_hint', envelope.fallback_hint ?? 'none')
+    scope.setTag('swap_error_http_status', String(status))
+    scope.addBreadcrumb({
+      category: 'swap.error',
+      level: 'warning',
+      data: {
+        code: envelope.error,
+        route: envelope.route,
+        fallback_hint: envelope.fallback_hint,
+        retry_after_seconds: envelope.retry_after_seconds,
+        status,
+      },
+    })
+  })
+}
+
+/**
+ * Shared throw path for 429/502 responses. Parses the enriched envelope
+ * when present and throws SquidDegradationErr; otherwise throws a plain
+ * Error with the legacy SWAP_UPSTREAM_TRANSIENT prefix so downstream
+ * pattern-matching keeps working.
+ */
+export function throwTransientError(status: number, bodyText: string): never {
+  const envelope = parseSquidEnvelope(bodyText)
+  if (envelope) {
+    tagSquidDegradation(envelope, status)
+    throw new SquidDegradationErr(status, envelope, bodyText)
+  }
+  throw new Error(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:${status}:${bodyText}`)
+}
 
 // Tag every subsequent Sentry event on the current scope with the source
 // that produced the winning quote. Backend owns a dashboard that splits
@@ -222,10 +300,12 @@ export async function fetchSwapQuote(args: FetchSwapQuoteArgs): Promise<FetchSwa
     const bodyText = await response.text()
     // Tag transient upstream errors (429 rate-limit exhausted, 502 squid
     // down) so callers (useMultiSwapQuote, SwapScreen) can show a softer
-    // "try again" notification instead of the generic crash sheet. The
-    // legacy refreshQuote path tags the same way; keep them in sync.
+    // "try again" notification instead of the generic crash sheet. When
+    // the body parses as the enriched envelope (backend PR #228), throw
+    // SquidDegradationErr so SwapScreen can render the right banner
+    // variant (rate-limit countdown, USDT fallback hint, or generic).
     if (response.status === 429 || response.status === 502) {
-      throw new Error(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:${response.status}:${bodyText}`)
+      throwTransientError(response.status, bodyText)
     }
     throw new Error(bodyText)
   }
@@ -301,29 +381,20 @@ async function createBaseSwapTransactions(
   fromToken: TokenBalance,
   updatedField: Field,
   unvalidatedSwapTransaction: SwapTransaction,
-  walletAddress: string
+  walletAddress: string,
+  worstCaseSellAmount: string
 ) {
   const baseTransactions: TransactionRequest[] = []
 
-  const {
-    guaranteedPrice,
-    buyAmount,
-    sellAmount,
-    allowanceTarget,
-    from,
-    to,
-    value,
-    data,
-    gas,
-    estimatedGasUse,
-  } = unvalidatedSwapTransaction
-  const amountType: string =
-    updatedField === Field.TO ? ('buyAmount' as const) : ('sellAmount' as const)
+  const { allowanceTarget, from, to, value, data, gas, estimatedGasUse } =
+    unvalidatedSwapTransaction
 
-  const amountToApprove =
-    amountType === 'buyAmount'
-      ? BigInt(new BigNumber(buyAmount).times(guaranteedPrice).toFixed(0, 0))
-      : BigInt(sellAmount)
+  // Approve amount comes from the backend-computed `worstCaseSellAmount`
+  // (backend PR #220, 2026-08-21), in wei of sellToken. Backend-authoritative
+  // across Squid + V4 Permit2 + V4 batchCalls. Replaces the old dimensionally
+  // broken `buyAmount * guaranteedPrice` client-side formula that produced
+  // approvals off by up to 10^12x on cross-decimal buy-mode swaps.
+  const amountToApprove = BigInt(worstCaseSellAmount)
 
   // If the sell token is ERC-20, we need to check the allowance and add an
   // approval transaction if necessary
@@ -392,13 +463,15 @@ async function prepareSwapTransactions(
   updatedField: Field,
   unvalidatedSwapTransaction: SwapTransaction,
   feeCurrencies: TokenBalance[],
-  walletAddress: string
+  walletAddress: string,
+  worstCaseSellAmount: string
 ): Promise<PreparedTransactionsResult> {
   const { amountToApprove, baseTransactions } = await createBaseSwapTransactions(
     fromToken,
     updatedField,
     unvalidatedSwapTransaction,
-    walletAddress
+    walletAddress,
+    worstCaseSellAmount
   )
   // Uniswap V4 + user already approved Permit2: baseTransactions is empty
   // because the sentinel swap tx is skipped and no ERC20 approve is needed.
@@ -439,13 +512,7 @@ function useSwapQuote({
   enableAppFee: boolean
 }) {
   const walletAddress = useSelector(walletAddressSelector)
-  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
-  // Bug E: the shared selector returns CELO at index 0, and prepareTransactions
-  // (called inside prepareSwapTransactions below) locks in the first viable
-  // entry. Demote CELO to the end of the array so any visible stable is
-  // preferred. CELO remains in the list as a last-resort fallback for the
-  // rare case where every stable fails the gas check.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
 
   const refreshQuote = useAsyncCallback(
     async (
@@ -494,8 +561,10 @@ function useSwapQuote({
         // salio como esperabamos" sheet that the wallet uses for unexpected
         // failures. 429 reaches here only after the in-flight wrapper has
         // exhausted its 3 retries; 502 only after the wrapper's single retry.
+        // Enriched envelope (backend PR #228) throws SquidDegradationErr so
+        // the SwapScreen banner can render the specific variant.
         if (response.status === 429 || response.status === 502) {
-          throw new Error(`${SWAP_UPSTREAM_TRANSIENT_ERROR}:${response.status}:${bodyText}`)
+          throwTransientError(response.status, bodyText)
         }
         throw new Error(bodyText)
       }
@@ -519,7 +588,8 @@ function useSwapQuote({
         updatedField,
         quote.unvalidatedSwapTransaction,
         feeCurrencies,
-        walletAddress
+        walletAddress,
+        quote.details.worstCaseSellAmount
       )
 
       const baseQuoteResult: BaseQuoteResult = {
@@ -677,7 +747,8 @@ export async function fetchSwapQuoteForExecution(
     Field.FROM,
     tx,
     feeCurrencies,
-    walletAddress
+    walletAddress,
+    quote.details.worstCaseSellAmount
   )
 
   return {
@@ -702,3 +773,33 @@ export async function fetchSwapQuoteForExecution(
 }
 
 export default useSwapQuote
+
+/**
+ * Extract the enriched Squid envelope from an error caught by consumers of
+ * useSwapQuote (SwapScreen, dollarsSpend saga). Prefer the class-based path
+ * (`instanceof SquidDegradationErr`) so we get the parsed envelope for free;
+ * fall back to parsing the tail of `SWAP_UPSTREAM_TRANSIENT:{status}:{body}`
+ * so consumers still get a typed envelope if the Error object crossed a
+ * module boundary that broke the class identity (jest reload, redux
+ * serialization, etc.). Returns null when the error is not from Squid
+ * degradation (generic error, legacy body without envelope, unrelated).
+ */
+export function extractSquidEnvelope(err: unknown): SquidDegradationError | null {
+  if (err instanceof SquidDegradationErr) return err.envelope
+  if (!(err instanceof Error) || !err.message) return null
+  const prefix = `${SWAP_UPSTREAM_TRANSIENT_ERROR}:`
+  if (!err.message.startsWith(prefix)) return null
+  // message shape: SWAP_UPSTREAM_TRANSIENT:{status}:{body}
+  const rest = err.message.slice(prefix.length)
+  const colonIndex = rest.indexOf(':')
+  if (colonIndex < 0) return null
+  const bodyText = rest.slice(colonIndex + 1)
+  return parseSquidEnvelope(bodyText)
+}
+
+export const __TESTING__ = {
+  createBaseSwapTransactions,
+  parseSquidEnvelope,
+  throwTransientError,
+  extractSquidEnvelope,
+}

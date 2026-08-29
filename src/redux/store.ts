@@ -29,10 +29,32 @@ export const timeBetweenStoreSizeEvents = ONE_MINUTE_IN_MILLIS
 // the entire state is serialized in a session
 let lastEventTime = 0
 
-// On rehydrate, the `transactionInFlight` slice may have descriptors whose
-// `lastErrorClass.raw` field holds a non-serializable Error captured at runtime.
-// Strip `raw` from every descriptor's `lastErrorClass` before the state is
-// returned to the store so consumers never see an undecodable blob.
+// On rehydrate, the `transactionInFlight` slice needs two fixups:
+//   1. Descriptors may hold a non-serializable Error in `lastErrorClass.raw`
+//      (captured at runtime); strip it so consumers never see an undecodable
+//      blob.
+//   2. Any descriptor with a still-unresolved status was stranded by the
+//      previous session (app killed mid-flow, saga threw before dispatching
+//      inFlightAdvance/-Fail, crash). Rehydrate runs on cold boot only, so
+//      by definition the sagas that owned those descriptors are DEAD; there
+//      is no resume path today (the recovery UI referenced by
+//      DeepLinkRecovery.onPress is a follow-up). Marking them `failed` at
+//      boot clears the false-positive "Tu transferencia se quedó a medias"
+//      banner that DeepLinkRecovery would otherwise surface every launch for
+//      txs that actually succeeded on-chain (Neeru deposit landed but the
+//      polling loop was killed, gold tx confirmed after app close, etc.).
+//      Descriptors are preserved (audit trail); only `status` is flipped.
+//      When a proper recovery UI ships, remove the sweep and reconcile
+//      against on-chain state instead.
+const UNRESOLVED_INFLIGHT_STATUSES = new Set([
+  'idle',
+  'preparing',
+  'awaiting-pin',
+  'submitting',
+  'pending-confirmation',
+  'progress',
+  'partial-failure',
+])
 const transactionInFlightTransform = createTransform<
   TransactionInFlightState,
   TransactionInFlightState
@@ -44,15 +66,18 @@ const transactionInFlightTransform = createTransform<
     if (!outboundState?.byFlow) return outboundState
     const scrubbedByFlow: TransactionInFlightState['byFlow'] = {}
     for (const [flowId, descriptor] of Object.entries(outboundState.byFlow)) {
+      let next = descriptor
       if (descriptor?.lastErrorClass) {
         const { raw: _raw, ...restErrorClass } = descriptor.lastErrorClass
-        scrubbedByFlow[flowId] = {
+        next = {
           ...descriptor,
           lastErrorClass: restErrorClass,
         }
-      } else {
-        scrubbedByFlow[flowId] = descriptor
       }
+      if (next?.status && UNRESOLVED_INFLIGHT_STATUSES.has(next.status)) {
+        next = { ...next, status: 'failed' }
+      }
+      scrubbedByFlow[flowId] = next
     }
     return { ...outboundState, byFlow: scrubbedByFlow }
   },
@@ -63,7 +88,7 @@ const persistConfig: PersistConfig<ReducersRootState> = {
   key: 'root',
   // default is -1, increment as we make migrations
   // See https://github.com/valora-inc/wallet/tree/main/WALLET.md#redux-state-migration
-  version: 253,
+  version: 254,
   keyPrefix: `reduxStore-`, // the redux-persist default is `persist:` which doesn't work with some file systems.
   storage: FSStorage(),
   blacklist: ['networkInfo', 'alert', 'imports', 'keylessBackup', transactionFeedV2Api.reducerPath],

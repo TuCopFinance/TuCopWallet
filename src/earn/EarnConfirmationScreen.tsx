@@ -7,6 +7,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import Button, { BtnSizes } from 'src/components/Button'
+import FeeSummary from 'src/components/FeeSummary'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
@@ -27,7 +28,6 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { useTokenInfo } from 'src/tokens/hooks'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -68,12 +68,7 @@ export default function EarnConfirmationScreen({ route }: Props) {
 
   const isGasSubsidized = isGasSubsidizedForNetwork(depositToken.networkId)
 
-  const rawFeeCurrencies = useSelector((state) =>
-    feeCurrenciesSelector(state, depositToken.networkId)
-  )
-  // Bug E: stables ahead of CELO so an earn withdraw/claim doesn't silently
-  // burn the user's hidden CELO balance on gas.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, depositToken.networkId))
 
   const withdrawAmountInDepositToken = useMemo(
     () =>
@@ -325,24 +320,13 @@ function GasFee({
   isGasSubsidized: Boolean
 }) {
   return (
-    <>
-      <TokenDisplay
-        style={[styles.apyText, isGasSubsidized && { textDecorationLine: 'line-through' }]}
-        tokenId={feeCurrency.tokenId}
-        amount={maxFeeAmount}
-        showLocalAmount={false}
-        testID="EarnConfirmation/GasFeeCryptoAmount"
-      />
-      {!isGasSubsidized && (
-        <TokenDisplay
-          style={styles.gasFeeFiat}
-          tokenId={feeCurrency.tokenId}
-          amount={maxFeeAmount}
-          showLocalAmount={true}
-          testID="EarnConfirmation/GasFeeFiatAmount"
-        />
-      )}
-    </>
+    <FeeSummary
+      layout="stacked"
+      components={[{ amount: maxFeeAmount, token: feeCurrency }]}
+      primaryStyle={[styles.apyText, isGasSubsidized && { textDecorationLine: 'line-through' }]}
+      secondaryStyle={styles.gasFeeFiat}
+      testID="EarnConfirmation/GasFee"
+    />
   )
 }
 

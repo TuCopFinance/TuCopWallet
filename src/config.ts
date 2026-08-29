@@ -81,6 +81,26 @@ export const TORUS_NETWORK = TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET
 
 // FEATURE FLAGS
 export const SENTRY_ENABLED = stringToBoolean(Config.SENTRY_ENABLED || 'false')
+// Sentry `environment` tag. Set explicitly via env file so dev builds and
+// prod builds land in separate Sentry environments even though they share
+// bundle ID + DSN. Fallback to 'production' is the safe default: an env
+// file that forgets to set this shows up as production, not as untagged
+// noise (matches the pre-existing behavior of shipping ALL events to
+// what was effectively one bucket).
+export const SENTRY_ENVIRONMENT = Config.SENTRY_ENVIRONMENT || 'production'
+
+// PostHog product analytics. Complements Sentry (errors) with an event
+// stream + funnels for user journeys (send, swap, gold, earn, onboarding).
+// The 260 existing AppAnalytics.track() call sites were routing to a Segment
+// client that was stubbed out; PostHog fills that gap without touching the
+// callers.
+export const POSTHOG_ENABLED = stringToBoolean(Config.POSTHOG_ENABLED || 'false')
+// Server host: US (`us.posthog.com`) for Colombia latency. `eu.posthog.com`
+// only if we later switch to EU-hosted for GDPR reasons.
+export const POSTHOG_HOST = Config.POSTHOG_HOST || 'https://us.posthog.com'
+// `environment` super-property tacked onto every event so dev-build noise
+// filters out of production dashboards (mirror of SENTRY_ENVIRONMENT).
+export const POSTHOG_ENVIRONMENT = Config.POSTHOG_ENVIRONMENT || 'production'
 
 // SECRETS
 export const WEB3AUTH_CLIENT_ID =
@@ -102,6 +122,10 @@ export const STATSIG_API_KEY =
   'client-EJqhHubOhMkds7D1mgwMQG1mFkXtZHF5sfq5Pcila1o'
 export const SEGMENT_API_KEY = keyOrUndefined(secretsFile, 'SEGMENT_API_KEY')
 export const SENTRY_CLIENT_URL = keyOrUndefined(secretsFile, 'SENTRY_CLIENT_URL')
+// PostHog client-side project token (`phc_...`). Baked into the app bundle
+// on purpose; PostHog treats project tokens as public identifiers. Server-
+// side privileges live under a separate personal API key that never ships.
+export const POSTHOG_API_KEY = keyOrUndefined(secretsFile, 'POSTHOG_API_KEY')
 export const RECAPTCHA_SITE_KEY = keyOrUndefined(secretsFile, 'RECAPTCHA_SITE_KEY')
 export const BIDALI_URL = keyOrUndefined(secretsFile, 'BIDALI_URL')
 

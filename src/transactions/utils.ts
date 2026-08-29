@@ -5,7 +5,7 @@ import { isYesterday } from 'date-fns/isYesterday'
 import locales from 'locales'
 import { PrefixedTxReceiptProperties, TxReceiptProperties } from 'src/analytics/Properties'
 import i18n from 'src/i18n'
-import { TokenBalances } from 'src/tokens/slice'
+import { TokenBalance, TokenBalances } from 'src/tokens/slice'
 import { NetworkId, TrackedTx } from 'src/transactions/types'
 import { formatFeedSectionTitle, timeDeltaInDays } from 'src/utils/time'
 import {
@@ -89,9 +89,10 @@ export function groupFeedItemsInSections<T extends { timestamp: number }>(
 export function getTxReceiptAnalyticsProperties(
   { tx, txHash, txReceipt }: TrackedTx,
   networkId: NetworkId,
-  tokensById: TokenBalances
+  tokensById: TokenBalances,
+  nativeFeeCurrency?: TokenBalance
 ): Partial<TxReceiptProperties> {
-  const feeCurrencyToken = tx && getFeeCurrencyToken([tx], networkId, tokensById)
+  const feeCurrencyToken = tx && getFeeCurrencyToken([tx], networkId, tokensById, nativeFeeCurrency)
   const feeDecimals = tx && feeCurrencyToken ? getFeeDecimals([tx], feeCurrencyToken) : undefined
 
   const txMaxGasFee = tx && feeDecimals ? getMaxGasFee([tx]).shiftedBy(-feeDecimals) : undefined

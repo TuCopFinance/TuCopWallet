@@ -11,6 +11,8 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { getLocalCurrencyCode } from 'src/localCurrency/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { AppDispatch, store } from 'src/redux/store'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { getMultichainFeatures } from 'src/statsig/index'
 import { vibrateSuccess } from 'src/styles/hapticFeedback'
 import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
@@ -179,19 +181,60 @@ export function useFetchTransactions(): QueryHookResult {
 
       if (result.transactions.length > 0) {
         Logger.info(TAG, `Blockscout returned ${result.transactions.length} transactions`)
+        // Blockscout returns raw ERC-20 transfers, so a Neeru / Aave withdraw
+        // shows up as a plain Received COPm transfer to the user's wallet.
+        // If the primary feed already classified the same tx hash as a
+        // Deposit/Withdraw/Swap/Approval/Exchange, keep the richer record
+        // and drop the Blockscout duplicate. Without this guard the raw
+        // Transfer entry would clobber the classified one (dedupe keeps the
+        // last-written value) and users saw "Pago recibido" instead of
+        // "Fondos retirados".
+        const classifiedHashes = new Set(
+          fetchedResult.transactions
+            .filter((tx) =>
+              [
+                TokenTransactionTypeV2.Deposit,
+                TokenTransactionTypeV2.Withdraw,
+                TokenTransactionTypeV2.SwapTransaction,
+                TokenTransactionTypeV2.CrossChainSwapTransaction,
+                TokenTransactionTypeV2.Exchange,
+                TokenTransactionTypeV2.Approval,
+                TokenTransactionTypeV2.EarnDeposit,
+                TokenTransactionTypeV2.EarnWithdraw,
+                TokenTransactionTypeV2.EarnSwapDeposit,
+                TokenTransactionTypeV2.EarnClaimReward,
+                TokenTransactionTypeV2.ClaimReward,
+              ].includes(tx.type)
+            )
+            .map((tx) => tx.transactionHash)
+        )
+        const nonClobberingBlockscoutTxs = result.transactions.filter(
+          (tx) => !classifiedHashes.has(tx.transactionHash)
+        )
         setFetchedResult((prev) => ({
           ...prev,
-          transactions: deduplicateTransactions(prev.transactions, result.transactions),
+          transactions: deduplicateTransactions(prev.transactions, nonClobberingBlockscoutTxs),
         }))
 
-        // Update Redux with Blockscout transactions
+        // Redux mirror keeps the same non-clobbering slice so the persisted
+        // feed matches the in-memory feed after reboot.
         const networkId = config.defaultNetworkId
-        dispatch(updateTransactions({ networkId, transactions: result.transactions }))
+        dispatch(updateTransactions({ networkId, transactions: nonClobberingBlockscoutTxs }))
       }
 
       setBlockscoutFetched(true)
     } catch (error) {
-      Logger.error(TAG, 'Error fetching from Blockscout', error)
+      // Blockscout backfill failure means the feed misses historical
+      // transfers until next boot. captureBusinessError so backend/ops
+      // can see when Blockscout proxy degrades; user impact is only
+      // "missing history", not a crash, so warn (not error) locally.
+      Logger.warn(TAG, 'Error fetching from Blockscout')
+      captureBusinessError(error, {
+        feature: 'tx_feed',
+        provider: 'blockscout',
+        action: 'fetch_backfill',
+        errorCode: classifyHttpError(error),
+      })
       setBlockscoutFetched(true) // Don't retry on error to avoid infinite loops
     }
   }, [address, blockscoutFetched, dispatch])
@@ -216,7 +259,17 @@ export function useFetchTransactions(): QueryHookResult {
   }, [address, blockscoutFetched, fetchBlockscoutTransactions])
 
   const handleError = (error: Error) => {
-    Logger.error(TAG, 'Error while fetching transactions', error)
+    // Called from useAsyncCallback's error slot on every poll failure.
+    // Fingerprint by tx_feed/internal/poll_new_transactions so all polling
+    // failures (Alchemy 5xx, backend timeout, offline) group into one issue
+    // regardless of the underlying HTTP class.
+    Logger.warn(TAG, 'Error while fetching transactions')
+    captureBusinessError(error, {
+      feature: 'tx_feed',
+      provider: 'internal',
+      action: 'poll_new_transactions',
+      errorCode: classifyHttpError(error),
+    })
   }
 
   // Query for new transaction every POLL_INTERVAL

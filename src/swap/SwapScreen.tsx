@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useReducer, useRef } from 'react'
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -39,6 +39,7 @@ import FeeInfoBottomSheet from 'src/swap/FeeInfoBottomSheet'
 import SwapAmountInput from 'src/swap/SwapAmountInput'
 import SwapTransactionDetails from 'src/swap/SwapTransactionDetails'
 import getCrossChainFee from 'src/swap/getCrossChainFee'
+import { pickDisplayFeeCurrency } from 'src/swap/getDisplayFeeCurrency'
 import { getSwapTxsAnalyticsProperties } from 'src/swap/getSwapTxsAnalyticsProperties'
 import {
   buildDolaresVirtualToken,
@@ -59,6 +60,7 @@ import useSwapQuote, {
   NO_QUOTE_ERROR_MESSAGE,
   QuoteResult,
   SWAP_UPSTREAM_TRANSIENT_ERROR,
+  extractSquidEnvelope,
 } from 'src/swap/useSwapQuote'
 import { useSwappableTokens, useTokenInfo } from 'src/tokens/hooks'
 import {
@@ -312,15 +314,51 @@ export function SwapScreen({ route }: Props) {
     [dollarSnapshots]
   )
 
-  // Resolver-only list: keeps the virtual "Dolares" token so navigation
-  // that pre-selects FROM=virtual (from home CTAs, etc) can still find it
-  // when computing the `fromToken` object. The picker itself uses the raw
-  // `swappableFromTokens` and never surfaces the virtual token, because
-  // "Dolares" is the closed-state aggregate — inside the picker the user
-  // is choosing between concrete tokens (USDT, USDC, USDm, Pesos, ...).
-  const fromTokensForResolution = useMemo(() => {
-    return dolaresVirtualToken ? [dolaresVirtualToken, ...swappableFromTokens] : swappableFromTokens
-  }, [swappableFromTokens, dolaresVirtualToken])
+  // Picker fallback: buildDolaresVirtualToken returns null when the user
+  // has zero dollar balance. The swap picker must ALWAYS include Dolares
+  // as a selectable option (users buying dollars from pesos won't have
+  // dollar balance yet). Build a zero-balance synthetic just for the
+  // picker; the balance-aware version above still drives the closed-card
+  // "Saldo" display so nothing shows a fake balance.
+  const dolaresVirtualTokenForPicker = useMemo(
+    (): TokenBalance =>
+      dolaresVirtualToken ??
+      ({
+        tokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        address: null,
+        networkId: networkConfig.defaultNetworkId,
+        symbol: 'Dolares',
+        name: 'Dolares',
+        decimals: 2,
+        balance: new BigNumber(0),
+        priceUsd: new BigNumber(1),
+        lastKnownPriceUsd: new BigNumber(1),
+        priceFetchedAt: Date.now(),
+      } as TokenBalance),
+    [dolaresVirtualToken]
+  )
+
+  // Swap picker list for both FROM and TO. Composition:
+  //   1. Virtual "Dolares" aggregate at TOP (default option; multi-swap
+  //      Dolares -> Pesos uses this to plan the multi-leg spend).
+  //   2. Individual dollar tokens (USDT, USDC, USDm, USAT) so users can
+  //      drill into a single dollar when they want to skip the aggregate.
+  //   3. Pesos (COPm).
+  //   4. Any other swappable non-XAUt0 token.
+  //
+  // XAUt0 (Oro) is intentionally EXCLUDED: gold has its own dedicated
+  // buy/sell saga (src/gold/*) with its own screens; surfacing it in the
+  // generic swap picker leaks the concrete asset into a flow where the
+  // user is thinking about currency exchange, not investment.
+  const pickerFromTokens = useMemo(() => {
+    const filtered = swappableFromTokens.filter((t) => t.tokenId !== networkConfig.xaut0TokenId)
+    return [dolaresVirtualTokenForPicker, ...filtered]
+  }, [swappableFromTokens, dolaresVirtualTokenForPicker])
+
+  const pickerToTokens = useMemo(() => {
+    const filtered = swappableToTokens.filter((t) => t.tokenId !== networkConfig.xaut0TokenId)
+    return [dolaresVirtualTokenForPicker, ...filtered]
+  }, [swappableToTokens, dolaresVirtualTokenForPicker])
 
   const priceImpactWarningThreshold = useSelector(priceImpactWarningThresholdSelector)
 
@@ -350,27 +388,12 @@ export function SwapScreen({ route }: Props) {
   const filterChipsTo = useFilterChips(Field.TO, initialToTokenNetworkId)
 
   const { fromToken, toToken } = useMemo(() => {
-    // Also search fromTokensForResolution so the virtual Dolares token resolves correctly.
-    const fromToken =
-      swappableFromTokens.find((token) => token.tokenId === fromTokenId) ??
-      fromTokensForResolution.find((token) => token.tokenId === fromTokenId)
-    // Virtual "Dolares" is not a real ERC-20 and never lives in the
-    // swappable list; resolve it explicitly from the synthetic builder so
-    // the swap card can render the aggregated balance when callers (home
-    // CTAs, etc.) route into swap with TO=virtual pre-selected.
-    const toToken =
-      toTokenId === DOLARES_VIRTUAL_TOKEN_ID
-        ? (dolaresVirtualToken ?? undefined)
-        : swappableToTokens.find((token) => token.tokenId === toTokenId)
+    // pickerFromTokens/pickerToTokens include the virtual Dolares so both
+    // sides resolve it correctly regardless of which slot holds it.
+    const fromToken = pickerFromTokens.find((token) => token.tokenId === fromTokenId)
+    const toToken = pickerToTokens.find((token) => token.tokenId === toTokenId)
     return { fromToken, toToken }
-  }, [
-    fromTokenId,
-    toTokenId,
-    swappableFromTokens,
-    swappableToTokens,
-    fromTokensForResolution,
-    dolaresVirtualToken,
-  ])
+  }, [fromTokenId, toTokenId, pickerFromTokens, pickerToTokens])
 
   // When the user picks the virtual "Dolares" as destination, the swap router
   // still needs a real ERC-20 to settle into. Default to USDT (highest-liquidity
@@ -476,7 +499,34 @@ export function SwapScreen({ route }: Props) {
         !quote.swapAmount.eq(parsedSwapAmount[Field.FROM]))) ||
     fetchingSwapQuote
 
-  const confirmSwapIsLoading = swapStatus === 'started'
+  // Multi-swap (virtual Dolares) does not dispatch swapStart, it dispatches
+  // executeMultiSwap which the dollarsSpend saga picks up. So the swap slice's
+  // 'started' status never flips for these flows, and confirmSwapIsLoading
+  // alone would leave the Confirmar button clickable while the batch is in
+  // flight. We derive an extra "multi in flight" signal from dollarsSpend and
+  // an optimistic tick that covers the race window between click and the
+  // saga's first put(multiSwapStarted) (the 7702 relay path can take a few
+  // seconds before it dispatches).
+  const multiSwapInFlight = useSelector((s) => s.dollarsSpend.inFlight !== null)
+  const [multiSwapClickPending, setMultiSwapClickPending] = useState(false)
+  useEffect(() => {
+    // Once the saga confirms inFlight, drop the optimistic flag. Once the
+    // batch resolves (inFlight -> null), the optimistic flag is already
+    // false so the button re-enables cleanly.
+    if (multiSwapInFlight && multiSwapClickPending) {
+      setMultiSwapClickPending(false)
+    }
+  }, [multiSwapInFlight, multiSwapClickPending])
+  useEffect(() => {
+    // Safety net: if the saga bails silently (e.g. 7702 gate check throws
+    // before it dispatches multiSwapStarted), release the button after
+    // 15s so the user is not permanently stuck.
+    if (!multiSwapClickPending) return
+    const t = setTimeout(() => setMultiSwapClickPending(false), 15_000)
+    return () => clearTimeout(t)
+  }, [multiSwapClickPending])
+  const confirmSwapIsLoading =
+    swapStatus === 'started' || multiSwapInFlight || multiSwapClickPending
   const confirmSwapFailed = swapStatus === 'error'
 
   useEffect(() => {
@@ -486,6 +536,36 @@ export function SwapScreen({ route }: Props) {
   const isTransientUpstreamError =
     !!fetchSwapQuoteError?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR) ||
     !!multiSwapQuote.error?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR)
+
+  // Enriched Squid degradation envelope (backend PR #228, 2026-08-22).
+  // When present, drives the banner variant + optional retry countdown.
+  // Falls back to the generic "servicio no disponible" copy when the
+  // response was a legacy 429/502 without an envelope. extractSquidEnvelope
+  // handles both the class-based path and the message-tail fallback so
+  // module-boundary quirks in tests don't break the derivation.
+  const squidEnvelope =
+    extractSquidEnvelope(fetchSwapQuoteError) ?? extractSquidEnvelope(multiSwapQuote.error)
+
+  // Rate-limit countdown: when Squid forwards a Retry-After header, backend
+  // surfaces it as `retry_after_seconds`. Tick down once per second so the
+  // banner reads "Intenta en Ns" and hits 0 for a plain retry copy.
+  const [rateLimitCountdown, setRateLimitCountdown] = useState<number | null>(null)
+  useEffect(() => {
+    if (
+      squidEnvelope?.error === 'squid_rate_limited' &&
+      typeof squidEnvelope.retry_after_seconds === 'number' &&
+      squidEnvelope.retry_after_seconds > 0
+    ) {
+      setRateLimitCountdown(squidEnvelope.retry_after_seconds)
+    } else {
+      setRateLimitCountdown(null)
+    }
+  }, [squidEnvelope])
+  useEffect(() => {
+    if (rateLimitCountdown === null || rateLimitCountdown <= 0) return
+    const id = setTimeout(() => setRateLimitCountdown((n) => (n === null ? null : n - 1)), 1000)
+    return () => clearTimeout(id)
+  }, [rateLimitCountdown])
 
   useEffect(() => {
     if (fetchSwapQuoteError) {
@@ -551,6 +631,12 @@ export function SwapScreen({ route }: Props) {
       // gets a real ERC-20 destination, even when TO is the virtual Dolares.
       const settlementTokenId = quoteToToken?.tokenId
       if (!settlementTokenId) return
+      // Flip the optimistic loading flag BEFORE dispatching so the button
+      // shows the spinner immediately, closing the race window until the
+      // saga puts multiSwapStarted (7702 relay path can take a few seconds
+      // before it fires). The dollarsSpend inFlight selector takes over
+      // and the effect above drops the optimistic flag once it does.
+      setMultiSwapClickPending(true)
       dispatch(executeMultiSwap({ steps: multiSwapPlan.steps, toTokenId: settlementTokenId }))
       return
     }
@@ -894,19 +980,28 @@ export function SwapScreen({ route }: Props) {
 
   const allowSwap = useMemo(() => {
     if (showBelowMinSwapWarning) return false
-    // No quote was obtained because Squid returned 429/502. The saga would
-    // hit the same upstream and fail, so disable Confirmar until the next
-    // refresh succeeds (the banner above tells the user to retry).
-    if (isTransientUpstreamError) return false
+    // Virtual Dolares (multi-swap) fans out N parallel quotes. Some legs
+    // may 502 (Squid weekend suspension of Mento pools) while others
+    // (USDT via Uniswap V4) succeed. If the planner produces a valid
+    // plan from the healthy legs alone (steps > 0, shortfall <= 0), the
+    // saga will execute only those legs and the swap can proceed - the
+    // transient error banner stays visible as informational hint but
+    // does NOT block the button. Check the plan FIRST so a partial
+    // upstream outage does not lock the user out when USDT can cover it.
     if (isVirtualDolares) {
       return (
         !!toTokenId &&
         !!multiSwapPlan &&
         multiSwapPlan.steps.length > 0 &&
         multiSwapPlan.shortfall.lte(0) &&
-        fromAmountUsd.gt(0)
+        fromAmountUsd.gt(0) &&
+        !confirmSwapIsLoading
       )
     }
+    // Single-swap path: no quote was obtained because Squid returned
+    // 429/502. The saga would hit the same upstream and fail, so disable
+    // Confirmar until the next refresh succeeds (banner tells user to retry).
+    if (isTransientUpstreamError) return false
     return (
       !showDecreaseSpendForGasWarning &&
       !showNotEnoughBalanceForGasWarning &&
@@ -951,30 +1046,47 @@ export function SwapScreen({ route }: Props) {
   // never pays more on-chain than the max anyway.
   const NETWORK_FEE_USD_PER_STEP_ESTIMATE = new BigNumber(0.02)
   const NETWORK_FEE_MAX_MULTIPLIER = 1.5 // matches Celo L2 maxFee buffer
-  const usdmTokenForFeeDisplay = useMemo(() => {
+  const usdmTokenForFallback = useMemo(() => {
     return tokensById[networkConfig.usdmTokenId]
   }, [tokensById])
+  // Pre-confirm placeholder for the fee token in the virtual-Dolares path.
+  // Mirrors the on-chain CIP-64 picker order (CELO, COPm, USDm, USDC, USDT)
+  // + excludes tokens being spent so the display matches the actual outcome
+  // in the common case. Previously hard-coded USDm produced misleading rows
+  // like "0.025 USDm" when the tx actually paid 0.19 CELO of gas.
+  const availableFeeCurrenciesForDisplay = useSelector((state) =>
+    feeCurrenciesSelector(state, fromToken?.networkId || networkConfig.defaultNetworkId)
+  )
+  const feeDisplayToken = useMemo(() => {
+    if (!isVirtualDolares) return undefined
+    const spendingIds = (multiSwapPlan?.steps ?? []).map((s) => s.tokenId)
+    return pickDisplayFeeCurrency({
+      availableFeeCurrencies: availableFeeCurrenciesForDisplay,
+      excludedTokenIds: spendingIds,
+      fallbackToken: usdmTokenForFallback,
+    })
+  }, [isVirtualDolares, multiSwapPlan, availableFeeCurrenciesForDisplay, usdmTokenForFallback])
 
   const networkFee: SwapFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       const stepCount = multiSwapPlan?.steps.length ?? 0
       if (stepCount === 0) return undefined
       const estimateUsd = NETWORK_FEE_USD_PER_STEP_ESTIMATE.multipliedBy(stepCount)
       return {
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         amount: estimateUsd,
         maxAmount: estimateUsd.multipliedBy(NETWORK_FEE_MAX_MULTIPLIER),
       }
     }
     return getNetworkFee(quote)
-  }, [isVirtualDolares, multiSwapQuote.loading, multiSwapPlan, usdmTokenForFeeDisplay, quote])
+  }, [isVirtualDolares, multiSwapQuote.loading, multiSwapPlan, feeDisplayToken, quote])
 
   const feeToken = networkFee?.token ? tokensById[networkFee.token.tokenId] : undefined
 
   const appFee: AppFeeAmount | undefined = useMemo(() => {
     if (isVirtualDolares) {
-      if (!usdmTokenForFeeDisplay || multiSwapQuote.loading) return undefined
+      if (!feeDisplayToken || multiSwapQuote.loading) return undefined
       // Average percentage across the legs that contributed to the aggregate.
       const fulfilledWithFee = multiSwapQuote.perStepQuotes.filter(
         (q) => q.appFeePercentageIncludedInPrice
@@ -986,7 +1098,7 @@ export function SwapScreen({ route }: Props) {
         : new BigNumber(0)
       return {
         amount: multiSwapQuote.aggregateAppFeeUsd,
-        token: usdmTokenForFeeDisplay,
+        token: feeDisplayToken,
         percentage: avgPercentage,
       }
     }
@@ -1006,7 +1118,7 @@ export function SwapScreen({ route }: Props) {
     multiSwapQuote.loading,
     multiSwapQuote.perStepQuotes,
     multiSwapQuote.aggregateAppFeeUsd,
-    usdmTokenForFeeDisplay,
+    feeDisplayToken,
     quote,
     parsedSwapAmount,
     fromToken,
@@ -1051,15 +1163,15 @@ export function SwapScreen({ route }: Props) {
   const tokenBottomSheetsConfig = [
     {
       fieldType: Field.FROM,
-      // Picker shows real tokens only — the virtual "Dolares" aggregate is
-      // the closed-state display, never a picker row. Symmetric with TO.
-      tokens: swappableFromTokens,
+      // Virtual "Dolares" aggregate at top + individual dollars + Pesos,
+      // XAUt0 excluded (gold has its own saga). See pickerFromTokens.
+      tokens: pickerFromTokens,
       filterChips: filterChipsFrom,
       origin: TokenPickerOrigin.SwapFrom,
     },
     {
       fieldType: Field.TO,
-      tokens: swappableToTokens,
+      tokens: pickerToTokens,
       filterChips: filterChipsTo,
       origin: TokenPickerOrigin.SwapTo,
     },
@@ -1174,11 +1286,25 @@ export function SwapScreen({ route }: Props) {
             // multi-step path skips refreshQuote). Synthesize an effective
             // rate from the aggregated multi-swap result so the rate row
             // shows a meaningful value instead of returning null.
+            //
+            // Bug fix (2026-08-22): denominator MUST be the delivered USD
+            // (`totalInUsd - unquotedUsd`), not the raw requested amount.
+            // When one leg fails (e.g. Squid returns 502 for COPm<->USDC,
+            // COPm<->USDm during the ongoing upstream outage), the numerator
+            // sums only successful legs' output while the old denominator
+            // still included the failed leg's USD, producing rates like
+            // "1 Dolares ≈ 1385 Pesos" when reality is ~4200 COP/USD - the
+            // user saw a rate that made the delivered COP look tiny per
+            // requested USD, when actually the delivered COP is proportional
+            // to the SPENT USD only.
             exchangeRatePrice={
               isVirtualDolares
-                ? multiSwapQuote.totalInUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
-                  ? multiSwapQuote.totalOutToken.dividedBy(multiSwapQuote.totalInUsd).toString()
-                  : undefined
+                ? (() => {
+                    const deliveredUsd = multiSwapQuote.totalInUsd.minus(multiSwapQuote.unquotedUsd)
+                    return deliveredUsd.gt(0) && multiSwapQuote.totalOutToken.gt(0)
+                      ? multiSwapQuote.totalOutToken.dividedBy(deliveredUsd).toString()
+                      : undefined
+                  })()
                 : quote?.price
             }
             exchangeRateInfoBottomSheetRef={exchangeRateInfoBottomSheetRef}
@@ -1196,7 +1322,30 @@ export function SwapScreen({ route }: Props) {
             // cheapest available fee currency). Hide the "Pagada en" row to
             // avoid promising a specific token that the picker may not honor.
             hideFeePaidInRow={isVirtualDolares}
-            swapProvider={quote?.provider}
+            swapProvider={
+              // For Dolares multi-swap, quote is empty (each leg has its own
+              // quote via useMultiSwapQuote). Pick the first resolved leg's
+              // provider so the pre-confirm "Ruta del intercambio" reveal
+              // still renders. All legs typically share a provider (Squid);
+              // if any leg falls back to Uniswap V4 it usually happens across
+              // legs together.
+              isVirtualDolares ? multiSwapQuote.perStepQuotes[0]?.provider : quote?.provider
+            }
+            // Optimistic 7702 label: virtual Dolares with >1 leg + gate ON
+            // means the wallet WILL invoke executeDollarsSpend7702Saga which
+            // bundles everything into a single BatchExecutor.execute() tx.
+            // Even if the runtime falls back to legacy (edge cases: gate
+            // flips OFF between preview and submit, or delegation bootstrap
+            // fails), the post-tx feed reads the real saga-persisted provider
+            // slug so no lie survives to tx-details. Delegation itself is
+            // NOT checked here: 99% of users are delegated after their first
+            // multi-swap and the saga's relay path handles first-time users.
+            isBatched7702={
+              isVirtualDolares &&
+              !!multiSwapPlan &&
+              multiSwapPlan.steps.length > 1 &&
+              getFeatureGate(StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1)
+            }
           />
           {showCrossChainFeeWarning && (
             <InLineNotification
@@ -1334,9 +1483,28 @@ export function SwapScreen({ route }: Props) {
           {isTransientUpstreamError && (
             <InLineNotification
               variant={NotificationVariant.Warning}
-              title={t('swapScreen.upstreamUnavailableWarning.title')}
-              description={t('swapScreen.upstreamUnavailableWarning.body')}
+              title={
+                squidEnvelope?.error === 'squid_rate_limited'
+                  ? t('swapScreen.errorRateLimited.title')
+                  : squidEnvelope?.error === 'squid_unavailable' &&
+                      squidEnvelope.fallback_hint === 'USDT'
+                    ? t('swapScreen.errorUnavailableFallbackUsdt.title')
+                    : t('swapScreen.errorGeneric.title')
+              }
+              description={
+                squidEnvelope?.error === 'squid_rate_limited'
+                  ? rateLimitCountdown && rateLimitCountdown > 0
+                    ? t('swapScreen.errorRateLimited.bodyWithCountdown', {
+                        seconds: rateLimitCountdown,
+                      })
+                    : t('swapScreen.errorRateLimited.body')
+                  : squidEnvelope?.error === 'squid_unavailable' &&
+                      squidEnvelope.fallback_hint === 'USDT'
+                    ? t('swapScreen.errorUnavailableFallbackUsdt.body')
+                    : t('swapScreen.errorGeneric.body')
+              }
               style={styles.warning}
+              testID="SwapScreen/UpstreamErrorBanner"
             />
           )}
           {confirmSwapFailed && (
@@ -1486,6 +1654,10 @@ export function SwapScreen({ route }: Props) {
           if (!toTokenId) return
           const remaining = planSpend({ requestedUsd: fromAmountUsd, balances: dollarSnapshots })
           if (remaining.shortfall.gt(0)) return
+          // Mirror onPressConfirm's optimistic guard so the Reintentar button
+          // shows the spinner during the same race window (dispatch -> first
+          // multiSwapStarted put in the 7702 relay path).
+          setMultiSwapClickPending(true)
           dispatch(executeMultiSwap({ steps: remaining.steps, toTokenId }))
         }}
         onCancel={() => dispatch(multiSwapCleared())}

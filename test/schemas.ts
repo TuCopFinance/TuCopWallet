@@ -659,9 +659,12 @@ export const v19Schema = {
   tokens: {
     tokenBalances: {
       [mockCusdAddress]: {
-        name: 'Celo Dollars',
+        name: 'Mento Dollar',
         address: mockCusdAddress,
-        symbol: 'cUSD',
+        // Mento rebrand deploy 2026-08-20: on-chain symbol() now returns
+        // 'USDm' (was 'cUSD'). Backend /api/tokens/info reflects this now
+        // that use_tucop_backend_tokens_info is at 100%.
+        symbol: 'USDm',
         decimals: 18,
         imageUrl: '',
         usdPrice: '1',
@@ -669,9 +672,11 @@ export const v19Schema = {
         isCoreToken: true,
       },
       [mockCeurAddress]: {
-        name: 'Celo Euros',
+        name: 'Mento Euro',
         address: mockCeurAddress,
-        symbol: 'cEUR',
+        // Mento rebrand deploy 2026-08-20: on-chain symbol() now returns
+        // 'EURm' (was 'cEUR').
+        symbol: 'EURm',
         decimals: 18,
         imageUrl: '',
         usdPrice: '1.2',
@@ -821,9 +826,13 @@ export const v25Schema = {
     ...v24Schema.tokens,
     tokenBalances: {
       [mockCusdAddress]: {
-        name: 'Celo Dollars',
+        name: 'Mento Dollar',
         address: mockCusdAddress,
-        symbol: 'cUSD',
+        // Mento rebrand deploy 2026-08-20: on-chain symbol() now returns
+        // 'USDm' (was 'cUSD'). Backend /api/tokens/info reflects this now
+        // that use_tucop_backend_tokens_info is at 100%. Base schema for
+        // getLatestSchema()-derived default state.
+        symbol: 'USDm',
         decimals: 18,
         imageUrl: '',
         usdPrice: '1',
@@ -832,9 +841,11 @@ export const v25Schema = {
         priceFetchedAt: Date.now(),
       },
       [mockCeurAddress]: {
-        name: 'Celo Euros',
+        name: 'Mento Euro',
         address: mockCeurAddress,
-        symbol: 'cEUR',
+        // Mento rebrand deploy 2026-08-20: on-chain symbol() now returns
+        // 'EURm' (was 'cEUR').
+        symbol: 'EURm',
         decimals: 18,
         imageUrl: '',
         usdPrice: '1.2',
@@ -3837,6 +3848,18 @@ export const v253Schema = {
   },
 }
 
+export const v254Schema = {
+  ...v253Schema,
+  _persist: {
+    ...v253Schema._persist,
+    version: 254,
+  },
+  swap: {
+    ...v253Schema.swap,
+    feeMetadataByTxHash: {},
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v253Schema as Partial<RootState>
+  return v254Schema as Partial<RootState>
 }

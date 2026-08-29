@@ -3,6 +3,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
+import { addFeeCurrencyBreadcrumb } from 'src/sentry/breadcrumbs'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -99,18 +100,26 @@ export function getFeeCurrencyAddress(feeCurrency: TokenBalance): Address | unde
     return undefined
   }
 
-  // Direct fee currency
+  // Adapter takes precedence: when a token exposes a fee-currency adapter,
+  // that adapter is what FeeCurrencyDirectory registers on chain. Passing
+  // the raw token address to eth_gasPrice fails with "unregistered
+  // fee-currency address" for tokens whose native ERC-20 is not itself in
+  // the directory (USDC pattern on Celo mainnet: only the adapter
+  // 0x2f25deb3... is registered, not the token 0xceba9300...). Since the
+  // TuCop backend catalog started sending `isFeeCurrency: true` alongside
+  // `feeCurrencyAdapterAddress` for the same token, this branch must run
+  // before the direct-fee-currency branch below.
+  if (feeCurrency.feeCurrencyAdapterAddress) {
+    return feeCurrency.feeCurrencyAdapterAddress
+  }
+
+  // Direct fee currency (registered at the token address, no adapter needed).
   if (feeCurrency.isFeeCurrency) {
     if (!feeCurrency.address) {
       // This should never happen
       throw new Error(`Fee currency address is missing for fee currency ${feeCurrency.tokenId}`)
     }
     return feeCurrency.address as Address
-  }
-
-  // Fee currency adapter
-  if (feeCurrency.feeCurrencyAdapterAddress) {
-    return feeCurrency.feeCurrencyAdapterAddress
   }
 
   // This should never happen
@@ -218,31 +227,38 @@ export async function tryEstimateTransaction({
     // Observability: the return-null branch always emits a Logger.warn,
     // and captureBusinessError fires in the downstream saga catches, so
     // spikes in this fallback are still visible on Sentry.
+    // Detect ERC-20 approve/transfer FIRST because these have deterministic
+    // gas cost (~45-65k) and can safely use a fallback regardless of the
+    // specific estimateGas error the node returned. Op-reth returns bare
+    // "execution reverted" for a broader class of scenarios than the regex
+    // match below covers (observed 2026-08-28: user with 0.024 CELO trying
+    // to approve USDC to Squid router; estimateGas rejected because
+    // gasLimit × maxFeePerGas exceeded native balance, error surfaced as
+    // ExecutionRevertedError with details "execution reverted" - no match
+    // to any specific pattern). Without this widened branch, the whole
+    // multi-swap leg fails at fetchSwapQuoteForExecution and the saga
+    // bails, losing the subsequent legs.
+    const dataHex = tx.data as string | undefined
+    const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
+    // ERC-20 transfer(address,uint256): typically 50-65k gas.
+    const isERC20Transfer = selector === '0xa9059cbb'
+    // ERC-20 approve(address,uint256): typically 45-55k gas.
+    const isERC20Approve = selector === '0x095ea7b3'
+    const isKnownERC20Op = isERC20Transfer || isERC20Approve
+
     const isRecoverableEstimationError =
       e instanceof EstimateGasExecutionError &&
       (e.cause instanceof InsufficientFundsError ||
         (e.cause instanceof ExecutionRevertedError &&
           (/transfer value exceeded balance of sender/.test(e.cause.details) ||
             /transfer amount exceeds balance/.test(e.cause.details))) ||
-        e.cause instanceof InvalidInputRpcError)
+        e.cause instanceof InvalidInputRpcError ||
+        // Widened 2026-08-28: any estimateGas error on a deterministic-cost
+        // ERC-20 op is recoverable via the hardcoded fallback below, so we
+        // do not need to enumerate every possible cause / message wording.
+        isKnownERC20Op)
 
     if (isRecoverableEstimationError) {
-      // Gas estimation failed due to insufficient funds (or, for CIP-64 fee
-      // currencies, a Celo Forno flake that surfaces the same class).
-      // Standard ERC20 ops have well-known gas costs, so use a fallback
-      // instead of rejecting outright.
-      const dataHex = tx.data as string | undefined
-      const selector = dataHex ? dataHex.slice(0, 10).toLowerCase() : ''
-      // ERC-20 transfer(address,uint256): typically 50-65k gas.
-      const isERC20Transfer = selector === '0xa9059cbb'
-      // ERC-20 approve(address,uint256): typically 45-55k gas. Same
-      // deterministic cost, and if Forno keeps failing to estimate the
-      // approve (observed live 2026-07-26 with feeCurrency=COPm returning
-      // "Missing or invalid parameters") the whole downstream flow stalls
-      // without this fallback because the approve is the first tx in the
-      // batch and the swap that follows is gated on it.
-      const isERC20Approve = selector === '0x095ea7b3'
-
       if (isERC20Transfer || isERC20Approve) {
         const fallbackGas = BigInt(65000) + BigInt(feeCurrencyAddress ? STATIC_GAS_PADDING : 0)
         Logger.warn(
@@ -483,9 +499,24 @@ export async function prepareTransactions({
     const estimatedGasFee = getEstimatedGasFee(estimatedTransactions)
     const estimatedGasFeeInDecimal = estimatedGasFee?.shiftedBy(-feeDecimals)
     gasFees.push({ feeCurrency, maxGasFeeInDecimal, estimatedGasFeeInDecimal })
-    // Use estimated gas fee for balance validation (more realistic than max)
-    const gasForValidation = estimatedGasFeeInDecimal || maxGasFeeInDecimal
-    if (gasForValidation.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
+    // Use MAX (not estimated) for the balance-can-cover check. Forno enforces
+    // `gasLimit × maxFeePerGas + value` at submit time and rejects with a raw
+    // "insufficient funds for gas * price + value" if balance is between
+    // estimated and max. When that happens the picker has already committed
+    // to this feeCurrency, so the fee-currency cascade (fall through to the
+    // next candidate: COPm, USDm, USDC, USDT via CIP-64) never runs and the
+    // user sees a cryptic failure instead of the proper 'not-enough-balance-
+    // for-gas' UI path OR the transparent stable-gas payment.
+    // The previous "estimated" comment ("more realistic than max") described
+    // UI display accuracy, but the check here decides whether the tx CAN be
+    // submitted at all, so it must match what the node will actually enforce.
+    // Real-world trigger (2026-08-26): Celo baseFeePerGas spiked to 200 gwei;
+    // maxFeePerGas via wallet 2.0× multiplier hits 400 gwei, so a Squid ~1M
+    // gas swap requires ~0.4 CELO to submit while the estimated (using
+    // `_estimatedGasUse = gas × 0.6` and effective baseFee+priority ≈ 205
+    // gwei) reads ~0.12 CELO. A wallet with 0.246 CELO cleared the estimated
+    // check, then Forno rejected at submit — no fallback to COPm/USDm/etc.
+    if (maxGasFeeInDecimal.isGreaterThan(feeCurrency.balance) && !isGasSubsidized) {
       // Not enough balance to pay for gas, try next fee currency
       continue
     }
@@ -495,7 +526,7 @@ export async function prepareTransactions({
     if (
       spendToken &&
       spendToken.tokenId === feeCurrency.tokenId &&
-      spendAmountDecimal.plus(gasForValidation).isGreaterThan(spendToken.balance) &&
+      spendAmountDecimal.plus(maxGasFeeInDecimal).isGreaterThan(spendToken.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for amount + gas, try next fee currency
@@ -505,7 +536,7 @@ export async function prepareTransactions({
     // For different-token transactions or when no spend token, check if gas alone exceeds fee currency balance
     if (
       (!spendToken || spendToken.tokenId !== feeCurrency.tokenId) &&
-      gasForValidation.isGreaterThan(feeCurrency.balance) &&
+      maxGasFeeInDecimal.isGreaterThan(feeCurrency.balance) &&
       !isGasSubsidized
     ) {
       // Not enough balance to pay for gas, try next fee currency
@@ -513,6 +544,7 @@ export async function prepareTransactions({
     }
 
     // This is the one we can use
+    addFeeCurrencyBreadcrumb(feeCurrency, { origin, stage: 'prepared' })
     return {
       type: 'possible',
       transactions: estimatedTransactions,
@@ -729,31 +761,55 @@ function _getFeeCurrency(prepareTransaction: TransactionRequest): Address | unde
 export function getFeeCurrencyToken(
   preparedTransactions: TransactionRequest[],
   networkId: NetworkId,
-  tokensById: TokenBalances
+  tokensById: TokenBalances,
+  // Optional synthesized native fee-currency token (typically CELO on
+  // celo-mainnet). Passed by callers that use the fee-currency selector's
+  // synthesized-CELO entry: CELO is excluded from ALLOWED_TOKEN_IDS so
+  // tokensById does NOT contain it, but after PR #326 (Bug E reversal) CELO
+  // is the first-choice fee currency and any tx that pays gas in CELO has
+  // NO `feeCurrency` field (native gas).
+  nativeFeeCurrency?: TokenBalance
 ): TokenBalance | undefined {
   const feeCurrencyAdapterOrAddress = getFeeCurrency(preparedTransactions)
 
-  // First try to find the fee currency token by its address (most common case)
+  // First try store lookup (matches for both native-gas via
+  // `celo-mainnet:native` and for ERC20 fee currencies via their address).
   const feeCurrencyToken = tokensById[getTokenId(networkId, feeCurrencyAdapterOrAddress)]
   if (feeCurrencyToken) {
     return feeCurrencyToken
   }
 
-  // Then try finding the fee currency token by its fee currency adapter address
+  // Then adapter-address lookup (CIP-64 adapters register under a different
+  // address than the underlying token; scan the store for a match).
   if (feeCurrencyAdapterOrAddress) {
-    return Object.values(tokensById).find(
+    const byAdapter = Object.values(tokensById).find(
       (token) =>
         token &&
         token.networkId === networkId &&
         token.feeCurrencyAdapterAddress === feeCurrencyAdapterOrAddress
     )
+    if (byAdapter) {
+      return byAdapter
+    }
+
+    // Non-native fee currency address that we still can't resolve — real
+    // missing data. Log for visibility.
+    Logger.error(
+      TAG,
+      `Could not find fee currency token for prepared transactions with feeCurrency set to '${feeCurrencyAdapterOrAddress}' in network ${networkId}`
+    )
+    return undefined
   }
 
-  // This indicates we're missing some data
-  Logger.error(
-    TAG,
-    `Could not find fee currency token for prepared transactions with feeCurrency set to '${feeCurrencyAdapterOrAddress}' in network ${networkId}`
-  )
+  // Native gas (no feeCurrency field on the prepared tx) and no store hit
+  // (CELO is excluded from ALLOWED_TOKEN_IDS post PR #326 Bug E reversal).
+  // Use the synthesized entry if the caller passed one; otherwise return
+  // undefined SILENTLY (no error log). Callers that only need the token
+  // for optional analytics enrichment don't always have easy access to the
+  // synthesized entry and undefined is a valid state, not a bug.
+  if (nativeFeeCurrency && nativeFeeCurrency.networkId === networkId) {
+    return nativeFeeCurrency
+  }
   return undefined
 }
 

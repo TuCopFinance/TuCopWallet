@@ -37,11 +37,16 @@ curl -sf "$BASE/health" | jq -e '.ok == true' >/dev/null || fail "/health did no
 curl -sf "$BASE/ready" | jq -e '.ok == true' >/dev/null || fail "/ready did not return ok"
 curl -sf "$BASE/health/relay" | jq -e '.ok == true' >/dev/null || fail "/health/relay is failing (relay may need refunding)"
 
-next "neeru catalogue (4 categories, no partialFailure)"
+next "neeru catalogue (>=4 categories, no partialFailure)"
 CATALOG=$(curl -sf "$BASE/hooks-api/getEarnPositions?networkIds=celo-mainnet&supportedAppIds=neeru-vaults&address=$ADDR")
 COUNT=$(echo "$CATALOG" | jq '.data | length')
 PF=$(echo "$CATALOG" | jq '.meta.partialFailure // null')
-[[ "$COUNT" == "4" ]] || fail "expected 4 neeru categories, got $COUNT"
+# Backend expanded to 6 categories on 2026-08-25 (Flexible + 30/60/90/180/365
+# dias). Wallet is length-agnostic (src/earn/neeru/constants.ts:16 typed as
+# `number`, expandNeeruPositions appends any new backend ids). Check floor
+# at 4 (the originally-shipped set) so a future expansion never blocks a
+# release, but a regression that drops known categories still fails.
+[[ "$COUNT" -ge "4" ]] || fail "expected >=4 neeru categories, got $COUNT"
 [[ "$PF" == "null" ]] || fail "unexpected partialFailure: $PF"
 
 next "shortcut list (withdraw-amount-only present, withdraw-principal-only absent)"

@@ -9,8 +9,21 @@ export const CELO_GAS_MULTIPLIERS = {
   gasLimit: 1.05,
   // Priority fee multiplier (5% buffer - L2 has stable fees)
   priorityFee: 1.05,
-  // Max fee multiplier (2% buffer since L2 has very predictable fees)
-  maxFee: 1.02,
+  // Max fee multiplier: 3x. Only caps how much the WALLET is willing to
+  // pay per gas unit; EIP-1559-style fee markets still only charge
+  // (baseFee + effectiveTip), so a generous cap is free. History:
+  //   1.02 (~12% headroom) lost to Celo baseFee spikes → op-reth
+  //     rejects "maxFeePerGas < baseFeePerGas" (TestFlight 1.118.12).
+  //   2.0 (100% headroom) still lost when Celo baseFee crossed
+  //     ~100 gwei sustained (op-reth strict "Missing or invalid
+  //     parameters" on Squid pre-built multicall txs where the quote's
+  //     gas params captured a stale baseFee; observed 2026-08-26 with
+  //     baseFee at 200 gwei during gold sell submits).
+  //   3.0 (200% headroom) tolerates baseFee doubling between quote and
+  //     submit without rejecting. Real gas cost is still bounded by
+  //     actual baseFee + tip at inclusion; the wallet never pays the
+  //     3× cap unless the fee market pins there for the whole block.
+  maxFee: 3.0,
 } as const
 
 // Minimum gas prices for different fee currencies (in wei) - L2 optimized

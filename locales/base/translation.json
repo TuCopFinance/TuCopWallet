@@ -1863,6 +1863,19 @@
       "title": "Service temporarily unavailable",
       "body": "We couldn't get a quote. Please try again in a few seconds."
     },
+    "errorRateLimited": {
+      "title": "Service busy",
+      "body": "Try again in a moment.",
+      "bodyWithCountdown": "Try again in {{seconds}}s."
+    },
+    "errorUnavailableFallbackUsdt": {
+      "title": "Route unavailable",
+      "body": "This route is not available right now. Try switching to USDT."
+    },
+    "errorGeneric": {
+      "title": "Swap unavailable",
+      "body": "Swap is not available right now. Try again later."
+    },
     "confirmSwapFailedWarning": {
       "title": "Something went wrong",
       "body": "The network speed is slow or there is an unknown error. Please try again later"
@@ -1884,16 +1897,16 @@
       "networkFee": "{{networkName}} Network Fee",
       "networkFeeNoNetwork": "Network Fee",
       "serviceFee": "Service fee ({{percentage}}%)",
-      "swapFee": "{{appName}} Fee",
+      "swapFee": "Provider fee",
       "swapFeeWaived": "Free",
-      "appFee": "{{appName}} Fee",
+      "appFee": "Provider fee",
       "appFeeValue": "<0></0> <1>(<0></0>)</1>",
       "appFeeValue_withoutPriceUsd": "<0></0>",
       "appFeeValue_free": "Free",
       "appFeeValue_placeholder": "-",
-      "appFeeInfo": "{{appName}} Fee\n\nThe {{appName}} fee of {{appFeePercentage}}% is designed to enhance your experience by ensuring fast, reliable, and secure swaps.",
-      "appFeeInfo_free": "{{appName}} Fee\n\nThis swap is free of charge.",
-      "appFeeInfo_placeholder": "{{appName}} Fee\n\nThe fee is calculated based on the quote you receive.",
+      "appFeeInfo": "Provider fee\n\nThe {{appFeePercentage}}% provider fee is charged by the swap provider to process your transaction.",
+      "appFeeInfo_free": "Provider fee\n\nThis swap is free of charge.",
+      "appFeeInfo_placeholder": "Provider fee\n\nThe fee is calculated based on the quote you receive.",
       "appFeeInfoDismissButton": "Got it",
       "slippagePercentage": "Slippage Tolerance",
       "networkFeeInfo": "You are swapping on the {{networkName}} Network.\n\nThis estimated network fee is required to conduct a transaction on the {{networkName}} Network. This fee secures your transaction and goes towards keeping the network operational.",
@@ -1917,13 +1930,16 @@
       "estimatedCrossChainFee": "Estimated cross-chain fees",
       "maxCrossChainFee": "Max cross-chain fees",
       "feesBreakdown": "Breakdown",
+      "legsBreakdown": "Breakdown per swap",
+      "sharedGasNote": "The network fee is shared across all swaps in a single atomic transaction.",
       "feeAmount": "≈ {{localCurrencySymbol}}{{feeAmountInLocalCurrency}} ({{tokenAmount}} {{tokenSymbol}})",
       "feeAmount_noFiatPrice": "{{tokenAmount}} {{tokenSymbol}}",
       "feesMoreInfoLabel": "More information",
       "feesInfo_sameChain": "The network fee is required by the network to process the transaction.",
       "feesInfo_crossChain": "The network fee is required by the network to process the transaction. The cross-chain fee is charged by the cross-chain provider.",
-      "feesInfo_sameChainWithAppFee": "The network fee is required by the network to process the transaction. The {{appName}} fee of {{appFeePercentage}}% is charged for your use of our product.",
-      "feesInfo_crossChainWithAppFee": "The network fee is required by the network to process the transaction. The cross-chain fee is charged by the cross-chain provider. The {{appName}} fee of {{appFeePercentage}}% is charged for your use of our product."
+      "feesInfo_sameChainWithAppFee": "The network fee is required by the network to process the transaction. The {{appFeePercentage}}% provider fee is charged by the swap provider.",
+      "feesInfo_crossChainWithAppFee": "The network fee is required by the network to process the transaction. The cross-chain fee is charged by the cross-chain provider. The {{appFeePercentage}}% provider fee is charged by the swap provider.",
+      "provider": "Provider"
     },
     "fundYourWalletBottomSheet": {
       "title": "Fund your wallet",
@@ -2307,7 +2323,7 @@
     "approvalTransactionTitle": "Approval",
     "estimatedNetworkFee": "Estimated network fee",
     "networkFee": "Network fee",
-    "appFee": "App fee",
+    "appFee": "Provider fee",
     "estimatedCrossChainFee": "Estimated cross-chain fee",
     "crossChainFee": "Cross-chain fee",
     "finiteApprovalDescription": "Approved {{approvedAmount}} {{tokenSymbol}} for trade",
@@ -2943,13 +2959,17 @@
       "flexible": "Flexible",
       "thirtyDays": "30 days",
       "sixtyDays": "60 days",
-      "ninetyDays": "90 days"
+      "ninetyDays": "90 days",
+      "oneEightyDays": "180 days",
+      "threeSixtyFiveDays": "365 days"
     },
     "cardSubtitle": {
       "flexible": "Flexible",
       "thirtyDays": "30-day deposit",
       "sixtyDays": "60-day deposit",
-      "ninetyDays": "90-day deposit"
+      "ninetyDays": "90-day deposit",
+      "oneEightyDays": "180-day deposit",
+      "threeSixtyFiveDays": "365-day deposit"
     },
     "explainer": {
       "close": "Close",
@@ -2967,7 +2987,15 @@
       },
       "ninetyDays": {
         "title": "90-day deposit",
-        "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term. Usually the best rate.\n\nOnce the 90 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
+        "body": "Your Pesos are locked for 90 days. Interest builds up day by day during the term.\n\nOnce the 90 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 90 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
+      },
+      "oneEightyDays": {
+        "title": "180-day deposit",
+        "body": "Your Pesos are locked for 180 days. Interest builds up day by day during the term. Rate is higher than 30 / 60 / 90 days.\n\nOnce the 180 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 180 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
+      },
+      "threeSixtyFiveDays": {
+        "title": "365-day deposit",
+        "body": "Your Pesos are locked for 365 days. Interest builds up day by day during the term. This is the top rate Neeru offers.\n\nOnce the 365 days are up, you have a 7-day window to withdraw your deposit + earned interest at no cost. Interest does not grow during that window.\n\nIf you do not withdraw within those 7 days, the deposit automatically renews for another 365 days. The interest earned is added to the balance so it keeps earning.\n\nIf you need to withdraw before the term ends, a 20% fee applies only to the interest earned. Your deposit is never touched."
       }
     },
     "detail": {
@@ -2979,7 +3007,9 @@
         "flexible": "Withdraw anytime with no minimum lock",
         "thirtyDays": "Lock your Pesos for 30 days at a higher rate",
         "sixtyDays": "Lock your Pesos for 60 days at a higher rate",
-        "ninetyDays": "Lock your Pesos for 90 days at the highest rate"
+        "ninetyDays": "Lock your Pesos for 90 days at the highest rate",
+        "oneEightyDays": "Lock your Pesos for 180 days at a higher rate",
+        "threeSixtyFiveDays": "Lock your Pesos for 365 days at the top rate"
       },
       "emptyState": {
         "rateEyebrow": "Estimated rate",
@@ -3021,7 +3051,9 @@
       "flexible": "Pesos Flexible",
       "thirtyDays": "Pesos 30 days",
       "sixtyDays": "Pesos 60 days",
-      "ninetyDays": "Pesos 90 days"
+      "ninetyDays": "Pesos 90 days",
+      "oneEightyDays": "Pesos 180 days",
+      "threeSixtyFiveDays": "Pesos 365 days"
     },
     "closeSheet": {
       "title": "Withdraw your deposit",
@@ -3099,8 +3131,8 @@
     "receiveMoney": "Receive Money",
     "spendMoney": "Spend Money",
     "holdUSD": "Hold US Dollars",
-    "swapToUSD": "Swap your COPm for USDT",
-    "swapSubtitle": "Pesos/Dollars",
+    "swap": "Swap your currencies",
+    "swapSubtitle": "Change between your assets",
     "withdraw": "Withdraw From Your Wallet",
     "earn": "Earn with your COPm or USDT",
     "earnSimple": "Grow your money",
@@ -3151,7 +3183,8 @@
       "benefitDescription": "As a registered beneficiary of the ReFi Colombia program, you can claim your subsidy safely and directly to your wallet.",
       "claimButton": "Claim My Subsidy",
       "claimingButton": "Claiming...",
-      "processingText": "Processing transaction..."
+      "processingText": "Processing transaction...",
+      "networkFeeLabel": "Network fee"
     },
     "alreadyClaimed": {
       "title": "You have already claimed your subsidy!",
@@ -3207,7 +3240,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
-    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "atomicProgress": "Cambiando tus Dolares a {{destination}}...",
     "transitioning": "Finishing your operation...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",
@@ -3215,9 +3248,23 @@
       "retry": "Reintentar restante",
       "cancel": "Dejar pendiente"
     },
+    "atomicFailure": {
+      "title": "Couldn't complete the exchange",
+      "body": "The provider service is unavailable right now. Try again in a few minutes.",
+      "bodyRateLimited": "The provider is temporarily overloaded. Try again in a few seconds.",
+      "bodyRateLimitedWithCountdown": "The provider is temporarily overloaded. Try again in {{seconds}} seconds.",
+      "bodyFallbackUsdt": "This route is unavailable right now. Try again using USDT.",
+      "bodyPriceMoved": "Prices changed while preparing the exchange. Try again, or use a smaller amount.",
+      "retry": "Retry",
+      "cancel": "Cancel"
+    },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    },
+    "legList": {
+      "toggleDetail": "Ver detalles",
+      "retryBadge": "Intento {{attempt}}"
     }
   },
   "goldFlow": {
@@ -3274,13 +3321,14 @@
       "youPay": "You Pay",
       "youReceive": "You Receive",
       "goldPrice": "Gold Price",
+      "fees": "Fees",
       "networkFee": "Network Fee",
       "serviceFee": "Service fee ({{percentage}}%)",
       "swapProvider": "Provider",
       "estimatingFee": "Estimating...",
       "confirm": "Confirm Purchase",
-      "infoTitle": "About XAUt0",
-      "infoDescription": "XAUt0 tokens represent physical gold. Prices may fluctuate based on market conditions.",
+      "infoTitle": "About Digital Gold",
+      "infoDescription": "Each unit of Digital Gold represents physical gold stored in secure vaults. Prices may fluctuate based on market conditions.",
       "errorTitle": "Transaction Failed",
       "error": "Failed to complete purchase. Please try again.",
       "successMessage": "Gold purchase successful!"
@@ -3300,6 +3348,7 @@
       "youSell": "You Sell",
       "youReceive": "You Receive",
       "goldPrice": "Gold Price",
+      "fees": "Fees",
       "networkFee": "Network Fee",
       "serviceFee": "Service fee ({{percentage}}%)",
       "swapProvider": "Provider",

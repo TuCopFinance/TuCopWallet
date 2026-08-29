@@ -8,6 +8,7 @@ import colors from 'src/styles/colors'
 import { Spacing } from 'src/styles/styles'
 import { ALLOWED_TOKEN_IDS } from 'src/tokens/constants'
 import NoActivity from 'src/transactions/NoActivity'
+import DepositOrWithdrawFeedItem from 'src/transactions/feed/DepositOrWithdrawFeedItem'
 import EarnFeedItem from 'src/transactions/feed/EarnFeedItem'
 import NftFeedItem from 'src/transactions/feed/NftFeedItem'
 import SwapFeedItem from 'src/transactions/feed/SwapFeedItem'
@@ -61,9 +62,11 @@ function isTransactionAllowed(tx: TokenTransaction): boolean {
       // NFTs are always filtered out
       return false
     case TokenTransactionTypeV2.Deposit:
+      return ALLOWED_TOKEN_IDS.has(tx.outAmount.tokenId)
     case TokenTransactionTypeV2.Withdraw:
+      return ALLOWED_TOKEN_IDS.has(tx.inAmount.tokenId)
     case TokenTransactionTypeV2.ClaimReward:
-      // These types are not handled in V1, return false to filter them out
+      // Still deferred: no UI equivalent shipped yet in TuCop's V1 feed.
       return false
     default:
       return false
@@ -156,8 +159,13 @@ function TransactionFeed() {
         return <TokenApprovalFeedItem key={tx.transactionHash} transaction={tx} />
       case TokenTransactionTypeV2.Deposit:
       case TokenTransactionTypeV2.Withdraw:
+        // Backend emits these two for Neeru + Aave + Compound + Somm.
+        // Dispatched to the dedicated FeedItem so the row reads "Fondos
+        // retirados / depositados" instead of falling through to the raw
+        // COPm Transfer that Blockscout also produces (which used to show
+        // as "Pago recibido"). See tx-details screen for the paired render.
+        return <DepositOrWithdrawFeedItem key={tx.transactionHash} transaction={tx} />
       case TokenTransactionTypeV2.ClaimReward:
-        // These are handled by the FeedV2 only
         return null
       case TokenTransactionTypeV2.EarnDeposit:
       case TokenTransactionTypeV2.EarnSwapDeposit:

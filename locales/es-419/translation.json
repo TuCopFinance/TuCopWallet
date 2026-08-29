@@ -1868,6 +1868,19 @@
       "title": "Servicio temporalmente no disponible",
       "body": "No pudimos obtener una cotización. Vuelve a intentarlo en unos segundos."
     },
+    "errorRateLimited": {
+      "title": "Servicio saturado",
+      "body": "Intenta de nuevo en unos segundos.",
+      "bodyWithCountdown": "Intenta de nuevo en {{seconds}}s."
+    },
+    "errorUnavailableFallbackUsdt": {
+      "title": "Ruta no disponible",
+      "body": "Esta ruta no está disponible ahora. Prueba cambiando a USDT."
+    },
+    "errorGeneric": {
+      "title": "Cambio no disponible",
+      "body": "El cambio no está disponible ahora. Intenta más tarde."
+    },
     "confirmSwapFailedWarning": {
       "title": "Algo salió mal",
       "body": "La velocidad de la red es lenta o hay un error desconocido. Vuelve a intentarlo más tarde"
@@ -1898,16 +1911,16 @@
       "routeDetailExpand": "Ver",
       "routeDetailCollapse": "Ocultar",
       "routeLabel": "Ejecutado por",
-      "swapFee": "Tarifa de {{appName}}",
+      "swapFee": "Tarifa del proveedor",
       "swapFeeWaived": "Gratis",
-      "appFee": "Tarifa de {{appName}}",
+      "appFee": "Tarifa del proveedor",
       "appFeeValue": "<0></0> <1>(<0></0>)</1>",
       "appFeeValue_withoutPriceUsd": "<0></0>",
       "appFeeValue_free": "Gratis",
       "appFeeValue_placeholder": "-",
-      "appFeeInfo": "Tarifa de {{appName}}\n\nLa tarifa de {{appName}} del {{appFeePercentage}}% está diseñada para mejorar tu experiencia, garantizando intercambios rápidos, fiables y seguros.",
-      "appFeeInfo_free": "Tarifa de {{appName}}\n\nEste intercambio es gratuito.",
-      "appFeeInfo_placeholder": "Tarifa de {{appName}}\n\nLa tarifa se calcula en función de la cotización que recibas.",
+      "appFeeInfo": "Tarifa del proveedor\n\nLa tarifa del proveedor del {{appFeePercentage}}% es cobrada por el proveedor del intercambio para procesar tu operación.",
+      "appFeeInfo_free": "Tarifa del proveedor\n\nEste intercambio es gratuito.",
+      "appFeeInfo_placeholder": "Tarifa del proveedor\n\nLa tarifa se calcula en función de la cotización que recibas.",
       "appFeeInfoDismissButton": "Entendido",
       "slippagePercentage": "Tolerancia al slippage",
       "networkFeeInfo": "Estás intercambiando en la red {{networkName}}.\n\nSe requiere esta tarifa de red estimada para realizar una transacción en la red {{networkName}}. Esta tarifa asegura tu transacción y se destina a mantener la red.",
@@ -1932,13 +1945,16 @@
       "estimatedCrossChainFee": "Tarifa de transacción entre cadenas estimada",
       "maxCrossChainFee": "Tarifas máximas entre cadenas",
       "feesBreakdown": "Desglose",
+      "legsBreakdown": "Desglose por cambio",
+      "sharedGasNote": "La tarifa de red se comparte entre todos los cambios en una sola transacción.",
       "feeAmount": "≈ {{localCurrencySymbol}}{{feeAmountInLocalCurrency}} ({{tokenAmount}} {{tokenSymbol}})",
       "feeAmount_noFiatPrice": "{{tokenAmount}} {{tokenSymbol}}",
       "feesMoreInfoLabel": "Más información",
       "feesInfo_sameChain": "La tarifa de red es requerida por la red para procesar la transacción.",
       "feesInfo_crossChain": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas.",
-      "feesInfo_sameChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa de {{appName}} de {{appFeePercentage}}% se cobra por el uso de nuestro producto.",
-      "feesInfo_crossChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas. La tarifa de {{appName}} de {{appFeePercentage}}% se cobra por el uso de nuestro producto."
+      "feesInfo_sameChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa del proveedor de {{appFeePercentage}}% es cobrada por el proveedor del intercambio.",
+      "feesInfo_crossChainWithAppFee": "La tarifa de red es requerida por la red para procesar la transacción. La tarifa entre cadenas es cargada por el proveedor entre cadenas. La tarifa del proveedor de {{appFeePercentage}}% es cobrada por el proveedor del intercambio.",
+      "provider": "Proveedor"
     },
     "fundYourWalletBottomSheet": {
       "title": "Agregar fondos a tu billetera",
@@ -2323,7 +2339,7 @@
     "approvalTransactionTitle": "Aprobación",
     "estimatedNetworkFee": "Estimación de la tarifa de red",
     "networkFee": "Tarifa de red",
-    "appFee": "Tarifa de la app",
+    "appFee": "Tarifa del proveedor",
     "estimatedCrossChainFee": "Tarifa cross-chain estimada",
     "crossChainFee": "Tarifa cross-chain",
     "finiteApprovalDescription": "{{approvedAmount}} {{tokenSymbol}} aprobados para operar",
@@ -2648,7 +2664,7 @@
     "enterAmount": {
       "title": "¿Cuánto quieres depositar?",
       "titleWithdraw": "¿Cuánto quieres retirar?",
-      "deposit": "Depositar",
+      "deposit": "Depósito",
       "fees": "Tarifas",
       "available": "Disponible",
       "swap": "Cambio",
@@ -2956,13 +2972,17 @@
       "flexible": "Flexible",
       "thirtyDays": "30 días",
       "sixtyDays": "60 días",
-      "ninetyDays": "90 días"
+      "ninetyDays": "90 días",
+      "oneEightyDays": "180 días",
+      "threeSixtyFiveDays": "365 días"
     },
     "cardSubtitle": {
       "flexible": "Flexible",
       "thirtyDays": "Depósito a 30 días",
       "sixtyDays": "Depósito a 60 días",
-      "ninetyDays": "Depósito a 90 días"
+      "ninetyDays": "Depósito a 90 días",
+      "oneEightyDays": "Depósito a 180 días",
+      "threeSixtyFiveDays": "Depósito a 365 días"
     },
     "explainer": {
       "close": "Cerrar",
@@ -2980,7 +3000,15 @@
       },
       "ninetyDays": {
         "title": "Depósito a 90 días",
-        "body": "Tus Pesos quedan guardados 90 días. Los intereses se acumulan día a día durante el plazo. Suele ser la opción con mejor rendimiento.\n\nAl cumplirse los 90 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 90 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+        "body": "Tus Pesos quedan guardados 90 días. Los intereses se acumulan día a día durante el plazo.\n\nAl cumplirse los 90 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 90 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+      },
+      "oneEightyDays": {
+        "title": "Depósito a 180 días",
+        "body": "Tus Pesos quedan guardados 180 días. Los intereses se acumulan día a día durante el plazo. La tasa es mayor que en 30 / 60 / 90 días.\n\nAl cumplirse los 180 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 180 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
+      },
+      "threeSixtyFiveDays": {
+        "title": "Depósito a 365 días",
+        "body": "Tus Pesos quedan guardados 365 días. Los intereses se acumulan día a día durante el plazo. Es la tasa más alta que ofrece Neeru.\n\nAl cumplirse los 365 días tienes una ventana de 7 días para retirar el depósito + los intereses ganados sin ningún cobro. En esta ventana el interés no sigue creciendo.\n\nSi en esos 7 días no retiras, el depósito se renueva automáticamente por otros 365 días. Los intereses generados se suman al saldo para seguir rindiendo.\n\nSi necesitas retirar antes de cumplir el plazo, se cobra el 20% únicamente sobre los intereses generados. Tu depósito nunca se toca."
       }
     },
     "detail": {
@@ -2992,7 +3020,9 @@
         "flexible": "Retira en cualquier momento, sin tiempo mínimo",
         "thirtyDays": "Bloquea tus Pesos 30 días a una tasa más alta",
         "sixtyDays": "Bloquea tus Pesos 60 días a una tasa más alta",
-        "ninetyDays": "Bloquea tus Pesos 90 días a la tasa más alta"
+        "ninetyDays": "Bloquea tus Pesos 90 días a la tasa más alta",
+        "oneEightyDays": "Bloquea tus Pesos 180 días a una tasa más alta",
+        "threeSixtyFiveDays": "Bloquea tus Pesos 365 días a la tasa más alta"
       },
       "emptyState": {
         "rateEyebrow": "Tasa estimada",
@@ -3034,7 +3064,9 @@
       "flexible": "Pesos Flexible",
       "thirtyDays": "Pesos a 30 días",
       "sixtyDays": "Pesos a 60 días",
-      "ninetyDays": "Pesos a 90 días"
+      "ninetyDays": "Pesos a 90 días",
+      "oneEightyDays": "Pesos a 180 días",
+      "threeSixtyFiveDays": "Pesos a 365 días"
     },
     "closeSheet": {
       "title": "Retira tu depósito",
@@ -3119,8 +3151,8 @@
     "receiveMoney": "Recibe",
     "spendMoney": "Gasta",
     "holdUSD": "Mantener dólares estadounidenses",
-    "swapToUSD": "Intercambia tus divisas",
-    "swapSubtitle": "Pesos/Dólares",
+    "swap": "Intercambia tus divisas",
+    "swapSubtitle": "Cambia entre tus activos",
     "earn": "Haz crecer <0>tu dinero</0>",
     "earnSimple": "Haz crecer tu dinero",
     "earnSubtitle": "Invierte en Pesos y Dólares",
@@ -3191,7 +3223,8 @@
       "benefitDescription": "Como beneficiario registrado del programa de ReFi Colombia, puedes reclamar tu subsidio de forma segura y directa a tu wallet.",
       "claimButton": "Reclamar Mi Subsidio",
       "claimingButton": "Reclamando...",
-      "processingText": "Procesando transacción..."
+      "processingText": "Procesando transacción...",
+      "networkFeeLabel": "Tarifa de red"
     },
     "alreadyClaimed": {
       "title": "¡Ya reclamaste tu subsidio!",
@@ -3216,7 +3249,7 @@
     "expandedDetailHeader": "Detalle por token",
     "stepCount": "{{steps}} pasos",
     "stepProgress": "Paso {{index}} de {{total}}: convirtiendo {{symbol}}",
-    "atomicProgress": "Cambiando tus Dolares a Pesos...",
+    "atomicProgress": "Cambiando tus Dolares a {{destination}}...",
     "transitioning": "Finalizando tu cambio...",
     "partialSuccess": {
       "title": "Completaste {{completed}} de {{total}} pasos",
@@ -3224,9 +3257,23 @@
       "retry": "Reintentar restante",
       "cancel": "Dejar pendiente"
     },
+    "atomicFailure": {
+      "title": "No se pudo completar el intercambio",
+      "body": "El servicio del proveedor no está disponible en este momento. Intenta de nuevo en unos minutos.",
+      "bodyRateLimited": "El servicio está saturado en este momento. Intenta de nuevo en unos segundos.",
+      "bodyRateLimitedWithCountdown": "El servicio está saturado. Intenta de nuevo en {{seconds}} segundos.",
+      "bodyFallbackUsdt": "Esta ruta no está disponible en este momento. Vuelve a intentarlo usando USDT.",
+      "bodyPriceMoved": "Los precios cambiaron mientras preparabamos el intercambio. Intenta de nuevo, o usa un monto menor.",
+      "retry": "Reintentar",
+      "cancel": "Cancelar"
+    },
     "shortfall": {
       "title": "Saldo en Dolares insuficiente",
       "body": "Tu saldo total en Dolares es {{availableUsd}}. Recarga o reduce el monto."
+    },
+    "legList": {
+      "toggleDetail": "Ver detalles",
+      "retryBadge": "Intento {{attempt}}"
     }
   },
   "goldFlow": {
@@ -3283,13 +3330,14 @@
       "youPay": "Pagas",
       "youReceive": "Recibes",
       "goldPrice": "Precio del Oro",
+      "fees": "Tarifas",
       "networkFee": "Tarifa de Red",
       "serviceFee": "Tarifa de operación ({{percentage}}%)",
       "swapProvider": "Proveedor",
       "estimatingFee": "Estimando...",
       "confirm": "Confirmar Compra",
-      "infoTitle": "Sobre XAUt0",
-      "infoDescription": "Los tokens XAUt0 representan oro físico. Los precios pueden fluctuar según las condiciones del mercado.",
+      "infoTitle": "Sobre el Oro Digital",
+      "infoDescription": "Cada unidad de Oro Digital representa oro físico almacenado en bóvedas seguras. El precio puede variar según las condiciones del mercado.",
       "errorTitle": "Transacción Fallida",
       "error": "No se pudo completar la compra. Por favor intenta de nuevo.",
       "successMessage": "¡Compra de oro exitosa!"
@@ -3305,6 +3353,7 @@
       "youSell": "Vendes",
       "youReceive": "Recibes",
       "goldPrice": "Precio del Oro",
+      "fees": "Tarifas",
       "networkFee": "Tarifa de Red",
       "serviceFee": "Tarifa de operación ({{percentage}}%)",
       "swapProvider": "Proveedor",
@@ -3425,7 +3474,10 @@
     "recipient": "Destinatario",
     "pool": "Pool",
     "viewOnExplorer": "Ver en el explorador",
-    "breakdownHeader": "Detalle por moneda"
+    "breakdownHeader": "Detalle por moneda",
+    "feeExplainerWithProvider": "La tarifa de red es lo que pagas a la red Celo por procesar la transaccion. La tarifa del proveedor la cobra {{provider}} por encontrar la mejor tasa. Ambas se muestran en total como Tarifas.",
+    "feeExplainerNetworkOnly": "La tarifa de red es lo que pagas a la red Celo por procesar la transaccion. No hay tarifa del proveedor en esta operacion.",
+    "gotIt": "Entendido"
   },
   "errors": {
     "public": {

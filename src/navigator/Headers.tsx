@@ -8,6 +8,7 @@ import CloseButton from 'src/components/CloseButton'
 import CurrencyDisplay from 'src/components/CurrencyDisplay'
 import LegacyTokenDisplay from 'src/components/LegacyTokenDisplay'
 import QrScanButton from 'src/components/QrScanButton'
+import HeaderQuickActions from 'src/home/HeaderQuickActions'
 import SendButton from 'src/components/SendButton'
 import SettingsGearButton from 'src/components/SettingsGearButton'
 import TokenDisplay from 'src/components/TokenDisplay'
@@ -19,7 +20,6 @@ import { Spacing } from 'src/styles/styles'
 import { useTokenInfoByCurrency } from 'src/tokens/hooks'
 import { TokenBalance } from 'src/tokens/slice'
 import { Currency } from 'src/utils/currencies'
-import LeftLogo from './Logo.svg'
 
 export const noHeader: NativeStackNavigationOptions = {
   headerShown: false,
@@ -246,7 +246,12 @@ export const tabHeader: NativeStackNavigationOptions = {
   ...emptyHeader,
   headerRight: () => {
     return (
-      <View style={[styles.topElementsContainer, { marginRight: Spacing.Tiny4 }]}>
+      <View
+        style={[
+          styles.topElementsContainer,
+          { marginRight: Spacing.Regular16, paddingTop: Spacing.Thick24 },
+        ]}
+      >
         <SendButton testID="TabHeader/SendButton" />
         <QrScanButton testID="TabHeader/QRScanButton" />
         {/* <ShopTokensButton testID="TabHeader/ShopTokenButton" /> */}
@@ -254,9 +259,19 @@ export const tabHeader: NativeStackNavigationOptions = {
       </View>
     )
   },
+  // Logo dropped, quick actions promoted into the header (Envia / Recibe /
+  // Recarga / Gasta) so Home + Wallet open with a single top row.
+  // paddingTop = Thick24 pushes the row well below the notch/dynamic
+  // island. marginLeft/Right = Regular16 give edge breathing room so
+  // Envia and the settings gear don't hug the sim edges.
   headerLeft: () => (
-    <View style={[styles.topElementsContainer, { marginLeft: Spacing.Regular16 }]}>
-      <LeftLogo />
+    <View
+      style={[
+        styles.topElementsContainer,
+        { marginLeft: Spacing.Regular16, paddingTop: Spacing.Thick24 },
+      ]}
+    >
+      <HeaderQuickActions />
     </View>
   ),
 }

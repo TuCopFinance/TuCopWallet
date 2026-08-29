@@ -21,6 +21,48 @@ interface SwapResult {
   networkId: NetworkId
 }
 
+export interface SwapFeeMetadata {
+  // Squid integrator ("provider") fee in USD, already deducted from the
+  // delivered token by Squid at quote time. Sagas persist this on every
+  // successful swap so the tx-details 'Cambiar' screen can render the
+  // same 'Tarifa del proveedor' row the immediate success screen shows.
+  // Without this the backend indexer's tx entry lacks AppFee for these
+  // paths and the row disappears once the pending tx settles.
+  appFeeUsd: string
+  // Which venue actually executed the swap (squid / uniswap-v4 / etc).
+  // Stored as the raw saga-level slug; the UI maps it to a display label
+  // via formatSwapProvider so future venues surface without a wallet
+  // release. Optional so pre-existing persisted entries stay readable
+  // (undefined -> the 'Proveedor' row simply hides for that tx).
+  provider?: string
+  // On-chain network fee, computed by the saga at receipt time
+  // (gasUsed * effectiveGasPrice) so the success + tx-details screen
+  // renders the Tarifa de red row without depending on an async React
+  // hook that races the render + can silently bail on CIP-64 adapter
+  // resolution. Value is the whole-unit token amount (already shifted
+  // by decimals). Optional to keep existing persisted entries valid.
+  networkFeeValue?: string
+  // TokenId for the fee currency. Matches state.tokens.tokenBalances keys
+  // for stables paid via adapter (`celo-mainnet:<address>`) OR the
+  // synthetic native CELO id (`celo-mainnet:native`) for gas paid in CELO.
+  networkFeeTokenId?: string
+  // Per-leg Squid integrator fee breakdown for EIP-7702 atomic batches.
+  // Legacy multi-leg (non-7702) flows do NOT populate this: each leg lands
+  // as its own transaction so per-leg data is already keyed by that leg's
+  // own hash in feeMetadataByTxHash. In 7702 the whole batch is ONE tx,
+  // so per-leg info would be lost without an explicit array.
+  //
+  // `amount` is the fee value in whole token units of `tokenId` (Squid
+  // convention: fromAmount × pct/100, denominated in the leg's fromToken).
+  // The renderer can pass this straight to FeeSummary as a FeeComponent;
+  // FeeSummary handles the local-currency conversion via the canonical
+  // convertTokenToLocalAmount path (respects the COPm 1:1 rule).
+  // Optional for backward compat + single-leg swaps.
+  legFees?: { tokenId: string; amount: string }[]
+  // Wall-clock timestamp for FIFO eviction (see MAX_FEE_METADATA_ENTRIES).
+  recordedAt: number
+}
+
 export interface State {
   currentSwap: SwapTask | null
   /**
@@ -28,12 +70,22 @@ export interface State {
    */
   priceImpactWarningThreshold: number
   lastSwapped: string[]
+  // Wallet-local overlay for tx metadata the backend indexer does not emit
+  // (Squid integrator fee). Keyed by lowercase txHash. Bounded to
+  // MAX_FEE_METADATA_ENTRIES with FIFO eviction so it does not grow
+  // unbounded across the user's lifetime.
+  feeMetadataByTxHash: { [txHash: string]: SwapFeeMetadata }
 }
+
+// Cap: 500 swaps of metadata per user. A power user doing 5 swaps/day
+// hits this in ~100 days; older entries eviction is FIFO on write.
+const MAX_FEE_METADATA_ENTRIES = 500
 
 const initialState: State = {
   currentSwap: null,
   priceImpactWarningThreshold: 4, // 4% by default
   lastSwapped: [],
+  feeMetadataByTxHash: {},
 }
 
 function updateCurrentSwapStatus(currentSwap: SwapTask | null, swapId: string, status: SwapStatus) {
@@ -84,6 +136,38 @@ export const slice = createSlice({
     swapCancel: (state, action: PayloadAction<string>) => {
       updateCurrentSwapStatus(state.currentSwap, action.payload, 'idle')
     },
+    // Sagas call this on every successful swap that reports a positive
+    // integrator fee. Kept in a dedicated action (rather than tucked inside
+    // swapSuccess) so the aggregated multi-swap flow — which fires one
+    // parent success + N per-leg records — can dispatch it independently
+    // for each leg without doubling other side effects.
+    recordSwapFeeMetadata: (
+      state,
+      action: PayloadAction<{
+        txHash: string
+        appFeeUsd: string
+        provider?: string
+        networkFeeValue?: string
+        networkFeeTokenId?: string
+        legFees?: { tokenId: string; amount: string }[]
+      }>
+    ) => {
+      const key = action.payload.txHash.toLowerCase()
+      state.feeMetadataByTxHash[key] = {
+        appFeeUsd: action.payload.appFeeUsd,
+        provider: action.payload.provider,
+        networkFeeValue: action.payload.networkFeeValue,
+        networkFeeTokenId: action.payload.networkFeeTokenId,
+        legFees: action.payload.legFees,
+        recordedAt: Date.now(),
+      }
+      const entries = Object.entries(state.feeMetadataByTxHash)
+      if (entries.length > MAX_FEE_METADATA_ENTRIES) {
+        entries.sort((a, b) => a[1].recordedAt - b[1].recordedAt)
+        const trimmed = entries.slice(entries.length - MAX_FEE_METADATA_ENTRIES)
+        state.feeMetadataByTxHash = Object.fromEntries(trimmed)
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -101,6 +185,7 @@ export const slice = createSlice({
   },
 })
 
-export const { swapStart, swapSuccess, swapError, swapCancel } = slice.actions
+export const { swapStart, swapSuccess, swapError, swapCancel, recordSwapFeeMetadata } =
+  slice.actions
 
 export default slice.reducer

@@ -516,39 +516,121 @@ export const sortedTokensWithBalanceSelector = createSelector(
   (tokens) => tokens.filter((token) => token.balance.gt(TOKEN_MIN_AMOUNT))
 )
 
+// Defense-in-depth for tokens the backend catalog occasionally forgets to
+// flag as fee currencies. Cross-checked on-chain via
+// FeeCurrencyDirectory.getCurrencies() at 0x15F344B9E6c3Cb6F0376A36A64928b13F62C6276:
+// both entries below are registered as direct fee currencies (feeCurrency
+// field in the CIP-64 tx = token address, no adapter). Same treatment as
+// USDm (which the backend DOES flag today). Trigger for adding COPm:
+// 2026-08-26, backend /api/tokens/info omitted `isFeeCurrency: true` for
+// COPm, filtering it out of the wallet's fee-currency cascade and leaving
+// users with COPm balance unable to swap when CELO was below max-gas
+// threshold. Backend fix requested in parallel; this defensive path keeps
+// the wallet resilient to future backend regressions on the same class of
+// token. Addresses are lowercased for direct .has() lookups.
+const KNOWN_MENTO_DIRECT_FEE_CURRENCIES_CELO: ReadonlySet<string> = new Set([
+  '0x8a567e2ae79ca692bd748ab832081c45de4041ea', // COPm
+  '0x765de816845861e75a25fca122bb6898b8b1282a', // USDm (belt+suspenders, backend flags this today)
+])
+
 const feeCurrenciesByNetworkIdSelector = createSelector(
   (state: RootState) => tokensByIdSelector(state, Object.values(NetworkId)),
-  (tokens) => {
+  (state: RootState) => state.tokens.nativeCeloBalance,
+  (state: RootState) => state.tokens.nativeCeloPriceUsd,
+  (tokens, nativeCeloBalance, nativeCeloPriceUsd) => {
     const feeCurrenciesByNetworkId: { [key in NetworkId]?: TokenBalance[] } = {}
     // collect fee currencies
     Object.values(tokens).forEach((token) => {
-      if (isFeeCurrency(token)) {
-        feeCurrenciesByNetworkId[token.networkId] = [
-          ...(feeCurrenciesByNetworkId[token.networkId] ?? []),
-          token,
+      if (!token) return
+      // Defensive augmentation: known Mento-native direct fee currencies get
+      // isFeeCurrency:true forced when the backend catalog omits it. Only
+      // applies on celo-mainnet for the hardcoded set. Do NOT try to synth an
+      // adapter-based currency here (USDC/USDT); their adapter decimals are
+      // backend-supplied and we cannot fabricate them safely wallet-side.
+      // Merge is idempotent: if backend already flags the token, the spread
+      // preserves the flag; if not, the wallet adds it.
+      const addrLower = token.address?.toLowerCase() ?? ''
+      const needsAugment =
+        token.networkId === NetworkId['celo-mainnet'] &&
+        !isFeeCurrency(token) &&
+        KNOWN_MENTO_DIRECT_FEE_CURRENCIES_CELO.has(addrLower)
+      const effectiveToken: TokenBalance = needsAugment
+        ? Object.assign({}, token, { isFeeCurrency: true })
+        : token
+      if (isFeeCurrency(effectiveToken)) {
+        feeCurrenciesByNetworkId[effectiveToken.networkId] = [
+          ...(feeCurrenciesByNetworkId[effectiveToken.networkId] ?? []),
+          effectiveToken,
         ]
       }
     })
+
+    // Synthesize a CELO entry for celo-mainnet from the wallet's native
+    // balance. CELO is deliberately excluded from ALLOWED_TOKEN_IDS (kept
+    // out of tokenBalances) so it stays invisible in the portfolio, send,
+    // receive and swap-picker screens. The fee-currency layer, however,
+    // needs CELO as the first-choice payer for gas: paying gas with an
+    // invisible token means the user's visible stables (Dolares/Pesos) stay
+    // intact for their real usage. Only when CELO runs out does the cascade
+    // fall to the next candidate. Without this synthesis, flipping the
+    // catalog source (Statsig gate `use_tucop_backend_tokens_info`) to a
+    // provider that omits CELO leaves the fee cascade with no last-resort
+    // candidate, and the swap preview surfaces "not enough balance for gas"
+    // even when the wallet has CELO on chain.
+    const celoMainnet = NetworkId['celo-mainnet']
+    const existingCelo = feeCurrenciesByNetworkId[celoMainnet]?.find(
+      (t) => t.tokenId === networkConfig.celoTokenId
+    )
+    if (!existingCelo && nativeCeloBalance) {
+      const balance = new BigNumber(nativeCeloBalance).shiftedBy(-18)
+      // priceUsd sourced from backend /api/tokens/info (extracted before the
+      // ALLOWED_TOKEN_IDS filter drops CELO). Without a real price the fee
+      // display layer cannot convert CELO gas amounts to the local currency
+      // and the swap detail row renders "≈ COP$X + Y CELO" (mixed format)
+      // instead of a single "≈ COP$Z" total. See tokens/saga.ts +
+      // slice.nativeCeloPriceUsd.
+      const priceUsd = nativeCeloPriceUsd ? new BigNumber(nativeCeloPriceUsd) : null
+      const syntheticCelo: TokenBalance = {
+        tokenId: networkConfig.celoTokenId,
+        address: null,
+        networkId: celoMainnet,
+        symbol: 'CELO',
+        name: 'Celo',
+        decimals: 18,
+        balance,
+        priceUsd,
+        lastKnownPriceUsd: priceUsd,
+        priceFetchedAt: Date.now(),
+        isNative: true,
+      }
+      feeCurrenciesByNetworkId[celoMainnet] = [
+        ...(feeCurrenciesByNetworkId[celoMainnet] ?? []),
+        syntheticCelo,
+      ]
+    }
 
     // Priority order for TuCop fee currencies: CELO > COPm > USDm > USDC > USDT
     // Current names (Mento rebranding): COPm, USDm
     // Fallback old names (Valora API): cCOP, cUSD
     //
-    // NOTE: this preserves the historical CELO-first priority for the legacy
-    // callers (swap, send, earn, dapps, gold, walletConnect, buckspay,
-    // subsidies, neeru). The Bug-E stables-first preference is
-    // applied inside `pickFeeCurrency` (src/tokens/feeCurrencyPicker.ts), used
-    // only by the migrated flows (dollarsSpend legacy + 7702). Migrating the
-    // remaining callers to `pickFeeCurrency` removes their dependency on this
-    // ordering and lets us flip CELO to last-resort globally in a future PR.
+    // CELO is FIRST-choice for TuCop: the token is invisible in the portfolio,
+    // so paying gas in CELO does not touch any balance the user can see.
+    // Stables are only used when CELO is exhausted. This inverts the earlier
+    // Bug-E "stables-first" policy (PR #227, 2026-06-30) because that policy
+    // was motivated by protecting a user mental model of CELO that TuCop's UI
+    // never exposes in the first place - if the user cannot see CELO, its
+    // silent depletion is not a UX cost, and the alternative (draining
+    // visible stables) is what actually surprises users. The `reorderForBugE`
+    // wrapper and the CELO-deprioritization branch in `pickFeeCurrency` were
+    // removed together with this change.
     const FEE_CURRENCY_PRIORITY: Record<string, number> = {
-      CELO: 0,
-      COPm: 1, // Colombian Peso (current)
-      cCOP: 1, // Fallback old name
-      USDm: 2, // US Dollar (current)
-      cUSD: 2, // Fallback old name
-      USDC: 3,
-      USDT: 4,
+      CELO: 1,
+      COPm: 2, // Colombian Peso (current)
+      cCOP: 2, // Fallback old name
+      USDm: 3, // US Dollar (current)
+      cUSD: 3, // Fallback old name
+      USDC: 4,
+      USDT: 5,
     }
 
     // Sort fee currencies by priority, then by USD balance
@@ -591,6 +673,20 @@ export const feeCurrenciesSelector = createSelector(
   (feeCurrencies, networkId) => {
     return feeCurrencies[networkId] ?? []
   }
+)
+
+/**
+ * The native fee currency for a network (CELO on celo-mainnet). Used by
+ * fee-display callsites that receive a prepared transaction with no
+ * `feeCurrency` field (native gas). Because CELO is deliberately excluded
+ * from ALLOWED_TOKEN_IDS, it does NOT live in tokensById, so downstream
+ * lookups (getFeeCurrencyToken) would return undefined without this
+ * fallback. Returns the same synthesized entry the fee-currency picker
+ * consumes, keeping the source-of-truth single (nativeCeloBalance +
+ * nativeCeloPriceUsd in state.tokens).
+ */
+export const nativeFeeCurrencySelector = createSelector(feeCurrenciesSelector, (feeCurrencies) =>
+  feeCurrencies.find((tok) => tok.isNative)
 )
 
 export const allFeeCurrenciesSelector = createSelector(

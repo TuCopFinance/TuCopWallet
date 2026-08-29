@@ -6,7 +6,9 @@ import type { NetworkId } from 'src/transactions/types'
 
 // Builds the synthetic TokenBalance shown as a single "Dolares" row in
 // pickers. Aggregates USD value across USAT/USDm/USDC/USDT. Returns null
-// when no dollar tokens have positive USD value (caller hides the row).
+// when no dollar tokens have positive USD value (callers that need a
+// selectable placeholder even with zero balance should build a fallback
+// synthetic themselves - see SwapScreen.dolaresVirtualTokenForPicker).
 //
 // IMPORTANT: This is a synthetic shape. Code that handles it must detect
 // `tokenId === DOLARES_VIRTUAL_TOKEN_ID` BEFORE treating it as a real ERC-20

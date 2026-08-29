@@ -55,6 +55,13 @@ if ! grep -qE '^APP_DISPLAY_NAME=TuCop$' .env; then
 fi
 ok "APP_DISPLAY_NAME=TuCop (no dev suffix)"
 
+# 2b. Sentry environment MUST be production so release events don't
+#    land in the 'development' bucket used by yarn dev:ios sessions.
+if ! grep -qE '^SENTRY_ENVIRONMENT=production$' .env; then
+  fail ".env SENTRY_ENVIRONMENT is not 'production'. Actual: $(grep '^SENTRY_ENVIRONMENT=' .env || echo 'MISSING')"
+fi
+ok "SENTRY_ENVIRONMENT=production"
+
 # 3. Info.plist template vars intact (agvtool sometimes hardcodes them)
 INFO_PLIST="ios/TuCop/Info.plist"
 [[ -f "$INFO_PLIST" ]] || fail "$INFO_PLIST not found"

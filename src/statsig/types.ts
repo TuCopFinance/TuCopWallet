@@ -72,10 +72,40 @@ export enum StatsigFeatureGates {
   // Kept as a gate + default OFF so backend can validate the new endpoint
   // in prod with individual overrides / ramp % before flipping to 100%.
   USE_TUCOP_BACKEND_TOKENS_INFO = 'use_tucop_backend_tokens_info',
+  // PostHog product analytics rollout switch. When ON, AppAnalytics.init
+  // initializes the PostHog RN SDK and every existing track() / identify()
+  // / page() callsite fans out to PostHog. When OFF (default), the SDK
+  // stays uninitialized so events short-circuit before hitting any network.
+  // Server-side ramp so we can go 5% -> 25% -> 100% without a release.
+  POSTHOG_TRACKING_ENABLED = 'posthog_tracking_enabled',
+  // PostHog session replay + mobile heatmap rollout. Independent of
+  // POSTHOG_TRACKING_ENABLED so we can run product analytics broadly
+  // without replay (data-heavy, privacy-sensitive) or vice versa. When ON,
+  // the SDK initializes with sessionReplayConfig.maskAllTextInputs +
+  // maskAllImages + maskAllSandboxedViews (defensive defaults) and screens
+  // known to render financial data (balances, addresses, mnemonics) opt in
+  // to per-view masking via <PostHogMaskView>. Heatmaps on the PostHog
+  // dashboard are aggregated from replay tap events — enabling replay
+  // also unlocks the heatmap surface. Default OFF; ramp per-cohort once
+  // the masking pass covers every surface.
+  POSTHOG_SESSION_REPLAY_ENABLED = 'posthog_session_replay_enabled',
 }
 
 export enum StatsigExperiments {
   ONBOARDING_TERMS_AND_CONDITIONS = 'onboarding_terms_and_conditions',
+  // Onboarding: prompt phone verification upfront (control) vs deferred
+  // until first-send (variant). Hypothesis: deferring lifts D1 retention.
+  // Wire needed in the onboarding flow when we run this — parameter name
+  // is `promptTiming` with values 'upfront' | 'deferred_until_send'.
+  ONBOARDING_PHONE_VERIFY_TIMING = 'onboarding_phone_verify_timing',
+  // Gold confirm screen layout: compact (control, only "Recibes" card +
+  // details) vs verbose (variant, from-to cards + arrow + details).
+  // Parameter name is `layout` with values 'compact' | 'verbose'.
+  GOLD_CONFIRM_LAYOUT = 'gold_confirm_layout',
+  // Swap confirm CTA copy: neutral "Confirmar" (control) vs action
+  // "Cambiar ahora" (variant). Parameter name is `cta` with values
+  // 'confirmar' | 'cambiar_ahora'. Wired in SwapScreen submit button.
+  SWAP_CONFIRM_CTA_COPY = 'swap_confirm_cta_copy',
 }
 
 export type StatsigParameter =

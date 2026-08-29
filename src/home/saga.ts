@@ -9,6 +9,7 @@ import { fetchPositionsSaga, fetchShortcutsSaga } from 'src/positions/saga'
 import { executeShortcutSuccess } from 'src/positions/slice'
 import { withTimeout } from 'src/redux/sagas-helpers'
 import { Actions as SendActions } from 'src/send/actions'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { swapSuccess } from 'src/swap/slice'
 import { fetchTokenBalancesSaga } from 'src/tokens/saga'
 import { updateFeedFirstPage, updateTransactions } from 'src/transactions/slice'
@@ -32,12 +33,28 @@ export function withLoading<Fn extends (...args: any[]) => any>(fn: Fn, ...args:
 }
 
 export function* refreshAllBalances() {
-  yield* all([
-    call(fetchTokenBalancesSaga),
-    call(fetchLocalCurrencyRateSaga),
-    call(fetchPositionsSaga),
-    call(fetchShortcutsSaga),
-  ])
+  // Wrap the fanout so a single failing sub-saga (positions / shortcuts /
+  // FX / balances) surfaces as a structured Sentry event with the specific
+  // sub-fetch pinpointed via the error message. Without this the failures
+  // land as silent generator crashes and only show up as symptoms
+  // downstream (blank Home, stale balance card).
+  try {
+    yield* all([
+      call(fetchTokenBalancesSaga),
+      call(fetchLocalCurrencyRateSaga),
+      call(fetchPositionsSaga),
+      call(fetchShortcutsSaga),
+    ])
+  } catch (error) {
+    Logger.error(TAG, 'refreshAllBalances failed', error)
+    captureBusinessError(error, {
+      feature: 'home',
+      provider: 'internal',
+      action: 'refresh_all_balances',
+      errorCode: 'sub_fetch_failed',
+    })
+    throw error
+  }
 }
 
 export function* watchRefreshBalances() {

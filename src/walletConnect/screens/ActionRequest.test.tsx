@@ -209,9 +209,11 @@ describe('ActionRequest with WalletConnect V2', () => {
       expect(
         getByText('walletConnectRequest.estimatedNetworkFee, {"networkName":"Celo"}')
       ).toBeTruthy()
+      // Post FeeSummary refactor (2026-08-22): tokens on primary line,
+      // "≈ COP$X" as secondary line.
       const fee = within(getByTestId('EstimatedNetworkFee'))
       expect(fee.getByText('0.0007 CELO')).toBeTruthy() // gas * (_baseFeePerGas + maxPriorityFeePerGas)
-      expect(fee.getByText('COP$0.0047')).toBeTruthy()
+      expect(fee.getByText('≈ COP$0.0047')).toBeTruthy()
 
       fireEvent.press(getByText('walletConnectRequest.sendTransactionAction'))
       expect(store.getActions()).toEqual([

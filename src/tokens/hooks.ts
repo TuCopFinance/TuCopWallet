@@ -7,6 +7,7 @@ import { useSelector } from 'src/redux/hooks'
 import { getFeatureGate, getMultichainFeatures } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import {
+  allFeeCurrenciesSelector,
   cashInTokensByNetworkIdSelector,
   cashOutTokensByNetworkIdSelector,
   spendTokensByNetworkIdSelector,
@@ -28,7 +29,7 @@ import {
   getSupportedNetworkIdsForTokenBalances,
 } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
-import { Currency } from 'src/utils/currencies'
+import { Currency, CURRENCY_TO_CHAIN_SYMBOL, resolveCurrency } from 'src/utils/currencies'
 import { deterministicShuffle } from 'src/utils/random'
 import networkConfig from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
@@ -191,7 +192,20 @@ export function useTokenInfo(tokenId?: string): TokenBalance | undefined {
   const tokens = useSelector((state) =>
     tokensByIdSelector(state, { networkIds, includePositionTokens: true })
   )
-  return tokenId ? tokens[tokenId] : undefined
+  // Native fee currencies (CELO, ETH on other chains) are intentionally
+  // absent from tokensById so they stay invisible in portfolio / send /
+  // receive / swap-picker lists. They ARE synthesized inside
+  // feeCurrenciesSelector for the fee cascade. Anyone asking useTokenInfo
+  // for a specific tokenId that happens to be a native gas token — fee
+  // rows, tx-detail screens — should get a resolvable TokenBalance back
+  // instead of undefined, otherwise every fee display has to special-case
+  // native tokens inline. Fallback stays after the portfolio lookup so
+  // real portfolio tokens keep priority (never happens in practice — the
+  // two sets are disjoint by construction — but preserves the order-of-
+  // preference contract).
+  const feeCurrencies = useSelector(allFeeCurrenciesSelector)
+  if (!tokenId) return undefined
+  return tokens[tokenId] ?? feeCurrencies.find((c) => c.tokenId === tokenId)
 }
 
 export function useTokensInfo(tokenIds: string[]): (TokenBalance | undefined)[] {
@@ -199,15 +213,35 @@ export function useTokensInfo(tokenIds: string[]): (TokenBalance | undefined)[] 
   const tokens = useSelector((state) =>
     tokensByIdSelector(state, { networkIds, includePositionTokens: true })
   )
-  return tokenIds.map((tokenId) => tokens[tokenId])
+  const feeCurrencies = useSelector(allFeeCurrenciesSelector)
+  return tokenIds.map(
+    (tokenId) => tokens[tokenId] ?? feeCurrencies.find((c) => c.tokenId === tokenId)
+  )
 }
 
 /**
  * @deprecated
+ * Legacy symbol-based token lookup. Post the Mento rebrand deploy on
+ * 2026-08-20 the on-chain `symbol()` returns 'USDm'/'EURm' for the cUSD /
+ * cEUR contracts, but historical callers (FiatConnect cached quotes,
+ * legacy deeplinks) still pass 'cUSD' / 'cEUR' / 'cREAL'. Normalize via
+ * resolveCurrency + CURRENCY_TO_CHAIN_SYMBOL before the direct symbol
+ * match so those legacy inputs keep resolving.
  */
 export function useTokenInfoWithAddressBySymbol(symbol: string) {
   const tokens = useSelector(tokensListWithAddressSelector)
-  return tokens.find((tokenInfo) => tokenInfo.symbol === symbol)
+  const currency = symbol ? resolveCurrency(symbol) : undefined
+  const resolvedSymbol = currency ? CURRENCY_TO_CHAIN_SYMBOL[currency] : symbol
+  // Try the current on-chain symbol first (post 2026-08-20 Mento rebrand:
+  // 'USDm' for the cUSD contract, 'EURm' for cEUR). Fall back to the raw
+  // input symbol so legacy state (or tests) that still store 'cUSD' /
+  // 'cEUR' on the token entry keep resolving.
+  return (
+    tokens.find((tokenInfo) => tokenInfo.symbol === resolvedSymbol) ??
+    (resolvedSymbol !== symbol
+      ? tokens.find((tokenInfo) => tokenInfo.symbol === symbol)
+      : undefined)
+  )
 }
 
 export function useTokenInfoByCurrency(currency: Currency) {

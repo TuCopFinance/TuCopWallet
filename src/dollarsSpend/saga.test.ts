@@ -117,7 +117,7 @@ describe('executeMultiSwapSaga', () => {
       executeMultiSwap({ steps: [stepUsat, stepUsdm], toTokenId: 'celo-mainnet:copm' })
     )
       .provide(providers)
-      .put(multiSwapStarted({ steps: [stepUsat, stepUsdm] }))
+      .put(multiSwapStarted({ steps: [stepUsat, stepUsdm], destinationLabel: 'Pesos' }))
       .put(multiSwapStepSucceeded({ index: 0 }))
       .put(multiSwapStepSucceeded({ index: 1 }))
       .put(multiSwapCompleted())
@@ -125,18 +125,24 @@ describe('executeMultiSwapSaga', () => {
       .silentRun()
   })
 
-  it('halts and emits stepFailed when a step swap fails', async () => {
-    // The saga uses delay(50) between stepFailed and transitionComplete to
-    // give the UI a frame for the transitional message. Use real timers so
-    // jest.useFakeTimers() (global) does not stall the saga.
+  it('continues to the next leg when a step swap fails (post 2026-08-28 fix)', async () => {
+    // Previously the saga bailed on the first leg failure via `return`, leaving
+    // subsequent legs untouched. That behaviour lost planned USDT legs when
+    // an earlier USDC leg tripped op-reth's in-flight limit or a fee-currency
+    // misconfig. Post-fix the saga logs the failure to Sentry, dispatches
+    // inFlightAdvance so the progress sheet keeps ticking, and CONTINUES to
+    // the next leg. Only if ALL legs fail does it dispatch multiSwapStepFailed
+    // (the all-legs-failed branch after the loop).
     jest.useRealTimers()
     let raceCallIndex = 0
     const raceProvider: EffectProviders = {
       race(_effect, _next) {
         raceCallIndex += 1
         if (raceCallIndex === 1) {
+          // Leg 0 succeeds
           return { success: { type: swapSuccess.type, payload: { swapId: 'mocked-1' } } }
         }
+        // Leg 1 fails; saga must continue past it (not halt)
         return { error: { type: swapError.type, payload: 'mocked-2' } }
       },
     }
@@ -153,11 +159,18 @@ describe('executeMultiSwapSaga', () => {
         executeMultiSwap({ steps: [stepUsat, stepUsdm], toTokenId: 'celo-mainnet:copm' })
       )
         .provide(providers)
+        // With per-leg retry (2026-08-28 fix): leg 0 succeeds attempt 1, leg 1
+        // fails attempt 1, delay 3s, leg 1 fails attempt 2 (retry exhausted).
+        // Since leg 0 succeeded, legs.length > 0 -> multiSwapCompleted fires.
+        // PartialSuccessSheet would NOT render because
+        // failedAtIndex is never set - instead the success screen shows
+        // aggregated totals over the legs that made it.
         .put(multiSwapStepSucceeded({ index: 0 }))
-        .put.actionType(multiSwapStepFailed.type)
-        .put.actionType(multiSwapTransitionComplete.type)
-        .not.put.actionType(multiSwapCompleted.type)
-        .silentRun(500)
+        .put.actionType(multiSwapCompleted.type)
+        .not.put.actionType(multiSwapStepFailed.type)
+        // Timeout must cover: leg 0 (~50ms), leg 1 attempt 1 fail (~50ms),
+        // 3s retry delay, leg 1 attempt 2 fail (~50ms), + margin.
+        .silentRun(6000)
     } finally {
       jest.useFakeTimers()
     }

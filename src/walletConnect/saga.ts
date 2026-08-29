@@ -16,9 +16,10 @@ import { APP_NAME, WALLET_CONNECT_PROJECT_ID } from 'src/config'
 import { activeDappSelector } from 'src/dapps/selectors'
 import { ActiveDapp } from 'src/dapps/types'
 import i18n from 'src/i18n'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { isBottomSheetVisible, navigate, navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { getSupportedNetworkIdsForWalletConnect } from 'src/tokens/utils'
 import { Network } from 'src/transactions/types'
@@ -461,11 +462,7 @@ function* showActionRequest(request: WalletKitTypes.EventArguments['session_requ
   const supportedChains = yield* call(getSupportedChains)
 
   const networkId = walletConnectChainIdToNetworkId[request.params.chainId]
-  // Bug E: keep stables ahead of CELO so WalletConnect dapp txs don't pay gas
-  // in a balance the user can't see.
-  const feeCurrencies = reorderForBugE(
-    yield* select((state) => feeCurrenciesSelector(state, networkId))
-  )
+  const feeCurrencies = yield* select((state) => feeCurrenciesSelector(state, networkId))
   let preparedTransactionsResult: PreparedTransactionsResult | undefined = undefined
   let prepareTransactionErrorMessage: string | undefined = undefined
   if (
@@ -558,6 +555,15 @@ function* acceptSession({ session, approvedNamespaces }: AcceptSession) {
     AppAnalytics.track(WalletConnectEvents.wc_session_approve_error, {
       ...defaultTrackedProperties,
       error: e.message,
+    })
+    // Session approval failing means the wallet never handshook with the
+    // dapp: buildApprovedNamespaces mismatch, missing client, timeout on
+    // getSessionFromClient. All three are operational bugs worth an issue.
+    captureBusinessError(e, {
+      feature: 'wallet_connect',
+      provider: 'wallet-connect',
+      action: 'accept_session',
+      errorCode: classifyHttpError(e),
     })
   }
 
@@ -681,6 +687,17 @@ function* handleAcceptRequest({ request, preparedTransaction }: AcceptRequest) {
     AppAnalytics.track(WalletConnectEvents.wc_request_accept_error, {
       ...defaultTrackedProperties,
       error: e.message,
+    })
+    // Signing / sending a dapp request is the user-critical path in
+    // WalletConnect. Fingerprint by wallet_connect/wallet-connect/accept_request
+    // so all failures group into one Sentry issue regardless of the dapp,
+    // while classifyHttpError buckets by network family (RPC 5xx vs
+    // wallet-side revert vs timeout).
+    captureBusinessError(e, {
+      feature: 'wallet_connect',
+      provider: 'wallet-connect',
+      action: 'accept_request',
+      errorCode: classifyHttpError(e),
     })
 
     // Notify the client about the error if possible

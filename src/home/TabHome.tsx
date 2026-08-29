@@ -8,6 +8,7 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
 import { AppState } from 'src/app/actions'
 import { appStateSelector, phoneNumberVerifiedSelector } from 'src/app/selectors'
+import { PostHogMaskView } from 'posthog-react-native'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import RadialGradientBackground from 'src/components/RadialGradientBackground'
 import BalanceCard from 'src/components/BalanceCard'
@@ -18,14 +19,9 @@ import { StatsigFeatureGates } from 'src/statsig/types'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
-import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
 import SwapArrows from 'src/icons/actions/SwapArrows'
-import Receive from 'src/icons/tab-home/Receive'
-import Recharge from 'src/icons/tab-home/Recharge'
-import Send from 'src/icons/tab-home/Send'
 import Swap from 'src/icons/tab-home/Swap'
 import Grow from 'src/icons/tab-home/Grow'
-import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend'
 import { importContacts } from 'src/identity/actions'
 import { navigate } from 'src/navigator/NavigationService'
@@ -37,7 +33,7 @@ import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { useCOPm, useUSDT } from 'src/tokens/hooks'
+import { useCOPm } from 'src/tokens/hooks'
 import { hasGrantedContactsPermission } from 'src/utils/contacts'
 import GoldEntrypoint from 'src/gold/GoldEntrypoint'
 
@@ -126,50 +122,19 @@ function TabHome(_props: Props) {
   }, [earthquakeDonationEnabled])
 
   const COPmToken: any = useCOPm()
-  const USDTToken = useUSDT()
 
-  const onPressRecharge = React.useCallback(() => {
-    // Go directly to USDT (Dólares) - no token selection needed for recharge
-    if (USDTToken) {
-      navigate(Screens.FiatExchangeAmount, {
-        tokenId: USDTToken.tokenId,
-        flow: CICOFlow.CashIn,
-        tokenSymbol: USDTToken.symbol,
-      })
-    }
-  }, [USDTToken])
-
-  function onPressSendMoney() {
-    AppAnalytics.track(TabHomeEvents.send_money)
-    navigate(Screens.SendSelectRecipient, {
-      defaultTokenIdOverride: COPmToken.tokenId,
-    })
-  }
-
-  // function goToSpend() {
-  //   navigate(Screens.FiatExchangeCurrencyBottomSheet, { flow: FiatExchangeFlow.Spend })
-  //   AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
-  //     flow: FiatExchangeFlow.Spend,
-  //   })
-  // }
-
-  function onPressRecieveMoney() {
-    AppAnalytics.track(TabHomeEvents.receive_money)
-    navigate(Screens.QRNavigator, {
-      screen: Screens.QRCode,
-    })
-  }
-
-  function onPressHoldUSD() {
+  function onPressSwap() {
     AppAnalytics.track(TabHomeEvents.hold_usd)
-    // Pre-select the aggregated "Dolares" virtual on the TO side so the swap
-    // card shows the user's full dollar balance (4.67 across USDT/USDC/USDm)
-    // instead of just one concrete token. The swap layer translates virtual
-    // back to USDT for the actual settlement (see SwapScreen.quoteToToken).
+    // Default direction: Dolares (aggregate) -> Pesos. The multi-swap saga
+    // consumes the user's full dollar balance via the multi-step planner
+    // (USDT -> USDm -> USDC spend order) when FROM=virtual, or a single
+    // settlement token (USDT) when the user drills into a concrete dollar.
+    // User can reverse the direction inside the swap screen if they want
+    // to buy dollars with pesos.
     !!COPmToken &&
       navigate(Screens.SwapScreenWithBack, {
-        fromTokenId: COPmToken.tokenId,
-        toTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        fromTokenId: DOLARES_VIRTUAL_TOKEN_ID,
+        toTokenId: COPmToken.tokenId,
       })
   }
 
@@ -182,18 +147,19 @@ function TabHome(_props: Props) {
     navigate(Screens.ReFiColombiaSubsidies)
   }
 
-  const bucksPayFlowStatus = useSelector(bucksPayFlowStatusSelector)
-
-  function onPressWithdraw() {
-    if (bucksPayFlowStatus === 'tracking' || bucksPayFlowStatus === 'submitting-to-api') {
-      navigate(Screens.BucksPayStatus)
-    } else {
-      navigate(Screens.SelectOfframpProvider)
-    }
-  }
-
   return (
     <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
+      {/* BalanceCard rendered OUTSIDE the ScrollView so it stays fixed at
+          the top of Home while the user scrolls through the feature
+          cards below. Matches TabWallet where the balance carousel is
+          also fixed. Wrapped in PostHogMaskView because the card is the
+          headline balance display — Pesos / Dolares / Oro amounts should
+          never land in a session replay upload even when the replay gate
+          is on. Layout is unaffected (masking uses accessibilityLabel). */}
+      <PostHogMaskView>
+        <BalanceCard testID="TabHome/BalanceCard" />
+      </PostHogMaskView>
+
       <ScrollView
         style={styles.scrollStyle}
         contentContainerStyle={styles.scrollContainer}
@@ -206,157 +172,84 @@ function TabHome(_props: Props) {
           />
         }
       >
-        <BalanceCard testID="TabHome/BalanceCard" />
-
-        <View style={styles.totalBalanceContainer}>
-          <View style={styles.row}>
-            <View style={[styles.flex, { alignItems: 'center' }]}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.actionButtonsContainer}
-              >
-                <FlatCard type="scrollmenu" testID="FlatCard/SendMoney" onPress={onPressSendMoney}>
-                  <View style={styles.actionButton}>
-                    <Send />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.sendMoney')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard
-                  type="scrollmenu"
-                  testID="FlatCard/ReceiveMoney"
-                  onPress={onPressRecieveMoney}
-                >
-                  <View style={styles.actionButton}>
-                    <Receive />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.receiveMoney')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard type="scrollmenu" testID="FlatCard/AddCOPm" onPress={onPressRecharge}>
-                  <View style={styles.actionButton}>
-                    <Recharge />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.addCOPm')}
-                  </Text>
-                </FlatCard>
-
-                <FlatCard type="scrollmenu" testID="FlatCard/spendMoney" onPress={onPressWithdraw}>
-                  <View style={styles.actionButton}>
-                    <QuickActionsWithdraw color={Colors.primary} />
-                  </View>
-                  <Text style={[styles.textPrimary, styles.actionButtonText]}>
-                    {t('tabHome.spendMoney')}
-                  </Text>
-                </FlatCard>
-              </ScrollView>
-            </View>
-          </View>
-        </View>
-
-        <Shadow
-          style={styles.shadow2}
-          offset={[0, 0]}
-          distance={10} // Add this to remove bottom shadow
-          startColor="rgba(190, 201, 255, 0.28)"
-          sides={{ bottom: false }} // Add this to specifically disable bottom shadow
-        >
-          <View style={[styles.containerShadow, styles.noBottomShadow]}>
-            {earthquakeDonationEnabled && (
-              // Donation card first so it is the very first entrypoint users
-              // see under the balance / quick actions. Placed above the swap
-              // card intentionally: pinning the campaign to the top of the
-              // list is the whole point of the always-visible surface (the
-              // popup is one-per-session, but the card has to earn a look
-              // every time someone scrolls Home).
-              <FlatCard
-                testID="FlatCard/EarthquakeDonation"
-                onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
-              >
-                <View style={styles.cardRow}>
-                  <View style={styles.cardIconBox}>
-                    <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
-                  </View>
-                  <View style={styles.cardTextBox}>
-                    <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
-                    <Text style={styles.cardSubText}>
-                      {t('tabHome.earthquakeDonation.subtitle')}
-                    </Text>
-                    <Text style={styles.donationHighlight}>
-                      {t('tabHome.earthquakeDonation.highlight')}
-                    </Text>
-                  </View>
-                </View>
-              </FlatCard>
-            )}
-
-            <FlatCard testID="FlatCard/swapToUSD" onPress={onPressHoldUSD}>
-              <View style={styles.cardRow}>
-                <View style={styles.cardIconBox}>
-                  <Swap />
-                </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.swapToUSD')}</Text>
-                  <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
-                </View>
-              </View>
-            </FlatCard>
-
-            {/* <FlatCard testID="FlatCard/HoldUSD" onPress={onPressHoldUSD}>
-              <View style={styles.row}>
-                <Swap />
-                <View style={styles.flex}>
-                  <Text style={styles.ctaText}>{t('tabHome.holdUSD')}</Text>
-                  <Text style={styles.ctaSubText}>{t('tabHome.swapToUSD')}</Text>
-                </View>
-              </View>
-            </FlatCard> */}
-
-            <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
-              <View style={styles.cardRow}>
-                <View style={styles.cardIconBox}>
-                  <Grow size={25} />
-                </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
-                  <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
-                </View>
-              </View>
-            </FlatCard>
-
-            <GoldEntrypoint />
-
+        {/* Wrapper container without its own border/shadow so balance and
+            feature cards read as one continuous stack. Individual feature
+            cards (FlatCard) still carry their own shadow so each row keeps
+            visible affordance. */}
+        <View style={styles.featureCardsWrap}>
+          {earthquakeDonationEnabled && (
+            // Donation card first so it is the very first entrypoint users
+            // see under the balance / quick actions. Placed above the swap
+            // card intentionally: pinning the campaign to the top of the
+            // list is the whole point of the always-visible surface (the
+            // popup is one-per-session, but the card has to earn a look
+            // every time someone scrolls Home).
             <FlatCard
-              testID="FlatCard/ReFiColombiaSubsidies"
-              onPress={onPressReFiColombiaSubsidies}
+              testID="FlatCard/EarthquakeDonation"
+              onPress={() => earthquakeDonationCardRef.current?.snapToIndex(0)}
             >
               <View style={styles.cardRow}>
                 <View style={styles.cardIconBox}>
                   <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
                 </View>
                 <View style={styles.cardTextBox}>
-                  <Text style={styles.cardText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
-                  <Text style={styles.cardSubText}>
-                    {t('tabHome.reFiColombiaSubsidies.subtitle')}
+                  <Text style={styles.cardText}>{t('tabHome.earthquakeDonation.button')}</Text>
+                  <Text style={styles.cardSubText}>{t('tabHome.earthquakeDonation.subtitle')}</Text>
+                  <Text style={styles.donationHighlight}>
+                    {t('tabHome.earthquakeDonation.highlight')}
                   </Text>
                 </View>
               </View>
             </FlatCard>
+          )}
 
-            {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
+          <FlatCard testID="FlatCard/Swap" onPress={onPressSwap}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Swap />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.swap')}</Text>
+                <Text style={styles.cardSubText}>{t('tabHome.swapSubtitle')}</Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          <FlatCard testID="FlatCard/Earn" onPress={onPressEarn}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Grow size={25} />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.earnSimple')}</Text>
+                <Text style={styles.cardSubText}>{t('tabHome.earnSubtitle')}</Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          <GoldEntrypoint />
+
+          <FlatCard testID="FlatCard/ReFiColombiaSubsidies" onPress={onPressReFiColombiaSubsidies}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardIconBox}>
+                <Image source={require('./refi-colombia-logo.webp')} style={styles.refiLogo} />
+              </View>
+              <View style={styles.cardTextBox}>
+                <Text style={styles.cardText}>{t('tabHome.reFiColombiaSubsidies.button')}</Text>
+                <Text style={styles.cardSubText}>
+                  {t('tabHome.reFiColombiaSubsidies.subtitle')}
+                </Text>
+              </View>
+            </View>
+          </FlatCard>
+
+          {/* <FlatCard testID="FlatCard/Withdraw" onPress={onPressWithdraw}>
               <View style={styles.row}>
                 <Withdraw />
                 <Text style={styles.ctaText}>{t('tabHome.withdraw')}</Text>
               </View>
             </FlatCard> */}
-          </View>
-        </Shadow>
+        </View>
       </ScrollView>
 
       <AddCOPmBottomSheet forwardedRef={addCOPmBottomSheetRef} />
@@ -484,29 +377,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: variables.contentPadding,
   },
-  containerShadow: {
-    flex: 1,
-    borderTopRightRadius: 33,
-    padding: 22,
-    paddingTop: 30,
-    borderColor: 'rgba(190, 201, 255, 0.33)',
-    borderWidth: 1,
-    marginLeft: -17,
-    marginRight: -17,
-    backgroundColor: 'white',
-    borderBottomWidth: 0,
-    gap: 17,
-  },
-  noBottomShadow: {
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0, // For Android
+  featureCardsWrap: {
+    // Vertical stack of feature cards under the balance carousel. No
+    // border, no wrap-level shadow: the earlier Shadow + border created a
+    // visible seam. Now the two sections read as one continuous surface,
+    // and each FlatCard owns its own shadow.
+    // marginTop needed because BalanceCard + this wrap are siblings inside
+    // a ScrollView (not the outer SafeAreaView), so the outer
+    // container.gap does NOT put space between them. Without this margin
+    // the first feature card visually touched the balance-front bottom.
+    marginTop: 32,
+    gap: 12,
   },
   container: {
     flex: 1,
     paddingHorizontal: variables.contentPadding,
     paddingTop: variables.contentPadding,
     position: 'relative',
-    gap: Spacing.Regular16,
+    // gap between QuickActions, BalanceCard, and the containerShadow that
+    // wraps feature cards. Must be >= Shadow distance (10) + a comfortable
+    // clearance so the containerShadow drop-shadow does not almost overlap
+    // the balance card above it. Small12 (12) left only 2px clearance and
+    // read as visually stuck to the balance card.
+    gap: Spacing.Thick24,
     backgroundColor: 'white',
   },
   flatCard: {
@@ -539,24 +432,6 @@ const styles = StyleSheet.create({
     height: 124,
     width: 124,
   },
-  textPrimary: { color: Colors.primary },
-  // column: {
-  //   flexDirection: 'column',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   gap: Spacing.Smallest8,
-  // },
-  // ctaText: {
-  //   ...typeScale.bodySmall,
-  //   color: Colors.gray6,
-  //   letterSpacing: -0.16,
-  // },
-  // ctaSubText: {
-  //   ...typeScale.bodySmall,
-  //   color: Colors.gray6,
-  //   letterSpacing: -0.16,
-  //   fontFamily: Inter.Regular,
-  // },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -577,42 +452,10 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.black,
   },
-  totalBalanceContainer: {
-    marginTop: 18,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-
   shadow: {
     width: '100%',
     borderRadius: 15,
   },
-  shadow2: {
-    width: '100%',
-  },
-  actionButtonsContainer: {
-    gap: Spacing.Thick24,
-    marginTop: Spacing.Large32,
-    alignSelf: 'center',
-  },
-  actionButton: {
-    flexDirection: 'column',
-    backgroundColor: '#EEEFFF',
-    padding: 16,
-    marginBottom: Spacing.Smallest8,
-    borderRadius: 12,
-  },
-  actionButtonText: {
-    ...typeScale.bodyXSmall,
-    textAlign: 'center',
-    lineHeight: 20,
-    letterSpacing: -0.12,
-  },
-  // iconContainer: {
-  //   width: 56,
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  // },
   refiLogo: {
     width: 40,
     height: 40,
@@ -630,18 +473,18 @@ const styles = StyleSheet.create({
   cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingLeft: 40,
-    paddingRight: 40,
+    paddingVertical: 4,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   cardIconBox: {
-    width: 57,
-    height: 57,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     backgroundColor: '#EEEFFF',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   cardTextBox: {
     flex: 1,

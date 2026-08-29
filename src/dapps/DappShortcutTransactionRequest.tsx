@@ -1,5 +1,5 @@
 import { BottomSheetScreenProps } from '@th3rdwave/react-navigation-bottom-sheet'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, StyleSheet } from 'react-native'
@@ -16,7 +16,6 @@ import { rawShortcutTransactionsToTransactionRequests } from 'src/positions/tran
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { Spacing } from 'src/styles/styles'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
@@ -34,10 +33,7 @@ function usePrepareShortcutTransactions(
   networkId: NetworkId,
   rawTransactions: RawShortcutTransaction[] | undefined
 ) {
-  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
-  // Bug E: keep CELO as a last resort so dapp-shortcut gas debits hit visible
-  // stables when the user has any. Falls through to CELO if no stable works.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
 
   return useAsync(
     async () => {
@@ -94,11 +90,7 @@ function Content({ rewardId }: { rewardId: string }) {
     shortcutId: pendingAcceptShortcut?.shortcutId ?? '',
   }
 
-  const rawFeeCurrenciesContent = useSelector((state) => feeCurrenciesSelector(state, networkId))
-  const feeCurrencies = useMemo(
-    () => reorderForBugE(rawFeeCurrenciesContent),
-    [rawFeeCurrenciesContent]
-  )
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, networkId))
 
   const asyncPreparedTransactions = usePrepareShortcutTransactions(
     networkId,

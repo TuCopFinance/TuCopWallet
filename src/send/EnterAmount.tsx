@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import React, { ComponentType, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ComponentType, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
@@ -26,7 +26,7 @@ import TokenBottomSheet, {
   TokenBottomSheetProps,
   TokenPickerOrigin,
 } from 'src/components/TokenBottomSheet'
-import TokenDisplay from 'src/components/TokenDisplay'
+import TokenDisplay, { getTokenSymbol } from 'src/components/TokenDisplay'
 import TokenEnterAmount, {
   FETCH_UPDATED_TRANSACTIONS_DEBOUNCE_TIME_MS,
   useEnterAmount,
@@ -38,7 +38,6 @@ import { AmountEnteredIn } from 'src/send/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
-import { reorderForBugE } from 'src/tokens/feeCurrencyPicker'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
 import { PreparedTransactionsResult, getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -121,12 +120,7 @@ export default function EnterAmount({
   const insets = useSafeAreaInsets()
   const [token, setToken] = useState<TokenBalance>(() => defaultToken ?? tokens[0])
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null)
-  const rawFeeCurrencies = useSelector((state) => feeCurrenciesSelector(state, token.networkId))
-  // Bug E: reorder so visible stables outrank CELO before this list reaches
-  // prepareTransactions, which would otherwise pick CELO (priority 0 in the
-  // shared selector) and silently drain a balance the user can't see. Every
-  // entry from the selector survives; CELO just slides to the end.
-  const feeCurrencies = useMemo(() => reorderForBugE(rawFeeCurrencies), [rawFeeCurrencies])
+  const feeCurrencies = useSelector((state) => feeCurrenciesSelector(state, token.networkId))
   const { maxFeeAmount, feeCurrency } = getFeeCurrencyAndAmounts(prepareTransactionsResult)
   const { tokenId: feeTokenId } = feeCurrency ?? feeCurrencies[0]
 
@@ -295,7 +289,11 @@ export default function EnterAmount({
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.maxAmountWarning.title')}
             description={t('sendEnterAmountScreen.maxAmountWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrency.symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrency.symbol,
+                prepareTransactionsResult.feeCurrency.tokenId
+              ),
             })}
             style={styles.warning}
             testID="SendEnterAmount/MaxAmountWarning"
@@ -305,10 +303,18 @@ export default function EnterAmount({
           <InLineNotification
             variant={NotificationVariant.Warning}
             title={t('sendEnterAmountScreen.notEnoughBalanceForGasWarning.title', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrencies[0].symbol,
+                prepareTransactionsResult.feeCurrencies[0].tokenId
+              ),
             })}
             description={t('sendEnterAmountScreen.notEnoughBalanceForGasWarning.description', {
-              feeTokenSymbol: prepareTransactionsResult.feeCurrencies[0].symbol,
+              feeTokenSymbol: getTokenSymbol(
+                t,
+                prepareTransactionsResult.feeCurrencies[0].symbol,
+                prepareTransactionsResult.feeCurrencies[0].tokenId
+              ),
             })}
             style={styles.warning}
             testID="SendEnterAmount/NotEnoughForGasWarning"

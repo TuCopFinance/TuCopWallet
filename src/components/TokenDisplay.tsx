@@ -129,7 +129,13 @@ function TokenDisplay({
   // and treat it as known so the picker shows "4.67 Dolares" / "COP$X"
   // instead of "-" / "Precio no disponible".
   const isVirtualDolares = tokenId === DOLARES_VIRTUAL_TOKEN_ID
-  const effectivePriceUsd = isVirtualDolares ? new BigNumber(1) : tokenInfo?.priceUsd
+  // Fall back to lastKnownPriceUsd so a transient upstream degradation (backend
+  // temporarily returns null for CELO / native fee currency) doesn't render the
+  // fee row as "-" while the tokens saga polls the next value. Mirrors the
+  // pattern the swap / send balance selectors use (see tokens/selectors.ts).
+  const effectivePriceUsd = isVirtualDolares
+    ? new BigNumber(1)
+    : (tokenInfo?.priceUsd ?? tokenInfo?.lastKnownPriceUsd ?? null)
 
   // COPm with COP currency should be 1:1 (avoid USD conversion rounding)
   const isCopmWithCopCurrency =

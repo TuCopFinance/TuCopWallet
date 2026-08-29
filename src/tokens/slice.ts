@@ -99,6 +99,22 @@ export interface TokenBalancesWithAddress {
 interface State {
   tokenBalances: StoredTokenBalances
   error: boolean
+  // Native CELO balance (wei as string) for celo-mainnet. Populated by
+  // fetchTokenBalancesSaga via an on-chain getBalance() call. Kept out of
+  // tokenBalances on purpose: CELO is excluded from ALLOWED_TOKEN_IDS so it
+  // stays invisible in the portfolio, send/receive, swap picker, etc.
+  // Consumed by feeCurrenciesByNetworkIdSelector to synthesize a CELO entry
+  // in the fee-currency list so the fee cascade always has CELO available
+  // as the first-choice payer (invisible to the user).
+  nativeCeloBalance?: string
+  // USD price of CELO as a decimal string. Sourced from the backend
+  // `/api/tokens/info` response before ALLOWED_TOKEN_IDS filters CELO out.
+  // Needed by feeCurrenciesByNetworkIdSelector so the synthesized CELO fee
+  // currency has a real priceUsd; without it, any tx that pays gas in CELO
+  // (which is now the first-choice picker after PR #326 Bug E reversal)
+  // renders its network-fee amount as raw "0.0066 CELO" instead of being
+  // convertible to the display currency (COP).
+  nativeCeloPriceUsd?: string
 }
 
 export function tokenBalanceHasAddress(
@@ -149,6 +165,14 @@ const slice = createSlice({
         },
       }
     },
+    setNativeCeloBalance: (state, action: PayloadAction<string>) => ({
+      ...state,
+      nativeCeloBalance: action.payload,
+    }),
+    setNativeCeloPriceUsd: (state, action: PayloadAction<string>) => ({
+      ...state,
+      nativeCeloPriceUsd: action.payload,
+    }),
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => ({
@@ -163,6 +187,8 @@ export const {
   fetchTokenBalancesSuccess,
   fetchTokenBalancesFailure,
   importToken,
+  setNativeCeloBalance,
+  setNativeCeloPriceUsd,
 } = slice.actions
 
 export default slice.reducer

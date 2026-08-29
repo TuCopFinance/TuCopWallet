@@ -14,10 +14,12 @@ import {
   StoredTokenBalances,
   TokenBalance,
   fetchTokenBalancesFailure,
+  setNativeCeloBalance,
+  setNativeCeloPriceUsd,
   setTokenBalances,
 } from 'src/tokens/slice'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
-import { NetworkId } from 'src/transactions/types'
+import { Network, NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { ensureError } from 'src/utils/ensureError'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -63,7 +65,16 @@ export async function fetchTokenBalancesForAddressByTokenId(address: string) {
   return fetchedBalancesByTokenId
 }
 
-export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<StoredTokenBalances> {
+export interface TokensInfoResult {
+  filtered: StoredTokenBalances
+  // CELO is intentionally excluded from ALLOWED_TOKEN_IDS so it stays out of
+  // the portfolio, but its priceUsd IS needed by the fee-display layer to
+  // convert CELO gas amounts into the display currency (COP). Extracted from
+  // the raw backend response before the filter drops it.
+  celoPriceUsd: string | undefined
+}
+
+export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<TokensInfoResult> {
   // resolveTokensInfoUrl reads Statsig at call time so the source can be
   // flipped between the legacy Valora cloud function and the TuCop backend
   // replacement without a wallet release. Gate default OFF keeps Valora as
@@ -78,6 +89,22 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     )
   }
   const rawTokens = await response.json()
+
+  // Grab CELO priceUsd BEFORE the ALLOWED_TOKEN_IDS filter drops the entry.
+  // Backend keys CELO by its ERC-20 address (`celo-mainnet:0x471ece...`) while
+  // the wallet's internal celoTokenId is `celo-mainnet:native` (a synthetic
+  // identifier). Look up under the address form the backend actually uses,
+  // falling back to the legacy synthetic key so older feeds still resolve.
+  // Without this fallback the price never dispatched -> nativeCeloPriceUsd
+  // stayed null -> the fee bottom sheet on the swap / earn screens rendered
+  // "≈ - (0.052 CELO)" and the "Tarifas" row lost its COP equivalent.
+  const celoAddressKey = `${NetworkId['celo-mainnet']}:${networkConfig.celoTokenAddress.toLowerCase()}`
+  const rawCelo = rawTokens[celoAddressKey] ?? rawTokens[networkConfig.celoTokenId]
+  const celoPriceUsdRaw = rawCelo?.priceUsd
+  const celoPriceUsdNum = celoPriceUsdRaw == null ? NaN : Number(celoPriceUsdRaw)
+  const celoPriceUsd =
+    Number.isFinite(celoPriceUsdNum) && celoPriceUsdNum > 0 ? String(celoPriceUsdRaw) : undefined
+
   const filtered = Object.keys(rawTokens)
     .filter((tokenId) => ALLOWED_TOKEN_IDS.has(tokenId))
     .reduce((acc, tokenId) => {
@@ -128,7 +155,7 @@ export async function getTokensInfo(supportedNetworks: NetworkId[]): Promise<Sto
     }
   }
 
-  return filtered
+  return { filtered, celoPriceUsd }
 }
 
 export function* fetchTokenBalancesSaga() {
@@ -143,7 +170,10 @@ export function* fetchTokenBalancesSaga() {
     const importedTokens = yield* select(importedTokensSelector, supportedNetworks)
     const networkIconByNetworkId = yield* select(networksIconSelector)
 
-    const supportedTokens = yield* call(getTokensInfo, supportedNetworks)
+    const { filtered: supportedTokens, celoPriceUsd } = yield* call(
+      getTokensInfo,
+      supportedNetworks
+    )
     const fetchedBalancesByTokenId = yield* call(fetchTokenBalancesForAddressByTokenId, address)
 
     for (const token of Object.values(supportedTokens) as StoredTokenBalance[]) {
@@ -181,6 +211,29 @@ export function* fetchTokenBalancesSaga() {
         ...supportedTokens,
       })
     )
+
+    if (celoPriceUsd) {
+      yield* put(setNativeCeloPriceUsd(celoPriceUsd))
+    }
+
+    // Fetch native CELO balance so feeCurrenciesByNetworkIdSelector can
+    // synthesize a CELO entry in the fee-currency list. CELO is deliberately
+    // excluded from ALLOWED_TOKEN_IDS (kept out of tokenBalances) so it stays
+    // invisible in the portfolio, but the fee-currency cascade still needs it
+    // as the first-choice payer. A getBalance() failure must not block the
+    // regular token-balance flow, so it's wrapped in its own try/catch and
+    // logged silently.
+    if (supportedNetworks.includes(NetworkId['celo-mainnet'])) {
+      try {
+        const celoNativeBalance = yield* call(() =>
+          publicClient[Network.Celo].getBalance({ address: address as Address })
+        )
+        yield* put(setNativeCeloBalance(celoNativeBalance.toString()))
+      } catch (nativeErr) {
+        Logger.warn(TAG, 'failed to fetch native CELO balance', ensureError(nativeErr).message)
+      }
+    }
+
     AppAnalytics.track(AppEvents.fetch_balance, {})
   } catch (err) {
     const error = ensureError(err)

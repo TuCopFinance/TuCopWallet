@@ -100,6 +100,15 @@ export interface SwapInfo {
   // sheet flash N times. The multi-swap orchestrator navigates once at the
   // end with the aggregated leg breakdown.
   suppressSuccessNavigation?: boolean
+  // Set to true when this swap is a per-leg tx of a multi-swap and the
+  // orchestrator will dispatch its OWN aggregate addStandbyTransaction
+  // after all legs land. Without this flag, each leg's swap saga emits
+  // an individual standby tx that surfaces as a separate feed row
+  // ("Intercambio USDm > Pesos", "Intercambio USDC > Pesos", ...) instead
+  // of the collapsed "Dolares > Pesos" row the user expects. Only affects
+  // the client-side optimistic feed; on-chain the txs are still separate.
+  // Added 2026-08-28 to match the atomic 7702 path's single-standby UX.
+  suppressStandbyDispatch?: boolean
 }
 
 /**
@@ -184,10 +193,14 @@ export type SwapProvider = 'squid' | 'uniswap-v4' | (string & {})
  * atomic tx. No Permit2 typedData signature is involved.
  *
  * Layout returned by backend (order is significant):
- *   [0] Permit2.approve(sellToken, UniversalRouter, amount, expiration)
- *   [1] UniversalRouter.execute(commands, inputs, deadline)
+ *   [0] sellToken.approve(Permit2, amount)
+ *   [1] Permit2.approve(UniversalRouter, amount, expiration)
+ *   [2] UniversalRouter.execute(commands, inputs, deadline)
  *
- * See wallet-consumer-spec.md section 12 for the wire contract.
+ * The wallet is length-agnostic: it maps every entry into a
+ * BatchExecutor.execute() inner call, so if backend ever adds or removes
+ * a step no client change is required. See wallet-consumer-spec.md
+ * section 12 for the wire contract.
  */
 export interface UniswapV4BatchCall {
   to: string
@@ -229,6 +242,24 @@ export interface FetchQuoteResponse {
      * Mutually exclusive with `permit2`.
      */
     batchCalls?: UniswapV4BatchCall[]
+    /**
+     * Backend-computed upper bound on the amount of `sellToken` that will
+     * be spent for this quote, in wei of sellToken. Backend-authoritative
+     * across all three quote paths (Squid, V4 Permit2, V4 batchCalls) per
+     * PR #220 (2026-08-21, sha 07e4608). Required — a missing field means
+     * the backend regressed.
+     *
+     * Semantics:
+     *   - Squid path: equals `fromAmount` from the quote request.
+     *   - V4 path (both permit2 + batchCalls): equals `input.sellAmount`.
+     *
+     * Wallet uses this as the ERC20 approve amount. Replaces the old
+     * dimensionally broken `buyAmount * guaranteedPrice` formula which
+     * produced wrong-sized approvals (up to 10^12x) for cross-decimal
+     * buy-mode swaps (e.g. buy USDm with USDT, 18-dec buyAmount vs
+     * 6-dec USDT allowance).
+     */
+    worstCaseSellAmount: string
   }
 }
 
@@ -239,6 +270,57 @@ export interface FetchQuoteResponse {
  * responses and normalizing at one point keeps flexibility if it flips.
  */
 export const UNISWAP_V4_PROVIDER = 'uniswap-v4'
+
+/**
+ * Enriched error envelope backend returns on /api/swap/quote when Squid
+ * degrades (PR #228, 2026-08-22). Discriminated union on `error`:
+ *
+ * - `squid_unavailable` (HTTP 502): Squid upstream returned 5xx.
+ *   `retry_after_seconds` is always null for this branch — retrying
+ *   immediately is fine.
+ * - `squid_rate_limited` (HTTP 429): Squid throttled us. When Squid
+ *   forwards a Retry-After header, backend surfaces it as
+ *   `retry_after_seconds`; otherwise the field is null and the wallet
+ *   can retry after its usual backoff.
+ *
+ * `fallback_hint` is `"USDT"` when the failing pair is COPm<->USDC or
+ * COPm<->USDm (backend audited: only USDT<->COPm has a viable Uniswap
+ * V4 pool on Celo, so USDT is the only escape route when Squid drops).
+ * `null` for every other pair — the wallet should show a generic
+ * unavailable message instead of a fallback hint.
+ *
+ * `route` is diagnostic-only (e.g. "USDC->COPm") and MUST NOT be
+ * rendered to end users — it leaks token tickers into copy in a way
+ * that violates the Dolares convention (aggregate label vs specific
+ * ticker context). Sentry tag only.
+ */
+export type SquidDegradationError =
+  | {
+      error: 'squid_unavailable'
+      message: string
+      route: string
+      fallback_hint: 'USDT' | null
+      retry_after_seconds: null
+    }
+  | {
+      error: 'squid_rate_limited'
+      message: string
+      route: string
+      fallback_hint: 'USDT' | null
+      retry_after_seconds: number | null
+    }
+
+/**
+ * Type guard for the enriched envelope. Legacy 502/429 responses
+ * without an envelope (older backend versions, non-Squid-derived 5xx)
+ * fall through to generic handling — do not hard-fail on missing
+ * optional fields.
+ */
+export function isSquidDegradationError(body: unknown): body is SquidDegradationError {
+  if (typeof body !== 'object' || body === null) return false
+  const code = (body as Record<string, unknown>).error
+  return code === 'squid_unavailable' || code === 'squid_rate_limited'
+}
 
 /**
  * True iff the response is any variant of the Uniswap V4 route. Wallet

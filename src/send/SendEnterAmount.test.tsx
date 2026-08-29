@@ -62,13 +62,15 @@ const tokenBalances = {
   [mockPoofTokenId]: { ...mockTokenBalances[mockPoofTokenId], balance: '0' }, // filtered out for no balance
   [mockCeurTokenId]: { ...mockTokenBalances[mockCeurTokenId], balance: '100' },
 }
-// Post Bug E fix: EnterAmount applies reorderForBugE so CELO slides to the
-// end of the list passed to refreshPreparedTransactions. Stables keep their
-// selector priority order (cUSD < cEUR), CELO trails.
+// Post Bug-E-reversal (2026-08-20): the selector returns CELO first for
+// celo-mainnet and EnterAmount passes the list unchanged to
+// refreshPreparedTransactions. prepareTransactions iterates top-to-bottom
+// so CELO is the default fee currency, with visible stables (cUSD, cEUR)
+// as the cascade alternatives.
 const feeCurrencies = [
+  tokenBalances[mockCeloTokenId],
   tokenBalances[mockCusdTokenId],
   tokenBalances[mockCeurTokenId],
-  tokenBalances[mockCeloTokenId],
 ]
 const store = createMockStore({
   tokens: {
@@ -112,9 +114,9 @@ describe('SendEnterAmount', () => {
     const tokens = getAllByTestId('TokenBalanceItem')
     expect(tokens).toHaveLength(4)
     expect(tokens[0]).toHaveTextContent('CELO')
-    expect(tokens[1]).toHaveTextContent('cUSD')
+    expect(tokens[1]).toHaveTextContent('Mento Dollar')
     expect(tokens[2]).toHaveTextContent('POOF')
-    expect(tokens[3]).toHaveTextContent('cEUR')
+    expect(tokens[3]).toHaveTextContent('Mento Euro')
   })
 
   it('should prepare transactions with the expected inputs', async () => {
@@ -199,7 +201,7 @@ describe('SendEnterAmount', () => {
       </Provider>
     )
 
-    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('cEUR')
+    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('EURm')
     expect(getByTestId('SendEnterAmount/TokenSelect')).not.toBeDisabled()
   })
 
@@ -219,7 +221,7 @@ describe('SendEnterAmount', () => {
       </Provider>
     )
 
-    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('cUSD')
+    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('USDm')
     expect(getByTestId('SendEnterAmount/TokenSelect')).not.toBeDisabled()
   })
 
@@ -233,7 +235,10 @@ describe('SendEnterAmount', () => {
       </Provider>
     )
 
-    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('cUSD')
+    // When token selection is forced disabled, the picker renders through
+    // getTokenDisplayName which returns 'Dolares' (i18n key 'assets.dollars'
+    // in the test env) for USDm - matches the user-facing label.
+    expect(getByTestId('SendEnterAmount/TokenSelect')).toHaveTextContent('assets.dollars')
     expect(getByTestId('SendEnterAmount/TokenSelect')).toBeDisabled()
   })
 })

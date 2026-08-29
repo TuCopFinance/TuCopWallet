@@ -3,6 +3,8 @@ import AppAnalytics from 'src/analytics/AppAnalytics'
 import { CeloExchangeEvents, SendEvents } from 'src/analytics/Events'
 import { ErrorMessages } from 'src/app/ErrorMessages'
 import { classifyError } from 'src/lib/errors'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import {
   inFlightAbort,
   inFlightAdvance,
@@ -175,8 +177,20 @@ export function* sendPaymentSaga({
       yield* put(inFlightAbort({ flowId }))
       return
     }
-    Logger.error(`${TAG}/sendPaymentSaga`, 'Send payment failed', error)
+    Logger.warn(`${TAG}/sendPaymentSaga`, 'Send payment failed')
     AppAnalytics.track(SendEvents.send_tx_error, { error: error.message })
+    // Send failures happen either at the wallet-side prep (RPC, gas) or at
+    // chain execution (revert). captureBusinessError normalizes both into
+    // the send/internal/send_payment fingerprint so the Sentry dashboard
+    // shows a single issue per user; classifyHttpError buckets by network
+    // family so 5xx spikes (Forno degradation) stand out from wallet-side
+    // reverts.
+    captureBusinessError(error, {
+      feature: 'send',
+      provider: 'internal',
+      action: 'send_payment',
+      errorCode: classifyHttpError(error),
+    })
     yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
   }
 }

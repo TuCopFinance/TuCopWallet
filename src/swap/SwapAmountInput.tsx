@@ -13,6 +13,7 @@ import {
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import TextInput from 'src/components/TextInput'
 import TokenDisplay, { getTokenSymbol } from 'src/components/TokenDisplay'
+import { getDollarTokenTicker } from 'src/tokens/dollarGroup'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
@@ -86,11 +87,15 @@ const SwapAmountInput = ({
             <View style={styles.tokenInfo}>
               <TokenIcon token={token} size={IconSize.MEDIUM} />
               <View style={styles.tokenInfoText}>
-                <Text style={styles.tokenName}>{getTokenSymbol(t, token.symbol)}</Text>
+                <Text style={styles.tokenName}>
+                  {getDollarTokenTicker(token.tokenId) ??
+                    getTokenSymbol(t, token.symbol, token.tokenId)}
+                </Text>
                 {showBalance && token.balance && (
                   <Text style={styles.tokenBalance}>
                     {t('swapScreen.balance')}: {token.balance.toFormat(2)}{' '}
-                    {getTokenSymbol(t, token.symbol, token.tokenId)}
+                    {getDollarTokenTicker(token.tokenId) ??
+                      getTokenSymbol(t, token.symbol, token.tokenId)}
                   </Text>
                 )}
               </View>

@@ -1879,7 +1879,7 @@
       "perTokenDetailCollapse": "Hide",
       "swapFee": "{{appName}} Fee",
       "swapFeeWaived": "Free",
-      "appFee": "{{appName}} Fee",
+      "appFee": "Provider fee",
       "appFeeValue": "<0></0> <1>(<0></0>)</1>",
       "appFeeValue_withoutPriceUsd": "<0></0>",
       "appFeeValue_free": "Free",
@@ -1909,6 +1909,8 @@
       "estimatedCrossChainFee": "Estimated cross-chain fees",
       "maxCrossChainFee": "Max cross-chain fees",
       "feesBreakdown": "Breakdown",
+      "legsBreakdown": "Breakdown per swap",
+      "sharedGasNote": "The network fee is shared across all swaps in a single atomic transaction.",
       "feeAmount": "≈ {{localCurrencySymbol}}{{feeAmountInLocalCurrency}} ({{tokenAmount}} {{tokenSymbol}})",
       "feeAmount_noFiatPrice": "{{tokenAmount}} {{tokenSymbol}}",
       "feesMoreInfoLabel": "More information",
@@ -2298,7 +2300,7 @@
     "approvalTransactionTitle": "Approval",
     "estimatedNetworkFee": "Estimated network fee",
     "networkFee": "Network fee",
-    "appFee": "App fee",
+    "appFee": "Provider fee",
     "estimatedCrossChainFee": "Estimated cross-chain fee",
     "crossChainFee": "Cross-chain fee",
     "finiteApprovalDescription": "Approved {{approvedAmount}} {{tokenSymbol}} for trade",
@@ -2994,7 +2996,10 @@
     "recipient": "Recipient",
     "pool": "Pool",
     "viewOnExplorer": "View on explorer",
-    "breakdownHeader": "Breakdown by token"
+    "breakdownHeader": "Breakdown by token",
+    "feeExplainerWithProvider": "The network fee is what you pay to the Celo network to process the transaction. The provider fee is charged by {{provider}} for finding the best rate. Both are shown in total under Fees.",
+    "feeExplainerNetworkOnly": "The network fee is what you pay to the Celo network to process the transaction. There is no provider fee for this transaction.",
+    "gotIt": "Got it"
   },
   "errors": {
     "public": {

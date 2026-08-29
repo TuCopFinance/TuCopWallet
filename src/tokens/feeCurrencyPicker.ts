@@ -1,21 +1,27 @@
 import BigNumber from 'bignumber.js'
 import type { TokenBalance } from 'src/tokens/slice'
 
-// Bug E: CELO is hidden from TuCop's user-facing token list, so paying gas in
-// CELO silently shrinks a balance the user can't see. This module deprioritizes
-// CELO so any visible stable is preferred, with CELO only used when no stable
-// is suitable. The deprioritization lives here (not in feeCurrenciesSelector)
-// so legacy callers keep their CELO-first ordering until each one opts in.
+// TuCop pays gas in CELO first because CELO is invisible in the app (excluded
+// from ALLOWED_TOKEN_IDS). Silently draining a token the user never sees is
+// better UX than draining a visible stable (Dolares/Pesos) that the user is
+// counting on. This picker iterates the incoming array in the order supplied
+// by the selector (already CELO-first, then COPm, USDm, USDC, USDT) and
+// returns the first candidate that clears the balance, spending-set and
+// adapter-allowance checks. Historic "stables-first" Bug-E preference and the
+// paired `reorderForBugE` wrapper were removed on 2026-08-20 (see
+// [[project_bug_e_reversed_20260820]]).
 
-export type FeeCurrencyReason =
-  | 'preferred-stable' // user-visible token picked, hidden CELO debit avoided
-  | 'celo-fallback' // no stable usable, fell back to CELO (last resort)
+// Reason the picker returned a choice. Post Bug-E-reversal (2026-08-20) the
+// picker is order-preserving with no discrimination by symbol, so the only
+// non-null return path is "the first candidate that cleared every check".
+// The absence case is `pickFeeCurrency(...) === null` (typed at the return),
+// so no reason enum value is needed for it.
+export type FeeCurrencyReason = 'first-viable'
 
 export type DeclineReason =
   | 'in-spending-set' // token is being spent in the same flow; would deplete reserve
   | 'insufficient-balance' // balance does not cover requiredGasUsd (or is zero)
   | 'no-price-data' // can't verify against requiredGasUsd; safer to skip
-  | 'celo-deprioritized' // CELO would have qualified but a stable did too (Bug E)
   | 'adapter-allowance-missing' // CIP-64 adapter not pre-approved; caller-supplied
 
 export interface DeclinedCandidate {
@@ -46,20 +52,6 @@ export interface PickFeeCurrencyInput {
   adapterAllowanceMissing?: string[]
 }
 
-const isCelo = (t: TokenBalance) => t.symbol === 'CELO'
-const isNotCelo = (t: TokenBalance) => t.symbol !== 'CELO'
-
-/**
- * Lightweight Bug-E reorder for downstream consumers that iterate the array
- * themselves (e.g. prepareTransactions). Stable + non-filtering: every entry
- * from the input survives; CELO just moves to the end. Use this when the
- * caller wants the full candidate list with the preferred order baked in.
- * For the "pick one with reasoning" use case use pickFeeCurrency instead.
- */
-export function reorderForBugE(available: TokenBalance[]): TokenBalance[] {
-  return [...available.filter(isNotCelo), ...available.filter(isCelo)]
-}
-
 function normalizeLower(values: string[] | undefined): Set<string> {
   return new Set((values ?? []).map((v) => v.toLowerCase()))
 }
@@ -73,15 +65,9 @@ export function pickFeeCurrency({
   const excludeSet = normalizeLower(excludeTokenIds)
   const adapterSkipSet = normalizeLower(adapterAllowanceMissing)
   const declined: DeclinedCandidate[] = []
-
-  // Reorder candidates so stables come before CELO. Within each group the
-  // selector-supplied order (priority + USD balance) is preserved.
-  const nonCelo = available.filter(isNotCelo)
-  const celo = available.filter(isCelo)
-  const ordered = [...nonCelo, ...celo]
-
   const passing: TokenBalance[] = []
-  for (const token of ordered) {
+
+  for (const token of available) {
     const idMatch = excludeSet.has(token.tokenId.toLowerCase())
     const addressMatch = !!token.address && excludeSet.has(token.address.toLowerCase())
     if (idMatch || addressMatch) {
@@ -116,25 +102,6 @@ export function pickFeeCurrency({
 
   if (passing.length === 0) return null
 
-  const firstStable = passing.find(isNotCelo)
-  const firstCelo = passing.find(isCelo)
-
-  let chosen: TokenBalance
-  let reason: FeeCurrencyReason
-
-  if (firstStable) {
-    chosen = firstStable
-    reason = 'preferred-stable'
-    // Surface the Bug-E preference: CELO was usable but we deprioritized it.
-    if (firstCelo) {
-      declined.push({ token: firstCelo, reason: 'celo-deprioritized' })
-    }
-  } else {
-    // Only CELO remained. Acceptable last resort.
-    chosen = firstCelo!
-    reason = 'celo-fallback'
-  }
-
-  const alternatives = passing.filter((t) => t !== chosen)
-  return { chosen, reason, alternatives, declined }
+  const [chosen, ...alternatives] = passing
+  return { chosen, reason: 'first-viable', alternatives, declined }
 }

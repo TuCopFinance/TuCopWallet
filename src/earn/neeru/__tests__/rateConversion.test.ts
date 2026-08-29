@@ -5,8 +5,17 @@ describe('effectiveAnnualPercentFromMonthly', () => {
     expect(effectiveAnnualPercentFromMonthly(0)).toBe(0)
     expect(effectiveAnnualPercentFromMonthly(-1)).toBe(0)
   })
-  it('compounds 1% monthly to ~12.68% annual (matches backend catalogue)', () => {
-    expect(effectiveAnnualPercentFromMonthly(1)).toBeCloseTo(12.6825, 3)
+  // Post backend PR #207 (2026-08-18) alignment: E.A. is derived from a
+  // daily-compounding equivalent, exponent 365/30 instead of 12. Each row
+  // matches the corresponding backend Flex-catalogue value; previous
+  // fallback (^12) drifted by 0.15 to 0.21 pp across this range.
+  it.each([
+    [0.8, 10.180095],
+    [1.0, 12.869529],
+    [1.05, 13.551236],
+    [1.1, 14.23672],
+  ])('compounds %f%% monthly to %f%% annual (matches backend row)', (monthly, expected) => {
+    expect(effectiveAnnualPercentFromMonthly(monthly)).toBeCloseTo(expected, 5)
   })
 })
 
