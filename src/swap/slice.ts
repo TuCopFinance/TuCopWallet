@@ -46,6 +46,19 @@ export interface SwapFeeMetadata {
   // for stables paid via adapter (`celo-mainnet:<address>`) OR the
   // synthetic native CELO id (`celo-mainnet:native`) for gas paid in CELO.
   networkFeeTokenId?: string
+  // Per-leg Squid integrator fee breakdown for EIP-7702 atomic batches.
+  // Legacy multi-leg (non-7702) flows do NOT populate this: each leg lands
+  // as its own transaction so per-leg data is already keyed by that leg's
+  // own hash in feeMetadataByTxHash. In 7702 the whole batch is ONE tx,
+  // so per-leg info would be lost without an explicit array.
+  //
+  // `amount` is the fee value in whole token units of `tokenId` (Squid
+  // convention: fromAmount × pct/100, denominated in the leg's fromToken).
+  // The renderer can pass this straight to FeeSummary as a FeeComponent;
+  // FeeSummary handles the local-currency conversion via the canonical
+  // convertTokenToLocalAmount path (respects the COPm 1:1 rule).
+  // Optional for backward compat + single-leg swaps.
+  legFees?: { tokenId: string; amount: string }[]
   // Wall-clock timestamp for FIFO eviction (see MAX_FEE_METADATA_ENTRIES).
   recordedAt: number
 }
@@ -136,6 +149,7 @@ export const slice = createSlice({
         provider?: string
         networkFeeValue?: string
         networkFeeTokenId?: string
+        legFees?: { tokenId: string; amount: string }[]
       }>
     ) => {
       const key = action.payload.txHash.toLowerCase()
@@ -144,6 +158,7 @@ export const slice = createSlice({
         provider: action.payload.provider,
         networkFeeValue: action.payload.networkFeeValue,
         networkFeeTokenId: action.payload.networkFeeTokenId,
+        legFees: action.payload.legFees,
         recordedAt: Date.now(),
       }
       const entries = Object.entries(state.feeMetadataByTxHash)

@@ -7,7 +7,8 @@ import { FeeEvents } from 'src/analytics/Events'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import { BATCH_EXECUTOR_ABI } from 'src/dollarsSpend/batchExecutorAbi'
-import { ExecuteMultiSwapPayload } from 'src/dollarsSpend/saga'
+import { preflightBatchSimulate } from 'src/dollarsSpend/preflightBatchSimulate'
+import { ExecuteMultiSwapPayload, MULTI_SWAP_SLIPPAGE_PERCENTAGE } from 'src/dollarsSpend/saga'
 import {
   multiSwapCompleted,
   multiSwapStarted,
@@ -15,13 +16,13 @@ import {
   multiSwapStepSucceeded,
   multiSwapTransitionComplete,
 } from 'src/dollarsSpend/slice'
-import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
+import { DOLARES_VIRTUAL_TOKEN_ID, SpendStep } from 'src/dollarsSpend/types'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { recordSwapFeeMetadata } from 'src/swap/slice'
 import { postBuildTx } from 'src/swap/uniswapV4Saga'
 import { UNISWAP_V4_PROVIDER } from 'src/swap/types'
-import { fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
+import { extractSquidEnvelope, fetchSwapQuoteForExecution } from 'src/swap/useSwapQuote'
 import { addStandbyTransaction } from 'src/transactions/slice'
 import { newTransactionContext, TokenTransactionTypeV2 } from 'src/transactions/types'
 import {
@@ -43,76 +44,78 @@ import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'dollarsSpend/saga7702'
 
+// Escalating slippage tolerance for the preflight retry loop. Each Squid leg
+// freezes its `guaranteedPrice` at quote-fetch time; if the pool moves more
+// than the slippage cushion between fetch and simulate, the atomic batch's
+// inner call reverts and the whole batch aborts. The atomic 7702 path is
+// especially sensitive because N legs stacked in one tx compound the risk -
+// any single leg exceeding its cushion aborts them all.
+//
+// Attempts start at the legacy multi-swap base (1.5%) and progressively widen
+// so the fetcher pulls tighter quotes first (better price to the user) and
+// only relaxes if the market has genuinely moved. A batch that still reverts
+// at 3.5% signals a real problem (Squid degraded, deep liquidity issue,
+// pathological pool state) and the atomic-failure sheet surfaces to the
+// user. Guards against baseFee-independent pool volatility - even with an
+// idle chain, Squid pools can drift enough between two block heights to bust
+// a 0.5% cushion.
+const PREFLIGHT_SLIPPAGE_ESCALATION = [
+  MULTI_SWAP_SLIPPAGE_PERCENTAGE, // 1.5% - matches legacy per-leg saga baseline
+  '2.5',
+  '3.5',
+] as const
+const PREFLIGHT_INTER_ATTEMPT_DELAY_MS = 300
+
 interface InnerCall {
   target: Address
   value: bigint
   data: Hex
 }
 
+// Per-leg outcome from a successful build, aggregated into the standby tx +
+// success screen. Exported shape kept in sync with the outer saga's usage.
+type StepOutcome = {
+  tokenId: string
+  outAmountTokenWhole: BigNumber
+  inAmountTokenWhole: BigNumber
+  usd: BigNumber
+  appFeePercentageIncludedInPrice?: string
+}
+
 /**
- * EIP-7702 + CIP-64 saga path for dollarsSpend.
+ * Build inner Call[] for the atomic 7702 batch at a given slippage tolerance.
  *
- * Behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1. When enabled, the
- * full multi-step plan is collapsed into ONE transaction:
- *   1. Sign an EIP-7702 authorization delegating the EOA to the BatchExecutor.
- *   2. Build inner Call[] for each step (approve + swap) using fresh quotes.
- *   3. Submit a single tx type 0x7b (CIP-64) carrying the auth list + the
- *      `to = walletAddress, data = BatchExecutor.execute(calls)` payload, with
- *      feeCurrency set to the first ERC-20 the user is spending so gas is
- *      paid in USDm/USDC/USAT/USDT rather than CELO.
+ * Extracted from `executeDollarsSpend7702Saga` so the outer saga can invoke
+ * this multiple times with escalating slippage inside its preflight retry
+ * loop, without re-running the once-per-flow setup (walletAddress + tokens
+ * selection). Each attempt pulls fresh Squid / Uniswap-V4 quotes so retries
+ * are not just re-submitting stale data.
  *
- * Confirmed live on Celo mainnet in the S1 spike. See
- * contracts-research/scripts/s1-submit-7702-with-feecurrency.mjs.
+ * Contract:
+ *   - `kind: 'hard-error'` means the helper already dispatched the correct
+ *     multiSwapStepFailed + multiSwapTransitionComplete actions AND the
+ *     outer saga MUST return immediately without retry. Used for terminal
+ *     conditions (token missing from Redux state, malformed prepared tx,
+ *     V4 permit2 build-tx failure) where widening slippage would not help.
+ *   - `kind: 'ok'` carries the assembled `innerCalls` + per-leg
+ *     `stepOutcomes`. The outer saga runs preflight simulation on the
+ *     encoded batch calldata and, on revert, retries this helper with the
+ *     next wider slippage.
  *
- * On any failure (auth, quote, submit) we dispatch multiSwapStepFailed at
- * index 0 because the entire batch is atomic — there is no partial success
- * for the user to recover from in this path.
+ * Quote-fetch errors (Squid 429/502, network) surface as 'hard-error' with
+ * the enriched envelope threaded through, so PartialSuccessSheet can render
+ * the correct copy (rate-limited, USDT fallback hint, generic).
  */
-export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiSwapPayload>) {
-  const { steps, toTokenId } = action.payload
-
-  if (steps.length === 0) {
-    return
-  }
-
-  yield* put(
-    multiSwapStarted({
-      steps,
-      isAtomic: true,
-      destinationLabel: toTokenId === networkConfig.xaut0TokenId ? 'Oro' : 'Pesos',
-    })
-  )
-
-  const walletAddress = yield* select(walletAddressSelector)
-  if (!walletAddress) {
-    yield* put(
-      multiSwapStepFailed({ index: 0, errorMessage: 'Wallet address unavailable for 7702 batch' })
-    )
-    yield* delay(50)
-    yield* put(multiSwapTransitionComplete())
-    return
-  }
-
-  const tokensById = yield* select(tokensByIdSelector, getSupportedNetworkIdsForSwap())
-
-  // Build inner Call[] from fresh quotes for each step. Each step's prepared
-  // transactions are (optional approve) + swap; we forward both, preserving
-  // order so the BatchExecutor runs the allowance bump before the swap call.
+function* buildBatchInnerCalls(
+  walletAddress: string,
+  steps: SpendStep[],
+  toTokenId: string,
+  slippagePercentage: string,
+  tokensById: Record<string, TokenBalance | undefined>
+) {
   const innerCalls: InnerCall[] = []
-
-  // Track the actual (capped) outflow per step + estimated inflow per step.
-  // We use these after sendTransaction to build an optimistic standby tx so
-  // the user sees the swap in the feed before the indexer catches up. The
-  // "primary" outflow is the largest USD step (matches the backend classifier
-  // rule 1, which picks the same).
-  type StepOutcome = {
-    tokenId: string
-    outAmountTokenWhole: BigNumber
-    inAmountTokenWhole: BigNumber
-    usd: BigNumber
-    appFeePercentageIncludedInPrice?: string
-  }
   const stepOutcomes: StepOutcome[] = []
+
   for (let index = 0; index < steps.length; index++) {
     const step = steps[index]
     const fromToken = tokensById[step.tokenId]
@@ -125,7 +128,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       )
       yield* delay(50)
       yield* put(multiSwapTransitionComplete())
-      return
+      return { kind: 'hard-error' as const }
     }
 
     const feeCurrencies = yield* select(feeCurrenciesSelector, fromToken.networkId as NetworkId)
@@ -166,14 +169,20 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         walletAddress,
         fromToken,
         feeCurrencies,
+        // Explicit slippage per attempt. Previously omitted, which fell
+        // through to `fetchSwapQuoteForExecution`'s 0.5% default and made
+        // the atomic path 3x tighter than the legacy per-leg saga (1.5%).
+        // The preflight retry loop now passes an escalating value here.
+        slippagePercentage,
       })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       Logger.warn(TAG, `Quote refetch failed for step ${index} (${step.symbol}): ${message}`)
-      yield* put(multiSwapStepFailed({ index: 0, errorMessage: message }))
+      const envelope = extractSquidEnvelope(err)
+      yield* put(multiSwapStepFailed({ index: 0, errorMessage: message, errorEnvelope: envelope }))
       yield* delay(50)
       yield* put(multiSwapTransitionComplete())
-      return
+      return { kind: 'hard-error' as const }
     }
 
     if (freshQuote.preparedTransactions.type !== 'possible') {
@@ -185,7 +194,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       )
       yield* delay(50)
       yield* put(multiSwapTransitionComplete())
-      return
+      return { kind: 'hard-error' as const }
     }
 
     for (const tx of freshQuote.preparedTransactions.transactions) {
@@ -198,7 +207,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         )
         yield* delay(50)
         yield* put(multiSwapTransitionComplete())
-        return
+        return { kind: 'hard-error' as const }
       }
       innerCalls.push({
         target: tx.to as Address,
@@ -246,7 +255,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         )
         yield* delay(50)
         yield* put(multiSwapTransitionComplete())
-        return
+        return { kind: 'hard-error' as const }
       }
       const account = wallet.account
       const permit2Signature: Hex = yield* call(() =>
@@ -264,7 +273,7 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
         yield* put(multiSwapStepFailed({ index: 0, errorMessage: message }))
         yield* delay(50)
         yield* put(multiSwapTransitionComplete())
-        return
+        return { kind: 'hard-error' as const }
       }
       innerCalls.push({
         target: buildResult.to as Address,
@@ -304,8 +313,178 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     })
   }
 
-  if (innerCalls.length === 0) {
-    yield* put(multiSwapStepFailed({ index: 0, errorMessage: 'No inner calls to execute' }))
+  return { kind: 'ok' as const, innerCalls, stepOutcomes }
+}
+
+/**
+ * EIP-7702 + CIP-64 saga path for dollarsSpend.
+ *
+ * Behind StatsigFeatureGates.WRI_DOLLARS_SPEND_7702_V1. When enabled, the
+ * full multi-step plan is collapsed into ONE transaction:
+ *   1. Sign an EIP-7702 authorization delegating the EOA to the BatchExecutor.
+ *   2. Build inner Call[] for each step (approve + swap) using fresh quotes.
+ *   3. Submit a single tx type 0x7b (CIP-64) carrying the auth list + the
+ *      `to = walletAddress, data = BatchExecutor.execute(calls)` payload, with
+ *      feeCurrency set to the first ERC-20 the user is spending so gas is
+ *      paid in USDm/USDC/USAT/USDT rather than CELO.
+ *
+ * Confirmed live on Celo mainnet in the S1 spike. See
+ * contracts-research/scripts/s1-submit-7702-with-feecurrency.mjs.
+ *
+ * On any failure (auth, quote, submit) we dispatch multiSwapStepFailed at
+ * index 0 because the entire batch is atomic — there is no partial success
+ * for the user to recover from in this path.
+ *
+ * Preflight retry loop (baseFee-independent robustness):
+ *   Between build and submit, the batch calldata is simulated via `eth_call`.
+ *   If simulation reverts (Squid pool moved past the slippage cushion between
+ *   quote fetch and simulate), the helper rebuilds with a wider slippage and
+ *   retries. Escalation is 1.5% -> 2.5% -> 3.5%. Only after all three attempts
+ *   revert does the user see the atomic-failure sheet - at which point the
+ *   pool state has genuinely moved more than 3.5% since fetch (Squid degraded,
+ *   deep liquidity issue) and no wallet-side widening would rescue the batch.
+ */
+export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiSwapPayload>) {
+  const { steps, toTokenId } = action.payload
+
+  if (steps.length === 0) {
+    return
+  }
+
+  yield* put(
+    multiSwapStarted({
+      steps,
+      isAtomic: true,
+      destinationLabel: toTokenId === networkConfig.xaut0TokenId ? 'Oro' : 'Pesos',
+    })
+  )
+
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    yield* put(
+      multiSwapStepFailed({ index: 0, errorMessage: 'Wallet address unavailable for 7702 batch' })
+    )
+    yield* delay(50)
+    yield* put(multiSwapTransitionComplete())
+    return
+  }
+
+  const tokensById = yield* select(tokensByIdSelector, getSupportedNetworkIdsForSwap())
+
+  // Preflight retry loop: build the batch, encode calldata, simulate via
+  // eth_call. Every attempt refetches quotes at a wider slippage - critical
+  // because Squid's guaranteedPrice is frozen at quote-fetch time and Squid
+  // pools can drift more than 0.5%-1.5% between fetch and submit regardless
+  // of baseFee. Retrying with fresh quotes gets us fresh guaranteedPrice
+  // targets that reflect current pool state.
+  //
+  // Only `revert` from preflight triggers a retry. `other` (network / RPC
+  // failure hitting Forno) is passed through - retrying with wider slippage
+  // would not fix an RPC outage, and we let the outer sendTransaction path
+  // surface whatever the RPC eventually returns. Hard errors from the build
+  // helper (token missing, malformed prepared tx) also terminate the flow
+  // immediately without retry, since re-fetching quotes cannot resolve them.
+  let innerCalls: InnerCall[] | null = null
+  let stepOutcomes: StepOutcome[] | null = null
+  let calldata: Hex | null = null
+  let lastPreflightRevertMessage: string | null = null
+
+  for (let attemptIdx = 0; attemptIdx < PREFLIGHT_SLIPPAGE_ESCALATION.length; attemptIdx++) {
+    const slippage = PREFLIGHT_SLIPPAGE_ESCALATION[attemptIdx]
+
+    const built = yield* call(
+      buildBatchInnerCalls,
+      walletAddress,
+      steps,
+      toTokenId,
+      slippage,
+      tokensById
+    )
+    if (built.kind === 'hard-error') {
+      // Helper already dispatched multiSwapStepFailed + transitionComplete.
+      // The failure is intrinsic (missing token, malformed quote response,
+      // V4 build-tx down) so retrying with wider slippage would just re-run
+      // the same broken path. Terminate.
+      return
+    }
+
+    if (built.innerCalls.length === 0) {
+      yield* put(multiSwapStepFailed({ index: 0, errorMessage: 'No inner calls to execute' }))
+      yield* delay(50)
+      yield* put(multiSwapTransitionComplete())
+      return
+    }
+
+    const attemptCalldata = encodeFunctionData({
+      abi: BATCH_EXECUTOR_ABI,
+      functionName: 'execute',
+      args: [built.innerCalls],
+    })
+
+    const sim = yield* call(preflightBatchSimulate, {
+      walletAddress: walletAddress as Address,
+      batchExecutorCalldata: attemptCalldata,
+    })
+
+    if (sim.ok) {
+      Logger.info(
+        TAG,
+        `preflight OK at slippage=${slippage}% (attempt ${attemptIdx + 1}/${PREFLIGHT_SLIPPAGE_ESCALATION.length})`
+      )
+      innerCalls = built.innerCalls
+      stepOutcomes = built.stepOutcomes
+      calldata = attemptCalldata
+      break
+    }
+
+    if (sim.kind === 'other') {
+      // Preflight itself failed on a non-revert (RPC timeout, transport error).
+      // Retrying with wider slippage will not fix an RPC problem. Fall through
+      // to the sendTransaction path with THIS attempt's calldata - Forno's
+      // real eth_estimateGas at submit time might succeed if the RPC recovers,
+      // and if it also fails the outer catch handles it consistently with the
+      // legacy failure UX.
+      Logger.warn(
+        TAG,
+        `preflight non-revert error at slippage=${slippage}% (attempt ${attemptIdx + 1}); proceeding to submit without further retries: ${sim.errorMessage.slice(0, 200)}`
+      )
+      innerCalls = built.innerCalls
+      stepOutcomes = built.stepOutcomes
+      calldata = attemptCalldata
+      break
+    }
+
+    // sim.kind === 'revert' - Squid pool moved past the slippage cushion.
+    // Log and retry at the next wider slippage.
+    lastPreflightRevertMessage = sim.errorMessage
+    Logger.warn(
+      TAG,
+      `preflight reverted at slippage=${slippage}% (attempt ${attemptIdx + 1}/${PREFLIGHT_SLIPPAGE_ESCALATION.length}): ${sim.errorMessage.slice(0, 200)}`
+    )
+    if (attemptIdx < PREFLIGHT_SLIPPAGE_ESCALATION.length - 1) {
+      // Brief pause before the next fetch+preflight cycle. Not for the wallet's
+      // sake (we do not depend on time) but so we do not hammer the backend's
+      // per-wallet Squid rate-limit bucket (10 RPS).
+      yield* delay(PREFLIGHT_INTER_ATTEMPT_DELAY_MS)
+    }
+  }
+
+  if (calldata === null || innerCalls === null || stepOutcomes === null) {
+    // All preflight attempts reverted. The message shape includes "reverted"
+    // + "eth_call" + "viem" so PartialSuccessSheet.tsx's looksLikeOnchainRevert
+    // heuristic matches and the user sees `bodyPriceMoved` - which is accurate:
+    // Squid pool prices moved past even our widest slippage cushion (3.5%)
+    // between quote fetch and simulate.
+    const maxSlippage = PREFLIGHT_SLIPPAGE_ESCALATION[PREFLIGHT_SLIPPAGE_ESCALATION.length - 1]
+    const detail = lastPreflightRevertMessage ? lastPreflightRevertMessage.slice(0, 200) : 'unknown'
+    const summary = `Batch preflight reverted after ${PREFLIGHT_SLIPPAGE_ESCALATION.length} eth_call attempts with escalating slippage up to ${maxSlippage}%. Last revert: ${detail}. Request Arguments: viem preflight simulate.`
+    captureBusinessError(new Error(summary), {
+      feature: 'dollars_spend',
+      provider: 'internal',
+      action: 'preflight_exhausted_7702',
+      errorCode: 'preflight_revert',
+    })
+    yield* put(multiSwapStepFailed({ index: 0, errorMessage: summary }))
     yield* delay(50)
     yield* put(multiSwapTransitionComplete())
     return
@@ -334,11 +513,11 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // Celo, so combining authorizationList + feeCurrency in one tx makes the
     // node reject estimateGas. The relay endpoint handles the one-time
     // delegation tx separately (paid in CELO from a TuCop hot wallet).
-    const calldata = encodeFunctionData({
-      abi: BATCH_EXECUTOR_ABI,
-      functionName: 'execute',
-      args: [innerCalls],
-    })
+    //
+    // `calldata` was assembled by the outer preflight retry loop above from
+    // the innerCalls of whichever slippage attempt cleared eth_call simulate
+    // (or the last attempt that failed with a non-revert error). We reference
+    // it directly here instead of re-encoding.
 
     // Pick a fee currency via the central picker.
     //
@@ -394,11 +573,29 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       }
     }
 
-    const spendingTokenAddresses = steps.map((s) => s.tokenId.split(':')[1])
+    // Multi-swap fee-currency policy (2026-08-28): exclude a token from the
+    // fee-currency pool when its RESIDUAL (balance - planned spend) cannot
+    // cover the outer batch's gas. The atomic 7702 path packs all N legs
+    // into ONE tx, so gas is paid once for the whole batch (~2-3M gas at
+    // 3 legs). $0.30 USD covers stress baseFee (~200 gwei) with margin.
+    // See legacy saga.ts for detailed rationale on why partial-drain tokens
+    // still need a minimum residual to be safe fee currencies.
+    const MIN_FEE_RESIDUAL_USD = new BigNumber('0.30')
+    const excludedFromFee = steps
+      .filter((s) => {
+        const tok = tokensById[s.tokenId]
+        if (!tok) return true
+        const residual = tok.balance.minus(s.amountTokenWhole)
+        if (residual.lte(0)) return true
+        const priceUsd = tok.priceUsd
+        if (!priceUsd) return true
+        return residual.multipliedBy(priceUsd).lt(MIN_FEE_RESIDUAL_USD)
+      })
+      .map((s) => s.tokenId.split(':')[1])
 
     const choice = pickFeeCurrency({
       available: feeCurrencyCandidates,
-      excludeTokenIds: spendingTokenAddresses,
+      excludeTokenIds: excludedFromFee,
       adapterAllowanceMissing,
     })
 
@@ -643,13 +840,28 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
     // success + tx-details Proveedor row renders for every atomic 7702
     // batch. Amount kept as '0' when no fee so the renderer skips the
     // 'Tarifa del proveedor' row while still surfacing the venue.
+    // provider='squid-7702' only when we actually batched >1 leg into one
+    // tx. Single-leg via 7702 stays 'squid' because there is no bundling
+    // to advertise (formatSwapProvider maps 'squid-7702' -> 'Squid (7702)').
+    // Per-leg breakdown for the tx-details 'Desglose por cambio' section.
+    // Only populated for atomic 7702 batches (>1 leg), because those land
+    // as ONE on-chain tx with ONE feeMetadata entry, so the SwapContent
+    // renderer cannot recover per-leg data any other way. Legacy multi-leg
+    // (non-7702) skips this since each leg already has its own hash + entry.
+    const legFeesForPersist = isMultiLeg
+      ? stepOutcomes.map((o, i) => ({
+          tokenId: o.tokenId,
+          amount: legAppFees[i].toString(),
+        }))
+      : undefined
     yield* put(
       recordSwapFeeMetadata({
         txHash: hash,
         appFeeUsd: new BigNumber(appFeeUsdTotal).gt(0) ? appFeeUsdTotal : '0',
-        provider: 'squid',
+        provider: isMultiLeg ? 'squid-7702' : 'squid',
         networkFeeValue: batchNetworkFee?.value,
         networkFeeTokenId: batchNetworkFee?.tokenId,
+        legFees: legFeesForPersist,
       })
     )
     const successLegs = isMultiLeg
@@ -686,7 +898,16 @@ export function* executeDollarsSpend7702Saga(action: PayloadAction<ExecuteMultiS
       action: 'atomic_batch_7702',
       errorCode: classifyHttpError(err),
     })
-    yield* put(multiSwapStepFailed({ index: 0, errorMessage: message }))
+    // Outer catch surfaces everything downstream of the quote step: sign
+    // failures, RPC estimateGas reverts, submit failures. Even though these
+    // are rarely a Squid-quote 429/502 (those are caught inside the per-step
+    // block above), some wrapped errors CAN carry a SquidDegradationErr
+    // (e.g. a delayed refetch), so keep the extraction here as belt+
+    // suspenders. When the extraction returns null (typical for on-chain
+    // reverts), the sheet's env-based branching falls through to the
+    // generic body — same behaviour as before this line existed.
+    const envelope = extractSquidEnvelope(err)
+    yield* put(multiSwapStepFailed({ index: 0, errorMessage: message, errorEnvelope: envelope }))
     yield* delay(50)
     yield* put(multiSwapTransitionComplete())
   }

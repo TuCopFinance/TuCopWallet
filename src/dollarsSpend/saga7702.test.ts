@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { dynamic, throwError } from 'redux-saga-test-plan/providers'
+import { preflightBatchSimulate } from 'src/dollarsSpend/preflightBatchSimulate'
 import { executeMultiSwap, executeMultiSwapSaga } from 'src/dollarsSpend/saga'
 import { executeDollarsSpend7702Saga } from 'src/dollarsSpend/saga7702'
 import {
@@ -383,5 +384,146 @@ describe('dollarsSpend saga dispatcher (flag-gated)', () => {
     } finally {
       jest.useFakeTimers()
     }
+  })
+
+  // Preflight simulate + escalating slippage retry loop. The atomic 7702 batch
+  // freezes Squid's `guaranteedPrice` per leg at quote-fetch time. If Squid
+  // pools move past the slippage cushion between fetch and submit, the batch
+  // reverts atomically. The preflight loop rebuilds with wider slippage on
+  // revert; only after all three attempts revert do we surface a failure to
+  // the user.
+  describe('preflight simulate + escalating slippage', () => {
+    // The default preflight helper mock: returns `ok: true` so tests that do
+    // not specifically exercise the retry loop keep passing unchanged. To
+    // exercise the loop, override this provider with a per-call sequence via
+    // `jest.fn()` that returns different values on successive invocations.
+    const preflightOk = () => Promise.resolve({ ok: true as const })
+    const preflightRevert = () =>
+      Promise.resolve({
+        ok: false as const,
+        kind: 'revert' as const,
+        errorMessage:
+          'The contract function "execute" reverted with the following signature: execution reverted for an unknown reason.',
+      })
+
+    it('submits after preflight OK on the first slippage attempt (1.5%)', async () => {
+      jest.useRealTimers()
+      jest.mocked(getFeatureGate).mockReturnValue(true)
+      jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+      const wallet = mockWallet()
+      jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+      // Track calls via dynamic providers (matchers.call.fn intercepts the
+      // effect before the underlying jest mock, so the mock's own call counter
+      // stays at 0 - we rely on the dynamic handler's call count instead).
+      const quoteHandler = jest.fn(() => Promise.resolve(mockQuoteResult))
+      const preflightHandler = jest.fn(preflightOk)
+
+      try {
+        await expectSaga(
+          executeDollarsSpend7702Saga,
+          executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+        )
+          .provide([
+            [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+            [matchers.select.selector(tokensByIdSelector), mockTokensById],
+            [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
+            [matchers.call.fn(fetchSwapQuoteForExecution), dynamic(quoteHandler)],
+            [matchers.call.fn(preflightBatchSimulate), dynamic(preflightHandler)],
+            [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+            [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
+          ])
+          .put.actionType(multiSwapStepSucceeded.type)
+          .put.actionType(multiSwapCompleted.type)
+          .silentRun(500)
+      } finally {
+        jest.useFakeTimers()
+      }
+      // Preflight OK on the first attempt: build helper runs once
+      // (quoteHandler called exactly once per step), preflight called once,
+      // sendTransaction called once for the winning attempt.
+      expect(quoteHandler).toHaveBeenCalledTimes(1)
+      expect(preflightHandler).toHaveBeenCalledTimes(1)
+      expect(wallet.sendTransaction).toHaveBeenCalledTimes(1)
+    })
+
+    it('retries the build+preflight loop with wider slippage when the first attempt reverts', async () => {
+      jest.useRealTimers()
+      jest.mocked(getFeatureGate).mockReturnValue(true)
+      jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+      const wallet = mockWallet()
+      jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+      // First preflight reverts (Squid pool moved past 1.5% cushion), second
+      // preflight (at 2.5%) succeeds and the batch commits.
+      const preflightHandler = jest
+        .fn()
+        .mockImplementationOnce(preflightRevert)
+        .mockImplementationOnce(preflightOk)
+
+      try {
+        await expectSaga(
+          executeDollarsSpend7702Saga,
+          executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+        )
+          .provide([
+            [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+            [matchers.select.selector(tokensByIdSelector), mockTokensById],
+            [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
+            [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
+            [matchers.call.fn(preflightBatchSimulate), dynamic(preflightHandler)],
+            [matchers.call.fn(getViemWallet), dynamic(() => wallet)],
+            [matchers.call.fn(getConnectedUnlockedAccount), MOCK_WALLET],
+          ])
+          .put.actionType(multiSwapCompleted.type)
+          .silentRun(2000)
+      } finally {
+        jest.useFakeTimers()
+      }
+      // Preflight called twice (one revert + one OK). sendTransaction called
+      // once for the winning attempt. This proves the retry loop escalates
+      // exactly once and does not double-submit on the first revert.
+      expect(preflightHandler).toHaveBeenCalledTimes(2)
+      expect(wallet.sendTransaction).toHaveBeenCalledTimes(1)
+    })
+
+    it('dispatches multiSwapStepFailed after all preflight attempts revert', async () => {
+      jest.useRealTimers()
+      jest.mocked(getFeatureGate).mockReturnValue(true)
+      jest.mocked(fetchSwapQuoteForExecution).mockResolvedValue(mockQuoteResult as any)
+      const wallet = mockWallet()
+      jest.mocked(getViemWallet as any).mockReturnValue(wallet)
+
+      // Preflight reverts every time (Squid pool state genuinely intractable
+      // for this shape - possibly a degraded pool with deep price movement).
+      const preflightHandler = jest.fn().mockImplementation(preflightRevert)
+
+      try {
+        await expectSaga(
+          executeDollarsSpend7702Saga,
+          executeMultiSwap({ steps: [stepUsat], toTokenId: 'celo-mainnet:copm' })
+        )
+          .provide([
+            [matchers.select.selector(walletAddressSelector), MOCK_WALLET],
+            [matchers.select.selector(tokensByIdSelector), mockTokensById],
+            [matchers.select.selector(feeCurrenciesSelector), [mockCeloNative]],
+            [matchers.call.fn(fetchSwapQuoteForExecution), mockQuoteResult],
+            [matchers.call.fn(preflightBatchSimulate), dynamic(preflightHandler)],
+          ])
+          .put.actionType(multiSwapStepFailed.type)
+          .not.put.actionType(multiSwapCompleted.type)
+          .silentRun(3000)
+      } finally {
+        jest.useFakeTimers()
+      }
+      // Preflight called exactly 3 times (one per slippage escalation:
+      // 1.5% -> 2.5% -> 3.5%), wallet never called sendTransaction (batch
+      // never advanced past preflight). This confirms the loop exhausts the
+      // escalation sequence and terminates via the multiSwapStepFailed path
+      // (not a mid-loop return or a crash), matching the escalation array
+      // length defined in saga7702.ts.
+      expect(preflightHandler).toHaveBeenCalledTimes(3)
+      expect(wallet.sendTransaction).not.toHaveBeenCalled()
+    })
   })
 })
