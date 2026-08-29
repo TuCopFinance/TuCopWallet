@@ -883,7 +883,7 @@ describe('TransactionDetailsScreen', () => {
   })
 
   it(`renders the correct details for a ${TokenTransactionTypeV2.CrossChainSwapTransaction} transacton`, () => {
-    const { getByText, getByTestId, getAllByTestId } = renderScreen({
+    const { getByText, getByTestId } = renderScreen({
       transaction: crossChainSwapTransaction({ status: TransactionStatus.Complete }),
       storeOverrides: {
         tokens: {
@@ -928,7 +928,7 @@ describe('TransactionDetailsScreen', () => {
   })
 
   it(`renders approximate numbers for a pending ${TokenTransactionTypeV2.CrossChainSwapTransaction} transacton`, () => {
-    const { getByText, getByTestId, getAllByTestId, queryByText } = renderScreen({
+    const { getByText, getByTestId, queryByText } = renderScreen({
       transaction: crossChainSwapTransaction({ status: TransactionStatus.Pending }),
       storeOverrides: {
         tokens: {
