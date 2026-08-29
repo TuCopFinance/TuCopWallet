@@ -81,16 +81,17 @@ Information-oriented material: what something is, how it is shaped, what the con
 
 Task-oriented walkthroughs: how to accomplish a specific job.
 
-| Document                                                     | Description                                     |
-| ------------------------------------------------------------ | ----------------------------------------------- |
-| [guides/wallet-setup.md](guides/wallet-setup.md)             | Development setup                               |
-| [guides/phone-verification.md](guides/phone-verification.md) | Phone verification how-to                       |
-| [guides/connecting-dapps.md](guides/connecting-dapps.md)     | WalletConnect v2 integration                    |
-| [guides/navigation-flows.md](guides/navigation-flows.md)     | User-facing navigation flows                    |
-| [guides/ci-cd.md](guides/ci-cd.md)                           | CI/CD pipeline architecture                     |
-| [guides/releases.md](guides/releases.md)                     | End-to-end release process (quick + detailed)   |
-| [guides/manual-upload.md](guides/manual-upload.md)           | Manual App Store / Play Store upload (fallback) |
-| [../e2e/README.md](../e2e/README.md)                         | E2E testing setup with Detox                    |
+| Document                                                           | Description                                                 |
+| ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| [guides/wallet-setup.md](guides/wallet-setup.md)                   | Development setup                                           |
+| [guides/phone-verification.md](guides/phone-verification.md)       | Phone verification how-to                                   |
+| [guides/connecting-dapps.md](guides/connecting-dapps.md)           | WalletConnect v2 integration                                |
+| [guides/navigation-flows.md](guides/navigation-flows.md)           | User-facing navigation flows                                |
+| [guides/ci-cd.md](guides/ci-cd.md)                                 | CI/CD pipeline architecture                                 |
+| [guides/releases.md](guides/releases.md)                           | End-to-end release process (quick + detailed)               |
+| [guides/app-store-connect-api.md](guides/app-store-connect-api.md) | Automated TestFlight upload + read-only ASC queries via API |
+| [guides/manual-upload.md](guides/manual-upload.md)                 | Manual App Store / Play Store upload (fallback)             |
+| [../e2e/README.md](../e2e/README.md)                               | E2E testing setup with Detox                                |
 
 ## Specs
 
