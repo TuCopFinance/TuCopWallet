@@ -980,10 +980,14 @@ export function SwapScreen({ route }: Props) {
 
   const allowSwap = useMemo(() => {
     if (showBelowMinSwapWarning) return false
-    // No quote was obtained because Squid returned 429/502. The saga would
-    // hit the same upstream and fail, so disable Confirmar until the next
-    // refresh succeeds (the banner above tells the user to retry).
-    if (isTransientUpstreamError) return false
+    // Virtual Dolares (multi-swap) fans out N parallel quotes. Some legs
+    // may 502 (Squid weekend suspension of Mento pools) while others
+    // (USDT via Uniswap V4) succeed. If the planner produces a valid
+    // plan from the healthy legs alone (steps > 0, shortfall <= 0), the
+    // saga will execute only those legs and the swap can proceed - the
+    // transient error banner stays visible as informational hint but
+    // does NOT block the button. Check the plan FIRST so a partial
+    // upstream outage does not lock the user out when USDT can cover it.
     if (isVirtualDolares) {
       return (
         !!toTokenId &&
@@ -994,6 +998,10 @@ export function SwapScreen({ route }: Props) {
         !confirmSwapIsLoading
       )
     }
+    // Single-swap path: no quote was obtained because Squid returned
+    // 429/502. The saga would hit the same upstream and fail, so disable
+    // Confirmar until the next refresh succeeds (banner tells user to retry).
+    if (isTransientUpstreamError) return false
     return (
       !showDecreaseSpendForGasWarning &&
       !showNotEnoughBalanceForGasWarning &&
