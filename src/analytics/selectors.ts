@@ -13,6 +13,7 @@ import { currentLanguageSelector } from 'src/i18n/selectors'
 import { getLocalCurrencyCode } from 'src/localCurrency/selectors'
 import { userLocationDataSelector } from 'src/networkInfo/selectors'
 import { pointsBalanceSelector } from 'src/points/selectors'
+import { opaqueAccountId } from 'src/sentry/piiScrub'
 import { getPositionBalanceUsd } from 'src/positions/getPositionBalanceUsd'
 import {
   hooksPreviewApiUrlSelector,
@@ -197,6 +198,14 @@ export const getCurrentUserTraits = createSelector(
       pincodeType,
       ...hasTokenBalanceFields,
       pointsBalance,
+      // Cross-tool correlation id: Sentry event.user.id is the FNV-1a hash
+      // of the wallet address (opaqueAccountId), never the raw address.
+      // Mirror the same hash here as a PostHog user property so a
+      // support / debug workflow can pivot from a Sentry issue's user id
+      // to the matching PostHog user without needing the raw address.
+      // Keeps PostHog's distinct_id (rawWalletAddress) intact so
+      // pre-existing user history is preserved.
+      sentryOpaqueId: rawWalletAddress ? opaqueAccountId(rawWalletAddress) : null,
     } satisfies Record<string, string | boolean | number | null | undefined>
   }
 )

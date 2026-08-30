@@ -351,6 +351,9 @@ const expectedTraitsForAllNetworks = {
   hasCeloMainnetTokenBalance: true,
   hasEthereumMainnetTokenBalance: true,
   pointsBalance: '50',
+  // FNV-1a hash of the mock address, mirrors what opaqueAccountId
+  // computes for cross-tool correlation (Sentry event.user.id).
+  sentryOpaqueId: 'b97dc1eaf41d1979',
 }
 
 describe('getCurrentUserTraits', () => {
