@@ -47,9 +47,35 @@ if (__DEV__ && !SENTRY_ENABLED) {
 // This prevents "Sentry.wrap called before Sentry.init" warning
 initializeSentryEarly()
 
+// Global JS error handler. Sentry's reactNativeErrorHandlersIntegration
+// (default) also patches this and forwards to Sentry, but we chain a
+// breadcrumb + Logger.error BEFORE the default handler runs so the Sentry
+// event carries a searchable "root_error_handler" breadcrumb even if the
+// event itself lands untagged (no captureBusinessError). Belt-and-suspenders
+// for the P1P class of fatal-unhandled crashes (TUCOPWALLET-1P and friends).
 const defaultErrorHandler = ErrorUtils.getGlobalHandler()
 const customErrorHandler = (e, isFatal) => {
   Logger.error('RootErrorHandler', `Unhandled error. isFatal: ${isFatal}`, e)
+  try {
+    Sentry.addBreadcrumb({
+      category: 'app.root_error_handler',
+      level: isFatal ? 'fatal' : 'error',
+      message: e && e.message ? e.message : 'unknown error',
+      data: {
+        isFatal: !!isFatal,
+        name: e && e.name,
+        // Truncated stack: full stack is on the event itself, this is
+        // just a hint in the breadcrumb trail so support can see the
+        // crash chain at a glance.
+        stackTop:
+          e && typeof e.stack === 'string'
+            ? e.stack.split('\n').slice(0, 3).join(' | ')
+            : undefined,
+      },
+    })
+  } catch {
+    // never let the breadcrumb layer swallow the original error
+  }
   defaultErrorHandler(e, isFatal)
 }
 ErrorUtils.setGlobalHandler(customErrorHandler)

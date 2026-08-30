@@ -5,6 +5,7 @@ import { sentryTracesSampleRateSelector } from 'src/app/selectors'
 import { APP_BUNDLE_ID, SENTRY_CLIENT_URL, SENTRY_ENABLED, SENTRY_ENVIRONMENT } from 'src/config'
 import Logger from 'src/utils/Logger'
 import { opaqueAccountId, scrubSensitiveStrings } from 'src/sentry/piiScrub'
+import { installGlobalContextForSentry } from 'src/sentry/globalContext'
 import networkConfig from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 import { select } from 'typed-redux-saga'
@@ -172,6 +173,11 @@ export function initializeSentryEarly() {
     },
     beforeBreadcrumb: (breadcrumb) => scrubSensitiveStrings(breadcrumb),
   })
+
+  // Install side-band context providers (NetInfo + AppState). Must run
+  // AFTER Sentry.init so the first setContext call has a live client to
+  // write into. Idempotent; safe if this fn re-runs (e.g. Fast Refresh).
+  installGlobalContextForSentry()
 
   Logger.info(TAG, 'installSentry', 'Sentry installation complete')
 }
