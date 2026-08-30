@@ -59,6 +59,8 @@ src/
 - Use `Logger.ts`, not console.log
 - Use i18n for user-facing strings
 - Use `useAppSelector`/`useAppDispatch` for Redux
+- NEVER `void promise` on Promise-returning SDK calls (fires unhandled rejection → fatal onerror in RN). Always `.catch()`. See `.claude/rules/observability.md`.
+- Route real errors through `captureBusinessError` (feature+provider+action taxonomy), not raw `Sentry.captureException`. See `.claude/rules/observability.md`.
 
 ---
 
@@ -95,3 +97,4 @@ src/
 @.claude/rules/android-build.md - Android config & SoLoader fix
 @.claude/rules/railway.md - Backend sibling services (phone verification, twilio, buckspay)
 @.claude/rules/ci-cd.md - CI checks & Knip
+@.claude/rules/observability.md - Sentry + PostHog + Statsig stack, captureBusinessError taxonomy, PII scrub, auto-attached contexts (connectivity/app_state/feature_gates)
