@@ -229,12 +229,21 @@ class AppAnalytics {
           preloadFeatureFlags: false,
           sendFeatureFlagEvent: false,
         })
-        void this.posthogClient.register({
-          environment: POSTHOG_ENVIRONMENT,
-          app_version: DeviceInfo.getReadableVersion(),
-          build_number: DeviceInfo.getBuildNumber(),
-          platform: Platform.OS,
-        })
+        // register() returns a Promise; a `void`-discarded rejection
+        // becomes an unhandled rejection that surfaces as a fatal
+        // onerror in React Native (Sentry TUCOPWALLET-1P root cause,
+        // 1.118.13). Attach an explicit .catch so a lib-internal
+        // throw (e.g. UUIDv7 counter overflow) never derails startup.
+        this.posthogClient
+          .register({
+            environment: POSTHOG_ENVIRONMENT,
+            app_version: DeviceInfo.getReadableVersion(),
+            build_number: DeviceInfo.getBuildNumber(),
+            platform: Platform.OS,
+          })
+          .catch((err) => {
+            Logger.warn(TAG, 'PostHog register failed', err)
+          })
         Logger.info(TAG, 'PostHog initialized', {
           host: POSTHOG_HOST,
           env: POSTHOG_ENVIRONMENT,
@@ -383,7 +392,13 @@ class AppAnalytics {
 
     if (posthogEnabled && this.posthogClient) {
       try {
-        void this.posthogClient.screen(screenId, props)
+        // screen() returns a Promise; discarding it with `void` turns any
+        // internal async throw into an unhandled rejection (RN surfaces
+        // those as fatal onerror). Chain a .catch so lib-internal
+        // failures degrade to a log line instead of crashing the app.
+        this.posthogClient.screen(screenId, props).catch((err) => {
+          Logger.error(TAG, 'Error tracking page to PostHog', err)
+        })
       } catch (err) {
         Logger.error(TAG, 'Error tracking page to PostHog', err)
       }
