@@ -419,6 +419,10 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
     let legSucceededOnAttempt = -1
     let successTxHash: string | null = null
     let successFreshQuote: Awaited<ReturnType<typeof fetchSwapQuoteForExecution>> | null = null
+    // Track per-attempt failure kind so the aggregate capture at the
+    // exhausted-attempts branch tells us WHY every retry failed (fetch vs
+    // submit) without hunting for sibling Sentry events by timestamp.
+    const attemptFailures: Array<{ attempt: number; kind: 'fetch' | 'submit'; reason: string }> = []
 
     for (let attempt = 0; attempt < MAX_LEG_ATTEMPTS; attempt++) {
       if (attempt > 0) {
@@ -483,6 +487,7 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
             errorEnvelope: envelope,
           })
         )
+        attemptFailures.push({ attempt: attempt + 1, kind: 'fetch', reason: message })
         break
       }
 
@@ -579,6 +584,11 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
           errorMessage: `Submit failed on attempt ${attempt + 1} (see Sentry for full stack)`,
         })
       )
+      attemptFailures.push({
+        attempt: attempt + 1,
+        kind: 'submit',
+        reason: 'swapError (root cause in sibling Sentry event)',
+      })
       // Ensure `error` (unused after this log line) is not flagged unused.
       void error
     }
@@ -645,7 +655,19 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         provider: 'internal',
         action: 'multi_swap_step',
         errorCode: 'step_failed',
-        extra: { stepIndex: index, stepSymbol: step.symbol, attemptsUsed: MAX_LEG_ATTEMPTS },
+        extra: {
+          stepIndex: index,
+          stepSymbol: step.symbol,
+          attemptsUsed: MAX_LEG_ATTEMPTS,
+          // Per-attempt breakdown: distinguishes fetch failures (network /
+          // backend 5xx) from submit failures (on-chain revert, gas issue,
+          // Squid pool exhaustion). Correlates this aggregate capture with
+          // the swap-saga's per-submit Sentry events without timestamp
+          // hunting.
+          attemptFailures,
+          lastFailureKind: attemptFailures.at(-1)?.kind ?? 'unknown',
+          lastFailureReason: attemptFailures.at(-1)?.reason ?? 'unknown',
+        },
       })
       yield* put(
         inFlightAdvance({ flowId, toStatus: 'progress', patch: { currentStep: index + 1 } })
