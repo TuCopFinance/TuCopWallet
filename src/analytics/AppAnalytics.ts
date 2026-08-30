@@ -1,5 +1,6 @@
 import { SegmentClient } from '@segment/analytics-react-native'
 import { StatsigClientRN } from '@statsig/react-native-bindings'
+import * as Sentry from '@sentry/react-native'
 import _ from 'lodash'
 import PostHog from 'posthog-react-native'
 import { Platform } from 'react-native'
@@ -101,6 +102,12 @@ class AppAnalytics {
   // `phc_` project token. Left undefined on E2E, dev opt-out, and gate-off
   // rollouts so track/identify/page short-circuit before any network I/O.
   private posthogClient: PostHog | undefined
+  // Session-start snapshot of every declared feature gate (see init()).
+  // Attached as super props on every track() so PostHog can cohort by
+  // "users where gate_X = true"; also mirrored to Sentry.setContext so
+  // Sentry events carry the same snapshot. Empty until Statsig fetch
+  // completes; safe to spread into props either way.
+  private featureGateSnapshot: Record<string, boolean> = {}
 
   async init() {
     let uniqueID
@@ -171,6 +178,37 @@ class AppAnalytics {
       )
       setStatsigClient(client)
       await client.initializeAsync()
+
+      // Snapshot every declared feature gate value at session start and
+      // surface it to both Sentry (context) and PostHog (super props on
+      // the client's register()) so we can pivot on cohort membership
+      // in either tool. Reads use the same getFeatureGate helper the
+      // rest of the app uses, so overrides + Statsig fetch state stay
+      // consistent. Fires once here on init; when Statsig ramps a gate
+      // mid-session the wallet still ships the value that was live at
+      // startup for that user, which matches how the wallet reads gates
+      // (mostly module-level constants). Any drift becomes visible as
+      // a mismatch between Statsig console and this snapshot, which is
+      // itself useful diagnostic signal.
+      try {
+        const gateSnapshot: Record<string, boolean> = {}
+        for (const gate of Object.values(StatsigFeatureGates)) {
+          try {
+            gateSnapshot[`gate_${gate}`] = !!getFeatureGate(gate as StatsigFeatureGates)
+          } catch (readErr) {
+            // A single gate lookup failure must not derail the snapshot.
+            Logger.warn(TAG, `feature gate read failed: ${gate}`, readErr)
+          }
+        }
+        Sentry.setContext('feature_gates', gateSnapshot)
+        // Cache on the instance so getSuperProps() can attach the same
+        // snapshot to every tracked event without re-reading gates on
+        // every capture (getFeatureGate is cheap but this runs on hot
+        // paths).
+        this.featureGateSnapshot = gateSnapshot
+      } catch (snapshotErr) {
+        Logger.warn(TAG, 'feature gate snapshot failed', snapshotErr)
+      }
     } catch (error) {
       Logger.warn(TAG, `Statsig setup error`, error)
     }
@@ -478,6 +516,10 @@ class AppAnalytics {
       ...prefixedSuperProps,
       // Statsig prop, won't be read properly by Statsig if prefixed
       statsigEnvironment: STATSIG_ENV,
+      // Feature gate snapshot from session start. Each gate ships as
+      // `gate_<name>: boolean`. Empty {} spreads to nothing before
+      // Statsig fetch completes; harmless.
+      ...this.featureGateSnapshot,
     }
   }
 }
