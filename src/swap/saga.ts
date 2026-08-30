@@ -241,15 +241,28 @@ export function* swapSubmitSaga(action: PayloadAction<SwapInfo>) {
     // instead of exploding on the mismatch check in sendPreparedTransactions.
     if (preparedTransactions.length === 0) {
       const emptyError = new Error('preparedTransactions empty at swapStart')
-      Logger.error(TAG, emptyError.message)
+      const quoteAgeMs = Date.now() - quoteReceivedAt
+      Logger.error(TAG, emptyError.message, {
+        provider,
+        swapType,
+        serializedTxCount: serializablePreparedTransactions.length,
+        quoteAgeMs,
+      })
       yield* put(swapError(swapId))
       yield* put(inFlightFail({ flowId, errorClass: classifyError(emptyError) }))
       captureBusinessError(emptyError, {
         feature: 'swap',
-        provider: 'squid',
+        provider: provider === UNISWAP_V4_PROVIDER ? 'uniswap-v4' : 'squid',
         action: 'empty_prepared_txs',
         errorCode: 'empty_prepared_txs',
-        extra: { swapType },
+        extra: {
+          swapType,
+          provider,
+          serializedTxCount: serializablePreparedTransactions.length,
+          quoteAgeMs,
+          fromTokenId,
+          toTokenId,
+        },
       })
       return
     }
