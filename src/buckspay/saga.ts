@@ -21,6 +21,7 @@ import {
 } from 'src/lib/useTransactionInFlight/actions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { walletAddressSelector } from 'src/web3/selectors'
@@ -90,7 +91,23 @@ function* submitWithRetry(walletAddress: string, txHash: string, bankDetails: Ba
     }
   }
 
-  throw lastError ?? new Error('API submit failed after retries')
+  // All retries exhausted. Surface to Sentry BEFORE throwing so the
+  // outer offramp catch also fires captureBusinessError; each captures a
+  // distinct fingerprint (`submit_retries_exhausted` vs the top-level
+  // `offramp_failed`) so we can tell in the dashboard whether the flow
+  // died at API submit specifically vs anywhere else.
+  const finalErr = lastError ?? new Error('API submit failed after retries')
+  captureBusinessError(finalErr, {
+    feature: 'buckspay',
+    provider: 'buckspay',
+    action: 'submit_api',
+    errorCode: 'submit_retries_exhausted',
+    extra: {
+      attempts: API_SUBMIT_MAX_RETRIES,
+      finalMessage: finalErr.message,
+    },
+  })
+  throw finalErr
 }
 
 function* pollStatusSaga(txHash: string) {
@@ -196,6 +213,22 @@ export function* offrampSaga(
     const errorKey = error.message === 'POLLING_TIMEOUT' ? 'buckspay.pollingTimeout' : undefined
     yield* put(offrampError(errorKey || error.message || 'Unknown error'))
     yield* put(inFlightFail({ flowId, errorClass: classifyError(error) }))
+    // Sentry: top-level offramp failure. Fingerprint splits by error message
+    // so POLLING_TIMEOUT groups separately from send / API / prepare failures.
+    // `submit_api` failures are ALSO captured in submitWithRetry with a
+    // more specific fingerprint; both events tell us where in the flow
+    // it died. Throttle prevents double-firing across the flow.
+    captureBusinessError(error, {
+      feature: 'buckspay',
+      provider: 'buckspay',
+      action: 'offramp',
+      errorCode: error?.message === 'POLLING_TIMEOUT' ? 'polling_timeout' : 'offramp_failed',
+      extra: {
+        flowId,
+        message: error?.message,
+        errorClass: classifyError(error),
+      },
+    })
   } finally {
     if (yield* cancelled()) {
       Logger.info(TAG, 'Offramp saga was cancelled')
@@ -221,6 +254,19 @@ function* resumeTrackingSaga() {
       Logger.error(TAG, 'Resume tracking failed', error)
       const errorKey = error.message === 'POLLING_TIMEOUT' ? 'buckspay.pollingTimeout' : undefined
       yield* put(offrampError(errorKey || error.message || 'Unknown error'))
+      // Separate fingerprint from offramp_failed so we can tell in Sentry
+      // whether the flow died during the fresh submit or when the app
+      // resumed a stale flow after restart. Same errorCode taxonomy.
+      captureBusinessError(error, {
+        feature: 'buckspay',
+        provider: 'buckspay',
+        action: 'resume_tracking',
+        errorCode: error?.message === 'POLLING_TIMEOUT' ? 'polling_timeout' : 'resume_failed',
+        extra: {
+          txHash: txHash ? `${txHash.slice(0, 10)}...` : undefined,
+          message: error?.message,
+        },
+      })
     }
   }
 }

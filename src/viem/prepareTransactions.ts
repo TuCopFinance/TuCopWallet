@@ -4,6 +4,7 @@ import { TransactionEvents } from 'src/analytics/Events'
 import { TransactionOrigin } from 'src/analytics/types'
 import { STATIC_GAS_PADDING } from 'src/config'
 import { addFeeCurrencyBreadcrumb } from 'src/sentry/breadcrumbs'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import {
   NativeTokenBalance,
   TokenBalance,
@@ -558,6 +559,39 @@ export async function prepareTransactions({
       origin,
       networkId: feeCurrencies[0].networkId,
     })
+
+    // Cascade exhausted with the user holding balance in at least one fee
+    // currency: probable calibration bug (over-estimated gas fee, wrong
+    // token balance, or fee currency directory rate stale). "User has zero
+    // of everything" is a legitimate state; "user has USDT but cascade
+    // rejects USDT" is the actionable case, so we only fire captureBusinessError
+    // when at least one currency had a positive balance. Fingerprint groups
+    // by origin so we can tell which flow (swap, send, earn, etc.) is
+    // over-estimating gas.
+    const hasAnyBalance = feeCurrencies.some((c) => c.balance && c.balance.gt(0))
+    if (hasAnyBalance) {
+      captureBusinessError(new Error('fee_currency_cascade_exhausted_with_balance'), {
+        feature: 'fee_currency',
+        provider: 'internal',
+        action: 'cascade',
+        errorCode: 'cascade_exhausted_with_balance',
+        extra: {
+          origin,
+          networkId: feeCurrencies[0].networkId,
+          currencyCount: feeCurrencies.length,
+          // Symbols only, no addresses / balances (both are PII per the
+          // wallet's Sentry policy). Symbols tell us WHICH currencies
+          // were candidates without leaking the user's holdings.
+          symbolsAttempted: feeCurrencies.map((c) => c.symbol),
+          // Boolean flags per candidate: whether balance was > 0. Lets
+          // Sentry group "cascade rejected everything even though X had
+          // balance" without exposing amounts.
+          balancePresenceBySymbol: Object.fromEntries(
+            feeCurrencies.map((c) => [c.symbol, !!(c.balance && c.balance.gt(0))])
+          ),
+        },
+      })
+    }
   }
 
   // So far not enough balance to pay for gas
