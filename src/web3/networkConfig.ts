@@ -582,6 +582,13 @@ export const BUCKSPAY_CELO_NETWORK_ID = 6
 export const BUCKSPAY_API_BASE_URL = 'https://buckspay-webhook-production-ad81.up.railway.app'
 export const BUCKSPAY_WEB_APP_URL = 'https://app.buckspay.xyz/'
 
+// TuCOPRamp off-ramp / on-ramp constants (Pattern B: wallet talks to backend proxy).
+// The proxy strips the /api/tucopramp prefix and forwards to https://api.ramp.tucop.xyz/v1/p2p/*.
+// Wallet MUST sign the UPSTREAM path (/v1/p2p/<endpoint>), not the prefixed one.
+// See .claude/coordination/tucopramp.md + .claude/coordination/tucopramp-backend-brief.md.
+export const TUCOPRAMP_API_BASE_URL =
+  'https://tucop-backend-production.up.railway.app/api/tucopramp'
+
 export { COPM_TOKEN_ID_MAINNET }
 
 export default networkConfig
