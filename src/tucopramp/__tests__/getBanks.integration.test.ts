@@ -14,12 +14,25 @@
 // Then ping the backend team with the run timestamp so they can correlate
 // the request_id in Railway logs.
 
+import { FetchMock } from 'jest-fetch-mock'
 import { getBanks } from 'src/tucopramp/api'
+
+const mockFetch = fetch as FetchMock
 
 const enabled = process.env.RUN_TUCOPRAMP_INTEGRATION_TESTS === '1'
 const describeIfEnabled = enabled ? describe : describe.skip
 
 describeIfEnabled('getBanks (integration, real prod proxy)', () => {
+  // Restore the real fetch for this suite so we actually hit the network.
+  // jest-fetch-mock replaces global.fetch by default which would swallow the
+  // request and make the integration test meaningless.
+  beforeAll(() => {
+    mockFetch.disableMocks()
+  })
+  afterAll(() => {
+    mockFetch.enableMocks()
+  })
+
   it('returns the 6 expected bank rows', async () => {
     const banks = await getBanks()
     const codes = banks.map((b) => b.code).sort()
