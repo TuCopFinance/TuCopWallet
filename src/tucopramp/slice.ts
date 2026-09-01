@@ -1,0 +1,228 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { REHYDRATE, RehydrateAction } from 'redux-persist'
+import { getRehydratePayload } from 'src/redux/persist-helper'
+import {
+  Bank,
+  MeResponse,
+  OfframpOrderResponse,
+  OnrampOrderResponse,
+  QuoteResponse,
+  ReceivingAccountResponse,
+} from 'src/tucopramp/types'
+
+// Flow status enums surface to the UI. Kept separate for off-ramp vs on-ramp
+// because the two flows share little in the middle even if the endpoints
+// look symmetric.
+
+export type OfframpFlowStatus =
+  | 'idle'
+  | 'quoting'
+  | 'quote-ready'
+  | 'creating-order'
+  | 'awaiting-deposit'
+  | 'deposit-confirmed'
+  | 'processing'
+  | 'completed'
+  | 'cancelling'
+  | 'cancelled'
+  | 'expired'
+  | 'refund-owed'
+  | 'refunded'
+  | 'error'
+
+export type OnrampFlowStatus =
+  | 'idle'
+  | 'quoting'
+  | 'quote-ready'
+  | 'creating-order'
+  | 'awaiting-proof-upload'
+  | 'uploading-proof'
+  | 'awaiting-review'
+  | 'verifying'
+  | 'completed'
+  | 'cancelled'
+  | 'expired'
+  | 'error'
+
+interface OfframpFlow {
+  status: OfframpFlowStatus
+  lastQuote: QuoteResponse | null
+  currentOrder: OfframpOrderResponse | null
+  idempotencyKey: string | null
+  errorCode: string | null
+}
+
+interface OnrampFlow {
+  status: OnrampFlowStatus
+  lastQuote: QuoteResponse | null
+  currentOrder: OnrampOrderResponse | null
+  idempotencyKey: string | null
+  proofUploaded: boolean
+  errorCode: string | null
+}
+
+export interface State {
+  // Cached reference data (safe to keep across sessions once persisted).
+  banks: Bank[] | null
+  receivingAccount: ReceivingAccountResponse | null
+  userProfile: MeResponse | null
+
+  offramp: OfframpFlow
+  onramp: OnrampFlow
+}
+
+const initialOfframp: OfframpFlow = {
+  status: 'idle',
+  lastQuote: null,
+  currentOrder: null,
+  idempotencyKey: null,
+  errorCode: null,
+}
+
+const initialOnramp: OnrampFlow = {
+  status: 'idle',
+  lastQuote: null,
+  currentOrder: null,
+  idempotencyKey: null,
+  proofUploaded: false,
+  errorCode: null,
+}
+
+const initialState: State = {
+  banks: null,
+  receivingAccount: null,
+  userProfile: null,
+  offramp: initialOfframp,
+  onramp: initialOnramp,
+}
+
+export const slice = createSlice({
+  name: 'tucopramp',
+  initialState,
+  reducers: {
+    // Reference data
+    setBanks: (state, action: PayloadAction<Bank[]>) => {
+      state.banks = action.payload
+    },
+    setReceivingAccount: (state, action: PayloadAction<ReceivingAccountResponse>) => {
+      state.receivingAccount = action.payload
+    },
+    setUserProfile: (state, action: PayloadAction<MeResponse>) => {
+      state.userProfile = action.payload
+    },
+
+    // Off-ramp transitions
+    offrampReset: (state) => {
+      state.offramp = { ...initialOfframp }
+    },
+    offrampQuoting: (state) => {
+      state.offramp.status = 'quoting'
+      state.offramp.errorCode = null
+    },
+    offrampQuoteReady: (state, action: PayloadAction<QuoteResponse>) => {
+      state.offramp.status = 'quote-ready'
+      state.offramp.lastQuote = action.payload
+    },
+    offrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
+      state.offramp.status = 'creating-order'
+      state.offramp.idempotencyKey = action.payload.idempotencyKey
+    },
+    offrampOrderCreated: (state, action: PayloadAction<OfframpOrderResponse>) => {
+      state.offramp.status = 'awaiting-deposit'
+      state.offramp.currentOrder = action.payload
+    },
+    offrampAdvance: (
+      state,
+      action: PayloadAction<{
+        status: OfframpFlowStatus
+        currentOrder?: OfframpOrderResponse
+      }>
+    ) => {
+      state.offramp.status = action.payload.status
+      if (action.payload.currentOrder) {
+        state.offramp.currentOrder = action.payload.currentOrder
+      }
+    },
+    offrampCancelling: (state) => {
+      state.offramp.status = 'cancelling'
+    },
+    offrampError: (state, action: PayloadAction<{ code: string }>) => {
+      state.offramp.status = 'error'
+      state.offramp.errorCode = action.payload.code
+    },
+
+    // On-ramp transitions
+    onrampReset: (state) => {
+      state.onramp = { ...initialOnramp }
+    },
+    onrampQuoting: (state) => {
+      state.onramp.status = 'quoting'
+      state.onramp.errorCode = null
+    },
+    onrampQuoteReady: (state, action: PayloadAction<QuoteResponse>) => {
+      state.onramp.status = 'quote-ready'
+      state.onramp.lastQuote = action.payload
+    },
+    onrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
+      state.onramp.status = 'creating-order'
+      state.onramp.idempotencyKey = action.payload.idempotencyKey
+    },
+    onrampOrderCreated: (state, action: PayloadAction<OnrampOrderResponse>) => {
+      state.onramp.status = 'awaiting-proof-upload'
+      state.onramp.currentOrder = action.payload
+    },
+    onrampUploadingProof: (state) => {
+      state.onramp.status = 'uploading-proof'
+    },
+    onrampProofUploaded: (state) => {
+      state.onramp.status = 'awaiting-review'
+      state.onramp.proofUploaded = true
+    },
+    onrampAdvance: (state, action: PayloadAction<{ status: OnrampFlowStatus }>) => {
+      state.onramp.status = action.payload.status
+    },
+    onrampError: (state, action: PayloadAction<{ code: string }>) => {
+      state.onramp.status = 'error'
+      state.onramp.errorCode = action.payload.code
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
+      const rehydrated = getRehydratePayload(action, 'tucopramp') as Partial<State> | undefined
+      // Only rehydrate reference data. In-flight flow state (quotes, orders,
+      // idempotency keys) resets to `idle` on cold start; sagas will fetch
+      // fresh order status if the user reopens a screen mid-flow.
+      return {
+        ...state,
+        banks: rehydrated?.banks ?? state.banks,
+        receivingAccount: rehydrated?.receivingAccount ?? state.receivingAccount,
+        userProfile: rehydrated?.userProfile ?? state.userProfile,
+      }
+    })
+  },
+})
+
+export const {
+  setBanks,
+  setReceivingAccount,
+  setUserProfile,
+  offrampReset,
+  offrampQuoting,
+  offrampQuoteReady,
+  offrampCreatingOrder,
+  offrampOrderCreated,
+  offrampAdvance,
+  offrampCancelling,
+  offrampError,
+  onrampReset,
+  onrampQuoting,
+  onrampQuoteReady,
+  onrampCreatingOrder,
+  onrampOrderCreated,
+  onrampUploadingProof,
+  onrampProofUploaded,
+  onrampAdvance,
+  onrampError,
+} = slice.actions
+
+export default slice.reducer

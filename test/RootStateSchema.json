@@ -564,6 +564,36 @@
             ],
             "type": "object"
         },
+        "Bank": {
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "supported_account_types": {
+                    "items": {
+                        "$ref": "#/definitions/BankAccountType"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "code",
+                "display_name",
+                "supported_account_types"
+            ],
+            "type": "object"
+        },
+        "BankAccountType": {
+            "enum": [
+                "checking",
+                "savings"
+            ],
+            "type": "string"
+        },
         "BankDetails": {
             "additionalProperties": false,
             "properties": {
@@ -2488,6 +2518,32 @@
             ],
             "type": "object"
         },
+        "MeResponse": {
+            "additionalProperties": false,
+            "properties": {
+                "cedula_last_4": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "primary_email": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "cedula_last_4",
+                "full_name",
+                "user_id"
+            ],
+            "type": "object"
+        },
         "MultichainBetaStatus": {
             "enum": [
                 "NotSeen",
@@ -3272,6 +3328,235 @@
                 "$ref": "#/definitions/ContactRecipient"
             },
             "type": "object"
+        },
+        "OfframpFlow": {
+            "additionalProperties": false,
+            "properties": {
+                "currentOrder": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/OfframpOrderResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "idempotencyKey": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "lastQuote": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/QuoteResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/OfframpFlowStatus"
+                }
+            },
+            "required": [
+                "currentOrder",
+                "errorCode",
+                "idempotencyKey",
+                "lastQuote",
+                "status"
+            ],
+            "type": "object"
+        },
+        "OfframpFlowStatus": {
+            "enum": [
+                "awaiting-deposit",
+                "cancelled",
+                "cancelling",
+                "completed",
+                "creating-order",
+                "deposit-confirmed",
+                "error",
+                "expired",
+                "idle",
+                "processing",
+                "quote-ready",
+                "quoting",
+                "refund-owed",
+                "refunded"
+            ],
+            "type": "string"
+        },
+        "OfframpOrderResponse": {
+            "additionalProperties": false,
+            "properties": {
+                "chain_id": {
+                    "type": "number"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "gross_amount_copm": {
+                    "type": "number"
+                },
+                "multisig_address": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/OfframpOrderStatus"
+                }
+            },
+            "required": [
+                "chain_id",
+                "expires_at",
+                "gross_amount_copm",
+                "multisig_address",
+                "order_id",
+                "status"
+            ],
+            "type": "object"
+        },
+        "OfframpOrderStatus": {
+            "enum": [
+                "AWAITING_DEPOSIT",
+                "CANCELLED",
+                "COMPLETED",
+                "DEPOSIT_CONFIRMED",
+                "EXPIRED",
+                "PROCESSING",
+                "REFUNDED",
+                "REFUND_OWED"
+            ],
+            "type": "string"
+        },
+        "OnrampFlow": {
+            "additionalProperties": false,
+            "properties": {
+                "currentOrder": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/OnrampOrderResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "idempotencyKey": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "lastQuote": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/QuoteResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "proofUploaded": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "$ref": "#/definitions/OnrampFlowStatus"
+                }
+            },
+            "required": [
+                "currentOrder",
+                "errorCode",
+                "idempotencyKey",
+                "lastQuote",
+                "proofUploaded",
+                "status"
+            ],
+            "type": "object"
+        },
+        "OnrampFlowStatus": {
+            "enum": [
+                "awaiting-proof-upload",
+                "awaiting-review",
+                "cancelled",
+                "completed",
+                "creating-order",
+                "error",
+                "expired",
+                "idle",
+                "quote-ready",
+                "quoting",
+                "uploading-proof",
+                "verifying"
+            ],
+            "type": "string"
+        },
+        "OnrampOrderResponse": {
+            "additionalProperties": false,
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "gross_amount_cop": {
+                    "type": "number"
+                },
+                "instructions": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "proof_upload_required": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "receiving_account": {
+                    "$ref": "#/definitions/ReceivingAccountResponse"
+                },
+                "status": {
+                    "$ref": "#/definitions/OnrampOrderStatus"
+                }
+            },
+            "required": [
+                "expires_at",
+                "gross_amount_cop",
+                "instructions",
+                "order_id",
+                "proof_upload_required",
+                "receiving_account",
+                "status"
+            ],
+            "type": "object"
+        },
+        "OnrampOrderStatus": {
+            "enum": [
+                "AWAITING_PROOF",
+                "AWAITING_REVIEW",
+                "CANCELLED",
+                "COMPLETED",
+                "EXPIRED",
+                "VERIFYING"
+            ],
+            "type": "string"
         },
         "Partial<Record<FiatAccountType,{fiatAccountSchemas:{fiatAccountSchema:FiatAccountSchema;allowedValues:Record<string,[string,...string[]]>;userActionType?:TransferInUserActionDetails|undefined;}[];settlementTimeLowerBound?:string|undefined;settlementTimeUpperBound?:string|undefined;}>>": {
             "additionalProperties": false,
@@ -4328,6 +4613,83 @@
         },
         "PublicAppConfig": {
             "additionalProperties": false,
+            "type": "object"
+        },
+        "QuoteResponse": {
+            "additionalProperties": false,
+            "properties": {
+                "display_text": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "fee_absorbed_by": {
+                    "enum": [
+                        "tucop",
+                        "user"
+                    ],
+                    "type": "string"
+                },
+                "fee_amount_cop": {
+                    "type": "number"
+                },
+                "fee_percent": {
+                    "type": "number"
+                },
+                "gross_amount_cop": {
+                    "type": "number"
+                },
+                "gross_amount_copm": {
+                    "type": "number"
+                },
+                "net_amount_to_user_cop": {
+                    "type": "number"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "remaining_daily_cop": {
+                    "type": "number"
+                },
+                "remaining_monthly_cop": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "display_text",
+                "expires_at",
+                "fee_absorbed_by",
+                "fee_amount_cop",
+                "fee_percent",
+                "gross_amount_cop",
+                "gross_amount_copm",
+                "net_amount_to_user_cop",
+                "quote_id",
+                "remaining_daily_cop",
+                "remaining_monthly_cop"
+            ],
+            "type": "object"
+        },
+        "ReceivingAccountResponse": {
+            "additionalProperties": false,
+            "properties": {
+                "bre_b_key": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "bre_b_key",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "bre_b_key",
+                "display_name",
+                "kind"
+            ],
             "type": "object"
         },
         "Recipient": {
@@ -6628,6 +6990,58 @@
         "State_27": {
             "additionalProperties": false,
             "properties": {
+                "banks": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/definitions/Bank"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "offramp": {
+                    "$ref": "#/definitions/OfframpFlow"
+                },
+                "onramp": {
+                    "$ref": "#/definitions/OnrampFlow"
+                },
+                "receivingAccount": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/ReceivingAccountResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "userProfile": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/MeResponse"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "banks",
+                "offramp",
+                "onramp",
+                "receivingAccount",
+                "userProfile"
+            ],
+            "type": "object"
+        },
+        "State_28": {
+            "additionalProperties": false,
+            "properties": {
                 "buyStatus": {
                     "$ref": "#/definitions/GoldOperationStatus"
                 },
@@ -6721,23 +7135,11 @@
             ],
             "type": "object"
         },
-        "State_28": {
-            "additionalProperties": false,
-            "properties": {
-                "byFlow": {
-                    "$ref": "#/definitions/Record<string,InFlightDescriptor>"
-                }
-            },
-            "required": [
-                "byFlow"
-            ],
-            "type": "object"
-        },
         "State_29": {
             "additionalProperties": false,
             "properties": {
                 "byFlow": {
-                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
+                    "$ref": "#/definitions/Record<string,InFlightDescriptor>"
                 }
             },
             "required": [
@@ -6756,6 +7158,18 @@
             ]
         },
         "State_30": {
+            "additionalProperties": false,
+            "properties": {
+                "byFlow": {
+                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
+                }
+            },
+            "required": [
+                "byFlow"
+            ],
+            "type": "object"
+        },
+        "State_31": {
             "additionalProperties": false,
             "properties": {
                 "byAdapter": {
@@ -8652,7 +9066,7 @@
             "$ref": "#/definitions/State_13"
         },
         "gold": {
-            "$ref": "#/definitions/State_27"
+            "$ref": "#/definitions/State_28"
         },
         "home": {
             "$ref": "#/definitions/State_5"
@@ -8723,7 +9137,7 @@
             "$ref": "#/definitions/State_4"
         },
         "sentTransactionLog": {
-            "$ref": "#/definitions/State_29"
+            "$ref": "#/definitions/State_30"
         },
         "swap": {
             "$ref": "#/definitions/State_19"
@@ -8732,10 +9146,13 @@
             "$ref": "#/definitions/State_15"
         },
         "transactionInFlight": {
-            "$ref": "#/definitions/State_28"
+            "$ref": "#/definitions/State_29"
         },
         "transactions": {
             "$ref": "#/definitions/State_6"
+        },
+        "tucopramp": {
+            "$ref": "#/definitions/State_27"
         },
         "walletConnect": {
             "$ref": "#/definitions/State_14"
@@ -8744,7 +9161,7 @@
             "$ref": "#/definitions/State_7"
         },
         "wriFeeAdapterBootstrap": {
-            "$ref": "#/definitions/State_30"
+            "$ref": "#/definitions/State_31"
         }
     },
     "required": [
@@ -8779,6 +9196,7 @@
         "tokens",
         "transactionInFlight",
         "transactions",
+        "tucopramp",
         "walletConnect",
         "web3",
         "wriFeeAdapterBootstrap"

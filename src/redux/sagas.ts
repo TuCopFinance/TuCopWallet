@@ -52,6 +52,7 @@ import { tokensSaga } from 'src/tokens/saga'
 import { setTokenBalances } from 'src/tokens/slice'
 import { transactionSaga } from 'src/transactions/saga'
 import { updateTransactions } from 'src/transactions/slice'
+import { tucoprampSaga } from 'src/tucopramp/saga'
 import Logger from 'src/utils/Logger'
 import { checkAccountExistenceSaga } from 'src/utils/accountChecker'
 import { walletConnectSaga } from 'src/walletConnect/saga'
@@ -154,6 +155,7 @@ export function* rootSaga() {
     yield* spawn(earnSaga)
     yield* spawn(neeruSaga)
     yield* spawn(bucksPaySaga)
+    yield* spawn(tucoprampSaga)
     yield* spawn(goldSaga)
   } catch (error) {
     Logger.error('@rootSaga', 'Error while initializing sagas', error)
