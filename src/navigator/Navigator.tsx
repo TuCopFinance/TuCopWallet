@@ -137,6 +137,8 @@ import BucksPayBankForm from 'src/buckspay/BucksPayBankForm'
 import BucksPayConfirm from 'src/buckspay/BucksPayConfirm'
 import BucksPayStatus from 'src/buckspay/BucksPayStatus'
 import SelectOfframpProvider from 'src/fiatExchanges/SelectOfframpProvider'
+import TuCOPRampOfframpFlow from 'src/tucopramp/TuCOPRampOfframpFlow'
+import TuCOPRampOnrampFlow from 'src/tucopramp/TuCOPRampOnrampFlow'
 import WebViewScreen from 'src/webview/WebViewScreen'
 
 const TAG = 'Navigator'
@@ -641,6 +643,16 @@ const bucksPayScreens = (Navigator: typeof Stack) => (
       options={headerWithBackButton}
     />
     <Navigator.Screen name={Screens.BucksPayStatus} component={BucksPayStatus} options={noHeader} />
+    <Navigator.Screen
+      name={Screens.TuCOPRampOfframpFlow}
+      component={TuCOPRampOfframpFlow}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.TuCOPRampOnrampFlow}
+      component={TuCOPRampOnrampFlow}
+      options={headerWithBackButton}
+    />
   </>
 )
 

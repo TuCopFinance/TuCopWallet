@@ -363,6 +363,8 @@ export type StackParamList = {
     }
   }
   [Screens.BucksPayStatus]: undefined
+  [Screens.TuCOPRampOfframpFlow]: undefined
+  [Screens.TuCOPRampOnrampFlow]: undefined
   // Digital Gold (XAUt0)
   [Screens.GoldHome]: undefined
   [Screens.GoldInfoScreen]: undefined

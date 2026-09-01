@@ -89,6 +89,14 @@ export enum StatsigFeatureGates {
   // also unlocks the heatmap surface. Default OFF; ramp per-cohort once
   // the masking pass covers every surface.
   POSTHOG_SESSION_REPLAY_ENABLED = 'posthog_session_replay_enabled',
+  // Surfaces the TuCOPRamp off-ramp entry (COPm -> COP via Bre-B) in the
+  // SelectOfframpProvider screen. Default OFF; ramps once the Phase 5
+  // real-deposit smoke passes against the prod proxy.
+  SHOW_TUCOPRAMP_OFFRAMP = 'show_tucopramp_offramp',
+  // Surfaces the TuCOPRamp on-ramp entry (COP via Bre-B -> COPm) in the
+  // on-ramp entry point. Default OFF; independent of the off-ramp flag so
+  // we can ramp scopes separately.
+  SHOW_TUCOPRAMP_ONRAMP = 'show_tucopramp_onramp',
 }
 
 export enum StatsigExperiments {

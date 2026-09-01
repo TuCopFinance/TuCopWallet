@@ -115,6 +115,8 @@ export enum Screens {
   BucksPayBankForm = 'BucksPayBankForm',
   BucksPayConfirm = 'BucksPayConfirm',
   BucksPayStatus = 'BucksPayStatus',
+  TuCOPRampOfframpFlow = 'TuCOPRampOfframpFlow',
+  TuCOPRampOnrampFlow = 'TuCOPRampOnrampFlow',
   // Digital Gold (XAUt0)
   GoldHome = 'GoldHome',
   GoldInfoScreen = 'GoldInfoScreen',

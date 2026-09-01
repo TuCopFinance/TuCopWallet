@@ -1,7 +1,11 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
+import { navigate } from 'src/navigator/NavigationService'
+import { Screens } from 'src/navigator/Screens'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -10,6 +14,7 @@ const BucksPayLogo = require('./buckspay-logo.png')
 
 function SelectOfframpProvider() {
   const { t } = useTranslation()
+  const tucopRampEnabled = getFeatureGate(StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP)
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -17,7 +22,25 @@ function SelectOfframpProvider() {
         <Text style={styles.title}>{t('buckspay.selectProvider')}</Text>
         <Text style={styles.subtitle}>{t('buckspay.selectProviderSubtitle')}</Text>
 
-        {/* BucksPay - Temporarily Disabled */}
+        {tucopRampEnabled && (
+          <TouchableOpacity
+            style={styles.providerCard}
+            testID="offramp-provider-tucopramp"
+            onPress={() => navigate(Screens.TuCOPRampOfframpFlow)}
+          >
+            <View style={styles.providerRow}>
+              <View style={[styles.providerLogo, styles.providerLogoTucop]}>
+                <Text style={styles.providerLogoText}>TC</Text>
+              </View>
+              <View style={styles.providerInfo}>
+                <Text style={styles.providerName}>{t('tucopramp.providerName')}</Text>
+                <Text style={styles.providerSubtitle}>{t('tucopramp.offrampProviderTagline')}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* BucksPay - Temporarily Disabled (kept side by side for one release cycle) */}
         <View
           style={[styles.providerCard, styles.providerCardDisabled]}
           testID="offramp-provider-buckspay-disabled"
@@ -65,6 +88,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.gray2,
     backgroundColor: Colors.white,
+    marginBottom: Spacing.Regular16,
   },
   providerCardDisabled: {
     backgroundColor: Colors.gray1,
@@ -83,6 +107,15 @@ const styles = StyleSheet.create({
   providerLogoDisabled: {
     opacity: 0.5,
   },
+  providerLogoTucop: {
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  providerLogoText: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.white,
+  },
   providerInfo: {
     flex: 1,
     marginLeft: Spacing.Small12,
@@ -93,6 +126,11 @@ const styles = StyleSheet.create({
   },
   providerNameDisabled: {
     color: Colors.gray4,
+  },
+  providerSubtitle: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    marginTop: 2,
   },
   disabledLabel: {
     ...typeScale.labelSemiBoldSmall,
