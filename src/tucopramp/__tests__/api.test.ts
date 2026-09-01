@@ -1,11 +1,42 @@
 import { FetchMock } from 'jest-fetch-mock'
-import { getBanks } from 'src/tucopramp/api'
+import { Address } from 'viem'
+import {
+  cancelOrder,
+  createOfframpOrder,
+  createOnrampOrder,
+  getBanks,
+  getMe,
+  getOfframpQuote,
+  getOnrampQuote,
+  getOrder,
+  getProofUrl,
+  getReceivingAccount,
+  listOrders,
+  TucopRampAuth,
+  uploadProof,
+} from 'src/tucopramp/api'
 import { TucopRampError } from 'src/tucopramp/types'
+import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 
 const mockFetch = fetch as FetchMock
 
 jest.mock('src/utils/Logger')
+
+const TEST_WALLET = '0xabc0000000000000000000000000000000000000' as Address
+
+function makeAuth(signature = '0xsig'): TucopRampAuth {
+  const kc = {
+    getAccounts: () => [TEST_WALLET],
+    isUnlocked: () => true,
+    unlock: async () => true,
+    getViemAccount: () => ({
+      address: TEST_WALLET,
+      signMessage: async (_args: { message: string }) => signature,
+    }),
+  } as unknown as KeychainAccounts
+  return { walletAddress: TEST_WALLET, keychainAccounts: kc }
+}
 
 const SIX_BANK_RESPONSE = {
   banks: [
@@ -30,60 +61,411 @@ const SIX_BANK_RESPONSE = {
   ],
 }
 
-describe('getBanks', () => {
+describe('tucopramp/api', () => {
   beforeEach(() => {
     mockFetch.resetMocks()
   })
 
-  it('returns the 6 bank rows from a 200 response', async () => {
-    mockFetch.mockResponseOnce(JSON.stringify(SIX_BANK_RESPONSE), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
+  describe('getBanks', () => {
+    it('returns the 6 bank rows from a 200 response', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify(SIX_BANK_RESPONSE), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const banks = await getBanks()
+
+      expect(banks).toHaveLength(6)
+      expect(banks.map((b) => b.code).sort()).toEqual([
+        'bancolombia',
+        'bbva',
+        'bogota',
+        'daviplata',
+        'davivienda',
+        'nequi',
+      ])
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/banks`,
+        expect.objectContaining({ method: 'GET' })
+      )
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init?.headers)
+      expect(headers.get('X-Wallet-Address')).toBeNull()
+      expect(headers.get('X-Wallet-Signature')).toBeNull()
     })
 
-    const banks = await getBanks()
+    it('propagates TucopRampError when the proxy is disabled (503)', async () => {
+      jest.useRealTimers()
+      mockFetch.mockResponse(JSON.stringify({ code: 'proxy_disabled', status: 503 }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      })
 
-    expect(banks).toHaveLength(6)
-    expect(banks.map((b) => b.code).sort()).toEqual([
-      'bancolombia',
-      'bbva',
-      'bogota',
-      'daviplata',
-      'davivienda',
-      'nequi',
-    ])
-    const bancolombia = banks.find((b) => b.code === 'bancolombia')
-    expect(bancolombia?.display_name).toBe('Bancolombia')
-    expect(bancolombia?.supported_account_types).toEqual(['savings', 'checking'])
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      `${TUCOPRAMP_API_BASE_URL}/v1/p2p/banks`,
-      expect.objectContaining({ method: 'GET' })
-    )
-    const init = mockFetch.mock.calls[0][1] as RequestInit
-    const headers = new Headers(init?.headers)
-    expect(headers.get('X-Wallet-Address')).toBeNull()
-    expect(headers.get('X-Wallet-Signature')).toBeNull()
+      let caught: TucopRampError | undefined
+      try {
+        await getBanks()
+      } catch (e) {
+        caught = e as TucopRampError
+      }
+      expect(caught).toBeInstanceOf(TucopRampError)
+      expect(caught?.httpStatus).toBe(503)
+      expect(caught?.code).toBe('proxy_disabled')
+    }, 15_000)
   })
 
-  it('propagates TucopRampError when the proxy is disabled (503)', async () => {
-    // fetchWithTimeout retries 5xx up to MAX_ATTEMPTS with real backoff, so we
-    // need real timers and a mockResponse (not mockResponseOnce) that answers
-    // every attempt of the retry loop.
-    jest.useRealTimers()
-    mockFetch.mockResponse(JSON.stringify({ code: 'proxy_disabled', status: 503 }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' },
+  describe('getReceivingAccount', () => {
+    it('returns the Bre-B alias when 200', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ kind: 'bre_b_key', bre_b_key: '@tucopfinance', display_name: 'TuCop' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await getReceivingAccount()
+      expect(res.bre_b_key).toBe('@tucopfinance')
+      expect(res.kind).toBe('bre_b_key')
     })
 
-    let caught: TucopRampError | undefined
-    try {
-      await getBanks()
-    } catch (e) {
-      caught = e as TucopRampError
-    }
-    expect(caught).toBeInstanceOf(TucopRampError)
-    expect(caught?.httpStatus).toBe(503)
-    expect(caught?.code).toBe('proxy_disabled')
-  }, 15_000)
+    it('does not attach wallet headers (public endpoint)', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ kind: 'bre_b_key', bre_b_key: '@x', display_name: 'x' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      await getReceivingAccount()
+      const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
+      expect(headers.get('X-Wallet-Signature')).toBeNull()
+    })
+  })
+
+  describe('getMe', () => {
+    it('signs GET /v1/p2p/users/me and returns the profile on 200', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ user_id: 'u1', full_name: 'Test', cedula_last_4: '1234' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await getMe(makeAuth('0xdead'))
+      expect(res.user_id).toBe('u1')
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/users/me`,
+        expect.objectContaining({ method: 'GET' })
+      )
+      const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
+      expect(headers.get('X-Wallet-Address')).toBe(TEST_WALLET)
+      expect(headers.get('X-Wallet-Signature')).toBe('0xdead')
+    })
+
+    it('surfaces 404 wallet_not_linked as TucopRampError', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          code: 'wallet_not_linked',
+          status: 404,
+          detail: 'not linked yet',
+        }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      )
+      let caught: TucopRampError | undefined
+      try {
+        await getMe(makeAuth())
+      } catch (e) {
+        caught = e as TucopRampError
+      }
+      expect(caught?.code).toBe('wallet_not_linked')
+      expect(caught?.httpStatus).toBe(404)
+    })
+  })
+
+  describe('getOfframpQuote', () => {
+    it('posts the v1.1 body shape and returns the quote', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          quote_id: 'q1',
+          gross_amount_cop: 200_000,
+          gross_amount_copm: 200_000,
+          fee_percent: 0.5,
+          fee_amount_cop: 1000,
+          fee_absorbed_by: 'user',
+          net_amount_to_user_cop: 199_000,
+          display_text: 'ok',
+          remaining_daily_cop: 800_000,
+          remaining_monthly_cop: 2_800_000,
+          expires_at: '2026-09-01T22:00:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await getOfframpQuote(makeAuth(), {
+        gross_amount_cop: 200_000,
+        payout_method: 'bank_account',
+        bank_code: 'bancolombia',
+        bank_account_type: 'savings',
+        cedula: '1234567890',
+      })
+      expect(res.quote_id).toBe('q1')
+
+      const [url, init] = mockFetch.mock.calls[0]
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/offramp/quote`)
+      expect((init as RequestInit).method).toBe('POST')
+      expect((init as RequestInit).body).toContain('"gross_amount_cop":200000')
+      expect((init as RequestInit).body).toContain('"payout_method":"bank_account"')
+    })
+
+    it('rejects with amount_limit_exceeded (409)', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ code: 'amount_limit_exceeded', status: 409, detail: 'over cap' }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      )
+      let caught: TucopRampError | undefined
+      try {
+        await getOfframpQuote(makeAuth(), {
+          gross_amount_cop: 999_999_999,
+          payout_method: 'bank_account',
+          cedula: '1234567890',
+        })
+      } catch (e) {
+        caught = e as TucopRampError
+      }
+      expect(caught?.code).toBe('amount_limit_exceeded')
+    })
+  })
+
+  describe('createOfframpOrder', () => {
+    it('sends Idempotency-Key and returns multisig on 200', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          order_id: 'ord1',
+          status: 'AWAITING_DEPOSIT',
+          multisig_address: '0x6399618ab4eA489Ae434F4718b7E572757D95702',
+          chain_id: 42220,
+          gross_amount_copm: 200_000,
+          expires_at: '2026-09-01T23:00:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await createOfframpOrder(
+        makeAuth(),
+        {
+          gross_amount_cop: 200_000,
+          cedula: '1234567890',
+          full_name: 'Tester',
+          email: 'tester@example.com',
+          payout_method: 'bank_account',
+          bank_code: 'bancolombia',
+          bank_account_type: 'savings',
+          bank_account_number: '111',
+          consent_accepted: true,
+          quote_id: 'q1',
+        },
+        'idem-abc'
+      )
+      expect(res.order_id).toBe('ord1')
+      expect(res.status).toBe('AWAITING_DEPOSIT')
+
+      const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
+      expect(headers.get('Idempotency-Key')).toBe('idem-abc')
+    })
+
+    it('surfaces idempotency_conflict (409) on same key with different body', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ code: 'idempotency_conflict', status: 409 }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await expect(
+        createOfframpOrder(
+          makeAuth(),
+          {
+            gross_amount_cop: 100_000,
+            cedula: '1234567890',
+            full_name: 'x',
+            email: 'x@x.x',
+            payout_method: 'bank_account',
+            consent_accepted: true,
+          },
+          'reused-key'
+        )
+      ).rejects.toMatchObject({ code: 'idempotency_conflict', httpStatus: 409 })
+    })
+  })
+
+  describe('getOnrampQuote', () => {
+    it('posts {gross_amount_cop, cedula} and returns quote', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          quote_id: 'q2',
+          gross_amount_cop: 100_000,
+          gross_amount_copm: 100_000,
+          fee_percent: 0,
+          fee_amount_cop: 0,
+          fee_absorbed_by: 'tucop',
+          net_amount_to_user_cop: 100_000,
+          display_text: 'ok',
+          remaining_daily_cop: 900_000,
+          remaining_monthly_cop: 2_900_000,
+          expires_at: '2026-09-01T22:30:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await getOnrampQuote(makeAuth(), {
+        gross_amount_cop: 100_000,
+        cedula: '1234567890',
+      })
+      expect(res.quote_id).toBe('q2')
+      const body = (mockFetch.mock.calls[0][1] as RequestInit).body as string
+      expect(body).toBe('{"gross_amount_cop":100000,"cedula":"1234567890"}')
+    })
+  })
+
+  describe('createOnrampOrder', () => {
+    it('rejects when consent is missing', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ code: 'consent_required', status: 400, detail: 'consent missing' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+      await expect(
+        createOnrampOrder(
+          makeAuth(),
+          {
+            gross_amount_cop: 100_000,
+            cedula: '1234567890',
+            full_name: 'x',
+            email: 'x@x.x',
+            // @ts-expect-error -- deliberately invalid to exercise the server error path
+            consent_accepted: false,
+          },
+          'idem-xyz'
+        )
+      ).rejects.toMatchObject({ code: 'consent_required', httpStatus: 400 })
+    })
+  })
+
+  describe('listOrders', () => {
+    it('passes cursor + limit as query string, signs base path only', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ orders: [], next_cursor: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await listOrders(makeAuth(), { cursor: 'abc', limit: 5 })
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders?cursor=abc&limit=5`)
+    })
+
+    it('sends no query string when no params provided', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ orders: [], next_cursor: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await listOrders(makeAuth())
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders`)
+    })
+  })
+
+  describe('getOrder', () => {
+    it('encodes the orderId into the path', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          id: 'ord-1',
+          order_type: 'offramp',
+          status: 'AWAITING_DEPOSIT',
+          gross_amount_cop: 100_000,
+          gross_amount_copm: 100_000,
+          created_at: '2026-09-01T00:00:00Z',
+          expires_at: '2026-09-01T01:00:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      await getOrder(makeAuth(), 'ord-1')
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1`)
+    })
+
+    it('surfaces order_not_found (404)', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ code: 'order_not_found', status: 404 }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await expect(getOrder(makeAuth(), 'missing')).rejects.toMatchObject({
+        code: 'order_not_found',
+        httpStatus: 404,
+      })
+    })
+  })
+
+  describe('cancelOrder', () => {
+    it('POSTs to /orders/{id}/cancel with Idempotency-Key', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ id: 'ord-1', status: 'CANCELLED', cancelled_at: '2026-09-01T00:05:00Z' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await cancelOrder(makeAuth(), 'ord-1', 'idem-cancel-1')
+      expect(res.status).toBe('CANCELLED')
+
+      const [url, init] = mockFetch.mock.calls[0]
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/cancel`)
+      expect((init as RequestInit).method).toBe('POST')
+      const headers = new Headers((init as RequestInit)?.headers)
+      expect(headers.get('Idempotency-Key')).toBe('idem-cancel-1')
+    })
+
+    it('surfaces order_not_cancelable (409) after deposit landed', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ code: 'order_not_cancelable', status: 409 }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await expect(cancelOrder(makeAuth(), 'ord-1', 'idem-x')).rejects.toMatchObject({
+        code: 'order_not_cancelable',
+        httpStatus: 409,
+      })
+    })
+  })
+
+  describe('getProofUrl', () => {
+    it('adds kind as a query param and returns the signed URL', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ url: 'https://x/proof.pdf', expires_at: '2026-09-01T23:00:00Z' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await getProofUrl(makeAuth(), 'ord-1', 'operator_outgoing')
+      expect(res.url).toBe('https://x/proof.pdf')
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toBe(
+        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/proof-url?kind=operator_outgoing`
+      )
+    })
+  })
+
+  describe('uploadProof', () => {
+    it('sends multipart with wallet headers but no Content-Type override', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ proof_id: 'p1', status: 'AWAITING_REVIEW' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const res = await uploadProof(makeAuth('0xsig'), 'ord-1', {
+        uri: 'file:///proof.png',
+        name: 'proof.png',
+        type: 'image/png',
+      })
+      expect(res.proof_id).toBe('p1')
+
+      const [url, init] = mockFetch.mock.calls[0]
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/proof`)
+      const headers = new Headers((init as RequestInit)?.headers)
+      expect(headers.get('X-Wallet-Address')).toBe(TEST_WALLET)
+      expect(headers.get('X-Wallet-Signature')).toBe('0xsig')
+      // We deliberately did NOT set Content-Type; runtime injects multipart/form-data
+      // with the boundary. The header should not appear on our explicit headers map.
+      expect(headers.get('Content-Type')).toBeNull()
+    })
+
+    it('surfaces proof_too_large (400)', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify({ code: 'proof_too_large', status: 400 }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await expect(
+        uploadProof(makeAuth(), 'ord-1', {
+          uri: 'file:///big.pdf',
+          name: 'big.pdf',
+          type: 'application/pdf',
+        })
+      ).rejects.toMatchObject({ code: 'proof_too_large', httpStatus: 400 })
+    })
+  })
 })

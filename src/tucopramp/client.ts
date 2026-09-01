@@ -59,6 +59,11 @@ export async function signTucopRampRequest(
 export interface TucopRampFetchArgs {
   method: HttpMethod
   upstreamPath: string
+  // Query string WITHOUT leading `?`. Sent to the server but NOT covered by
+  // the signature: per guide V1.1 §Auth the canonical string covers the path
+  // only, no query string. Callers use this for list pagination + proof-url
+  // ?kind=... on GET endpoints.
+  queryString?: string
   body?: unknown
   walletAddress?: Address
   keychainAccounts?: KeychainAccounts
@@ -85,7 +90,7 @@ export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
     args.fetchImpl ?? ((url, init) => fetchWithTimeout(url, init ?? null, REQUEST_TIMEOUT_MS))
-  const url = `${baseUrl}${args.upstreamPath}`
+  const url = `${baseUrl}${args.upstreamPath}${args.queryString ? `?${args.queryString}` : ''}`
 
   const bodyStr = args.body === undefined ? undefined : JSON.stringify(args.body)
   const headers: Record<string, string> = {}
