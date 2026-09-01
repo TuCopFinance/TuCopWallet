@@ -3858,6 +3858,30 @@ export const v254Schema = {
     ...v253Schema.swap,
     feeMetadataByTxHash: {},
   },
+  // tucopramp slice added without a persist version bump per repo policy
+  // (no_persist_version_bump_pre_release): additive slices with an
+  // initialState fall through autoMergeLevel2 without a migration; bump
+  // comes at the release commit, not now.
+  tucopramp: {
+    banks: null,
+    receivingAccount: null,
+    userProfile: null,
+    offramp: {
+      status: 'idle',
+      lastQuote: null,
+      currentOrder: null,
+      idempotencyKey: null,
+      errorCode: null,
+    },
+    onramp: {
+      status: 'idle',
+      lastQuote: null,
+      currentOrder: null,
+      idempotencyKey: null,
+      proofUploaded: false,
+      errorCode: null,
+    },
+  },
 }
 
 export function getLatestSchema(): Partial<RootState> {

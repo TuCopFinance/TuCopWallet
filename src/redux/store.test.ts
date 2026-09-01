@@ -429,6 +429,26 @@ describe('store state', () => {
           "standbyTransactions": [],
           "transactionsByNetworkId": {},
         },
+        "tucopramp": {
+          "banks": null,
+          "offramp": {
+            "currentOrder": null,
+            "errorCode": null,
+            "idempotencyKey": null,
+            "lastQuote": null,
+            "status": "idle",
+          },
+          "onramp": {
+            "currentOrder": null,
+            "errorCode": null,
+            "idempotencyKey": null,
+            "lastQuote": null,
+            "proofUploaded": false,
+            "status": "idle",
+          },
+          "receivingAccount": null,
+          "userProfile": null,
+        },
         "walletConnect": {
           "pendingActions": [],
           "pendingSessions": [],
