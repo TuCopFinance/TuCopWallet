@@ -209,6 +209,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 <Text style={styles.label}>{t('tucopramp.bankLabel')}</Text>
                 {bankOptions.length > 0 ? (
                   <Dropdown<string>
+                    // `key` forces a remount when bankCode changes so the
+                    // Dropdown's internal `labelSelected` state re-initializes
+                    // from `defaultLabel`. Without it, the label captured on
+                    // the first render (before fetchBanks resolves) sticks
+                    // even after the useEffect sets bankCode to banks[0].code.
+                    key={`bank-${bankCode || 'unset'}`}
                     options={bankOptions}
                     onValueSelected={(value) => {
                       setBankCode(value)
@@ -227,6 +233,11 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
                 <Text style={styles.label}>{t('tucopramp.accountTypeLabel')}</Text>
                 <Dropdown<BankAccountType>
+                  // Remount when bankCode changes (so the supported types
+                  // list reflects the newly-picked bank) OR when the
+                  // programmatic fallback in the bank onValueSelected
+                  // changes bankAccountType (so the label stays in sync).
+                  key={`atype-${bankCode}-${bankAccountType}`}
                   options={accountTypeOptions}
                   onValueSelected={setBankAccountType}
                   defaultLabel={t(`tucopramp.accountType_${bankAccountType}`)}
