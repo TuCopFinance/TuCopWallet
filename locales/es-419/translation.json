@@ -3448,6 +3448,7 @@
     "bankPickerTitle": "Elige tu banco",
     "bankListLoading": "Cargando lista de bancos...",
     "accountTypeLabel": "Tipo de cuenta",
+    "accountTypePickerTitle": "Elige el tipo de cuenta",
     "accountType_savings": "Cuenta de ahorros",
     "accountType_checking": "Cuenta corriente",
     "accountNumberLabel": "Número de cuenta",

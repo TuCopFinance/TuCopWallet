@@ -2970,6 +2970,7 @@
     "bankPickerTitle": "Choose your bank",
     "bankListLoading": "Loading bank list...",
     "accountTypeLabel": "Account type",
+    "accountTypePickerTitle": "Choose the account type",
     "accountType_savings": "Savings account",
     "accountType_checking": "Checking account",
     "accountNumberLabel": "Account number",

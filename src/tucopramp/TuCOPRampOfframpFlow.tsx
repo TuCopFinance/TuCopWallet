@@ -14,7 +14,6 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
-import Dropdown from 'src/components/Dropdown'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -65,7 +64,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const [cedula, setCedula] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [fullName, setFullName] = useState<string>('')
-  const [bankPickerOpen, setBankPickerOpen] = useState(false)
+  const [openPicker, setOpenPicker] = useState<null | 'bank' | 'accountType'>(null)
 
   useEffect(() => {
     dispatch(fetchBanks())
@@ -222,7 +221,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 {bankOptions.length > 0 ? (
                   <TouchableOpacity
                     style={styles.pickerTouchable}
-                    onPress={() => setBankPickerOpen(true)}
+                    onPress={() => setOpenPicker('bank')}
                     testID="tucopramp-offramp-bank"
                     accessibilityRole="button"
                   >
@@ -236,17 +235,17 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 )}
 
                 <Text style={styles.label}>{t('tucopramp.accountTypeLabel')}</Text>
-                <Dropdown<BankAccountType>
-                  // Remount when bankCode changes (so the supported types
-                  // list reflects the newly-picked bank) OR when the
-                  // programmatic fallback in the bank onValueSelected
-                  // changes bankAccountType (so the label stays in sync).
-                  key={`atype-${bankCode}-${bankAccountType}`}
-                  options={accountTypeOptions}
-                  onValueSelected={setBankAccountType}
-                  defaultLabel={t(`tucopramp.accountType_${bankAccountType}`)}
-                  testId="tucopramp-offramp-account-type"
-                />
+                <TouchableOpacity
+                  style={styles.pickerTouchable}
+                  onPress={() => setOpenPicker('accountType')}
+                  testID="tucopramp-offramp-account-type"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.pickerValue}>
+                    {t(`tucopramp.accountType_${bankAccountType}`)}
+                  </Text>
+                  <DownArrowIcon color={Colors.accent} strokeWidth={2} />
+                </TouchableOpacity>
 
                 <Text style={styles.label}>{t('tucopramp.accountNumberLabel')}</Text>
                 <TextInput
@@ -427,46 +426,89 @@ function TuCOPRampOfframpFlow(_props: Props) {
         )}
       </ScrollView>
 
-      <Modal
-        visible={bankPickerOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setBankPickerOpen(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setBankPickerOpen(false)}>
-          <View style={styles.pickerBackdrop} />
-        </TouchableWithoutFeedback>
-        <View style={styles.pickerSheet}>
-          <View style={styles.pickerHandle} />
-          <Text style={styles.pickerTitle}>{t('tucopramp.bankPickerTitle')}</Text>
-          <ScrollView style={styles.pickerList}>
-            {bankOptions.map((opt) => {
-              const isSelected = opt.value === bankCode
-              return (
-                <TouchableOpacity
-                  key={opt.value}
-                  style={styles.pickerRow}
-                  onPress={() => {
-                    setBankCode(opt.value)
-                    const bank = banks?.find((b) => b.code === opt.value)
-                    const supported = bank?.supported_account_types ?? []
-                    if (!supported.includes(bankAccountType) && supported.length > 0) {
-                      setBankAccountType(supported[0] as BankAccountType)
-                    }
-                    setBankPickerOpen(false)
-                  }}
-                  testID={`tucopramp-offramp-bank-option-${opt.value}`}
-                >
-                  <Text style={[styles.pickerRowText, isSelected && styles.pickerRowTextSelected]}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              )
-            })}
-          </ScrollView>
-        </View>
-      </Modal>
+      <PickerModal
+        visible={openPicker === 'bank'}
+        title={t('tucopramp.bankPickerTitle')}
+        options={bankOptions}
+        selectedValue={bankCode}
+        testIdPrefix="tucopramp-offramp-bank-option"
+        onClose={() => setOpenPicker(null)}
+        onSelect={(value) => {
+          setBankCode(value)
+          const bank = banks?.find((b) => b.code === value)
+          const supported = bank?.supported_account_types ?? []
+          if (!supported.includes(bankAccountType) && supported.length > 0) {
+            setBankAccountType(supported[0] as BankAccountType)
+          }
+        }}
+      />
+
+      <PickerModal<BankAccountType>
+        visible={openPicker === 'accountType'}
+        title={t('tucopramp.accountTypePickerTitle')}
+        options={accountTypeOptions}
+        selectedValue={bankAccountType}
+        testIdPrefix="tucopramp-offramp-account-type-option"
+        onClose={() => setOpenPicker(null)}
+        onSelect={setBankAccountType}
+      />
     </SafeAreaView>
+  )
+}
+
+interface PickerModalProps<T> {
+  visible: boolean
+  title: string
+  options: { value: T; label: string }[]
+  selectedValue: T | undefined
+  testIdPrefix: string
+  onClose(): void
+  onSelect(value: T): void
+}
+
+// Bottom-sheet-styled picker rendered as a native Modal so it escapes the
+// parent ScrollView's z-index layer entirely. Works around the known RN iOS
+// gotcha where the shared src/components/Dropdown (position: absolute +
+// zIndex) is overlapped by sibling form fields inside a ScrollView.
+function PickerModal<T extends string>({
+  visible,
+  title,
+  options,
+  selectedValue,
+  testIdPrefix,
+  onClose,
+  onSelect,
+}: PickerModalProps<T>) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.pickerBackdrop} />
+      </TouchableWithoutFeedback>
+      <View style={styles.pickerSheet}>
+        <View style={styles.pickerHandle} />
+        <Text style={styles.pickerTitle}>{title}</Text>
+        <ScrollView style={styles.pickerList}>
+          {options.map((opt) => {
+            const isSelected = opt.value === selectedValue
+            return (
+              <TouchableOpacity
+                key={String(opt.value)}
+                style={styles.pickerRow}
+                onPress={() => {
+                  onSelect(opt.value)
+                  onClose()
+                }}
+                testID={`${testIdPrefix}-${opt.value}`}
+              >
+                <Text style={[styles.pickerRowText, isSelected && styles.pickerRowTextSelected]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
+      </View>
+    </Modal>
   )
 }
 
