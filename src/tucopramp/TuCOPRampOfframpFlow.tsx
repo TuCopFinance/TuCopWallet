@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Dropdown from 'src/components/Dropdown'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -23,9 +24,9 @@ import {
   offrampErrorCodeSelector,
   offrampLastQuoteSelector,
   offrampStatusSelector,
-  userProfileSelector,
 } from 'src/tucopramp/selectors'
 import { offrampReset } from 'src/tucopramp/slice'
+import { BankAccountType, PayoutMethod } from 'src/tucopramp/types'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -33,23 +34,23 @@ import { Spacing } from 'src/styles/styles'
 type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampOfframpFlow>
 
 // Single screen master that drives the full off-ramp flow via conditional
-// rendering on the redux flow status. Keeps navigation shallow (no nested
-// stack of tiny screens) and lets us commit incrementally without breaking
-// the flow at the navigator layer.
+// rendering on the redux flow status. Keeps navigation shallow.
 function TuCOPRampOfframpFlow(_props: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
   const status = useSelector(offrampStatusSelector)
   const banks = useSelector(banksSelector)
-  const profile = useSelector(userProfileSelector)
   const quote = useSelector(offrampLastQuoteSelector)
   const order = useSelector(offrampCurrentOrderSelector)
   const errorCode = useSelector(offrampErrorCodeSelector)
 
-  // Form-local state (survives status transitions until user resets).
   const [amount, setAmount] = useState('')
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('bank_account')
   const [bankCode, setBankCode] = useState<string>('')
+  const [bankAccountType, setBankAccountType] = useState<BankAccountType>('savings')
+  const [bankAccountNumber, setBankAccountNumber] = useState<string>('')
+  const [breBKey, setBreBKey] = useState<string>('')
   const [cedula, setCedula] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [fullName, setFullName] = useState<string>('')
@@ -64,19 +65,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
   }, [])
 
   useEffect(() => {
-    if (profile?.cedula_last_4 && !cedula) {
-      // Prefill only the "last 4" surface; user completes the full number.
-    }
-  }, [profile, cedula])
-
-  useEffect(() => {
     if (banks && banks.length > 0 && !bankCode) {
       setBankCode(banks[0].code)
     }
   }, [banks, bankCode])
 
   useEffect(() => {
-    // Kick off polling once the order lands.
     if (status === 'awaiting-deposit' && order?.order_id) {
       dispatch(pollOfframpOrder({ orderId: order.order_id }))
     }
@@ -84,16 +78,30 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
   const amountNum = useMemo(() => Number(amount) || 0, [amount])
   const amountValid = amountNum >= TUCOPRAMP_MIN_ORDER_COP && amountNum <= TUCOPRAMP_MAX_ORDER_COP
-  const formValid = amountValid && bankCode.length > 0 && cedula.length >= 6 && email.includes('@')
+
+  const selectedBank = useMemo(() => banks?.find((b) => b.code === bankCode), [banks, bankCode])
+
+  const payoutFieldsValid = useMemo(() => {
+    if (payoutMethod === 'bre_b_key') {
+      return breBKey.trim().length >= 3 && breBKey.trim().length <= 100
+    }
+    return (
+      bankCode.length > 0 &&
+      bankAccountNumber.trim().length >= 4 &&
+      (selectedBank?.supported_account_types ?? []).includes(bankAccountType)
+    )
+  }, [payoutMethod, breBKey, bankCode, bankAccountNumber, bankAccountType, selectedBank])
+
+  const formValid = amountValid && cedula.length >= 6 && email.includes('@') && payoutFieldsValid
 
   const onRequestQuote = () => {
     if (!formValid) return
     dispatch(
       requestOfframpQuote({
         gross_amount_cop: amountNum,
-        payout_method: 'bank_account',
-        bank_code: bankCode,
-        bank_account_type: 'savings',
+        payout_method: payoutMethod,
+        bank_code: payoutMethod === 'bank_account' ? bankCode : undefined,
+        bank_account_type: payoutMethod === 'bank_account' ? bankAccountType : undefined,
         cedula,
       })
     )
@@ -108,10 +116,14 @@ function TuCOPRampOfframpFlow(_props: Props) {
           cedula,
           full_name: fullName || 'TuCop user',
           email,
-          payout_method: 'bank_account',
-          bank_code: bankCode,
-          bank_account_type: 'savings',
-          bank_account_number: '',
+          payout_method: payoutMethod,
+          ...(payoutMethod === 'bank_account'
+            ? {
+                bank_code: bankCode,
+                bank_account_type: bankAccountType,
+                bank_account_number: bankAccountNumber.trim(),
+              }
+            : { bre_b_key: breBKey.trim() }),
           consent_accepted: true,
           quote_id: quote.quote_id,
         },
@@ -133,6 +145,19 @@ function TuCOPRampOfframpFlow(_props: Props) {
     dispatch(offrampReset())
     navigateBack()
   }
+
+  const bankOptions = useMemo(
+    () => (banks ?? []).map((b) => ({ value: b.code, label: b.display_name })),
+    [banks]
+  )
+
+  const accountTypeOptions = useMemo(() => {
+    const supported = selectedBank?.supported_account_types ?? ['savings', 'checking']
+    return supported.map((v) => ({
+      value: v as BankAccountType,
+      label: t(`tucopramp.accountType_${v}`),
+    }))
+  }, [selectedBank, t])
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -160,14 +185,82 @@ function TuCOPRampOfframpFlow(_props: Props) {
               </Text>
             )}
 
-            <Text style={styles.label}>{t('tucopramp.bankLabel')}</Text>
-            <TextInput
-              style={styles.input}
-              value={bankCode}
-              onChangeText={setBankCode}
-              editable={status === 'idle'}
-              testID="tucopramp-offramp-bank"
-            />
+            <Text style={styles.label}>{t('tucopramp.payoutMethodLabel')}</Text>
+            <View style={styles.segmentRow}>
+              <Button
+                text={t('tucopramp.payoutMethod_bank_account')}
+                onPress={() => setPayoutMethod('bank_account')}
+                type={payoutMethod === 'bank_account' ? BtnTypes.PRIMARY : BtnTypes.SECONDARY}
+                size={BtnSizes.SMALL}
+                testID="tucopramp-offramp-payout-bank"
+              />
+              <View style={styles.segmentSpacer} />
+              <Button
+                text={t('tucopramp.payoutMethod_bre_b_key')}
+                onPress={() => setPayoutMethod('bre_b_key')}
+                type={payoutMethod === 'bre_b_key' ? BtnTypes.PRIMARY : BtnTypes.SECONDARY}
+                size={BtnSizes.SMALL}
+                testID="tucopramp-offramp-payout-breb"
+              />
+            </View>
+
+            {payoutMethod === 'bank_account' && (
+              <View>
+                <Text style={styles.label}>{t('tucopramp.bankLabel')}</Text>
+                {bankOptions.length > 0 ? (
+                  <Dropdown<string>
+                    options={bankOptions}
+                    onValueSelected={(value) => {
+                      setBankCode(value)
+                      const bank = banks?.find((b) => b.code === value)
+                      const supported = bank?.supported_account_types ?? []
+                      if (!supported.includes(bankAccountType) && supported.length > 0) {
+                        setBankAccountType(supported[0] as BankAccountType)
+                      }
+                    }}
+                    defaultLabel={selectedBank?.display_name ?? t('tucopramp.bankPickerDefault')}
+                    testId="tucopramp-offramp-bank"
+                  />
+                ) : (
+                  <Text style={styles.helper}>{t('tucopramp.bankListLoading')}</Text>
+                )}
+
+                <Text style={styles.label}>{t('tucopramp.accountTypeLabel')}</Text>
+                <Dropdown<BankAccountType>
+                  options={accountTypeOptions}
+                  onValueSelected={setBankAccountType}
+                  defaultLabel={t(`tucopramp.accountType_${bankAccountType}`)}
+                  testId="tucopramp-offramp-account-type"
+                />
+
+                <Text style={styles.label}>{t('tucopramp.accountNumberLabel')}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('tucopramp.accountNumberPlaceholder') ?? ''}
+                  keyboardType="numeric"
+                  value={bankAccountNumber}
+                  onChangeText={setBankAccountNumber}
+                  editable={status === 'idle'}
+                  testID="tucopramp-offramp-account-number"
+                />
+              </View>
+            )}
+
+            {payoutMethod === 'bre_b_key' && (
+              <View>
+                <Text style={styles.label}>{t('tucopramp.breBKeyLabel')}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('tucopramp.breBKeyPlaceholder') ?? ''}
+                  autoCapitalize="none"
+                  value={breBKey}
+                  onChangeText={setBreBKey}
+                  editable={status === 'idle'}
+                  testID="tucopramp-offramp-brebkey"
+                />
+                <Text style={styles.helper}>{t('tucopramp.breBKeyHelp')}</Text>
+              </View>
+            )}
 
             <Text style={styles.label}>{t('tucopramp.fullNameLabel')}</Text>
             <TextInput
@@ -219,9 +312,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
                   {quote.net_amount_to_user_cop.toLocaleString('es-CO')} COP
                 </Text>
                 <Text style={styles.quoteFee}>
-                  {t('tucopramp.quoteFee', {
-                    fee: quote.fee_amount_cop.toLocaleString('es-CO'),
-                  })}
+                  {t('tucopramp.quoteFee', { fee: quote.fee_amount_cop.toLocaleString('es-CO') })}
                 </Text>
                 <Button
                   text={t('tucopramp.confirmSendCta')}
@@ -346,6 +437,13 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray4,
     marginTop: Spacing.Smallest8,
+  },
+  segmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  segmentSpacer: {
+    width: Spacing.Small12,
   },
   spinner: { marginVertical: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
