@@ -1,10 +1,21 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Dropdown from 'src/components/Dropdown'
+import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -54,6 +65,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const [cedula, setCedula] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [fullName, setFullName] = useState<string>('')
+  const [bankPickerOpen, setBankPickerOpen] = useState(false)
 
   useEffect(() => {
     dispatch(fetchBanks())
@@ -208,25 +220,17 @@ function TuCOPRampOfframpFlow(_props: Props) {
               <View>
                 <Text style={styles.label}>{t('tucopramp.bankLabel')}</Text>
                 {bankOptions.length > 0 ? (
-                  <Dropdown<string>
-                    // `key` forces a remount when bankCode changes so the
-                    // Dropdown's internal `labelSelected` state re-initializes
-                    // from `defaultLabel`. Without it, the label captured on
-                    // the first render (before fetchBanks resolves) sticks
-                    // even after the useEffect sets bankCode to banks[0].code.
-                    key={`bank-${bankCode || 'unset'}`}
-                    options={bankOptions}
-                    onValueSelected={(value) => {
-                      setBankCode(value)
-                      const bank = banks?.find((b) => b.code === value)
-                      const supported = bank?.supported_account_types ?? []
-                      if (!supported.includes(bankAccountType) && supported.length > 0) {
-                        setBankAccountType(supported[0] as BankAccountType)
-                      }
-                    }}
-                    defaultLabel={selectedBank?.display_name ?? t('tucopramp.bankPickerDefault')}
-                    testId="tucopramp-offramp-bank"
-                  />
+                  <TouchableOpacity
+                    style={styles.pickerTouchable}
+                    onPress={() => setBankPickerOpen(true)}
+                    testID="tucopramp-offramp-bank"
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.pickerValue}>
+                      {selectedBank?.display_name ?? t('tucopramp.bankPickerDefault')}
+                    </Text>
+                    <DownArrowIcon color={Colors.accent} strokeWidth={2} />
+                  </TouchableOpacity>
                 ) : (
                   <Text style={styles.helper}>{t('tucopramp.bankListLoading')}</Text>
                 )}
@@ -422,6 +426,46 @@ function TuCOPRampOfframpFlow(_props: Props) {
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        visible={bankPickerOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setBankPickerOpen(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setBankPickerOpen(false)}>
+          <View style={styles.pickerBackdrop} />
+        </TouchableWithoutFeedback>
+        <View style={styles.pickerSheet}>
+          <View style={styles.pickerHandle} />
+          <Text style={styles.pickerTitle}>{t('tucopramp.bankPickerTitle')}</Text>
+          <ScrollView style={styles.pickerList}>
+            {bankOptions.map((opt) => {
+              const isSelected = opt.value === bankCode
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={styles.pickerRow}
+                  onPress={() => {
+                    setBankCode(opt.value)
+                    const bank = banks?.find((b) => b.code === opt.value)
+                    const supported = bank?.supported_account_types ?? []
+                    if (!supported.includes(bankAccountType) && supported.length > 0) {
+                      setBankAccountType(supported[0] as BankAccountType)
+                    }
+                    setBankPickerOpen(false)
+                  }}
+                  testID={`tucopramp-offramp-bank-option-${opt.value}`}
+                >
+                  <Text style={[styles.pickerRowText, isSelected && styles.pickerRowTextSelected]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
+          </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
@@ -496,6 +540,66 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray4,
     marginBottom: Spacing.Regular16,
+  },
+  pickerTouchable: {
+    padding: Spacing.Small12,
+    borderColor: Colors.gray2,
+    borderRadius: 4,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pickerValue: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    flexShrink: 1,
+  },
+  pickerBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  pickerSheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: '75%',
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingTop: Spacing.Small12,
+    paddingBottom: Spacing.Thick24,
+    paddingHorizontal: Spacing.Regular16,
+  },
+  pickerHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.gray2,
+    marginBottom: Spacing.Regular16,
+  },
+  pickerTitle: {
+    ...typeScale.titleSmall,
+    color: Colors.black,
+    marginBottom: Spacing.Regular16,
+  },
+  pickerList: {
+    flexGrow: 0,
+  },
+  pickerRow: {
+    paddingVertical: Spacing.Small12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray1,
+  },
+  pickerRowText: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+  },
+  pickerRowTextSelected: {
+    color: Colors.accent,
+    fontWeight: '600',
   },
 })
 

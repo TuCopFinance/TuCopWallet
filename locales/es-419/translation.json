@@ -3445,6 +3445,7 @@
     "amountRange": "Monto entre {{min}} y {{max}} pesos",
     "bankLabel": "Banco",
     "bankPickerDefault": "Selecciona un banco",
+    "bankPickerTitle": "Elige tu banco",
     "bankListLoading": "Cargando lista de bancos...",
     "accountTypeLabel": "Tipo de cuenta",
     "accountType_savings": "Cuenta de ahorros",

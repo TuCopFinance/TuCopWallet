@@ -2967,6 +2967,7 @@
     "amountRange": "Amount between {{min}} and {{max}} pesos",
     "bankLabel": "Bank",
     "bankPickerDefault": "Select a bank",
+    "bankPickerTitle": "Choose your bank",
     "bankListLoading": "Loading bank list...",
     "accountTypeLabel": "Account type",
     "accountType_savings": "Savings account",
