@@ -72,6 +72,15 @@ interface LimitsState {
   fetchedAt: number | null
 }
 
+// Settings-side cedula self-correction flow (PATCH /users/cedula). Never
+// persisted across restarts — always begins in 'idle' on cold boot.
+export type CedulaUpdateStatus = 'idle' | 'updating' | 'success' | 'error'
+
+interface CedulaUpdateState {
+  status: CedulaUpdateStatus
+  errorCode: string | null
+}
+
 export interface State {
   // Cached reference data (safe to keep across sessions once persisted).
   banks: Bank[] | null
@@ -81,6 +90,7 @@ export interface State {
 
   offramp: OfframpFlow
   onramp: OnrampFlow
+  cedulaUpdate: CedulaUpdateState
 }
 
 const initialOfframp: OfframpFlow = {
@@ -105,6 +115,11 @@ const initialLimits: LimitsState = {
   fetchedAt: null,
 }
 
+const initialCedulaUpdate: CedulaUpdateState = {
+  status: 'idle',
+  errorCode: null,
+}
+
 const initialState: State = {
   banks: null,
   receivingAccount: null,
@@ -112,6 +127,7 @@ const initialState: State = {
   limits: initialLimits,
   offramp: initialOfframp,
   onramp: initialOnramp,
+  cedulaUpdate: initialCedulaUpdate,
 }
 
 export const slice = createSlice({
@@ -210,6 +226,23 @@ export const slice = createSlice({
       state.onramp.status = 'error'
       state.onramp.errorCode = action.payload.code
     },
+
+    // Cedula update transitions
+    cedulaUpdateReset: (state) => {
+      state.cedulaUpdate = { ...initialCedulaUpdate }
+    },
+    cedulaUpdating: (state) => {
+      state.cedulaUpdate.status = 'updating'
+      state.cedulaUpdate.errorCode = null
+    },
+    cedulaUpdateSucceeded: (state) => {
+      state.cedulaUpdate.status = 'success'
+      state.cedulaUpdate.errorCode = null
+    },
+    cedulaUpdateFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.cedulaUpdate.status = 'error'
+      state.cedulaUpdate.errorCode = action.payload.code
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
@@ -250,6 +283,10 @@ export const {
   onrampProofUploaded,
   onrampAdvance,
   onrampError,
+  cedulaUpdateReset,
+  cedulaUpdating,
+  cedulaUpdateSucceeded,
+  cedulaUpdateFailed,
 } = slice.actions
 
 export default slice.reducer

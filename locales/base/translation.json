@@ -3412,6 +3412,26 @@
       "proof_not_found": "Receipt not found",
       "invalid_upload": "The file is invalid",
       "internal_error": "Service error, please try again"
+    },
+    "settings": {
+      "updateCedula": {
+        "title": "Change your ID",
+        "subtitle": "Update the ID number linked to your TuCOPRamp account.",
+        "currentLabel": "Current ID",
+        "activeOrderWarning": "If you have an active order, close it before changing the ID. The server will reject the change while an order is active.",
+        "newCedulaLabel": "New ID",
+        "newCedulaPlaceholder": "Digits only (6 to 10)",
+        "cedulaFormatHelper": "The ID must be 6 to 10 digits, no letters or separators.",
+        "reasonLabel": "Reason for change",
+        "reasonPlaceholder": "e.g. I typed the wrong ID on the first order",
+        "submitCta": "Update ID",
+        "tryAgainCta": "Try again",
+        "updating": "Updating...",
+        "successHeading": "ID updated",
+        "successBody": "Your next order will use the new ID.",
+        "doneCta": "Done",
+        "errorHeading": "Could not update"
+      }
     }
   }
 }

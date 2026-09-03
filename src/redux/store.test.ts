@@ -431,6 +431,10 @@ describe('store state', () => {
         },
         "tucopramp": {
           "banks": null,
+          "cedulaUpdate": {
+            "errorCode": null,
+            "status": "idle",
+          },
           "limits": {
             "fetchedAt": null,
             "value": null,

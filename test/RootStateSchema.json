@@ -7031,6 +7031,31 @@
                         }
                     ]
                 },
+                "cedulaUpdate": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "errorCode": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "status": {
+                            "enum": [
+                                "error",
+                                "idle",
+                                "success",
+                                "updating"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "errorCode",
+                        "status"
+                    ],
+                    "type": "object"
+                },
                 "limits": {
                     "$ref": "#/definitions/LimitsState"
                 },
@@ -7063,6 +7088,7 @@
             },
             "required": [
                 "banks",
+                "cedulaUpdate",
                 "limits",
                 "offramp",
                 "onramp",

@@ -14,6 +14,7 @@ import {
   getReceivingAccount,
   listOrders,
   TucopRampAuth,
+  updateCedula,
   uploadProof,
 } from 'src/tucopramp/api'
 import { TucopRampError } from 'src/tucopramp/types'
@@ -211,6 +212,53 @@ describe('tucopramp/api', () => {
     })
   })
 
+  describe('updateCedula', () => {
+    it('sends PATCH with body + wallet signature and returns the response', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ userId: 'u1', updated_at: '2026-09-03T10:00:00Z' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      const res = await updateCedula(makeAuth('0xsig'), {
+        new_cedula: '1234567',
+        reason: 'wrong id typed on first order',
+      })
+      expect(res.userId).toBe('u1')
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/users/cedula`,
+        expect.objectContaining({ method: 'PATCH' })
+      )
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init?.headers)
+      expect(headers.get('X-Wallet-Address')).toBe(TEST_WALLET)
+      expect(headers.get('X-Wallet-Signature')).toBe('0xsig')
+      // Body byte-per-byte pass-through: PATCH body serialized by client, sig
+      // is over the body hash. Verify body reached the transport intact.
+      expect(init.body).toBe(
+        JSON.stringify({ new_cedula: '1234567', reason: 'wrong id typed on first order' })
+      )
+    })
+
+    it('surfaces 409 cedula_locked_by_active_order intact', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          code: 'cedula_locked_by_active_order',
+          status: 409,
+          detail: 'active order exists',
+          request_id: 'req_lock',
+        }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      )
+      await expect(
+        updateCedula(makeAuth(), { new_cedula: '9876543', reason: 'x' })
+      ).rejects.toMatchObject({
+        code: 'cedula_locked_by_active_order',
+        httpStatus: 409,
+        request_id: 'req_lock',
+      })
+    })
+  })
+
   describe('getOfframpQuote', () => {
     it('posts the v1.1 body shape and returns the quote', async () => {
       mockFetch.mockResponseOnce(
@@ -364,7 +412,9 @@ describe('tucopramp/api', () => {
             cedula: '1234567890',
             full_name: 'x',
             email: 'x@x.x',
-            // @ts-expect-error -- deliberately invalid to exercise the server error path
+            // Deliberately invalid payload to exercise the server error path.
+            // The openapi types `consent_accepted` as a plain boolean, so no
+            // ts-expect-error is needed; the server enforces `true`.
             consent_accepted: false,
           },
           'idem-xyz'

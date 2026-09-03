@@ -2,8 +2,16 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { throwError } from 'redux-saga-test-plan/providers'
 import * as api from 'src/tucopramp/api'
-import { fetchLimitsSaga, submitOfframpOrderSaga, submitOnrampOrderSaga } from 'src/tucopramp/saga'
 import {
+  fetchLimitsSaga,
+  submitCedulaUpdateSaga,
+  submitOfframpOrderSaga,
+  submitOnrampOrderSaga,
+} from 'src/tucopramp/saga'
+import {
+  cedulaUpdateFailed,
+  cedulaUpdateSucceeded,
+  cedulaUpdating,
   limitsFetched,
   offrampCreatingOrder,
   offrampError,
@@ -355,6 +363,52 @@ describe('submitOnrampOrderSaga quote expiry guard', () => {
       .put(onrampQuoting())
       .not.call.fn(api.createOnrampOrder)
       .put.actionType(onrampError.type)
+      .run()
+  })
+})
+
+describe('submitCedulaUpdateSaga', () => {
+  ;(getKeychainAccounts as jest.Mock).mockResolvedValue(mockKeychainAccounts)
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('dispatches updating -> succeeded on 200 and re-fetches user profile', async () => {
+    const updated = { userId: 'u1', updated_at: '2026-09-03T10:00:00Z' }
+    const meResponse = { user_id: 'u1', full_name: 'X', cedula_last_4: '4567' }
+
+    await expectSaga(submitCedulaUpdateSaga, {
+      type: 'x',
+      payload: { new_cedula: '1234567', reason: 'first order had wrong id' },
+    })
+      .withState(buildState())
+      .provide([
+        [matchers.call.fn(api.updateCedula), updated],
+        [matchers.call.fn(api.getMe), meResponse],
+      ])
+      .put(cedulaUpdating())
+      .put(cedulaUpdateSucceeded())
+      .run()
+  })
+
+  it('dispatches cedulaUpdateFailed with the specific code on 409 lock', async () => {
+    const err = new (require('src/tucopramp/types').TucopRampError)({
+      httpStatus: 409,
+      code: 'cedula_locked_by_active_order',
+      message: 'locked',
+      envelope: { code: 'cedula_locked_by_active_order' },
+    })
+
+    await expectSaga(submitCedulaUpdateSaga, {
+      type: 'x',
+      payload: { new_cedula: '1234567', reason: 'x' },
+    })
+      .withState(buildState())
+      .provide([[matchers.call.fn(api.updateCedula), throwError(err)]])
+      .put(cedulaUpdating())
+      .put(cedulaUpdateFailed({ code: 'cedula_locked_by_active_order' }))
+      .not.put(cedulaUpdateSucceeded())
       .run()
   })
 })

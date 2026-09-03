@@ -117,6 +117,7 @@ export enum Screens {
   BucksPayStatus = 'BucksPayStatus',
   TuCOPRampOfframpFlow = 'TuCOPRampOfframpFlow',
   TuCOPRampOnrampFlow = 'TuCOPRampOnrampFlow',
+  TuCOPRampUpdateCedulaScreen = 'TuCOPRampUpdateCedulaScreen',
   // Digital Gold (XAUt0)
   GoldHome = 'GoldHome',
   GoldInfoScreen = 'GoldInfoScreen',

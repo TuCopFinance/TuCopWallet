@@ -15,10 +15,15 @@ import {
   getReceivingAccount as apiGetReceivingAccount,
   ProofFile,
   TucopRampAuth,
+  updateCedula as apiUpdateCedula,
+  UpdateCedulaRequest,
   uploadProof as apiUploadProof,
 } from 'src/tucopramp/api'
 import { limitsFetchedAtSelector } from 'src/tucopramp/selectors'
 import {
+  cedulaUpdateFailed,
+  cedulaUpdateSucceeded,
+  cedulaUpdating,
   limitsFetched,
   offrampAdvance,
   offrampCancelling,
@@ -74,6 +79,7 @@ export const fetchBanks = createAction('tucopramp/fetchBanks')
 export const fetchReceivingAccount = createAction('tucopramp/fetchReceivingAccount')
 export const fetchUserProfile = createAction('tucopramp/fetchUserProfile')
 export const fetchLimits = createAction('tucopramp/fetchLimits')
+export const submitCedulaUpdate = createAction<UpdateCedulaRequest>('tucopramp/submitCedulaUpdate')
 
 export const requestOfframpQuote = createAction<OfframpQuoteRequest>(
   'tucopramp/requestOfframpQuote'
@@ -161,6 +167,30 @@ export function* fetchUserProfileSaga() {
       return
     }
     Logger.warn(TAG, 'fetchUserProfile failed', err)
+  }
+}
+
+// Cedula self-correction via PATCH /v1/p2p/users/cedula. Backend rejects with
+// 409 cedula_locked_by_active_order when any non-terminal order references the
+// current cedula; the settings screen SHOULD prevent submission in that state
+// but the saga also surfaces the code via cedulaUpdateFailed so the UI stays
+// truthful if the state changed between load + submit.
+export function* submitCedulaUpdateSaga(action: PayloadAction<UpdateCedulaRequest>) {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(cedulaUpdateFailed({ code: 'no_wallet' }))
+    return
+  }
+  yield* put(cedulaUpdating())
+  try {
+    yield* call(apiUpdateCedula, auth, action.payload)
+    // Success: re-fetch profile so cedula_last_4 refreshes across the UI.
+    // Any listener reading userProfileSelector will see the new value on
+    // the next selector tick without any imperative sync.
+    yield* call(fetchUserProfileSaga)
+    yield* put(cedulaUpdateSucceeded())
+  } catch (err) {
+    yield* put(cedulaUpdateFailed({ code: errorCode(err) }))
   }
 }
 
@@ -471,6 +501,7 @@ export function* tucoprampSaga() {
   yield* takeLatest(fetchBanks.type, fetchBanksSaga)
   yield* takeLatest(fetchReceivingAccount.type, fetchReceivingAccountSaga)
   yield* takeLatest(fetchUserProfile.type, fetchUserProfileSaga)
+  yield* takeLatest(submitCedulaUpdate.type, submitCedulaUpdateSaga)
   yield* takeLatest(requestOfframpQuote.type, requestOfframpQuoteSaga)
   yield* takeLatest(submitOfframpOrder.type, submitOfframpOrderSaga)
   yield* takeLatest(pollOfframpOrder.type, pollOfframpOrderSaga)

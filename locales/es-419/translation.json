@@ -3523,6 +3523,26 @@
       "proof_not_found": "No encontramos el comprobante",
       "invalid_upload": "El archivo no es valido",
       "internal_error": "Error del servicio, intenta de nuevo"
+    },
+    "settings": {
+      "updateCedula": {
+        "title": "Cambia tu cedula",
+        "subtitle": "Actualiza el numero de cedula asociado a tu cuenta de TuCOPRamp.",
+        "currentLabel": "Cedula actual",
+        "activeOrderWarning": "Si tienes una orden en curso, cierrala antes de cambiar la cedula. El servidor rechazara el cambio con una orden activa.",
+        "newCedulaLabel": "Nueva cedula",
+        "newCedulaPlaceholder": "Solo digitos (6 a 10)",
+        "cedulaFormatHelper": "La cedula debe tener entre 6 y 10 digitos, sin letras ni separadores.",
+        "reasonLabel": "Razon del cambio",
+        "reasonPlaceholder": "Ej: escribi la cedula equivocada en la primera orden",
+        "submitCta": "Actualizar cedula",
+        "tryAgainCta": "Reintentar",
+        "updating": "Actualizando...",
+        "successHeading": "Cedula actualizada",
+        "successBody": "Tu proxima orden usara la nueva cedula.",
+        "doneCta": "Listo",
+        "errorHeading": "No se pudo actualizar"
+      }
     }
   },
   "transactionSuccess": {

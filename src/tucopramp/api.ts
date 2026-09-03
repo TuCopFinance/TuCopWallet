@@ -88,6 +88,37 @@ export function getMe(auth: TucopRampAuth, opts?: CallOpts): Promise<MeResponse>
   })
 }
 
+// Server PATCH /v1/p2p/users/cedula. Body { new_cedula, reason } (both required
+// per openapi P2PPatchCedulaRequest). Server rejects with 409
+// cedula_locked_by_active_order when there is any non-terminal order — the UI
+// should surface that state before firing this call to avoid the round-trip.
+// Response { userId, updated_at }; the wallet re-fetches getMe() after
+// success to refresh the cached profile with the new cedula_last_4.
+export interface UpdateCedulaRequest {
+  new_cedula: string
+  reason: string
+}
+
+export interface UpdateCedulaResponse {
+  userId: string
+  updated_at: string
+}
+
+export function updateCedula(
+  auth: TucopRampAuth,
+  body: UpdateCedulaRequest,
+  opts?: CallOpts
+): Promise<UpdateCedulaResponse> {
+  return tucopRampFetch<UpdateCedulaResponse>({
+    method: 'PATCH',
+    upstreamPath: '/v1/p2p/users/cedula',
+    body,
+    walletAddress: auth.walletAddress,
+    keychainAccounts: auth.keychainAccounts,
+    ...opts,
+  })
+}
+
 // ---------- Off-ramp ----------
 
 export function getOfframpQuote(

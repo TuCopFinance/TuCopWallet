@@ -3885,6 +3885,10 @@ export const v254Schema = {
       proofUploaded: false,
       errorCode: null,
     },
+    cedulaUpdate: {
+      status: 'idle',
+      errorCode: null,
+    },
   },
 }
 

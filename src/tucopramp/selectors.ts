@@ -19,3 +19,8 @@ export const onrampStatusSelector = (state: RootState) => state.tucopramp.onramp
 export const onrampLastQuoteSelector = (state: RootState) => state.tucopramp.onramp.lastQuote
 export const onrampCurrentOrderSelector = (state: RootState) => state.tucopramp.onramp.currentOrder
 export const onrampErrorCodeSelector = (state: RootState) => state.tucopramp.onramp.errorCode
+
+// Cedula update (settings flow)
+export const cedulaUpdateStatusSelector = (state: RootState) => state.tucopramp.cedulaUpdate.status
+export const cedulaUpdateErrorCodeSelector = (state: RootState) =>
+  state.tucopramp.cedulaUpdate.errorCode
