@@ -23,7 +23,7 @@
   "pinChanged": "PIN changed",
   "pinChangeFailed": "Changing the PIN failed",
   "requirePinOnAppOpen": "Require PIN on App Open",
-  "connectedApplications": "Connected Dapps",
+  "connectedApplications": "Connected apps",
   "analytics": "Analytics",
   "shareAnalytics": "Share Analytics",
   "hapticFeedback": "Haptic Feedback",
@@ -281,21 +281,21 @@
     }
   ],
   "consumerIncentivesTitle": "Supercharge is ending",
-  "consumerIncentivesSummary": "But more rewards are headed your way. Until May 28, get {{percent}}% annual rewards on your highest stablecoin balance (cUSD, cEUR, or cREAL). Here's how it works:",
+  "consumerIncentivesSummary": "But more rewards are headed your way. Until May 28, get {{percent}}% annual rewards on your highest stablecoin balance (Dollars, Euros, or Reals). Here's how it works:",
   "earnWeekly": {
     "header": "Connect your phone number",
     "text": "Tap Connect Number if you haven't connected it yet."
   },
   "noMinCommitment": {
     "header": "Add a minimum balance",
-    "earningText": "Receive rewards on 10-1000 cUSD, 10-1000 cEUR, or 50-6000 cREAL.",
+    "earningText": "Receive rewards on 10-1000 Dollars, 10-1000 Euros, or 50-6000 Reals.",
     "connectText": "Just have a balance of at least {{minBalance}} {{currency}} and connect your phone number to start getting rewarded."
   },
   "saveMoreEarnMore": {
     "header": "Set up your Recovery Phrase",
     "text": "This will ensure your rewards are safe and in your control."
   },
-  "conclusion": "It’s that simple. Supercharge your crypto today!",
+  "conclusion": "It’s that simple. Supercharge your digital assets today!",
   "superchargeTitle": "Supercharge is ending",
   "superchargeDescription": "But more rewards are headed your way. Until May 28, get {{apy}}% annual rewards on your highest {{token}} balance. Here's how it works:",
   "superchargeConnectNumber": "Connect your phone number",
@@ -306,7 +306,7 @@
   "superchargeDisclaimerDayLimit": "This will not affect your balance or previous earnings. <0>Learn more</0>",
   "superchargeTokenDetailsDialog": {
     "title": "Which assets can I Supercharge?",
-    "body": "You’ll get rewarded weekly on your Celo stablecoin with the highest value (cEUR, cUSD, cREAL).",
+    "body": "You’ll get rewarded weekly on your stablecoin with the highest value (Euros, Dollars, Reals).",
     "dismiss": "Dismiss"
   },
   "superchargingTitle": "App update required",
@@ -325,7 +325,7 @@
   "superchargingNotificationBody": "You're getting rewards with Supercharge ⚡",
   "superchargingNotificationBodyV1_33": "You're getting {{apy}}% rewards with Supercharge ⚡",
   "superchargingNotificationStart": "Learn more",
-  "startSuperchargingNotificationBody": "Get rewarded with crypto weekly. Start Supercharging!",
+  "startSuperchargingNotificationBody": "Get rewarded with digital weekly. Start Supercharging!",
   "startSuperchargingNotificationStart": "Get rewards",
   "cashIn": "Add {{currency}}",
   "connectNumber": "Connect number",
@@ -343,14 +343,14 @@
     "signTX": "Sign transaction",
     "details": "Show details"
   },
-  "shareInfo": "You must connect your wallet to approve transactions in this Dapp. Once connected, it will have access to your wallet address.",
-  "connectWalletInfoDappkit": "You must connect your wallet to approve transactions in this Dapp. Once connected, it will have access to your wallet address and phone number.",
+  "shareInfo": "You must connect your wallet to approve transactions in this app. Once connected, it will have access to your wallet address.",
+  "connectWalletInfoDappkit": "You must connect your wallet to approve transactions in this app. Once connected, it will have access to your wallet address and phone number.",
   "data": "Data",
   "firebaseDisabled": "Firebase is disabled, notification and log uploading wont work",
   "learnMore": "Learn More",
   "equalToAmount": "Equal to <1></1>",
   "whatIsGold": "{{appName}} allows you to buy and sell CELO",
-  "manageCelo": "Manage Celo Dollars",
+  "manageCelo": "Manage Dollars",
   "exchangeRate": "Exchange Rate",
   "exchangeRateValue": "<0></0> : 1 {{takerTokenCode}}",
   "history": "History",
@@ -375,13 +375,13 @@
   "securityFee": "Network Fee",
   "exchangeFee": "Exchange Fee",
   "edit": "Edit",
-  "notEnoughDollars": "Not enough Celo Dollars to make exchange",
+  "notEnoughDollars": "Not enough Dollars to make exchange",
   "notEnoughGold": "Not enough CELO to make exchange",
   "pending": "Pending",
   "loadingExchangeRate": "Loading Exchange Rate...",
   "errorRefreshingRate": "Could not refresh exchange rate",
   "exchangeRateChange": "Exchange rate has changed, please retry",
-  "feeExchangeEducation": "When exchanging between assets, a small fee goes towards keeping the value of Celo stablecoins tied to the asset they track. \n\nVisit the FAQ to learn more.",
+  "feeExchangeEducation": "When converting between assets, a small fee helps keep the value of your digital assets tied to the traditional currency they represent.\n\nVisit the FAQ to learn more.",
   "goldPrice": "CELO Price",
   "yourGoldBalance": "Your CELO Balance",
   "goldAmount": "CELO Amount",
@@ -406,26 +406,26 @@
   "noExchanges": "There are no exchanges available for {{digitalAsset}} in your region.",
   "buySellOnExchanges": "Buy/Sell on Exchanges",
   "cashOut": "Withdraw Funds",
-  "cashOutSubtitle": "Spend on gift cards and other purchases or send funds to a crypto exchange",
+  "cashOutSubtitle": "Spend on gift cards and other purchases or send funds to a digital exchange",
   "cashOutComingSoon": "Cash Out (Coming Soon)",
   "spend": "Spend",
   "spendSubtitle": "Use your balance with supporting merchants",
   "amountCelo": "Amount (CELO)",
-  "onlyCeloDollars": "cUSD only",
+  "onlyCeloDollars": "Dollars only",
   "onlyCelo": "CELO only",
-  "celoDollar": "Celo Dollar",
-  "celoEuro": "Celo Euro",
-  "celoReal": "Celo Real",
-  "celoDollars": "Celo Dollars",
+  "celoDollar": "Digital dollar",
+  "celoEuro": "Digital euro",
+  "celoReal": "Digital real",
+  "celoDollars": "Digital dollars",
   "ether": "Ether",
   "tapToCopyCeloDollarsAddress": "Tap to copy your {{appName}} CUSD address",
   "disclaimerFiat": "{{currency}} values are estimates.",
-  "dollarsNotYetEnabledNote": "Celo Dollars are not yet available on any providers. To get Celo Dollars, purchase CELO and exchange it for Celo Dollars in the CELO tab.",
+  "dollarsNotYetEnabledNote": "Digital dollars are not yet available on any providers. Try converting other assets inside your wallet.",
   "selectDigitalCurrency": "Select an asset",
   "selectPaymentMethod": "Select method:",
   "payWithBank": "Bank account",
   "payWithCard": "Debit card",
-  "payWithExchange": "Cryptocurrency exchange",
+  "payWithExchange": "Digital exchange",
   "selectCashOutMethod": "Select method:",
   "receiveOnAddress": "Wallet address",
   "receiveWithBidali": "Gift Cards and Mobile Top Up",
@@ -464,8 +464,8 @@
   "useBalanceWithMerchants": "Use your balance with supporting merchants",
   "findMerchants": "Find local merchants near you",
   "celoDeposit": "CELO Purchase",
-  "cUsdDeposit": "cUSD Purchase",
-  "cEurDeposit": "cEUR Purchase",
+  "cUsdDeposit": "Dollars Purchase",
+  "cEurDeposit": "Euros Purchase",
   "providerUnavailable": "Not currently available",
   "pricePer": "Price per {{coin}}",
   "feeDiscount": "Fee Discount",
@@ -515,8 +515,8 @@
   "receivedNft": "Received NFT",
   "sentNft": "Sent NFT",
   "getStarted": "Get Started",
-  "manageCeloDollars": "Manage Celo Dollars",
-  "sendCeloDollars": "Send Celo Dollars",
+  "manageCeloDollars": "Manage Dollars",
+  "sendCeloDollars": "Send Dollars",
   "startEarning": "Start Earning",
   "backToWallet": "Back to Wallet",
   "exchangeForGold": "Exchange for CELO",
@@ -544,12 +544,12 @@
   "reclaim": "Reclaim",
   "claimed": "Claimed",
   "celoGold": "CELO",
-  "celoEuros": "Celo Euros",
+  "celoEuros": "Digital euros",
   "balanceAvailable": "<0></0> available",
   "subtotal": "Subtotal",
   "total": "Total",
-  "totalInDollars": "Celo Dollars @ <0></0>",
-  "totalInEuros": "Celo Euros @ <0></0>",
+  "totalInDollars": "Dollars @ <0></0>",
+  "totalInEuros": "Euros @ <0></0>",
   "totalInCelo": "Celo @ <0></0>",
   "totalInToken": "<0></0> @ <1></1>",
   "tokenExchanteRate": "{{symbol}} @ <0></0>",
@@ -649,9 +649,9 @@
   "dismiss": "Dismiss",
   "review": "Review",
   "insufficientBalance": "Your balance is too low to make this transaction",
-  "insufficientBalanceStable": "You do not have enough cUSD or cEUR to complete this transaction",
+  "insufficientBalanceStable": "You do not have enough Dollars or Euros to complete this transaction",
   "amount": "Amount",
-  "currentBalance": "Current Balance (cUSD)",
+  "currentBalance": "Current Balance (Dollars)",
   "restore": "Restore",
   "commentUnavailable": "Comment Unavailable",
   "accountClearFailed": "There was an error while removing your Recovery Phrase. You might have to reinstall the app to restore all functionality.",
@@ -669,26 +669,26 @@
   "notNow": "Not Now",
   "goldEducationSteps": [
     {
-      "title": "What is CELO?",
-      "text": "CELO is a digital currency that keeps the Celo Dollar (cUSD) stable."
+      "title": "What are digital assets?",
+      "text": "Digital assets are a way to store and move value from your wallet without needing a bank account."
     },
     {
-      "title": "CELO’s price changes",
-      "text": "If more people use the Celo Dollar, the value of CELO increases. Unlike CELO, the Celo Dollar doesn't change in value. "
+      "title": "Prices can change",
+      "text": "Some digital assets are backed 1 to 1 by a traditional currency (like Pesos or Dollars) and their value stays stable. Others can go up or down in value over time."
     },
     {
-      "title": "Shape the Celo Network",
-      "text": "By holding CELO, you have the ability to vote for changes and features you’d like to see on the Celo Network."
+      "title": "Your wallet, your control",
+      "text": "In {{appName}} you keep control of your wallet at all times. No one else can move your funds without your confirmation."
     },
     {
-      "title": "Please buy and sell responsibly",
-      "text": "{{appName}} allows you to buy and sell CELO. CELO presents a risk of financial loss, please exercise caution."
+      "title": "Take care of your funds",
+      "text": "Digital assets can lose value. Before making decisions, consider your finances and your risk tolerance. Participate responsibly."
     }
   ],
   "inviteWithWhatsapp": "Invite with WhatsApp",
   "inviteWithSMS": "Invite with SMS",
   "whySendFees": "This fee covers costs for the new user to connect their phone number",
-  "whyReceiveFees": "You were sent some crypto to confirm your account",
+  "whyReceiveFees": "You were sent some digital to confirm your account",
   "inviteSent": "Invite Sent",
   "accountSetupFailed": "Failed to create your wallet",
   "accountSetupFailedDescription": "Please delete {{appName}} from your device and try again. If you continue to have issues please reach out to support.",
@@ -711,7 +711,7 @@
     "body": "Connect and share value with your friends and family on {{appName}}.",
     "button": "Share Invite",
     "error": "There was an issue creating a sharable link",
-    "share": "Hey! Sign up to {{appName}} wallet. I use it to grow my savings in USD and crypto, and you can set it up in seconds with just a phone number. Make sure to sign up with my referral link here: {{shareUrl}}.",
+    "share": "Hey! Sign up to {{appName}} wallet. I use it to grow my savings in USD and digital, and you can set it up in seconds with just a phone number. Make sure to sign up with my referral link here: {{shareUrl}}.",
     "help": "To collect this reward, the invitee must download through the referral link and connect their phone number to a new {{appName}} wallet. <0>View all terms</0>",
     "rewardsActive": {
       "title": "Invite friends and collect NFTs",
@@ -726,7 +726,7 @@
   "welcomeCelo": "Welcome to {{appName}}",
   "chooseCountryCode": "Country Code",
   "chooseCountry": "Country",
-  "joinText": "{{appName}} helps you to send, receive, and save value on the blockchain.",
+  "joinText": "{{appName}} helps you to send, receive, and save value on the network.",
   "terms": {
     "title": "Terms and Conditions",
     "heading1": "Data and Privacy",
@@ -734,7 +734,7 @@
     "info": "In order to use our services, please read and accept our <0>User Agreement and Terms</0> by clicking the accept button below.",
     "privacy": "By joining this network, you give us permission to collect anonymous information about your use of the app. Additionally, if you connect your phone number, a hashed copy of it will be stored. If you grant {{appName}} access to your contact list, {{appName}} will import each contact's name, phone number and profile picture to allow users to connect through the {{appName}} app. To learn how we collect and use this information please review our <0>Privacy Policy</0>.",
     "goldDisclaimer": "When you create an \"account\" with {{appName}} you are creating a digital wallet to which only you hold the keys. No other person or entity, including {{appName}}, can recover your key, change or undo transactions, or recover lost funds. Be aware that digital assets are part of a new asset class and present a risk of financial loss. Carefully consider your financial circumstances and tolerance for financial risk before purchasing any digital asset.",
-    "goldDisclaimerWithPoints": "When you create an \"account\" with {{appName}} you are creating a digital wallet to which only you hold the keys. No other person or entity, including {{appName}}, can recover your key, change or undo transactions, or recover lost funds. {{appName}} grants tokenized loyalty rewards (\"Points\") to Users for engaging in certain in-app activities. Points are on-chain, non-transferable, and non-redeemable collectibles. No guarantees are made about Points availability or value. Be aware that digital assets are part of a new asset class and present a risk of financial loss. Carefully consider your financial circumstances and tolerance for financial risk before purchasing any digital asset."
+    "goldDisclaimerWithPoints": "When you create an \"account\" with {{appName}} you are creating a digital wallet to which only you hold the keys. No other person or entity, including {{appName}}, can recover your key, change or undo transactions, or recover lost funds. {{appName}} grants tokenized loyalty rewards (\"Points\") to Users for engaging in certain in-app activities. Points are , non-transferable, and non-redeemable collectibles. No guarantees are made about Points availability or value. Be aware that digital assets are part of a new asset class and present a risk of financial loss. Carefully consider your financial circumstances and tolerance for financial risk before purchasing any digital asset."
   },
   "termsColloquial": {
     "title": "Let’s start by creating your wallet",
@@ -743,7 +743,7 @@
     "privacy2": "If you decide to link your phone number, we will store an encrypted copy of it.",
     "privacy3": "If you decide to connect your contacts, we use their names, numbers, and profile pictures to make it easier to find them.",
     "walletHeading": "Your Digital Wallet with {{appName}}:",
-    "wallet1": "You’re about to create a digital wallet. Only you have the key to your wallet. We cannot recover your key or your assets if you lose your key. We also cannot reverse actions taken through {{appName}} on blockchains.",
+    "wallet1": "You’re about to create a digital wallet. Only you have the key to your wallet. We cannot recover your key or your assets if you lose your key. We also cannot reverse actions taken through {{appName}} on the network.",
     "wallet2": "Digital assets, the assets with which you will interact with {{appName}}, come with unique risks. By using {{appName}}, you accept these risks and take responsibility for them. Please consider your finances and risk tolerance before making choices.",
     "fullTerms": "Read our full <0>Terms & Conditions</0>"
   },
@@ -822,19 +822,19 @@
     "cta": "Purchase lookups (2)"
   },
   "onboardingEducation": {
-    "step1": "If you can text, you can crypto. Starting now, your phone is your crypto wallet.",
-    "step2": "With {{appName}}, it’s easy to access and easy to grow your crypto.",
+    "step1": "If you can text, you can digital. Starting now, your phone is your digital assets wallet.",
+    "step2": "With {{appName}}, it’s easy to access and easy to grow your digital.",
     "step3": "All you need is a mobile phone to send, spend and explore.",
     "payment": "Make payments globally with near zero fees",
     "impact": "Support climate and social change initiatives",
-    "spend": "Use your crypto to shop your favorite brands"
+    "spend": "Use your digital assets to shop your favorite brands"
   },
   "enableBiometry": {
     "title": "Secure your wallet",
     "description": "{{biometryType}} secures your wallet and makes it easier to use {{appName}}",
     "cta": "Turn on {{biometryType}}",
     "guideTitle": "Want to add {{biometryType}}?",
-    "guideDescription": "{{biometryType}} makes it easier, quicker, and more secure to connect your wallet to dapps & sign transactions."
+    "guideDescription": "{{biometryType}} makes it easier, quicker, and more secure to connect your wallet to apps & sign transactions."
   },
   "biometryType": {
     "FaceID": "Face ID",
@@ -846,15 +846,15 @@
   "useBiometryType": "Use {{biometryType}}",
   "unlockWithBiometryPrompt": "Authenticate to unlock {{appName}}",
   "welcome": {
-    "title": "Step into the future of crypto with {{appName}}",
-    "titleGuided": "Welcome to {{appName}}!\nLet’s create your crypto wallet.",
+    "title": "Step into the future of digital with {{appName}}",
+    "titleGuided": "Welcome to {{appName}}!\nLet’s create your digital assets wallet.",
     "createAccount": "Create new account",
     "restoreAccount": "Restore my account",
     "createNewWallet": "Create new wallet",
     "restoreWallet": "Restore wallet",
     "hasWallet": "I already have a wallet",
     "hasWalletV1_88": "I have a wallet",
-    "header": "Welcome to {{appName}}! Let's create your crypto wallet.",
+    "header": "Welcome to {{appName}}! Let's create your digital assets wallet.",
     "getStarted": "Get Started",
     "agreeToTerms": "By creating a wallet you agree to our <0>Terms and Conditions</0>"
   },
@@ -893,7 +893,7 @@
   "verificationEducation": {
     "title": "Phone Number",
     "header": "Connect your phone number",
-    "body": "To make sure your number is really yours, you’ll receive three SMS messages that will cost about 0.05 cUSD each.\n\nConnection takes about three minutes.",
+    "body": "To make sure your number is really yours, you’ll receive three SMS messages that will cost about 0.05 Dollars each.\n\nConnection takes about three minutes.",
     "feelessBody": "You will receive three messages to help securely connect your phone number. Connection takes about three minutes.",
     "start": "Start",
     "resume": "Resume",
@@ -917,7 +917,7 @@
   "phoneVerificationScreen": {
     "screenTitle": "Phone Number",
     "title": "Connect your phone number to {{appName}}",
-    "description": "This links your wallet address to your phone number so sending crypto is easy",
+    "description": "This links your wallet address to your phone number so sending digital is easy",
     "startButtonLabel": "Connect",
     "learnMore": {
       "buttonLabel": "Do I need to connect?",
@@ -1014,7 +1014,7 @@
   "verificationUnavailable": "Phone number connection is currently unavailable. Please enter your phone number and we will notify you when it is possible to connect again.\n\nIn the meantime, you can continue to use {{appName}} with QR codes or Account Addresses. Don't worry, payments sent to your phone number will be waiting for you until you connect it to your account.",
   "requests": "Requests",
   "empty": "You have no Payment Requests",
-  "celoDollarBalance": "Celo Dollar Balance",
+  "celoDollarBalance": "Dollar Balance",
   "requestDeclined": "Request Declined",
   "requestPaid": "Request Paid",
   "paymentRequestUpdateFailed": "Cannot update payment request",
@@ -1045,7 +1045,7 @@
   "amountSent": "Amount Sent",
   "amountReceived": "Amount Received",
   "amountCeloWithdrawn": "Amount (CELO)",
-  "feeEducation": "Blockchains collect a transaction fee to keep networks supported and running smoothly.",
+  "feeEducation": "Networks collect a transaction fee to keep the service running smoothly.",
   "reviewPayment": "Review Payment",
   "requestPayment": "Request Payment",
   "max": "MAX",
@@ -1063,10 +1063,10 @@
   "requestFromMobileNumber": "Request From Phone Number",
   "sendToAddress": "Send to Address",
   "walletAddress": "Wallet Address",
-  "inviteWithoutPayment": "Hi! I’ve been using {{appName}} to send crypto worldwide. It’s easy to try and I want to invite you to check it out with this link: {{link}}",
-  "inviteWithEscrowedPayment": "Hi! I’ve been using {{appName}} to send crypto worldwide. I just sent you {{amount}} {{token}}. Please download the {{appName}} App and redeem your {{token}} using this link: {{link}}",
-  "inviteWithRewards": "Hi! 👋 I'm using {{appName}} as my crypto wallet. It's super quick to download the app and connect your phone number - plus, we both get a special edition NFT as a reward. 💫 \n\nUse this link to download: {{link}}",
-  "inviteWithRewardsCUSD": "Hey! Right now we can both get 1 USDT if you sign up to {{appName}} wallet and connect your phone number. I use it to grow my savings with crypto, and you can set it up in seconds with just a phone number. Make sure to sign up with my referral link here: \n\n{{link}} \n\n Hurry, the referral promotion ends soon!",
+  "inviteWithoutPayment": "Hi! I’ve been using {{appName}} to send digital worldwide. It’s easy to try and I want to invite you to check it out with this link: {{link}}",
+  "inviteWithEscrowedPayment": "Hi! I’ve been using {{appName}} to send digital worldwide. I just sent you {{amount}} {{token}}. Please download the {{appName}} App and redeem your {{token}} using this link: {{link}}",
+  "inviteWithRewards": "Hi! 👋 I'm using {{appName}} as my digital wallet. It's super quick to download the app and connect your phone number - plus, we both get a special edition NFT as a reward. 💫 \n\nUse this link to download: {{link}}",
+  "inviteWithRewardsCUSD": "Hey! Right now we can both get 1 USDT if you sign up to {{appName}} wallet and connect your phone number. I use it to grow my savings with digital, and you can set it up in seconds with just a phone number. Make sure to sign up with my referral link here: \n\n{{link}} \n\n Hurry, the referral promotion ends soon!",
   "loadingContacts": "Finding your contacts",
   "myCode": "My Code",
   "scanCode": "Scan",
@@ -1090,7 +1090,7 @@
   "stableBalance": "{{token}} Balance",
   "selectToken": "Select Asset",
   "verificationCta": {
-    "header": "Send crypto like a text!",
+    "header": "Send digital like a text!",
     "body": "Link your phone number to your wallet address so you can send & receive payments with friends.",
     "cta": "Link Phone number"
   },
@@ -1189,9 +1189,9 @@
     "sendTransactionAction": "Send",
     "unsupportedChain": {
       "title": "Unsupported chain",
-      "description": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure Celo is the active chain on the dapp side.",
-      "descriptionV1_74_one": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure {{supportedNetworkNames}} is the active chain on the dapp side.",
-      "descriptionV1_74_other": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure the active chain on the dapp is one of the following: {{supportedNetworkNames}}."
+      "description": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure Celo is the active chain on the app side.",
+      "descriptionV1_74_one": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure {{supportedNetworkNames}} is the active chain on the app side.",
+      "descriptionV1_74_other": "{{dappName}} is requesting this action on a chain not supported by {{appName}}. Please make sure the active chain on the app is one of the following: {{supportedNetworkNames}}."
     },
     "notEnoughBalanceForGas": {
       "title": "Insufficient gas token balance",
@@ -1204,9 +1204,9 @@
     "session": {
       "failUnsupportedNamespace": {
         "title": "Unsupported chain",
-        "description": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure Celo is selected on the dapp side.",
-        "descriptionV1_74_one": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure {{supportedNetworkNames}} is selected on the dapp side.",
-        "descriptionV1_74_other": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure one of the following is selected on the dapp side: {{supportedNetworkNames}}."
+        "description": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure Celo is selected on the app side.",
+        "descriptionV1_74_one": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure {{supportedNetworkNames}} is selected on the app side.",
+        "descriptionV1_74_other": "{{dappName}} would like to connect with a chain not supported by {{appName}}. Please make sure one of the following is selected on the app side: {{supportedNetworkNames}}."
       },
       "warnUnsupportedChains": {
         "title": "Unsupported chain",
@@ -1234,8 +1234,8 @@
     "computeSharedSecret": "Generate a secret"
   },
   "tapToDisconnect": "Tap to Disconnect",
-  "sessionsTitle": "Connected Dapps",
-  "sessionsSubTitle": "The following dapps are connected to {{appName}}. You can connect to more dapps by scanning their QR code.",
+  "sessionsTitle": "Connected apps",
+  "sessionsSubTitle": "The following apps are connected to {{appName}}. You can connect to more apps by scanning their QR code.",
   "disconnect": "Disconnect",
   "disconnectTitle": "Disconnect {{dappName}}?",
   "disconnectBody": "Are you sure you want to disconnect from {{dappName}}?",
@@ -1261,7 +1261,7 @@
   "viewAll": "View All",
   "noNotificationsPlaceholder": "You're all caught up!",
   "thanksForVerifying": "Thanks for connecting",
-  "goldIsWhereYouSave": "CELO is where you can save Celo Dollars you have",
+  "goldIsWhereYouSave": "CELO is where you can save Dollars you have",
   "dinner": "Dinner",
   "bikeParts": "Bike Parts",
   "groceryRun": "Grocery run",
@@ -1269,11 +1269,11 @@
   "pleaseHoldOn": "Please hold on",
   "welcomeToCeloPayments": "Welcome to {{appName}}",
   "letsGetStartedByFirstTransaction": "Let’s get started by sending your first transaction",
-  "sendMoney": "Send Crypto",
+  "sendMoney": "Send Digital",
   "verificationFee": "Confirmation Fee",
   "networkFee": "Network Fee",
   "networkFeeExplanation": {
-    "0": "Each week, a very small fee (less than 0.01%) of every user's Celo Dollar Balance is used to keep the Celo Dollar's value stable. To learn more about Celo fees, visit the ",
+    "0": "Each week, a very small fee (less than 0.01%) of every user's Dollar Balance is used to keep the Dollar's value stable. To learn more about Celo fees, visit the ",
     "1": "FAQ"
   },
   "confirmingTransaction": "Confirming…",
@@ -1302,7 +1302,7 @@
   "feedItemDepositTitle": "Deposit",
   "feedItemFcTransferMobileMoney": "Mobile Money Transfer",
   "feedItemFcTransferBankAccount": "Bank Account Transfer",
-  "feedItemFcTransferWithdraw": "Withdraw {{crypto}}",
+  "feedItemFcTransferWithdraw": "Withdraw {{digital}}",
   "feedItemExchangeTitle": "CELO",
   "feedItemExchangeInfo_boughtGold": "Bought <0></0> CELO",
   "feedItemExchangeInfo_soldGold": "Sold <0></0> CELO",
@@ -1381,10 +1381,10 @@
   "totalValue": "Total Balance",
   "viewBalances": "View Assets",
   "totalAssets": "My assets",
-  "totalAssetsInfo": "Includes estimated total of wallet assets and dapp positions",
+  "totalAssetsInfo": "Includes estimated total of wallet assets and app positions",
   "assetsSegmentedControl": {
     "walletAssets": "Wallet assets",
-    "dappPositions": "Dapp positions"
+    "dappPositions": "app positions"
   },
   "open": "Open",
   "nftViewer": "NFT Viewer",
@@ -1422,7 +1422,7 @@
     "begin": {
       "label": "Step 1",
       "title": "Verify your Identity",
-      "description": "Adding crypto with a bank account is easy. This step will take about 5 minutes.",
+      "description": "Adding digital with a bank account is easy. This step will take about 5 minutes.",
       "cta": "Begin"
     },
     "stepTwo": {
@@ -1461,22 +1461,22 @@
     "button": "Refresh"
   },
   "dappsScreen": {
-    "title": "Dapps",
+    "title": "apps",
     "titleDiscover": "Discover",
-    "exploreDapps": "Dapps",
+    "exploreDapps": "apps",
     "exploreAll": "View All",
     "message": "Explore ways to use your assets",
-    "errorMessage": "There was an error loading dapps",
+    "errorMessage": "There was an error loading apps",
     "featuredDapp": "Featured",
     "allDapps": "All",
     "favoriteDapps": "My Favorites",
     "mostPopularDapps": "Most Popular",
-    "mostPopularDapps_UK": "Other Dapps",
+    "mostPopularDapps_UK": "Other apps",
     "favoriteDappsAndAll": "My Favorites & All",
-    "searchPlaceHolder": "Search dapps",
+    "searchPlaceHolder": "Search apps",
     "noFavorites": {
       "title": "No favorites added",
-      "description": "Keep track of your most-used Dapps by tapping the star icon to add it as a favorite"
+      "description": "Keep track of your most-used apps by tapping the star icon to add it as a favorite"
     },
     "favoritedDappToast": {
       "message": "Added as a favorite",
@@ -1488,20 +1488,20 @@
       "removeFilter": "Remove filter",
       "searchMessage": "No matching results found for <0>\"{{searchTerm}}\"</0>"
     },
-    "disclaimer_UK": "This is a list of third-party Dapps. The description for each Dapp is purely informational, and not an invitation to use them."
+    "disclaimer_UK": "This is a list of third-party apps. The description for each app is purely informational, and not an invitation to use them."
   },
   "dappRankings": {
-    "title": "Dapp rankings",
-    "description": "Discover the most favorited dapps by others in the {{appName}} community"
+    "title": "app rankings",
+    "description": "Discover the most favorited apps by others in the {{appName}} community"
   },
   "dappShortcuts": {
     "rewards": {
       "title": "Your rewards",
-      "description": "Claim available rewards from open dapp positions"
+      "description": "Claim available rewards from open app positions"
     },
     "claimRewardsScreen": {
       "title": "Your rewards",
-      "description": "Now you can claim rewards from open dapp positions directly in {{appName}}!",
+      "description": "Now you can claim rewards from open app positions directly in {{appName}}!",
       "claimButton": "Claim",
       "claimedLabel": "Claimed",
       "rewardLabel": "Available reward",
@@ -1511,8 +1511,8 @@
     "claimRewardFailure": "There was an error claiming your reward, please try again later"
   },
   "dappsScreenHelpDialog": {
-    "title": "What are dapps?",
-    "message": "Dapps (decentralized apps) provide new ways to use your crypto, earn rewards, and explore Web3.\n\nConnect {{appName}} to a dapp to get started.",
+    "title": "What are apps?",
+    "message": "apps (decentralized apps) provide new ways to use your digital assets assets, earn rewards, and explore apps.\n\nConnect {{appName}} to a app to get started.",
     "dismiss": "Dismiss"
   },
   "dappsScreenBottomSheet": {
@@ -1521,16 +1521,16 @@
     "button": "Go to {{dappName}}"
   },
   "dappsScreenInfoSheet": {
-    "title": "What is a dapp?",
-    "description": "A dapp (or decentralized application) is an app that is built and run on top of a blockchain network. This means that no single company or organization manages or stores your data.\n\nDapps vary by the services they offer. Examples of these services include decentralized exchanges, lending, borrowing, swapping, storing NFTs.",
+    "title": "What is a app?",
+    "description": "A app (or decentralized application) is an app that is built and run on top of a network. This means that no single company or organization manages or stores your data.\n\napps vary by the services they offer. Examples of these services include decentralized exchanges, lending, borrowing, swapping, storing NFTs.",
     "buttonLabel": "Tell me more"
   },
-  "dappsDisclaimerAllDapps": "{{appName}} is not affiliated with these dapps and makes no representations or claims in using them. Please acknowledge the risk before using a dapp by reviewing the user agreement or privacy policy.",
-  "dappsDisclaimerSingleDapp": "{{appName}} is not affiliated with this dapp and makes no representations in using it. Always review a dapp's user agreement or privacy policy.",
-  "dappsDisclaimerUnlistedDapp": "This dapp is not listed in {{appName}}. {{appName}} is not affiliated with this dapp and makes no representations in using it. Always review a dapp's user agreement or privacy policy.",
-  "recentlyUsedDapps": "Recently Used Dapps",
-  "favoritedDapps": "Favorited Dapps",
-  "allDapps": "All Dapps",
+  "dappsDisclaimerAllDapps": "{{appName}} is not affiliated with these apps and makes no representations or claims in using them. Please acknowledge the risk before using a app by reviewing the user agreement or privacy policy.",
+  "dappsDisclaimerSingleDapp": "{{appName}} is not affiliated with this app and makes no representations in using it. Always review a app's user agreement or privacy policy.",
+  "dappsDisclaimerUnlistedDapp": "This app is not listed in {{appName}}. {{appName}} is not affiliated with this app and makes no representations in using it. Always review a app's user agreement or privacy policy.",
+  "recentlyUsedDapps": "Recently Used apps",
+  "favoritedDapps": "Favorited apps",
+  "allDapps": "All apps",
   "rewards": "Rewards",
   "supercharge": "Supercharge",
   "others": "Others",
@@ -1546,11 +1546,11 @@
     "whyMissingPayments": "Why don't I see more payment methods?",
     "dismiss": "Dismiss",
     "missingPaymentsExplained": "Not all payment methods are available in every country.\n\nAvailability depends on each provider's geographical coverage.",
-    "cryptoExchange": "Cryptocurrency Exchange",
+    "cryptoExchange": "Digital Exchange",
     "feesVary": "Fees Vary",
     "viewExchanges": "View Exchanges",
     "depositFrom": "Deposit from",
-    "cryptoExchangeOrWallet": "Crypto Exchange or Wallet",
+    "cryptoExchangeOrWallet": "Digital Exchange or Wallet",
     "card": "Credit / Debit Card",
     "bank": "Bank Account",
     "mobileMoney": "Mobile Money",
@@ -1658,7 +1658,7 @@
     },
     "quoteExpiredDialog": {
       "title": "Review amounts & fees",
-      "body": "Crypto amounts & fees can change due to fluctuations in the crypto market.\n\nPlease review your final amount & fees before submitting",
+      "body": "Digital amounts & fees can change due to fluctuations in the digital market.\n\nPlease review your final amount & fees before submitting",
       "continue": "Continue"
     }
   },
@@ -1704,15 +1704,15 @@
       "exchangeAmountTitle": "Add {{currency}}",
       "selectProviderHeader": "Select Payment Method",
       "selectProviderHeader_UK": "Provider Details",
-      "depositExchangeTitle": "Deposit Crypto"
+      "depositExchangeTitle": "Deposit Digital"
     },
     "cashOut": {
       "fiatExchangeTitle": "Withdraw Funds",
-      "fiatExchangeSubtitle": "Get funds out of {{appName}} and into a bank account, card, crypto exchange or to mobile money.",
+      "fiatExchangeSubtitle": "Get funds out of {{appName}} and into a bank account, card, digital exchange or to mobile money.",
       "selectCurrencyTitle": "Withdraw Funds",
       "exchangeAmountTitle": "Withdraw {{currency}}",
       "selectProviderHeader": "Select Withdraw Method",
-      "withdrawExchangeTitle": "Withdraw Crypto"
+      "withdrawExchangeTitle": "Withdraw Digital"
     },
     "spend": {
       "fiatExchangeTitle": "Spend Funds",
@@ -1789,7 +1789,7 @@
   "webView": {
     "openExternal": "Open in External Browser"
   },
-  "dappNotListed": "This dapp is not listed in {{appName}}. Dapps are third party applications. Use at your own risk.",
+  "dappNotListed": "This app is not listed in {{appName}}. apps are third party applications. Use at your own risk.",
   "swapScreen": {
     "title": "Swap",
     "review": "Review",
@@ -1921,7 +1921,7 @@
     },
     "fundYourWalletBottomSheet": {
       "title": "Fund your wallet",
-      "description": "Before you can swap tokens you will need to fund your wallet by buying crypto or transferring tokens.",
+      "description": "Before you can swap tokens you will need to fund your wallet by buying digital or transferring tokens.",
       "addFundsButton": "Add Funds"
     }
   },
@@ -1962,7 +1962,7 @@
     "swapPriceModal": {
       "title": "Prices have changed",
       "action": "Continue",
-      "body": "Crypto amounts & fees can change due to fluctuations in the crypto market. \n\n Please review your final amount & fees and resubmit."
+      "body": "Digital amounts & fees can change due to fluctuations in the digital market. \n\n Please review your final amount & fees and resubmit."
     },
     "swapCompleteSection": {
       "title": "Swap successful",
@@ -1990,7 +1990,7 @@
     "title": "Looks like {{contactName}} doesn’t have a {{appName}} wallet yet.",
     "body": "You can still invite them to {{appName}}, or try to send a payment to their wallet address or nom.space.",
     "sendInviteButtonLabel": "Send Invite",
-    "shareMessage": "Hi! I've been using {{appName}} as my crypto wallet and I want to invite you to check it out. Once you download the app and connect your phone number, we both get a special NFT. Use this link: {{link}}",
+    "shareMessage": "Hi! I've been using {{appName}} as my digital wallet and I want to invite you to check it out. Once you download the app and connect your phone number, we both get a special NFT. Use this link: {{link}}",
     "rewardsActive": {
       "title": "Invite {{contactName}} to {{appName}} and you’ll both receive NFTs!",
       "body": "Looks like {{contactName}} isn't on {{appName}}. You can still send a payment if you know their wallet address, or send an invite instead. \n\n After they download the wallet and connect their phone number, you’ll both get an exclusive NFT."
@@ -2013,7 +2013,7 @@
     "later": "I'll explore later",
     "options": {
       "add": "Add funds to your wallet",
-      "dapp": "Find ways to use crypto",
+      "dapp": "Find ways to use digital",
       "earn": "Explore earning opportunities",
       "profile": "Build your profile",
       "learn": "Learn about Celo",
@@ -2021,7 +2021,7 @@
     }
   },
   "reverifyUsingCPVHomecard": {
-    "description": "Reconnect your number to send, receive and get rewards on your crypto",
+    "description": "Reconnect your number to send, receive and get rewards on your digital",
     "buttonLabel": "Reconnect number"
   },
   "profileScreen": {
@@ -2087,11 +2087,11 @@
     "tabBar": {
       "tokens": "Tokens",
       "collectibles": "Collectibles",
-      "dappPositions": "Dapp Positions"
+      "dappPositions": "app Positions"
     },
     "importToken": "Import",
     "importTokens": "Import Tokens",
-    "mentoDollar": "USDm",
+    "mentoDollar": "Dollars",
     "pesos": "Pesos",
     "dollars": "Dollars",
     "gold": "Gold",
@@ -2165,7 +2165,7 @@
     },
     "jumpstart": {
       "title": "Send with a Live Link",
-      "subtitle": "Share a link to send crypto like a text"
+      "subtitle": "Share a link to send digital like a text"
     },
     "getStarted": {
       "title": "Ways to send funds on {{appName}}",
@@ -2195,7 +2195,7 @@
     },
     "connectPhoneNumberModal": {
       "title": "Connect your phone number",
-      "description": "You need to connect your phone number so you can start sending crypto to your friends"
+      "description": "You need to connect your phone number so you can start sending digital to your friends"
     },
     "unknownAddressInfo": "Please make sure this address supports the asset you are trying to send. Your funds may not be recoverable if this address is invalid.",
     "buttons": {
@@ -2245,13 +2245,13 @@
     }
   },
   "jumpstartIntro": {
-    "title": "Share crypto like a text",
-    "description": "Live Links are a way to send crypto on the Celo network to a friend with a link",
+    "title": "Share digital like a text",
+    "description": "Live Links are a way to send digital on the Celo network to a friend with a link",
     "noFundsHint": "To get started, you’ll need some assets on Celo in your wallet.",
     "haveFundsButton": "Send with a Live Link",
     "addFundsCelo": {
       "title": "Get Assets on Celo",
-      "info": "Live Links are a way to send crypto on the Celo network to a friend with a link.\nTo get started, you’ll need some CELO assets in your wallet.",
+      "info": "Live Links are a way to send digital on the Celo network to a friend with a link.\nTo get started, you’ll need some CELO assets in your wallet.",
       "description": "Once you’ve added assets on Celo you’ll have to come back to create a Live Link.",
       "cta": "Get Assets on Celo",
       "actionDescriptions": {
@@ -2351,8 +2351,8 @@
     "secondaryCta": "No thanks"
   },
   "getStartedHome": {
-    "title": "Buy crypto or transfer tokens",
-    "body": "Buy or transfer compatible tokens to send crypto and explore web3!",
+    "title": "Buy digital or transfer tokens",
+    "body": "Buy or transfer compatible tokens to send digital and explore apps!",
     "titleV1_86": "Add funds to your wallet",
     "exploreTokens": "Explore all tokens",
     "exploreTokensBody": "You can buy up to 10+ tokens in {{appName}}. Check them out!"
@@ -2384,7 +2384,7 @@
   "error": "Error",
   "linkPhoneNumber": {
     "title": "Link a phone number to your wallet address",
-    "description": "No more messy wallet addresses! Send crypto to other Celo users with just a phone number",
+    "description": "No more messy wallet addresses! Send digital to other Celo users with just a phone number",
     "startButtonLabel": "Link Phone Number",
     "later": "I'll do this later"
   },
@@ -2416,7 +2416,7 @@
     }
   },
   "jumpstartReclaim": {
-    "description": "Reclaiming your link incurs a network gas fee, would you like to proceed?",
+    "description": "Reclaiming your link incurs a network fee, would you like to proceed?",
     "fetchStatusError": {
       "title": "Oops, something went wrong",
       "description": "We could not get the claim status of this invitation, please try again later or contact support",
@@ -2565,12 +2565,12 @@
       }
     },
     "cta": {
-      "title": "Earn on your crypto",
+      "title": "Earn on your digital",
       "subtitle": "Deposit today and earn returns",
       "description": "See how much you can earn when supplying a lending pool"
     },
     "earnInfo": {
-      "title": "Earn on your\ncrypto",
+      "title": "Earn on your\ndigital",
       "details": {
         "earn": {
           "titleGasSubsidy": "Maximize Earnings without Gas Fees*",
@@ -2580,7 +2580,7 @@
         },
         "work": {
           "title": "Put Your Assets To Work",
-          "subtitle": "Start earning on your crypto by depositing into a liquidity pool. "
+          "subtitle": "Start earning on your digital assets by depositing into a liquidity pool. "
         },
         "manage": {
           "title": "Manage Directly from {{appName}}",
@@ -2606,9 +2606,9 @@
       "description": "Earn approximately {{apy}}% per year when you add {{symbol}} to a pool"
     },
     "entrypoint": {
-      "title": "Earn on your crypto",
+      "title": "Earn on your digital",
       "subtitle": "Deposit and earn",
-      "description": "Earn by lending your crypto assets in liquidity pools.",
+      "description": "Earn by lending your digital assets assets in liquidity pools.",
       "totalDepositAndEarnings": "Total Deposit & Earnings"
     },
     "enterAmount": {
@@ -2675,8 +2675,8 @@
       "fee": "Est. Gas Fees",
       "provider": "Earnings provider",
       "network": "Network",
-      "footer": "By depositing crypto into an Aave pool, you accept the risks associated with using Aave. <0>Terms & Conditions</0>",
-      "footerV1_93": "By depositing crypto into an {{providerName}} pool, you accept the risks associated with using {{providerName}}. <0>Terms & Conditions</0>",
+      "footer": "By depositing digital into an Aave pool, you accept the risks associated with using Aave. <0>Terms & Conditions</0>",
+      "footerV1_93": "By depositing digital into an {{providerName}} pool, you accept the risks associated with using {{providerName}}. <0>Terms & Conditions</0>",
       "noTermsUrlFooter": "You are responsible for your actions in {{appName}}. {{appName}} disclaims all responsibility for your assets or interactions with {{providerName}}. You can review {{providerName}}'s documents <0>here</0> and our Terms & Conditions <1>here</1>.",
       "primaryCta": "Complete",
       "secondaryCta": "Cancel",
@@ -2729,7 +2729,7 @@
       "fees": "Fees"
     },
     "section": {
-      "neeru": "Neeru",
+      "neeru": "Investment",
       "allbridge": "Allbridge",
       "aave": "Aave",
       "marranitos": "Marranitos",
@@ -2741,16 +2741,16 @@
       "learnMoreBottomSheet": {
         "bottomSheetTitle": "Learn more about yield pools",
         "apySubtitle": "What is an APY?",
-        "apyDescription": "Annual percentage yield (APY) is a metric used to calculate the annualized return on crypto investments. It's a key indicator of a cryptocurrency's potential return and profitability.",
+        "apyDescription": "Annual percentage yield (APY) is a metric used to calculate the annualized return on digital investments. It's a key indicator of a digital asset's potential return and profitability.",
         "tvlSubtitle": "What is TVL?",
-        "tvlDescription": "TVL stands for Total Value Locked, and it's a metric used in the crypto industry to measure the value of digital assets locked on a blockchain network. TVL is calculated by adding up the value of all digital assets locked in a DeFi protocol or smart contract. These assets can include cryptocurrencies, stablecoins, and other tokens.",
+        "tvlDescription": "TVL stands for Total Value Locked, and it's a metric used in the digital industry to measure the value of digital assets locked on a network. TVL is calculated by adding up the value of all digital assets locked in a DeFi protocol or protocol. These assets can include digital assets, stablecoins, and other tokens.",
         "yieldPoolSubtitle": "What is a yield pool?",
         "yieldPoolDescription": "Yield pools, or liquidity pools, are pooled funds provided by token holders, which enable trading on decentralized exchanges. When you contribute to the pool, you can earn interest from other people who borrow those funds.",
         "chooseSubtitle": "How should you choose a pool? ",
         "chooseDescription": "Any financial decision is a personal choice. We have aggregated some pools across different protocols, but each pool has benefits and risks. We do our best to provide some helpful info for each pool, but it’s always best to do additional research if you’re unsure."
       },
       "noPoolsTitle": "You haven’t joined any pools yet",
-      "noPoolsDescription": "Discover available pools, pick one that matches your goals, and make the most of your crypto.",
+      "noPoolsDescription": "Discover available pools, pick one that matches your goals, and make the most of your digital.",
       "errorTitle": "Unable to load pools",
       "errorDescription": "Oops, something went wrong when trying to load the pool information. Please try again.",
       "errorButton": "Try again"
@@ -2866,11 +2866,11 @@
     "selectToken": "Select token",
     "fiatPriceUnavailable": "Price unavailable"
   },
-  "celoDollarAmount": "<0></0> Celo Dollar",
-  "celoDollarAmount_plural": "<0></0> Celo Dollars",
+  "celoDollarAmount": "<0></0> Dollar",
+  "celoDollarAmount_plural": "<0></0> Dollars",
   "goldFlow": {
     "entrypoint": {
-      "title": "Digital Gold (XAUt0)"
+      "title": "Digital Gold (Gold)"
     },
     "info": {
       "title": "Invest in Digital Gold",
@@ -2878,7 +2878,7 @@
       "details": {
         "backed": {
           "title": "100% Gold Backed",
-          "subtitle": "Each XAUt0 token represents one troy ounce of physical gold held in secure Swiss vaults."
+          "subtitle": "Each Gold token represents one troy ounce of physical gold held in secure Swiss vaults."
         },
         "secure": {
           "title": "Secure & Verified",
@@ -2906,8 +2906,8 @@
   },
   "buckspay": {
     "selectProvider": "Withdraw Funds",
-    "selectProviderSubtitle": "Choose a provider to convert your crypto to local currency.",
-    "providerDescription": "Convert COPm to Colombian Pesos",
+    "selectProviderSubtitle": "Choose a provider to convert your digital assets to local currency.",
+    "providerDescription": "Convert Pesos to Colombian Pesos",
     "bankFormTitle": "Bank Details",
     "bankFormSubtitle": "Enter the amount and your bank account details to receive your funds.",
     "amountLabel": "Amount (Pesos)",
@@ -2945,10 +2945,10 @@
     "errorPreparingTransaction": "Failed to prepare transaction. Please try again.",
     "notEnoughGas": "Not enough balance to pay for network fees.",
     "needDecreaseAmount": "Amount is too high. Decrease to cover network fees.",
-    "amountBelowMin": "Minimum amount is {{min}} COPm",
-    "amountAboveMax": "Maximum amount is {{max}} COPm",
-    "insufficientBalance": "Insufficient COPm balance (available: {{balance}})",
-    "apiSubmitFailed": "Your crypto was sent but we couldn't register the transaction. Please contact support with your transaction hash.",
+    "amountBelowMin": "Minimum amount is {{min}} Pesos",
+    "amountAboveMax": "Maximum amount is {{max}} Pesos",
+    "insufficientBalance": "Insufficient Pesos balance (available: {{balance}})",
+    "apiSubmitFailed": "Your digital was sent but we couldn't register the transaction. Please contact support with your transaction hash.",
     "pollingTimeout": "Your withdrawal is still being processed by BucksPay. This can take up to 24 hours. You can close this screen and check back later.",
     "contactSupport": "Contact BucksPay Support",
     "minimize": "Close",
@@ -2959,7 +2959,7 @@
   },
   "tucopramp": {
     "providerName": "TuCop Payments",
-    "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
+    "offrampProviderTagline": "Convert your digital assets pesos to pesos in your bank account",
     "offrampTitle": "Withdraw to your bank",
     "onrampTitle": "Receive digital pesos",
     "onrampEntryTitle": "Receive digital pesos",
@@ -3001,7 +3001,7 @@
     "confirmSendCta": "Confirm and send",
     "confirmCreateOrderCta": "Confirm",
     "creatingOrder": "Preparing your order...",
-    "awaitingDepositHeading": "Send your digital pesos",
+    "awaitingDepositHeading": "Send your digital assets pesos",
     "awaitingDepositBody": "Send {{amount}} digital pesos to complete your withdrawal.",
     "processingHeading": "Processing",
     "awaitingProofHeading": "Transfer pesos via Bre-B",
