@@ -17,6 +17,8 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
@@ -78,6 +80,14 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
 
   useEffect(() => {
+    // Defensive: the on-ramp entry in WithdrawSpend is already gated on
+    // SHOW_TUCOPRAMP_ONRAMP, but a deep link or test harness could land here
+    // with the gate OFF. Redirect back without dispatching so no traffic
+    // reaches Ramp for a feature that is not enabled for this user cohort.
+    if (!getFeatureGate(StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP)) {
+      navigateBack()
+      return
+    }
     dispatch(fetchReceivingAccount())
     dispatch(fetchUserProfile())
     return () => {

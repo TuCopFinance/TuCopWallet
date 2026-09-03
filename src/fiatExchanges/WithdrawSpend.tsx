@@ -12,9 +12,9 @@ import { fiatExchange } from 'src/images/Images'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { useSelector } from 'src/redux/hooks'
-import { getDynamicConfigParams } from 'src/statsig'
+import { getDynamicConfigParams, getFeatureGate } from 'src/statsig'
 import { DynamicConfigs } from 'src/statsig/constants'
-import { StatsigDynamicConfigs } from 'src/statsig/types'
+import { StatsigDynamicConfigs, StatsigFeatureGates } from 'src/statsig/types'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import variables from 'src/styles/variables'
@@ -26,6 +26,7 @@ export default function WithdrawSpend() {
   const appState = useSelector((state) => state.app.appState)
 
   const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
+  const tucopRampOnrampEnabled = getFeatureGate(StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP)
 
   useEffect(() => {
     if (appState === AppState.Active && timestamp) {
@@ -40,6 +41,10 @@ export default function WithdrawSpend() {
     AppAnalytics.track(FiatExchangeEvents.cico_landing_select_flow, {
       flow: FiatExchangeFlow.CashOut,
     })
+  }
+
+  function goToTucopRampOnramp() {
+    navigate(Screens.TuCOPRampOnrampFlow)
   }
 
   const { t } = useTranslation()
@@ -66,6 +71,14 @@ export default function WithdrawSpend() {
               {t(`fiatExchangeFlow.cashOut.fiatExchangeSubtitle`)}
             </Text>
           </ListItem>
+          {tucopRampOnrampEnabled && (
+            <ListItem onPress={goToTucopRampOnramp}>
+              <Text testID="tucoprampOnramp" style={styles.optionTitle}>
+                {t('tucopramp.onrampEntryTitle')}
+              </Text>
+              <Text style={styles.optionSubtitle}>{t('tucopramp.onrampEntrySubtitle')}</Text>
+            </ListItem>
+          )}
         </View>
         <View testID="otherFundingOptions" style={styles.moreWaysContainer}>
           <Text style={styles.moreWays}>

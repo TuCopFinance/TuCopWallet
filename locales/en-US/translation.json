@@ -2962,6 +2962,8 @@
     "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
     "offrampTitle": "Withdraw to your bank",
     "onrampTitle": "Receive digital pesos",
+    "onrampEntryTitle": "Receive digital pesos",
+    "onrampEntrySubtitle": "Convert pesos in your bank account to digital pesos with TuCop Payments",
     "amountLabel": "Amount (Pesos)",
     "amountPlaceholder": "Enter the amount",
     "amountRange": "Amount between {{min}} and {{max}} pesos",

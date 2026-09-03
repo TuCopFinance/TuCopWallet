@@ -3440,6 +3440,8 @@
     "offrampProviderTagline": "Convierte tus pesos digitales a pesos en tu cuenta",
     "offrampTitle": "Retirar a tu banco",
     "onrampTitle": "Recibir pesos digitales",
+    "onrampEntryTitle": "Recibir pesos digitales",
+    "onrampEntrySubtitle": "Convierte tus pesos en cuenta a pesos digitales con TuCop Pagos",
     "amountLabel": "Monto (Pesos)",
     "amountPlaceholder": "Ingresa el monto",
     "amountRange": "Monto entre {{min}} y {{max}} pesos",

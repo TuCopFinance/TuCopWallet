@@ -85,6 +85,14 @@ tsconfig.tsbuildinfo
 */.next/*
 .env
 .env.local
+# Local env backups developers keep during env swaps (e.g. `.env.dev-backup`,
+# `.env.smoke-backup`). Never committed. Patterns catch the common naming
+# conventions so `git add .` cannot capture them by accident. If you need to
+# track one deliberately, use `git add -f`.
+.env.*-backup
+.env.*.backup
+*.env-backup
+*.env.backup
 
 # Packages from old monorepo structure
 packages/
