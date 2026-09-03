@@ -444,6 +444,9 @@ describe('store state', () => {
             "errorCode": null,
             "idempotencyKey": null,
             "lastQuote": null,
+            "proofUrl": null,
+            "proofUrlErrorCode": null,
+            "proofUrlLoading": false,
             "status": "idle",
           },
           "onramp": {

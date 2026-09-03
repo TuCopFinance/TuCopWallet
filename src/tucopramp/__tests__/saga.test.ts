@@ -4,6 +4,7 @@ import { throwError } from 'redux-saga-test-plan/providers'
 import * as api from 'src/tucopramp/api'
 import {
   fetchLimitsSaga,
+  fetchOfframpProofUrlSaga,
   submitCedulaUpdateSaga,
   submitOfframpOrderSaga,
   submitOnrampOrderSaga,
@@ -16,6 +17,9 @@ import {
   offrampCreatingOrder,
   offrampError,
   offrampOrderCreated,
+  offrampProofUrlFailed,
+  offrampProofUrlLoaded,
+  offrampProofUrlLoading,
   offrampQuoteReady,
   offrampQuoting,
   onrampCreatingOrder,
@@ -409,6 +413,49 @@ describe('submitCedulaUpdateSaga', () => {
       .put(cedulaUpdating())
       .put(cedulaUpdateFailed({ code: 'cedula_locked_by_active_order' }))
       .not.put(cedulaUpdateSucceeded())
+      .run()
+  })
+})
+
+describe('fetchOfframpProofUrlSaga', () => {
+  ;(getKeychainAccounts as jest.Mock).mockResolvedValue(mockKeychainAccounts)
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('dispatches loading -> loaded on 200 with the {url, expires_at} shape', async () => {
+    const proof = {
+      url: 'https://api.ramp.tucop.xyz/v1/p2p/proofs/xyz?ts=1&sig=abc',
+      expires_at: '2026-09-03T20:00:00Z',
+    }
+    await expectSaga(fetchOfframpProofUrlSaga, {
+      type: 'x',
+      payload: { orderId: 'o-1', kind: 'operator_outgoing' as const },
+    })
+      .withState(buildState())
+      .provide([[matchers.call.fn(api.getProofUrl), proof]])
+      .put(offrampProofUrlLoading())
+      .put(offrampProofUrlLoaded(proof))
+      .run()
+  })
+
+  it('dispatches failed with the code on error (e.g. 404 order_not_found)', async () => {
+    const err = new (require('src/tucopramp/types').TucopRampError)({
+      httpStatus: 404,
+      code: 'order_not_found',
+      message: 'not found',
+      envelope: { code: 'order_not_found' },
+    })
+    await expectSaga(fetchOfframpProofUrlSaga, {
+      type: 'x',
+      payload: { orderId: 'o-1', kind: 'operator_outgoing' as const },
+    })
+      .withState(buildState())
+      .provide([[matchers.call.fn(api.getProofUrl), throwError(err)]])
+      .put(offrampProofUrlLoading())
+      .put(offrampProofUrlFailed({ code: 'order_not_found' }))
+      .not.put.actionType(offrampProofUrlLoaded.type)
       .run()
   })
 })

@@ -3543,6 +3543,13 @@
         "doneCta": "Listo",
         "errorHeading": "No se pudo actualizar"
       }
+    },
+    "offramp": {
+      "completed": {
+        "proofTitle": "Comprobante del pagador",
+        "proofLoading": "Cargando comprobante...",
+        "proofError": "No pudimos cargar el comprobante. Intenta reabrir la orden."
+      }
     }
   },
   "transactionSuccess": {

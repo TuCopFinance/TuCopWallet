@@ -3876,6 +3876,9 @@ export const v254Schema = {
       currentOrder: null,
       idempotencyKey: null,
       errorCode: null,
+      proofUrl: null,
+      proofUrlLoading: false,
+      proofUrlErrorCode: null,
     },
     onramp: {
       status: 'idle',

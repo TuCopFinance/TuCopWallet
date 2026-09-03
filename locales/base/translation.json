@@ -3432,6 +3432,13 @@
         "doneCta": "Done",
         "errorHeading": "Could not update"
       }
+    },
+    "offramp": {
+      "completed": {
+        "proofTitle": "Payout receipt",
+        "proofLoading": "Loading receipt...",
+        "proofError": "Could not load the receipt. Try re-opening the order."
+      }
     }
   }
 }

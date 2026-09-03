@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -23,6 +24,7 @@ import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import {
   cancelOfframpOrder,
   fetchBanks,
+  fetchOfframpProofUrl,
   fetchUserProfile,
   pollOfframpOrder,
   requestOfframpQuote,
@@ -33,6 +35,9 @@ import {
   offrampCurrentOrderSelector,
   offrampErrorCodeSelector,
   offrampLastQuoteSelector,
+  offrampProofUrlErrorCodeSelector,
+  offrampProofUrlLoadingSelector,
+  offrampProofUrlSelector,
   offrampStatusSelector,
 } from 'src/tucopramp/selectors'
 import { offrampReset } from 'src/tucopramp/slice'
@@ -54,6 +59,9 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const quote = useSelector(offrampLastQuoteSelector)
   const order = useSelector(offrampCurrentOrderSelector)
   const errorCode = useSelector(offrampErrorCodeSelector)
+  const proofUrl = useSelector(offrampProofUrlSelector)
+  const proofUrlLoading = useSelector(offrampProofUrlLoadingSelector)
+  const proofUrlErrorCode = useSelector(offrampProofUrlErrorCodeSelector)
 
   const [amount, setAmount] = useState('')
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('bank_account')
@@ -86,6 +94,18 @@ function TuCOPRampOfframpFlow(_props: Props) {
       dispatch(pollOfframpOrder({ orderId: order.order_id }))
     }
   }, [status, order, dispatch])
+
+  // On COMPLETED, try to fetch the operator's outgoing-transfer proof. Server
+  // returns 404 if none exists (older orders, or Ops has not attached a proof
+  // yet); we hide the proof block in that case rather than showing an error.
+  // Refetches when the cached URL crosses its expires_at deadline (server
+  // TTL 300s per guide sec 10). The re-fetch is idempotent + cheap.
+  useEffect(() => {
+    if (status !== 'completed' || !order?.order_id) return
+    const stillFresh = proofUrl && new Date(proofUrl.expires_at).getTime() > Date.now() + 5_000
+    if (stillFresh || proofUrlLoading) return
+    dispatch(fetchOfframpProofUrl({ orderId: order.order_id, kind: 'operator_outgoing' }))
+  }, [status, order, proofUrl, proofUrlLoading, dispatch])
 
   const amountNum = useMemo(() => Number(amount) || 0, [amount])
   const limits = getCachedLimits()
@@ -400,6 +420,39 @@ function TuCOPRampOfframpFlow(_props: Props) {
                       ? t('tucopramp.expired')
                       : t('tucopramp.cancelled')}
             </Text>
+
+            {status === 'completed' && (
+              <View style={styles.proofBlock}>
+                <Text style={styles.proofTitle}>{t('tucopramp.offramp.completed.proofTitle')}</Text>
+                {proofUrlLoading && (
+                  <View style={styles.proofLoadingRow}>
+                    <ActivityIndicator />
+                    <Text style={styles.helper}>
+                      {t('tucopramp.offramp.completed.proofLoading')}
+                    </Text>
+                  </View>
+                )}
+                {!!proofUrl && !proofUrlLoading && (
+                  <Image
+                    source={{ uri: proofUrl.url }}
+                    style={styles.proofImage}
+                    resizeMode="contain"
+                    testID="tucopramp-offramp-proof-image"
+                  />
+                )}
+                {/* Hide the error entirely on 404 order_not_found or missing
+                    proof - Ops may not have attached one for this order. Only
+                    surface real errors (network, proxy_disabled, etc.). */}
+                {!!proofUrlErrorCode &&
+                  proofUrlErrorCode !== 'order_not_found' &&
+                  !proofUrlLoading && (
+                    <Text style={styles.proofError}>
+                      {t('tucopramp.offramp.completed.proofError')}
+                    </Text>
+                  )}
+              </View>
+            )}
+
             <Button
               text={t('tucopramp.closeCta')}
               onPress={onCloseAndExit}
@@ -562,6 +615,37 @@ const styles = StyleSheet.create({
     color: Colors.black,
     textAlign: 'center',
     marginBottom: Spacing.Regular16,
+  },
+  proofBlock: {
+    alignSelf: 'stretch',
+    marginTop: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+    padding: Spacing.Regular16,
+    borderRadius: 12,
+    backgroundColor: Colors.gray1,
+  },
+  proofTitle: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.gray4,
+    marginBottom: Spacing.Smallest8,
+  },
+  proofImage: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: 8,
+    backgroundColor: Colors.gray2,
+  },
+  proofLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.Regular16,
+  },
+  proofError: {
+    ...typeScale.bodySmall,
+    color: Colors.errorDark,
+    textAlign: 'center',
+    marginTop: Spacing.Smallest8,
   },
   quoteBox: {
     backgroundColor: Colors.gray1,

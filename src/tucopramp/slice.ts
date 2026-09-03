@@ -45,12 +45,24 @@ export type OnrampFlowStatus =
   | 'expired'
   | 'error'
 
+// Short-lived HMAC-signed URL from GET /v1/p2p/orders/{id}/proof-url. Not
+// persisted across app restarts (server TTL 300 s, wallet re-fetches on
+// terminal-screen re-open). Kept on the offramp flow rather than a global
+// slot because only the offramp completion screen renders it today.
+interface ProofUrl {
+  url: string
+  expires_at: string
+}
+
 interface OfframpFlow {
   status: OfframpFlowStatus
   lastQuote: QuoteResponse | null
   currentOrder: OfframpOrderResponse | null
   idempotencyKey: string | null
   errorCode: string | null
+  proofUrl: ProofUrl | null
+  proofUrlLoading: boolean
+  proofUrlErrorCode: string | null
 }
 
 interface OnrampFlow {
@@ -99,6 +111,9 @@ const initialOfframp: OfframpFlow = {
   currentOrder: null,
   idempotencyKey: null,
   errorCode: null,
+  proofUrl: null,
+  proofUrlLoading: false,
+  proofUrlErrorCode: null,
 }
 
 const initialOnramp: OnrampFlow = {
@@ -191,6 +206,19 @@ export const slice = createSlice({
       state.offramp.status = 'error'
       state.offramp.errorCode = action.payload.code
     },
+    offrampProofUrlLoading: (state) => {
+      state.offramp.proofUrlLoading = true
+      state.offramp.proofUrlErrorCode = null
+    },
+    offrampProofUrlLoaded: (state, action: PayloadAction<ProofUrl>) => {
+      state.offramp.proofUrl = action.payload
+      state.offramp.proofUrlLoading = false
+      state.offramp.proofUrlErrorCode = null
+    },
+    offrampProofUrlFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.offramp.proofUrlLoading = false
+      state.offramp.proofUrlErrorCode = action.payload.code
+    },
 
     // On-ramp transitions
     onrampReset: (state) => {
@@ -274,6 +302,9 @@ export const {
   offrampAdvance,
   offrampCancelling,
   offrampError,
+  offrampProofUrlLoading,
+  offrampProofUrlLoaded,
+  offrampProofUrlFailed,
   onrampReset,
   onrampQuoting,
   onrampQuoteReady,

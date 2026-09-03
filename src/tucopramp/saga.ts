@@ -12,8 +12,10 @@ import {
   getOfframpQuote as apiGetOfframpQuote,
   getOnrampQuote as apiGetOnrampQuote,
   getOrder as apiGetOrder,
+  getProofUrl as apiGetProofUrl,
   getReceivingAccount as apiGetReceivingAccount,
   ProofFile,
+  ProofKind,
   TucopRampAuth,
   updateCedula as apiUpdateCedula,
   UpdateCedulaRequest,
@@ -30,6 +32,9 @@ import {
   offrampCreatingOrder,
   offrampError,
   offrampOrderCreated,
+  offrampProofUrlFailed,
+  offrampProofUrlLoaded,
+  offrampProofUrlLoading,
   offrampQuoteReady,
   offrampQuoting,
   onrampAdvance,
@@ -91,6 +96,9 @@ export const submitOfframpOrder = createAction<{
 export const pollOfframpOrder = createAction<{ orderId: string }>('tucopramp/pollOfframpOrder')
 export const cancelOfframpOrder = createAction<{ orderId: string; idempotencyKey?: string }>(
   'tucopramp/cancelOfframpOrder'
+)
+export const fetchOfframpProofUrl = createAction<{ orderId: string; kind: ProofKind }>(
+  'tucopramp/fetchOfframpProofUrl'
 )
 
 export const requestOnrampQuote = createAction<OnrampQuoteRequest>('tucopramp/requestOnrampQuote')
@@ -319,6 +327,31 @@ export function* pollOfframpOrderSaga(action: PayloadAction<{ orderId: string }>
   Logger.warn(TAG, `pollOfframpOrder gave up after ${POLL_MAX_ATTEMPTS} attempts`)
 }
 
+// Fetch the short-lived HMAC-signed URL for a proof (operator_outgoing on
+// COMPLETED offramp orders, or user_incoming on onramp). Server returns
+// { url, expires_at } with a 300 s TTL. Consumer opens the URL directly in
+// an Image / WebView / PDF viewer; the URL is public + HMAC-gated so no
+// wallet-auth headers are needed on the follow-up fetch of the file bytes.
+// If the URL expires while the user is still on the screen, dispatch this
+// action again to pull a fresh one.
+export function* fetchOfframpProofUrlSaga(
+  action: PayloadAction<{ orderId: string; kind: ProofKind }>
+) {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(offrampProofUrlFailed({ code: 'no_wallet' }))
+    return
+  }
+  yield* put(offrampProofUrlLoading())
+  try {
+    const proof = yield* call(apiGetProofUrl, auth, action.payload.orderId, action.payload.kind)
+    yield* put(offrampProofUrlLoaded({ url: proof.url, expires_at: proof.expires_at }))
+  } catch (err) {
+    Logger.warn(TAG, 'fetchOfframpProofUrl failed', err)
+    yield* put(offrampProofUrlFailed({ code: errorCode(err) }))
+  }
+}
+
 export function* cancelOfframpOrderSaga(
   action: PayloadAction<{ orderId: string; idempotencyKey?: string }>
 ) {
@@ -506,6 +539,7 @@ export function* tucoprampSaga() {
   yield* takeLatest(submitOfframpOrder.type, submitOfframpOrderSaga)
   yield* takeLatest(pollOfframpOrder.type, pollOfframpOrderSaga)
   yield* takeLatest(cancelOfframpOrder.type, cancelOfframpOrderSaga)
+  yield* takeLatest(fetchOfframpProofUrl.type, fetchOfframpProofUrlSaga)
   yield* takeLatest(requestOnrampQuote.type, requestOnrampQuoteSaga)
   yield* takeLatest(submitOnrampOrder.type, submitOnrampOrderSaga)
   yield* takeLatest(uploadOnrampProof.type, uploadOnrampProofSaga)

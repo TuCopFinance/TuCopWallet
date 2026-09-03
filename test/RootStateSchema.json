@@ -3390,6 +3390,26 @@
                         }
                     ]
                 },
+                "proofUrl": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "expires_at": { "type": "string" },
+                                "url": { "type": "string" }
+                            },
+                            "required": ["expires_at", "url"],
+                            "type": "object"
+                        },
+                        { "type": "null" }
+                    ]
+                },
+                "proofUrlErrorCode": {
+                    "type": ["null", "string"]
+                },
+                "proofUrlLoading": {
+                    "type": "boolean"
+                },
                 "status": {
                     "$ref": "#/definitions/OfframpFlowStatus"
                 }
@@ -3399,6 +3419,9 @@
                 "errorCode",
                 "idempotencyKey",
                 "lastQuote",
+                "proofUrl",
+                "proofUrlErrorCode",
+                "proofUrlLoading",
                 "status"
             ],
             "type": "object"

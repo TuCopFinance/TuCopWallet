@@ -13,6 +13,11 @@ export const offrampLastQuoteSelector = (state: RootState) => state.tucopramp.of
 export const offrampCurrentOrderSelector = (state: RootState) =>
   state.tucopramp.offramp.currentOrder
 export const offrampErrorCodeSelector = (state: RootState) => state.tucopramp.offramp.errorCode
+export const offrampProofUrlSelector = (state: RootState) => state.tucopramp.offramp.proofUrl
+export const offrampProofUrlLoadingSelector = (state: RootState) =>
+  state.tucopramp.offramp.proofUrlLoading
+export const offrampProofUrlErrorCodeSelector = (state: RootState) =>
+  state.tucopramp.offramp.proofUrlErrorCode
 
 // On-ramp flow
 export const onrampStatusSelector = (state: RootState) => state.tucopramp.onramp.status
