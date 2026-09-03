@@ -3694,6 +3694,9 @@
                         "string"
                     ]
                 },
+                "proofRejectedForRetry": {
+                    "type": "boolean"
+                },
                 "proofUploaded": {
                     "type": "boolean"
                 },
@@ -3709,6 +3712,7 @@
                 "idempotencyKey",
                 "lastQuote",
                 "pendingIdempotencyKey",
+                "proofRejectedForRetry",
                 "proofUploaded",
                 "status"
             ],

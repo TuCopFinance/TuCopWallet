@@ -88,6 +88,14 @@ interface OnrampFlow extends FlowErrorMeta {
   idempotencyKey: string | null
   pendingIdempotencyKey: string | null
   proofUploaded: boolean
+  // True when the server state machine moved the order backwards from
+  // AWAITING_REVIEW / VERIFYING to AWAITING_PROOF, which is the signal that an
+  // operator rejected the previous proof with retryable=true and expects the
+  // user to upload a new one. Set by the polling saga on the regressive
+  // transition, cleared when the user starts a new upload. UI reads this to
+  // show a "comprobante rechazado, sube uno nuevo" banner so the user knows
+  // they returned to the upload step by design, not by a UI glitch.
+  proofRejectedForRetry: boolean
 }
 
 // Server-provided operational caps (min / max / daily / monthly in COP).
@@ -148,6 +156,7 @@ const initialOnramp: OnrampFlow = {
   idempotencyKey: null,
   pendingIdempotencyKey: null,
   proofUploaded: false,
+  proofRejectedForRetry: false,
   errorCode: null,
   errorRetryAfterSeconds: null,
   errorRequestId: null,
@@ -305,6 +314,10 @@ export const slice = createSlice({
     },
     onrampUploadingProof: (state) => {
       state.onramp.status = 'uploading-proof'
+      // Starting a new upload clears the rejection banner from any previous
+      // retryable rejection. If the operator rejects THIS upload too, the
+      // polling saga will re-set the flag on the next regressive transition.
+      state.onramp.proofRejectedForRetry = false
     },
     onrampProofUploaded: (state) => {
       state.onramp.status = 'awaiting-review'
@@ -312,6 +325,16 @@ export const slice = createSlice({
     },
     onrampAdvance: (state, action: PayloadAction<{ status: OnrampFlowStatus }>) => {
       state.onramp.status = action.payload.status
+    },
+    // Dispatched by the polling saga when it detects the specific regressive
+    // transition AWAITING_REVIEW / VERIFYING -> AWAITING_PROOF, which the
+    // server state machine only produces when an operator rejects the previous
+    // proof with retryable=true. Combines status update with rejection-flag
+    // set so the UI can distinguish this state from the initial upload step.
+    onrampProofRejectedForRetry: (state) => {
+      state.onramp.status = 'awaiting-proof-upload'
+      state.onramp.proofUploaded = false
+      state.onramp.proofRejectedForRetry = true
     },
     onrampError: (
       state,
@@ -401,6 +424,7 @@ export const {
   onrampUploadingProof,
   onrampProofUploaded,
   onrampAdvance,
+  onrampProofRejectedForRetry,
   onrampError,
   cedulaUpdateReset,
   cedulaUpdating,

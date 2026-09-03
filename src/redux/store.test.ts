@@ -462,6 +462,7 @@ describe('store state', () => {
             "idempotencyKey": null,
             "lastQuote": null,
             "pendingIdempotencyKey": null,
+            "proofRejectedForRetry": false,
             "proofUploaded": false,
             "status": "idle",
           },

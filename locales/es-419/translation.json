@@ -3567,7 +3567,9 @@
       "label": "He leido y acepto los terminos y condiciones de TuCOPRamp",
       "linkText": "Ver terminos",
       "required": "Aceptar los terminos para continuar"
-    }
+    },
+    "proofRejectedForRetryTitle": "Comprobante rechazado",
+    "proofRejectedForRetryBody": "El operador no pudo verificar tu comprobante. Sube uno nuevo con la transferencia clara y completa."
   },
   "transactionSuccess": {
     "swap": {

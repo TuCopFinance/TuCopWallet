@@ -39,6 +39,7 @@ import {
   onrampErrorRequestIdSelector,
   onrampErrorRetryAfterSecondsSelector,
   onrampLastQuoteSelector,
+  onrampProofRejectedForRetrySelector,
   onrampStatusSelector,
   receivingAccountSelector,
 } from 'src/tucopramp/selectors'
@@ -75,6 +76,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const errorCode = useSelector(onrampErrorCodeSelector)
   const errorRetryAfterSeconds = useSelector(onrampErrorRetryAfterSecondsSelector)
   const errorRequestId = useSelector(onrampErrorRequestIdSelector)
+  const proofRejectedForRetry = useSelector(onrampProofRejectedForRetrySelector)
 
   const [amount, setAmount] = useState('')
   const [cedula, setCedula] = useState('')
@@ -329,6 +331,16 @@ function TuCOPRampOnrampFlow(_props: Props) {
 
         {status === 'awaiting-proof-upload' && order && (
           <View>
+            {proofRejectedForRetry && (
+              <View style={styles.rejectionBanner} testID="tucopramp-onramp-proof-rejected-banner">
+                <Text style={styles.rejectionBannerTitle}>
+                  {t('tucopramp.proofRejectedForRetryTitle')}
+                </Text>
+                <Text style={styles.rejectionBannerBody}>
+                  {t('tucopramp.proofRejectedForRetryBody')}
+                </Text>
+              </View>
+            )}
             <Text style={styles.statusHeading}>{t('tucopramp.awaitingProofHeading')}</Text>
             <View style={styles.infoBox}>
               <Text style={styles.infoLabel}>{t('tucopramp.transferToLabel')}</Text>
@@ -454,6 +466,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.Regular16,
     marginBottom: Spacing.Regular16,
+  },
+  rejectionBanner: {
+    backgroundColor: Colors.errorLight,
+    borderRadius: 12,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.error,
+  },
+  rejectionBannerTitle: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.error,
+    marginBottom: Spacing.Smallest8,
+  },
+  rejectionBannerBody: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
   },
   infoLabel: {
     ...typeScale.labelSemiBoldSmall,

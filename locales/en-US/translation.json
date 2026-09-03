@@ -3089,7 +3089,9 @@
       "label": "I have read and accept the TuCOPRamp terms and conditions",
       "linkText": "View terms",
       "required": "Accept the terms to continue"
-    }
+    },
+    "proofRejectedForRetryTitle": "Receipt rejected",
+    "proofRejectedForRetryBody": "The operator could not verify your receipt. Upload a new one with the transfer clearly visible."
   },
   "transactionSuccess": {
     "swap": {

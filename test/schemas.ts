@@ -3892,6 +3892,7 @@ export const v254Schema = {
       idempotencyKey: null,
       pendingIdempotencyKey: null,
       proofUploaded: false,
+      proofRejectedForRetry: false,
       errorCode: null,
       errorRetryAfterSeconds: null,
       errorRequestId: null,

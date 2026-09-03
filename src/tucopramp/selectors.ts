@@ -36,6 +36,11 @@ export const onrampErrorRequestIdSelector = (state: RootState) =>
   state.tucopramp.onramp.errorRequestId
 export const onrampPendingIdempotencyKeySelector = (state: RootState) =>
   state.tucopramp.onramp.pendingIdempotencyKey
+// True while the user is in the awaiting-proof-upload step AFTER a retryable
+// operator rejection (as opposed to the first entry into that step from
+// creation). Drives the "comprobante rechazado, sube uno nuevo" banner.
+export const onrampProofRejectedForRetrySelector = (state: RootState) =>
+  state.tucopramp.onramp.proofRejectedForRetry
 
 // Cedula update (settings flow)
 export const cedulaUpdateStatusSelector = (state: RootState) => state.tucopramp.cedulaUpdate.status

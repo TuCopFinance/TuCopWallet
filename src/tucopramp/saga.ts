@@ -48,6 +48,7 @@ import {
   onrampCreatingOrder,
   onrampError,
   onrampOrderCreated,
+  onrampProofRejectedForRetry,
   onrampProofUploaded,
   onrampQuoteReady,
   onrampQuoting,
@@ -521,6 +522,13 @@ export function* uploadOnrampProofSaga(
   }
 }
 
+// AWAITING_REVIEW and VERIFYING are the two states from which the server may
+// route back to AWAITING_PROOF via a retryable operator rejection. Tracked
+// locally in the polling loop so we can distinguish "user just uploaded and
+// server is in review" from "operator rejected our upload and we are back to
+// upload step". The latter drives the UI banner via onrampProofRejectedForRetry.
+const RETRYABLE_ROLLBACK_ORIGINS = new Set<OnrampOrderStatus>(['AWAITING_REVIEW', 'VERIFYING'])
+
 export function* pollOnrampOrderSaga(action: PayloadAction<{ orderId: string }>) {
   const auth = yield* call(resolveAuth)
   if (!auth) {
@@ -529,11 +537,27 @@ export function* pollOnrampOrderSaga(action: PayloadAction<{ orderId: string }>)
   }
   let attempts = 0
   let delayMs = POLL_INITIAL_DELAY_MS
+  let previousStatus: OnrampOrderStatus | null = null
   while (attempts < POLL_MAX_ATTEMPTS) {
     try {
       const detail = yield* call(apiGetOrder, auth, action.payload.orderId)
       const status = detail.status as OnrampOrderStatus
-      yield* put(onrampAdvance({ status: mapOnrampDetailStatus(status) }))
+      // Regressive transition from a review-side state back to AWAITING_PROOF
+      // only happens when an operator rejected the proof with retryable=true.
+      // Dispatch a dedicated action so the slice flips the rejection banner
+      // flag together with the status update. Any other transition (including
+      // the first entry into AWAITING_PROOF from creation) goes through the
+      // generic onrampAdvance path so it does not falsely flag as rejection.
+      const isRetryableRollback =
+        status === 'AWAITING_PROOF' &&
+        previousStatus !== null &&
+        RETRYABLE_ROLLBACK_ORIGINS.has(previousStatus)
+      if (isRetryableRollback) {
+        yield* put(onrampProofRejectedForRetry())
+      } else {
+        yield* put(onrampAdvance({ status: mapOnrampDetailStatus(status) }))
+      }
+      previousStatus = status
       if (isOnrampTerminal(status)) return
       if (status === 'VERIFYING') delayMs = POLL_ACTIVE_DELAY_MS
     } catch (err) {
