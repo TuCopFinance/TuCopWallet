@@ -26,6 +26,17 @@ import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
 import {
+  MAX_ACCOUNT_NUMBER_LENGTH,
+  MAX_BREB_KEY_LENGTH,
+  MAX_CEDULA_LENGTH,
+  MAX_NAME_LENGTH,
+  isValidBankAccountNumber,
+  isValidBreBKey,
+  isValidEmail,
+  sanitizeDigits,
+  sanitizePersonName,
+} from 'src/tucopramp/validation'
+import {
   cancelOfframpOrder,
   fetchBanks,
   fetchOfframpProofUrl,
@@ -130,24 +141,21 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
   const payoutFieldsValid = useMemo(() => {
     if (payoutMethod === 'bre_b_key') {
-      return breBKey.trim().length >= 3 && breBKey.trim().length <= 100
+      return isValidBreBKey(breBKey)
     }
     return (
       bankCode.length > 0 &&
-      bankAccountNumber.trim().length >= 4 &&
+      isValidBankAccountNumber(bankAccountNumber) &&
       (selectedBank?.supported_account_types ?? []).includes(bankAccountType)
     )
   }, [payoutMethod, breBKey, bankCode, bankAccountNumber, bankAccountType, selectedBank])
 
   const firstNameValid = firstName.trim().length > 0
   const lastNameValid = lastName.trim().length > 0
+  const cedulaValid = isValidCedula(cedula)
+  const emailValid = isValidEmail(email)
   const formValid =
-    amountValid &&
-    isValidCedula(cedula) &&
-    email.includes('@') &&
-    payoutFieldsValid &&
-    firstNameValid &&
-    lastNameValid
+    amountValid && cedulaValid && emailValid && payoutFieldsValid && firstNameValid && lastNameValid
 
   const onRequestQuote = () => {
     if (!formValid) return
@@ -305,10 +313,16 @@ function TuCOPRampOfframpFlow(_props: Props) {
                   placeholder={t('tucopramp.accountNumberPlaceholder') ?? ''}
                   keyboardType="numeric"
                   value={bankAccountNumber}
-                  onChangeText={setBankAccountNumber}
+                  onChangeText={(v) =>
+                    setBankAccountNumber(sanitizeDigits(v, MAX_ACCOUNT_NUMBER_LENGTH))
+                  }
+                  maxLength={MAX_ACCOUNT_NUMBER_LENGTH}
                   editable={status === 'idle'}
                   testID="tucopramp-offramp-account-number"
                 />
+                {bankAccountNumber.length > 0 && !isValidBankAccountNumber(bankAccountNumber) && (
+                  <Text style={styles.helperError}>{t('tucopramp.accountNumberInvalid')}</Text>
+                )}
               </View>
             )}
 
@@ -319,12 +333,17 @@ function TuCOPRampOfframpFlow(_props: Props) {
                   style={styles.input}
                   placeholder={t('tucopramp.breBKeyPlaceholder') ?? ''}
                   autoCapitalize="none"
+                  autoCorrect={false}
                   value={breBKey}
-                  onChangeText={setBreBKey}
+                  onChangeText={(v) => setBreBKey(v.slice(0, MAX_BREB_KEY_LENGTH))}
+                  maxLength={MAX_BREB_KEY_LENGTH}
                   editable={status === 'idle'}
                   testID="tucopramp-offramp-brebkey"
                 />
                 <Text style={styles.helper}>{t('tucopramp.breBKeyHelp')}</Text>
+                {breBKey.trim().length > 0 && !isValidBreBKey(breBKey) && (
+                  <Text style={styles.helperError}>{t('tucopramp.breBKeyInvalid')}</Text>
+                )}
               </View>
             )}
 
@@ -335,7 +354,8 @@ function TuCOPRampOfframpFlow(_props: Props) {
               autoCapitalize="words"
               autoCorrect={false}
               value={firstName}
-              onChangeText={(v) => setFirstName(toTitleCase(v))}
+              onChangeText={(v) => setFirstName(toTitleCase(sanitizePersonName(v)))}
+              maxLength={MAX_NAME_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-offramp-firstname"
             />
@@ -347,7 +367,8 @@ function TuCOPRampOfframpFlow(_props: Props) {
               autoCapitalize="words"
               autoCorrect={false}
               value={lastName}
-              onChangeText={(v) => setLastName(toTitleCase(v))}
+              onChangeText={(v) => setLastName(toTitleCase(sanitizePersonName(v)))}
+              maxLength={MAX_NAME_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-offramp-lastname"
             />
@@ -357,21 +378,29 @@ function TuCOPRampOfframpFlow(_props: Props) {
               style={styles.input}
               keyboardType="numeric"
               value={cedula}
-              onChangeText={setCedula}
+              onChangeText={(v) => setCedula(sanitizeDigits(v, MAX_CEDULA_LENGTH))}
+              maxLength={MAX_CEDULA_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-offramp-cedula"
             />
+            {cedula.length > 0 && !cedulaValid && (
+              <Text style={styles.helperError}>{t('tucopramp.cedulaInvalid')}</Text>
+            )}
 
             <Text style={styles.label}>{t('tucopramp.emailLabel')}</Text>
             <TextInput
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
               value={email}
               onChangeText={setEmail}
               editable={status === 'idle'}
               testID="tucopramp-offramp-email"
             />
+            {email.length > 0 && !emailValid && (
+              <Text style={styles.helperError}>{t('tucopramp.emailInvalid')}</Text>
+            )}
 
             {status === 'quoting' && <ActivityIndicator style={styles.spinner} />}
 
@@ -721,6 +750,11 @@ const styles = StyleSheet.create({
   helper: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
+    marginTop: Spacing.Smallest8,
+  },
+  helperError: {
+    ...typeScale.bodySmall,
+    color: Colors.errorDark,
     marginTop: Spacing.Smallest8,
   },
   segmentRow: {

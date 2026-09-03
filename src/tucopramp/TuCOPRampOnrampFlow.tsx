@@ -26,6 +26,13 @@ import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
 import {
+  MAX_CEDULA_LENGTH,
+  MAX_NAME_LENGTH,
+  isValidEmail,
+  sanitizeDigits,
+  sanitizePersonName,
+} from 'src/tucopramp/validation'
+import {
   fetchReceivingAccount,
   fetchUserProfile,
   pollOnrampOrder,
@@ -113,8 +120,9 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const amountValid = amountNum >= limits.min_order_cop && amountNum <= limits.max_order_cop
   const firstNameValid = firstName.trim().length > 0
   const lastNameValid = lastName.trim().length > 0
-  const formValid =
-    amountValid && isValidCedula(cedula) && email.includes('@') && firstNameValid && lastNameValid
+  const cedulaValid = isValidCedula(cedula)
+  const emailValid = isValidEmail(email)
+  const formValid = amountValid && cedulaValid && emailValid && firstNameValid && lastNameValid
 
   const onRequestQuote = () => {
     if (!formValid) return
@@ -222,7 +230,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
               autoCapitalize="words"
               autoCorrect={false}
               value={firstName}
-              onChangeText={(v) => setFirstName(toTitleCase(v))}
+              onChangeText={(v) => setFirstName(toTitleCase(sanitizePersonName(v)))}
+              maxLength={MAX_NAME_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-onramp-firstname"
             />
@@ -234,7 +243,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
               autoCapitalize="words"
               autoCorrect={false}
               value={lastName}
-              onChangeText={(v) => setLastName(toTitleCase(v))}
+              onChangeText={(v) => setLastName(toTitleCase(sanitizePersonName(v)))}
+              maxLength={MAX_NAME_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-onramp-lastname"
             />
@@ -244,21 +254,29 @@ function TuCOPRampOnrampFlow(_props: Props) {
               style={styles.input}
               keyboardType="numeric"
               value={cedula}
-              onChangeText={setCedula}
+              onChangeText={(v) => setCedula(sanitizeDigits(v, MAX_CEDULA_LENGTH))}
+              maxLength={MAX_CEDULA_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-onramp-cedula"
             />
+            {cedula.length > 0 && !cedulaValid && (
+              <Text style={styles.helperError}>{t('tucopramp.cedulaInvalid')}</Text>
+            )}
 
             <Text style={styles.label}>{t('tucopramp.emailLabel')}</Text>
             <TextInput
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
               value={email}
               onChangeText={setEmail}
               editable={status === 'idle'}
               testID="tucopramp-onramp-email"
             />
+            {email.length > 0 && !emailValid && (
+              <Text style={styles.helperError}>{t('tucopramp.emailInvalid')}</Text>
+            )}
 
             {status === 'quoting' && <ActivityIndicator style={styles.spinner} />}
 
@@ -438,6 +456,11 @@ const styles = StyleSheet.create({
   helper: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
+    marginTop: Spacing.Smallest8,
+  },
+  helperError: {
+    ...typeScale.bodySmall,
+    color: Colors.errorDark,
     marginTop: Spacing.Smallest8,
   },
   spinner: { marginVertical: Spacing.Thick24 },
