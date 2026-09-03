@@ -3869,6 +3869,8 @@ export const v254Schema = {
     limits: {
       value: null,
       fetchedAt: null,
+      serverMaxAgeMs: null,
+      backgroundRevalidateInFlight: false,
     },
     offramp: {
       status: 'idle',
@@ -3876,6 +3878,8 @@ export const v254Schema = {
       currentOrder: null,
       idempotencyKey: null,
       errorCode: null,
+      errorRetryAfterSeconds: null,
+      errorRequestId: null,
       proofUrl: null,
       proofUrlLoading: false,
       proofUrlErrorCode: null,
@@ -3887,6 +3891,8 @@ export const v254Schema = {
       idempotencyKey: null,
       proofUploaded: false,
       errorCode: null,
+      errorRetryAfterSeconds: null,
+      errorRequestId: null,
     },
     cedulaUpdate: {
       status: 'idle',

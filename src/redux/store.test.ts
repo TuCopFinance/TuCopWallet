@@ -436,12 +436,16 @@ describe('store state', () => {
             "status": "idle",
           },
           "limits": {
+            "backgroundRevalidateInFlight": false,
             "fetchedAt": null,
+            "serverMaxAgeMs": null,
             "value": null,
           },
           "offramp": {
             "currentOrder": null,
             "errorCode": null,
+            "errorRequestId": null,
+            "errorRetryAfterSeconds": null,
             "idempotencyKey": null,
             "lastQuote": null,
             "proofUrl": null,
@@ -452,6 +456,8 @@ describe('store state', () => {
           "onramp": {
             "currentOrder": null,
             "errorCode": null,
+            "errorRequestId": null,
+            "errorRetryAfterSeconds": null,
             "idempotencyKey": null,
             "lastQuote": null,
             "proofUploaded": false,

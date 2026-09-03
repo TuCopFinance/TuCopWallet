@@ -1,13 +1,24 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
+import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import {
   fetchReceivingAccount,
@@ -20,6 +31,8 @@ import {
 import {
   onrampCurrentOrderSelector,
   onrampErrorCodeSelector,
+  onrampErrorRequestIdSelector,
+  onrampErrorRetryAfterSecondsSelector,
   onrampLastQuoteSelector,
   onrampStatusSelector,
   receivingAccountSelector,
@@ -30,6 +43,11 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampOnrampFlow>
+
+// Legal terms URL (see TuCOPRampOfframpFlow for context). Kept as separate
+// constants per file to keep the flows self-contained; if Legal publishes
+// a TuCOPRamp-specific URL, update both in the same commit.
+const TUCOPRAMP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
 // Placeholder ProofFile for the smoke path. Real file picker (react-native-
 // image-picker or expo-image-picker) wires in when we polish the UX; the
@@ -50,11 +68,14 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const quote = useSelector(onrampLastQuoteSelector)
   const order = useSelector(onrampCurrentOrderSelector)
   const errorCode = useSelector(onrampErrorCodeSelector)
+  const errorRetryAfterSeconds = useSelector(onrampErrorRetryAfterSecondsSelector)
+  const errorRequestId = useSelector(onrampErrorRequestIdSelector)
 
   const [amount, setAmount] = useState('')
   const [cedula, setCedula] = useState('')
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
+  const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
 
   useEffect(() => {
     dispatch(fetchReceivingAccount())
@@ -82,7 +103,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
   }
 
   const onSubmitOrder = () => {
-    if (!quote) return
+    if (!quote || !consentAccepted) return
+    addConsentBreadcrumb('onramp')
     dispatch(
       submitOnrampOrder({
         body: {
@@ -199,11 +221,35 @@ function TuCOPRampOnrampFlow(_props: Props) {
                     fee: quote.fee_amount_cop.toLocaleString('es-CO'),
                   })}
                 </Text>
+                <TouchableOpacity
+                  style={styles.consentRow}
+                  onPress={() => setConsentAccepted((v) => !v)}
+                  testID="tucopramp-onramp-consent"
+                >
+                  <View
+                    style={[
+                      styles.consentCheckbox,
+                      consentAccepted && styles.consentCheckboxChecked,
+                    ]}
+                  >
+                    {consentAccepted && <Text style={styles.consentCheckmark}>✓</Text>}
+                  </View>
+                  <View style={styles.consentTextBlock}>
+                    <Text style={styles.consentLabel}>{t('tucopramp.consent.label')}</Text>
+                    <Text
+                      style={styles.consentLink}
+                      onPress={() => Linking.openURL(TUCOPRAMP_TERMS_URL)}
+                    >
+                      {t('tucopramp.consent.linkText')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
                 <Button
                   text={t('tucopramp.confirmCreateOrderCta')}
                   onPress={onSubmitOrder}
                   size={BtnSizes.FULL}
                   type={BtnTypes.PRIMARY}
+                  disabled={!consentAccepted}
                   testID="tucopramp-onramp-create-order"
                 />
               </View>
@@ -281,12 +327,12 @@ function TuCOPRampOnrampFlow(_props: Props) {
             <Text style={styles.body}>
               {errorCode ? t(`tucopramp.errors.${errorCode}`, t('tucopramp.errors.unknown')) : ''}
             </Text>
-            <Button
-              text={t('tucopramp.retryCta')}
-              onPress={onStartOver}
-              size={BtnSizes.FULL}
-              type={BtnTypes.PRIMARY}
-              testID="tucopramp-onramp-retry"
+            <ErrorFooter
+              errorCode={errorCode}
+              retryAfterSeconds={errorRetryAfterSeconds}
+              requestId={errorRequestId}
+              onRetry={onStartOver}
+              retryButtonTestId="tucopramp-onramp-retry"
             />
           </View>
         )}
@@ -370,6 +416,44 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray4,
     marginBottom: Spacing.Regular16,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+  },
+  consentCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: Colors.gray4,
+    marginRight: Spacing.Smallest8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  consentCheckboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  consentCheckmark: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  consentTextBlock: {
+    flex: 1,
+  },
+  consentLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
+  },
+  consentLink: {
+    ...typeScale.bodySmall,
+    color: Colors.primary,
+    marginTop: Spacing.Tiny4,
+    textDecorationLine: 'underline',
   },
 })
 

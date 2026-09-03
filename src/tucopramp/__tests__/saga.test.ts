@@ -105,19 +105,20 @@ describe('fetchLimitsSaga', () => {
     // .put.like ignores unspecified payload fields (fetchedAt).
     await expectSaga(fetchLimitsSaga)
       .withState(buildState({ fetchedAt: null }))
-      .provide([[matchers.call.fn(api.getLimits), LIMITS]])
+      .provide([[matchers.call.fn(api.getLimitsWithMeta), { value: LIMITS, serverMaxAgeMs: null }]])
       .put.like({
         action: { type: limitsFetched.type, payload: { value: LIMITS } },
       })
       .run()
   })
 
-  it('skips fetch on warm cache (fetchedAt within 12h TTL)', async () => {
-    const getLimitsSpy = jest.spyOn(api, 'getLimits')
-    // fetchedAt just under 12h old relative to real Date.now
+  it('skips fetch on fresh cache (within server max-age)', async () => {
+    const getLimitsSpy = jest.spyOn(api, 'getLimitsWithMeta')
+    // fetchedAt seconds ago -> well within the default max-age (300s).
+    // Stale-while-revalidate should NOT fire; put must not happen either.
     const nowIsh = Date.now()
     await expectSaga(fetchLimitsSaga)
-      .withState(buildState({ fetchedAt: nowIsh - TWELVE_HOURS_MS + 60_000 }))
+      .withState(buildState({ fetchedAt: nowIsh - 10_000 }))
       .not.put.actionType(limitsFetched.type)
       .run()
     expect(getLimitsSpy).not.toHaveBeenCalled()
@@ -128,7 +129,7 @@ describe('fetchLimitsSaga', () => {
     const nowIsh = Date.now()
     await expectSaga(fetchLimitsSaga)
       .withState(buildState({ fetchedAt: nowIsh - TWELVE_HOURS_MS - 60_000 }))
-      .provide([[matchers.call.fn(api.getLimits), LIMITS]])
+      .provide([[matchers.call.fn(api.getLimitsWithMeta), { value: LIMITS, serverMaxAgeMs: null }]])
       .put.actionType(limitsFetched.type)
       .run()
   })
@@ -137,7 +138,7 @@ describe('fetchLimitsSaga', () => {
     const err = new Error('network down')
     await expectSaga(fetchLimitsSaga)
       .withState(buildState({ fetchedAt: null }))
-      .provide([[matchers.call.fn(api.getLimits), throwError(err)]])
+      .provide([[matchers.call.fn(api.getLimitsWithMeta), throwError(err)]])
       .not.put.actionType(limitsFetched.type)
       .run()
     expect(captureBusinessError).toHaveBeenCalledWith(

@@ -37,6 +37,8 @@ import {
   banksSelector,
   offrampCurrentOrderSelector,
   offrampErrorCodeSelector,
+  offrampErrorRequestIdSelector,
+  offrampErrorRetryAfterSecondsSelector,
   offrampLastQuoteSelector,
   offrampProofUrlErrorCodeSelector,
   offrampProofUrlLoadingSelector,
@@ -50,6 +52,11 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampOfframpFlow>
+
+// TuCOPRamp legal terms URL. Reuses the existing TuCop TOS since Legal has
+// not published a TuCOPRamp-specific version yet; when they do, update this
+// constant (and the onramp mirror) in the same commit + confirm with Ops.
+const TUCOPRAMP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
 // Single screen master that drives the full off-ramp flow via conditional
 // rendering on the redux flow status. Keeps navigation shallow.
@@ -76,6 +83,9 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const [email, setEmail] = useState<string>('')
   const [fullName, setFullName] = useState<string>('')
   const [openPicker, setOpenPicker] = useState<null | 'bank' | 'accountType'>(null)
+  const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
+  const errorRetryAfterSeconds = useSelector(offrampErrorRetryAfterSecondsSelector)
+  const errorRequestId = useSelector(offrampErrorRequestIdSelector)
 
   useEffect(() => {
     dispatch(fetchBanks())
@@ -143,7 +153,10 @@ function TuCOPRampOfframpFlow(_props: Props) {
   }
 
   const onSubmitOrder = () => {
-    if (!quote) return
+    if (!quote || !consentAccepted) return
+    // Consent breadcrumb before the order request goes out: any error event
+    // that follows will carry proof of when consent was recorded.
+    addConsentBreadcrumb('offramp')
     dispatch(
       submitOfframpOrder({
         body: {
@@ -352,11 +365,35 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 <Text style={styles.quoteFee}>
                   {t('tucopramp.quoteFee', { fee: quote.fee_amount_cop.toLocaleString('es-CO') })}
                 </Text>
+                <TouchableOpacity
+                  style={styles.consentRow}
+                  onPress={() => setConsentAccepted((v) => !v)}
+                  testID="tucopramp-offramp-consent"
+                >
+                  <View
+                    style={[
+                      styles.consentCheckbox,
+                      consentAccepted && styles.consentCheckboxChecked,
+                    ]}
+                  >
+                    {consentAccepted && <Text style={styles.consentCheckmark}>✓</Text>}
+                  </View>
+                  <View style={styles.consentTextBlock}>
+                    <Text style={styles.consentLabel}>{t('tucopramp.consent.label')}</Text>
+                    <Text
+                      style={styles.consentLink}
+                      onPress={() => Linking.openURL(TUCOPRAMP_TERMS_URL)}
+                    >
+                      {t('tucopramp.consent.linkText')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
                 <Button
                   text={t('tucopramp.confirmSendCta')}
                   onPress={onSubmitOrder}
                   size={BtnSizes.FULL}
                   type={BtnTypes.PRIMARY}
+                  disabled={!consentAccepted}
                   testID="tucopramp-offramp-confirm"
                 />
               </View>
@@ -472,12 +509,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
             <Text style={styles.body}>
               {errorCode ? t(`tucopramp.errors.${errorCode}`, t('tucopramp.errors.unknown')) : ''}
             </Text>
-            <Button
-              text={t('tucopramp.retryCta')}
-              onPress={onStartOver}
-              size={BtnSizes.FULL}
-              type={BtnTypes.PRIMARY}
-              testID="tucopramp-offramp-retry"
+            <ErrorFooter
+              errorCode={errorCode}
+              retryAfterSeconds={errorRetryAfterSeconds}
+              requestId={errorRequestId}
+              onRetry={onStartOver}
+              retryButtonTestId="tucopramp-offramp-retry"
             />
           </View>
         )}
@@ -649,6 +686,44 @@ const styles = StyleSheet.create({
     color: Colors.errorDark,
     textAlign: 'center',
     marginTop: Spacing.Smallest8,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+  },
+  consentCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: Colors.gray4,
+    marginRight: Spacing.Smallest8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  consentCheckboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  consentCheckmark: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  consentTextBlock: {
+    flex: 1,
+  },
+  consentLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
+  },
+  consentLink: {
+    ...typeScale.bodySmall,
+    color: Colors.primary,
+    marginTop: Spacing.Tiny4,
+    textDecorationLine: 'underline',
   },
   quoteBox: {
     backgroundColor: Colors.gray1,

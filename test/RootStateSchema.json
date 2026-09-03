@@ -2501,11 +2501,15 @@
         "LimitsState": {
             "additionalProperties": false,
             "properties": {
+                "backgroundRevalidateInFlight": { "type": "boolean" },
                 "fetchedAt": {
                     "type": [
                         "null",
                         "number"
                     ]
+                },
+                "serverMaxAgeMs": {
+                    "type": ["null", "number"]
                 },
                 "value": {
                     "anyOf": [
@@ -2519,7 +2523,9 @@
                 }
             },
             "required": [
+                "backgroundRevalidateInFlight",
                 "fetchedAt",
+                "serverMaxAgeMs",
                 "value"
             ],
             "type": "object"
@@ -3374,6 +3380,12 @@
                         "string"
                     ]
                 },
+                "errorRequestId": {
+                    "type": ["null", "string"]
+                },
+                "errorRetryAfterSeconds": {
+                    "type": ["null", "number"]
+                },
                 "idempotencyKey": {
                     "type": [
                         "null",
@@ -3417,6 +3429,8 @@
             "required": [
                 "currentOrder",
                 "errorCode",
+                "errorRequestId",
+                "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
                 "proofUrl",
@@ -3509,6 +3523,12 @@
                         "string"
                     ]
                 },
+                "errorRequestId": {
+                    "type": ["null", "string"]
+                },
+                "errorRetryAfterSeconds": {
+                    "type": ["null", "number"]
+                },
                 "idempotencyKey": {
                     "type": [
                         "null",
@@ -3535,6 +3555,8 @@
             "required": [
                 "currentOrder",
                 "errorCode",
+                "errorRequestId",
+                "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
                 "proofUploaded",

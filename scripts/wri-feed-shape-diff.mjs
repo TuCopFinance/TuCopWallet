@@ -36,13 +36,21 @@ const INCLUDE_TYPES = [
   'CLAIM_REWARD',
 ].join(',')
 
+// Types the TuCop backend still does not classify at parity with Valora.
+// Kept out of the default comparison to keep the gap signal meaningful
+// (Valora side would count these as legitimate rows that TuCop cannot
+// reproduce yet). Pass --include-deferred to keep them.
+//
+// 2026-09-03: DEPOSIT / WITHDRAW / CLAIM_REWARD removed from this set after
+// the backend cross-audit confirmed TuCop classifies Neeru interactions
+// as DEPOSIT / WITHDRAW with appName + positionId (verified live for
+// spike v2 hashes 0x6ee3c5aa..., 0xf6f97aed..., 0xaca26b5c...). Valora
+// emits the same on-chain tx as generic SENT / RECEIVED. Hash-only
+// equality now catches them as Common.
 const DEFERRED_TYPES = new Set([
   'NFT_RECEIVED',
   'NFT_SENT',
   'CROSS_CHAIN_SWAP_TRANSACTION',
-  'DEPOSIT',
-  'WITHDRAW',
-  'CLAIM_REWARD',
 ])
 
 const NETWORK_IDS = 'celo-mainnet'
@@ -211,9 +219,25 @@ async function main() {
   const valoraByHash = new Map(valoraTxs.map((tx) => [tx.transactionHash, tx]))
   const tucopByHash = new Map(tucopTxs.map((tx) => [tx.transactionHash, tx]))
 
-  const onlyValora = [...valoraByHash.keys()].filter((h) => !tucopByHash.has(h))
+  // TuCop back-end aggregates multi-swap Dolares clusters into ONE top-level
+  // SwapTransaction whose `fromTokenAmounts[i].transactionHash` carries the
+  // per-leg hashes (spec section 7 "Multi-swap Dolares clustering", backend
+  // PR #244 shipped 2026-08-28). Valora emits each leg as a standalone row.
+  // For hash coverage we treat any leg hash as "present in TuCop" so the
+  // comparator does not double-count what is the same on-chain tx.
+  const tucopLegHashes = new Set()
+  for (const tx of tucopTxs) {
+    const legs = Array.isArray(tx.fromTokenAmounts) ? tx.fromTokenAmounts : []
+    for (const leg of legs) {
+      const legHash = typeof leg?.transactionHash === 'string' ? leg.transactionHash.toLowerCase() : null
+      if (legHash) tucopLegHashes.add(legHash)
+    }
+  }
+  const tucopHasHash = (h) => tucopByHash.has(h) || tucopLegHashes.has(h)
+
+  const onlyValora = [...valoraByHash.keys()].filter((h) => !tucopHasHash(h))
   const onlyTucop = [...tucopByHash.keys()].filter((h) => !valoraByHash.has(h))
-  const common = [...valoraByHash.keys()].filter((h) => tucopByHash.has(h))
+  const common = [...valoraByHash.keys()].filter(tucopHasHash)
 
   stdout.write('== Counts ==\n')
   stdout.write(`  Valora transactions: ${valoraTxs.length}\n`)
