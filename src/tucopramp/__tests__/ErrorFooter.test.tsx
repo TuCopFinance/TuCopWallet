@@ -41,7 +41,9 @@ describe('ErrorFooter', () => {
     expect(getByTestId('tucopramp-error-retry-countdown')).toHaveTextContent(/3/)
 
     // Advance 2 seconds via fake timers
-    act(() => {
+    // Cast to void: act() returns a Thenable but the ops inside are synchronous
+    // (jest.advanceTimersByTime is sync). No await needed.
+    void act(() => {
       jest.advanceTimersByTime(2000)
     })
     expect(getByTestId('tucopramp-error-retry-countdown')).toHaveTextContent(/1/)
@@ -52,7 +54,9 @@ describe('ErrorFooter', () => {
     expect(onRetry).not.toHaveBeenCalled()
 
     // Advance to 0 -> re-enabled
-    act(() => {
+    // Cast to void: act() returns a Thenable but the ops inside are synchronous
+    // (jest.advanceTimersByTime is sync). No await needed.
+    void act(() => {
       jest.advanceTimersByTime(2000)
     })
     fireEvent.press(retryBtn)

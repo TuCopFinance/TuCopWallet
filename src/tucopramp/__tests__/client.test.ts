@@ -313,3 +313,25 @@ describe('tucopRampFetch', () => {
     })
   })
 })
+
+describe('parseCacheControlMaxAgeMs', () => {
+  const { parseCacheControlMaxAgeMs } = require('src/tucopramp/client')
+
+  it.each([
+    ['public, max-age=300', 300_000],
+    ['max-age=60', 60_000],
+    ['private, max-age=0, must-revalidate', 0],
+    ['MAX-AGE=42', 42_000],
+    ['no-cache', null],
+    ['public', null],
+    ['max-age=abc', null],
+    ['max-age=-5', null],
+  ])('Cache-Control: %p -> %p ms', (header, expected) => {
+    const headers = new Headers({ 'Cache-Control': header })
+    expect(parseCacheControlMaxAgeMs(headers)).toBe(expected)
+  })
+
+  it('returns null when the header is absent', () => {
+    expect(parseCacheControlMaxAgeMs(new Headers({}))).toBeNull()
+  })
+})
