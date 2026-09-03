@@ -564,36 +564,6 @@
             ],
             "type": "object"
         },
-        "Bank": {
-            "additionalProperties": false,
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "display_name": {
-                    "type": "string"
-                },
-                "supported_account_types": {
-                    "items": {
-                        "$ref": "#/definitions/BankAccountType"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "code",
-                "display_name",
-                "supported_account_types"
-            ],
-            "type": "object"
-        },
-        "BankAccountType": {
-            "enum": [
-                "checking",
-                "savings"
-            ],
-            "type": "string"
-        },
         "BankDetails": {
             "additionalProperties": false,
             "properties": {
@@ -926,6 +896,34 @@
                 "txHash"
             ],
             "type": "object"
+        },
+        "CedulaUpdateState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/CedulaUpdateStatus"
+                }
+            },
+            "required": [
+                "errorCode",
+                "status"
+            ],
+            "type": "object"
+        },
+        "CedulaUpdateStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "success",
+                "updating"
+            ],
+            "type": "string"
         },
         "CeloNewsConfig": {
             "additionalProperties": false,
@@ -2501,7 +2499,9 @@
         "LimitsState": {
             "additionalProperties": false,
             "properties": {
-                "backgroundRevalidateInFlight": { "type": "boolean" },
+                "backgroundRevalidateInFlight": {
+                    "type": "boolean"
+                },
                 "fetchedAt": {
                     "type": [
                         "null",
@@ -2509,7 +2509,10 @@
                     ]
                 },
                 "serverMaxAgeMs": {
-                    "type": ["null", "number"]
+                    "type": [
+                        "null",
+                        "number"
+                    ]
                 },
                 "value": {
                     "anyOf": [
@@ -2547,32 +2550,6 @@
                 "currencyCode",
                 "exchangeRate",
                 "value"
-            ],
-            "type": "object"
-        },
-        "MeResponse": {
-            "additionalProperties": false,
-            "properties": {
-                "cedula_last_4": {
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "primary_email": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "cedula_last_4",
-                "full_name",
-                "user_id"
             ],
             "type": "object"
         },
@@ -3367,7 +3344,38 @@
                 "currentOrder": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/OfframpOrderResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "chain_id": {
+                                    "type": "number"
+                                },
+                                "expires_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "gross_amount_copm": {
+                                    "type": "number"
+                                },
+                                "multisig_address": {
+                                    "type": "string"
+                                },
+                                "order_id": {
+                                    "description": "Format: uuid",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "chain_id",
+                                "expires_at",
+                                "gross_amount_copm",
+                                "multisig_address",
+                                "order_id",
+                                "status"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -3381,10 +3389,16 @@
                     ]
                 },
                 "errorRequestId": {
-                    "type": ["null", "string"]
+                    "type": [
+                        "null",
+                        "string"
+                    ]
                 },
                 "errorRetryAfterSeconds": {
-                    "type": ["null", "number"]
+                    "type": [
+                        "null",
+                        "number"
+                    ]
                 },
                 "idempotencyKey": {
                     "type": [
@@ -3395,7 +3409,61 @@
                 "lastQuote": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/QuoteResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "display_text": {
+                                    "type": "string"
+                                },
+                                "expires_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "fee_absorbed_by": {
+                                    "enum": [
+                                        "tucop",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                },
+                                "fee_amount_cop": {
+                                    "type": "number"
+                                },
+                                "fee_percent": {
+                                    "type": "number"
+                                },
+                                "gross_amount_cop": {
+                                    "type": "number"
+                                },
+                                "gross_amount_copm": {
+                                    "type": "number"
+                                },
+                                "net_amount_to_user_cop": {
+                                    "type": "number"
+                                },
+                                "quote_id": {
+                                    "type": "string"
+                                },
+                                "remaining_daily_cop": {
+                                    "type": "number"
+                                },
+                                "remaining_monthly_cop": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "display_text",
+                                "expires_at",
+                                "fee_absorbed_by",
+                                "fee_amount_cop",
+                                "fee_percent",
+                                "gross_amount_cop",
+                                "gross_amount_copm",
+                                "net_amount_to_user_cop",
+                                "quote_id",
+                                "remaining_daily_cop",
+                                "remaining_monthly_cop"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -3405,19 +3473,18 @@
                 "proofUrl": {
                     "anyOf": [
                         {
-                            "additionalProperties": false,
-                            "properties": {
-                                "expires_at": { "type": "string" },
-                                "url": { "type": "string" }
-                            },
-                            "required": ["expires_at", "url"],
-                            "type": "object"
+                            "$ref": "#/definitions/ProofUrl"
                         },
-                        { "type": "null" }
+                        {
+                            "type": "null"
+                        }
                     ]
                 },
                 "proofUrlErrorCode": {
-                    "type": ["null", "string"]
+                    "type": [
+                        "null",
+                        "string"
+                    ]
                 },
                 "proofUrlLoading": {
                     "type": "boolean"
@@ -3459,58 +3526,67 @@
             ],
             "type": "string"
         },
-        "OfframpOrderResponse": {
-            "additionalProperties": false,
-            "properties": {
-                "chain_id": {
-                    "type": "number"
-                },
-                "expires_at": {
-                    "type": "string"
-                },
-                "gross_amount_copm": {
-                    "type": "number"
-                },
-                "multisig_address": {
-                    "type": "string"
-                },
-                "order_id": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/OfframpOrderStatus"
-                }
-            },
-            "required": [
-                "chain_id",
-                "expires_at",
-                "gross_amount_copm",
-                "multisig_address",
-                "order_id",
-                "status"
-            ],
-            "type": "object"
-        },
-        "OfframpOrderStatus": {
-            "enum": [
-                "AWAITING_DEPOSIT",
-                "CANCELLED",
-                "COMPLETED",
-                "DEPOSIT_CONFIRMED",
-                "EXPIRED",
-                "PROCESSING",
-                "REFUNDED",
-                "REFUND_OWED"
-            ],
-            "type": "string"
-        },
         "OnrampFlow": {
             "additionalProperties": false,
             "properties": {
                 "currentOrder": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/OnrampOrderResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "expires_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "gross_amount_cop": {
+                                    "type": "number"
+                                },
+                                "instructions": {
+                                    "type": "string"
+                                },
+                                "order_id": {
+                                    "description": "Format: uuid",
+                                    "type": "string"
+                                },
+                                "proof_upload_required": {
+                                    "const": true,
+                                    "type": "boolean"
+                                },
+                                "receiving_account": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "bre_b_key": {
+                                            "type": "string"
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "const": "bre_b_key",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "bre_b_key",
+                                        "display_name",
+                                        "kind"
+                                    ],
+                                    "type": "object"
+                                },
+                                "status": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "expires_at",
+                                "gross_amount_cop",
+                                "instructions",
+                                "order_id",
+                                "proof_upload_required",
+                                "receiving_account",
+                                "status"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -3524,10 +3600,16 @@
                     ]
                 },
                 "errorRequestId": {
-                    "type": ["null", "string"]
+                    "type": [
+                        "null",
+                        "string"
+                    ]
                 },
                 "errorRetryAfterSeconds": {
-                    "type": ["null", "number"]
+                    "type": [
+                        "null",
+                        "number"
+                    ]
                 },
                 "idempotencyKey": {
                     "type": [
@@ -3538,7 +3620,61 @@
                 "lastQuote": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/QuoteResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "display_text": {
+                                    "type": "string"
+                                },
+                                "expires_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "fee_absorbed_by": {
+                                    "enum": [
+                                        "tucop",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                },
+                                "fee_amount_cop": {
+                                    "type": "number"
+                                },
+                                "fee_percent": {
+                                    "type": "number"
+                                },
+                                "gross_amount_cop": {
+                                    "type": "number"
+                                },
+                                "gross_amount_copm": {
+                                    "type": "number"
+                                },
+                                "net_amount_to_user_cop": {
+                                    "type": "number"
+                                },
+                                "quote_id": {
+                                    "type": "string"
+                                },
+                                "remaining_daily_cop": {
+                                    "type": "number"
+                                },
+                                "remaining_monthly_cop": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "display_text",
+                                "expires_at",
+                                "fee_absorbed_by",
+                                "fee_amount_cop",
+                                "fee_percent",
+                                "gross_amount_cop",
+                                "gross_amount_copm",
+                                "net_amount_to_user_cop",
+                                "quote_id",
+                                "remaining_daily_cop",
+                                "remaining_monthly_cop"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -3578,54 +3714,6 @@
                 "quoting",
                 "uploading-proof",
                 "verifying"
-            ],
-            "type": "string"
-        },
-        "OnrampOrderResponse": {
-            "additionalProperties": false,
-            "properties": {
-                "expires_at": {
-                    "type": "string"
-                },
-                "gross_amount_cop": {
-                    "type": "number"
-                },
-                "instructions": {
-                    "type": "string"
-                },
-                "order_id": {
-                    "type": "string"
-                },
-                "proof_upload_required": {
-                    "const": true,
-                    "type": "boolean"
-                },
-                "receiving_account": {
-                    "$ref": "#/definitions/ReceivingAccountResponse"
-                },
-                "status": {
-                    "$ref": "#/definitions/OnrampOrderStatus"
-                }
-            },
-            "required": [
-                "expires_at",
-                "gross_amount_cop",
-                "instructions",
-                "order_id",
-                "proof_upload_required",
-                "receiving_account",
-                "status"
-            ],
-            "type": "object"
-        },
-        "OnrampOrderStatus": {
-            "enum": [
-                "AWAITING_PROOF",
-                "AWAITING_REVIEW",
-                "CANCELLED",
-                "COMPLETED",
-                "EXPIRED",
-                "VERIFYING"
             ],
             "type": "string"
         },
@@ -4567,6 +4655,22 @@
             ],
             "type": "string"
         },
+        "ProofUrl": {
+            "additionalProperties": false,
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "expires_at",
+                "url"
+            ],
+            "type": "object"
+        },
         "ProposalTypes.OptionalNamespaces": {
             "additionalProperties": false,
             "type": "object"
@@ -4684,83 +4788,6 @@
         },
         "PublicAppConfig": {
             "additionalProperties": false,
-            "type": "object"
-        },
-        "QuoteResponse": {
-            "additionalProperties": false,
-            "properties": {
-                "display_text": {
-                    "type": "string"
-                },
-                "expires_at": {
-                    "type": "string"
-                },
-                "fee_absorbed_by": {
-                    "enum": [
-                        "tucop",
-                        "user"
-                    ],
-                    "type": "string"
-                },
-                "fee_amount_cop": {
-                    "type": "number"
-                },
-                "fee_percent": {
-                    "type": "number"
-                },
-                "gross_amount_cop": {
-                    "type": "number"
-                },
-                "gross_amount_copm": {
-                    "type": "number"
-                },
-                "net_amount_to_user_cop": {
-                    "type": "number"
-                },
-                "quote_id": {
-                    "type": "string"
-                },
-                "remaining_daily_cop": {
-                    "type": "number"
-                },
-                "remaining_monthly_cop": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "display_text",
-                "expires_at",
-                "fee_absorbed_by",
-                "fee_amount_cop",
-                "fee_percent",
-                "gross_amount_cop",
-                "gross_amount_copm",
-                "net_amount_to_user_cop",
-                "quote_id",
-                "remaining_daily_cop",
-                "remaining_monthly_cop"
-            ],
-            "type": "object"
-        },
-        "ReceivingAccountResponse": {
-            "additionalProperties": false,
-            "properties": {
-                "bre_b_key": {
-                    "type": "string"
-                },
-                "display_name": {
-                    "type": "string"
-                },
-                "kind": {
-                    "const": "bre_b_key",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "bre_b_key",
-                "display_name",
-                "kind"
-            ],
             "type": "object"
         },
         "Recipient": {
@@ -5078,6 +5105,7 @@
                 "TransactionSuccessScreen",
                 "TuCOPRampOfframpFlow",
                 "TuCOPRampOnrampFlow",
+                "TuCOPRampUpdateCedulaScreen",
                 "UpgradeScreen",
                 "ValidateRecipientAccount",
                 "ValidateRecipientIntro",
@@ -7067,7 +7095,34 @@
                     "anyOf": [
                         {
                             "items": {
-                                "$ref": "#/definitions/Bank"
+                                "additionalProperties": false,
+                                "properties": {
+                                    "ach_code": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "display_name": {
+                                        "type": "string"
+                                    },
+                                    "supported_account_types": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "ach_code",
+                                    "code",
+                                    "display_name",
+                                    "supported_account_types"
+                                ],
+                                "type": "object"
                             },
                             "type": "array"
                         },
@@ -7077,29 +7132,7 @@
                     ]
                 },
                 "cedulaUpdate": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "errorCode": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "status": {
-                            "enum": [
-                                "error",
-                                "idle",
-                                "success",
-                                "updating"
-                            ],
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "errorCode",
-                        "status"
-                    ],
-                    "type": "object"
+                    "$ref": "#/definitions/CedulaUpdateState"
                 },
                 "limits": {
                     "$ref": "#/definitions/LimitsState"
@@ -7113,7 +7146,25 @@
                 "receivingAccount": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/ReceivingAccountResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "bre_b_key": {
+                                    "type": "string"
+                                },
+                                "display_name": {
+                                    "type": "string"
+                                },
+                                "kind": {
+                                    "const": "bre_b_key",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "bre_b_key",
+                                "display_name",
+                                "kind"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -7123,7 +7174,47 @@
                 "userProfile": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/MeResponse"
+                            "additionalProperties": false,
+                            "properties": {
+                                "cedula_last_4": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "full_name": {
+                                    "type": "string"
+                                },
+                                "primary_email": {
+                                    "description": "Format: email",
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "primary_phone": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "user_id": {
+                                    "description": "Format: uuid",
+                                    "type": "string"
+                                },
+                                "wallets_count": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "cedula_last_4",
+                                "full_name",
+                                "primary_email",
+                                "primary_phone",
+                                "user_id",
+                                "wallets_count"
+                            ],
+                            "type": "object"
                         },
                         {
                             "type": "null"
@@ -7661,6 +7752,7 @@
                         "TransactionSuccessScreen",
                         "TuCOPRampOfframpFlow",
                         "TuCOPRampOnrampFlow",
+                        "TuCOPRampUpdateCedulaScreen",
                         "UpgradeScreen",
                         "ValidateRecipientAccount",
                         "ValidateRecipientIntro",
@@ -9332,4 +9424,3 @@
     ],
     "type": "object"
 }
-
