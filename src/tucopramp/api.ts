@@ -290,10 +290,24 @@ export function getProofUrl(
 
 // ---------- Proof upload (multipart, special case) ----------
 //
-// Per guide V1.1 §Auth: multipart bodies are NOT covered by the signature
-// (BODY_HASH = "" in the canonical string). The file bytes must still reach
-// the upstream intact, so the proxy forwards them raw. Content-Type + boundary
-// are set by the runtime automatically; we deliberately do not touch them.
+// Per Ramp server implementation (`middleware/wallet-auth.ts:72-74` +
+// `routes/p2p.uploads.ts:12-17`): wallet-auth runs BEFORE multer parses the
+// multipart body, so `req.rawBody` is `undefined` at signature-check time
+// and the server hashes an empty buffer. That produces the well-known
+// `sha256('')` digest `e3b0c442...98b855`, which is what the server
+// verifies against. The wallet MUST sign the same digest, NOT the literal
+// empty string. `signTucopRampRequest` takes `body: ''` here so its
+// `sha256Hex('')` branch runs and produces the matching digest.
+//
+// Note: guide text at openapi.yaml:51-52 says "sha256 of the raw request
+// body for mutating methods" which suggests hashing the multipart bytes,
+// but that is documentation drift; server behaviour (which is what the
+// signature is verified against) wins. Confirmed via `crypto` in node:
+// `sha256('') === sha256(Buffer.alloc(0))`.
+//
+// The file bytes still reach the upstream intact via the proxy's byte-per-
+// byte multipart forwarding. Content-Type + boundary are set by the RN
+// runtime automatically; we deliberately do not touch them.
 
 export interface ProofFile {
   uri: string
@@ -325,7 +339,11 @@ export async function uploadProof(
   const signed = await signTucopRampRequest({
     method: 'POST',
     upstreamPath,
-    body: undefined, // BODY_HASH = "" for multipart per V1.1 §Auth
+    // Empty string, NOT undefined, so signTucopRampRequest hashes ''
+    // (=> `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`)
+    // matching Ramp's server-side hash of `Buffer.alloc(0)`. See long
+    // comment above the class of endpoints for the rationale.
+    body: '',
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
     now: opts?.now,

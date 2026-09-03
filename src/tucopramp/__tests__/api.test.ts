@@ -542,6 +542,46 @@ describe('tucopramp/api', () => {
       expect(headers.get('Content-Type')).toBeNull()
     })
 
+    // Regression guard: server verifies signature against sha256(empty buffer)
+    // = e3b0c442...b855, because wallet-auth middleware runs before multer
+    // parses the multipart body (see Ramp p2p.uploads.ts:12-17 +
+    // wallet-auth.ts:72-74). If the wallet ever regresses to signing the
+    // literal empty string, every proof upload returns 401 signature_invalid.
+    it('signs multipart with sha256("") body-hash, matching Ramp server side', async () => {
+      const capturedMessages: string[] = []
+      const authCapturing: TucopRampAuth = {
+        walletAddress: TEST_WALLET,
+        keychainAccounts: {
+          getAccounts: () => [TEST_WALLET],
+          isUnlocked: () => true,
+          unlock: async () => true,
+          getViemAccount: () => ({
+            address: TEST_WALLET,
+            signMessage: async ({ message }: { message: string }) => {
+              capturedMessages.push(message)
+              return '0xdeadbeef'
+            },
+          }),
+        } as unknown as KeychainAccounts,
+      }
+      mockFetch.mockResponseOnce(JSON.stringify({ proof_id: 'p2', status: 'AWAITING_REVIEW' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await uploadProof(
+        authCapturing,
+        'ord-2',
+        { uri: 'file:///r.png', name: 'r.png', type: 'image/png' },
+        { now: () => 1_700_000_000_000 }
+      )
+      expect(capturedMessages).toHaveLength(1)
+      // Full canonical string, no truncation. If this fails, the wallet is
+      // out of sync with the server's signature verification.
+      expect(capturedMessages[0]).toBe(
+        'TuCOPRamp:POST:/v1/p2p/orders/ord-2/proof:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+      )
+    })
+
     it('surfaces proof_too_large (400)', async () => {
       mockFetch.mockResponseOnce(JSON.stringify({ code: 'proof_too_large', status: 400 }), {
         status: 400,
