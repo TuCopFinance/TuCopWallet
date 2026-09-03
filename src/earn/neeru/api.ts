@@ -105,7 +105,13 @@ export async function fetchNeeruPositions({
   walletAddress: string
 }): Promise<NeeruPositionsResponse> {
   const url = new URL('/api/earn/neeru/positions', baseUrl)
-  url.searchParams.set('address', walletAddress)
+  // Normalize to lowercase before the query so a caller that hands us the
+  // EIP-55 checksummed address (viem.getAddress() output) still gets a 200.
+  // Backend accepts both casings idempotently since PR #273 (2026-09-03) but
+  // this keeps the wallet resilient if the backend ever regresses to
+  // lowercase-only for operational reasons, matching the pattern already used
+  // in src/tucopramp/client.ts:50.
+  url.searchParams.set('address', walletAddress.toLowerCase())
   const response = await fetchWithTimeout(url.toString(), null, NEERU_FETCH_TIMEOUT_MS)
   if (!response.ok) {
     throw new Error(`fetchNeeruPositions failed: ${response.status} ${response.statusText}`)
