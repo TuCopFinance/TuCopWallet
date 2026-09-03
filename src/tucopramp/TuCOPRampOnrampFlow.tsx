@@ -24,6 +24,7 @@ import { StatsigFeatureGates } from 'src/statsig/types'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
+import { toTitleCase } from 'src/tucopramp/nameFormat'
 import {
   fetchReceivingAccount,
   fetchUserProfile,
@@ -78,7 +79,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const [amount, setAmount] = useState('')
   const [cedula, setCedula] = useState('')
   const [email, setEmail] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
 
   useEffect(() => {
@@ -107,7 +109,10 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const amountNum = useMemo(() => Number(amount) || 0, [amount])
   const limits = getCachedLimits()
   const amountValid = amountNum >= limits.min_order_cop && amountNum <= limits.max_order_cop
-  const formValid = amountValid && isValidCedula(cedula) && email.includes('@')
+  const firstNameValid = firstName.trim().length > 0
+  const lastNameValid = lastName.trim().length > 0
+  const formValid =
+    amountValid && isValidCedula(cedula) && email.includes('@') && firstNameValid && lastNameValid
 
   const onRequestQuote = () => {
     if (!formValid) return
@@ -122,7 +127,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
         body: {
           gross_amount_cop: amountNum,
           cedula,
-          full_name: fullName || 'TuCop user',
+          full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
           email,
           consent_accepted: true,
           quote_id: quote.quote_id,
@@ -208,13 +213,28 @@ function TuCOPRampOnrampFlow(_props: Props) {
               </Text>
             )}
 
-            <Text style={styles.label}>{t('tucopramp.fullNameLabel')}</Text>
+            <Text style={styles.label}>{t('tucopramp.firstNameLabel')}</Text>
             <TextInput
               style={styles.input}
-              value={fullName}
-              onChangeText={setFullName}
+              placeholder={t('tucopramp.firstNamePlaceholder') ?? ''}
+              autoCapitalize="words"
+              autoCorrect={false}
+              value={firstName}
+              onChangeText={(v) => setFirstName(toTitleCase(v))}
               editable={status === 'idle'}
-              testID="tucopramp-onramp-fullname"
+              testID="tucopramp-onramp-firstname"
+            />
+
+            <Text style={styles.label}>{t('tucopramp.lastNameLabel')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('tucopramp.lastNamePlaceholder') ?? ''}
+              autoCapitalize="words"
+              autoCorrect={false}
+              value={lastName}
+              onChangeText={(v) => setLastName(toTitleCase(v))}
+              editable={status === 'idle'}
+              testID="tucopramp-onramp-lastname"
             />
 
             <Text style={styles.label}>{t('tucopramp.cedulaLabel')}</Text>
@@ -241,14 +261,16 @@ function TuCOPRampOnrampFlow(_props: Props) {
             {status === 'quoting' && <ActivityIndicator style={styles.spinner} />}
 
             {status === 'idle' && (
-              <Button
-                text={t('tucopramp.getQuoteCta')}
-                onPress={onRequestQuote}
-                size={BtnSizes.FULL}
-                type={BtnTypes.PRIMARY}
-                disabled={!formValid}
-                testID="tucopramp-onramp-get-quote"
-              />
+              <View style={styles.ctaSpacer}>
+                <Button
+                  text={t('tucopramp.getQuoteCta')}
+                  onPress={onRequestQuote}
+                  size={BtnSizes.FULL}
+                  type={BtnTypes.PRIMARY}
+                  disabled={!formValid}
+                  testID="tucopramp-onramp-get-quote"
+                />
+              </View>
             )}
 
             {status === 'quote-ready' && quote && (
@@ -399,6 +421,7 @@ const styles = StyleSheet.create({
     padding: Spacing.Small12,
     ...typeScale.bodyMedium,
     color: Colors.black,
+    minHeight: 44,
   },
   helper: {
     ...typeScale.bodySmall,
@@ -406,6 +429,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Smallest8,
   },
   spinner: { marginVertical: Spacing.Thick24 },
+  ctaSpacer: { marginTop: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
   statusHeading: {
     ...typeScale.titleSmall,
