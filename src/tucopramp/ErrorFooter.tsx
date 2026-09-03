@@ -1,11 +1,17 @@
 import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, Text, View } from 'react-native'
+import { Platform, StyleSheet, Text, View } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+
+// Platform-native monospace stack. iOS ships Menlo; Android ships monospace
+// (Droid Sans Mono under the hood). Falling back to whatever the OS considers
+// monospace is more consistent than shipping a custom font just for this
+// reference-code render.
+const MONO_FONT = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' })
 
 // Shared error-block footer for both TuCOPRamp flows (offramp + onramp).
 //
@@ -136,6 +142,6 @@ const styles = StyleSheet.create({
     ...typeScale.labelSmall,
     color: Colors.black,
     marginBottom: Spacing.Smallest8,
-    fontFamily: 'Menlo',
+    fontFamily: MONO_FONT,
   },
 })
