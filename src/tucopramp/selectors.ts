@@ -17,6 +17,8 @@ export const offrampErrorRetryAfterSecondsSelector = (state: RootState) =>
   state.tucopramp.offramp.errorRetryAfterSeconds
 export const offrampErrorRequestIdSelector = (state: RootState) =>
   state.tucopramp.offramp.errorRequestId
+export const offrampPendingIdempotencyKeySelector = (state: RootState) =>
+  state.tucopramp.offramp.pendingIdempotencyKey
 export const offrampProofUrlSelector = (state: RootState) => state.tucopramp.offramp.proofUrl
 export const offrampProofUrlLoadingSelector = (state: RootState) =>
   state.tucopramp.offramp.proofUrlLoading
@@ -32,6 +34,8 @@ export const onrampErrorRetryAfterSecondsSelector = (state: RootState) =>
   state.tucopramp.onramp.errorRetryAfterSeconds
 export const onrampErrorRequestIdSelector = (state: RootState) =>
   state.tucopramp.onramp.errorRequestId
+export const onrampPendingIdempotencyKeySelector = (state: RootState) =>
+  state.tucopramp.onramp.pendingIdempotencyKey
 
 // Cedula update (settings flow)
 export const cedulaUpdateStatusSelector = (state: RootState) => state.tucopramp.cedulaUpdate.status

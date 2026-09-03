@@ -22,7 +22,11 @@ import {
   uploadProof as apiUploadProof,
 } from 'src/tucopramp/api'
 import { RootState } from 'src/redux/reducers'
-import { limitsFetchedAtSelector } from 'src/tucopramp/selectors'
+import {
+  limitsFetchedAtSelector,
+  offrampPendingIdempotencyKeySelector,
+  onrampPendingIdempotencyKeySelector,
+} from 'src/tucopramp/selectors'
 import {
   cedulaUpdateFailed,
   cedulaUpdateSucceeded,
@@ -316,7 +320,13 @@ export function* submitOfframpOrderSaga(
   const bodyWithFreshQuote = yield* call(ensureFreshOfframpQuote, auth, action.payload.body)
   if (bodyWithFreshQuote === null) return // refetch failed, error already dispatched
 
-  const idempotencyKey = action.payload.idempotencyKey ?? uuidv4()
+  // Idempotency-Key precedence: caller-provided > previously persisted
+  // (mid-createOrder crash / retry) > fresh UUID for a new intent. The
+  // persisted key survives cold boot via REHYDRATE, so a crash+relaunch
+  // reuses the same header and the server dedups instead of creating a
+  // duplicate real-money order. Cleared on order confirmation.
+  const persistedKey = yield* select(offrampPendingIdempotencyKeySelector)
+  const idempotencyKey = action.payload.idempotencyKey ?? persistedKey ?? uuidv4()
   yield* put(offrampCreatingOrder({ idempotencyKey }))
   try {
     const order = yield* call(apiCreateOfframpOrder, auth, bodyWithFreshQuote, idempotencyKey)
@@ -456,7 +466,10 @@ export function* submitOnrampOrderSaga(
   const bodyWithFreshQuote = yield* call(ensureFreshOnrampQuote, auth, action.payload.body)
   if (bodyWithFreshQuote === null) return
 
-  const idempotencyKey = action.payload.idempotencyKey ?? uuidv4()
+  // Idempotency-Key precedence: caller > persisted (cross-restart) > fresh.
+  // See submitOfframpOrderSaga for the rationale.
+  const persistedKey = yield* select(onrampPendingIdempotencyKeySelector)
+  const idempotencyKey = action.payload.idempotencyKey ?? persistedKey ?? uuidv4()
   yield* put(onrampCreatingOrder({ idempotencyKey }))
   try {
     const order = yield* call(apiCreateOnrampOrder, auth, bodyWithFreshQuote, idempotencyKey)

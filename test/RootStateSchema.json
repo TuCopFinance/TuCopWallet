@@ -3470,6 +3470,12 @@
                         }
                     ]
                 },
+                "pendingIdempotencyKey": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofUrl": {
                     "anyOf": [
                         {
@@ -3500,6 +3506,7 @@
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
+                "pendingIdempotencyKey",
                 "proofUrl",
                 "proofUrlErrorCode",
                 "proofUrlLoading",
@@ -3681,6 +3688,12 @@
                         }
                     ]
                 },
+                "pendingIdempotencyKey": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofUploaded": {
                     "type": "boolean"
                 },
@@ -3695,6 +3708,7 @@
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
+                "pendingIdempotencyKey",
                 "proofUploaded",
                 "status"
             ],

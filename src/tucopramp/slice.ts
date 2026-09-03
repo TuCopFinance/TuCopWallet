@@ -70,6 +70,12 @@ interface OfframpFlow extends FlowErrorMeta {
   lastQuote: QuoteResponse | null
   currentOrder: OfframpOrderResponse | null
   idempotencyKey: string | null
+  // Persisted across app restarts. Generated once when the user first hits
+  // Confirm; reused on every subsequent submit until the order is confirmed
+  // (server dedups server-side via Idempotency-Key header) or the user
+  // explicitly resets the flow. Prevents duplicate real-money orders when
+  // the app crashes mid-createOrder and the user retries after cold boot.
+  pendingIdempotencyKey: string | null
   proofUrl: ProofUrl | null
   proofUrlLoading: boolean
   proofUrlErrorCode: string | null
@@ -80,6 +86,7 @@ interface OnrampFlow extends FlowErrorMeta {
   lastQuote: QuoteResponse | null
   currentOrder: OnrampOrderResponse | null
   idempotencyKey: string | null
+  pendingIdempotencyKey: string | null
   proofUploaded: boolean
 }
 
@@ -125,6 +132,7 @@ const initialOfframp: OfframpFlow = {
   lastQuote: null,
   currentOrder: null,
   idempotencyKey: null,
+  pendingIdempotencyKey: null,
   errorCode: null,
   errorRetryAfterSeconds: null,
   errorRequestId: null,
@@ -138,6 +146,7 @@ const initialOnramp: OnrampFlow = {
   lastQuote: null,
   currentOrder: null,
   idempotencyKey: null,
+  pendingIdempotencyKey: null,
   proofUploaded: false,
   errorCode: null,
   errorRetryAfterSeconds: null,
@@ -219,10 +228,16 @@ export const slice = createSlice({
     offrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
       state.offramp.status = 'creating-order'
       state.offramp.idempotencyKey = action.payload.idempotencyKey
+      // Persist the key so a mid-createOrder crash + cold-boot retry reuses
+      // the same Idempotency-Key header (server dedups). Cleared on success.
+      state.offramp.pendingIdempotencyKey = action.payload.idempotencyKey
     },
     offrampOrderCreated: (state, action: PayloadAction<OfframpOrderResponse>) => {
       state.offramp.status = 'awaiting-deposit'
       state.offramp.currentOrder = action.payload
+      // Order confirmed on the server; clear the pending key so the next
+      // NEW intent gets a fresh UUID rather than colliding on the same key.
+      state.offramp.pendingIdempotencyKey = null
     },
     offrampAdvance: (
       state,
@@ -281,10 +296,12 @@ export const slice = createSlice({
     onrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
       state.onramp.status = 'creating-order'
       state.onramp.idempotencyKey = action.payload.idempotencyKey
+      state.onramp.pendingIdempotencyKey = action.payload.idempotencyKey
     },
     onrampOrderCreated: (state, action: PayloadAction<OnrampOrderResponse>) => {
       state.onramp.status = 'awaiting-proof-upload'
       state.onramp.currentOrder = action.payload
+      state.onramp.pendingIdempotencyKey = null
     },
     onrampUploadingProof: (state) => {
       state.onramp.status = 'uploading-proof'
@@ -330,15 +347,29 @@ export const slice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: RehydrateAction) => {
       const rehydrated = getRehydratePayload(action, 'tucopramp') as Partial<State> | undefined
-      // Only rehydrate reference data. In-flight flow state (quotes, orders,
-      // idempotency keys) resets to `idle` on cold start; sagas will fetch
-      // fresh order status if the user reopens a screen mid-flow.
+      // Reference data (banks / receiving account / user profile / limits)
+      // rehydrates as-is. In-flight flow state (quotes, orders, statuses)
+      // resets to `idle` on cold start; sagas will re-fetch order status if
+      // the user reopens a screen mid-flow. EXCEPTION: pendingIdempotencyKey
+      // survives across cold boot so a mid-createOrder crash + retry reuses
+      // the same Idempotency-Key header (server dedups). Cleared on order
+      // confirmation. Prevents duplicate real-money orders.
       return {
         ...state,
         banks: rehydrated?.banks ?? state.banks,
         receivingAccount: rehydrated?.receivingAccount ?? state.receivingAccount,
         userProfile: rehydrated?.userProfile ?? state.userProfile,
         limits: rehydrated?.limits ?? state.limits,
+        offramp: {
+          ...state.offramp,
+          pendingIdempotencyKey:
+            rehydrated?.offramp?.pendingIdempotencyKey ?? state.offramp.pendingIdempotencyKey,
+        },
+        onramp: {
+          ...state.onramp,
+          pendingIdempotencyKey:
+            rehydrated?.onramp?.pendingIdempotencyKey ?? state.onramp.pendingIdempotencyKey,
+        },
       }
     })
   },

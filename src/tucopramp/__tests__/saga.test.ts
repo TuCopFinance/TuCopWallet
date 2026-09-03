@@ -460,3 +460,102 @@ describe('fetchOfframpProofUrlSaga', () => {
       .run()
   })
 })
+
+describe('submitOfframpOrderSaga idempotency persist', () => {
+  ;(getKeychainAccounts as jest.Mock).mockResolvedValue(mockKeychainAccounts)
+
+  const baseBody: OfframpOrderRequest = {
+    gross_amount_cop: 100_000,
+    cedula: '1234567',
+    full_name: 'Test User',
+    email: 'test@example.com',
+    payout_method: 'bank_account',
+    bank_code: 'bancolombia',
+    bank_account_type: 'savings',
+    bank_account_number: '12345678',
+    consent_accepted: true,
+    quote_id: 'q-fresh',
+  }
+  const orderResponse = {
+    order_id: 'o-1',
+    status: 'AWAITING_DEPOSIT' as const,
+    multisig_address: '0xaa',
+    chain_id: 42220,
+    gross_amount_copm: 100_000,
+    expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+  }
+  const validQuote = {
+    quote_id: 'q-fresh',
+    gross_amount_cop: 100_000,
+    gross_amount_copm: 100_000,
+    fee_percent: 0,
+    fee_amount_cop: 0,
+    fee_absorbed_by: 'tucop' as const,
+    net_amount_to_user_cop: 100_000,
+    display_text: '',
+    remaining_daily_cop: 900_000,
+    remaining_monthly_cop: 2_900_000,
+    expires_at: new Date(Date.now() + 300_000).toISOString(),
+  }
+
+  beforeEach(() => jest.clearAllMocks())
+
+  it('reuses the persisted pendingIdempotencyKey when present (cross-restart retry)', async () => {
+    const stored = 'persisted-uuid-abc'
+    const state = buildState({ offrampLastQuote: validQuote })
+    state.tucopramp.offramp.pendingIdempotencyKey = stored
+
+    const { effects } = await expectSaga(submitOfframpOrderSaga, {
+      type: 'x',
+      payload: { body: baseBody },
+    })
+      .withState(state)
+      .provide([[matchers.call.fn(api.createOfframpOrder), orderResponse]])
+      .run()
+
+    const createCall = (effects.call ?? []).find(
+      (e: any) => e.payload.fn === api.createOfframpOrder
+    )
+    // The persisted key must have been reused (3rd arg to createOfframpOrder).
+    expect(createCall?.payload.args[2]).toBe(stored)
+  })
+
+  it('generates a fresh UUID when no persisted key exists', async () => {
+    const state = buildState({ offrampLastQuote: validQuote })
+    // pendingIdempotencyKey stays null (default)
+
+    const { effects } = await expectSaga(submitOfframpOrderSaga, {
+      type: 'x',
+      payload: { body: baseBody },
+    })
+      .withState(state)
+      .provide([[matchers.call.fn(api.createOfframpOrder), orderResponse]])
+      .run()
+
+    const createCall = (effects.call ?? []).find(
+      (e: any) => e.payload.fn === api.createOfframpOrder
+    )
+    // Fresh UUID: 36 chars with dashes.
+    expect(createCall?.payload.args[2]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}/i)
+  })
+
+  it('caller-provided idempotencyKey wins over persisted', async () => {
+    const stored = 'persisted-uuid-abc'
+    const explicit = 'caller-uuid-xyz'
+    const state = buildState({ offrampLastQuote: validQuote })
+    state.tucopramp.offramp.pendingIdempotencyKey = stored
+
+    const { effects } = await expectSaga(submitOfframpOrderSaga, {
+      type: 'x',
+      payload: { body: baseBody, idempotencyKey: explicit },
+    })
+      .withState(state)
+      .provide([[matchers.call.fn(api.createOfframpOrder), orderResponse]])
+      .run()
+
+    const createCall = (effects.call ?? []).find(
+      (e: any) => e.payload.fn === api.createOfframpOrder
+    )
+    expect(createCall?.payload.args[2]).toBe(explicit)
+  })
+})
