@@ -92,30 +92,55 @@ export interface ErrorEnvelope {
   issues?: Array<{ path?: string; code: string }>
 }
 
-// Error codes from guide section 9.2 + Pattern B proxy specific.
+// Error codes cross-checked with Ramp on 2026-09-03 against the actual
+// server emit sites. `rate_limited` (no suffix) and `idempotency_conflict`
+// were dead branches, removed. Nine codes that the server does emit but
+// our union missed were added; UI copy for the ALTA/MEDIA codes is
+// mapped in locales/{es-419,en-US}/translation.json under
+// `tucopramp.errors.*`.
 export type TucopRampErrorCode =
+  // Auth
   | 'invalid_api_key'
   | 'signature_invalid'
   | 'signature_expired'
+  // User
   | 'wallet_not_linked'
+  | 'wallet_linked_to_other_user'
+  | 'user_not_found'
+  | 'cedula_invalid_format'
+  | 'cedula_locked_by_active_order'
+  // Body / validation
   | 'invalid_body'
   | 'invalid_query'
   | 'consent_required'
+  | 'payout_invalid_shape'
+  // Amounts
   | 'amount_limit_exceeded'
+  // Orders
   | 'order_not_found'
   | 'order_not_cancelable'
+  // Proofs
   | 'proof_missing_file'
   | 'proof_invalid_type'
   | 'proof_too_large'
   | 'proof_not_acceptable_in_state'
   | 'proof_url_expired'
-  | 'rate_limited'
+  | 'proof_not_found'
+  | 'proof_signature_invalid'
+  | 'invalid_upload'
+  // Rate limits (bucket-specific; `rate_limited` without a suffix is never
+  // emitted by the server per Ramp audit 2026-09-03).
   | 'rate_limited_ip'
   | 'rate_limited_consumer'
   | 'rate_limited_wallet'
-  | 'idempotency_conflict'
-  | 'proxy_disabled' // Wallet-backend proxy specific (kill switch)
-  | 'proxy_misconfigured' // Wallet-backend proxy specific (missing env vars)
+  // Idempotency
+  | 'idempotency_key_reuse'
+  | 'idempotency_key_required'
+  // Server-side generic fallback
+  | 'internal_error'
+  // Wallet-backend proxy specific (not emitted by TuCOPRamp)
+  | 'proxy_disabled'
+  | 'proxy_misconfigured'
 
 // Structured error thrown by the client on non-2xx responses.
 

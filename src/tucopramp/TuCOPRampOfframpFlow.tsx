@@ -261,6 +261,11 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 testID="tucopramp-offramp-payout-breb"
               />
             </View>
+            <Text style={styles.helper}>
+              {payoutMethod === 'bre_b_key'
+                ? t('tucopramp.payoutEta_bre_b_key')
+                : t('tucopramp.payoutEta_bank_account')}
+            </Text>
 
             {payoutMethod === 'bank_account' && (
               <View>
