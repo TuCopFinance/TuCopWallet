@@ -3866,6 +3866,10 @@ export const v254Schema = {
     banks: null,
     receivingAccount: null,
     userProfile: null,
+    limits: {
+      value: null,
+      fetchedAt: null,
+    },
     offramp: {
       status: 'idle',
       lastQuote: null,

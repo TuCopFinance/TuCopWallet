@@ -271,4 +271,45 @@ describe('tucopRampFetch', () => {
       })
     ).rejects.toThrow(/must start with "\/v1\/p2p\/"/)
   })
+
+  // The 10 codes added to the TucopRampErrorCode union on 2026-09-02 must
+  // land on TucopRampError intact. If the client ever adds a code allowlist
+  // or normalization step, the widening on line 177 of types.ts would still
+  // accept them but this test would fail loudly.
+  describe.each([
+    'wallet_linked_to_other_user',
+    'cedula_invalid_format',
+    'cedula_locked_by_active_order',
+    'user_not_found',
+    'payout_invalid_shape',
+    'idempotency_key_required',
+    'proof_signature_invalid',
+    'proof_not_found',
+    'invalid_upload',
+    'internal_error',
+  ])('propagates envelope.code=%s intact', (code) => {
+    it('surfaces on TucopRampError.code', async () => {
+      const fetchMock: FetchMock = jest.fn(
+        async (_url, _init) =>
+          new Response(JSON.stringify({ code, detail: 'x', request_id: 'req_z' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          })
+      )
+      let caught: TucopRampError | undefined
+      try {
+        await tucopRampFetch({
+          method: 'GET',
+          upstreamPath: '/v1/p2p/banks',
+          skipWalletAuth: true,
+          baseUrl: TEST_BASE_URL,
+          fetchImpl: fetchMock,
+        })
+      } catch (e) {
+        caught = e as TucopRampError
+      }
+      expect(caught?.code).toBe(code)
+      expect(caught?.request_id).toBe('req_z')
+    })
+  })
 })

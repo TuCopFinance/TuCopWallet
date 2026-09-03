@@ -10,7 +10,8 @@ export type BusinessFeature =
   | 'gold' // digital gold buy / sell (XAUt0)
   | 'swap' // any token-to-token swap
   | 'transactions' // generic tx send / receipt / feed
-  | 'buckspay' // COPm to COP off-ramp
+  | 'buckspay' // COPm to COP off-ramp (legacy, being replaced by tucopramp)
+  | 'tucopramp' // COPm <-> COP semi-manual ramp via Bre-B (replaces buckspay)
   | 'jumpstart' // send-via-link
   | 'positions' // hooks-api positions fetch / trigger
   | 'subsidies' // ReFi Colombia UBI claim flow

@@ -1,11 +1,13 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
 import { Address } from 'viem'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import {
   cancelOrder as apiCancelOrder,
   createOfframpOrder as apiCreateOfframpOrder,
   createOnrampOrder as apiCreateOnrampOrder,
   getBanks as apiGetBanks,
+  getLimits as apiGetLimits,
   getMe as apiGetMe,
   getOfframpQuote as apiGetOfframpQuote,
   getOnrampQuote as apiGetOnrampQuote,
@@ -15,7 +17,9 @@ import {
   TucopRampAuth,
   uploadProof as apiUploadProof,
 } from 'src/tucopramp/api'
+import { limitsFetchedAtSelector } from 'src/tucopramp/selectors'
 import {
+  limitsFetched,
   offrampAdvance,
   offrampCancelling,
   offrampCreatingOrder,
@@ -48,7 +52,7 @@ import Logger from 'src/utils/Logger'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { call, delay, put, select, takeLatest } from 'typed-redux-saga'
+import { call, delay, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 const TAG = 'tucopramp/saga'
 
@@ -58,11 +62,18 @@ const POLL_INITIAL_DELAY_MS = 15_000
 const POLL_ACTIVE_DELAY_MS = 30_000
 const POLL_MAX_ATTEMPTS = 60 // 60 * 15s = 15min ceiling before saga bails
 
+// GET /v1/p2p/limits is cached client-side per guide sec 10 (server also
+// advertises Cache-Control: max-age=300). We skip refetching within this
+// window even on explicit refresh triggers so Ops config bumps propagate on
+// the next natural cold-cache boot rather than on every screen open.
+const LIMITS_CACHE_TTL_MS = 12 * 60 * 60 * 1000 // 12h
+
 // Actions the UI dispatches (typed via Redux Toolkit's createAction).
 
 export const fetchBanks = createAction('tucopramp/fetchBanks')
 export const fetchReceivingAccount = createAction('tucopramp/fetchReceivingAccount')
 export const fetchUserProfile = createAction('tucopramp/fetchUserProfile')
+export const fetchLimits = createAction('tucopramp/fetchLimits')
 
 export const requestOfframpQuote = createAction<OfframpQuoteRequest>(
   'tucopramp/requestOfframpQuote'
@@ -153,6 +164,30 @@ export function* fetchUserProfileSaga() {
   }
 }
 
+// Runtime operational caps from GET /v1/p2p/limits. Guarded by a 12h TTL so
+// the fetch fires at most once per boot per fresh cache window. On any
+// failure the hardcoded fallback in limits.ts keeps the UI working; we still
+// report via captureBusinessError so persistent server-side outages surface
+// on the dashboard.
+export function* fetchLimitsSaga() {
+  const fetchedAt = yield* select(limitsFetchedAtSelector)
+  const now = Date.now()
+  if (fetchedAt !== null && now - fetchedAt < LIMITS_CACHE_TTL_MS) {
+    return // warm cache, skip
+  }
+  try {
+    const limits = yield* call(apiGetLimits)
+    yield* put(limitsFetched({ value: limits, fetchedAt: now }))
+  } catch (err) {
+    Logger.warn(TAG, 'fetchLimits failed, keeping hardcoded fallback', err)
+    captureBusinessError(err, {
+      feature: 'tucopramp',
+      provider: 'ramp',
+      action: 'get_limits',
+    })
+  }
+}
+
 // ---------- Off-ramp ----------
 
 export function* requestOfframpQuoteSaga(action: PayloadAction<OfframpQuoteRequest>) {
@@ -178,13 +213,53 @@ export function* submitOfframpOrderSaga(
     yield* put(offrampError({ code: 'no_wallet' }))
     return
   }
+  // Guard: if the slice's last quote has already expired, refetch silently
+  // and swap the quote_id on the outgoing body. The UI flips to `quoting`
+  // for the brief window while we re-quote, then resumes creating the order.
+  // Malformed / missing expires_at falls through (isFinite guard); the server
+  // will 400 on a stale quote_id and the caller will see the specific code.
+  const bodyWithFreshQuote = yield* call(ensureFreshOfframpQuote, auth, action.payload.body)
+  if (bodyWithFreshQuote === null) return // refetch failed, error already dispatched
+
   const idempotencyKey = action.payload.idempotencyKey ?? uuidv4()
   yield* put(offrampCreatingOrder({ idempotencyKey }))
   try {
-    const order = yield* call(apiCreateOfframpOrder, auth, action.payload.body, idempotencyKey)
+    const order = yield* call(apiCreateOfframpOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(offrampOrderCreated(order))
   } catch (err) {
     yield* put(offrampError({ code: errorCode(err) }))
+  }
+}
+
+// If the last observed quote for this flow has an expires_at in the past,
+// re-fetch a fresh quote from the same params and return the body with the
+// new quote_id spliced in. Returns null when refetch failed and an error was
+// already dispatched, in which case the caller must abort.
+function* ensureFreshOfframpQuote(auth: TucopRampAuth, body: OfframpOrderRequest) {
+  const lastQuote = yield* select((s) => s.tucopramp.offramp.lastQuote)
+  if (!lastQuote || !lastQuote.expires_at || lastQuote.quote_id !== body.quote_id) {
+    return body
+  }
+  const expiresAtMs = new Date(lastQuote.expires_at).getTime()
+  if (!isFinite(expiresAtMs) || Date.now() <= expiresAtMs) {
+    return body
+  }
+  Logger.info(TAG, 'offramp quote expired, refetching before submit')
+  yield* put(offrampQuoting())
+  try {
+    const quoteRequest: OfframpQuoteRequest = {
+      gross_amount_cop: body.gross_amount_cop,
+      payout_method: body.payout_method,
+      bank_code: body.bank_code,
+      bank_account_type: body.bank_account_type,
+      cedula: body.cedula,
+    }
+    const fresh = yield* call(apiGetOfframpQuote, auth, quoteRequest)
+    yield* put(offrampQuoteReady(fresh))
+    return { ...body, quote_id: fresh.quote_id }
+  } catch (err) {
+    yield* put(offrampError({ code: errorCode(err) }))
+    return null
   }
 }
 
@@ -257,13 +332,42 @@ export function* submitOnrampOrderSaga(
     yield* put(onrampError({ code: 'no_wallet' }))
     return
   }
+  // Same guard as offramp: refetch on stale quote before creating the order.
+  const bodyWithFreshQuote = yield* call(ensureFreshOnrampQuote, auth, action.payload.body)
+  if (bodyWithFreshQuote === null) return
+
   const idempotencyKey = action.payload.idempotencyKey ?? uuidv4()
   yield* put(onrampCreatingOrder({ idempotencyKey }))
   try {
-    const order = yield* call(apiCreateOnrampOrder, auth, action.payload.body, idempotencyKey)
+    const order = yield* call(apiCreateOnrampOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(onrampOrderCreated(order))
   } catch (err) {
     yield* put(onrampError({ code: errorCode(err) }))
+  }
+}
+
+function* ensureFreshOnrampQuote(auth: TucopRampAuth, body: OnrampOrderRequest) {
+  const lastQuote = yield* select((s) => s.tucopramp.onramp.lastQuote)
+  if (!lastQuote || !lastQuote.expires_at || lastQuote.quote_id !== body.quote_id) {
+    return body
+  }
+  const expiresAtMs = new Date(lastQuote.expires_at).getTime()
+  if (!isFinite(expiresAtMs) || Date.now() <= expiresAtMs) {
+    return body
+  }
+  Logger.info(TAG, 'onramp quote expired, refetching before submit')
+  yield* put(onrampQuoting())
+  try {
+    const quoteRequest: OnrampQuoteRequest = {
+      gross_amount_cop: body.gross_amount_cop,
+      cedula: body.cedula,
+    }
+    const fresh = yield* call(apiGetOnrampQuote, auth, quoteRequest)
+    yield* put(onrampQuoteReady(fresh))
+    return { ...body, quote_id: fresh.quote_id }
+  } catch (err) {
+    yield* put(onrampError({ code: errorCode(err) }))
+    return null
   }
 }
 
@@ -357,6 +461,13 @@ function mapOnrampDetailStatus(status: OnrampOrderStatus) {
 // ---------- Root ----------
 
 export function* tucoprampSaga() {
+  // One-shot limits fetch at saga boot (which fires post-REHYDRATE per
+  // rootSaga). The saga itself is TTL-guarded so it becomes a no-op on
+  // warm cache. Forked so the takeLatest registrations below don't wait
+  // for the network call.
+  yield* fork(fetchLimitsSaga)
+
+  yield* takeLatest(fetchLimits.type, fetchLimitsSaga)
   yield* takeLatest(fetchBanks.type, fetchBanksSaga)
   yield* takeLatest(fetchReceivingAccount.type, fetchReceivingAccountSaga)
   yield* takeLatest(fetchUserProfile.type, fetchUserProfileSaga)

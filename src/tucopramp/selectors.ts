@@ -4,6 +4,8 @@ import { RootState } from 'src/redux/reducers'
 export const banksSelector = (state: RootState) => state.tucopramp.banks
 export const receivingAccountSelector = (state: RootState) => state.tucopramp.receivingAccount
 export const userProfileSelector = (state: RootState) => state.tucopramp.userProfile
+export const limitsSelector = (state: RootState) => state.tucopramp.limits.value
+export const limitsFetchedAtSelector = (state: RootState) => state.tucopramp.limits.fetchedAt
 
 // Off-ramp flow
 export const offrampStatusSelector = (state: RootState) => state.tucopramp.offramp.status

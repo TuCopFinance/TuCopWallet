@@ -8,6 +8,7 @@ import {
   OnrampOrderResponse,
   QuoteResponse,
   ReceivingAccountResponse,
+  TucopRampLimits,
 } from 'src/tucopramp/types'
 
 // Flow status enums surface to the UI. Kept separate for off-ramp vs on-ramp
@@ -61,11 +62,22 @@ interface OnrampFlow {
   errorCode: string | null
 }
 
+// Server-provided operational caps (min / max / daily / monthly in COP).
+// value=null means never fetched (fresh install). Consumers should fall back
+// to TUCOPRAMP_HARDCODED_LIMITS in that case (helper in limits.ts does the
+// lookup). fetchedAt is a unix-ms timestamp used by the fetch saga to skip
+// refetching within the 12h TTL agreed in guide sec 10.
+interface LimitsState {
+  value: TucopRampLimits | null
+  fetchedAt: number | null
+}
+
 export interface State {
   // Cached reference data (safe to keep across sessions once persisted).
   banks: Bank[] | null
   receivingAccount: ReceivingAccountResponse | null
   userProfile: MeResponse | null
+  limits: LimitsState
 
   offramp: OfframpFlow
   onramp: OnrampFlow
@@ -88,10 +100,16 @@ const initialOnramp: OnrampFlow = {
   errorCode: null,
 }
 
+const initialLimits: LimitsState = {
+  value: null,
+  fetchedAt: null,
+}
+
 const initialState: State = {
   banks: null,
   receivingAccount: null,
   userProfile: null,
+  limits: initialLimits,
   offramp: initialOfframp,
   onramp: initialOnramp,
 }
@@ -109,6 +127,13 @@ export const slice = createSlice({
     },
     setUserProfile: (state, action: PayloadAction<MeResponse>) => {
       state.userProfile = action.payload
+    },
+    limitsFetched: (
+      state,
+      action: PayloadAction<{ value: TucopRampLimits; fetchedAt: number }>
+    ) => {
+      state.limits.value = action.payload.value
+      state.limits.fetchedAt = action.payload.fetchedAt
     },
 
     // Off-ramp transitions
@@ -197,6 +222,7 @@ export const slice = createSlice({
         banks: rehydrated?.banks ?? state.banks,
         receivingAccount: rehydrated?.receivingAccount ?? state.receivingAccount,
         userProfile: rehydrated?.userProfile ?? state.userProfile,
+        limits: rehydrated?.limits ?? state.limits,
       }
     })
   },
@@ -206,6 +232,7 @@ export const {
   setBanks,
   setReceivingAccount,
   setUserProfile,
+  limitsFetched,
   offrampReset,
   offrampQuoting,
   offrampQuoteReady,

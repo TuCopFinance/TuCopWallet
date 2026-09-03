@@ -8,7 +8,7 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { TUCOPRAMP_MAX_ORDER_COP, TUCOPRAMP_MIN_ORDER_COP } from 'src/tucopramp/limits'
+import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import {
   fetchReceivingAccount,
   fetchUserProfile,
@@ -72,8 +72,9 @@ function TuCOPRampOnrampFlow(_props: Props) {
   }, [status, order, dispatch])
 
   const amountNum = useMemo(() => Number(amount) || 0, [amount])
-  const amountValid = amountNum >= TUCOPRAMP_MIN_ORDER_COP && amountNum <= TUCOPRAMP_MAX_ORDER_COP
-  const formValid = amountValid && cedula.length >= 6 && email.includes('@')
+  const limits = getCachedLimits()
+  const amountValid = amountNum >= limits.min_order_cop && amountNum <= limits.max_order_cop
+  const formValid = amountValid && isValidCedula(cedula) && email.includes('@')
 
   const onRequestQuote = () => {
     if (!formValid) return
@@ -138,8 +139,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
             {!amountValid && amount.length > 0 && (
               <Text style={styles.helper}>
                 {t('tucopramp.amountRange', {
-                  min: TUCOPRAMP_MIN_ORDER_COP.toLocaleString('es-CO'),
-                  max: TUCOPRAMP_MAX_ORDER_COP.toLocaleString('es-CO'),
+                  min: limits.min_order_cop.toLocaleString('es-CO'),
+                  max: limits.max_order_cop.toLocaleString('es-CO'),
                 })}
               </Text>
             )}

@@ -3512,7 +3512,17 @@
       "rate_limited_wallet": "Espera un momento antes de reintentar.",
       "idempotency_conflict": "Solicitud duplicada. Cierra y vuelve a intentar.",
       "proxy_disabled": "Servicio en mantenimiento. Intenta más tarde.",
-      "proxy_misconfigured": "Servicio no disponible por configuración."
+      "proxy_misconfigured": "Servicio no disponible por configuración.",
+      "wallet_linked_to_other_user": "Esta wallet ya esta vinculada a otro usuario",
+      "cedula_invalid_format": "Cedula invalida",
+      "cedula_locked_by_active_order": "No podes cambiar la cedula con una orden activa",
+      "user_not_found": "Usuario no encontrado",
+      "payout_invalid_shape": "Datos de pago invalidos",
+      "idempotency_key_required": "Reintenta la operacion",
+      "proof_signature_invalid": "Comprobante invalido, tomalo de nuevo",
+      "proof_not_found": "No encontramos el comprobante",
+      "invalid_upload": "El archivo no es valido",
+      "internal_error": "Error del servicio, intenta de nuevo"
     }
   },
   "transactionSuccess": {

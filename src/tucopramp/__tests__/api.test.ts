@@ -5,6 +5,7 @@ import {
   createOfframpOrder,
   createOnrampOrder,
   getBanks,
+  getLimits,
   getMe,
   getOfframpQuote,
   getOnrampQuote,
@@ -133,6 +134,43 @@ describe('tucopramp/api', () => {
       await getReceivingAccount()
       const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
       expect(headers.get('X-Wallet-Signature')).toBeNull()
+    })
+  })
+
+  describe('getLimits', () => {
+    const LIMITS_SHAPE = {
+      min_order_cop: 100000,
+      max_order_cop: 500000,
+      max_daily_cop: 1000000,
+      max_monthly_cop: 3000000,
+    }
+
+    it('returns the 4-field limits object on 200 without wallet auth', async () => {
+      mockFetch.mockResponseOnce(JSON.stringify(LIMITS_SHAPE), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const limits = await getLimits()
+      expect(limits).toEqual(LIMITS_SHAPE)
+      // public endpoint: no wallet signature attached
+      const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
+      expect(headers.get('X-Wallet-Signature')).toBeNull()
+      // URL uses the proxy base + upstream path unchanged
+      expect(mockFetch.mock.calls[0][0]).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/limits`)
+    })
+
+    it('propagates a TucopRampError on 4xx with envelope code intact', async () => {
+      // 400 (not 503) so the transport does not retry: fetchWithTimeout
+      // exponentially retries 5xx, which would time out this test.
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ code: 'invalid_query', detail: 'bad param', status: 400 }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+      await expect(getLimits()).rejects.toMatchObject({
+        name: 'TucopRampError',
+        code: 'invalid_query',
+        httpStatus: 400,
+      })
     })
   })
 

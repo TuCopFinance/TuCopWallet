@@ -431,6 +431,10 @@ describe('store state', () => {
         },
         "tucopramp": {
           "banks": null,
+          "limits": {
+            "fetchedAt": null,
+            "value": null,
+          },
           "offramp": {
             "currentOrder": null,
             "errorCode": null,

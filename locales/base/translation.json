@@ -3399,5 +3399,19 @@
   "recovery": {
     "banner": "Your transfer was left in progress. Tap to see details.",
     "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
+  },
+  "tucopramp": {
+    "errors": {
+      "wallet_linked_to_other_user": "This wallet is already linked to another user",
+      "cedula_invalid_format": "Invalid ID",
+      "cedula_locked_by_active_order": "Cannot change ID while an order is active",
+      "user_not_found": "User not found",
+      "payout_invalid_shape": "Invalid payout details",
+      "idempotency_key_required": "Please retry the operation",
+      "proof_signature_invalid": "Invalid receipt, take it again",
+      "proof_not_found": "Receipt not found",
+      "invalid_upload": "The file is invalid",
+      "internal_error": "Service error, please try again"
+    }
   }
 }

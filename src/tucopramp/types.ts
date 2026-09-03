@@ -40,6 +40,16 @@ export interface BanksResponse {
   banks: Bank[]
 }
 
+// Operational caps served by GET /v1/p2p/limits. Values are Colombian pesos,
+// integers, unaggregated. The hardcoded fallback in src/tucopramp/limits.ts
+// matches the server default; the runtime fetch is the source of truth.
+export interface TucopRampLimits {
+  min_order_cop: number
+  max_order_cop: number
+  max_daily_cop: number
+  max_monthly_cop: number
+}
+
 export interface ReceivingAccountResponse {
   kind: 'bre_b_key'
   bre_b_key: string
@@ -181,6 +191,8 @@ export interface ErrorEnvelope {
 }
 
 // Error codes from guide section 9.2 + Pattern B proxy specific.
+// Cross-audit 2026-09-02 added the 10 codes tagged (NEW) below: server ships
+// 29 codes total, wallet knew 22, users saw the fallback for the missing 10.
 export type TucopRampErrorCode =
   | 'invalid_api_key'
   | 'signature_invalid'
@@ -204,6 +216,17 @@ export type TucopRampErrorCode =
   | 'idempotency_conflict'
   | 'proxy_disabled' // Wallet-backend proxy specific (kill switch)
   | 'proxy_misconfigured' // Wallet-backend proxy specific (missing env vars)
+  // NEW 2026-09-02 (server codes not previously enumerated wallet-side):
+  | 'wallet_linked_to_other_user'
+  | 'cedula_invalid_format'
+  | 'cedula_locked_by_active_order'
+  | 'user_not_found'
+  | 'payout_invalid_shape'
+  | 'idempotency_key_required'
+  | 'proof_signature_invalid'
+  | 'proof_not_found'
+  | 'invalid_upload'
+  | 'internal_error'
 
 // Structured error thrown by the client on non-2xx responses.
 // Fields exposed intact for both dashboards (code, request_id) and clients

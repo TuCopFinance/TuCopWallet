@@ -17,6 +17,7 @@ import {
   QuoteResponse,
   ReceivingAccountResponse,
   TucopRampError,
+  TucopRampLimits,
 } from 'src/tucopramp/types'
 import Logger from 'src/utils/Logger'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -57,6 +58,19 @@ export function getReceivingAccount(opts?: CallOpts): Promise<ReceivingAccountRe
   return tucopRampFetch<ReceivingAccountResponse>({
     method: 'GET',
     upstreamPath: '/v1/p2p/onramp/receiving-account',
+    skipWalletAuth: true,
+    ...opts,
+  })
+}
+
+// Server-provided operational caps. See getCachedLimits() in limits.ts for the
+// caller-facing lookup that falls back to hardcoded defaults when the runtime
+// fetch has not landed yet. Cache-Control: max-age=300 upstream, TTL enforced
+// by the fetch saga (skip refetch within 12h per guide sec 10).
+export function getLimits(opts?: CallOpts): Promise<TucopRampLimits> {
+  return tucopRampFetch<TucopRampLimits>({
+    method: 'GET',
+    upstreamPath: '/v1/p2p/limits',
     skipWalletAuth: true,
     ...opts,
   })

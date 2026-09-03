@@ -2498,6 +2498,32 @@
             ],
             "type": "object"
         },
+        "LimitsState": {
+            "additionalProperties": false,
+            "properties": {
+                "fetchedAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TucopRampLimits"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "fetchedAt",
+                "value"
+            ],
+            "type": "object"
+        },
         "LocalAmount": {
             "additionalProperties": false,
             "properties": {
@@ -7005,6 +7031,9 @@
                         }
                     ]
                 },
+                "limits": {
+                    "$ref": "#/definitions/LimitsState"
+                },
                 "offramp": {
                     "$ref": "#/definitions/OfframpFlow"
                 },
@@ -7034,6 +7063,7 @@
             },
             "required": [
                 "banks",
+                "limits",
                 "offramp",
                 "onramp",
                 "receivingAccount",
@@ -8206,6 +8236,30 @@
         },
         "TriggeredShortcuts": {
             "additionalProperties": false,
+            "type": "object"
+        },
+        "TucopRampLimits": {
+            "additionalProperties": false,
+            "properties": {
+                "max_daily_cop": {
+                    "type": "number"
+                },
+                "max_monthly_cop": {
+                    "type": "number"
+                },
+                "max_order_cop": {
+                    "type": "number"
+                },
+                "min_order_cop": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "max_daily_cop",
+                "max_monthly_cop",
+                "max_order_cop",
+                "min_order_cop"
+            ],
             "type": "object"
         },
         "TxHashToDisplayInfo": {
