@@ -13,6 +13,10 @@ export const offrampLastQuoteSelector = (state: RootState) => state.tucopramp.of
 export const offrampCurrentOrderSelector = (state: RootState) =>
   state.tucopramp.offramp.currentOrder
 export const offrampErrorCodeSelector = (state: RootState) => state.tucopramp.offramp.errorCode
+export const offrampErrorRetryAfterSecondsSelector = (state: RootState) =>
+  state.tucopramp.offramp.errorRetryAfterSeconds
+export const offrampErrorRequestIdSelector = (state: RootState) =>
+  state.tucopramp.offramp.errorRequestId
 export const offrampProofUrlSelector = (state: RootState) => state.tucopramp.offramp.proofUrl
 export const offrampProofUrlLoadingSelector = (state: RootState) =>
   state.tucopramp.offramp.proofUrlLoading
@@ -24,6 +28,10 @@ export const onrampStatusSelector = (state: RootState) => state.tucopramp.onramp
 export const onrampLastQuoteSelector = (state: RootState) => state.tucopramp.onramp.lastQuote
 export const onrampCurrentOrderSelector = (state: RootState) => state.tucopramp.onramp.currentOrder
 export const onrampErrorCodeSelector = (state: RootState) => state.tucopramp.onramp.errorCode
+export const onrampErrorRetryAfterSecondsSelector = (state: RootState) =>
+  state.tucopramp.onramp.errorRetryAfterSeconds
+export const onrampErrorRequestIdSelector = (state: RootState) =>
+  state.tucopramp.onramp.errorRequestId
 
 // Cedula update (settings flow)
 export const cedulaUpdateStatusSelector = (state: RootState) => state.tucopramp.cedulaUpdate.status

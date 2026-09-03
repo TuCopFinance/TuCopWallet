@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Image,
+  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -20,6 +21,8 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
+import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
+import ErrorFooter from 'src/tucopramp/ErrorFooter'
 import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
 import {
   cancelOfframpOrder,

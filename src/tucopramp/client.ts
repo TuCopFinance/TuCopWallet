@@ -86,6 +86,24 @@ export interface TucopRampFetchArgs {
 // Callers that need to retry (e.g. after signature_expired) should do so
 // explicitly with a fresh timestamp.
 export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
+  const { data } = await tucopRampFetchWithMeta<T>(args)
+  return data
+}
+
+// Response metadata surfaced to callers that need it (e.g. Cache-Control on
+// GET /v1/p2p/limits to honour the server's max-age hint).
+export interface ResponseMeta {
+  headers: Headers
+  status: number
+}
+
+// Variant of tucopRampFetch that exposes the response metadata (headers +
+// status) alongside the parsed body. Use only where the metadata drives
+// caller behaviour (Cache-Control, ETag, custom rate-limit headers). Every
+// other call site should stay on tucopRampFetch to avoid coupling.
+export async function tucopRampFetchWithMeta<T>(
+  args: TucopRampFetchArgs
+): Promise<{ data: T; meta: ResponseMeta }> {
   assertUpstreamPath(args.upstreamPath)
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
@@ -128,10 +146,8 @@ export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
 
   if (response.ok) {
     const text = await response.text()
-    if (text.length === 0) {
-      return undefined as T
-    }
-    return JSON.parse(text) as T
+    const data = (text.length === 0 ? undefined : JSON.parse(text)) as T
+    return { data, meta: { headers: response.headers, status: response.status } }
   }
 
   const retryAfterHeader = response.headers.get('Retry-After')
@@ -154,6 +170,19 @@ export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
     retryAfterSeconds: Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : undefined,
     envelope,
   })
+}
+
+// Parse the server's `Cache-Control: public, max-age=<seconds>` directive.
+// Returns milliseconds or null if the header is missing/malformed. Only the
+// max-age token is honoured; other directives are ignored.
+export function parseCacheControlMaxAgeMs(headers: Headers): number | null {
+  const raw = headers.get('Cache-Control')
+  if (!raw) return null
+  const match = raw.match(/max-age=(\d+)/i)
+  if (!match) return null
+  const seconds = Number(match[1])
+  if (!Number.isFinite(seconds) || seconds < 0) return null
+  return seconds * 1000
 }
 
 function assertUpstreamPath(path: string): void {

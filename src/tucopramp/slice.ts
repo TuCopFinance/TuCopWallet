@@ -54,34 +54,49 @@ interface ProofUrl {
   expires_at: string
 }
 
-interface OfframpFlow {
+// Extended error metadata carried on both offramp and onramp flow slices.
+// retryAfterSeconds is only populated for rate_limited codes (extracted from
+// the server's Retry-After response header via TucopRampError.retryAfterSeconds).
+// request_id is populated for every RFC 7807 error envelope the server returns
+// (client.ts parses it out of the JSON body).
+interface FlowErrorMeta {
+  errorCode: string | null
+  errorRetryAfterSeconds: number | null
+  errorRequestId: string | null
+}
+
+interface OfframpFlow extends FlowErrorMeta {
   status: OfframpFlowStatus
   lastQuote: QuoteResponse | null
   currentOrder: OfframpOrderResponse | null
   idempotencyKey: string | null
-  errorCode: string | null
   proofUrl: ProofUrl | null
   proofUrlLoading: boolean
   proofUrlErrorCode: string | null
 }
 
-interface OnrampFlow {
+interface OnrampFlow extends FlowErrorMeta {
   status: OnrampFlowStatus
   lastQuote: QuoteResponse | null
   currentOrder: OnrampOrderResponse | null
   idempotencyKey: string | null
   proofUploaded: boolean
-  errorCode: string | null
 }
 
 // Server-provided operational caps (min / max / daily / monthly in COP).
 // value=null means never fetched (fresh install). Consumers should fall back
 // to TUCOPRAMP_HARDCODED_LIMITS in that case (helper in limits.ts does the
-// lookup). fetchedAt is a unix-ms timestamp used by the fetch saga to skip
-// refetching within the 12h TTL agreed in guide sec 10.
+// lookup). fetchedAt is a unix-ms timestamp used by the fetch saga to gate
+// refetches; serverMaxAgeMs is the last observed Cache-Control: max-age from
+// the /limits response (300 s per current server config, but respected per-
+// response so a future server bump propagates without a wallet release).
+// backgroundRevalidateInFlight guards against firing overlapping background
+// revalidate fetches (stale-while-revalidate pattern).
 interface LimitsState {
   value: TucopRampLimits | null
   fetchedAt: number | null
+  serverMaxAgeMs: number | null
+  backgroundRevalidateInFlight: boolean
 }
 
 // Settings-side cedula self-correction flow (PATCH /users/cedula). Never
@@ -111,6 +126,8 @@ const initialOfframp: OfframpFlow = {
   currentOrder: null,
   idempotencyKey: null,
   errorCode: null,
+  errorRetryAfterSeconds: null,
+  errorRequestId: null,
   proofUrl: null,
   proofUrlLoading: false,
   proofUrlErrorCode: null,
@@ -123,11 +140,15 @@ const initialOnramp: OnrampFlow = {
   idempotencyKey: null,
   proofUploaded: false,
   errorCode: null,
+  errorRetryAfterSeconds: null,
+  errorRequestId: null,
 }
 
 const initialLimits: LimitsState = {
   value: null,
   fetchedAt: null,
+  serverMaxAgeMs: null,
+  backgroundRevalidateInFlight: false,
 }
 
 const initialCedulaUpdate: CedulaUpdateState = {
@@ -161,10 +182,26 @@ export const slice = createSlice({
     },
     limitsFetched: (
       state,
-      action: PayloadAction<{ value: TucopRampLimits; fetchedAt: number }>
+      action: PayloadAction<{
+        value: TucopRampLimits
+        fetchedAt: number
+        serverMaxAgeMs?: number | null
+      }>
     ) => {
       state.limits.value = action.payload.value
       state.limits.fetchedAt = action.payload.fetchedAt
+      // Preserve last-known serverMaxAgeMs when the caller omits it (e.g. a
+      // failed header parse), rather than losing the observed value.
+      if (action.payload.serverMaxAgeMs !== undefined) {
+        state.limits.serverMaxAgeMs = action.payload.serverMaxAgeMs
+      }
+      state.limits.backgroundRevalidateInFlight = false
+    },
+    limitsBackgroundRevalidateStarted: (state) => {
+      state.limits.backgroundRevalidateInFlight = true
+    },
+    limitsBackgroundRevalidateFinished: (state) => {
+      state.limits.backgroundRevalidateInFlight = false
     },
 
     // Off-ramp transitions
@@ -202,9 +239,18 @@ export const slice = createSlice({
     offrampCancelling: (state) => {
       state.offramp.status = 'cancelling'
     },
-    offrampError: (state, action: PayloadAction<{ code: string }>) => {
+    offrampError: (
+      state,
+      action: PayloadAction<{
+        code: string
+        retryAfterSeconds?: number | null
+        request_id?: string | null
+      }>
+    ) => {
       state.offramp.status = 'error'
       state.offramp.errorCode = action.payload.code
+      state.offramp.errorRetryAfterSeconds = action.payload.retryAfterSeconds ?? null
+      state.offramp.errorRequestId = action.payload.request_id ?? null
     },
     offrampProofUrlLoading: (state) => {
       state.offramp.proofUrlLoading = true
@@ -250,9 +296,18 @@ export const slice = createSlice({
     onrampAdvance: (state, action: PayloadAction<{ status: OnrampFlowStatus }>) => {
       state.onramp.status = action.payload.status
     },
-    onrampError: (state, action: PayloadAction<{ code: string }>) => {
+    onrampError: (
+      state,
+      action: PayloadAction<{
+        code: string
+        retryAfterSeconds?: number | null
+        request_id?: string | null
+      }>
+    ) => {
       state.onramp.status = 'error'
       state.onramp.errorCode = action.payload.code
+      state.onramp.errorRetryAfterSeconds = action.payload.retryAfterSeconds ?? null
+      state.onramp.errorRequestId = action.payload.request_id ?? null
     },
 
     // Cedula update transitions
@@ -294,6 +349,8 @@ export const {
   setReceivingAccount,
   setUserProfile,
   limitsFetched,
+  limitsBackgroundRevalidateStarted,
+  limitsBackgroundRevalidateFinished,
   offrampReset,
   offrampQuoting,
   offrampQuoteReady,

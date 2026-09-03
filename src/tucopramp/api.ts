@@ -1,5 +1,11 @@
 import { Address, Hex } from 'viem'
-import { signTucopRampRequest, tucopRampFetch, FetchImpl } from 'src/tucopramp/client'
+import {
+  parseCacheControlMaxAgeMs,
+  signTucopRampRequest,
+  tucopRampFetch,
+  tucopRampFetchWithMeta,
+  FetchImpl,
+} from 'src/tucopramp/client'
 import {
   Bank,
   BanksResponse,
@@ -74,6 +80,22 @@ export function getLimits(opts?: CallOpts): Promise<TucopRampLimits> {
     skipWalletAuth: true,
     ...opts,
   })
+}
+
+// Metadata-aware variant. Returns { value, serverMaxAgeMs } so the caller can
+// implement stale-while-revalidate against the server's Cache-Control hint
+// (guide sec 10: server sends max-age=300, wallet had a fixed 12h TTL — this
+// variant lets the saga honour whichever is shorter).
+export async function getLimitsWithMeta(
+  opts?: CallOpts
+): Promise<{ value: TucopRampLimits; serverMaxAgeMs: number | null }> {
+  const { data, meta } = await tucopRampFetchWithMeta<TucopRampLimits>({
+    method: 'GET',
+    upstreamPath: '/v1/p2p/limits',
+    skipWalletAuth: true,
+    ...opts,
+  })
+  return { value: data, serverMaxAgeMs: parseCacheControlMaxAgeMs(meta.headers) }
 }
 
 // ---------- User ----------

@@ -7,7 +7,7 @@ import {
   createOfframpOrder as apiCreateOfframpOrder,
   createOnrampOrder as apiCreateOnrampOrder,
   getBanks as apiGetBanks,
-  getLimits as apiGetLimits,
+  getLimitsWithMeta as apiGetLimitsWithMeta,
   getMe as apiGetMe,
   getOfframpQuote as apiGetOfframpQuote,
   getOnrampQuote as apiGetOnrampQuote,
@@ -21,11 +21,14 @@ import {
   UpdateCedulaRequest,
   uploadProof as apiUploadProof,
 } from 'src/tucopramp/api'
+import { RootState } from 'src/redux/reducers'
 import { limitsFetchedAtSelector } from 'src/tucopramp/selectors'
 import {
   cedulaUpdateFailed,
   cedulaUpdateSucceeded,
   cedulaUpdating,
+  limitsBackgroundRevalidateFinished,
+  limitsBackgroundRevalidateStarted,
   limitsFetched,
   offrampAdvance,
   offrampCancelling,
@@ -202,20 +205,74 @@ export function* submitCedulaUpdateSaga(action: PayloadAction<UpdateCedulaReques
   }
 }
 
-// Runtime operational caps from GET /v1/p2p/limits. Guarded by a 12h TTL so
-// the fetch fires at most once per boot per fresh cache window. On any
-// failure the hardcoded fallback in limits.ts keeps the UI working; we still
-// report via captureBusinessError so persistent server-side outages surface
-// on the dashboard.
+// Runtime operational caps from GET /v1/p2p/limits with a 3-tier staleness
+// gate honoring both the server's Cache-Control: max-age hint AND the
+// wallet's hard 12h upper bound.
+//
+//   age < serverMaxAge    -> fresh, skip fetch
+//   age < LIMITS_CACHE_TTL_MS -> stale, fire background revalidate (SWR)
+//   age >= LIMITS_CACHE_TTL_MS -> beyond hard TTL, foreground fetch
+//
+// Server sends max-age=300 today (guide sec 10). If the server ever bumps
+// this, we automatically respect the new value per-response — no wallet
+// release needed. Falls back to a 5min default when the header is missing
+// so a temporary server misconfiguration does not extend the fresh window
+// indefinitely. On any failure the hardcoded fallback in limits.ts keeps
+// the UI working; we still report via captureBusinessError so persistent
+// server-side outages surface on the dashboard.
+const DEFAULT_SERVER_MAX_AGE_MS = 5 * 60 * 1000 // 5min, matches current server config
+
 export function* fetchLimitsSaga() {
   const fetchedAt = yield* select(limitsFetchedAtSelector)
+  const serverMaxAgeMs = yield* select((s: RootState) => s.tucopramp.limits.serverMaxAgeMs)
+  const bgInFlight = yield* select(
+    (s: RootState) => s.tucopramp.limits.backgroundRevalidateInFlight
+  )
   const now = Date.now()
-  if (fetchedAt !== null && now - fetchedAt < LIMITS_CACHE_TTL_MS) {
-    return // warm cache, skip
+  const effectiveMaxAge = serverMaxAgeMs ?? DEFAULT_SERVER_MAX_AGE_MS
+
+  if (fetchedAt !== null) {
+    const age = now - fetchedAt
+    if (age < effectiveMaxAge) {
+      return // fresh, skip
+    }
+    if (age < LIMITS_CACHE_TTL_MS) {
+      // Stale-while-revalidate: user still sees the cached value; refresh in
+      // the background. Guard against overlapping revalidations.
+      if (bgInFlight) return
+      yield* put(limitsBackgroundRevalidateStarted())
+      try {
+        const { value, serverMaxAgeMs: freshMaxAge } = yield* call(apiGetLimitsWithMeta)
+        yield* put(
+          limitsFetched({
+            value,
+            fetchedAt: Date.now(),
+            serverMaxAgeMs: freshMaxAge,
+          })
+        )
+      } catch (err) {
+        Logger.warn(TAG, 'fetchLimits background revalidate failed', err)
+        yield* put(limitsBackgroundRevalidateFinished())
+        captureBusinessError(err, {
+          feature: 'tucopramp',
+          provider: 'ramp',
+          action: 'get_limits',
+        })
+      }
+      return
+    }
   }
+
+  // Cold cache or beyond hard TTL: foreground fetch.
   try {
-    const limits = yield* call(apiGetLimits)
-    yield* put(limitsFetched({ value: limits, fetchedAt: now }))
+    const { value, serverMaxAgeMs: freshMaxAge } = yield* call(apiGetLimitsWithMeta)
+    yield* put(
+      limitsFetched({
+        value,
+        fetchedAt: Date.now(),
+        serverMaxAgeMs: freshMaxAge,
+      })
+    )
   } catch (err) {
     Logger.warn(TAG, 'fetchLimits failed, keeping hardcoded fallback', err)
     captureBusinessError(err, {
@@ -239,7 +296,7 @@ export function* requestOfframpQuoteSaga(action: PayloadAction<OfframpQuoteReque
     const quote = yield* call(apiGetOfframpQuote, auth, action.payload)
     yield* put(offrampQuoteReady(quote))
   } catch (err) {
-    yield* put(offrampError({ code: errorCode(err) }))
+    yield* put(offrampError(errorMeta(err)))
   }
 }
 
@@ -265,7 +322,7 @@ export function* submitOfframpOrderSaga(
     const order = yield* call(apiCreateOfframpOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(offrampOrderCreated(order))
   } catch (err) {
-    yield* put(offrampError({ code: errorCode(err) }))
+    yield* put(offrampError(errorMeta(err)))
   }
 }
 
@@ -296,7 +353,7 @@ function* ensureFreshOfframpQuote(auth: TucopRampAuth, body: OfframpOrderRequest
     yield* put(offrampQuoteReady(fresh))
     return { ...body, quote_id: fresh.quote_id }
   } catch (err) {
-    yield* put(offrampError({ code: errorCode(err) }))
+    yield* put(offrampError(errorMeta(err)))
     return null
   }
 }
@@ -366,7 +423,7 @@ export function* cancelOfframpOrderSaga(
     yield* call(apiCancelOrder, auth, action.payload.orderId, idempotencyKey)
     yield* put(offrampAdvance({ status: 'cancelled' }))
   } catch (err) {
-    yield* put(offrampError({ code: errorCode(err) }))
+    yield* put(offrampError(errorMeta(err)))
   }
 }
 
@@ -383,7 +440,7 @@ export function* requestOnrampQuoteSaga(action: PayloadAction<OnrampQuoteRequest
     const quote = yield* call(apiGetOnrampQuote, auth, action.payload)
     yield* put(onrampQuoteReady(quote))
   } catch (err) {
-    yield* put(onrampError({ code: errorCode(err) }))
+    yield* put(onrampError(errorMeta(err)))
   }
 }
 
@@ -405,7 +462,7 @@ export function* submitOnrampOrderSaga(
     const order = yield* call(apiCreateOnrampOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(onrampOrderCreated(order))
   } catch (err) {
-    yield* put(onrampError({ code: errorCode(err) }))
+    yield* put(onrampError(errorMeta(err)))
   }
 }
 
@@ -429,7 +486,7 @@ function* ensureFreshOnrampQuote(auth: TucopRampAuth, body: OnrampOrderRequest) 
     yield* put(onrampQuoteReady(fresh))
     return { ...body, quote_id: fresh.quote_id }
   } catch (err) {
-    yield* put(onrampError({ code: errorCode(err) }))
+    yield* put(onrampError(errorMeta(err)))
     return null
   }
 }
@@ -447,7 +504,7 @@ export function* uploadOnrampProofSaga(
     yield* call(apiUploadProof, auth, action.payload.orderId, action.payload.file)
     yield* put(onrampProofUploaded())
   } catch (err) {
-    yield* put(onrampError({ code: errorCode(err) }))
+    yield* put(onrampError(errorMeta(err)))
   }
 }
 
@@ -481,6 +538,26 @@ function errorCode(err: unknown): string {
   if (err instanceof TucopRampError) return err.code
   if (err instanceof Error) return err.message.slice(0, 80)
   return 'unknown'
+}
+
+// Extract the full error metadata (code + optional retry-after + request_id)
+// for propagation into flow error dispatches. Retry-After only lands when the
+// server sent it (typically 429 rate_limited); request_id lands whenever the
+// RFC 7807 envelope carried it. Non-TucopRampError paths still surface the
+// code but leave retry/request_id null.
+function errorMeta(err: unknown): {
+  code: string
+  retryAfterSeconds: number | null
+  request_id: string | null
+} {
+  if (err instanceof TucopRampError) {
+    return {
+      code: err.code,
+      retryAfterSeconds: err.retryAfterSeconds ?? null,
+      request_id: err.request_id ?? null,
+    }
+  }
+  return { code: errorCode(err), retryAfterSeconds: null, request_id: null }
 }
 
 function mapOfframpDetailStatus(status: OfframpOrderStatus) {
