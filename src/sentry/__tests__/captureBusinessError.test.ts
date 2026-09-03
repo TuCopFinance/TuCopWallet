@@ -27,7 +27,7 @@ describe('captureBusinessError', () => {
     ;(config as any).SENTRY_ENABLED = false
     captureBusinessError(new Error('x'), {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
     })
     expect(Sentry.captureException).not.toHaveBeenCalled()
@@ -36,13 +36,13 @@ describe('captureBusinessError', () => {
   it('sets feature/provider/action tags and reports the error', () => {
     captureBusinessError(new Error('boom'), {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
       errorCode: 'LOW_POOL',
     })
     expect(mockScope.setTags).toHaveBeenCalledWith({
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
       errorCode: 'LOW_POOL',
     })
@@ -65,13 +65,13 @@ describe('captureBusinessError', () => {
   it('groups the same business error via fingerprint regardless of message', () => {
     captureBusinessError(new Error('boom'), {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
       errorCode: 'LOW_POOL',
     })
     expect(mockScope.setFingerprint).toHaveBeenCalledWith([
       'earn',
-      'neeru',
+      'earn-vault',
       'close_position',
       'LOW_POOL',
     ])
@@ -161,7 +161,7 @@ describe('captureBusinessError', () => {
     })
     captureBusinessError(new Error('c'), {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
       errorCode: 'LOW_POOL',
     })

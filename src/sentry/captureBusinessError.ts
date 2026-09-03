@@ -31,7 +31,7 @@ export type BusinessFeature =
 // native flows (e.g. positions fetch failure that is not a specific
 // provider). Aligned with backend's taxonomy so joint dashboards work.
 export type BusinessProvider =
-  | 'neeru'
+  | 'earn-vault'
   | 'marranitos'
   | 'squid'
   | 'uniswap-v4'

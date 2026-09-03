@@ -40,7 +40,7 @@ export function* fetchNeeruMetaSaga() {
       Sentry.setTag('neeru_meta_source', 'fallback_pending')
       captureBusinessError(error, {
         feature: 'earn',
-        provider: 'neeru',
+        provider: 'earn-vault',
         action: 'fetch_meta',
         errorCode: classifyHttpError(error),
       })
@@ -60,7 +60,7 @@ export function* fetchNeeruCatalogueSaga() {
     Logger.warn(TAG, 'catalogue fetch failed, callers will render loading/retry', error)
     captureBusinessError(error, {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'fetch_catalogue',
       errorCode: classifyHttpError(error),
     })

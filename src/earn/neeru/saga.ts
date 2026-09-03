@@ -297,7 +297,7 @@ export function* fetchNeeruPositionsSaga(_action: ReturnType<typeof fetchPositio
     Logger.error(TAG, 'fetchNeeruPositions failed', error)
     captureBusinessError(error, {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'fetch_positions',
       errorCode: classifyHttpError(error),
     })
@@ -419,7 +419,7 @@ export function* closeNeeruPositionSaga(action: ReturnType<typeof closePositionS
     Logger.error(TAG, 'close failed', error)
     captureBusinessError(error, {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'close_position',
       // Prefer the confidence tag from the two-source safety net when the
       // error came from enforceReceiptsOrThrow. Falls back to HTTP class
@@ -518,7 +518,7 @@ export function* emergencyCloseNeeruPositionSaga(action: ReturnType<typeof emerg
     Logger.error(TAG, 'emergency close failed', error)
     captureBusinessError(error, {
       feature: 'earn',
-      provider: 'neeru',
+      provider: 'earn-vault',
       action: 'emergency_close',
       errorCode: classifyRevertConfidence(error) ?? classifyHttpError(error),
     })

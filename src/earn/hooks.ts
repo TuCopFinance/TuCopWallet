@@ -31,8 +31,8 @@ const TAG = 'earn/hooks'
 // sync with the appId values dispatched by the earn sagas (src/earn/saga.ts
 // via pool.appId and src/earn/neeru/saga.ts with the hardcoded literals).
 const PROVIDER_FALLBACK_NAMES: Record<string, string> = {
-  'neeru-vaults': 'Neeru',
-  neeru: 'Neeru',
+  'neeru-vaults': 'Inversión',
+  neeru: 'Inversión',
   beefy: 'Beefy',
   aave: 'Aave',
   allbridge: 'Allbridge',
