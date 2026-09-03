@@ -55,8 +55,12 @@ export async function sendSupportRequest({
   })
 }
 
-// These custom fields auto-populate fields in zendesk
-// Id's come from https://valoraapp.zendesk.com/admin/objects-rules/tickets/ticket-fields (only admins can view)
+// These custom fields auto-populate fields in zendesk. Runtime endpoint is
+// tucopwallet.zendesk.com (see ZENDESK_PROJECT_NAME in src/config.ts). Field
+// IDs below were inherited from the upstream Valora Zendesk and were kept as
+// the wallet moved to its own Zendesk instance; verify at
+// https://tucopwallet.zendesk.com/admin/objects-rules/tickets/ticket-fields
+// (admin access required) when adding new fields.
 export function _generateCustomFields(deviceInfo: SupportRequestUserProperties) {
   return [
     {

@@ -59,7 +59,7 @@
 	<string>$(CLEVERTAP_TOKEN)</string>
 	<key>FirebaseDynamicLinksCustomDomains</key>
 	<array>
-		<string>https://vlra.app</string>
+		<string>https://tucop.xyz</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
