@@ -20,7 +20,6 @@ import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
-import { navigateToURI } from 'src/utils/linking'
 import { showToast } from 'src/components/showToast'
 import { walletAddressSelector } from 'src/web3/selectors'
 
@@ -83,18 +82,8 @@ export default function QRCodeDisplay(props: Props) {
           <>
             <Text style={styles.exchangeText}>
               <Trans i18nKey="fiatExchangeFlow.exchange.informationText">
-                <Text
-                  style={styles.boldLink}
-                  onPress={() => navigateToURI('https://celo.org')}
-                ></Text>
-                <Text
-                  style={styles.boldLink}
-                  onPress={() =>
-                    navigateToURI(
-                      'https://celoscan.io/token/0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e'
-                    )
-                  }
-                ></Text>
+                <Text style={styles.bold}></Text>
+                <Text style={styles.bold}></Text>
               </Trans>
             </Text>
             <ExchangesBottomSheet
@@ -164,10 +153,6 @@ const styles = StyleSheet.create({
   },
   bold: {
     ...typeScale.labelSemiBoldXSmall,
-  },
-  boldLink: {
-    fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   description: {
     ...typeScale.bodyXSmall,

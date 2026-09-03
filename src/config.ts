@@ -133,13 +133,13 @@ export const WALLET_CONNECT_PROJECT_ID = 'dcc6ce1fc698ea19c114e7afe1bc469f'
 export const AUTH0_CLIENT_ID = 'FS2sPfMvDBKy0udOoCbc4ao8HakvAR6b'
 export const AUTH0_DOMAIN = 'auth.valora.xyz'
 
-export const SPEND_MERCHANT_LINKS: SpendMerchant[] = [
-  {
-    name: 'Merchant Map',
-    link: 'https://celo.org/experience/merchant/merchants-accepting-celo#map',
-    subtitleKey: 'findMerchants',
-  },
-]
+// No merchant links wired at TuCop yet. The previous entry pointed at
+// celo.org/experience/merchant which leaks the underlying network to users
+// (violates the no-tech-leak policy in .claude/rules/tokens.md). Wire real
+// merchant links here when a tucop.xyz page exists; the Spend screen already
+// filters out entries with no link so an empty list renders as an empty
+// section without breaking the layout.
+export const SPEND_MERCHANT_LINKS: SpendMerchant[] = []
 
 export const DEFAULT_PERSONA_TEMPLATE_ID = 'itmpl_5FYHGGFhdAYvfd7FvSpNADcC'
 
