@@ -3411,7 +3411,11 @@
       "proof_signature_invalid": "Invalid receipt, take it again",
       "proof_not_found": "Receipt not found",
       "invalid_upload": "The file is invalid",
-      "internal_error": "Service error, please try again"
+      "internal_error": "Service error, please try again",
+      "rate_limited_countdown": "Too many requests, try again in {{seconds}}s",
+      "referenceCode": "Reference code",
+      "copyReference": "Copy code",
+      "copied": "Copied"
     },
     "settings": {
       "updateCedula": {
@@ -3439,6 +3443,11 @@
         "proofLoading": "Loading receipt...",
         "proofError": "Could not load the receipt. Try re-opening the order."
       }
+    },
+    "consent": {
+      "label": "I have read and accept the TuCOPRamp terms and conditions",
+      "linkText": "View terms",
+      "required": "Accept the terms to continue"
     }
   }
 }

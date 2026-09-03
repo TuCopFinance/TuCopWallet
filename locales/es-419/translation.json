@@ -3522,7 +3522,11 @@
       "proof_signature_invalid": "Comprobante invalido, tomalo de nuevo",
       "proof_not_found": "No encontramos el comprobante",
       "invalid_upload": "El archivo no es valido",
-      "internal_error": "Error del servicio, intenta de nuevo"
+      "internal_error": "Error del servicio, intenta de nuevo",
+      "rate_limited_countdown": "Muchas solicitudes, intenta de nuevo en {{seconds}}s",
+      "referenceCode": "Codigo de referencia",
+      "copyReference": "Copiar codigo",
+      "copied": "Copiado"
     },
     "settings": {
       "updateCedula": {
@@ -3550,6 +3554,11 @@
         "proofLoading": "Cargando comprobante...",
         "proofError": "No pudimos cargar el comprobante. Intenta reabrir la orden."
       }
+    },
+    "consent": {
+      "label": "He leido y acepto los terminos y condiciones de TuCOPRamp",
+      "linkText": "Ver terminos",
+      "required": "Aceptar los terminos para continuar"
     }
   },
   "transactionSuccess": {
