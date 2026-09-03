@@ -1359,6 +1359,27 @@ PODS:
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
+  - react-native-image-picker (8.2.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-in-app-review (4.3.3):
     - React-Core
   - react-native-launch-arguments (4.0.2):
@@ -2138,6 +2159,7 @@ DEPENDENCIES:
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-contacts (from `../node_modules/react-native-contacts`)
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - react-native-launch-arguments (from `../node_modules/react-native-launch-arguments`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -2322,6 +2344,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-contacts"
   react-native-cookies:
     :path: "../node_modules/@react-native-cookies/cookies"
+  react-native-image-picker:
+    :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
     :path: "../node_modules/react-native-in-app-review"
   react-native-launch-arguments:
@@ -2511,6 +2535,7 @@ SPEC CHECKSUMS:
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-contacts: 5eeeb8bff95a0e1680a11329e15653eb73d29a1d
   react-native-cookies: f7772e020f2d61cbbb591cf769ac352b8c1517e6
+  react-native-image-picker: 82a9e4371e48c518a69882b3c54de11134196cd2
   react-native-in-app-review: b3d1eed3d1596ebf6539804778272c4c65e4a400
   react-native-launch-arguments: d4759f7591e2766e6c5ec746b7032429edaf7058
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187

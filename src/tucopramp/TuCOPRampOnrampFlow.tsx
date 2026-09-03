@@ -13,6 +13,8 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import { launchImageLibrary } from 'react-native-image-picker'
+import type { ImagePickerResponse } from 'react-native-image-picker'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -39,7 +41,8 @@ import {
   onrampStatusSelector,
   receivingAccountSelector,
 } from 'src/tucopramp/selectors'
-import { onrampReset } from 'src/tucopramp/slice'
+import { onrampError, onrampReset } from 'src/tucopramp/slice'
+import Logger from 'src/utils/Logger'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
@@ -51,15 +54,14 @@ type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampOnrampFlow>
 // a TuCOPRamp-specific URL, update both in the same commit.
 const TUCOPRAMP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
-// Placeholder ProofFile for the smoke path. Real file picker (react-native-
-// image-picker or expo-image-picker) wires in when we polish the UX; the
-// current dummy is enough to exercise the saga -> api -> proxy path end to
-// end during Phase 5 smoke.
-const STUB_PROOF_FILE = {
-  uri: 'file:///stub-proof.png',
-  name: 'proof.png',
-  type: 'image/png',
-}
+const TAG = 'tucopramp/OnrampFlow'
+
+// react-native-image-picker MIME whitelist for the Bre-B receipt. Server
+// enforces the same list with `proof_invalid_type` (400) if anything else
+// slips through. PDFs are not supported by launchImageLibrary today; users
+// with a PDF receipt would need a separate document picker (out of scope
+// for the first release).
+const ALLOWED_PROOF_MIME = ['image/png', 'image/jpeg', 'image/jpg']
 
 function TuCOPRampOnrampFlow(_props: Props) {
   const { t } = useTranslation()
@@ -129,10 +131,39 @@ function TuCOPRampOnrampFlow(_props: Props) {
     )
   }
 
-  const onUploadProof = () => {
-    if (order?.order_id) {
-      dispatch(uploadOnrampProof({ orderId: order.order_id, file: STUB_PROOF_FILE }))
+  const onUploadProof = async () => {
+    if (!order?.order_id) return
+    let response: ImagePickerResponse
+    try {
+      response = await launchImageLibrary({
+        mediaType: 'photo',
+        includeBase64: false,
+        selectionLimit: 1,
+        // presentationStyle is iOS-only; leaves default on Android.
+        presentationStyle: 'formSheet',
+      })
+    } catch (err) {
+      Logger.warn(TAG, 'launchImageLibrary threw', err)
+      return
     }
+    if (response.didCancel) return
+    const asset = response.assets?.[0]
+    if (!asset?.uri || !asset.type || !asset.fileName) {
+      Logger.warn(TAG, 'image picker returned incomplete asset', response)
+      return
+    }
+    if (!ALLOWED_PROOF_MIME.includes(asset.type)) {
+      // Surface as a soft error via redux so the ErrorFooter shows it; server
+      // would also reject with proof_invalid_type, but this saves the round-trip.
+      dispatch(onrampError({ code: 'proof_invalid_type' }))
+      return
+    }
+    dispatch(
+      uploadOnrampProof({
+        orderId: order.order_id,
+        file: { uri: asset.uri, name: asset.fileName, type: asset.type },
+      })
+    )
   }
 
   const onCloseAndExit = () => {
