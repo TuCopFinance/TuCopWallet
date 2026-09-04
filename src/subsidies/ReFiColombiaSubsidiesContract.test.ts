@@ -205,7 +205,7 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     expect(mockWallet.sendTransaction).not.toHaveBeenCalled()
     expect(showErrorMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        context: { screen: 'subsidies', action: 'prepareClaimTransaction' },
+        context: { screen: 'reficolombia', action: 'prepareClaimTransaction' },
         variant: 'sheet',
       })
     )
@@ -249,6 +249,6 @@ describe('ReFiColombiaSubsidiesContract.claimSubsidy', () => {
     const callArg = (prepareTransactions as jest.Mock).mock.calls[0][0]
     expect(callArg.feeCurrencies.length).toBeGreaterThan(0)
     expect(callArg.baseTransactions[0].to).toBe(REFI_COLOMBIA_SUBSIDIES_ADDRESS)
-    expect(callArg.origin).toBe('subsidies')
+    expect(callArg.origin).toBe('reficolombia')
   })
 })

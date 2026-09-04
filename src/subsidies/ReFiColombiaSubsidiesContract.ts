@@ -87,8 +87,8 @@ export class ReFiColombiaSubsidiesContract {
     } catch (error) {
       Logger.warn(TAG, 'Error checking if can claim this week')
       captureBusinessError(error, {
-        feature: 'subsidies',
-        provider: 'refi-colombia-subsidies',
+        feature: 'reficolombia',
+        provider: 'refi-colombia',
         action: 'can_claim_this_week',
         errorCode: 'simulate_failed',
       })
@@ -143,8 +143,8 @@ export class ReFiColombiaSubsidiesContract {
     } catch (error) {
       Logger.warn(TAG, 'Error getting UBI status, falling back to basic status')
       captureBusinessError(error, {
-        feature: 'subsidies',
-        provider: 'refi-colombia-subsidies',
+        feature: 'reficolombia',
+        provider: 'refi-colombia',
         action: 'get_ubi_status',
         errorCode:
           error instanceof Error && error.message.includes('No contract deployed')
@@ -174,8 +174,8 @@ export class ReFiColombiaSubsidiesContract {
     } catch (error) {
       Logger.warn(TAG, 'Error checking if address is beneficiary')
       captureBusinessError(error, {
-        feature: 'subsidies',
-        provider: 'refi-colombia-subsidies',
+        feature: 'reficolombia',
+        provider: 'refi-colombia',
         action: 'is_beneficiary',
         errorCode:
           error instanceof Error && error.message.includes('No contract deployed')
@@ -187,7 +187,7 @@ export class ReFiColombiaSubsidiesContract {
       if (error instanceof Error && error.message.includes('No contract deployed')) {
         showErrorMessage({
           error,
-          context: { screen: 'subsidies', action: 'isBeneficiary' },
+          context: { screen: 'reficolombia', action: 'isBeneficiary' },
           variant: 'sheet',
         })
       }
@@ -222,9 +222,22 @@ export class ReFiColombiaSubsidiesContract {
           from: walletAddress,
           to: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
           data: claimCallData,
+          // Pre-set gas bypasses estimateGas, which was failing in 1.118.13
+          // during Celo baseFee spikes for the `claimSubsidy()` selector
+          // (Sentry TUCOPWALLET-21 `max fee per gas less than block base
+          // fee`, TUCOPWALLET-22 `out of gas: gas required exceeds: 27212`,
+          // TUCOPWALLET-1V `prepare_not-enough-balance-for-gas` - all
+          // 3 issues, Sep 3+ 2026, 8+6+10 users). prepareTransactions
+          // honors baseTx.gas at src/viem/prepareTransactions.ts:350 and
+          // adds STATIC_GAS_PADDING (~50k) + 25% shortcut buffer on top,
+          // so the on-chain limit lands around 300k. The claimSubsidy()
+          // -> COPm.transfer path uses ~150-200k in practice, so this
+          // leaves ample headroom without over-charging (Forno bills
+          // gasUsed, not gasLimit).
+          gas: BigInt(200_000),
         },
       ],
-      origin: 'subsidies',
+      origin: 'reficolombia',
     })
   }
 
@@ -245,7 +258,7 @@ export class ReFiColombiaSubsidiesContract {
         Logger.warn(TAG, `Address ${walletAddress} is not a beneficiary`)
         showErrorMessage({
           error: new Error(ErrorMessages.UBI_NOT_BENEFICIARY),
-          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          context: { screen: 'reficolombia', action: 'claimSubsidy' },
           variant: 'sheet',
         })
         return { success: false, error: 'Not a beneficiary' }
@@ -258,7 +271,7 @@ export class ReFiColombiaSubsidiesContract {
           : 'proxima semana'
         showErrorMessage({
           error: new Error(ErrorMessages.UBI_ALREADY_CLAIMED),
-          context: { screen: 'subsidies', action: 'claimSubsidy' },
+          context: { screen: 'reficolombia', action: 'claimSubsidy' },
           variant: 'sheet',
         })
         return {
@@ -302,15 +315,15 @@ export class ReFiColombiaSubsidiesContract {
       if (prepared.type !== 'possible') {
         Logger.warn(TAG, `Cannot prepare claim transaction: ${prepared.type}`)
         captureBusinessError(new Error(`prepare_${prepared.type}`), {
-          feature: 'subsidies',
-          provider: 'refi-colombia-subsidies',
+          feature: 'reficolombia',
+          provider: 'refi-colombia',
           action: 'claim_subsidy',
           errorCode: 'insufficient_gas',
           extra: { prepareType: prepared.type },
         })
         showErrorMessage({
           error: new Error(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS),
-          context: { screen: 'subsidies', action: 'prepareClaimTransaction' },
+          context: { screen: 'reficolombia', action: 'prepareClaimTransaction' },
           variant: 'sheet',
         })
         return {
@@ -324,7 +337,7 @@ export class ReFiColombiaSubsidiesContract {
         `Sending claim transaction with feeCurrency ${prepared.feeCurrency.symbol} (${prepared.feeCurrency.tokenId})`
       )
       addTxSubmittedBreadcrumb({
-        feature: 'subsidies',
+        feature: 'reficolombia',
         feeCurrencySymbol: prepared.feeCurrency.symbol,
         networkId: NetworkId['celo-mainnet'],
       })
@@ -390,6 +403,8 @@ export class ReFiColombiaSubsidiesContract {
         | 'already_claimed_this_week'
         | 'not_beneficiary'
         | 'insufficient_gas'
+        | 'out_of_gas'
+        | 'base_fee_stale'
         | 'user_cancelled'
         | 'contract_not_deployed'
         | 'wallet_locked'
@@ -404,6 +419,17 @@ export class ReFiColombiaSubsidiesContract {
         errorCode = 'not_beneficiary'
       } else if (errorMessage.includes('insufficient funds')) {
         errorCode = 'insufficient_gas'
+        // Post-2026-09 Celo baseFee-spike class: Forno rejects tx submission
+        // when maxFeePerGas has drifted below current baseFee between
+        // wallet-side quote and submit. Fingerprint separately so a dashboard
+        // spike here (retryable) does not merge with genuine cascade
+        // exhaustion (insufficient_gas). See TUCOPWALLET-21, 2026-09-03.
+      } else if (/max fee per gas less than block base fee/i.test(errorMessage)) {
+        errorCode = 'base_fee_stale'
+        // OOG at submit: tx accepted but reverted for gas. Distinct from
+        // insufficient_gas (pre-submit balance check). See TUCOPWALLET-22.
+      } else if (/out of gas|gas required exceeds/i.test(errorMessage)) {
+        errorCode = 'out_of_gas'
       } else if (errorMessage.includes('User rejected') || errorMessage.includes('cancelled')) {
         errorCode = 'user_cancelled'
       } else if (errorMessage.includes('No contract deployed')) {
@@ -419,8 +445,8 @@ export class ReFiColombiaSubsidiesContract {
         return { success: false, error: 'Transacción cancelada por el usuario' }
       }
       captureBusinessError(error, {
-        feature: 'subsidies',
-        provider: 'refi-colombia-subsidies',
+        feature: 'reficolombia',
+        provider: 'refi-colombia',
         action: 'claim_subsidy',
         errorCode,
       })
@@ -437,6 +463,12 @@ export class ReFiColombiaSubsidiesContract {
           uiError = new Error(ErrorMessages.UBI_NOT_BENEFICIARY)
           break
         case 'insufficient_gas':
+        case 'out_of_gas':
+        case 'base_fee_stale':
+          // All three surface as the same user-facing "insufficient balance
+          // for network fee" copy so users get a consistent recovery hint
+          // ("add balance in a fee-eligible token"). Underlying differences
+          // matter for Sentry fingerprint only.
           uiError = new Error(ErrorMessages.INSUFFICIENT_FUNDS_FOR_GAS)
           break
         default:
@@ -444,7 +476,7 @@ export class ReFiColombiaSubsidiesContract {
       }
       showErrorMessage({
         error: uiError,
-        context: { screen: 'subsidies', action: 'claimSubsidy' },
+        context: { screen: 'reficolombia', action: 'claimSubsidy' },
         variant: 'sheet',
       })
       return { success: false, error: errorMessage }
@@ -516,8 +548,8 @@ export class ReFiColombiaSubsidiesContract {
     } catch (error) {
       Logger.warn(TAG, 'Error getting basic UBI status')
       captureBusinessError(error, {
-        feature: 'subsidies',
-        provider: 'refi-colombia-subsidies',
+        feature: 'reficolombia',
+        provider: 'refi-colombia',
         action: 'get_basic_ubi_status',
         errorCode:
           error instanceof Error && error.message.includes('No contract deployed')
