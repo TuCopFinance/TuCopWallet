@@ -45,4 +45,4 @@ export type TransactionOrigin =
   | 'shortcut'
   | 'gold-buy'
   | 'gold-sell'
-  | 'subsidies'
+  | 'reficolombia'

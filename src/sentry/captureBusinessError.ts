@@ -14,7 +14,7 @@ export type BusinessFeature =
   | 'tucopramp' // COPm <-> COP semi-manual ramp via Bre-B (replaces buckspay)
   | 'jumpstart' // send-via-link
   | 'positions' // hooks-api positions fetch / trigger
-  | 'subsidies' // ReFi Colombia UBI claim flow
+  | 'reficolombia' // ReFi Colombia UBI claim flow (was 'subsidies' pre-1.118.14)
   | 'send' // send-money screen (recipient, review, submit)
   | 'wallet_connect' // dapp connection + session request handling
   | 'deep_link' // universal / custom-scheme link dispatch
@@ -40,7 +40,7 @@ export type BusinessProvider =
   | 'buckspay'
   | 'wri'
   | 'internal'
-  | 'refi-colombia-subsidies'
+  | 'refi-colombia' // ReFi Colombia UBI provider (was 'refi-colombia-subsidies' pre-1.118.14)
   | 'wallet-connect'
   | 'wri-relay'
   | 'bridge'

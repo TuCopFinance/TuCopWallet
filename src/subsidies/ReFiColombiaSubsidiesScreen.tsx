@@ -101,8 +101,8 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
         if (cancelled) return
         Logger.warn(TAG, 'Fee preview failed')
         captureBusinessError(error, {
-          feature: 'subsidies',
-          provider: 'refi-colombia-subsidies',
+          feature: 'reficolombia',
+          provider: 'refi-colombia',
           action: 'preview_claim_fee',
           errorCode: 'rpc_error',
         })
