@@ -33,6 +33,7 @@ import TokenEnterAmount, {
 } from 'src/components/TokenEnterAmount'
 import CustomHeader from 'src/components/header/CustomHeader'
 import { useSelector } from 'src/redux/hooks'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import EnterAmountOptions from 'src/send/EnterAmountOptions'
 import { AmountEnteredIn } from 'src/send/types'
 import Colors from 'src/styles/colors'
@@ -40,7 +41,10 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { TokenBalance } from 'src/tokens/slice'
+import Logger from 'src/utils/Logger'
 import { PreparedTransactionsResult, getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
+
+const TAG_ENTER_AMOUNT = 'send/EnterAmount'
 
 export interface ProceedArgs {
   tokenAmount: BigNumber
@@ -86,15 +90,51 @@ export const SendProceed = ({
   showLoading,
 }: ProceedComponentProps) => {
   const { t } = useTranslation()
+  // Defensive: fold !tokenAmount into `disabled` so the button greys out
+  // whenever the amount parser has not produced a BigNumber yet. Reports
+  // from 2026-09-05 (Reno 14F + Redmi Note 13, 1.118.13) described a
+  // silent Revisar tap: no navigation, no Sentry exception. Root cause
+  // was the `tokenAmount && onPressProceed(...)` short-circuit inside
+  // onPress - if a prior valid entry left `prepareTransactionsResult`
+  // at type 'possible' AND the user re-edited the amount to a value the
+  // parser could not immediately resolve (comma-vs-dot decimal on some
+  // OEM keyboards, or a race between input change and prepare refetch),
+  // the button stayed visually active but the tap did nothing. Folding
+  // into `disabled` makes the state visible; the log-and-capture in
+  // onPress catches the residual case where the tap still fires with a
+  // null amount (would go silently unreported before).
+  const isReady = !disabled && !!tokenAmount
   return (
     <Button
-      onPress={() =>
-        tokenAmount && onPressProceed({ tokenAmount, localAmount, token, amountEnteredIn })
-      }
+      onPress={() => {
+        if (tokenAmount) {
+          onPressProceed({ tokenAmount, localAmount, token, amountEnteredIn })
+          return
+        }
+        // Guard fired: telemetry so we see when the button was enabled
+        // but the parsed amount is missing. Fingerprint groups distinct
+        // from other send failures. beforeSend PII scrub drops any
+        // stray amount / address strings if the caller ever adds them.
+        Logger.warn(TAG_ENTER_AMOUNT, 'SendProceed onPress fired with null tokenAmount', {
+          tokenSymbol: token?.symbol,
+          amountEnteredIn,
+        })
+        captureBusinessError(new Error('send_proceed_null_token_amount'), {
+          feature: 'send',
+          provider: 'internal',
+          action: 'review_button',
+          errorCode: 'null_token_amount',
+          extra: {
+            tokenSymbol: token?.symbol,
+            amountEnteredIn,
+            hasLocalAmount: !!localAmount,
+          },
+        })
+      }}
       text={t('review')}
       style={styles.reviewButton}
       size={BtnSizes.FULL}
-      disabled={disabled}
+      disabled={!isReady}
       showLoading={showLoading}
       testID="SendEnterAmount/ReviewButton"
     />
