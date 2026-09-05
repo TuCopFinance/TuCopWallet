@@ -7,6 +7,10 @@ import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
+import Logger from 'src/utils/Logger'
+
+const TAG_GOLD_SELL_ENTER_AMOUNT = 'gold/GoldSellEnterAmount'
 import { buildDolaresVirtualToken } from 'src/dollarsSpend/dolaresVirtualToken'
 import { DOLARES_VIRTUAL_TOKEN_ID } from 'src/dollarsSpend/types'
 import { useDollarBalanceSnapshots } from 'src/dollarsSpend/useDollarBalanceSnapshots'
@@ -212,7 +216,32 @@ export default function GoldSellEnterAmount(_props: Props) {
   const insufficientBalance = parsedGoldAmount && parsedGoldAmount.gt(xaut0Balance)
 
   const onPressContinue = () => {
-    if (!isAmountValid || !selectedOutputToken || !outputAmount) return
+    if (!isAmountValid || !selectedOutputToken || !outputAmount) {
+      // Guard fired despite the button being enabled -> we have a
+      // state race (button rendered with an isAmountValid computed
+      // from stale data, then re-render lost one of the pieces).
+      // Silent return would hide this as a support ticket ("boton no
+      // hace nada"); Sentry gets it instead. Fingerprint groups all
+      // silent-tap cases into one issue we can track.
+      Logger.warn(TAG_GOLD_SELL_ENTER_AMOUNT, 'onPressContinue guard fired', {
+        isAmountValid,
+        hasOutputToken: !!selectedOutputToken,
+        hasOutputAmount: !!outputAmount,
+      })
+      captureBusinessError(new Error('gold_sell_continue_silent_return'), {
+        feature: 'gold',
+        provider: 'internal',
+        action: 'sell_continue_button',
+        errorCode: 'silent_return_guard',
+        extra: {
+          isAmountValid: !!isAmountValid,
+          hasOutputToken: !!selectedOutputToken,
+          hasOutputAmount: !!outputAmount,
+          outputTokenSymbol: selectedOutputToken?.symbol,
+        },
+      })
+      return
+    }
 
     AppAnalytics.track(GoldEvents.gold_sell_quote_received, {
       fromAmount: parsedGoldAmount.toString(),

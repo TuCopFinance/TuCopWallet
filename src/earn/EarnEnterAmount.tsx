@@ -7,6 +7,7 @@ import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents, SendEvents } from 'src/analytics/Events'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import BackButton from 'src/components/BackButton'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -368,7 +369,23 @@ function EarnEnterAmount({ route }: Props) {
 
   const onPressContinue = () => {
     if (!tokenAmount || !transactionToken) {
-      // should never happen
+      // Guard fired despite the button being enabled -> state race
+      // (button rendered from a stale isAmountValid, then a piece went
+      // null before the tap). Silent return would hide it as a support
+      // ticket; Sentry gets it instead. Fingerprint groups all silent
+      // button taps into a single dashboard issue.
+      captureBusinessError(new Error('earn_enter_amount_continue_silent_return'), {
+        feature: 'earn',
+        provider: 'earn-vault',
+        action: 'enter_amount_continue_button',
+        errorCode: 'silent_return_guard',
+        extra: {
+          hasTokenAmount: !!tokenAmount,
+          hasTransactionToken: !!transactionToken,
+          mode,
+          poolAppId: pool?.appId,
+        },
+      })
       return
     }
     AppAnalytics.track(EarnEvents.earn_enter_amount_continue_press, {

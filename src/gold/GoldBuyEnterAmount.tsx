@@ -7,6 +7,7 @@ import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
+import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import BackButton from 'src/components/BackButton'
 import { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -324,10 +325,28 @@ export default function GoldBuyEnterAmount({ route }: Props) {
     })
 
     if (!isAmountValid || !selectedToken || !goldAmount) {
+      // Guard fired despite the button being enabled -> state race
+      // (button rendered with fresh isAmountValid, then a piece went
+      // stale before the tap). Sentry gets it so we can track any
+      // silent 'boton no hace nada' reports without waiting for
+      // support tickets.
       Logger.warn('GoldBuyEnterAmount', 'Invalid state for continue', {
         isAmountValid,
         hasSelectedToken: !!selectedToken,
         hasGoldAmount: !!goldAmount,
+      })
+      captureBusinessError(new Error('gold_buy_continue_silent_return'), {
+        feature: 'gold',
+        provider: 'internal',
+        action: 'buy_continue_button',
+        errorCode: 'silent_return_guard',
+        extra: {
+          isAmountValid: !!isAmountValid,
+          hasSelectedToken: !!selectedToken,
+          hasGoldAmount: !!goldAmount,
+          selectedTokenSymbol: selectedToken?.symbol,
+          isVirtualDolares,
+        },
       })
       return
     }
