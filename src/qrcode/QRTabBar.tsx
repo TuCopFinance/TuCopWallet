@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dimensions, StyleSheet, Text, View } from 'react-native'
 import Animated, { Extrapolation, interpolate } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import SegmentedControl from 'src/components/SegmentedControl'
 import BackChevron from 'src/icons/navigation/BackChevron'
 import Share from 'src/icons/actions/Share'
@@ -31,6 +31,15 @@ export default function QRTabBar({
 }: Props) {
   const dispatch = useDispatch()
   const { t } = useTranslation()
+  const insets = useSafeAreaInsets()
+  // Header height on iOS = safe-area top + native nav-bar (~44px)
+  // + the tabHeader's own Thick24 paddingTop. Add Regular16 padding
+  // between the header bottom edge and the tab bar for breathing
+  // room. Fully dynamic per device instead of a magic top:100 that
+  // matched no phone precisely.
+  const IOS_NAV_BAR_HEIGHT = 44
+  const HEADER_INNER_PADDING = 24
+  const topOffset = insets.top + IOS_NAV_BAR_HEIGHT + HEADER_INNER_PADDING + Spacing.Regular16
   const values = useMemo(
     () =>
       state.routes.map((route) => {
@@ -72,7 +81,7 @@ export default function QRTabBar({
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { top: topOffset }]} edges={[]}>
       <View style={styles.leftContainer}>
         <TopBarIconButton
           icon={leftIcon === 'times' ? <Times color={color} /> : <BackChevron color={color} />}
@@ -111,28 +120,23 @@ export default function QRTabBar({
 
 const styles = StyleSheet.create({
   container: {
-    // With QRNavigator headerShown:false (was true + a spread of
-    // tabHeader that rendered SendButton + QrScanButton +
-    // SettingsGearButton), the tab bar owns the whole top strip and
-    // no longer has to clear a native header. Anchor to top:0 so
-    // the SafeAreaView(edges=['top']) around this container adds
-    // the actual notch inset per device; the paddingTop below
-    // provides the visual gap between the notch and the segmented
-    // picker.
+    // top is computed at render time from useSafeAreaInsets() so
+    // this bar always lands just below the tabHeader (native
+    // stack header with SendButton + QrScanButton +
+    // SettingsGearButton) regardless of the device's notch size.
+    // Passed inline via style={[styles.container, { top }]}.
+    // NO backgroundColor here: on the Escanear tab the segmented
+    // control's inactive-tab label ("Mi código") relies on the
+    // dark camera preview showing through for contrast, and the
+    // X close icon flips to white so it can be read on the same
+    // dark background. A hardcoded white bg made both invisible.
     position: 'absolute',
-    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingTop: Spacing.Regular16,
-    // Opaque background so the home screen quick-actions that show
-    // through the modal presentation on iOS do NOT bleed into the
-    // tab bar area. Fixes the visual overlap between the segmented
-    // picker text and the home Envia/Recibe icons that stayed
-    // visible behind the modal.
-    backgroundColor: colors.white,
   },
   leftContainer: {
     width: 50,
