@@ -1722,11 +1722,11 @@
       "selectCurrencyTitle": "Spend Funds"
     },
     "exchange": {
-      "informational": "To avoid losing your funds, only share this address with <0>{{appName}}</0> or other compatible wallets.",
+      "informational": "To prevent loss of funds, use this address on exchanges or assets compatible with the following networks: <0>{{networks}}</0>",
       "copyAddress": "Copy Address",
-      "informationText": "Before receiving, make sure the source wallet is compatible with <0>{{appName}}</0>.",
-      "bottomSheetTitle": "How do I receive funds?",
-      "bottomSheetInfo": "Before sending you funds, make sure the source wallet is compatible with {{appName}}."
+      "informationText": "Select the <0>Celo network</0> in your exchange when sending. For dollars use <1>USDT (0x4806...3d5e)</1>",
+      "bottomSheetTitle": "What exchanges can I use to deposit funds?",
+      "bottomSheetInfo": "Double check that you are sending assets that are compatible with the the networks supported by {{appName}}."
     }
   },
   "fiatDetailsScreen": {

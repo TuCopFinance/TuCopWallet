@@ -1727,11 +1727,11 @@
       "selectCurrencyTitle": "Gastar fondos"
     },
     "exchange": {
-      "informational": "Para evitar perder tu dinero, comparte esta dirección solo con <0>{{appName}}</0> u otras billeteras compatibles.",
+      "informational": "Para evitar la pérdida de fondos, utiliza esta dirección en exchanges o activos compatibles con las siguientes redes: <0>{{networks}}</0>",
       "copyAddress": "Copiar dirección",
-      "informationText": "Antes de recibir, revisa que la billetera de origen sea compatible con <0>{{appName}}</0>.",
-      "bottomSheetTitle": "¿Cómo recibo fondos?",
-      "bottomSheetInfo": "Antes de enviarte fondos, revisa que la billetera de origen sea compatible con {{appName}}."
+      "informationText": "Selecciona la <0>red Celo</0> en tu exchange al enviar. Para dólares usa <1>USDT (0x4806...3d5e)</1>",
+      "bottomSheetTitle": "¿Qué exchanges puedo utilizar para depositar fondos?",
+      "bottomSheetInfo": "Comprueba que envías activos compatibles con las redes que admite {{appName}}."
     }
   },
   "fiatDetailsScreen": {
