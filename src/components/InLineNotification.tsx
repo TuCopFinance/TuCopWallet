@@ -78,7 +78,7 @@ export function InLineNotification({
           {!hideIcon && (
             <View style={styles.iconContainer}>
               {customIcon ?? (
-                <Icon color={variantColor.primary} size={28} testId="InLineNotification/Icon" />
+                <Icon color={variantColor.primary} size={20} testId="InLineNotification/Icon" />
               )}
             </View>
           )}
@@ -101,17 +101,17 @@ export function InLineNotification({
 
 const styles = StyleSheet.create({
   container: {
-    padding: Spacing.Regular16,
+    paddingVertical: Spacing.Small12,
+    paddingHorizontal: Spacing.Regular16,
     borderRadius: Spacing.Regular16,
   },
   contentContainer: {
-    display: 'flex',
+    flex: 1,
     justifyContent: 'center',
-    margin: 'auto',
   },
   row: {
-    display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   ctaRow: {
     paddingTop: Spacing.Smallest8,
@@ -119,8 +119,8 @@ const styles = StyleSheet.create({
     gap: Spacing.Smallest8,
   },
   iconContainer: {
-    alignItems: 'center',
-    marginBottom: Spacing.Smallest8,
+    marginRight: Spacing.Small12,
+    justifyContent: 'center',
   },
   titleText: {
     ...typeScale.labelSmall,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   bodyText: {
     ...typeScale.bodyXSmall,
     color: Colors.secondary,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   ctaLabel: {
     ...typeScale.labelSmall,
