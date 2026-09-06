@@ -113,14 +113,20 @@ export default function QRNavigator({ route }: Props) {
         headerShadowVisible: true,
         headerTitleAllowFontScaling: false,
         headerTransparent: false,
-        // Force an opaque white background on the header. Without
-        // this, the home screen's HeaderQuickActions (Envia /
-        // Recibe / Recarga / Gasta with their icons + labels) leaks
-        // through on the LEFT side of the tabHeader (which only
-        // populates headerRight). Explicit backgroundColor makes
-        // the header a solid strip regardless of the modal
-        // presentation transparency at the top.
-        headerStyle: { backgroundColor: Colors.white },
+        // tabHeader packs HeaderQuickActions (icons + labels stacked
+        // vertically ~65px total) into headerLeft plus SendButton /
+        // QrScanButton / SettingsGearButton on the right. The default
+        // native-stack header height on iOS (safe-area top + 44) is
+        // NOT tall enough to fit the labels, so they overflow onto
+        // the content area below and show up on top of the QR /
+        // camera preview as ugly dark strips. Explicit height 140
+        // gives the full stack (safe-area ~59 + padding 24 + icon 22
+        // + label gap 2 + label 12 + breathing 20) room to breathe
+        // on iPhone 16 Pro, and looks correct on smaller devices too
+        // because safe-area top shrinks proportionally. Solid white
+        // background paints the whole strip opaque so nothing leaks
+        // through the modal presentation.
+        headerStyle: { backgroundColor: Colors.white, height: 140 },
         tabBarActiveTintColor: Colors.black,
         tabBarInactiveTintColor: Colors.gray3,
         tabBarLabelStyle: styles.label,
