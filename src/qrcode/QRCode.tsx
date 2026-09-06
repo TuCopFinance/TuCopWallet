@@ -17,9 +17,9 @@ import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { vibrateInformative } from 'src/styles/hapticFeedback'
 import { Spacing } from 'src/styles/styles'
-import variables from 'src/styles/variables'
 import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
 import { NetworkId } from 'src/transactions/types'
+import { navigateToURI } from 'src/utils/linking'
 import { showToast } from 'src/components/showToast'
 import { walletAddressSelector } from 'src/web3/selectors'
 
@@ -70,7 +70,11 @@ export default function QRCodeDisplay(props: Props) {
         i18nKey={'fiatExchangeFlow.exchange.informational'}
         tOptions={{ networks: getSupportedNetworks() }}
       >
-        <Text style={styles.bold} />
+        {/* <0> anchor wraps the network name ("Celo"). Making it a
+            tappable link lets a curious user open Celo's homepage
+            before choosing the network at their exchange, without
+            having to google what "Celo" means. */}
+        <Text style={styles.boldLink} onPress={() => navigateToURI('https://celo.org/')} />
       </Trans>
     </Text>
   )
@@ -82,8 +86,27 @@ export default function QRCodeDisplay(props: Props) {
           <>
             <Text style={styles.exchangeText}>
               <Trans i18nKey="fiatExchangeFlow.exchange.informationText">
-                <Text style={styles.bold}></Text>
-                <Text style={styles.bold}></Text>
+                {/* <0> anchor: "red Celo" - taps into Celo's homepage
+                     so the user can verify what network their exchange
+                     should be set to before they hit send. */}
+                <Text
+                  style={styles.boldLink}
+                  onPress={() => navigateToURI('https://celo.org/')}
+                ></Text>
+                {/* <1> anchor: the specific USDT-on-Celo contract. The
+                     Ethereum USDT and Celo USDT are DIFFERENT contracts;
+                     sending Ethereum-USDT to a Celo address burns the
+                     funds. Tapping opens Celoscan on the exact contract
+                     so the user can cross-check it in their exchange's
+                     "receive address" screen. */}
+                <Text
+                  style={styles.boldLink}
+                  onPress={() =>
+                    navigateToURI(
+                      'https://celoscan.io/token/0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e'
+                    )
+                  }
+                ></Text>
               </Trans>
             </Text>
             <ExchangesBottomSheet
@@ -151,8 +174,14 @@ const styles = StyleSheet.create({
     marginTop: 120,
     marginBottom: 16,
   },
-  bold: {
-    ...typeScale.labelSemiBoldXSmall,
+  boldLink: {
+    // Bold + underline + accent color -> unmistakably a tap target.
+    // Applied to the two Trans children in the informationText and the
+    // one child in informational so both surfaces render "red Celo"
+    // and the USDT contract as clickable links.
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+    color: colors.accent,
   },
   description: {
     ...typeScale.bodyXSmall,
@@ -178,16 +207,26 @@ const styles = StyleSheet.create({
   },
   name: {
     ...typeScale.labelSemiBoldMedium,
-    marginHorizontal: variables.width / 5,
+    marginHorizontal: Spacing.Regular16,
     marginBottom: 8,
+    textAlign: 'center',
   },
   address: {
-    ...typeScale.bodyMedium,
+    // Was bodyMedium with a 20% side margin, which cut the 42-char
+    // wallet address at the ~28th character and forced a jagged wrap
+    // onto a second line ("0xea510eca6966208499cdec45522" +
+    // "11f3c3ca0df4e"). bodySmall + Regular16 side padding lets the
+    // full address land on ONE line on modern phones (iPhone 12+ /
+    // most Android). On very narrow devices it still wraps, but the
+    // break happens near the midpoint instead of jumping around.
+    ...typeScale.bodySmall,
     color: colors.accent,
-    marginHorizontal: variables.width / 5,
-    // Adjusted marginBottom to accommodate the button's padding/margin
+    marginHorizontal: Spacing.Regular16,
     marginBottom: Spacing.Thick24,
     textAlign: 'center',
+    // Explicit letterSpacing keeps hex chars visually distinguishable
+    // at the smaller size (0/O, 5/S adjacency reads cleaner).
+    letterSpacing: 0.2,
   },
   exchangeText: {
     ...typeScale.bodyMedium,

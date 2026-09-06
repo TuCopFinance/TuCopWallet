@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { getFontScaleSync } from 'react-native-device-info'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -32,6 +32,7 @@ import useFetchRecipientVerificationStatus from 'src/send/useFetchRecipientVerif
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { navigateToURI } from 'src/utils/linking'
 import variables from 'src/styles/variables'
 import Title from './title.svg'
 
@@ -352,7 +353,20 @@ function SendSelectRecipient({ route }: Props) {
       {showUnknownAddressInfo && (
         <InLineNotification
           variant={NotificationVariant.Info}
-          description={t('sendSelectRecipient.unknownAddressInfo')}
+          description={
+            <Text style={typeScale.bodyXSmall}>
+              <Trans i18nKey="sendSelectRecipient.unknownAddressInfo">
+                {/* <0> anchor: "red Celo". Tapping opens Celo's home
+                    page so the user can double-check what network they
+                    are on. Cheaper than a support ticket for a lost
+                    send. */}
+                <Text
+                  style={styles.unknownAddressInfoLink}
+                  onPress={() => navigateToURI('https://celo.org/')}
+                />
+              </Trans>
+            </Text>
+          }
           testID="UnknownAddressInfo"
           style={styles.unknownAddressInfo}
         />
@@ -415,6 +429,11 @@ const styles = StyleSheet.create({
   unknownAddressInfo: {
     margin: Spacing.Regular16,
     marginBottom: variables.contentPadding,
+  },
+  unknownAddressInfoLink: {
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+    color: colors.accent,
   },
   sendOrInviteButton: {
     margin: Spacing.Regular16,

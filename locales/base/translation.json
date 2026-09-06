@@ -1722,11 +1722,11 @@
       "selectCurrencyTitle": "Spend Funds"
     },
     "exchange": {
-      "informational": "To prevent loss of funds, use this address on exchanges or assets compatible with the following networks: <0>{{networks}}</0>",
+      "informational": "To avoid losing your funds, this address only receives on the <0>{{networks}}</0> network. Sending from another network will lose the funds forever.",
       "copyAddress": "Copy Address",
-      "informationText": "Select the <0>Celo network</0> in your exchange when sending. For dollars use <1>USDT (0x4806...3d5e)</1>",
-      "bottomSheetTitle": "What exchanges can I use to deposit funds?",
-      "bottomSheetInfo": "Double check that you are sending assets that are compatible with the the networks supported by {{appName}}."
+      "informationText": "In your exchange, select the <0>Celo network</0> as the destination network. For dollars use this contract <1>USDT (0x4806...3d5e)</1>. Any other USDT is lost when sent here.",
+      "bottomSheetTitle": "How do I deposit from an exchange?",
+      "bottomSheetInfo": "Select the Celo network in your exchange before sending. Sending from another network will lose your money forever."
     }
   },
   "fiatDetailsScreen": {
@@ -2220,7 +2220,7 @@
       "title": "Connect your phone number",
       "description": "You need to connect your phone number so you can start sending digital to your friends"
     },
-    "unknownAddressInfo": "Please make sure this address supports the asset you are trying to send. Your funds may not be recoverable if this address is invalid.",
+    "unknownAddressInfo": "Confirm this address receives on the <0>Celo network</0>. Sending to an address on another network will lose your money forever.",
     "buttons": {
       "send": "Continue",
       "invite": "Invite"

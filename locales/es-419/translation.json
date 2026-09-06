@@ -1727,11 +1727,11 @@
       "selectCurrencyTitle": "Gastar fondos"
     },
     "exchange": {
-      "informational": "Para evitar la pérdida de fondos, utiliza esta dirección en exchanges o activos compatibles con las siguientes redes: <0>{{networks}}</0>",
+      "informational": "Para evitar perder tu dinero, esta dirección solo recibe en la red <0>{{networks}}</0>. Enviar desde otra red hará que se pierda para siempre.",
       "copyAddress": "Copiar dirección",
-      "informationText": "Selecciona la <0>red Celo</0> en tu exchange al enviar. Para dólares usa <1>USDT (0x4806...3d5e)</1>",
-      "bottomSheetTitle": "¿Qué exchanges puedo utilizar para depositar fondos?",
-      "bottomSheetInfo": "Comprueba que envías activos compatibles con las redes que admite {{appName}}."
+      "informationText": "En tu exchange, selecciona la <0>red Celo</0> como red de destino. Para dólares usa el contrato <1>USDT (0x4806...3d5e)</1>. Cualquier otro USDT se pierde al enviar.",
+      "bottomSheetTitle": "¿Cómo deposito desde un exchange?",
+      "bottomSheetInfo": "Selecciona la red Celo en tu exchange antes de enviar. Enviar desde otra red hará que tu dinero se pierda para siempre."
     }
   },
   "fiatDetailsScreen": {
@@ -2236,7 +2236,7 @@
       "title": "Conecta tu número de teléfono",
       "description": "Tienes que conectar tu número de teléfono para empezar a enviar activo digital a tus amigos"
     },
-    "unknownAddressInfo": "Asegúrate de que esta dirección es compatible con el activo que intentas enviar. Tus fondos pueden no ser recuperables si esta dirección no es válida.",
+    "unknownAddressInfo": "Confirma que esta dirección recibe en la <0>red Celo</0>. Enviar a una dirección de otra red hará que pierdas tu dinero para siempre.",
     "buttons": {
       "send": "Continuar",
       "invite": "Invitar"
