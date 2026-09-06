@@ -130,20 +130,29 @@ export default function QRCodeDisplay(props: Props) {
 
       {/* The QR image encodes the wallet address; the text below shows it in
           plain hex. Both mask together so session replay never captures a
-          reproducible identifier of this user's on-chain identity. */}
-      <PostHogMaskView>
-        <View testID="QRCode" style={styles.qrContainer}>
-          <StyledQRCode qrSvgRef={qrSvgRef} />
-        </View>
+          reproducible identifier of this user's on-chain identity.
 
-        {!!displayName && (
-          <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
-            {displayName}
+          The masking wrapper does NOT propagate the parent's
+          alignItems:center down its children, so we wrap everything
+          in a full-width View that re-establishes horizontal centering.
+          Without it the QR ends up drifting left of the screen midline
+          because its own container is sized to the QR + padding and
+          the flex parent is broken by PostHogMaskView. */}
+      <PostHogMaskView>
+        <View style={styles.maskInner}>
+          <View testID="QRCode" style={styles.qrContainer}>
+            <StyledQRCode qrSvgRef={qrSvgRef} />
+          </View>
+
+          {!!displayName && (
+            <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" testID="displayName">
+              {displayName}
+            </Text>
+          )}
+          <Text testID="address" style={styles.address}>
+            {address}
           </Text>
-        )}
-        <Text testID="address" style={styles.address}>
-          {address}
-        </Text>
+        </View>
       </PostHogMaskView>
 
       <Button
@@ -199,6 +208,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     width: '100%',
   },
+  maskInner: {
+    // Full-width wrapper inside PostHogMaskView. Re-establishes
+    // horizontal centering that the mask component breaks.
+    width: '100%',
+    alignItems: 'center',
+  },
   qrContainer: {
     marginTop: '5%',
     marginBottom: Spacing.Thick24,
@@ -208,6 +223,10 @@ const styles = StyleSheet.create({
     // and reintroduce the scan failures.
     padding: Spacing.Regular16,
     backgroundColor: colors.white,
+    // Belt-and-suspenders: even inside maskInner (alignItems:center),
+    // an explicit alignSelf ensures the container never drifts left
+    // if some future refactor changes the outer flex direction.
+    alignSelf: 'center',
   },
   name: {
     ...typeScale.labelSemiBoldMedium,
