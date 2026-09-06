@@ -1,17 +1,15 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
-import React, { useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Keyboard, StyleSheet, Switch, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
-import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import TextInput from 'src/components/TextInput'
 import Touchable from 'src/components/Touchable'
-import CustomHeader from 'src/components/header/CustomHeader'
 import { goldPriceUsdSelector, priceAlertsSelector } from 'src/gold/selectors'
 import { addPriceAlert, removePriceAlert, updatePriceAlert } from 'src/gold/slice'
 import { PriceAlert } from 'src/gold/types'
@@ -29,11 +27,15 @@ import { parseInputAmount } from 'src/utils/parsing'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.GoldPriceAlerts>
 
-export default function GoldPriceAlerts(_props: Props) {
+export default function GoldPriceAlerts({ navigation }: Props) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { decimalSeparator } = getNumberFormatSettings()
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerTitle: t('goldFlow.priceAlerts.title') ?? '' })
+  }, [navigation, t])
 
   const goldPriceUsd = useSelector(goldPriceUsdSelector)
   const priceAlerts = useSelector(priceAlertsSelector)
@@ -149,11 +151,6 @@ export default function GoldPriceAlerts(_props: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <CustomHeader
-        style={{ paddingHorizontal: Spacing.Thick24 }}
-        left={<BackButton />}
-        title={t('goldFlow.priceAlerts.title')}
-      />
       <View style={[styles.content, insetsStyle]}>
         {/* Current Price Display */}
         {currentLocalPrice && (

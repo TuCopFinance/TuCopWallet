@@ -18,6 +18,7 @@ import Pincode from 'src/pincode/Pincode'
 import { checkPin, getPincodeWithBiometry } from 'src/pincode/authentication'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
+import { Spacing } from 'src/styles/styles'
 import { currentAccountSelector } from 'src/web3/selectors'
 
 function PincodeLock() {
@@ -94,7 +95,7 @@ function PincodeLock() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
+    paddingTop: Spacing.XLarge48,
     flex: 1,
     backgroundColor: colors.white,
   },

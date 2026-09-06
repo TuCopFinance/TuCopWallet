@@ -16,6 +16,7 @@ import { StackParamList } from 'src/navigator/types'
 import { checkPin } from 'src/pincode/authentication'
 import Pincode from 'src/pincode/Pincode'
 import { useSelector } from 'src/redux/hooks'
+import { Spacing } from 'src/styles/styles'
 import { currentAccountSelector } from 'src/web3/selectors'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.PincodeEnter>
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
+    paddingTop: Spacing.XLarge48,
   },
 })
 
