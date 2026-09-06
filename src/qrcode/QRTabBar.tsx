@@ -111,15 +111,14 @@ export default function QRTabBar({
 
 const styles = StyleSheet.create({
   container: {
-    // Was hardcoded top:100, which forced the bar to sit at a fixed
-    // 100px on every device regardless of the actual safe-area top
-    // inset. On the iPhone 16 Pro (safe-area top ~59px) that meant
-    // the bar sat well BELOW the notch but pushed the X + segmented
-    // picker into the home quick-actions row still visible behind
-    // the modal, and on smaller phones it left a wide dead zone.
-    // Anchor to top:0 and let the SafeAreaView(edges=['top']) around
-    // this container add the actual per-device inset, then add the
-    // regular Spacing.Regular16 padding on top of that.
+    // With QRNavigator headerShown:false (was true + a spread of
+    // tabHeader that rendered SendButton + QrScanButton +
+    // SettingsGearButton), the tab bar owns the whole top strip and
+    // no longer has to clear a native header. Anchor to top:0 so
+    // the SafeAreaView(edges=['top']) around this container adds
+    // the actual notch inset per device; the paddingTop below
+    // provides the visual gap between the notch and the segmented
+    // picker.
     position: 'absolute',
     top: 0,
     left: 0,
@@ -128,6 +127,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingTop: Spacing.Regular16,
+    // Opaque background so the home screen quick-actions that show
+    // through the modal presentation on iOS do NOT bleed into the
+    // tab bar area. Fixes the visual overlap between the segmented
+    // picker text and the home Envia/Recibe icons that stayed
+    // visible behind the modal.
+    backgroundColor: colors.white,
   },
   leftContainer: {
     width: 50,

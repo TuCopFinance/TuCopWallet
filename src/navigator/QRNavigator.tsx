@@ -1,7 +1,7 @@
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import { useIsFocused } from '@react-navigation/native'
-import { NativeStackHeaderProps, NativeStackScreenProps } from '@react-navigation/native-stack'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { PERMISSIONS, RESULTS, check } from 'react-native-permissions'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { QrScreenEvents } from 'src/analytics/Events'
-import { noHeader, tabHeader } from 'src/navigator/Headers'
+import { noHeader } from 'src/navigator/Headers'
 import { Screens } from 'src/navigator/Screens'
 import { QRTabParamList, StackParamList } from 'src/navigator/types'
 import QRCode from 'src/qrcode/QRCode'
@@ -109,17 +109,23 @@ export default function QRNavigator({ route }: Props) {
         />
       )}
       screenOptions={{
-        headerShown: true,
-        headerShadowVisible: true,
-        headerTitleAllowFontScaling: false,
-        headerTransparent: false,
+        // Hide the Tab.Navigator's own header. It was spreading
+        // `tabHeader` (which renders SendButton + QrScanButton +
+        // SettingsGearButton on the right) and reserving ~110-140px
+        // at the top of the modal. Two problems: (1) those icons do
+        // not make sense on the QR screen itself (why show a "scan
+        // QR" button on the scan-QR screen), (2) the QRTabBar sits
+        // position:absolute at top:100 to clear that header and
+        // still lands inside the reserved area, overlapping the
+        // buttons. Killing the header lets QRTabBar own the top
+        // strip cleanly.
+        headerShown: false,
         tabBarActiveTintColor: Colors.black,
         tabBarInactiveTintColor: Colors.gray3,
         tabBarLabelStyle: styles.label,
         tabBarItemStyle: styles.tabBarItem,
         tabBarAllowFontScaling: false,
         tabBarLabelPosition: 'beside-icon',
-        ...(tabHeader as NativeStackHeaderProps),
       }}
     >
       <Tab.Screen name={Screens.QRCode} options={{ title: t('myCode') ?? undefined }}>
