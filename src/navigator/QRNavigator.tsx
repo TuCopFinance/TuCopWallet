@@ -109,35 +109,34 @@ export default function QRNavigator({ route }: Props) {
         />
       )}
       screenOptions={{
+        // Use the exact same tabHeader as home + wallet so all three
+        // surfaces render an identical top strip (HeaderQuickActions
+        // on the left + Send/QR/Settings on the right). Home and QR
+        // modal both go through the same React Navigation headerLeft
+        // + headerRight slot system, so no per-navigator drift.
         headerShown: true,
         headerShadowVisible: true,
         headerTitleAllowFontScaling: false,
         headerTransparent: false,
-        // tabHeader packs HeaderQuickActions (icons + labels stacked
-        // vertically ~65px total) into headerLeft plus SendButton /
-        // QrScanButton / SettingsGearButton on the right. The default
-        // native-stack header height on iOS (safe-area top + 44) is
-        // NOT tall enough to fit the labels, so they overflow onto
-        // the content area below and show up on top of the QR /
-        // camera preview as ugly dark strips. Explicit height 140
-        // gives the full stack (safe-area ~59 + padding 24 + icon 22
-        // + label gap 2 + label 12 + breathing 20) room to breathe
-        // on iPhone 16 Pro, and looks correct on smaller devices too
-        // because safe-area top shrinks proportionally. Solid white
-        // background paints the whole strip opaque so nothing leaks
-        // through the modal presentation.
-        headerStyle: { backgroundColor: Colors.white, height: 140 },
         tabBarActiveTintColor: Colors.black,
         tabBarInactiveTintColor: Colors.gray3,
         tabBarLabelStyle: styles.label,
         tabBarItemStyle: styles.tabBarItem,
         tabBarAllowFontScaling: false,
         tabBarLabelPosition: 'beside-icon',
-        // tabHeader adds the SendButton + QrScanButton +
-        // SettingsGearButton on the right side of the header so
-        // users can reach send / scan / settings without leaving
-        // this modal.
         ...(tabHeader as NativeStackHeaderProps),
+        // HeaderQuickActions' paddingTop:Thick24 + icon + label stack is
+        // taller than React Navigation's default iOS header (safe-area
+        // top + 44). Home does not notice because tab content is
+        // white and label overflow is invisible; QR Escanear tab has
+        // a dark camera preview so the overflowing labels show up as
+        // faded text on dark. Explicit height covers the whole stack
+        // plus breathing room so labels stay INSIDE the white header
+        // strip and no longer bleed into the tab content below.
+        headerStyle: {
+          backgroundColor: Colors.white,
+          height: 140,
+        } as any,
       }}
     >
       <Tab.Screen name={Screens.QRCode} options={{ title: t('myCode') ?? undefined }}>

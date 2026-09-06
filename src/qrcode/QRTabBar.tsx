@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dimensions, StyleSheet, Text, View } from 'react-native'
 import Animated, { Extrapolation, interpolate } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import SegmentedControl from 'src/components/SegmentedControl'
 import BackChevron from 'src/icons/navigation/BackChevron'
 import Share from 'src/icons/actions/Share'
@@ -31,15 +31,7 @@ export default function QRTabBar({
 }: Props) {
   const dispatch = useDispatch()
   const { t } = useTranslation()
-  const insets = useSafeAreaInsets()
-  // Header height on iOS = safe-area top + native nav-bar (~44px)
-  // + the tabHeader's own Thick24 paddingTop. Add Regular16 padding
-  // between the header bottom edge and the tab bar for breathing
-  // room. Fully dynamic per device instead of a magic top:100 that
-  // matched no phone precisely.
-  const IOS_NAV_BAR_HEIGHT = 44
-  const HEADER_INNER_PADDING = 24
-  const topOffset = insets.top + IOS_NAV_BAR_HEIGHT + HEADER_INNER_PADDING + Spacing.Regular16
+  const topOffset = 140
   const values = useMemo(
     () =>
       state.routes.map((route) => {

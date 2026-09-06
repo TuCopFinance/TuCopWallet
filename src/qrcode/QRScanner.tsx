@@ -1,9 +1,17 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import {
+  Keyboard,
+  LayoutChangeEvent,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { RNCamera } from 'react-native-camera'
 import DeviceInfo from 'react-native-device-info'
-import { useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs, Mask, Rect, Svg } from 'react-native-svg'
 import Modal from 'src/components/Modal'
 import TextButton from 'src/components/TextButton'
@@ -17,32 +25,45 @@ interface QRScannerProps {
 }
 
 const SeeThroughOverlay = () => {
-  const { width, height } = useSafeAreaFrame()
+  // Measures the actual camera viewport (below the QRTabBar/header and
+  // above the safe-area bottom) via onLayout so the scan cutout is
+  // centered relative to WHAT THE USER SEES, not to useSafeAreaFrame
+  // which reports the whole screen height and pushes the cutout below
+  // the visible midline.
+  const [layout, setLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
+  const onLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout
+    setLayout({ width, height })
+  }
 
+  const { width, height } = layout
   const margin = 40
-  const centerBoxSize = width - margin * 2
+  const centerBoxSize = Math.max(0, width - margin * 2)
   const centerBoxBorderRadius = 8
+  const cutoutY = (height - centerBoxSize) / 2
 
-  // TODO(jeanregisser): Investigate why the mask is pixelated on iOS.
-  // It's visible on the rounded corners but since they are small, I'm ignoring it for now.
   return (
-    <Svg height={height} width={width} viewBox={`0 0 ${width} ${height}`}>
-      <Defs>
-        <Mask id="mask" x="0" y="0" height="100%" width="100%">
-          <Rect height="100%" width="100%" fill={colors.white} />
-          <Rect
-            x={margin}
-            y={(height - centerBoxSize) / 2}
-            rx={centerBoxBorderRadius}
-            ry={centerBoxBorderRadius}
-            width={centerBoxSize}
-            height={centerBoxSize}
-            fill={colors.black}
-          />
-        </Mask>
-      </Defs>
-      <Rect height="100%" width="100%" fill={`${colors.black}80`} mask="url(#mask)" />
-    </Svg>
+    <View style={StyleSheet.absoluteFill} onLayout={onLayout} pointerEvents="none">
+      {width > 0 && height > 0 && (
+        <Svg height={height} width={width} viewBox={`0 0 ${width} ${height}`}>
+          <Defs>
+            <Mask id="mask" x="0" y="0" height="100%" width="100%">
+              <Rect height="100%" width="100%" fill={colors.white} />
+              <Rect
+                x={margin}
+                y={cutoutY}
+                rx={centerBoxBorderRadius}
+                ry={centerBoxBorderRadius}
+                width={centerBoxSize}
+                height={centerBoxSize}
+                fill={colors.black}
+              />
+            </Mask>
+          </Defs>
+          <Rect height="100%" width="100%" fill={`${colors.black}80`} mask="url(#mask)" />
+        </Svg>
+      )}
+    </View>
   )
 }
 

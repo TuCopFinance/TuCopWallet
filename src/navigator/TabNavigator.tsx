@@ -71,6 +71,10 @@ export default function TabNavigator({ route }: Props) {
         ),
         tabBarLabelPosition: 'beside-icon',
         ...(tabHeader as NativeStackHeaderProps),
+        headerStyle: {
+          backgroundColor: Colors.white,
+          height: 140,
+        } as any,
       }}
     >
       <Tab.Screen
