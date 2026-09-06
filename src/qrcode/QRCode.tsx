@@ -202,8 +202,12 @@ const styles = StyleSheet.create({
   qrContainer: {
     marginTop: '5%',
     marginBottom: Spacing.Thick24,
-    color: colors.accent,
-    tintColor: colors.accent,
+    // Do NOT tint the QR container - the SVG renders modules in
+    // #000 for scanner compatibility (see StyledQRGen.tsx). A
+    // tintColor here would repaint everything with the brand color
+    // and reintroduce the scan failures.
+    padding: Spacing.Regular16,
+    backgroundColor: colors.white,
   },
   name: {
     ...typeScale.labelSemiBoldMedium,
