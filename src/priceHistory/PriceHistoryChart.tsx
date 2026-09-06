@@ -19,7 +19,7 @@ import { Price, fetchPriceHistoryStart } from 'src/priceHistory/slice'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { RootState } from 'src/redux/reducers'
 import colors from 'src/styles/colors'
-import { Inter } from 'src/styles/fonts'
+import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
 import { getLocalCurrencyDisplayValue } from 'src/utils/formatting'
@@ -32,7 +32,7 @@ const CHART_MIN_VERTICAL_RANGE = 0.01 // one cent
 const CHART_DOMAIN_PADDING = { y: [30, 30] as [number, number], x: [5, 5] as [number, number] }
 const CHART_STEP_IN_HOURS = 12
 
-function Loader({ color = colors.goldBrand, style }: { color?: colors; style?: ViewStyle }) {
+function Loader({ color = colors.goldAccent, style }: { color?: colors; style?: ViewStyle }) {
   return (
     <View style={[styles.loader, style]}>
       <ActivityIndicator testID="PriceHistoryChart/Loader" size="large" color={color} />
@@ -321,8 +321,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   timeframe: {
+    ...typeScale.bodyMedium,
     color: colors.gray3,
-    fontSize: 16,
     flexGrow: 1,
   },
   range: {

@@ -60,7 +60,7 @@ function Tick({ startValue, endValue, textStyle, textHeight, animationDuration }
 
 export default function NumberTicker({
   value,
-  typeScaleName = 'displaySmall',
+  typeScaleName = 'titleLarge',
   animationDuration = 1300,
   disableAnimation = false,
   testID,

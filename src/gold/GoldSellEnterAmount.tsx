@@ -500,9 +500,9 @@ const styles = StyleSheet.create({
   goldBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E1', // Light gold background
+    backgroundColor: Colors.goldAccentLight,
     borderWidth: 1,
-    borderColor: Colors.goldBrand,
+    borderColor: Colors.goldAccent,
     borderRadius: 100,
     paddingHorizontal: Spacing.Smallest8,
     paddingVertical: Spacing.Tiny4,

@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Smallest8,
   },
   amountInput: {
-    ...typeScale.displaySmall,
+    ...typeScale.titleLarge,
     borderWidth: 1,
     borderColor: Colors.gray2,
     borderRadius: 8,

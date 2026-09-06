@@ -7,28 +7,12 @@ export const Inter = {
   Bold: Platform.OS === 'android' ? 'RedHatDisplayBold' : 'RedHatDisplay-Bold',
 }
 
-/**
- * Figma TypeScale Styles
- */
+// Every text style in feature code comes from `typeScale`. Font sizes are
+// the SAME across iOS and Android; a prior Platform.select() branch on
+// medium keys shipped 12pt on Android + 16pt on iOS for what was
+// supposed to be the same style, producing a real cross-platform bug.
+// Removed. See .claude/rules/design-system.md §2.
 export const typeScale = StyleSheet.create({
-  displayLarge: {
-    fontFamily: Inter.Bold,
-    fontSize: 80,
-    lineHeight: 80,
-    letterSpacing: -2.4,
-  },
-  displayMedium: {
-    fontFamily: Inter.Bold,
-    fontSize: 56,
-    lineHeight: 64,
-    letterSpacing: -1.12,
-  },
-  displaySmall: {
-    fontFamily: Inter.Bold,
-    fontSize: 40,
-    lineHeight: 48,
-    letterSpacing: -0.8,
-  },
   titleLarge: {
     fontFamily: Inter.Bold,
     fontSize: 32,
@@ -57,7 +41,7 @@ export const typeScale = StyleSheet.create({
   },
   labelSemiBoldMedium: {
     fontFamily: Inter.SemiBold,
-    fontSize: Platform.select({ android: 12, ios: 16 }),
+    fontSize: 16,
     lineHeight: 24,
   },
   labelSemiBoldSmall: {
@@ -77,17 +61,12 @@ export const typeScale = StyleSheet.create({
   },
   labelMedium: {
     fontFamily: Inter.Medium,
-    fontSize: Platform.select({ android: 12, ios: 16 }),
+    fontSize: 16,
     lineHeight: 24,
   },
   labelSmall: {
     fontFamily: Inter.Medium,
     fontSize: 14,
-    lineHeight: 20,
-  },
-  labelNormal: {
-    fontFamily: Inter.Medium,
-    fontSize: 16,
     lineHeight: 20,
   },
   labelXSmall: {
@@ -109,7 +88,7 @@ export const typeScale = StyleSheet.create({
   },
   bodyMedium: {
     fontFamily: Inter.Regular,
-    fontSize: Platform.select({ android: 12, ios: 16 }),
+    fontSize: 16,
     lineHeight: 24,
   },
   bodySmall: {

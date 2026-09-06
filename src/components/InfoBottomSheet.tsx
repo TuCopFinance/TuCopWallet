@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
     marginTop: 37,
     marginBottom: 9,
     textAlign: 'center',
-    color: colors.onboardingBrownLight,
+    color: colors.gray4,
   },
 })

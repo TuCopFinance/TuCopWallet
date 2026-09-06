@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   labelLong: {
     ...typeScale.labelSemiBoldSmall,
-    color: colors.onboardingBrownLight,
+    color: colors.gray4,
     opacity: 0.5,
     marginBottom: 4,
   },
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   codeValueLong: {
     ...typeScale.bodyMedium,
-    color: colors.onboardingBrownLight,
+    color: colors.gray4,
   },
   statusContainer: {
     width: 32,
