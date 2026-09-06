@@ -111,8 +111,17 @@ export default function QRTabBar({
 
 const styles = StyleSheet.create({
   container: {
+    // Was hardcoded top:100, which forced the bar to sit at a fixed
+    // 100px on every device regardless of the actual safe-area top
+    // inset. On the iPhone 16 Pro (safe-area top ~59px) that meant
+    // the bar sat well BELOW the notch but pushed the X + segmented
+    // picker into the home quick-actions row still visible behind
+    // the modal, and on smaller phones it left a wide dead zone.
+    // Anchor to top:0 and let the SafeAreaView(edges=['top']) around
+    // this container add the actual per-device inset, then add the
+    // regular Spacing.Regular16 padding on top of that.
     position: 'absolute',
-    top: 100,
+    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',

@@ -154,8 +154,14 @@ const styles = StyleSheet.create({
     margin: 20,
   },
   viewContainer: {
+    // MUST NOT center the child. RNCamera has flex:1 and expects a
+    // parent that lets it stretch to the full available area. When
+    // this container had justifyContent:center + alignItems:center
+    // the camera preview collapsed into a small dark rectangle in
+    // the middle of the screen (visible on the simulator, but the
+    // same behavior surfaces on real devices as a shrunken viewfinder
+    // that misses QRs at the edges). Plain flex:1 lets the camera
+    // fill the modal.
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 })
