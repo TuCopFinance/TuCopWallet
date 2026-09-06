@@ -249,11 +249,10 @@ const styles = StyleSheet.create({
     ...typeScale.labelMedium,
   },
   currencyInput: {
-    ...typeScale.bodyMedium,
+    ...typeScale.bodyLarge,
     marginLeft: 10,
     flex: 1,
     textAlign: 'right',
-    fontSize: 19,
     lineHeight: Platform.select({ android: 27, ios: 23 }), // vertical align = center
     minHeight: 48, // setting height manually b.c. of bug causing text to jump on Android
   },

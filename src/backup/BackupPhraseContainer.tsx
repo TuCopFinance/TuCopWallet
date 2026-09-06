@@ -188,9 +188,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   phraseText: {
-    ...typeScale.bodyMedium,
-    fontSize: 22,
-    lineHeight: 32,
+    ...typeScale.bodyLarge,
   },
   phraseInputContainer: {
     marginTop: 10,

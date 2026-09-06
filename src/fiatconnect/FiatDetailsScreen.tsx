@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     lineHeight: LINE_HEIGHT,
   },
   error: {
-    fontSize: 12,
+    ...typeScale.bodyXSmall,
     color: colors.errorDark,
   },
   submitButton: {

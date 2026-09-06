@@ -161,17 +161,17 @@ export default function BalanceCard({ testID }: Props) {
       textColor: Colors.white,
       expandable: true,
       gradient: {
-        colors: ['#1B3DB2', '#0A1840', '#000D2E'],
+        colors: [Colors.balanceCardBlueStart, Colors.balanceCardBlueMid, Colors.balanceCardBlueEnd],
       },
     },
     gold: {
       visible: goldLocalValue.gt(0),
       label: t('tabHome.goldBalance'),
       amount: goldLocalValue,
-      textColor: '#3A2A05',
+      textColor: Colors.balanceCardGoldStart,
       expandable: true,
       gradient: {
-        colors: ['#FFE17A', '#D4A017', '#8B6914'],
+        colors: [Colors.balanceCardGoldPeak, Colors.balanceCardGoldMid, Colors.balanceCardGoldEnd],
         locations: [0, 0.55, 1],
       },
     },
@@ -183,7 +183,11 @@ export default function BalanceCard({ testID }: Props) {
       textColor: Colors.white,
       expandable: true,
       gradient: {
-        colors: ['#26A17B', '#1A6F55', '#0F4733'],
+        colors: [
+          Colors.balanceCardGreenStart,
+          Colors.balanceCardGreenMid,
+          Colors.balanceCardGreenEnd,
+        ],
       },
     },
     pesos: {

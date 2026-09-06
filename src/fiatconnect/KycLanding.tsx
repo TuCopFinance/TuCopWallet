@@ -231,12 +231,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
   },
   disclaimer: {
+    ...typeScale.bodyXSmall,
     color: Colors.gray5,
     textAlign: 'left',
     marginLeft: 11,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '400',
   },
   privacyLink: {
     textDecorationLine: 'underline',

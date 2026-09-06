@@ -555,9 +555,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   consentCheckmark: {
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.white,
-    fontSize: 14,
-    fontWeight: '700',
   },
   consentTextBlock: {
     flex: 1,

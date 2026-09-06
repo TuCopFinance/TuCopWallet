@@ -69,9 +69,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   errorMessage: {
-    ...typeScale.bodyMedium,
-    fontSize: 12,
-    borderRadius: 12,
+    ...typeScale.bodyXSmall,
+    borderRadius: Spacing.Small12,
     backgroundColor: Colors.gray1,
     padding: Spacing.Regular16,
   },

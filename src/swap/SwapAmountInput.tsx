@@ -199,8 +199,7 @@ const styles = StyleSheet.create({
     color: Colors.error,
   },
   inputText: {
-    ...typeScale.titleSmall,
-    fontSize: 26,
+    ...typeScale.titleMedium,
     lineHeight: undefined,
     paddingVertical: Spacing.Smallest8,
   },

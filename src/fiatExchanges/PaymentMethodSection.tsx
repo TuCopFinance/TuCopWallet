@@ -371,9 +371,8 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldSmall,
   },
   expandedTag: {
-    ...typeScale.labelSemiBoldSmall,
+    ...typeScale.labelSemiBoldXSmall,
     color: colors.accent,
-    fontSize: 12,
     marginTop: 2,
   },
 })

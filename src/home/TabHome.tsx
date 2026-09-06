@@ -2,7 +2,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { Shadow } from 'react-native-shadow-2'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
@@ -148,7 +147,7 @@ function TabHome(_props: Props) {
   }
 
   return (
-    <SafeAreaView testID="TabHome" style={styles.container} edges={[]}>
+    <View testID="TabHome" style={styles.container}>
       {/* BalanceCard rendered OUTSIDE the ScrollView so it stays fixed at
           the top of Home while the user scrolls through the feature
           cards below. Matches TabWallet where the balance carousel is
@@ -259,7 +258,7 @@ function TabHome(_props: Props) {
           <EarthquakeDonationSheet forwardedRef={earthquakeDonationCardRef} source="card" />
         </>
       )}
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -392,7 +391,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: variables.contentPadding,
-    paddingTop: variables.contentPadding,
     position: 'relative',
     // gap between QuickActions, BalanceCard, and the containerShadow that
     // wraps feature cards. Must be >= Shadow distance (10) + a comfortable
@@ -483,7 +481,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-    backgroundColor: '#EEEFFF',
+    backgroundColor: Colors.primary10,
     borderRadius: 10,
   },
   cardTextBox: {

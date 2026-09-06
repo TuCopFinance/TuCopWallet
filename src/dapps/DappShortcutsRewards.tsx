@@ -19,7 +19,7 @@ import { triggerShortcut } from 'src/positions/slice'
 import { ClaimablePosition } from 'src/positions/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
-import { typeScale } from 'src/styles/fonts'
+import { Inter, typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
 import { Currency } from 'src/utils/currencies'
@@ -273,9 +273,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', // prevent from defaulting to full width of container
   },
   chipText: {
-    ...typeScale.labelSemiBoldXSmall,
-    fontSize: 10,
-    lineHeight: 12,
+    ...typeScale.bodyXXSmall,
+    fontFamily: Inter.SemiBold,
   },
 })
 

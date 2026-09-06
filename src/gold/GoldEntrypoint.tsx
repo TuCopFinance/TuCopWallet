@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-    backgroundColor: '#EEEFFF',
+    backgroundColor: Colors.primary10,
     borderRadius: 10,
   },
   cardTextContainer: {

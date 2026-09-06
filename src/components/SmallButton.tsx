@@ -77,9 +77,7 @@ const styles = StyleSheet.create({
     borderColor: colors.accent,
   },
   text: {
-    ...typeScale.labelMedium,
-    fontSize: 13,
-    lineHeight: 20,
+    ...typeScale.labelSmall,
     color: colors.gray5,
     textAlign: 'center',
   },

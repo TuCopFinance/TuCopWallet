@@ -12,6 +12,7 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg'
+import Colors from 'src/styles/colors'
 
 const BackgroundWelcome = ({ style, width = 391.5, height = 852 }: any) => {
   // Calculate center point
@@ -62,8 +63,8 @@ const BackgroundWelcome = ({ style, width = 391.5, height = 852 }: any) => {
           fy="0%"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0%" stopColor="#2F4ACD" />
-          <Stop offset="100%" stopColor="#0D0D0D" />
+          <Stop offset="0%" stopColor={Colors.primary} />
+          <Stop offset="100%" stopColor={Colors.nearBlack} />
         </RadialGradient>
         <LinearGradient
           id="paint1_linear_2051_242"
@@ -73,8 +74,8 @@ const BackgroundWelcome = ({ style, width = 391.5, height = 852 }: any) => {
           y2="525"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#2F4ACD" stopOpacity="1" />
-          <Stop offset="1" stopColor="#999999" stopOpacity="0" />
+          <Stop offset="0" stopColor={Colors.primary} stopOpacity="1" />
+          <Stop offset="1" stopColor={Colors.gray3} stopOpacity="0" />
         </LinearGradient>
         <ClipPath id="clip0_2051_242">
           <Rect width="100%" height="100%" fill="white" />

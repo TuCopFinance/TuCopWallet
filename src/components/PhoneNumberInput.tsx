@@ -7,6 +7,7 @@ import FormTextInput from 'src/components/FormTextInput'
 import Touchable from 'src/components/Touchable'
 import ValidatedTextInput from 'src/components/ValidatedTextInput'
 import colors from 'src/styles/colors'
+import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { type LocalizedCountry } from 'src/utils/Countries'
 import { ValidatorKind } from 'src/utils/inputValidation'
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   flag: {
-    fontSize: 20,
+    ...typeScale.titleSmall,
   },
   phoneNumberInput: {
     flex: 1,

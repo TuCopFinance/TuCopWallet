@@ -131,11 +131,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    ...typeScale.bodyXSmall,
+    ...typeScale.bodyXXSmall,
     color: Colors.primary,
     textAlign: 'center',
     marginTop: 2,
-    fontSize: 10,
-    lineHeight: 12,
   },
 })

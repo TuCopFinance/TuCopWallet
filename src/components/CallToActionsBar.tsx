@@ -2,6 +2,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import TextButton from 'src/components/TextButton'
 import colors from 'src/styles/colors'
+import { typeScale } from 'src/styles/fonts'
 
 export interface CallToAction {
   onPress: (params?: { index?: number }) => unknown
@@ -56,8 +57,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   action: {
-    fontSize: 14,
-    lineHeight: 16,
+    ...typeScale.labelSmall,
     marginRight: 24,
     minWidth: 48,
     minHeight: 16,

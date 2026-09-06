@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   flag: {
-    fontSize: 20,
+    ...typeScale.titleSmall,
     marginLeft: 4,
     marginRight: 16,
   },
