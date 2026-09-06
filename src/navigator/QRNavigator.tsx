@@ -113,6 +113,14 @@ export default function QRNavigator({ route }: Props) {
         headerShadowVisible: true,
         headerTitleAllowFontScaling: false,
         headerTransparent: false,
+        // Force an opaque white background on the header. Without
+        // this, the home screen's HeaderQuickActions (Envia /
+        // Recibe / Recarga / Gasta with their icons + labels) leaks
+        // through on the LEFT side of the tabHeader (which only
+        // populates headerRight). Explicit backgroundColor makes
+        // the header a solid strip regardless of the modal
+        // presentation transparency at the top.
+        headerStyle: { backgroundColor: Colors.white },
         tabBarActiveTintColor: Colors.black,
         tabBarInactiveTintColor: Colors.gray3,
         tabBarLabelStyle: styles.label,
