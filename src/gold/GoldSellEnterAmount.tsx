@@ -275,7 +275,7 @@ export default function GoldSellEnterAmount(_props: Props) {
   // Only show empty state after balance has loaded and is actually zero
   if (!balanceLoading && xaut0Balance.isZero()) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
           <GoldIconSelector size={64} />
@@ -294,7 +294,7 @@ export default function GoldSellEnterAmount(_props: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}

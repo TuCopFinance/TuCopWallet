@@ -253,7 +253,7 @@ export default function EnterAmount({
     (disableBalanceCheck ? !!processedAmounts.token.bignum?.isZero() : !transactionIsPossible)
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer} edges={['top']}>
+    <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'bottom']}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[

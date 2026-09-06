@@ -299,7 +299,7 @@ function SendSelectRecipient({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.body} edges={['top']}>
+    <SafeAreaView style={styles.body} edges={['top', 'bottom']}>
       <CustomHeader
         style={{ paddingHorizontal: variables.contentPadding }}
         left={customTabHeader.headerLeft()}

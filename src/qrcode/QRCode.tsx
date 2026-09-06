@@ -12,14 +12,11 @@ import CopyIcon from 'src/icons/actions/CopyIcon'
 import StyledQRCode from 'src/qrcode/StyledQRCode'
 import { useSelector } from 'src/redux/hooks'
 import { SVG } from 'src/send/actions'
-import { NETWORK_NAMES } from 'src/shared/conts'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { vibrateInformative } from 'src/styles/hapticFeedback'
 import { Spacing } from 'src/styles/styles'
 import variables from 'src/styles/variables'
-import { getSupportedNetworkIdsForTokenBalances } from 'src/tokens/utils'
-import { NetworkId } from 'src/transactions/types'
 import { showToast } from 'src/components/showToast'
 import { walletAddressSelector } from 'src/web3/selectors'
 
@@ -56,20 +53,9 @@ export default function QRCodeDisplay(props: Props) {
     props.onPressExchange?.(exchange)
   }
 
-  const getSupportedNetworks = () => {
-    const supportedNetworkIds = getSupportedNetworkIdsForTokenBalances()
-    const networks = supportedNetworkIds.map((networkId: NetworkId) => {
-      return NETWORK_NAMES[networkId]
-    })
-    return networks.join(', ')
-  }
-
   const description = () => (
     <Text style={styles.description}>
-      <Trans
-        i18nKey={'fiatExchangeFlow.exchange.informational'}
-        tOptions={{ networks: getSupportedNetworks() }}
-      >
+      <Trans i18nKey={'fiatExchangeFlow.exchange.informational'}>
         <Text style={styles.bold} />
       </Trans>
     </Text>
@@ -82,7 +68,6 @@ export default function QRCodeDisplay(props: Props) {
           <>
             <Text style={styles.exchangeText}>
               <Trans i18nKey="fiatExchangeFlow.exchange.informationText">
-                <Text style={styles.bold}></Text>
                 <Text style={styles.bold}></Text>
               </Trans>
             </Text>

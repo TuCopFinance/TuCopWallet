@@ -421,7 +421,7 @@ function EarnEnterAmount({ route }: Props) {
   const dropdownEnabled = availableInputTokens.length > 1
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer} edges={['top']}>
+    <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'bottom']}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[

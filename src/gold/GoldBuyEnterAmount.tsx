@@ -412,7 +412,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   if (!availableTokens.length) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
           <GoldIconSelector size={48} />
@@ -423,7 +423,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}

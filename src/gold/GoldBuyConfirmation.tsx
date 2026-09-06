@@ -470,7 +470,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
 
   if (!isVirtualDolares && !fromToken) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
@@ -480,7 +480,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <CustomHeader
         style={{ paddingHorizontal: Spacing.Thick24 }}
         left={<BackButton />}
