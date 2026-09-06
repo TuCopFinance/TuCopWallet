@@ -98,3 +98,4 @@ src/
 @.claude/rules/railway.md - Backend sibling services (phone verification, twilio, buckspay)
 @.claude/rules/ci-cd.md - CI checks & Knip
 @.claude/rules/observability.md - Sentry + PostHog + Statsig stack, captureBusinessError taxonomy, PII scrub, auto-attached contexts (connectivity/app_state/feature_gates)
+@.claude/rules/design-system.md - Screen wrapper, typography scale, spacing tokens, color tokens, shared primitives (Screen/Row/Card/TopBarIcon/InLineNotification), banned patterns
