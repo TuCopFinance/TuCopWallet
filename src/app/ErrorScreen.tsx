@@ -2,7 +2,7 @@ import { RouteProp } from '@react-navigation/native'
 import * as React from 'react'
 import { WithTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import Button, { BtnSizes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
 import StickyCtaBottom from 'src/components/StickyCtaBottom'
@@ -32,7 +32,7 @@ class ErrorScreen extends React.Component<Props> {
     const { t } = this.props
     const errorMessage = this.getErrorMessage()
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Screen padding={0}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <StateCard variant="error" title={t('oops')} subtitle={t('somethingWrong')}>
             <View style={styles.detailWrapper}>
@@ -50,15 +50,12 @@ class ErrorScreen extends React.Component<Props> {
             testID="ErrorContinueButton"
           />
         </StickyCtaBottom>
-      </SafeAreaView>
+      </Screen>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',

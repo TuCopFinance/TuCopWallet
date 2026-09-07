@@ -1,8 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { AppEvents } from 'src/analytics/Events'
 import { MultichainBetaStatus, optMultichainBeta } from 'src/app/actions'
@@ -42,39 +41,42 @@ function MultichainBeta() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <BetaTag />
-        <Text style={styles.title}>{t('multichainBeta.title')}</Text>
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.description}>{t('multichainBeta.description1')}</Text>
-          <Text style={styles.description}>{t('multichainBeta.description2')}</Text>
-        </View>
-        <View style={styles.ctaContainer}>
-          <Button
-            style={styles.cta}
-            touchableStyle={styles.ctaTouchable}
-            size={BtnSizes.FULL}
-            text={t('multichainBeta.primaryCta')}
-            onPress={() => onPressCta(true)}
-            testID="MultichainBeta/OptIn"
-            disabled={multichainBetaStatus !== MultichainBetaStatus.NotSeen}
-            showLoading={multichainBetaStatus === MultichainBetaStatus.OptedIn}
-          />
-          <Button
-            style={styles.cta}
-            touchableStyle={styles.ctaTouchable}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.FULL}
-            text={t('multichainBeta.secondaryCta')}
-            onPress={() => onPressCta(false)}
-            testID="MultichainBeta/OptOut"
-            disabled={multichainBetaStatus !== MultichainBetaStatus.NotSeen}
-            showLoading={multichainBetaStatus === MultichainBetaStatus.OptedOut}
-          />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Screen
+      edges={['left', 'right', 'bottom']}
+      scroll
+      padding={0}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <BetaTag />
+      <Text style={styles.title}>{t('multichainBeta.title')}</Text>
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.description}>{t('multichainBeta.description1')}</Text>
+        <Text style={styles.description}>{t('multichainBeta.description2')}</Text>
+      </View>
+      <View style={styles.ctaContainer}>
+        <Button
+          style={styles.cta}
+          touchableStyle={styles.ctaTouchable}
+          size={BtnSizes.FULL}
+          text={t('multichainBeta.primaryCta')}
+          onPress={() => onPressCta(true)}
+          testID="MultichainBeta/OptIn"
+          disabled={multichainBetaStatus !== MultichainBetaStatus.NotSeen}
+          showLoading={multichainBetaStatus === MultichainBetaStatus.OptedIn}
+        />
+        <Button
+          style={styles.cta}
+          touchableStyle={styles.ctaTouchable}
+          type={BtnTypes.SECONDARY}
+          size={BtnSizes.FULL}
+          text={t('multichainBeta.secondaryCta')}
+          onPress={() => onPressCta(false)}
+          testID="MultichainBeta/OptOut"
+          disabled={multichainBetaStatus !== MultichainBetaStatus.NotSeen}
+          showLoading={multichainBetaStatus === MultichainBetaStatus.OptedOut}
+        />
+      </View>
+    </Screen>
   )
 }
 
@@ -95,9 +97,6 @@ MultichainBeta.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: Spacing.Thick24,

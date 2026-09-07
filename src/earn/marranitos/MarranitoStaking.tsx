@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import { showErrorMessage } from 'src/components/ErrorMessage'
+import Screen from 'src/components/Screen'
 import { showToast } from 'src/components/showToast'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -96,79 +97,80 @@ const MarranitoStaking = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView style={styles.scrollContent}>
-        <View style={styles.content}>
-          <Text style={styles.title}>{t('earnFlow.staking.title')}</Text>
-          <Text style={styles.subtitle}>
-            {t('earnFlow.staking.subtitle', { apy: pool.apy, days: pool.days })}
-          </Text>
+    <Screen padding={0} background={Colors.lightPrimary}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.kav}
+      >
+        <ScrollView style={styles.scrollContent}>
+          <View style={styles.content}>
+            <Text style={styles.title}>{t('earnFlow.staking.title')}</Text>
+            <Text style={styles.subtitle}>
+              {t('earnFlow.staking.subtitle', { apy: pool.apy, days: pool.days })}
+            </Text>
 
-          <View style={styles.poolInfo}>
-            <View style={styles.poolInfoRow}>
-              <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.network')}</Text>
-              <Text style={styles.poolInfoValue}>{pool.network}</Text>
+            <View style={styles.poolInfo}>
+              <View style={styles.poolInfoRow}>
+                <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.network')}</Text>
+                <Text style={styles.poolInfoValue}>{pool.network}</Text>
+              </View>
+              <View style={styles.poolInfoRow}>
+                <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.apy')}</Text>
+                <Text style={styles.poolInfoValue}>{pool.apy}%</Text>
+              </View>
+              <View style={styles.poolInfoRow}>
+                <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.duration')}</Text>
+                <Text style={styles.poolInfoValue}>
+                  {t('earnFlow.staking.days', { days: pool.days })}
+                </Text>
+              </View>
+              <View style={styles.poolInfoRow}>
+                <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.balance')}</Text>
+                <Text style={styles.poolInfoValue}>
+                  <TokenDisplay
+                    style={styles.poolInfoValue}
+                    amount={BigNumber(tokenBalance.replace('COPm', ''))}
+                    tokenId={COPM_TOKEN_ID_MAINNET}
+                    showSymbol={true}
+                    hideSign={true}
+                    showLocalAmount={true}
+                  />
+                </Text>
+              </View>
             </View>
-            <View style={styles.poolInfoRow}>
-              <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.apy')}</Text>
-              <Text style={styles.poolInfoValue}>{pool.apy}%</Text>
-            </View>
-            <View style={styles.poolInfoRow}>
-              <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.duration')}</Text>
-              <Text style={styles.poolInfoValue}>
-                {t('earnFlow.staking.days', { days: pool.days })}
-              </Text>
-            </View>
-            <View style={styles.poolInfoRow}>
-              <Text style={styles.poolInfoLabel}>{t('earnFlow.staking.balance')}</Text>
-              <Text style={styles.poolInfoValue}>
-                <TokenDisplay
-                  style={styles.poolInfoValue}
-                  amount={BigNumber(tokenBalance.replace('COPm', ''))}
-                  tokenId={COPM_TOKEN_ID_MAINNET}
-                  showSymbol={true}
-                  hideSign={true}
-                  showLocalAmount={true}
-                />
-              </Text>
-            </View>
-          </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>{t('earnFlow.staking.amount')}</Text>
-            <TextInput
-              style={styles.input}
-              value={amount}
-              onChangeText={setAmount}
-              placeholder={t('earnFlow.staking.enterAmount')}
-              keyboardType="numeric"
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>{t('earnFlow.staking.amount')}</Text>
+              <TextInput
+                style={styles.input}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder={t('earnFlow.staking.enterAmount')}
+                keyboardType="numeric"
+              />
+            </View>
+
+            {/* Eliminamos el input de contraseña ya que usaremos el componente Pincode */}
+
+            <Button
+              text={t('earnFlow.staking.stakeButton')}
+              onPress={handleStake}
+              type={BtnTypes.PRIMARY}
+              size={BtnSizes.FULL}
+              style={styles.stakeButton}
+              showLoading={isStaking}
+              disabled={isStaking}
             />
           </View>
-
-          {/* Eliminamos el input de contraseña ya que usaremos el componente Pincode */}
-
-          <Button
-            text={t('earnFlow.staking.stakeButton')}
-            onPress={handleStake}
-            type={BtnTypes.PRIMARY}
-            size={BtnSizes.FULL}
-            style={styles.stakeButton}
-            showLoading={isStaking}
-            disabled={isStaking}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  kav: {
     flex: 1,
-    backgroundColor: Colors.lightPrimary,
   },
   scrollContent: {
     padding: Spacing.Regular16,

@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SubsidiesEvents, TabHomeEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -493,7 +493,7 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <Screen edges={['bottom']} padding={0}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <TuCOPLogo width={100} height={32} />
@@ -519,15 +519,11 @@ export default function ReFiColombiaSubsidiesScreen({ navigation }: Props) {
       </ScrollView>
 
       {renderStickyButton() && <StickyCtaBottom>{renderStickyButton()}</StickyCtaBottom>}
-    </SafeAreaView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   header: {
     paddingHorizontal: Spacing.Thick24,
     paddingVertical: Spacing.Large32,
