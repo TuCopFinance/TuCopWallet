@@ -1,5 +1,12 @@
 import React from 'react'
-import { ScrollView, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import {
+  RefreshControlProps,
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native'
 import KeyboardAwareScrollView from 'src/components/KeyboardAwareScrollView'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 import Colors from 'src/styles/colors'
@@ -23,6 +30,7 @@ export interface ScreenProps {
   background?: string
   style?: StyleProp<ViewStyle>
   contentContainerStyle?: StyleProp<ViewStyle>
+  refreshControl?: React.ReactElement<RefreshControlProps>
   testID?: string
 }
 
@@ -42,6 +50,7 @@ export default function Screen({
   background = Colors.white,
   style,
   contentContainerStyle,
+  refreshControl,
   testID,
 }: ScreenProps) {
   const paddingHorizontal = padding === 0 ? 0 : Spacing[padding]
@@ -70,6 +79,7 @@ export default function Screen({
           contentContainerStyle={[styles.grow, inner]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>

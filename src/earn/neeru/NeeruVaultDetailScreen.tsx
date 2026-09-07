@@ -3,9 +3,9 @@ import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { RefreshControl, StyleSheet, Text, View } from 'react-native'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Screen from 'src/components/Screen'
 import { formatValueToDisplay } from 'src/components/TokenDisplay'
 import { neeruCatalogueCategoryByIdSelector } from 'src/earn/neeru/configSelectors'
 import { NEERU_CATEGORY_LABEL_KEYS, categoryIdFromPositionId } from 'src/earn/neeru/constants'
@@ -97,93 +97,87 @@ export default function NeeruVaultDetailScreen({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        refreshControl={
-          <RefreshControl
-            refreshing={fetchStatus === 'loading'}
-            onRefresh={() => dispatch(fetchPositionsStart())}
-          />
-        }
-      >
-        <Text style={styles.header}>{t('neeruVaults.detail.header', { categoryLabel })}</Text>
-        <Text style={styles.description}>{description}</Text>
-
-        {isEmpty ? (
-          // Rich empty state: rate hero + how-it-works + trust footer.
-          // Replaces the previous sparse "Total en X: 0.00 Pesos" + one-line
-          // "Todavia no tienes depositos" that read as if the page were broken.
-          // Redundant total row is suppressed here (0 balance is implied).
-          <View testID="NeeruVaultDetail.EmptyState" style={styles.emptyCard}>
-            <Text style={styles.emptyRateEyebrow}>
-              {t('neeruVaults.detail.emptyState.rateEyebrow')}
-            </Text>
-            <Text style={styles.emptyRateValue}>
-              {t('neeruVaults.detail.emptyState.rateValueEa', {
-                percentage: annualRate.toFixed(2),
-              })}
-            </Text>
-            <Text style={styles.emptyRateSubtitle}>
-              {t('neeruVaults.detail.emptyState.rateEquivalentMv', {
-                percentage: monthlyRate.toFixed(2),
-              })}
-            </Text>
-
-            <View style={styles.emptyDivider} />
-
-            <Text style={styles.emptyStepsHeader}>
-              {t('neeruVaults.detail.emptyState.howItWorksHeader')}
-            </Text>
-            <View style={styles.emptyStep}>
-              <Text style={styles.emptyStepNumber}>1</Text>
-              <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step1')}</Text>
-            </View>
-            <View style={styles.emptyStep}>
-              <Text style={styles.emptyStepNumber}>2</Text>
-              <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step2')}</Text>
-            </View>
-            <View style={styles.emptyStep}>
-              <Text style={styles.emptyStepNumber}>3</Text>
-              <Text style={styles.emptyStepText}>{t(withdrawStepKey)}</Text>
-            </View>
-
-            <Text style={styles.emptyTrustNote}>
-              {t('neeruVaults.detail.emptyState.trustNote')}
-            </Text>
-          </View>
-        ) : (
-          <>
-            <Text style={styles.total}>
-              {t('neeruVaults.detail.aggregateBalance', { categoryLabel, amount: total })}
-            </Text>
-            <View style={styles.positionsList}>
-              {positions.map((p) => (
-                <NeeruPositionRow
-                  key={p.positionId}
-                  position={p}
-                  onManagePress={handleManagePress}
-                />
-              ))}
-            </View>
-          </>
-        )}
-
-        <Button
-          size={BtnSizes.FULL}
-          type={BtnTypes.PRIMARY}
-          text={t('neeruVaults.detail.depositCta')}
-          onPress={() => navigate(Screens.EarnEnterAmount, { pool, mode: 'deposit' })}
-          testID="NeeruVaultDetail.DepositCta"
-          style={styles.cta}
+    <Screen
+      edges={['bottom']}
+      scroll
+      padding={0}
+      contentContainerStyle={styles.scroll}
+      refreshControl={
+        <RefreshControl
+          refreshing={fetchStatus === 'loading'}
+          onRefresh={() => dispatch(fetchPositionsStart())}
         />
-      </ScrollView>
-    </SafeAreaView>
+      }
+    >
+      <Text style={styles.header}>{t('neeruVaults.detail.header', { categoryLabel })}</Text>
+      <Text style={styles.description}>{description}</Text>
+
+      {isEmpty ? (
+        // Rich empty state: rate hero + how-it-works + trust footer.
+        // Replaces the previous sparse "Total en X: 0.00 Pesos" + one-line
+        // "Todavia no tienes depositos" that read as if the page were broken.
+        // Redundant total row is suppressed here (0 balance is implied).
+        <View testID="NeeruVaultDetail.EmptyState" style={styles.emptyCard}>
+          <Text style={styles.emptyRateEyebrow}>
+            {t('neeruVaults.detail.emptyState.rateEyebrow')}
+          </Text>
+          <Text style={styles.emptyRateValue}>
+            {t('neeruVaults.detail.emptyState.rateValueEa', {
+              percentage: annualRate.toFixed(2),
+            })}
+          </Text>
+          <Text style={styles.emptyRateSubtitle}>
+            {t('neeruVaults.detail.emptyState.rateEquivalentMv', {
+              percentage: monthlyRate.toFixed(2),
+            })}
+          </Text>
+
+          <View style={styles.emptyDivider} />
+
+          <Text style={styles.emptyStepsHeader}>
+            {t('neeruVaults.detail.emptyState.howItWorksHeader')}
+          </Text>
+          <View style={styles.emptyStep}>
+            <Text style={styles.emptyStepNumber}>1</Text>
+            <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step1')}</Text>
+          </View>
+          <View style={styles.emptyStep}>
+            <Text style={styles.emptyStepNumber}>2</Text>
+            <Text style={styles.emptyStepText}>{t('neeruVaults.detail.emptyState.step2')}</Text>
+          </View>
+          <View style={styles.emptyStep}>
+            <Text style={styles.emptyStepNumber}>3</Text>
+            <Text style={styles.emptyStepText}>{t(withdrawStepKey)}</Text>
+          </View>
+
+          <Text style={styles.emptyTrustNote}>{t('neeruVaults.detail.emptyState.trustNote')}</Text>
+        </View>
+      ) : (
+        <>
+          <Text style={styles.total}>
+            {t('neeruVaults.detail.aggregateBalance', { categoryLabel, amount: total })}
+          </Text>
+          <View style={styles.positionsList}>
+            {positions.map((p) => (
+              <NeeruPositionRow key={p.positionId} position={p} onManagePress={handleManagePress} />
+            ))}
+          </View>
+        </>
+      )}
+
+      <Button
+        size={BtnSizes.FULL}
+        type={BtnTypes.PRIMARY}
+        text={t('neeruVaults.detail.depositCta')}
+        onPress={() => navigate(Screens.EarnEnterAmount, { pool, mode: 'deposit' })}
+        testID="NeeruVaultDetail.DepositCta"
+        style={styles.cta}
+      />
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
   scroll: { padding: Spacing.Regular16, gap: Spacing.Regular16 },
   header: { ...typeScale.titleMedium, color: Colors.black },
   description: { ...typeScale.bodyMedium, color: Colors.gray3 },

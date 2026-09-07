@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
@@ -151,7 +151,7 @@ export default function EarnConfirmationScreen({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen padding={0} contentContainerStyle={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Title mode={mode} />
         {showWithdrawAndClaimNotice && (
@@ -248,7 +248,7 @@ export default function EarnConfirmationScreen({ route }: Props) {
         disabled={!!ctaDisabled}
         showLoading={withdrawStatus === 'loading'}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -349,7 +349,6 @@ const styles = StyleSheet.create({
     padding: Spacing.Thick24,
   },
   container: {
-    flex: 1,
     justifyContent: 'space-between',
   },
   title: {

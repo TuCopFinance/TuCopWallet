@@ -6,7 +6,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { getNumberFormatSettings } from 'react-native-localize'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SwapEvents } from 'src/analytics/Events'
 import { showErrorMessage } from 'src/components/ErrorMessage'
@@ -1178,7 +1178,7 @@ export function SwapScreen({ route }: Props) {
   ]
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer} testID="SwapScreen">
+    <Screen padding={0} testID="SwapScreen">
       <CustomHeader
         style={{ paddingHorizontal: variables.contentPadding }}
         left={<BackButton />}
@@ -1662,14 +1662,11 @@ export function SwapScreen({ route }: Props) {
         }}
         onCancel={() => dispatch(multiSwapCleared())}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
-    flex: 1,
-  },
   contentContainer: {
     padding: Spacing.Regular16,
     flexGrow: 1,

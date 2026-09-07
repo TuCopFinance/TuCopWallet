@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import Svg, { Circle, Path, Rect } from 'react-native-svg'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import StateCard from 'src/components/StateCard'
@@ -68,7 +68,7 @@ function EarthquakeDonationSuccessScreen({ route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <View style={styles.content}>
         <StateCard
           variant="success"
@@ -133,7 +133,7 @@ function EarthquakeDonationSuccessScreen({ route }: Props) {
           testID="EarthquakeDonationSuccess/Continue"
         />
       </StickyCtaBottom>
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -142,10 +142,6 @@ EarthquakeDonationSuccessScreen.navigationOptions = () => ({
 })
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   content: {
     flex: 1,
     justifyContent: 'center',

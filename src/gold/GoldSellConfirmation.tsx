@@ -3,8 +3,9 @@ import BigNumber from 'bignumber.js'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BackButton from 'src/components/BackButton'
+import Screen from 'src/components/Screen'
 import BottomSheet, { BottomSheetModalRefType } from 'src/components/BottomSheet'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
@@ -236,17 +237,17 @@ export default function GoldSellConfirmation({ route }: Props) {
 
   if (!toToken) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Screen padding={0}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      </SafeAreaView>
+      </Screen>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <CustomHeader
         style={{ paddingHorizontal: Spacing.Thick24 }}
         left={<BackButton />}
@@ -418,7 +419,7 @@ export default function GoldSellConfirmation({ route }: Props) {
         appFee={detailsAppFee}
         fetchingSwapQuote={isGettingQuote}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -428,10 +429,6 @@ GoldSellConfirmation.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.Thick24,

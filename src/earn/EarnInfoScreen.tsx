@@ -2,7 +2,8 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import React, { ReactElement } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -65,7 +66,7 @@ export default function EarnInfoScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeAreaContainer, { paddingTop: headerHeight }]} edges={[]}>
+    <Screen edges={[]} style={{ paddingTop: headerHeight }}>
       <ScrollView>
         <Text style={styles.title} testID="EarnInfoScreen/Title">
           {t('earnFlow.earnInfo.title')}
@@ -108,7 +109,7 @@ export default function EarnInfoScreen() {
           size={BtnSizes.FULL}
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -122,10 +123,6 @@ EarnInfoScreen.navigationOptions = () => ({
 })
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
-    flex: 1,
-    paddingHorizontal: Spacing.Regular16,
-  },
   flex: {
     flex: 1,
   },

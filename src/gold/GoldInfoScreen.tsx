@@ -2,7 +2,8 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import React, { ReactElement } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -71,7 +72,7 @@ export default function GoldInfoScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeAreaContainer, { paddingTop: headerHeight }]} edges={[]}>
+    <Screen edges={[]} style={{ paddingTop: headerHeight }}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.iconContainer}>
           <GoldIconSelector size={80} />
@@ -114,7 +115,7 @@ export default function GoldInfoScreen() {
           testID="GoldInfoScreen/GetStartedButton"
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -128,10 +129,6 @@ GoldInfoScreen.navigationOptions = () => ({
 })
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
-    flex: 1,
-    paddingHorizontal: Spacing.Regular16,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: Spacing.Regular16,

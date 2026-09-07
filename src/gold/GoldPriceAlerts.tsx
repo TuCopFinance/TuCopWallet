@@ -4,7 +4,8 @@ import React, { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Keyboard, StyleSheet, Switch, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
@@ -150,7 +151,7 @@ export default function GoldPriceAlerts({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen edges={['top']} padding={0}>
       <View style={[styles.content, insetsStyle]}>
         {/* Current Price Display */}
         {currentLocalPrice && (
@@ -241,7 +242,7 @@ export default function GoldPriceAlerts({ navigation }: Props) {
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -250,10 +251,6 @@ GoldPriceAlerts.navigationOptions = () => ({
 })
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   content: {
     flex: 1,
     paddingHorizontal: Spacing.Thick24,
