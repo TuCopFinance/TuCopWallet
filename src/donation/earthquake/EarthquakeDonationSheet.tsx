@@ -321,7 +321,7 @@ export default function EarthquakeDonationSheet({ forwardedRef, source }: Props)
 
 const styles = StyleSheet.create({
   sheetTitle: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     textAlign: 'center',
   },
   scroll: {
@@ -420,10 +420,10 @@ const styles = StyleSheet.create({
   },
   breakdownLabel: {
     ...typeScale.bodySmall,
-    color: Colors.gray5,
+    color: Colors.gray4,
   },
   breakdownValue: {
-    ...typeScale.labelMedium,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.black,
   },
   matchValue: {
@@ -436,14 +436,12 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Tiny4,
   },
   breakdownTotalLabel: {
-    ...typeScale.labelMedium,
+    ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
-    fontWeight: '600',
   },
   breakdownTotalValue: {
-    ...typeScale.labelMedium,
+    ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
-    fontWeight: '600',
   },
   errorText: {
     ...typeScale.bodySmall,

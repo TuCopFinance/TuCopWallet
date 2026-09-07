@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     color: Colors.black,
   },
   priceRow: {

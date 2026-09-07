@@ -180,8 +180,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Small12,
   },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
-  rowLabel: { ...typeScale.bodyMedium, color: Colors.gray3 },
-  rowValue: { ...typeScale.bodyMedium, color: Colors.black },
+  rowLabel: { ...typeScale.bodySmall, color: Colors.gray4 },
+  rowValue: { ...typeScale.labelSemiBoldSmall, color: Colors.black },
   bold: { fontWeight: '600' },
   negative: { color: Colors.error },
   warning: {

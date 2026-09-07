@@ -100,11 +100,11 @@ const getStartedStyles = StyleSheet.create({
     gap: Spacing.Regular16,
   },
   subtitle: {
-    ...typeScale.labelXXSmall,
+    ...typeScale.bodyXSmall,
     color: colors.gray3,
   },
   title: {
-    ...typeScale.labelMedium,
+    ...typeScale.titleMedium,
     color: colors.gray5,
   },
   optionWrapper: {

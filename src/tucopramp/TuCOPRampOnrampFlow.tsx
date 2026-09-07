@@ -508,11 +508,11 @@ const styles = StyleSheet.create({
     color: Colors.black,
   },
   infoLabel: {
-    ...typeScale.labelSemiBoldSmall,
+    ...typeScale.bodySmall,
     color: Colors.gray4,
     marginBottom: Spacing.Smallest8,
   },
-  infoValue: { ...typeScale.bodyMedium, color: Colors.black },
+  infoValue: { ...typeScale.labelSemiBoldSmall, color: Colors.black },
   quoteBox: {
     backgroundColor: Colors.gray1,
     borderRadius: 12,

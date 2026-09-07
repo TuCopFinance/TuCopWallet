@@ -1111,7 +1111,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   title: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     color: Colors.black,
   },
   inputContainer: {

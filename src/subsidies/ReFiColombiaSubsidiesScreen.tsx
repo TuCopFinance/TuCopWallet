@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Tiny4,
   },
   headerSubtitle: {
-    ...typeScale.bodySmall,
+    ...typeScale.bodyMedium,
     color: Colors.gray3,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -607,11 +607,11 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
   },
   detailValue: {
-    ...typeScale.labelMedium,
+    ...typeScale.labelSemiBoldSmall,
     color: Colors.black,
   },
   detailValueLarge: {
-    ...typeScale.labelSemiBoldLarge,
+    ...typeScale.titleMedium,
     color: Colors.black,
   },
   detailValueMuted: {
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
     gap: Spacing.Smallest8,
   },
   benefitTitle: {
-    ...typeScale.titleSmall,
+    ...typeScale.labelSemiBoldMedium,
     color: Colors.primary,
   },
   benefitDescription: {

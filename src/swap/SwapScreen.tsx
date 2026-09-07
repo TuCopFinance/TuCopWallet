@@ -1682,14 +1682,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.Small12,
   },
   disclaimerText: {
-    ...typeScale.labelXXSmall,
+    ...typeScale.bodyXSmall,
     paddingBottom: Spacing.Smallest8,
     flexWrap: 'wrap',
     color: colors.gray3,
     textAlign: 'center',
   },
   disclaimerLink: {
-    ...typeScale.labelXXSmall,
+    ...typeScale.bodyXSmall,
     color: colors.primary,
   },
   warning: {

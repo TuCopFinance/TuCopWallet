@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.Regular16,
   },
   body: {
-    ...typeScale.bodyLarge,
+    ...typeScale.bodyMedium,
     paddingBottom: Spacing.Regular16,
   },
   postSetupBody: {

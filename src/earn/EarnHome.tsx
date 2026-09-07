@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
   //   justifyContent: 'flex-end',
   // },
   learnMoreTitle: {
-    ...typeScale.titleSmall,
+    ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
   },
   learnMoreSubTitle: {
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   description: {
-    ...typeScale.bodySmall,
+    ...typeScale.bodyMedium,
     textAlign: 'center',
     marginTop: Spacing.Regular16,
     color: Colors.gray3,

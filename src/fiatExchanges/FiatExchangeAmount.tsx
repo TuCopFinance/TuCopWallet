@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     ...typeScale.labelMedium,
   },
   currencyInput: {
-    ...typeScale.bodyLarge,
+    ...typeScale.titleMedium,
     marginLeft: 10,
     flex: 1,
     textAlign: 'right',

@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...typeScale.labelSemiBoldMedium,
+    ...typeScale.titleMedium,
     color: Colors.black,
     marginBottom: Spacing.Regular16,
     textAlign: 'center',
