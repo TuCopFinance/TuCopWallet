@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     color: Colors.black,
     textAlign: 'center',
     marginBottom: Spacing.Regular16,
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
   },
   description: {
     color: Colors.gray4,

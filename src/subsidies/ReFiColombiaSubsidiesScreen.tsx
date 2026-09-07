@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   headerTitle: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.primary,
     textAlign: 'center',
     marginBottom: Spacing.Tiny4,

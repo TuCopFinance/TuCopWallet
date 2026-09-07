@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: Colors.black,
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     marginVertical: Spacing.Regular16,
   },
   descriptionContainer: {

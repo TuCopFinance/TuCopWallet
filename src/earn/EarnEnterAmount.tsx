@@ -423,7 +423,13 @@ function EarnEnterAmount({ route }: Props) {
 
   return (
     <Screen padding={0}>
-      <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
+      <CustomHeader
+        style={{ paddingHorizontal: Spacing.Thick24 }}
+        left={<BackButton />}
+        title={
+          isWithdrawal ? t('earnFlow.enterAmount.titleWithdraw') : t('earnFlow.enterAmount.title')
+        }
+      />
       <KeyboardAwareScrollView
         contentContainerStyle={[
           styles.contentContainer,
@@ -436,11 +442,6 @@ function EarnEnterAmount({ route }: Props) {
         }}
       >
         <View style={styles.inputContainer}>
-          <Text style={styles.title}>
-            {isWithdrawal
-              ? t('earnFlow.enterAmount.titleWithdraw')
-              : t('earnFlow.enterAmount.title')}
-          </Text>
           <View style={styles.inputBox}>
             <View style={styles.inputRow}>
               <AmountInput

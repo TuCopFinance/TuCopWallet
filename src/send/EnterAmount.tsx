@@ -255,7 +255,11 @@ export default function EnterAmount({
 
   return (
     <Screen padding={0}>
-      <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
+      <CustomHeader
+        style={{ paddingHorizontal: Spacing.Thick24 }}
+        left={<BackButton />}
+        title={t('sendEnterAmountScreen.title')}
+      />
       <KeyboardAwareScrollView
         contentContainerStyle={[
           styles.contentContainer,
@@ -266,7 +270,6 @@ export default function EnterAmount({
         }}
       >
         <View style={styles.inputContainer}>
-          <Text style={styles.title}>{t('sendEnterAmountScreen.title')}</Text>
           <TokenEnterAmount
             autoFocus
             testID="SendEnterAmount"

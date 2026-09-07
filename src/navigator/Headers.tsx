@@ -33,12 +33,18 @@ export const noHeaderGestureDisabled: NativeStackNavigationOptions = {
 export const styles = StyleSheet.create({
   customHeaderTitle: {
     ...typeScale.titleSmall,
-    maxWidth: Dimensions.get('window').width * 0,
+    maxWidth: Dimensions.get('window').width * 0.6,
     color: Colors.primary,
   },
   headerTitle: {
-    ...typeScale.titleLarge,
-    maxWidth: Dimensions.get('window').width * 0,
+    // Was titleLarge (32B) with a maxWidth: window.width * 0 hack that
+    // clipped the title to zero width and effectively hid it in every
+    // CustomHeader consumer (SendSelectRecipient compensated with a
+    // decorative SVG below the header). Now sized to titleMedium (24B)
+    // to match the design-system §2 screen-title canonical, and given
+    // a real maxWidth so the text actually shows.
+    ...typeScale.titleMedium,
+    maxWidth: Dimensions.get('window').width * 0.6,
     color: Colors.primary,
   },
   headerSubTitle: {

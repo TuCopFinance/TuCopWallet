@@ -182,8 +182,9 @@ function SendConfirmation(props: Props) {
       }
     >
       <CustomHeader
-        style={{ paddingHorizontal: 8 }}
+        style={{ paddingHorizontal: Spacing.Smallest8 }}
         left={<BackButton eventName={SendEvents.send_confirm_back} />}
+        title={t('reviewPayment')}
       />
       <DisconnectBanner />
       <ReviewFrame

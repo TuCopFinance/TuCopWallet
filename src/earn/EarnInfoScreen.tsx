@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     color: Colors.black,
     textAlign: 'center',
     marginBottom: Spacing.Thick24,
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
   },
   detailsContainer: {
     gap: Spacing.Large32,

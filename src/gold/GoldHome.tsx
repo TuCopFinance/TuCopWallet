@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Regular16,
   },
   title: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.primary,
     marginTop: Spacing.Regular16,
   },

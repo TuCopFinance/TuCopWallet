@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: Colors.primary,
   },
   listHeaderContainer: {

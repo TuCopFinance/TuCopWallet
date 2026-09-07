@@ -467,13 +467,13 @@ const styles = StyleSheet.create({
   ctaSpacer: { marginTop: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
   statusHeading: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     color: Colors.black,
     marginBottom: Spacing.Regular16,
     textAlign: 'center',
   },
   errorHeading: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     color: Colors.errorDark,
     marginBottom: Spacing.Regular16,
     textAlign: 'center',

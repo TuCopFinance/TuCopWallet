@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   title: {
-    ...typeScale.titleSmall,
+    ...typeScale.titleMedium,
     letterSpacing: -0.16,
     textAlign: 'center',
     marginBottom: Spacing.Regular16,

@@ -296,14 +296,16 @@ export default function GoldSellEnterAmount(_props: Props) {
 
   return (
     <Screen padding={0}>
-      <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
+      <CustomHeader
+        style={{ paddingHorizontal: Spacing.Thick24 }}
+        left={<BackButton />}
+        title={t('goldFlow.sell.title')}
+      />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
         <View style={styles.inputContainer}>
-          <Text style={styles.title}>{t('goldFlow.sell.title')}</Text>
-
           {/* Price Display */}
           {localGoldPrice && (
             <View style={styles.priceRow}>

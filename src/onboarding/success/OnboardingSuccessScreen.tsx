@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     height: undefined,
   },
   text: {
-    ...typeScale.titleLarge,
+    ...typeScale.titleMedium,
     color: colors.white,
     marginTop: Spacing.Regular16,
     marginBottom: Spacing.Thick24,

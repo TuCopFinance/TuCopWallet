@@ -425,14 +425,16 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   return (
     <Screen padding={0}>
-      <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
+      <CustomHeader
+        style={{ paddingHorizontal: Spacing.Thick24 }}
+        left={<BackButton />}
+        title={t('goldFlow.buy.title')}
+      />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
         <View style={styles.inputContainer}>
-          <Text style={styles.title}>{t('goldFlow.buy.title')}</Text>
-
           {/* Price Display */}
           {localGoldPrice && (
             <View style={styles.priceRow}>
