@@ -3046,7 +3046,16 @@
     "proofRejectedForRetryTitle": "Receipt rejected",
     "proofRejectedForRetryBody": "The operator could not verify your receipt. Upload a new one with the transfer clearly visible.",
     "selectProvider": "Withdraw Funds",
-    "selectProviderSubtitle": "Choose a provider to convert your digital assets to local currency."
+    "selectProviderSubtitle": "Choose a provider to convert your digital assets to local currency.",
+    "amountBelowMin": "The minimum amount is {{min}} pesos",
+    "amountAboveMax": "The maximum amount is {{max}} pesos",
+    "confirmSubtitle": "Review the details before confirming the withdrawal",
+    "breakdown": {
+      "amountRequested": "Requested amount",
+      "offrampCommission": "Withdrawal commission ({{percent}}%)",
+      "coveredByTuCop": "Covered by TuCop",
+      "youReceive": "You receive"
+    }
   },
   "transactionSuccess": {
     "swap": {

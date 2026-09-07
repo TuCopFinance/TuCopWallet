@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import { launchImageLibrary } from 'react-native-image-picker'
 import type { ImagePickerResponse } from 'react-native-image-picker'
 import { navigateBack } from 'src/navigator/NavigationService'
@@ -214,14 +215,32 @@ function TuCOPRampOnrampFlow(_props: Props) {
               editable={status === 'idle'}
               testID="tucopramp-onramp-amount"
             />
-            {!amountValid && amount.length > 0 && (
+            {amount.length === 0 || amountNum === 0 ? (
               <Text style={styles.helper}>
                 {t('tucopramp.amountRange', {
                   min: limits.min_order_cop.toLocaleString('es-CO'),
                   max: limits.max_order_cop.toLocaleString('es-CO'),
                 })}
               </Text>
-            )}
+            ) : amountNum < limits.min_order_cop ? (
+              <InLineNotification
+                variant={NotificationVariant.Error}
+                description={t('tucopramp.amountBelowMin', {
+                  min: limits.min_order_cop.toLocaleString('es-CO'),
+                })}
+                style={styles.amountAlert}
+                testID="tucopramp-onramp-amount-below-min"
+              />
+            ) : amountNum > limits.max_order_cop ? (
+              <InLineNotification
+                variant={NotificationVariant.Error}
+                description={t('tucopramp.amountAboveMax', {
+                  max: limits.max_order_cop.toLocaleString('es-CO'),
+                })}
+                style={styles.amountAlert}
+                testID="tucopramp-onramp-amount-above-max"
+              />
+            ) : null}
 
             <Text style={styles.label}>{t('tucopramp.firstNameLabel')}</Text>
             <TextInput
@@ -457,6 +476,10 @@ const styles = StyleSheet.create({
     ...typeScale.bodySmall,
     color: Colors.gray4,
     marginTop: Spacing.Smallest8,
+  },
+  amountAlert: {
+    marginTop: Spacing.Smallest8,
+    marginBottom: Spacing.Smallest8,
   },
   helperError: {
     ...typeScale.bodySmall,

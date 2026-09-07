@@ -3521,7 +3521,16 @@
     "proofRejectedForRetryTitle": "Comprobante rechazado",
     "proofRejectedForRetryBody": "El operador no pudo verificar tu comprobante. Sube uno nuevo con la transferencia clara y completa.",
     "selectProvider": "Retirar Fondos",
-    "selectProviderSubtitle": "Elige un proveedor para convertir tus activos digitales a moneda local."
+    "selectProviderSubtitle": "Elige un proveedor para convertir tus activos digitales a moneda local.",
+    "amountBelowMin": "El monto minimo es {{min}} pesos",
+    "amountAboveMax": "El monto maximo es {{max}} pesos",
+    "confirmSubtitle": "Revisa los detalles antes de confirmar el retiro",
+    "breakdown": {
+      "amountRequested": "Monto solicitado",
+      "offrampCommission": "Comision de retiro ({{percent}}%)",
+      "coveredByTuCop": "Cubierto por TuCop",
+      "youReceive": "Recibiras"
+    }
   },
   "transactionSuccess": {
     "swap": {

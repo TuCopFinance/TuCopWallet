@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -230,7 +231,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{t('tucopramp.offrampTitle')}</Text>
 
-        {(status === 'idle' || status === 'quoting' || status === 'quote-ready') && (
+        {(status === 'idle' || status === 'quoting') && (
           <View>
             <Text style={styles.label}>{t('tucopramp.amountLabel')}</Text>
             <TextInput
@@ -242,14 +243,32 @@ function TuCOPRampOfframpFlow(_props: Props) {
               editable={status === 'idle'}
               testID="tucopramp-offramp-amount"
             />
-            {!amountValid && amount.length > 0 && (
+            {amount.length === 0 || amountNum === 0 ? (
               <Text style={styles.helper}>
                 {t('tucopramp.amountRange', {
                   min: limits.min_order_cop.toLocaleString('es-CO'),
                   max: limits.max_order_cop.toLocaleString('es-CO'),
                 })}
               </Text>
-            )}
+            ) : amountNum < limits.min_order_cop ? (
+              <InLineNotification
+                variant={NotificationVariant.Error}
+                description={t('tucopramp.amountBelowMin', {
+                  min: limits.min_order_cop.toLocaleString('es-CO'),
+                })}
+                style={styles.amountAlert}
+                testID="tucopramp-offramp-amount-below-min"
+              />
+            ) : amountNum > limits.max_order_cop ? (
+              <InLineNotification
+                variant={NotificationVariant.Error}
+                description={t('tucopramp.amountAboveMax', {
+                  max: limits.max_order_cop.toLocaleString('es-CO'),
+                })}
+                style={styles.amountAlert}
+                testID="tucopramp-offramp-amount-above-max"
+              />
+            ) : null}
 
             <Text style={styles.label}>{t('tucopramp.payoutMethodLabel')}</Text>
             <View style={styles.segmentRow}>
@@ -416,49 +435,80 @@ function TuCOPRampOfframpFlow(_props: Props) {
                 />
               </View>
             )}
+          </View>
+        )}
 
-            {status === 'quote-ready' && quote && (
-              <View style={styles.quoteBox}>
-                <Text style={styles.quoteLabel}>{t('tucopramp.quoteReceivedLabel')}</Text>
-                <Text style={styles.quoteAmount}>
-                  {quote.net_amount_to_user_cop.toLocaleString('es-CO')} COP
+        {status === 'quote-ready' && quote && (
+          <View style={styles.confirmView}>
+            <Text style={styles.confirmSubtitle}>{t('tucopramp.confirmSubtitle')}</Text>
+
+            <View style={styles.breakdownCard}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>
+                  {t('tucopramp.breakdown.amountRequested')}
                 </Text>
-                <Text style={styles.quoteFee}>
-                  {t('tucopramp.quoteFee', { fee: quote.fee_amount_cop.toLocaleString('es-CO') })}
-                </Text>
-                <TouchableOpacity
-                  style={styles.consentRow}
-                  onPress={() => setConsentAccepted((v) => !v)}
-                  testID="tucopramp-offramp-consent"
-                >
-                  <View
-                    style={[
-                      styles.consentCheckbox,
-                      consentAccepted && styles.consentCheckboxChecked,
-                    ]}
-                  >
-                    {consentAccepted && <Text style={styles.consentCheckmark}>✓</Text>}
-                  </View>
-                  <View style={styles.consentTextBlock}>
-                    <Text style={styles.consentLabel}>{t('tucopramp.consent.label')}</Text>
-                    <Text
-                      style={styles.consentLink}
-                      onPress={() => Linking.openURL(TUCOPRAMP_TERMS_URL)}
-                    >
-                      {t('tucopramp.consent.linkText')}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                <Button
-                  text={t('tucopramp.confirmSendCta')}
-                  onPress={onSubmitOrder}
-                  size={BtnSizes.FULL}
-                  type={BtnTypes.PRIMARY}
-                  disabled={!consentAccepted}
-                  testID="tucopramp-offramp-confirm"
-                />
+                <Text style={styles.breakdownValue}>{amountNum.toLocaleString('es-CO')} pesos</Text>
               </View>
-            )}
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>
+                  {t('tucopramp.breakdown.offrampCommission', {
+                    percent:
+                      amountNum > 0
+                        ? ((quote.fee_amount_cop / amountNum) * 100).toFixed(2)
+                        : '0.00',
+                  })}
+                </Text>
+                <Text style={styles.breakdownValue}>
+                  {quote.fee_amount_cop.toLocaleString('es-CO')} pesos
+                </Text>
+              </View>
+              {quote.fee_amount_cop === 0 && (
+                <View style={styles.coveredBadge}>
+                  <Text style={styles.coveredBadgeText}>
+                    {t('tucopramp.breakdown.coveredByTuCop')}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.breakdownDivider} />
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownTotalLabel}>
+                  {t('tucopramp.breakdown.youReceive')}
+                </Text>
+                <Text style={styles.breakdownTotalValue}>
+                  {quote.net_amount_to_user_cop.toLocaleString('es-CO')} pesos
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.consentRow}
+              onPress={() => setConsentAccepted((v) => !v)}
+              testID="tucopramp-offramp-consent"
+            >
+              <View
+                style={[styles.consentCheckbox, consentAccepted && styles.consentCheckboxChecked]}
+              >
+                {consentAccepted && <Text style={styles.consentCheckmark}>✓</Text>}
+              </View>
+              <View style={styles.consentTextBlock}>
+                <Text style={styles.consentLabel}>{t('tucopramp.consent.label')}</Text>
+                <Text
+                  style={styles.consentLink}
+                  onPress={() => Linking.openURL(TUCOPRAMP_TERMS_URL)}
+                >
+                  {t('tucopramp.consent.linkText')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Button
+              text={t('tucopramp.confirmSendCta')}
+              onPress={onSubmitOrder}
+              size={BtnSizes.FULL}
+              type={BtnTypes.PRIMARY}
+              disabled={!consentAccepted}
+              testID="tucopramp-offramp-confirm"
+              style={styles.confirmCta}
+            />
           </View>
         )}
 
@@ -752,6 +802,10 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
     marginTop: Spacing.Smallest8,
   },
+  amountAlert: {
+    marginTop: Spacing.Smallest8,
+    marginBottom: Spacing.Smallest8,
+  },
   helperError: {
     ...typeScale.bodySmall,
     color: Colors.errorDark,
@@ -853,26 +907,65 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Tiny4,
     textDecorationLine: 'underline',
   },
-  quoteBox: {
-    backgroundColor: Colors.gray1,
-    borderRadius: 12,
-    padding: Spacing.Regular16,
+  confirmView: {
     marginTop: Spacing.Thick24,
   },
-  quoteLabel: {
-    ...typeScale.labelSemiBoldSmall,
-    color: Colors.gray4,
-    marginBottom: Spacing.Smallest8,
-  },
-  quoteAmount: {
-    ...typeScale.titleMedium,
-    color: Colors.black,
-    marginBottom: Spacing.Smallest8,
-  },
-  quoteFee: {
-    ...typeScale.bodySmall,
+  confirmSubtitle: {
+    ...typeScale.bodyMedium,
     color: Colors.gray4,
     marginBottom: Spacing.Regular16,
+  },
+  breakdownCard: {
+    backgroundColor: Colors.gray1,
+    borderRadius: Spacing.Small12,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: Spacing.Smallest8,
+  },
+  breakdownLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    flex: 1,
+    marginRight: Spacing.Small12,
+  },
+  breakdownValue: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.black,
+  },
+  breakdownDivider: {
+    height: 1,
+    backgroundColor: Colors.gray2,
+    marginVertical: Spacing.Smallest8,
+  },
+  breakdownTotalLabel: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.black,
+    flex: 1,
+    marginRight: Spacing.Small12,
+  },
+  breakdownTotalValue: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.primary,
+  },
+  coveredBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.successLight,
+    borderRadius: Spacing.Smallest8,
+    paddingHorizontal: Spacing.Small12,
+    paddingVertical: Spacing.Tiny4,
+    marginTop: Spacing.Tiny4,
+  },
+  coveredBadgeText: {
+    ...typeScale.labelSemiBoldXSmall,
+    color: Colors.successDark,
+  },
+  confirmCta: {
+    marginTop: Spacing.Regular16,
   },
   pickerTouchable: {
     padding: Spacing.Small12,
