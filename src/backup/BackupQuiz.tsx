@@ -3,7 +3,7 @@ import { chunk, flatMap, shuffle, times } from 'lodash'
 import * as React from 'react'
 import { Trans, WithTranslation } from 'react-i18next'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import { connect } from 'react-redux'
 import { setBackupCompleted } from 'src/account/actions'
 import { showError } from 'src/alert/actions'
@@ -233,7 +233,7 @@ export class BackupQuiz extends React.Component<Props, State> {
     const isQuizComplete = userChosenWords.length === mnemonicLength && mnemonicLength !== 0
     const mnemonicWordsToDisplay = mnemonicWordButtons.slice(0, MNEMONIC_BUTTONS_TO_DISPLAY)
     return (
-      <SafeAreaView style={styles.container}>
+      <Screen padding="Thick24" style={styles.justifyBetween}>
         <DevSkipButton nextScreen={Screens.BackupComplete} onSkip={this.onScreenSkip} />
         <>
           <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -292,7 +292,7 @@ export class BackupQuiz extends React.Component<Props, State> {
             <Text style={styles.skipButtonText}>{t('backupQuizSkip.skip')}</Text>
           </Touchable>
         </>
-      </SafeAreaView>
+      </Screen>
     )
   }
 }
@@ -356,10 +356,8 @@ function getShuffledWordSet(mnemonic: string) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  justifyBetween: {
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.Thick24,
     paddingBottom: Spacing.Thick24,
   },
   scrollContainer: {
