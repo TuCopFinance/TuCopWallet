@@ -117,7 +117,7 @@ export default function QRCodeDisplay(props: Props) {
             />
           </>
         ) : (
-          <View style={{ marginLeft: 33, marginRight: 33 }}>
+          <View style={styles.notificationWrap}>
             <InLineNotification
               variant={NotificationVariant.Info}
               description={description()}
@@ -159,47 +159,48 @@ export default function QRCodeDisplay(props: Props) {
         text={t('fiatExchangeFlow.exchange.copyAddress')}
         onPress={onPressCopy}
         icon={<CopyIcon color={colors.white} />}
-        iconMargin={12}
+        iconMargin={Spacing.Small12}
         iconPositionLeft={false}
         testID="copyButton"
         size={BtnSizes.FULL}
-        // Ensure the button wrapper takes full width within its container
-        // and add horizontal padding to align with other content.
-        style={{
-          width: '100%',
-          paddingHorizontal: Spacing.Regular16,
-          marginBottom: Spacing.Regular16,
-        }}
-        // Removed touchableStyle={{ width: '100%' }} as BtnSizes.FULL and the wrapper style should handle width.
+        style={styles.copyButton}
       />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+  },
   bottomContent: {
     paddingHorizontal: Spacing.Regular16,
     width: '100%',
-    marginTop: 120,
-    marginBottom: 16,
+    // 48pt breathing room below the header for BOTH mount contexts:
+    // ExchangeQR (stack header) and QRNavigator's Mi codigo tab
+    // (position:absolute QRTabBar overlaying the top ~60pt). Previous
+    // 120 was tuned for the tab-overlay case and looked oversized
+    // under the stack header (the ExchangeQR "Depositar" screen).
+    marginTop: Spacing.XLarge48,
+    marginBottom: Spacing.Regular16,
+  },
+  notificationWrap: {
+    paddingHorizontal: Spacing.Regular16,
   },
   boldLink: {
     // Bold + underline + accent color -> unmistakably a tap target.
-    // Applied to the two Trans children in the informationText and the
-    // one child in informational so both surfaces render "red Celo"
-    // and the USDT contract as clickable links.
+    // Only the LINK spans use this style; the surrounding body text
+    // stays black so it reads as prose, not as one giant hyperlink.
     fontWeight: '600',
     textDecorationLine: 'underline',
     color: colors.accent,
   },
   description: {
     ...typeScale.bodyXSmall,
-  },
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: colors.white,
+    color: colors.black,
   },
   link: {
     ...typeScale.labelSemiBoldMedium,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qrContainer: {
-    marginTop: '5%',
+    marginTop: Spacing.Small12,
     marginBottom: Spacing.Thick24,
     // Do NOT tint the QR container - the SVG renders modules in
     // #000 for scanner compatibility (see StyledQRGen.tsx). A
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
   name: {
     ...typeScale.labelSemiBoldMedium,
     marginHorizontal: Spacing.Regular16,
-    marginBottom: 8,
+    marginBottom: Spacing.Smallest8,
     textAlign: 'center',
   },
   address: {
@@ -253,7 +254,16 @@ const styles = StyleSheet.create({
   },
   exchangeText: {
     ...typeScale.bodyMedium,
-    color: colors.accent,
+    // Body copy is black; the two <0>/<1> Trans children carry
+    // styles.boldLink and turn into accent-colored underlined links.
+    // Prior value (colors.accent applied to the whole text) made the
+    // entire paragraph read as one giant link.
+    color: colors.black,
     textAlign: 'center',
+  },
+  copyButton: {
+    width: '100%',
+    paddingHorizontal: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
   },
 })

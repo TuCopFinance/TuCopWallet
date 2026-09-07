@@ -1711,7 +1711,7 @@
       "exchangeAmountTitle": "Agregar {{currency}}",
       "selectProviderHeader": "Selecciona el método de pago",
       "selectProviderHeader_UK": "Datos del proveedor",
-      "depositExchangeTitle": "Depositar activo digital"
+      "depositExchangeTitle": "Depositar"
     },
     "cashOut": {
       "fiatExchangeTitle": "Retirar fondos",
@@ -1719,7 +1719,7 @@
       "selectCurrencyTitle": "Retirar fondos",
       "exchangeAmountTitle": "Retirar {{currency}}",
       "selectProviderHeader": "Selecciona el método de retiro",
-      "withdrawExchangeTitle": "Retirar activo digital"
+      "withdrawExchangeTitle": "Retirar"
     },
     "spend": {
       "fiatExchangeTitle": "Gastar fondos",

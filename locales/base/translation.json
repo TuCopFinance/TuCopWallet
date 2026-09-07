@@ -1706,7 +1706,7 @@
       "exchangeAmountTitle": "Add {{currency}}",
       "selectProviderHeader": "Select Payment Method",
       "selectProviderHeader_UK": "Provider Details",
-      "depositExchangeTitle": "Deposit Digital"
+      "depositExchangeTitle": "Deposit"
     },
     "cashOut": {
       "fiatExchangeTitle": "Withdraw Funds",
@@ -1714,7 +1714,7 @@
       "selectCurrencyTitle": "Withdraw Funds",
       "exchangeAmountTitle": "Withdraw {{currency}}",
       "selectProviderHeader": "Select Withdraw Method",
-      "withdrawExchangeTitle": "Withdraw Digital"
+      "withdrawExchangeTitle": "Withdraw"
     },
     "spend": {
       "fiatExchangeTitle": "Spend Funds",
