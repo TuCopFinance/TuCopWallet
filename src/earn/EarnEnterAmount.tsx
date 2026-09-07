@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, TextInput as RNTextInput, StyleSheet, Text, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { EarnEvents, SendEvents } from 'src/analytics/Events'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
@@ -421,7 +422,7 @@ function EarnEnterAmount({ route }: Props) {
   const dropdownEnabled = availableInputTokens.length > 1
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[
@@ -651,7 +652,7 @@ function EarnEnterAmount({ route }: Props) {
         title={t('sendEnterAmountScreen.selectToken')}
         titleStyle={styles.title}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -1104,9 +1105,6 @@ function SwapDetailsBottomSheet({
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
-    flex: 1,
-  },
   contentContainer: {
     paddingHorizontal: Spacing.Thick24,
     paddingTop: Spacing.Thick24,

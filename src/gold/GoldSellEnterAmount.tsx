@@ -4,7 +4,8 @@ import React, { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, StyleSheet, Text, TextInput as RNTextInput, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
@@ -275,7 +276,7 @@ export default function GoldSellEnterAmount(_props: Props) {
   // Only show empty state after balance has loaded and is actually zero
   if (!balanceLoading && xaut0Balance.isZero()) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Screen padding={0}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
           <GoldIconSelector size={64} />
@@ -289,12 +290,12 @@ export default function GoldSellEnterAmount(_props: Props) {
             testID="GoldSellEnterAmount/BuyGold"
           />
         </View>
-      </SafeAreaView>
+      </Screen>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}
@@ -444,7 +445,7 @@ export default function GoldSellEnterAmount(_props: Props) {
         title={t('goldFlow.sell.selectToken')}
         titleStyle={styles.title}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -454,10 +455,6 @@ GoldSellEnterAmount.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.Thick24,

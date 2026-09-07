@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import { SendEvents } from 'src/analytics/Events'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { ErrorMessages } from 'src/app/ErrorMessages'
@@ -172,9 +172,9 @@ function SendConfirmation(props: Props) {
   }
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      // No modal display on android so we set edges to undefined
+    <Screen
+      padding="Smallest8"
+      // No modal display on android so we fall back to the Screen default (top+bottom)
       edges={
         props.route.name === Screens.SendConfirmationModal && Platform.OS === 'ios'
           ? ['bottom']
@@ -228,15 +228,11 @@ function SendConfirmation(props: Props) {
           />
         </View>
       </ReviewFrame>
-    </SafeAreaView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: Spacing.Smallest8,
-  },
   feeContainer: {
     padding: Spacing.Regular16,
     paddingBottom: Spacing.Smallest8,

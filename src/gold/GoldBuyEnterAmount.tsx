@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, StyleSheet, Text, TextInput as RNTextInput, View } from 'react-native'
 import { getNumberFormatSettings } from 'react-native-localize'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { GoldEvents } from 'src/analytics/Events'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
@@ -412,18 +413,18 @@ export default function GoldBuyEnterAmount({ route }: Props) {
 
   if (!availableTokens.length) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Screen padding={0}>
         <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
         <View style={styles.emptyState}>
           <GoldIconSelector size={48} />
           <Text style={styles.emptyStateText}>{t('goldFlow.buy.noTokensForGold')}</Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.scrollContent, insetsStyle]}
@@ -589,7 +590,7 @@ export default function GoldBuyEnterAmount({ route }: Props) {
         title={t('goldFlow.buy.selectToken')}
         titleStyle={styles.title}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
@@ -599,10 +600,6 @@ GoldBuyEnterAmount.navigationOptions = {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.Thick24,

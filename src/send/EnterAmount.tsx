@@ -11,7 +11,8 @@ import {
   TextStyle,
 } from 'react-native'
 import { View } from 'react-native-animatable'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Screen from 'src/components/Screen'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { SendEvents } from 'src/analytics/Events'
 import BackButton from 'src/components/BackButton'
@@ -253,7 +254,7 @@ export default function EnterAmount({
     (disableBalanceCheck ? !!processedAmounts.token.bignum?.isZero() : !transactionIsPossible)
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'bottom']}>
+    <Screen padding={0}>
       <CustomHeader style={{ paddingHorizontal: Spacing.Thick24 }} left={<BackButton />} />
       <KeyboardAwareScrollView
         contentContainerStyle={[
@@ -400,14 +401,11 @@ export default function EnterAmount({
         title={t('sendEnterAmountScreen.selectToken')}
         titleStyle={styles.title}
       />
-    </SafeAreaView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
-    flex: 1,
-  },
   contentContainer: {
     paddingHorizontal: Spacing.Thick24,
     paddingTop: Spacing.Thick24,
