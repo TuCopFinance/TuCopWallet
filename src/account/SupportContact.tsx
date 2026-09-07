@@ -24,6 +24,7 @@ import { hooksPreviewApiUrlSelector } from 'src/positions/selectors'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
 import { anonymizedPhone } from 'src/utils/phoneNumbers'
 import { currentAccountSelector } from 'src/web3/selectors'
@@ -205,7 +206,7 @@ function SupportContact({ route }: Props) {
 
 const styles = StyleSheet.create({
   disclaimer: {
-    marginBottom: 24,
+    marginBottom: Spacing.Thick24,
   },
   disclaimerText: {
     ...typeScale.bodyMedium,
@@ -216,42 +217,42 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flexGrow: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.Regular16,
   },
   attachLogs: {
     flexShrink: 0,
     flexDirection: 'row',
     height: 40,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: Spacing.Tiny4,
   },
   logsSwitch: {
-    marginBottom: 3,
-    marginRight: 10,
+    marginBottom: Spacing.Tiny4,
+    marginRight: Spacing.Smallest8,
   },
   messageTextInput: {
     ...typeScale.bodyMedium,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    marginTop: 8,
+    paddingHorizontal: Spacing.Small12,
+    paddingVertical: Spacing.Tiny4,
+    marginTop: Spacing.Smallest8,
     alignItems: 'flex-start',
     borderColor: colors.black,
-    borderRadius: 8,
+    borderRadius: Spacing.Smallest8,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: Spacing.Regular16,
     color: colors.black,
     height: 80,
     maxHeight: 150,
   },
   singleLineTextInput: {
     ...typeScale.bodyMedium,
-    paddingHorizontal: 12,
-    marginTop: 8,
+    paddingHorizontal: Spacing.Small12,
+    marginTop: Spacing.Smallest8,
     alignItems: 'flex-start',
     borderColor: colors.black,
-    borderRadius: 8,
+    borderRadius: Spacing.Smallest8,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: Spacing.Regular16,
     color: colors.black,
     maxHeight: 50,
   },
@@ -259,11 +260,11 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldSmall,
   },
   loadingSpinnerContainer: {
-    marginVertical: 20,
+    marginVertical: Spacing.Thick24,
   },
   title: {
     ...typeScale.titleMedium,
-    marginVertical: 16,
+    marginVertical: Spacing.Regular16,
   },
 })
 

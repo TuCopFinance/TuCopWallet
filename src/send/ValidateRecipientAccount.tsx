@@ -31,6 +31,7 @@ import { RootState } from 'src/redux/reducers'
 import { TransactionDataInput } from 'src/send/types'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 
 const FULL_ADDRESS_PLACEHOLDER = '0xf1b1d5a6e7728g309c4a025k122d71ad75a61976'
 const PARTIAL_ADDRESS_PLACEHOLDER = ['a', '0', 'F', '4']
@@ -303,78 +304,78 @@ export class ValidateRecipientAccount extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.Regular16,
     justifyContent: 'space-between',
   },
   singleDigitInputContainer: {
     flexDirection: 'row',
   },
   singleDigitInputWrapper: {
-    paddingRight: 8,
+    paddingRight: Spacing.Smallest8,
   },
   codeHeader: {
     ...typeScale.labelSemiBoldSmall,
-    paddingVertical: 8,
+    paddingVertical: Spacing.Smallest8,
   },
   h2: {
     ...typeScale.titleSmall,
-    paddingVertical: 16,
+    paddingVertical: Spacing.Regular16,
   },
   button: {
-    paddingVertical: 16,
+    paddingVertical: Spacing.Regular16,
   },
   helpContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 24,
+    paddingBottom: Spacing.Thick24,
   },
   askHelpText: {
     ...typeScale.bodySmall,
-    paddingLeft: 8,
+    paddingLeft: Spacing.Smallest8,
     textDecorationLine: 'underline',
   },
   body: {
     ...typeScale.bodyMedium,
-    paddingBottom: 16,
+    paddingBottom: Spacing.Regular16,
   },
   modalBody: {
     ...typeScale.bodyMedium,
     textAlign: 'center',
-    paddingVertical: 8,
+    paddingVertical: Spacing.Smallest8,
   },
   modalHeader: {
     ...typeScale.titleSmall,
     textAlign: 'center',
-    paddingBottom: 4,
+    paddingBottom: Spacing.Tiny4,
   },
   modalBody2: {
     ...typeScale.bodySmall,
     textAlign: 'center',
     color: colors.gray4,
-    paddingVertical: 16,
-    paddingTop: 16,
+    paddingVertical: Spacing.Regular16,
+    paddingTop: Spacing.Regular16,
   },
   menuContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: Spacing.Smallest8,
   },
   menuCardContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.Smallest8,
   },
   menuText: {
     ...typeScale.bodySmall,
     color: colors.gray4,
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.Smallest8,
   },
   addressContainer: {
-    paddingVertical: 8,
+    paddingVertical: Spacing.Smallest8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalButtonContainer: {
-    paddingVertical: 24,
+    paddingVertical: Spacing.Thick24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',

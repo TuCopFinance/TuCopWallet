@@ -26,6 +26,7 @@ import { StackParamList } from 'src/navigator/types'
 import { RootState } from 'src/redux/reducers'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 import Logger from 'src/utils/Logger'
 import { currentAccountSelector } from 'src/web3/selectors'
 
@@ -358,16 +359,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingHorizontal: Spacing.Thick24,
+    paddingBottom: Spacing.Thick24,
   },
   scrollContainer: {
-    paddingTop: 24,
+    paddingTop: Spacing.Thick24,
     flexGrow: 1,
   },
   bottomHalf: { flex: 1, justifyContent: 'center' },
   bodyText: {
-    marginTop: 20,
+    marginTop: Spacing.Regular16 + Spacing.Tiny4,
     ...typeScale.bodyMedium,
     color: colors.black,
     textAlign: 'center',
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   bodyTextBold: {
     ...typeScale.labelMedium,
     textAlign: 'center',
-    marginTop: 25,
+    marginTop: Spacing.Thick24,
   },
   chosenWordsContainer: {
     flexDirection: 'row',
@@ -385,10 +386,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   chosenWordWrapper: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginHorizontal: 3,
-    marginVertical: 4,
+    paddingVertical: Spacing.Tiny4,
+    paddingHorizontal: Spacing.Smallest8,
+    marginHorizontal: Spacing.Tiny4,
+    marginVertical: Spacing.Tiny4,
     minWidth: 55,
     borderWidth: 1,
     borderColor: colors.gray2,
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
     color: colors.gray5,
   },
   mnemonicButtonsContainer: {
-    marginTop: 24,
+    marginTop: Spacing.Thick24,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
@@ -420,31 +421,35 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.accent,
     overflow: 'hidden',
-    marginVertical: 4,
-    marginHorizontal: 4,
+    marginVertical: Spacing.Tiny4,
+    marginHorizontal: Spacing.Tiny4,
   },
   mnemonicWordButton: {
     borderRadius: 100,
     minWidth: 65,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.Regular16,
+    paddingVertical: Spacing.Smallest8,
   },
   mnemonicWordButonText: {
     textAlign: 'center',
     color: colors.accent,
   },
   backWord: {
-    paddingRight: 24,
-    paddingLeft: 16,
-    paddingVertical: 4,
+    paddingRight: Spacing.Thick24,
+    paddingLeft: Spacing.Regular16,
+    paddingVertical: Spacing.Tiny4,
   },
-  resetButton: { alignItems: 'center', padding: 24, marginTop: 8 },
+  resetButton: {
+    alignItems: 'center',
+    padding: Spacing.Thick24,
+    marginTop: Spacing.Smallest8,
+  },
   cancelButton: {
     color: colors.gray4,
   },
   skipButton: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: Spacing.Regular16,
   },
   skipButtonText: {
     ...typeScale.bodySmall,

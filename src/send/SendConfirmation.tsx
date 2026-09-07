@@ -29,6 +29,7 @@ import { usePrepareSendTransactions } from 'src/send/usePrepareSendTransactions'
 import DisconnectBanner from 'src/shared/DisconnectBanner'
 import colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
+import { Spacing } from 'src/styles/styles'
 import { useAmountAsUsd, useTokenInfo, useTokenToLocalAmount } from 'src/tokens/hooks'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
@@ -234,22 +235,22 @@ function SendConfirmation(props: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.Smallest8,
   },
   feeContainer: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: Spacing.Regular16,
+    paddingBottom: Spacing.Smallest8,
   },
   transferContainer: {
     alignItems: 'flex-start',
-    paddingBottom: 24,
+    paddingBottom: Spacing.Thick24,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   recipientInfoContainer: {
-    paddingLeft: 8,
+    paddingLeft: Spacing.Smallest8,
   },
   headerText: {
     ...typeScale.labelMedium,
@@ -265,17 +266,17 @@ const styles = StyleSheet.create({
   address: {
     ...typeScale.labelSmall,
     color: colors.gray5,
-    paddingRight: 4,
+    paddingRight: Spacing.Tiny4,
   },
   amount: {
     ...typeScale.titleLarge,
-    paddingVertical: 8,
+    paddingVertical: Spacing.Smallest8,
     color: colors.black,
   },
   amountSubscript: {
     ...typeScale.bodyMedium,
     color: colors.gray5,
-    paddingBottom: 16,
+    paddingBottom: Spacing.Regular16,
   },
 })
 
