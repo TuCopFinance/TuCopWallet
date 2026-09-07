@@ -576,12 +576,6 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
 
 Logger.info('Connecting to Celo mainnet')
 
-// BucksPay offramp constants
-export const BUCKSPAY_RECEIVER_ADDRESS = '0xB731D9D3840F5C237CB7CD091f6e0ff5f6562Dd0' as Address
-export const BUCKSPAY_CELO_NETWORK_ID = 6
-export const BUCKSPAY_API_BASE_URL = 'https://buckspay-webhook-production-ad81.up.railway.app'
-export const BUCKSPAY_WEB_APP_URL = 'https://app.buckspay.xyz/'
-
 // TuCOPRamp off-ramp / on-ramp constants (Pattern B: wallet talks to backend proxy).
 // The proxy strips the /api/tucopramp prefix and forwards to https://api.ramp.tucop.xyz/v1/p2p/*.
 // Wallet MUST sign the UPSTREAM path (/v1/p2p/<endpoint>), not the prefixed one.

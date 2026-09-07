@@ -181,16 +181,16 @@ describe('useTransactionInFlight', () => {
       () => useTransactionInFlight({ scopeToFlowKind: 'swap' }),
       { wrapper: makeWrapper(store) }
     )
-    const { result: buckspayHook } = renderHook(
-      () => useTransactionInFlight({ scopeToFlowKind: 'buckspay' }),
+    const { result: goldHook } = renderHook(
+      () => useTransactionInFlight({ scopeToFlowKind: 'gold' }),
       { wrapper: makeWrapper(store) }
     )
 
     void act(() => {
-      swapHook.current.start({ ...baseStartArgs, flowKind: 'buckspay' })
+      swapHook.current.start({ ...baseStartArgs, flowKind: 'gold' })
     })
 
     expect(swapHook.current.current).toBeNull()
-    expect(buckspayHook.current.current?.flowKind).toBe('buckspay')
+    expect(goldHook.current.current?.flowKind).toBe('gold')
   })
 })

@@ -4,7 +4,6 @@ import { sleep } from 'src/utils/sleep'
 import { REHYDRATE } from 'redux-persist'
 import { Actions as AccountActions } from 'src/account/actions'
 import { accountSaga } from 'src/account/saga'
-import { bucksPaySaga } from 'src/buckspay/saga'
 import { devModeSelector } from 'src/account/selectors'
 import { analyticsSaga } from 'src/analytics/saga'
 import { Actions as AppActions } from 'src/app/actions'
@@ -154,7 +153,6 @@ export function* rootSaga() {
     yield* spawn(pointsSaga)
     yield* spawn(earnSaga)
     yield* spawn(neeruSaga)
-    yield* spawn(bucksPaySaga)
     yield* spawn(tucoprampSaga)
     yield* spawn(goldSaga)
   } catch (error) {

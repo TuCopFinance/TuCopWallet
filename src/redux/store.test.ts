@@ -143,7 +143,7 @@ describe('store state', () => {
       {
         "_persist": {
           "rehydrated": true,
-          "version": 254,
+          "version": 255,
         },
         "account": {
           "acceptedTerms": false,
@@ -214,15 +214,6 @@ describe('store state', () => {
           "showSwapMenuInDrawerMenu": true,
           "supportedBiometryType": null,
           "walletConnectV2Enabled": true,
-        },
-        "buckspay": {
-          "bucksPayCode": null,
-          "bucksPayStatus": null,
-          "certificateUrl": null,
-          "error": null,
-          "flowStatus": "idle",
-          "lastBankDetails": null,
-          "transactionHash": null,
         },
         "dapps": {
           "activeDapp": null,

@@ -2,14 +2,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
     "definitions": {
-        "AccountType": {
-            "enum": [
-                "checking",
-                "nequi",
-                "savings"
-            ],
-            "type": "string"
-        },
         "ActiveDapp": {
             "additionalProperties": false,
             "properties": {
@@ -564,30 +556,6 @@
             ],
             "type": "object"
         },
-        "BankDetails": {
-            "additionalProperties": false,
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "accountType": {
-                    "$ref": "#/definitions/AccountType"
-                },
-                "bankCountry": {
-                    "type": "string"
-                },
-                "bankName": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "accountNumber",
-                "accountType",
-                "bankCountry",
-                "bankName"
-            ],
-            "type": "object"
-        },
         "BaseToken": {
             "additionalProperties": false,
             "properties": {
@@ -735,18 +703,6 @@
                     ]
                 }
             ]
-        },
-        "BucksPayFlowStatus": {
-            "enum": [
-                "checking-user",
-                "completed",
-                "error",
-                "idle",
-                "sending-crypto",
-                "submitting-to-api",
-                "tracking"
-            ],
-            "type": "string"
         },
         "CICOFlow": {
             "enum": [
@@ -5016,9 +4972,6 @@
                 "BackupPhrase",
                 "BackupQuiz",
                 "BidaliScreen",
-                "BucksPayBankForm",
-                "BucksPayConfirm",
-                "BucksPayStatus",
                 "CashInSuccess",
                 "ChooseYourAdventure",
                 "CoinbasePayScreen",
@@ -7040,75 +6993,6 @@
         "State_26": {
             "additionalProperties": false,
             "properties": {
-                "bucksPayCode": {
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                },
-                "bucksPayStatus": {
-                    "anyOf": [
-                        {
-                            "enum": [
-                                "FINISHED",
-                                "INPROGRESS",
-                                "PAYED",
-                                "PENDING",
-                                "STARTED"
-                            ],
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "certificateUrl": {
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                },
-                "error": {
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                },
-                "flowStatus": {
-                    "$ref": "#/definitions/BucksPayFlowStatus"
-                },
-                "lastBankDetails": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/BankDetails"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "transactionHash": {
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                }
-            },
-            "required": [
-                "bucksPayCode",
-                "bucksPayStatus",
-                "certificateUrl",
-                "error",
-                "flowStatus",
-                "lastBankDetails",
-                "transactionHash"
-            ],
-            "type": "object"
-        },
-        "State_27": {
-            "additionalProperties": false,
-            "properties": {
                 "banks": {
                     "anyOf": [
                         {
@@ -7251,7 +7135,7 @@
             ],
             "type": "object"
         },
-        "State_28": {
+        "State_27": {
             "additionalProperties": false,
             "properties": {
                 "buyStatus": {
@@ -7347,11 +7231,23 @@
             ],
             "type": "object"
         },
-        "State_29": {
+        "State_28": {
             "additionalProperties": false,
             "properties": {
                 "byFlow": {
                     "$ref": "#/definitions/Record<string,InFlightDescriptor>"
+                }
+            },
+            "required": [
+                "byFlow"
+            ],
+            "type": "object"
+        },
+        "State_29": {
+            "additionalProperties": false,
+            "properties": {
+                "byFlow": {
+                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
                 }
             },
             "required": [
@@ -7370,18 +7266,6 @@
             ]
         },
         "State_30": {
-            "additionalProperties": false,
-            "properties": {
-                "byFlow": {
-                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
-                }
-            },
-            "required": [
-                "byFlow"
-            ],
-            "type": "object"
-        },
-        "State_31": {
             "additionalProperties": false,
             "properties": {
                 "byAdapter": {
@@ -7666,9 +7550,6 @@
                         "BackupPhrase",
                         "BackupQuiz",
                         "BidaliScreen",
-                        "BucksPayBankForm",
-                        "BucksPayConfirm",
-                        "BucksPayStatus",
                         "CashInSuccess",
                         "ChooseYourAdventure",
                         "CoinbasePayScreen",
@@ -9286,9 +9167,6 @@
         "app": {
             "$ref": "#/definitions/State"
         },
-        "buckspay": {
-            "$ref": "#/definitions/State_26"
-        },
         "dapps": {
             "$ref": "#/definitions/State_16"
         },
@@ -9305,7 +9183,7 @@
             "$ref": "#/definitions/State_13"
         },
         "gold": {
-            "$ref": "#/definitions/State_28"
+            "$ref": "#/definitions/State_27"
         },
         "home": {
             "$ref": "#/definitions/State_5"
@@ -9376,7 +9254,7 @@
             "$ref": "#/definitions/State_4"
         },
         "sentTransactionLog": {
-            "$ref": "#/definitions/State_30"
+            "$ref": "#/definitions/State_29"
         },
         "swap": {
             "$ref": "#/definitions/State_19"
@@ -9385,13 +9263,13 @@
             "$ref": "#/definitions/State_15"
         },
         "transactionInFlight": {
-            "$ref": "#/definitions/State_29"
+            "$ref": "#/definitions/State_28"
         },
         "transactions": {
             "$ref": "#/definitions/State_6"
         },
         "tucopramp": {
-            "$ref": "#/definitions/State_27"
+            "$ref": "#/definitions/State_26"
         },
         "walletConnect": {
             "$ref": "#/definitions/State_14"
@@ -9400,7 +9278,7 @@
             "$ref": "#/definitions/State_7"
         },
         "wriFeeAdapterBootstrap": {
-            "$ref": "#/definitions/State_31"
+            "$ref": "#/definitions/State_30"
         }
     },
     "required": [
@@ -9408,7 +9286,6 @@
         "account",
         "alert",
         "app",
-        "buckspay",
         "dapps",
         "dollarsSpend",
         "earn",

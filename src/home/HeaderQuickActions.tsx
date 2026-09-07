@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
-import { bucksPayFlowStatusSelector } from 'src/buckspay/selectors'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
 import Receive from 'src/icons/tab-home/Receive'
@@ -11,7 +10,6 @@ import Recharge from 'src/icons/tab-home/Recharge'
 import Send from 'src/icons/tab-home/Send'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
-import { useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import Touchable from 'src/components/Touchable'
@@ -33,7 +31,6 @@ export default function HeaderQuickActions() {
   const { t } = useTranslation()
   const COPmToken = useCOPm()
   const USDTToken = useUSDT()
-  const bucksPayFlowStatus = useSelector(bucksPayFlowStatusSelector)
 
   const onPressSendMoney = () => {
     if (!COPmToken) return
@@ -58,11 +55,7 @@ export default function HeaderQuickActions() {
   }
 
   const onPressWithdraw = () => {
-    if (bucksPayFlowStatus === 'tracking' || bucksPayFlowStatus === 'submitting-to-api') {
-      navigate(Screens.BucksPayStatus)
-    } else {
-      navigate(Screens.SelectOfframpProvider)
-    }
+    navigate(Screens.SelectOfframpProvider)
   }
 
   return (

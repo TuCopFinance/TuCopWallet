@@ -64,7 +64,6 @@ const mockBalances = {
 function renderComponent(storeOverrides: RecursivePartial<RootState> = {}) {
   const store = createMockStore({
     ...mockBalances,
-    buckspay: { flowStatus: 'idle' },
     ...storeOverrides,
   })
   return render(
@@ -107,11 +106,5 @@ describe('HeaderQuickActions', () => {
     const { getByTestId } = renderComponent()
     fireEvent.press(getByTestId('Header/SpendMoney'))
     expect(navigate).toHaveBeenCalledWith(Screens.SelectOfframpProvider)
-  })
-
-  it('Tapping spend money routes to BucksPayStatus when a bucks-pay flow is in flight', () => {
-    const { getByTestId } = renderComponent({ buckspay: { flowStatus: 'tracking' } })
-    fireEvent.press(getByTestId('Header/SpendMoney'))
-    expect(navigate).toHaveBeenCalledWith(Screens.BucksPayStatus)
   })
 })

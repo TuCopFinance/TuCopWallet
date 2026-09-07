@@ -133,9 +133,6 @@ import VerificationCodeInputScreen from 'src/verify/VerificationCodeInputScreen'
 import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
-import BucksPayBankForm from 'src/buckspay/BucksPayBankForm'
-import BucksPayConfirm from 'src/buckspay/BucksPayConfirm'
-import BucksPayStatus from 'src/buckspay/BucksPayStatus'
 import SelectOfframpProvider from 'src/fiatExchanges/SelectOfframpProvider'
 import TuCOPRampOfframpFlow from 'src/tucopramp/TuCOPRampOfframpFlow'
 import TuCOPRampOnrampFlow from 'src/tucopramp/TuCOPRampOnrampFlow'
@@ -633,17 +630,6 @@ const bucksPayScreens = (Navigator: typeof Stack) => (
       component={SelectOfframpProvider}
       options={headerWithBackButton}
     />
-    <Navigator.Screen
-      name={Screens.BucksPayBankForm}
-      component={BucksPayBankForm}
-      options={headerWithBackButton}
-    />
-    <Navigator.Screen
-      name={Screens.BucksPayConfirm}
-      component={BucksPayConfirm}
-      options={headerWithBackButton}
-    />
-    <Navigator.Screen name={Screens.BucksPayStatus} component={BucksPayStatus} options={noHeader} />
     <Navigator.Screen
       name={Screens.TuCOPRampOfframpFlow}
       component={TuCOPRampOfframpFlow}

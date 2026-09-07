@@ -13,7 +13,6 @@ import { ErrorMessages } from 'src/app/ErrorMessages'
 import { coinbasePayEnabledSelector } from 'src/app/selectors'
 import BackButton from 'src/components/BackButton'
 import Dialog from 'src/components/Dialog'
-import ListItem from 'src/components/ListItem'
 import Touchable from 'src/components/Touchable'
 import { FETCH_FIATCONNECT_QUOTES } from 'src/config'
 import { CoinbasePaymentSection } from 'src/fiatExchanges/CoinbasePaymentSection'
@@ -38,7 +37,6 @@ import {
 import { fetchFiatConnectQuotes } from 'src/fiatconnect/slice'
 import InfoIcon from 'src/icons/status/InfoIcon'
 import Wallet from 'src/icons/navigator/Wallet'
-import BucksPayIcon from 'src/icons/features/BucksPayIcon'
 import {
   getDefaultLocalCurrencyCode,
   getLocalCurrencyCode,
@@ -63,7 +61,7 @@ import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { classifyHttpError } from 'src/sentry/classifyHttpError'
 import Logger from 'src/utils/Logger'
 import { navigateToURI } from 'src/utils/linking'
-import networkConfig, { COPM_TOKEN_ID_MAINNET, USDT_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import networkConfig from 'src/web3/networkConfig'
 import { currentAccountSelector } from 'src/web3/selectors'
 // import { uuidV4 } from 'web3-utils' // Transak disabled
 import {
@@ -122,8 +120,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   const appId: string | undefined = undefined
   const insets = useSafeAreaInsets()
 
-  const [isUSDT, setIsUSDT] = useState(false)
-  const [isCOPm, setCOPm] = useState(false)
   // const [transakLoading, setTransakLoading] = useState(false) // Transak disabled
 
   useEffect(() => {
@@ -136,14 +132,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
           fiatAmount,
         })
       )
-    }
-
-    if (tokenInfo.tokenId === USDT_TOKEN_ID_MAINNET) {
-      setIsUSDT(true)
-    }
-
-    if (tokenInfo.tokenId === COPM_TOKEN_ID_MAINNET) {
-      setCOPm(true)
     }
 
     Logger.debug(TAG, 'token info', tokenInfo)
@@ -333,70 +321,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
     <ScrollView contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, Spacing.Thick24) }}>
       <AmountSpentInfo {...route.params} />
 
-      <ListItem>
-        {/* BucksPay for COPm - Temporarily Disabled */}
-        {isCOPm && (
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: colors.gray1,
-              opacity: 0.7,
-            }}
-            testID="buckspay-disabled-copm"
-          >
-            <View style={styles.imageContainer}>
-              <BucksPayIcon size={32} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.newLabelText, { color: colors.gray4 }]}>Buckspay</Text>
-              <Text style={{ ...typeScale.labelSemiBoldXSmall, color: colors.warningDark }}>
-                {t('buckspay.temporarilyDisabled')}
-              </Text>
-              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4, marginTop: 2 }}>
-                {t('buckspay.comingSoonMessage')}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* BucksPay for USDT CashIn - Temporarily Disabled */}
-        {isUSDT && flow === CICOFlow.CashIn && (
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: colors.gray1,
-              opacity: 0.7,
-            }}
-            testID="buckspay-disabled-usdt"
-          >
-            <View style={styles.imageContainer}>
-              <BucksPayIcon size={32} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.newLabelText, { color: colors.gray4 }]}>Buckspay</Text>
-              <Text style={{ ...typeScale.labelSemiBoldXSmall, color: colors.warningDark }}>
-                {t('buckspay.temporarilyDisabled')}
-              </Text>
-              <Text style={{ ...typeScale.bodyXSmall, color: colors.gray4, marginTop: 2 }}>
-                {t('buckspay.comingSoonMessage')}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Transak disabled - only crypto wallet option available
+      {/* Transak disabled - only crypto wallet option available
         {isUSDT && (
           <Touchable onPress={handleIntechchainProviderPress} style={{ width: '100%' }}>
             <View
@@ -428,7 +353,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
           </Touchable>
         )}
         */}
-      </ListItem>
 
       {paymentMethodSections.map((paymentMethod) => (
         <PaymentMethodSection
@@ -612,7 +536,7 @@ function ExchangesSection({
     rightText = t('selectProviderScreen.viewExchanges')
   }
 
-  // For CashIn (DepositFrom), use card style like BucksPay
+  // For CashIn (DepositFrom), use card style like the primary provider
   if (exchangesText === SelectProviderExchangesText.DepositFrom) {
     return (
       <View testID="Exchanges" style={{ paddingHorizontal: 16, paddingTop: 12 }}>

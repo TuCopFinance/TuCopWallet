@@ -3904,6 +3904,17 @@ export const v254Schema = {
   },
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { buckspay: _v254Buckspay, ...v254SchemaWithoutBuckspay } = v254Schema as any
+
+export const v255Schema = {
+  ...v254SchemaWithoutBuckspay,
+  _persist: {
+    ...v254Schema._persist,
+    version: 255,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v254Schema as Partial<RootState>
+  return v255Schema as Partial<RootState>
 }

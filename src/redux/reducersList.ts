@@ -1,6 +1,5 @@
 import { reducer as account } from 'src/account/reducer'
 import { reducer as alert } from 'src/alert/reducer'
-import bucksPayReducer from 'src/buckspay/slice'
 import goldReducer from 'src/gold/slice'
 import { appReducer as app } from 'src/app/reducers'
 import dappsReducer from 'src/dapps/slice'
@@ -62,7 +61,6 @@ export const reducersList = {
   earn: earnReducer,
   neeru: neeruReducer,
   neeruConfig: neeruConfigReducer,
-  buckspay: bucksPayReducer,
   tucopramp: tucoprampReducer,
   gold: goldReducer,
   transactionInFlight: transactionInFlightReducer,

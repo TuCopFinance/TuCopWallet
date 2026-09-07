@@ -2,15 +2,7 @@ import type { ErrorClass } from 'src/lib/errors'
 import type { NetworkId } from 'src/transactions/types'
 import type { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 
-export type FlowKind =
-  | 'swap'
-  | 'dollarsSpend'
-  | 'send'
-  | 'buckspay'
-  | 'earn'
-  | 'gold'
-  | 'jumpstart'
-  | 'subsidy'
+export type FlowKind = 'swap' | 'dollarsSpend' | 'send' | 'earn' | 'gold' | 'jumpstart' | 'subsidy'
 
 export type InFlightStatus =
   | 'idle'

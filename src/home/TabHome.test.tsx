@@ -91,7 +91,6 @@ describe('TabHome', () => {
   function renderScreen(storeOverrides: RecursivePartial<RootState> = {}, screenParams = {}) {
     const store = createMockStore({
       ...mockBalances,
-      buckspay: { flowStatus: 'idle' },
       ...storeOverrides,
     })
 

@@ -10,8 +10,7 @@ export type BusinessFeature =
   | 'gold' // digital gold buy / sell (XAUt0)
   | 'swap' // any token-to-token swap
   | 'transactions' // generic tx send / receipt / feed
-  | 'buckspay' // COPm to COP off-ramp (legacy, being replaced by tucopramp)
-  | 'tucopramp' // COPm <-> COP semi-manual ramp via Bre-B (replaces buckspay)
+  | 'tucopramp' // COPm <-> COP semi-manual ramp via Bre-B (offramp + onramp)
   | 'jumpstart' // send-via-link
   | 'positions' // hooks-api positions fetch / trigger
   | 'reficolombia' // ReFi Colombia UBI claim flow (was 'subsidies' pre-1.118.14)
@@ -37,7 +36,6 @@ export type BusinessProvider =
   | 'uniswap-v4'
   | 'allbridge'
   | 'jumpstart'
-  | 'buckspay'
   | 'wri'
   | 'internal'
   | 'refi-colombia' // ReFi Colombia UBI provider (was 'refi-colombia-subsidies' pre-1.118.14)

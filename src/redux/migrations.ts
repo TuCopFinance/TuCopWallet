@@ -2161,4 +2161,14 @@ export const migrations = {
       },
     }
   },
+  255: (state: any) => {
+    // BucksPay teardown. The buckspay reducer, saga, screens, provider tile,
+    // sentry taxonomy entry and networkConfig constants were all deleted.
+    // Drop any persisted buckspay slice so the additionalProperties:false
+    // RootState schema validation stays happy on rehydrate for users
+    // upgrading from a version that had the slice.
+    if (!state || !('buckspay' in state)) return state
+    const { buckspay: _buckspay, ...rest } = state
+    return rest
+  },
 }
