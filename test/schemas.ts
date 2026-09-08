@@ -3892,6 +3892,7 @@ export const v254Schema = {
       activeOrderMissingMultisig: false,
       activeOrderDetail: null,
       lastPayout: null,
+      savedPayoutProfiles: [],
     },
     onramp: {
       status: 'idle',

@@ -88,6 +88,29 @@ export interface LastOfframpPayout {
   bre_b_key: string | null
 }
 
+// Locally cached offramp payout profile. The server does NOT expose the
+// per-order personal info (full_name / cedula / email) on the wallet-facing
+// OrderDetail schema, so the wallet builds its own destination-keyed cache
+// on every successful order creation. When the user starts a new order and
+// types a Bre-B key or a bank_account_number that matches a saved profile,
+// the personal info is overwritten with the ones tied to that specific
+// destination. This handles the "one wallet, many payout beneficiaries"
+// case (self + spouse + parent, each with their own name + cedula).
+// Match keys:
+//   - bre_b_key exact match, OR
+//   - bank_code + bank_account_number (full) exact match.
+export interface SavedPayoutProfile {
+  method: 'bank_account' | 'bre_b_key'
+  bre_b_key: string | null
+  bank_code: string | null
+  bank_account_type: string | null
+  bank_account_number: string | null
+  full_name: string
+  cedula: string
+  email: string
+  lastUsedAt: number
+}
+
 interface OfframpFlow extends FlowErrorMeta {
   status: OfframpFlowStatus
   lastQuote: QuoteResponse | null
@@ -122,6 +145,12 @@ interface OfframpFlow extends FlowErrorMeta {
   // instead of seeing a bare cancel button.
   activeOrderDetail: OrderDetail | null
   lastPayout: LastOfframpPayout | null
+  // Destination-keyed cache of past payouts, used to prefill personal info
+  // when the user re-types a Bre-B key or bank account from a previous
+  // order. Persisted across app restarts (see REHYDRATE). Capped at 10
+  // entries to bound AsyncStorage growth; oldest entry is dropped when a
+  // new one pushes the list past the cap.
+  savedPayoutProfiles: SavedPayoutProfile[]
 }
 
 interface OnrampFlow extends FlowErrorMeta {
@@ -198,6 +227,7 @@ const initialOfframp: OfframpFlow = {
   activeOrderMissingMultisig: false,
   activeOrderDetail: null,
   lastPayout: null,
+  savedPayoutProfiles: [],
 }
 
 const initialOnramp: OnrampFlow = {
@@ -402,6 +432,27 @@ export const slice = createSlice({
       // guard still catch double-broadcasts.
       state.offramp.activeCheckStatus = 'failed'
     },
+    // Upsert a payout profile keyed by destination (bre_b_key OR
+    // bank_code + bank_account_number). Called by submitOfframpOrderSaga
+    // right after apiCreateOfframpOrder returns 200. Dedupes on match:
+    // an incoming profile that shares the destination with an existing
+    // one replaces it (personal info can change over time and the newer
+    // submission wins), then the entry bubbles to the head of the array.
+    // Cap enforcement keeps the list bounded so AsyncStorage doesn't grow
+    // unbounded on power users.
+    offrampSavePayoutProfile: (state, action: PayloadAction<SavedPayoutProfile>) => {
+      const incoming = action.payload
+      const isSameDestination = (a: SavedPayoutProfile, b: SavedPayoutProfile) =>
+        a.method === b.method &&
+        (a.method === 'bre_b_key'
+          ? a.bre_b_key === b.bre_b_key
+          : a.bank_code === b.bank_code && a.bank_account_number === b.bank_account_number)
+      const filtered = state.offramp.savedPayoutProfiles.filter(
+        (p) => !isSameDestination(p, incoming)
+      )
+      const MAX_SAVED_PROFILES = 10
+      state.offramp.savedPayoutProfiles = [incoming, ...filtered].slice(0, MAX_SAVED_PROFILES)
+    },
 
     // On-ramp transitions
     onrampReset: (state) => {
@@ -503,6 +554,8 @@ export const slice = createSlice({
           ...state.offramp,
           pendingIdempotencyKey:
             rehydrated?.offramp?.pendingIdempotencyKey ?? state.offramp.pendingIdempotencyKey,
+          savedPayoutProfiles:
+            rehydrated?.offramp?.savedPayoutProfiles ?? state.offramp.savedPayoutProfiles,
         },
         onramp: {
           ...state.onramp,
@@ -539,6 +592,7 @@ export const {
   offrampActiveResumed,
   offrampNoActiveFound,
   offrampActiveCheckFailed,
+  offrampSavePayoutProfile,
   onrampReset,
   onrampQuoting,
   onrampQuoteReady,

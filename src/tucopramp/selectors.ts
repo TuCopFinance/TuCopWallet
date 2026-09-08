@@ -39,6 +39,8 @@ export const offrampActiveOrderMissingMultisigSelector = (state: RootState) =>
 export const offrampActiveOrderDetailSelector = (state: RootState) =>
   state.tucopramp.offramp.activeOrderDetail
 export const offrampLastPayoutSelector = (state: RootState) => state.tucopramp.offramp.lastPayout
+export const offrampSavedPayoutProfilesSelector = (state: RootState) =>
+  state.tucopramp.offramp.savedPayoutProfiles
 
 // On-ramp flow
 export const onrampStatusSelector = (state: RootState) => state.tucopramp.onramp.status

@@ -54,6 +54,7 @@ import {
   offrampProofUrlLoading,
   offrampQuoteReady,
   offrampQuoting,
+  offrampSavePayoutProfile,
   onrampAdvance,
   onrampCancelling,
   onrampCreatingOrder,
@@ -368,6 +369,37 @@ export function* submitOfframpOrderSaga(
   try {
     const order = yield* call(apiCreateOfframpOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(offrampOrderCreated(order))
+    // Persist the destination-keyed payout profile so a future order that
+    // targets the same Bre-B key or bank account can prefill the personal
+    // info (name, cedula, email) tied to THIS specific destination. The
+    // server never exposes per-order personal info on wallet-facing
+    // endpoints, so this local cache is the only source of truth for the
+    // "one wallet, many beneficiaries" case.
+    yield* put(
+      offrampSavePayoutProfile({
+        method: bodyWithFreshQuote.payout_method,
+        bre_b_key:
+          bodyWithFreshQuote.payout_method === 'bre_b_key'
+            ? (bodyWithFreshQuote.bre_b_key ?? null)
+            : null,
+        bank_code:
+          bodyWithFreshQuote.payout_method === 'bank_account'
+            ? (bodyWithFreshQuote.bank_code ?? null)
+            : null,
+        bank_account_type:
+          bodyWithFreshQuote.payout_method === 'bank_account'
+            ? (bodyWithFreshQuote.bank_account_type ?? null)
+            : null,
+        bank_account_number:
+          bodyWithFreshQuote.payout_method === 'bank_account'
+            ? (bodyWithFreshQuote.bank_account_number ?? null)
+            : null,
+        full_name: bodyWithFreshQuote.full_name,
+        cedula: bodyWithFreshQuote.cedula,
+        email: bodyWithFreshQuote.email ?? '',
+        lastUsedAt: Date.now(),
+      })
+    )
   } catch (err) {
     yield* put(offrampError(errorMeta(err)))
   }

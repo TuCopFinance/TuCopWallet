@@ -451,6 +451,7 @@ describe('store state', () => {
             "proofUrl": null,
             "proofUrlErrorCode": null,
             "proofUrlLoading": false,
+            "savedPayoutProfiles": [],
             "status": "idle",
           },
           "onramp": {
