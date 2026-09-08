@@ -1,11 +1,14 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
+import Clipboard from '@react-native-clipboard/clipboard'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Image,
   Linking,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +19,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Dialog from 'src/components/Dialog'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
@@ -39,19 +43,29 @@ import {
 } from 'src/tucopramp/validation'
 import {
   cancelOfframpOrder,
+  checkActiveOfframpOrder,
   fetchBanks,
   fetchOfframpProofUrl,
   fetchUserProfile,
   pollOfframpOrder,
   requestOfframpQuote,
+  sendOfframpDeposit,
   submitOfframpOrder,
 } from 'src/tucopramp/saga'
 import {
   banksSelector,
+  offrampActiveCheckStatusSelector,
+  offrampActiveOrderDetailSelector,
+  offrampActiveOrderIdSelector,
+  offrampActiveOrderMissingMultisigSelector,
   offrampCurrentOrderSelector,
+  offrampDepositTxErrorCodeSelector,
+  offrampDepositTxHashSelector,
+  offrampDepositTxStatusSelector,
   offrampErrorCodeSelector,
   offrampErrorRequestIdSelector,
   offrampErrorRetryAfterSecondsSelector,
+  offrampLastPayoutSelector,
   offrampLastQuoteSelector,
   offrampProofUrlErrorCodeSelector,
   offrampProofUrlLoadingSelector,
@@ -60,9 +74,18 @@ import {
 } from 'src/tucopramp/selectors'
 import { offrampReset } from 'src/tucopramp/slice'
 import { BankAccountType, PayoutMethod } from 'src/tucopramp/types'
+import { usePrepareSendTransactions } from 'src/send/usePrepareSendTransactions'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { useTokenInfo } from 'src/tokens/hooks'
+import { feeCurrenciesSelector } from 'src/tokens/selectors'
+import { NetworkId } from 'src/transactions/types'
+import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
+import { getSerializablePreparedTransaction } from 'src/viem/preparedTransactionSerialization'
+import Logger from 'src/utils/Logger'
+import { COPM_TOKEN_ID_MAINNET, networkIdToChainId } from 'src/web3/networkConfig'
+import { walletAddressSelector } from 'src/web3/selectors'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampOfframpFlow>
 
@@ -98,17 +121,75 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const [lastName, setLastName] = useState<string>('')
   const [openPicker, setOpenPicker] = useState<null | 'bank' | 'accountType'>(null)
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
+  const [cancelConfirmVisible, setCancelConfirmVisible] = useState<boolean>(false)
   const errorRetryAfterSeconds = useSelector(offrampErrorRetryAfterSecondsSelector)
   const errorRequestId = useSelector(offrampErrorRequestIdSelector)
+
+  const walletAddress = useSelector(walletAddressSelector)
+  const copmTokenInfo = useTokenInfo(COPM_TOKEN_ID_MAINNET)
+  const feeCurrencies = useSelector((state) =>
+    feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
+  )
+  const depositTxHash = useSelector(offrampDepositTxHashSelector)
+  const depositTxStatus = useSelector(offrampDepositTxStatusSelector)
+  const depositTxErrorCode = useSelector(offrampDepositTxErrorCodeSelector)
+  const activeCheckStatus = useSelector(offrampActiveCheckStatusSelector)
+  const activeOrderId = useSelector(offrampActiveOrderIdSelector)
+  const activeOrderMissingMultisig = useSelector(offrampActiveOrderMissingMultisigSelector)
+  const activeOrderDetail = useSelector(offrampActiveOrderDetailSelector)
+  const lastPayout = useSelector(offrampLastPayoutSelector)
+  const { prepareTransactionsResult, refreshPreparedTransactions, clearPreparedTransactions } =
+    usePrepareSendTransactions()
+  // Guards against dispatching sendOfframpDeposit twice for the same order
+  // when the component re-renders (usePrepareSendTransactions result updates,
+  // poll ticks, etc.). The saga is also takeLeading so a stray double-tap
+  // wouldn't broadcast twice either way; this ref keeps the UI honest.
+  const dispatchedSendOrderIdRef = useRef<string | null>(null)
+  const [autoSendError, setAutoSendError] = useState<string | null>(null)
+  const [activeReferenceCopied, setActiveReferenceCopied] = useState<boolean>(false)
+
+  // maxFeeAmount is expressed in the fee currency (COPm on Celo when the user
+  // pays fees with COPm). Since 1 COPm = 1 COP always, we render it directly
+  // as COP without any FX conversion.
+  const { maxFeeAmount, feeCurrency: feeTokenInfo } =
+    getFeeCurrencyAndAmounts(prepareTransactionsResult)
 
   useEffect(() => {
     dispatch(fetchBanks())
     dispatch(fetchUserProfile())
+    // Enforce one-active-order-at-a-time: ask the server whether the wallet
+    // already has an in-flight offramp order BEFORE the user starts filling
+    // the form. If there is one, the resume view takes over; if not, the
+    // fresh form path is unlocked.
+    dispatch(checkActiveOfframpOrder())
     return () => {
       dispatch(offrampReset())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Prefill payout section from the most recent completed order. Only runs
+  // when the user has not typed anything into those fields yet (to avoid
+  // stomping user input). The full bank_account_number is never prefilled -
+  // server returns only last_4 for privacy - so bank_account_number always
+  // starts empty for the user to re-enter.
+  useEffect(() => {
+    if (!lastPayout) return
+    if (lastPayout.method === 'bre_b_key') {
+      if (!breBKey && lastPayout.bre_b_key) {
+        setBreBKey(lastPayout.bre_b_key)
+        setPayoutMethod('bre_b_key')
+      }
+      return
+    }
+    if (lastPayout.method === 'bank_account') {
+      if (lastPayout.bank_code) setBankCode((prev) => (prev ? prev : lastPayout.bank_code!))
+      if (lastPayout.bank_account_type) {
+        setBankAccountType((prev) => prev || (lastPayout.bank_account_type as BankAccountType))
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastPayout?.method, lastPayout?.bank_code, lastPayout?.bre_b_key])
 
   useEffect(() => {
     if (banks && banks.length > 0 && !bankCode) {
@@ -133,6 +214,134 @@ function TuCOPRampOfframpFlow(_props: Props) {
     if (stillFresh || proofUrlLoading) return
     dispatch(fetchOfframpProofUrl({ orderId: order.order_id, kind: 'operator_outgoing' }))
   }, [status, order, proofUrl, proofUrlLoading, dispatch])
+
+  // Prepare the COPm transfer once the quote is ready so we can display the
+  // network fee in the breakdown card BEFORE the user hits Confirm. The real
+  // deposit address is only known after order creation, so we estimate against
+  // the wallet's own address (ERC-20 transfer gas is destination-independent
+  // for this purpose). This is an estimate, not the tx that gets sent.
+  useEffect(() => {
+    if (status !== 'quote-ready' || !quote || !copmTokenInfo || !walletAddress) {
+      return
+    }
+    clearPreparedTransactions()
+    refreshPreparedTransactions({
+      amount: new BigNumber(quote.gross_amount_copm),
+      token: copmTokenInfo,
+      recipientAddress: walletAddress,
+      walletAddress,
+      feeCurrencies,
+    }).catch(() => {
+      // Estimation failures are non-fatal: usePrepareSendTransactions already
+      // logs via its own onError. We just fall through and hide the network
+      // fee row when no result is available.
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, quote?.quote_id, walletAddress, copmTokenInfo?.tokenId])
+
+  // Once the order exists and we are in awaiting-deposit, re-prepare the tx
+  // against the REAL multisig address and auto-dispatch sendOfframpDeposit.
+  // The wallet is the depositor: the user already consented at the confirm
+  // step, so we broadcast the transfer on their behalf inside a saga that
+  // stays local to the offramp flow (no navigate-away to a generic
+  // TransactionSuccessScreen), then the existing poller moves the order to
+  // deposit-confirmed/processing/completed. The chain_id guard refuses to
+  // auto-send if the server ever returns anything other than Celo mainnet -
+  // the wallet is Celo-only so any other chain_id would mean the funds land
+  // on the wrong network.
+  const orderChainMatches =
+    !!order && order.chain_id === networkIdToChainId[NetworkId['celo-mainnet']]
+
+  useEffect(() => {
+    if (status !== 'awaiting-deposit' || !order || !copmTokenInfo || !walletAddress) {
+      return
+    }
+    if (!orderChainMatches) {
+      setAutoSendError('chain_mismatch')
+      return
+    }
+    if (dispatchedSendOrderIdRef.current === order.order_id) {
+      return
+    }
+    clearPreparedTransactions()
+    setAutoSendError(null)
+    refreshPreparedTransactions({
+      amount: new BigNumber(order.gross_amount_copm),
+      token: copmTokenInfo,
+      recipientAddress: order.multisig_address,
+      walletAddress,
+      feeCurrencies,
+    }).catch(() => {
+      setAutoSendError('prepare_failed')
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, order?.order_id, walletAddress, copmTokenInfo?.tokenId, orderChainMatches])
+
+  useEffect(() => {
+    if (
+      status !== 'awaiting-deposit' ||
+      !order ||
+      !copmTokenInfo ||
+      !walletAddress ||
+      !orderChainMatches ||
+      !prepareTransactionsResult ||
+      prepareTransactionsResult.type !== 'possible' ||
+      depositTxStatus === 'submitting' ||
+      depositTxStatus === 'submitted' ||
+      dispatchedSendOrderIdRef.current === order.order_id
+    ) {
+      return
+    }
+    const tx = prepareTransactionsResult.transactions[0]
+    if (!tx) return
+    // CRITICAL destination guard. The quote-ready estimation and the
+    // awaiting-deposit prepare share the same useAsyncCallback instance, so
+    // during the render cycle where the clear + refresh happen the cached
+    // result in the closure may still be the estimation's self-transfer
+    // (recipientAddress = walletAddress). Broadcasting that would send the
+    // user's COPm to themselves and register as "success". Refuse to sign
+    // anything whose destination is not the real multisig for THIS order.
+    // Requires a COPm ERC-20 transfer(to, amount) call: data must be at least
+    // 4 (selector) + 32 (padded address) = 68 bytes; bytes 4..36 are the
+    // recipient address, left-padded to 32.
+    const rawData = tx.data ?? ''
+    const dataHex = rawData.startsWith('0x') ? rawData.slice(2) : rawData
+    if (dataHex.length < 8 + 64) {
+      Logger.warn(
+        'tucopramp/deposit-guard',
+        'Prepared tx data too short to carry an ERC-20 transfer selector + recipient'
+      )
+      return
+    }
+    const recipientHex = '0x' + dataHex.slice(8 + 24, 8 + 64).toLowerCase()
+    const expectedHex = order.multisig_address.toLowerCase()
+    const toHex = (tx.to ?? '').toLowerCase()
+    const copmHex = COPM_TOKEN_ID_MAINNET.split(':')[1].toLowerCase()
+    if (toHex !== copmHex) {
+      Logger.warn(
+        'tucopramp/deposit-guard',
+        `Prepared tx target ${toHex} is not the COPm contract ${copmHex}. Refusing to sign.`
+      )
+      return
+    }
+    if (recipientHex !== expectedHex) {
+      Logger.warn(
+        'tucopramp/deposit-guard',
+        `Prepared tx recipient ${recipientHex} does not match multisig ${expectedHex}. Refusing to sign.`
+      )
+      return
+    }
+    dispatchedSendOrderIdRef.current = order.order_id
+    dispatch(
+      sendOfframpDeposit({
+        orderId: order.order_id,
+        multisigAddress: order.multisig_address,
+        amountCopm: order.gross_amount_copm,
+        serializablePreparedTransaction: getSerializablePreparedTransaction(tx),
+      })
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, order?.order_id, prepareTransactionsResult, depositTxStatus])
 
   const amountNum = useMemo(() => Number(amount) || 0, [amount])
   const limits = getCachedLimits()
@@ -198,12 +407,6 @@ function TuCOPRampOfframpFlow(_props: Props) {
     )
   }
 
-  const onCancelOrder = () => {
-    if (order?.order_id) {
-      dispatch(cancelOfframpOrder({ orderId: order.order_id }))
-    }
-  }
-
   const onStartOver = () => {
     dispatch(offrampReset())
   }
@@ -229,9 +432,158 @@ function TuCOPRampOfframpFlow(_props: Props) {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{t('tucopramp.offrampTitle')}</Text>
+        {/* Hide the outer page title when the missing-multisig block is on,
+            since that block already owns the H1. Prevents the double-title
+            stack. */}
+        {!(
+          activeCheckStatus === 'done' &&
+          !!activeOrderId &&
+          activeOrderMissingMultisig &&
+          status === 'awaiting-deposit'
+        ) && <Text style={styles.title}>{t('tucopramp.offrampTitle')}</Text>}
 
-        {(status === 'idle' || status === 'quoting') && (
+        {/* Hold the whole screen behind a spinner while we ask the server if
+            there is already an active order. Prevents the user from typing
+            into a fresh form that will get rejected once we know the truth. */}
+        {activeCheckStatus === 'checking' && status === 'idle' && (
+          <View style={styles.centered}>
+            <ActivityIndicator />
+            <Text style={styles.helper}>{t('tucopramp.checkingActiveOrder')}</Text>
+          </View>
+        )}
+
+        {/* Server has an active AWAITING_DEPOSIT order but the local slice
+            was wiped so we lack the multisig_address to broadcast. Renders
+            the full order detail (amount, payout, dates, reference id) so
+            the user knows what is open before they contact support. */}
+        {activeCheckStatus === 'done' &&
+          !!activeOrderId &&
+          activeOrderMissingMultisig &&
+          status === 'awaiting-deposit' &&
+          activeOrderDetail && (
+            <View style={styles.activeOrderRoot}>
+              <Text style={styles.activeOrderTitle}>{t('tucopramp.activeOrderExistsHeading')}</Text>
+              <Text style={styles.activeOrderSubtitle}>
+                {t('tucopramp.activeOrderMissingMultisigBody')}
+              </Text>
+
+              <View style={styles.activeOrderList}>
+                <View style={styles.activeOrderInlineRow}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.amountLabel')}
+                  </Text>
+                  <Text style={styles.activeOrderInlineValue}>
+                    {activeOrderDetail.gross_amount_cop.toLocaleString('es-CO')} pesos
+                  </Text>
+                </View>
+                <View style={styles.activeOrderRowDivider} />
+                <View style={styles.activeOrderInlineRow}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.netReceiveLabel')}
+                  </Text>
+                  <Text style={styles.activeOrderInlineValue}>
+                    {activeOrderDetail.net_amount_to_user_cop.toLocaleString('es-CO')} pesos
+                  </Text>
+                </View>
+                <View style={styles.activeOrderRowDivider} />
+
+                <View style={styles.activeOrderStackedBlock}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.destinationSection')}
+                  </Text>
+                  <Text style={styles.activeOrderStackedValue}>
+                    {activeOrderDetail.payout?.method === 'bre_b_key'
+                      ? t('tucopramp.activeOrder.payoutBreB', {
+                          key: activeOrderDetail.payout.bre_b_key ?? '',
+                        })
+                      : t('tucopramp.activeOrder.payoutBankAccount', {
+                          bank:
+                            banks?.find((b) => b.code === activeOrderDetail.payout?.bank_code)
+                              ?.display_name ??
+                            activeOrderDetail.payout?.bank_code ??
+                            '',
+                          last4: activeOrderDetail.payout?.bank_account_number_last_4 ?? '',
+                        })}
+                  </Text>
+                </View>
+                <View style={styles.activeOrderRowDivider} />
+
+                <View style={styles.activeOrderInlineRow}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.createdLabel')}
+                  </Text>
+                  <Text style={styles.activeOrderInlineValue}>
+                    {new Date(activeOrderDetail.created_at).toLocaleString('es-CO', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.activeOrderRowDivider} />
+                <View style={styles.activeOrderInlineRow}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.expiresLabel')}
+                  </Text>
+                  <Text style={styles.activeOrderInlineValue}>
+                    {new Date(activeOrderDetail.expires_at).toLocaleString('es-CO', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.activeOrderRowDivider} />
+
+                <View style={styles.activeOrderStackedBlock}>
+                  <Text style={styles.activeOrderInlineLabel}>
+                    {t('tucopramp.activeOrder.referenceSection')}
+                  </Text>
+                  <Text
+                    style={styles.activeOrderReferenceValue}
+                    selectable
+                    testID="tucopramp-active-order-reference-id"
+                  >
+                    {activeOrderDetail.id}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Clipboard.setString(activeOrderDetail.id)
+                      setActiveReferenceCopied(true)
+                      setTimeout(() => setActiveReferenceCopied(false), 2000)
+                    }}
+                    testID="tucopramp-active-order-reference-copy"
+                  >
+                    <Text style={styles.activeOrderCopyLink}>
+                      {activeReferenceCopied
+                        ? t('tucopramp.activeOrder.referenceCopied')
+                        : t('tucopramp.activeOrder.referenceCopy')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.activeOrderFooter}>
+                <InLineNotification
+                  variant={NotificationVariant.Info}
+                  description={t('tucopramp.activeOrderSupportHint')}
+                  style={styles.activeOrderNotice}
+                  testID="tucopramp-active-order-support-hint"
+                />
+                <Button
+                  text={t('tucopramp.backCta')}
+                  onPress={onCloseAndExit}
+                  size={BtnSizes.FULL}
+                  type={BtnTypes.PRIMARY}
+                  testID="tucopramp-offramp-active-back"
+                />
+              </View>
+            </View>
+          )}
+
+        {(status === 'idle' || status === 'quoting') && activeCheckStatus !== 'checking' && (
           <View>
             <Text style={styles.label}>{t('tucopramp.amountLabel')}</Text>
             <TextInput
@@ -442,43 +794,77 @@ function TuCOPRampOfframpFlow(_props: Props) {
           <View style={styles.confirmView}>
             <Text style={styles.confirmSubtitle}>{t('tucopramp.confirmSubtitle')}</Text>
 
-            <View style={styles.breakdownCard}>
-              <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>
-                  {t('tucopramp.breakdown.amountRequested')}
-                </Text>
-                <Text style={styles.breakdownValue}>{amountNum.toLocaleString('es-CO')} pesos</Text>
-              </View>
-              <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>
-                  {t('tucopramp.breakdown.offrampCommission', {
-                    percent:
-                      amountNum > 0
-                        ? ((quote.fee_amount_cop / amountNum) * 100).toFixed(2)
-                        : '0.00',
-                  })}
-                </Text>
-                <Text style={styles.breakdownValue}>
-                  {quote.fee_amount_cop.toLocaleString('es-CO')} pesos
-                </Text>
-              </View>
-              {quote.fee_amount_cop === 0 && (
-                <View style={styles.coveredBadge}>
-                  <Text style={styles.coveredBadgeText}>
-                    {t('tucopramp.breakdown.coveredByTuCop')}
-                  </Text>
+            {(() => {
+              // TuCop absorbs the fee whenever the net amount the user receives
+              // is greater than (gross - fee). Compute how much of the fee was
+              // covered so we can render the accounting row that makes the math
+              // add up: send - fee + (covered by TuCop) = you receive.
+              const coveredByTuCop = Math.max(
+                0,
+                quote.net_amount_to_user_cop - (amountNum - quote.fee_amount_cop)
+              )
+              // Network fee: only show when the estimated fee currency is COPm,
+              // so we can render "X pesos" without any FX conversion (1 COPm =
+              // 1 COP). If the fee currency is CELO or USDT for some reason,
+              // hide the row rather than mixing units.
+              const isFeeCopm = !!feeTokenInfo && feeTokenInfo.tokenId === COPM_TOKEN_ID_MAINNET
+              const networkFeeCop =
+                isFeeCopm && maxFeeAmount ? Math.ceil(maxFeeAmount.toNumber()) : null
+              return (
+                <View style={styles.breakdownCard}>
+                  <View style={styles.breakdownRow}>
+                    <Text style={styles.breakdownLabel}>
+                      {t('tucopramp.breakdown.amountToSend')}
+                    </Text>
+                    <Text style={styles.breakdownValue}>
+                      {amountNum.toLocaleString('es-CO')} pesos
+                    </Text>
+                  </View>
+                  <View style={styles.breakdownRow}>
+                    <Text style={styles.breakdownLabel}>
+                      {t('tucopramp.breakdown.offrampCommission', {
+                        percent:
+                          amountNum > 0
+                            ? ((quote.fee_amount_cop / amountNum) * 100).toFixed(2)
+                            : '0.00',
+                      })}
+                    </Text>
+                    <Text style={styles.breakdownValue}>
+                      {quote.fee_amount_cop.toLocaleString('es-CO')} pesos
+                    </Text>
+                  </View>
+                  {networkFeeCop !== null && (
+                    <View style={styles.breakdownRow}>
+                      <Text style={styles.breakdownLabel}>
+                        {t('tucopramp.breakdown.networkFee')}
+                      </Text>
+                      <Text style={styles.breakdownValue}>
+                        {networkFeeCop.toLocaleString('es-CO')} pesos
+                      </Text>
+                    </View>
+                  )}
+                  {coveredByTuCop > 0 && (
+                    <View style={styles.breakdownRow}>
+                      <Text style={styles.breakdownLabel}>
+                        {t('tucopramp.breakdown.assumedByTuCop')}
+                      </Text>
+                      <Text style={styles.breakdownValueNegative}>
+                        -{coveredByTuCop.toLocaleString('es-CO')} pesos
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.breakdownDivider} />
+                  <View style={styles.breakdownRow}>
+                    <Text style={styles.breakdownTotalLabel}>
+                      {t('tucopramp.breakdown.youReceive')}
+                    </Text>
+                    <Text style={styles.breakdownTotalValue}>
+                      {quote.net_amount_to_user_cop.toLocaleString('es-CO')} pesos
+                    </Text>
+                  </View>
                 </View>
-              )}
-              <View style={styles.breakdownDivider} />
-              <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownTotalLabel}>
-                  {t('tucopramp.breakdown.youReceive')}
-                </Text>
-                <Text style={styles.breakdownTotalValue}>
-                  {quote.net_amount_to_user_cop.toLocaleString('es-CO')} pesos
-                </Text>
-              </View>
-            </View>
+              )
+            })()}
 
             <TouchableOpacity
               style={styles.consentRow}
@@ -526,24 +912,73 @@ function TuCOPRampOfframpFlow(_props: Props) {
             <View>
               <Text style={styles.statusHeading}>
                 {status === 'awaiting-deposit'
-                  ? t('tucopramp.awaitingDepositHeading')
+                  ? depositTxStatus === 'submitting'
+                    ? t('tucopramp.sendingDepositHeading')
+                    : depositTxStatus === 'submitted'
+                      ? t('tucopramp.depositSubmittedHeading')
+                      : t('tucopramp.preparingDepositHeading')
                   : t('tucopramp.processingHeading')}
               </Text>
               <Text style={styles.body}>
-                {t('tucopramp.awaitingDepositBody', {
+                {t('tucopramp.sendingDepositBody', {
                   amount: order.gross_amount_copm.toLocaleString('es-CO'),
                 })}
               </Text>
-              {status !== 'awaiting-deposit' && <ActivityIndicator style={styles.spinner} />}
-              {status === 'awaiting-deposit' && (
-                <Button
-                  text={t('tucopramp.cancelCta')}
-                  onPress={onCancelOrder}
-                  size={BtnSizes.FULL}
-                  type={BtnTypes.SECONDARY}
-                  testID="tucopramp-offramp-cancel"
+              {depositTxStatus !== 'failed' && <ActivityIndicator style={styles.spinner} />}
+              {!!depositTxHash && (
+                <TouchableOpacity
+                  onPress={() =>
+                    Linking.openURL(`https://celoscan.io/tx/${depositTxHash}`).catch(() => {
+                      Logger.warn(
+                        'tucopramp/deposit-hash-link',
+                        `Failed to open Celoscan for ${depositTxHash}`
+                      )
+                    })
+                  }
+                  style={styles.txHashRow}
+                  testID="tucopramp-offramp-deposit-tx-hash"
+                >
+                  <Text style={styles.txHashLabel}>{t('tucopramp.depositTxLabel')}</Text>
+                  <Text style={styles.txHashValue} numberOfLines={1} ellipsizeMode="middle">
+                    {depositTxHash}
+                  </Text>
+                  <Text style={styles.txHashLink}>{t('tucopramp.viewOnCeloscan')}</Text>
+                </TouchableOpacity>
+              )}
+              {!!autoSendError && (
+                <InLineNotification
+                  variant={NotificationVariant.Error}
+                  description={t('tucopramp.autoSendError')}
+                  style={styles.amountAlert}
+                  testID="tucopramp-offramp-auto-send-error"
                 />
               )}
+              {depositTxStatus === 'failed' && (
+                <InLineNotification
+                  variant={NotificationVariant.Error}
+                  description={t(
+                    `tucopramp.depositTxErrors.${depositTxErrorCode ?? 'broadcast_failed'}`,
+                    t('tucopramp.depositTxErrors.broadcast_failed')
+                  )}
+                  style={styles.amountAlert}
+                  testID="tucopramp-offramp-deposit-tx-error"
+                />
+              )}
+              {/* Cancel escape hatch: only while the deposit tx has NOT been
+                  broadcast (or has failed). Once the tx is in flight the
+                  server may confirm any second; hiding the button avoids
+                  users racing their own money into a 409. */}
+              {status === 'awaiting-deposit' &&
+                (depositTxStatus === 'idle' || depositTxStatus === 'failed') && (
+                  <Button
+                    text={t('tucopramp.cancelOrderButton')}
+                    onPress={() => setCancelConfirmVisible(true)}
+                    type={BtnTypes.SECONDARY}
+                    size={BtnSizes.FULL}
+                    style={styles.cancelOrderButton}
+                    testID="tucopramp-offramp-cancel-order-button"
+                  />
+                )}
             </View>
           )}
 
@@ -660,6 +1095,24 @@ function TuCOPRampOfframpFlow(_props: Props) {
         onClose={() => setOpenPicker(null)}
         onSelect={setBankAccountType}
       />
+
+      <Dialog
+        isVisible={cancelConfirmVisible}
+        title={t('tucopramp.cancelConfirmTitle')}
+        actionText={t('tucopramp.cancelConfirmYes') ?? ''}
+        actionPress={() => {
+          setCancelConfirmVisible(false)
+          if (order?.order_id) {
+            dispatch(cancelOfframpOrder({ orderId: order.order_id }))
+          }
+        }}
+        secondaryActionText={t('tucopramp.cancelConfirmNo') ?? ''}
+        secondaryActionPress={() => setCancelConfirmVisible(false)}
+        onBackgroundPress={() => setCancelConfirmVisible(false)}
+        testID="tucopramp-offramp-cancel-confirm"
+      >
+        {t('tucopramp.cancelConfirmBody')}
+      </Dialog>
     </SafeAreaView>
   )
 }
@@ -778,6 +1231,11 @@ function PickerModal<T extends string>({
   )
 }
 
+// Platform-native monospace stack for the reference id in the active-order
+// card. iOS ships Menlo, Android maps 'monospace' to Droid Sans Mono. Falling
+// back to the OS default is more consistent than shipping a bundled font.
+const MONO_FONT = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' })
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
   content: { padding: Spacing.Thick24 },
@@ -806,6 +1264,66 @@ const styles = StyleSheet.create({
     marginTop: Spacing.Smallest8,
     marginBottom: Spacing.Smallest8,
   },
+  activeOrderRoot: {},
+  activeOrderTitle: {
+    ...typeScale.titleMedium,
+    color: Colors.black,
+    marginBottom: Spacing.Smallest8,
+  },
+  activeOrderSubtitle: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+    marginBottom: Spacing.Regular16,
+  },
+  activeOrderList: {
+    marginBottom: Spacing.Regular16,
+  },
+  activeOrderInlineRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.Small12,
+    gap: Spacing.Regular16,
+  },
+  activeOrderInlineLabel: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+  },
+  activeOrderInlineValue: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.black,
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+  activeOrderStackedBlock: {
+    paddingVertical: Spacing.Small12,
+  },
+  activeOrderStackedValue: {
+    ...typeScale.labelSemiBoldMedium,
+    color: Colors.black,
+    marginTop: Spacing.Tiny4,
+  },
+  activeOrderRowDivider: {
+    height: 1,
+    backgroundColor: Colors.gray2,
+  },
+  activeOrderReferenceValue: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
+    fontFamily: MONO_FONT,
+    marginTop: Spacing.Tiny4,
+    marginBottom: Spacing.Smallest8,
+  },
+  activeOrderCopyLink: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
+  },
+  activeOrderFooter: {
+    marginTop: Spacing.Regular16,
+  },
+  activeOrderNotice: {
+    marginBottom: Spacing.Regular16,
+  },
   helperError: {
     ...typeScale.bodySmall,
     color: Colors.errorDark,
@@ -821,6 +1339,27 @@ const styles = StyleSheet.create({
   spinner: { marginVertical: Spacing.Thick24 },
   ctaSpacer: { marginTop: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
+  cancelOrderButton: { marginTop: Spacing.Thick24 },
+  txHashRow: {
+    backgroundColor: Colors.gray1,
+    borderRadius: Spacing.Small12,
+    padding: Spacing.Regular16,
+    marginBottom: Spacing.Regular16,
+  },
+  txHashLabel: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    marginBottom: Spacing.Tiny4,
+  },
+  txHashValue: {
+    ...typeScale.bodySmall,
+    color: Colors.black,
+    marginBottom: Spacing.Tiny4,
+  },
+  txHashLink: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.primary,
+  },
   statusHeading: {
     ...typeScale.titleMedium,
     color: Colors.black,
@@ -937,6 +1476,10 @@ const styles = StyleSheet.create({
     ...typeScale.labelSemiBoldSmall,
     color: Colors.black,
   },
+  breakdownValueNegative: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.errorDark,
+  },
   breakdownDivider: {
     height: 1,
     backgroundColor: Colors.gray2,
@@ -951,18 +1494,6 @@ const styles = StyleSheet.create({
   breakdownTotalValue: {
     ...typeScale.labelSemiBoldMedium,
     color: Colors.primary,
-  },
-  coveredBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.successLight,
-    borderRadius: Spacing.Smallest8,
-    paddingHorizontal: Spacing.Small12,
-    paddingVertical: Spacing.Tiny4,
-    marginTop: Spacing.Tiny4,
-  },
-  coveredBadgeText: {
-    ...typeScale.labelSemiBoldXSmall,
-    color: Colors.successDark,
   },
   confirmCta: {
     marginTop: Spacing.Regular16,
