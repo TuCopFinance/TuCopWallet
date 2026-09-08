@@ -46,6 +46,9 @@ export interface TucopRampAuth {
 interface CallOpts {
   baseUrl?: string
   fetchImpl?: FetchImpl
+  // Test override for deterministic timestamp in the canonical signing
+  // string. Flows through to `signTucopRampRequest.now` unchanged.
+  now?: () => number
 }
 
 // ---------- Public endpoints (no wallet signature) ----------
@@ -214,6 +217,8 @@ export function createOnrampOrder(
 export interface ListOrdersParams {
   cursor?: string
   limit?: number
+  type?: 'offramp' | 'onramp'
+  status?: string
 }
 
 export function listOrders(
@@ -224,6 +229,8 @@ export function listOrders(
   const query = new URLSearchParams()
   if (params?.cursor) query.set('cursor', params.cursor)
   if (params?.limit !== undefined) query.set('limit', String(params.limit))
+  if (params?.type) query.set('type', params.type)
+  if (params?.status) query.set('status', params.status)
   const queryString = query.toString()
   return tucopRampFetch<OrdersListResponse>({
     method: 'GET',
