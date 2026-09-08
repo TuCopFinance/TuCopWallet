@@ -2,6 +2,8 @@ import * as Sentry from '@sentry/react-native'
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo'
 import { AppState, AppStateStatus } from 'react-native'
 import { SENTRY_ENABLED } from 'src/config'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import Logger from 'src/utils/Logger'
 
 // Global side-band context installer for Sentry. Wires OS-level signals
@@ -120,6 +122,31 @@ function installAppStateContext(): () => void {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noopTeardown = (): void => {}
 
+// Seed the feature_gates context immediately with the fallback defaults
+// baked into the wallet's Statsig wrapper (see src/statsig/index.ts). A
+// crash that happens BEFORE AppAnalytics.init() replaces this with the
+// live snapshot will still carry a cohort context - just one that
+// reflects the fallback defaults instead of the server-side values. The
+// `_source` field lets the Sentry dashboard tell fallback events apart
+// from live-snapshot events, which is the exact cohort you need when
+// looking at fatal-onerror in the initialization window (TUCOPWALLET-1P
+// class: PostHog / Statsig lib-internal throws during boot).
+function installFeatureGatesFallbackContext(): void {
+  try {
+    const snapshot: Record<string, boolean | string> = { _source: 'fallback' }
+    for (const gate of Object.values(StatsigFeatureGates)) {
+      try {
+        snapshot[`gate_${gate}`] = !!getFeatureGate(gate as StatsigFeatureGates)
+      } catch {
+        // A single gate lookup failure must not derail the snapshot.
+      }
+    }
+    Sentry.setContext('feature_gates', snapshot)
+  } catch (err) {
+    Logger.warn(TAG, 'feature_gates fallback snapshot failed', err)
+  }
+}
+
 export function installGlobalContextForSentry(): () => void {
   if (installed) {
     return noopTeardown
@@ -136,8 +163,12 @@ export function installGlobalContextForSentry(): () => void {
 
   const teardownNet = installNetInfoContext()
   const teardownAppState = installAppStateContext()
+  installFeatureGatesFallbackContext()
 
-  Logger.info(TAG, 'Global Sentry context installed (connectivity + app_state)')
+  Logger.info(
+    TAG,
+    'Global Sentry context installed (connectivity + app_state + feature_gates fallback)'
+  )
 
   return () => {
     teardownNet()
