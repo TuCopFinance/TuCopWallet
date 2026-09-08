@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingTop: Spacing.XLarge48,
+    paddingTop: Spacing.Regular16,
   },
 })
 
