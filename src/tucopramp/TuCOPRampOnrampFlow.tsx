@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import Dialog from 'src/components/Dialog'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import { launchImageLibrary } from 'react-native-image-picker'
 import type { ImagePickerResponse } from 'react-native-image-picker'
@@ -34,6 +35,7 @@ import {
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 import {
+  cancelOnrampOrder,
   fetchReceivingAccount,
   fetchUserProfile,
   pollOnrampOrder,
@@ -92,6 +94,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
+  const [cancelConfirmVisible, setCancelConfirmVisible] = useState<boolean>(false)
 
   useEffect(() => {
     // Defensive: the on-ramp entry in WithdrawSpend is already gated on
@@ -397,6 +400,25 @@ function TuCOPRampOnrampFlow(_props: Props) {
               type={BtnTypes.PRIMARY}
               testID="tucopramp-onramp-upload-proof"
             />
+            {/* Cancel escape hatch: on-ramp is cancelable only while status ===
+                AWAITING_PROOF. Server returns 409 order_not_cancelable if the
+                proof already uploaded and moved to AWAITING_REVIEW; the saga
+                treats that as a race and resumes the poll. */}
+            <Button
+              text={t('tucopramp.cancelOrderButton')}
+              onPress={() => setCancelConfirmVisible(true)}
+              size={BtnSizes.FULL}
+              type={BtnTypes.SECONDARY}
+              style={styles.cancelOrderButton}
+              testID="tucopramp-onramp-cancel-order-button"
+            />
+          </View>
+        )}
+
+        {status === 'cancelling' && (
+          <View style={styles.centered}>
+            <ActivityIndicator />
+            <Text style={styles.helper}>{t('tucopramp.cancelling')}</Text>
           </View>
         )}
 
@@ -449,6 +471,24 @@ function TuCOPRampOnrampFlow(_props: Props) {
           </View>
         )}
       </ScrollView>
+
+      <Dialog
+        isVisible={cancelConfirmVisible}
+        title={t('tucopramp.cancelConfirmTitle')}
+        actionText={t('tucopramp.cancelConfirmYes') ?? ''}
+        actionPress={() => {
+          setCancelConfirmVisible(false)
+          if (order?.order_id) {
+            dispatch(cancelOnrampOrder({ orderId: order.order_id }))
+          }
+        }}
+        secondaryActionText={t('tucopramp.cancelConfirmNo') ?? ''}
+        secondaryActionPress={() => setCancelConfirmVisible(false)}
+        onBackgroundPress={() => setCancelConfirmVisible(false)}
+        testID="tucopramp-onramp-cancel-confirm"
+      >
+        {t('tucopramp.cancelConfirmBody')}
+      </Dialog>
     </SafeAreaView>
   )
 }
@@ -489,6 +529,7 @@ const styles = StyleSheet.create({
   spinner: { marginVertical: Spacing.Thick24 },
   ctaSpacer: { marginTop: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
+  cancelOrderButton: { marginTop: Spacing.Regular16 },
   statusHeading: {
     ...typeScale.titleMedium,
     color: Colors.black,
