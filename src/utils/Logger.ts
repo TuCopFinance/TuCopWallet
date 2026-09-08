@@ -76,9 +76,11 @@ class Logger {
         errorMsg.toLowerCase().includes(networkError)
     )
 
-    // prevent genuine network errors from being sent to Sentry
+    // Console-only log when the error is either non-network or the network
+    // came back up before Logger.error fired. Logger does NOT forward to
+    // Sentry - business errors reach Sentry only through captureBusinessError
+    // (see .claude/rules/observability.md).
     if (!isNetworkError || (this.isNetworkConnected && isNetworkError)) {
-      // Error captured for logging purposes only
       const errorInfo = {
         tag,
         message: message?.toString(),
@@ -86,8 +88,6 @@ class Logger {
         source: 'Logger.error',
         networkConnected: this.isNetworkConnected,
       }
-
-      // Log the error info for debugging
       console.error('Logger captured error:', errorInfo)
     }
     console.error(

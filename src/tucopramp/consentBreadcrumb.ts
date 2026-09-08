@@ -20,6 +20,3 @@ export function addConsentBreadcrumb(flow: 'offramp' | 'onramp'): number {
   })
   return timestamp
 }
-
-// Renamed export kept for the alternate import name used in flow screens.
-export const addBusinessErrorBreadcrumb = addConsentBreadcrumb
