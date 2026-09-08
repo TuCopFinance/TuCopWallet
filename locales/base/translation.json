@@ -3366,6 +3366,9 @@
     "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
   },
   "tucopramp": {
+    "providerName": "TuCOP Ramp",
+    "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
+    "onrampEntrySubtitle": "Convert pesos in your bank account to digital pesos with TuCOP Ramp",
     "errors": {
       "wallet_linked_to_other_user": "This wallet is already linked to another user",
       "cedula_invalid_format": "Invalid ID",
@@ -3422,10 +3425,41 @@
     "amountAboveMax": "The maximum amount is {{max}} pesos",
     "confirmSubtitle": "Review the details before confirming the withdrawal",
     "breakdown": {
-      "amountRequested": "Requested amount",
+      "amountToSend": "Amount to send",
       "offrampCommission": "Withdrawal commission ({{percent}}%)",
-      "coveredByTuCop": "Covered by TuCop",
+      "assumedByTuCop": "Assumed by TuCop",
+      "networkFee": "Network fee",
       "youReceive": "You receive"
+    },
+    "checkingActiveOrder": "Checking your open orders...",
+    "activeOrderExistsHeading": "You already have an active order",
+    "activeOrderMissingMultisigBody": "You already have an order open with the operator. This wallet no longer has the deposit address for it, so you cannot resume the deposit from here.",
+    "activeOrderSupportHint": "Only the operator can cancel or refund an order. Contact support with the reference id below to close it or request a refund if you already sent your digital pesos.",
+    "backCta": "Back",
+    "activeOrder": {
+      "amountsSection": "Amounts",
+      "destinationSection": "Destination",
+      "datesSection": "Dates",
+      "referenceSection": "Reference id",
+      "amountLabel": "Amount to send",
+      "netReceiveLabel": "You would receive",
+      "payoutBankAccount": "{{bank}} account ending in {{last4}}",
+      "payoutBreB": "Bre-B key {{key}}",
+      "createdLabel": "Created",
+      "expiresLabel": "Expires",
+      "referenceCopy": "Copy reference id",
+      "referenceCopied": "Copied"
+    },
+    "preparingDepositHeading": "Preparing the transfer",
+    "sendingDepositHeading": "Sending your digital pesos",
+    "depositSubmittedHeading": "Deposit on the way",
+    "sendingDepositBody": "Sending {{amount}} digital pesos from your wallet. This takes a few seconds.",
+    "autoSendError": "Could not prepare the transfer. Try again or cancel the order.",
+    "depositTxLabel": "On-chain transaction",
+    "viewOnCeloscan": "View on Celoscan",
+    "depositTxErrors": {
+      "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
+      "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
     }
   }
 }
