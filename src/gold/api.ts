@@ -102,9 +102,18 @@ function isCircuitBreakerError(error: unknown): boolean {
 // can alert on the ratio without losing "the fetch itself succeeded".
 type GoldPriceSource = 'backend' | 'backend_stale' | 'dia_data' | 'fallback_hardcoded'
 
+// Emit as a breadcrumb rather than a persistent client-scope tag so a later
+// unrelated capture (e.g. a swap failure) does not carry the stale
+// gold_price_source from the last gold screen view. Sentry issue detail
+// still shows the recent source via the breadcrumb trail.
 function tagPriceSource(source: GoldPriceSource): void {
   if (!SENTRY_ENABLED) return
-  Sentry.setTag('gold_price_source', source)
+  Sentry.addBreadcrumb({
+    category: 'gold.price_source',
+    level: 'info',
+    message: `gold price source = ${source}`,
+    data: { source },
+  })
 }
 
 // Bucketed age so Sentry aggregations do not explode into per-second
@@ -231,10 +240,12 @@ export async function fetchGoldPriceFromApi(): Promise<GoldPriceData> {
     if (priceData.isStale) {
       tagPriceSource('backend_stale')
       if (SENTRY_ENABLED) {
-        Sentry.setTag(
-          'gold_price_stale_age_bucket',
-          bucketizeStaleAge(priceData.staleAgeSeconds ?? 0)
-        )
+        Sentry.addBreadcrumb({
+          category: 'gold.price_source',
+          level: 'info',
+          message: `gold price stale age = ${bucketizeStaleAge(priceData.staleAgeSeconds ?? 0)}`,
+          data: { staleAgeBucket: bucketizeStaleAge(priceData.staleAgeSeconds ?? 0) },
+        })
       }
     } else {
       tagPriceSource('backend')

@@ -27,7 +27,12 @@ export function* fetchNeeruMetaSaga() {
       // Baseline for the fallback-usage dashboard backend owns. Every
       // successful meta fetch resets the source tag on the current scope so
       // downstream events reflect that the runtime resolver is on 'backend'.
-      Sentry.setTag('neeru_meta_source', 'backend')
+      Sentry.addBreadcrumb({
+        category: 'neeru.meta_source',
+        level: 'info',
+        message: 'neeru meta source = backend',
+        data: { source: 'backend' },
+      })
     }
   } catch (e) {
     const error = ensureError(e)
@@ -37,7 +42,12 @@ export function* fetchNeeruMetaSaga() {
       // cache or hardcoded fallback. But we tag every subsequent event so
       // backend can correlate "fallback usage rate > 1% in 24h = backend
       // flaky" with the underlying meta-fetch failures.
-      Sentry.setTag('neeru_meta_source', 'fallback_pending')
+      Sentry.addBreadcrumb({
+        category: 'neeru.meta_source',
+        level: 'warning',
+        message: 'neeru meta source = fallback_pending',
+        data: { source: 'fallback_pending' },
+      })
       captureBusinessError(error, {
         feature: 'earn',
         provider: 'earn-vault',
@@ -90,7 +100,12 @@ export function* neeruConfigSaga() {
   if (SENTRY_ENABLED) {
     const rehydrated = yield* select((s: RootState) => s.neeruConfig)
     if (rehydrated.meta && rehydrated.metaSource === 'cache') {
-      Sentry.setTag('neeru_meta_source', 'cache')
+      Sentry.addBreadcrumb({
+        category: 'neeru.meta_source',
+        level: 'info',
+        message: 'neeru meta source = cache (rehydrated)',
+        data: { source: 'cache' },
+      })
     }
   }
   yield* put(fetchMetaStart())

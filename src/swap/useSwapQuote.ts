@@ -126,10 +126,19 @@ export function throwTransientError(status: number, bodyText: string): never {
 // backend introduced with the Uniswap V4 fallback; fall back to the
 // legacy swapProvider; ultimately 'unknown' when neither is present so
 // events remain visible on the dashboard even if the response is malformed.
+// Emit as breadcrumb rather than a persistent client-scope tag so an
+// unrelated later capture does not carry the stale swap_source from the
+// previous quote. Sentry issue detail still surfaces the source via the
+// breadcrumb trail on any swap-related failure.
 function tagSwapSource(response: FetchQuoteResponse): void {
   if (!SENTRY_ENABLED) return
   const source = response.details.source ?? response.details.swapProvider ?? 'unknown'
-  Sentry.setTag('swap_source', source)
+  Sentry.addBreadcrumb({
+    category: 'swap.source',
+    level: 'info',
+    message: `swap source = ${source}`,
+    data: { source },
+  })
 }
 
 export interface FetchSwapQuoteArgs {

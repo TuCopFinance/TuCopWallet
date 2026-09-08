@@ -13,6 +13,7 @@ jest.mock('src/sentry/captureBusinessError', () => ({
 
 jest.mock('@sentry/react-native', () => ({
   setTag: jest.fn(),
+  addBreadcrumb: jest.fn(),
 }))
 
 // SENTRY_ENABLED is read via `import { SENTRY_ENABLED } from 'src/config'`
@@ -29,6 +30,7 @@ const mockCaptureBusinessError = captureBusinessError as jest.MockedFunction<
   typeof captureBusinessError
 >
 const mockSetTag = Sentry.setTag as jest.MockedFunction<typeof Sentry.setTag>
+const mockAddBreadcrumb = Sentry.addBreadcrumb as jest.MockedFunction<typeof Sentry.addBreadcrumb>
 
 function jsonResponse(
   body: object,
@@ -65,6 +67,7 @@ beforeEach(() => {
   mockFetchWithTimeout.mockReset()
   mockCaptureBusinessError.mockReset()
   mockSetTag.mockReset()
+  mockAddBreadcrumb.mockReset()
 })
 
 describe('gold/api', () => {
@@ -146,7 +149,12 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'backend')
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ source: 'backend' }),
+        })
+      )
       expect(mockCaptureBusinessError).not.toHaveBeenCalled()
     })
 
@@ -166,7 +174,12 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'dia_data')
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ source: 'dia_data' }),
+        })
+      )
     })
 
     it('tags gold_price_source=fallback_hardcoded when all APIs fail', async () => {
@@ -177,7 +190,12 @@ describe('gold/api', () => {
       const { fetchGoldPriceWithFallback } = loadApi()
       await fetchGoldPriceWithFallback()
 
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'fallback_hardcoded')
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ source: 'fallback_hardcoded' }),
+        })
+      )
     })
 
     it('does NOT capture a business error when backend fails but DIA fallback succeeds', async () => {
@@ -271,11 +289,26 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_source', 'backend_stale')
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ source: 'backend_stale' }),
+        })
+      )
       // 342s falls in the 5-15min bucket (5*60=300 <= 342 < 15*60=900)
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_stale_age_bucket', '5-15min')
-      // Must NOT also tag the plain 'backend' variant (it's an either/or).
-      expect(mockSetTag).not.toHaveBeenCalledWith('gold_price_source', 'backend')
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ staleAgeBucket: '5-15min' }),
+        })
+      )
+      // Must NOT also emit the plain 'backend' variant (it's an either/or).
+      expect(mockAddBreadcrumb).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ source: 'backend' }),
+        })
+      )
     })
 
     it.each([
@@ -298,7 +331,12 @@ describe('gold/api', () => {
       const { fetchGoldPriceFromApi } = loadApi()
       await fetchGoldPriceFromApi()
 
-      expect(mockSetTag).toHaveBeenCalledWith('gold_price_stale_age_bucket', expectedBucket)
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'gold.price_source',
+          data: expect.objectContaining({ staleAgeBucket: expectedBucket }),
+        })
+      )
     })
 
     it('parses the x-provider-source header when backend serves a healthy fresh price', async () => {
