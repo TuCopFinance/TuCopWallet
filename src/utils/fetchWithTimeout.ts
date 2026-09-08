@@ -1,10 +1,10 @@
-import * as Sentry from '@sentry/react-native'
 import { FETCH_TIMEOUT_DURATION } from 'src/config'
 import {
   recordFailure,
   recordSuccess,
   shouldShortCircuit,
 } from 'src/lib/circuitBreaker/circuitBreaker'
+import { addRpcBreadcrumb } from 'src/sentry/breadcrumbs'
 
 const MAX_ATTEMPTS = 3
 const BASE_BACKOFF_MS = 250
@@ -34,18 +34,17 @@ function backoffDelayMs(attempt: number): number {
   return base + jitter
 }
 
+// Bridge into the canonical rpc.call breadcrumb category. Stamps host-only
+// URL so query strings never leak into Sentry, adds method + status +
+// durationMs when known. Called on every retry (attempt attempt) so an
+// eventual final failure lands with a trail of the retry cadence.
 function addRetryBreadcrumb(
-  circuitKey: string | null,
-  attempt: number,
-  data: { status?: number; error?: string }
+  url: string,
+  method: string,
+  data: { status?: number; error?: string; durationMs?: number }
 ): void {
   try {
-    Sentry.addBreadcrumb({
-      category: 'fetch',
-      level: 'warning',
-      message: `Retry attempt ${attempt} for ${circuitKey ?? 'unknown'}`,
-      data,
-    })
+    addRpcBreadcrumb(url, { method, ...data })
   } catch {
     // Sentry not initialized in tests; ignore.
   }
@@ -96,16 +95,19 @@ export const fetchWithTimeout = async (
     })
   }
 
+  const method = (options?.method ?? 'GET').toUpperCase()
   let lastResponse: Response | null = null
   let lastError: unknown = null
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const startedAt = Date.now()
     try {
       const response = await attemptFetch(url, options, duration)
+      const durationMs = Date.now() - startedAt
       if (response.status >= 500) {
         lastResponse = response
         if (circuitKey) recordFailure(circuitKey)
-        addRetryBreadcrumb(circuitKey, attempt + 1, { status: response.status })
+        addRetryBreadcrumb(url, method, { status: response.status, durationMs })
         if (attempt < MAX_ATTEMPTS - 1) {
           await sleep(backoffDelayMs(attempt))
           continue
@@ -114,12 +116,20 @@ export const fetchWithTimeout = async (
       }
       // 2xx, 3xx, 4xx: do not retry. 2xx clears breaker, others leave as-is.
       if (response.status < 400 && circuitKey) recordSuccess(circuitKey)
+      // Slow requests still land a breadcrumb so Sentry-side "receipt
+      // timeout" issues can point at slow-but-2xx upstreams. 4xx get
+      // logged unconditionally so a burst of 401s or 429s is visible.
+      if (response.status >= 400 || durationMs > 5000) {
+        addRetryBreadcrumb(url, method, { status: response.status, durationMs })
+      }
       return response
     } catch (err) {
+      const durationMs = Date.now() - startedAt
       lastError = err
       if (circuitKey) recordFailure(circuitKey)
-      addRetryBreadcrumb(circuitKey, attempt + 1, {
+      addRetryBreadcrumb(url, method, {
         error: (err as Error)?.message ?? String(err),
+        durationMs,
       })
       if (attempt < MAX_ATTEMPTS - 1) {
         await sleep(backoffDelayMs(attempt))
