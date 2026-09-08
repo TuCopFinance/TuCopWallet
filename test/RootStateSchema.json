@@ -2331,6 +2331,50 @@
             ],
             "type": "string"
         },
+        "LastOfframpPayout": {
+            "additionalProperties": false,
+            "properties": {
+                "bank_account_number_last_4": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "bank_account_type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "bank_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "bre_b_key": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "method": {
+                    "enum": [
+                        "bank_account",
+                        "bre_b_key"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "bank_account_number_last_4",
+                "bank_account_type",
+                "bank_code",
+                "bre_b_key",
+                "method"
+            ],
+            "type": "object"
+        },
         "LegStatus": {
             "additionalProperties": false,
             "properties": {
@@ -3294,9 +3338,158 @@
             },
             "type": "object"
         },
+        "OfframpDepositTxStatus": {
+            "enum": [
+                "failed",
+                "idle",
+                "submitted",
+                "submitting"
+            ],
+            "type": "string"
+        },
         "OfframpFlow": {
             "additionalProperties": false,
             "properties": {
+                "activeCheckStatus": {
+                    "enum": [
+                        "checking",
+                        "done",
+                        "failed",
+                        "idle"
+                    ],
+                    "type": "string"
+                },
+                "activeOrderDetail": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "created_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "expires_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                },
+                                "fee_absorbed_by": {
+                                    "enum": [
+                                        "tucop",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                },
+                                "fee_amount_cop": {
+                                    "type": "number"
+                                },
+                                "fee_percent": {
+                                    "type": "number"
+                                },
+                                "gross_amount_cop": {
+                                    "type": "number"
+                                },
+                                "gross_amount_copm": {
+                                    "type": "number"
+                                },
+                                "id": {
+                                    "description": "Format: uuid",
+                                    "type": "string"
+                                },
+                                "net_amount_to_user_cop": {
+                                    "type": "number"
+                                },
+                                "order_type": {
+                                    "enum": [
+                                        "offramp",
+                                        "onramp"
+                                    ],
+                                    "type": "string"
+                                },
+                                "payout": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "bank_account_number_last_4": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "bank_account_type": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "bank_code": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "bre_b_key": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "method": {
+                                            "enum": [
+                                                "bank_account",
+                                                "bre_b_key"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "method"
+                                    ],
+                                    "type": "object"
+                                },
+                                "proofs_available": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "updated_at": {
+                                    "description": "Format: date-time",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "created_at",
+                                "expires_at",
+                                "fee_absorbed_by",
+                                "fee_amount_cop",
+                                "fee_percent",
+                                "gross_amount_cop",
+                                "gross_amount_copm",
+                                "id",
+                                "net_amount_to_user_cop",
+                                "order_type",
+                                "proofs_available",
+                                "status",
+                                "updated_at"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "activeOrderId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "activeOrderMissingMultisig": {
+                    "type": "boolean"
+                },
                 "currentOrder": {
                     "anyOf": [
                         {
@@ -3338,6 +3531,21 @@
                         }
                     ]
                 },
+                "depositTxErrorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "depositTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "depositTxStatus": {
+                    "$ref": "#/definitions/OfframpDepositTxStatus"
+                },
                 "errorCode": {
                     "type": [
                         "null",
@@ -3360,6 +3568,16 @@
                     "type": [
                         "null",
                         "string"
+                    ]
+                },
+                "lastPayout": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/LastOfframpPayout"
+                        },
+                        {
+                            "type": "null"
+                        }
                     ]
                 },
                 "lastQuote": {
@@ -3456,11 +3674,19 @@
                 }
             },
             "required": [
+                "activeCheckStatus",
+                "activeOrderDetail",
+                "activeOrderId",
+                "activeOrderMissingMultisig",
                 "currentOrder",
+                "depositTxErrorCode",
+                "depositTxHash",
+                "depositTxStatus",
                 "errorCode",
                 "errorRequestId",
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
+                "lastPayout",
                 "lastQuote",
                 "pendingIdempotencyKey",
                 "proofUrl",
@@ -3679,6 +3905,7 @@
                 "awaiting-proof-upload",
                 "awaiting-review",
                 "cancelled",
+                "cancelling",
                 "completed",
                 "creating-order",
                 "error",

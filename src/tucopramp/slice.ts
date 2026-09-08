@@ -6,6 +6,7 @@ import {
   MeResponse,
   OfframpOrderResponse,
   OnrampOrderResponse,
+  OrderDetail,
   QuoteResponse,
   ReceivingAccountResponse,
   TucopRampLimits,
@@ -41,6 +42,7 @@ export type OnrampFlowStatus =
   | 'awaiting-review'
   | 'verifying'
   | 'completed'
+  | 'cancelling'
   | 'cancelled'
   | 'expired'
   | 'error'
@@ -65,6 +67,27 @@ interface FlowErrorMeta {
   errorRequestId: string | null
 }
 
+// Local state for the on-chain COPm deposit that the wallet broadcasts as
+// part of the offramp flow. The server does NOT expose the deposit tx hash
+// back through the wallet-facing GET /v1/p2p/orders/{id} endpoint (that field
+// only lives on AdminOrderDetail). So the wallet keeps the hash it got from
+// broadcasting locally and renders it as the user's on-chain receipt link.
+export type OfframpDepositTxStatus = 'idle' | 'submitting' | 'submitted' | 'failed'
+
+// Cached payout details from the user's most recent COMPLETED offramp order.
+// Used to prefill the payout section of a fresh form so the user does not
+// have to re-enter the same bank / Bre-B key every time. Populated by the
+// resume-check saga when it finds no active order but a recent completed one.
+// bank_account_number is intentionally NOT here - the server only returns
+// last_4 for privacy, so full account numbers must be re-entered.
+export interface LastOfframpPayout {
+  method: 'bank_account' | 'bre_b_key'
+  bank_code: string | null
+  bank_account_type: string | null
+  bank_account_number_last_4: string | null
+  bre_b_key: string | null
+}
+
 interface OfframpFlow extends FlowErrorMeta {
   status: OfframpFlowStatus
   lastQuote: QuoteResponse | null
@@ -79,6 +102,26 @@ interface OfframpFlow extends FlowErrorMeta {
   proofUrl: ProofUrl | null
   proofUrlLoading: boolean
   proofUrlErrorCode: string | null
+  depositTxHash: string | null
+  depositTxStatus: OfframpDepositTxStatus
+  depositTxErrorCode: string | null
+  // The server-side truth about whether the user has an already-active
+  // offramp order. Populated once per screen mount by checkActiveOfframpOrder.
+  // Enforces the "one active order at a time" invariant: if activeOrderId is
+  // set, the fresh-form path is hidden and the resume view is shown instead.
+  // activeOrderMissingMultisig flags the edge case where the server has an
+  // AWAITING_DEPOSIT order for us but the local slice was wiped (cold boot,
+  // reinstall) so we don't have the multisig_address needed to broadcast the
+  // deposit - user must cancel + retry.
+  activeCheckStatus: 'idle' | 'checking' | 'done' | 'failed'
+  activeOrderId: string | null
+  activeOrderMissingMultisig: boolean
+  // Full server-side detail of the active order. Populated by
+  // checkActiveOfframpOrder when resuming. Consumed by the UI to render the
+  // amount / payout / expiry card so the user can decide what to do with it
+  // instead of seeing a bare cancel button.
+  activeOrderDetail: OrderDetail | null
+  lastPayout: LastOfframpPayout | null
 }
 
 interface OnrampFlow extends FlowErrorMeta {
@@ -147,6 +190,14 @@ const initialOfframp: OfframpFlow = {
   proofUrl: null,
   proofUrlLoading: false,
   proofUrlErrorCode: null,
+  depositTxHash: null,
+  depositTxStatus: 'idle',
+  depositTxErrorCode: null,
+  activeCheckStatus: 'idle',
+  activeOrderId: null,
+  activeOrderMissingMultisig: false,
+  activeOrderDetail: null,
+  lastPayout: null,
 }
 
 const initialOnramp: OnrampFlow = {
@@ -289,6 +340,68 @@ export const slice = createSlice({
       state.offramp.proofUrlLoading = false
       state.offramp.proofUrlErrorCode = action.payload.code
     },
+    // On-chain deposit lifecycle, dispatched by sendOfframpDepositSaga. The
+    // hash is the ONLY on-chain reference the user gets - the server-facing
+    // GET /v1/p2p/orders/{id} response does not include incoming_tx_hash
+    // (that field lives on AdminOrderDetail, not P2POrderDetail), so the
+    // wallet is the sole source of truth for the deposit tx link.
+    offrampDepositSubmitting: (state) => {
+      state.offramp.depositTxStatus = 'submitting'
+      state.offramp.depositTxErrorCode = null
+    },
+    offrampDepositBroadcast: (state, action: PayloadAction<{ txHash: string }>) => {
+      state.offramp.depositTxStatus = 'submitted'
+      state.offramp.depositTxHash = action.payload.txHash
+      state.offramp.depositTxErrorCode = null
+    },
+    offrampDepositFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.offramp.depositTxStatus = 'failed'
+      state.offramp.depositTxErrorCode = action.payload.code
+    },
+    // Active-order check lifecycle. Dispatched by checkActiveOfframpOrderSaga
+    // on offramp screen mount to enforce the "one active order at a time"
+    // invariant server-side. See OfframpFlow.activeCheckStatus for details.
+    offrampActiveCheckStarted: (state) => {
+      state.offramp.activeCheckStatus = 'checking'
+      state.offramp.activeOrderMissingMultisig = false
+    },
+    offrampActiveResumed: (
+      state,
+      action: PayloadAction<{
+        detail: OrderDetail
+        currentOrder: OfframpOrderResponse | null
+        status: OfframpFlowStatus
+      }>
+    ) => {
+      state.offramp.activeCheckStatus = 'done'
+      state.offramp.activeOrderId = action.payload.detail.id
+      state.offramp.activeOrderDetail = action.payload.detail
+      state.offramp.status = action.payload.status
+      if (action.payload.currentOrder) {
+        state.offramp.currentOrder = action.payload.currentOrder
+        state.offramp.activeOrderMissingMultisig = false
+      } else {
+        // Server has an active AWAITING_DEPOSIT order but we lack the
+        // multisig_address (never created it locally, or slice was wiped).
+        // UI shows cancel-only in this case.
+        state.offramp.activeOrderMissingMultisig = true
+      }
+    },
+    offrampNoActiveFound: (
+      state,
+      action: PayloadAction<{ lastPayout: LastOfframpPayout | null }>
+    ) => {
+      state.offramp.activeCheckStatus = 'done'
+      state.offramp.activeOrderId = null
+      state.offramp.activeOrderMissingMultisig = false
+      state.offramp.lastPayout = action.payload.lastPayout
+    },
+    offrampActiveCheckFailed: (state) => {
+      // Fail-open: if the check fails (network, 5xx), don't block the user
+      // from creating a new order. Server-side idempotency + the deposit
+      // guard still catch double-broadcasts.
+      state.offramp.activeCheckStatus = 'failed'
+    },
 
     // On-ramp transitions
     onrampReset: (state) => {
@@ -325,6 +438,9 @@ export const slice = createSlice({
     },
     onrampAdvance: (state, action: PayloadAction<{ status: OnrampFlowStatus }>) => {
       state.onramp.status = action.payload.status
+    },
+    onrampCancelling: (state) => {
+      state.onramp.status = 'cancelling'
     },
     // Dispatched by the polling saga when it detects the specific regressive
     // transition AWAITING_REVIEW / VERIFYING -> AWAITING_PROOF, which the
@@ -416,6 +532,13 @@ export const {
   offrampProofUrlLoading,
   offrampProofUrlLoaded,
   offrampProofUrlFailed,
+  offrampDepositSubmitting,
+  offrampDepositBroadcast,
+  offrampDepositFailed,
+  offrampActiveCheckStarted,
+  offrampActiveResumed,
+  offrampNoActiveFound,
+  offrampActiveCheckFailed,
   onrampReset,
   onrampQuoting,
   onrampQuoteReady,
@@ -424,6 +547,7 @@ export const {
   onrampUploadingProof,
   onrampProofUploaded,
   onrampAdvance,
+  onrampCancelling,
   onrampProofRejectedForRetry,
   onrampError,
   cedulaUpdateReset,

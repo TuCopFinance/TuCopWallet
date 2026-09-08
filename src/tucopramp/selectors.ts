@@ -24,6 +24,21 @@ export const offrampProofUrlLoadingSelector = (state: RootState) =>
   state.tucopramp.offramp.proofUrlLoading
 export const offrampProofUrlErrorCodeSelector = (state: RootState) =>
   state.tucopramp.offramp.proofUrlErrorCode
+export const offrampDepositTxHashSelector = (state: RootState) =>
+  state.tucopramp.offramp.depositTxHash
+export const offrampDepositTxStatusSelector = (state: RootState) =>
+  state.tucopramp.offramp.depositTxStatus
+export const offrampDepositTxErrorCodeSelector = (state: RootState) =>
+  state.tucopramp.offramp.depositTxErrorCode
+export const offrampActiveCheckStatusSelector = (state: RootState) =>
+  state.tucopramp.offramp.activeCheckStatus
+export const offrampActiveOrderIdSelector = (state: RootState) =>
+  state.tucopramp.offramp.activeOrderId
+export const offrampActiveOrderMissingMultisigSelector = (state: RootState) =>
+  state.tucopramp.offramp.activeOrderMissingMultisig
+export const offrampActiveOrderDetailSelector = (state: RootState) =>
+  state.tucopramp.offramp.activeOrderDetail
+export const offrampLastPayoutSelector = (state: RootState) => state.tucopramp.offramp.lastPayout
 
 // On-ramp flow
 export const onrampStatusSelector = (state: RootState) => state.tucopramp.onramp.status
