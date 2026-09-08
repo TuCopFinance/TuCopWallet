@@ -220,4 +220,41 @@ describe('AppAnalytics', () => {
       'bdc761e455b9102eb141594eed7539166564fac4f8a249d19aa232b90e1bc457'
     )
   })
+
+  // Regression guard for the intentional design decision documented at
+  // .claude/rules/observability.md line 122:
+  //   > distinct_id = raw wallet address (intentional; if you're tempted
+  //   > to change this, don't).
+  //
+  // Changing PostHog identify to pass a hashed / opaque id would silently
+  // break every user-history join in PostHog dashboards (and any Sentry
+  // -> PostHog pivot via the sentryOpaqueId super-prop). This test breaks
+  // loud the moment identify() starts wrapping the userID.
+  it('passes raw wallet userID through to PostHog identify (no hashing)', async () => {
+    await AppAnalytics.init()
+    const mockPosthogIdentify = jest.fn()
+    // Attach a minimal posthogClient shim so the identify() PostHog branch
+    // fires. isPostHogSendable() checks state.app.analyticsEnabled (mocked
+    // above via getMockStoreData) and !isE2EEnv (production build here).
+    ;(AppAnalytics as any).posthogClient = {
+      identify: mockPosthogIdentify,
+      capture: jest.fn(),
+      screen: jest.fn().mockResolvedValue(undefined),
+      register: jest.fn().mockResolvedValue(undefined),
+      flush: jest.fn().mockResolvedValue(undefined),
+    }
+    const rawWallet = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+    AppAnalytics.identify(rawWallet, { some: 'trait' })
+    expect(mockPosthogIdentify).toHaveBeenCalledWith(
+      rawWallet,
+      expect.objectContaining({ some: 'trait' })
+    )
+    // Belt-and-suspenders: make sure it was NOT called with an opaque id
+    // (any hex string of length != 42, or a value that differs from the
+    // input) — those are the two ways someone might accidentally regress.
+    const firstArg = mockPosthogIdentify.mock.calls[0][0]
+    expect(firstArg).toBe(rawWallet)
+    expect(firstArg.length).toBe(42)
+    expect(firstArg.startsWith('0x')).toBe(true)
+  })
 })
