@@ -445,6 +445,11 @@ function TuCOPRampOnrampFlow(_props: Props) {
                   ? t('tucopramp.expired')
                   : t('tucopramp.cancelled')}
             </Text>
+            {status !== 'completed' && (
+              <Text style={styles.terminalBody}>
+                {status === 'expired' ? t('tucopramp.expiredBody') : t('tucopramp.cancelledBody')}
+              </Text>
+            )}
             <Button
               text={t('tucopramp.closeCta')}
               onPress={onCloseAndExit}
@@ -530,6 +535,13 @@ const styles = StyleSheet.create({
   ctaSpacer: { marginTop: Spacing.Thick24 },
   centered: { alignItems: 'center', paddingVertical: Spacing.Thick24 },
   cancelOrderButton: { marginTop: Spacing.Regular16 },
+  terminalBody: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+    textAlign: 'center',
+    marginBottom: Spacing.Thick24,
+    paddingHorizontal: Spacing.Regular16,
+  },
   statusHeading: {
     ...typeScale.titleMedium,
     color: Colors.black,

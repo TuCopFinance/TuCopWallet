@@ -3435,6 +3435,7 @@
     "activeOrderExistsHeading": "You already have an active order",
     "activeOrderMissingMultisigBody": "You already have an order open with the operator. This wallet no longer has the deposit address for it, so you cannot resume the deposit from here.",
     "activeOrderSupportHint": "Only the operator can cancel or refund an order. Contact support with the reference id below to close it or request a refund if you already sent your digital pesos.",
+    "activeOrderCancelHint": "You can cancel the order from here to free up your daily cap. If the deposit already left your wallet, you cannot cancel it: contact support with the reference id to request a refund.",
     "backCta": "Back",
     "activeOrder": {
       "amountsSection": "Amounts",
