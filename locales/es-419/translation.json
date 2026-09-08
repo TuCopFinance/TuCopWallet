@@ -3412,6 +3412,25 @@
     "breBKeyInvalid": "Formato no válido. Usa cédula, celular (10 dígitos que empiezan por 3), correo o alias @.",
     "cedulaLabel": "Cédula",
     "cedulaInvalid": "La cédula debe tener entre 6 y 10 dígitos.",
+    "documentTypeLabel": "Tipo de documento",
+    "documentTypePickerTitle": "Elige tu tipo de documento",
+    "documentValueLabel": "Número de documento",
+    "documentType": {
+      "CC": "Cédula de ciudadanía",
+      "CE": "Cédula de extranjería",
+      "TI": "Tarjeta de identidad",
+      "NUIP": "NUIP",
+      "NIT": "NIT",
+      "PAS": "Pasaporte"
+    },
+    "documentInvalid": {
+      "CC": "La cédula de ciudadanía debe tener entre 1 y 10 dígitos.",
+      "CE": "La cédula de extranjería debe tener entre 1 y 10 dígitos.",
+      "TI": "La tarjeta de identidad debe tener 10 u 11 dígitos.",
+      "NUIP": "El NUIP debe tener exactamente 10 dígitos.",
+      "NIT": "El NIT debe tener 9 dígitos, opcionalmente seguido de guion y dígito de verificación (por ejemplo 890903938 o 890903938-8).",
+      "PAS": "El pasaporte debe tener entre 5 y 20 caracteres alfanuméricos."
+    },
     "emailLabel": "Correo electrónico",
     "emailInvalid": "Correo no válido. Verifica que tenga @ y un dominio.",
     "accountNumberInvalid": "El número de cuenta debe tener entre 4 y 20 dígitos.",

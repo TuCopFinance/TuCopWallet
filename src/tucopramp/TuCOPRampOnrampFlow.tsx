@@ -17,6 +17,7 @@ import Dialog from 'src/components/Dialog'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
 import { launchImageLibrary } from 'react-native-image-picker'
 import type { ImagePickerResponse } from 'react-native-image-picker'
+import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -25,13 +26,19 @@ import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
-import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
+import { getCachedLimits } from 'src/tucopramp/limits'
+import { PickerModal } from 'src/tucopramp/PickerModal'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
 import {
-  MAX_CEDULA_LENGTH,
+  ALL_DOCUMENT_TYPES,
+  DocumentType,
+  MAX_DOCUMENT_LENGTH,
   MAX_NAME_LENGTH,
+  getDocumentAutoCapitalize,
+  getDocumentKeyboardType,
+  isValidDocument,
   isValidEmail,
-  sanitizeDigits,
+  sanitizeDocument,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 import {
@@ -89,11 +96,13 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const proofRejectedForRetry = useSelector(onrampProofRejectedForRetrySelector)
 
   const [amount, setAmount] = useState('')
+  const [documentType, setDocumentType] = useState<DocumentType>('CC')
   const [cedula, setCedula] = useState('')
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
+  const [docTypePickerOpen, setDocTypePickerOpen] = useState<boolean>(false)
   const [cancelConfirmVisible, setCancelConfirmVisible] = useState<boolean>(false)
 
   useEffect(() => {
@@ -124,13 +133,15 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const amountValid = amountNum >= limits.min_order_cop && amountNum <= limits.max_order_cop
   const firstNameValid = firstName.trim().length > 0
   const lastNameValid = lastName.trim().length > 0
-  const cedulaValid = isValidCedula(cedula)
+  const cedulaValid = isValidDocument(documentType, cedula)
   const emailValid = isValidEmail(email)
   const formValid = amountValid && cedulaValid && emailValid && firstNameValid && lastNameValid
 
   const onRequestQuote = () => {
     if (!formValid) return
-    dispatch(requestOnrampQuote({ gross_amount_cop: amountNum, cedula }))
+    dispatch(
+      requestOnrampQuote({ gross_amount_cop: amountNum, cedula, document_type: documentType })
+    )
   }
 
   const onSubmitOrder = () => {
@@ -140,6 +151,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
       submitOnrampOrder({
         body: {
           gross_amount_cop: amountNum,
+          document_type: documentType,
           cedula,
           full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
           email,
@@ -193,6 +205,15 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const onStartOver = () => {
     dispatch(onrampReset())
   }
+
+  const documentTypeOptions = useMemo(
+    () =>
+      ALL_DOCUMENT_TYPES.map((v) => ({
+        value: v,
+        label: t(`tucopramp.documentType.${v}`),
+      })),
+    [t]
+  )
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -271,18 +292,34 @@ function TuCOPRampOnrampFlow(_props: Props) {
               testID="tucopramp-onramp-lastname"
             />
 
-            <Text style={styles.label}>{t('tucopramp.cedulaLabel')}</Text>
+            <Text style={styles.label}>{t('tucopramp.documentTypeLabel')}</Text>
+            <TouchableOpacity
+              style={styles.pickerTouchable}
+              onPress={() => setDocTypePickerOpen(true)}
+              testID="tucopramp-onramp-doc-type-picker"
+              accessibilityRole="button"
+              disabled={status !== 'idle'}
+            >
+              <Text style={styles.pickerValue}>{t(`tucopramp.documentType.${documentType}`)}</Text>
+              <DownArrowIcon color={Colors.accent} strokeWidth={2} />
+            </TouchableOpacity>
+
+            <Text style={styles.label}>{t('tucopramp.documentValueLabel')}</Text>
             <TextInput
               style={styles.input}
-              keyboardType="numeric"
+              keyboardType={getDocumentKeyboardType(documentType)}
+              autoCapitalize={getDocumentAutoCapitalize(documentType)}
+              autoCorrect={false}
               value={cedula}
-              onChangeText={(v) => setCedula(sanitizeDigits(v, MAX_CEDULA_LENGTH))}
-              maxLength={MAX_CEDULA_LENGTH}
+              onChangeText={(v) => setCedula(sanitizeDocument(documentType, v))}
+              maxLength={MAX_DOCUMENT_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-onramp-cedula"
             />
             {cedula.length > 0 && !cedulaValid && (
-              <Text style={styles.helperError}>{t('tucopramp.cedulaInvalid')}</Text>
+              <Text style={styles.helperError}>
+                {t(`tucopramp.documentInvalid.${documentType}`)}
+              </Text>
             )}
 
             <Text style={styles.label}>{t('tucopramp.emailLabel')}</Text>
@@ -494,6 +531,19 @@ function TuCOPRampOnrampFlow(_props: Props) {
       >
         {t('tucopramp.cancelConfirmBody')}
       </Dialog>
+
+      <PickerModal<DocumentType>
+        visible={docTypePickerOpen}
+        title={t('tucopramp.documentTypePickerTitle')}
+        options={documentTypeOptions}
+        selectedValue={documentType}
+        testIdPrefix="tucopramp-onramp-doc-type-option"
+        onClose={() => setDocTypePickerOpen(false)}
+        onSelect={(v) => {
+          setDocumentType(v)
+          setCedula(sanitizeDocument(v, cedula))
+        }}
+      />
     </SafeAreaView>
   )
 }
@@ -525,6 +575,21 @@ const styles = StyleSheet.create({
   amountAlert: {
     marginTop: Spacing.Smallest8,
     marginBottom: Spacing.Smallest8,
+  },
+  pickerTouchable: {
+    padding: Spacing.Small12,
+    borderColor: Colors.gray2,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  pickerValue: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    flexShrink: 1,
   },
   helperError: {
     ...typeScale.bodySmall,

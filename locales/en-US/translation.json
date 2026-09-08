@@ -2937,6 +2937,25 @@
     "breBKeyInvalid": "Invalid format. Use ID number, phone (10 digits starting with 3), email or @ alias.",
     "cedulaLabel": "ID number",
     "cedulaInvalid": "The ID number must have between 6 and 10 digits.",
+    "documentTypeLabel": "Document type",
+    "documentTypePickerTitle": "Choose your document type",
+    "documentValueLabel": "Document number",
+    "documentType": {
+      "CC": "ID card (Cedula)",
+      "CE": "Foreign ID card",
+      "TI": "Minor ID card",
+      "NUIP": "NUIP",
+      "NIT": "NIT (company)",
+      "PAS": "Passport"
+    },
+    "documentInvalid": {
+      "CC": "The ID card number must have between 1 and 10 digits.",
+      "CE": "The foreign ID card number must have between 1 and 10 digits.",
+      "TI": "The minor ID card number must have 10 or 11 digits.",
+      "NUIP": "The NUIP must have exactly 10 digits.",
+      "NIT": "The NIT must have 9 digits, optionally followed by a hyphen and a check digit (e.g. 890903938 or 890903938-8).",
+      "PAS": "The passport must have between 5 and 20 alphanumeric characters."
+    },
     "emailLabel": "Email",
     "emailInvalid": "Invalid email. Check that it has @ and a domain.",
     "accountNumberInvalid": "The account number must have between 4 and 20 digits.",

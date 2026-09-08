@@ -1,13 +1,19 @@
 import {
+  ALL_DOCUMENT_TYPES,
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_CEDULA_LENGTH,
+  MAX_DOCUMENT_LENGTH,
   MAX_NAME_LENGTH,
   detectBreBKeyKind,
+  getDocumentAutoCapitalize,
+  getDocumentKeyboardType,
   isValidBankAccountNumber,
   isValidBreBKey,
+  isValidDocument,
   isValidEmail,
   isValidPersonName,
   sanitizeDigits,
+  sanitizeDocument,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 
@@ -130,5 +136,149 @@ describe('isValidBreBKey', () => {
 describe('MAX_CEDULA_LENGTH', () => {
   it('exports 10', () => {
     expect(MAX_CEDULA_LENGTH).toBe(10)
+  })
+})
+
+describe('ALL_DOCUMENT_TYPES', () => {
+  it('exposes the 6 openapi enum values', () => {
+    expect(ALL_DOCUMENT_TYPES).toEqual(['CC', 'CE', 'TI', 'NUIP', 'NIT', 'PAS'])
+  })
+
+  it('MAX_DOCUMENT_LENGTH matches the openapi cedula.maxLength cap (20)', () => {
+    expect(MAX_DOCUMENT_LENGTH).toBe(20)
+  })
+})
+
+describe('isValidDocument', () => {
+  describe('CC (Cedula Ciudadania) - historic 1-10 digit range', () => {
+    it.each([
+      ['1', true], // historic FIX: server accepts single digit
+      ['4321', true], // old-cedula pre-6-digit-reform, previously rejected
+      ['12', true],
+      ['1023456789', true],
+      ['12345678901', false], // 11 digits, over max
+      ['', false],
+      ['12a34', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('CC', input)).toBe(expected)
+    })
+  })
+
+  describe('CE (Cedula Extranjeria) - 1-10 digits', () => {
+    it.each([
+      ['1', true],
+      ['1023456789', true],
+      ['12345678901', false],
+      ['', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('CE', input)).toBe(expected)
+    })
+  })
+
+  describe('TI (Tarjeta Identidad) - 10 or 11 digits', () => {
+    it.each([
+      ['1234567890', true],
+      ['12345678901', true],
+      ['123456789', false], // 9 digits, under min
+      ['123456789012', false], // 12 digits, over max
+      ['', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('TI', input)).toBe(expected)
+    })
+  })
+
+  describe('NUIP - exactly 10 digits', () => {
+    it.each([
+      ['1023456789', true],
+      ['123456789', false],
+      ['12345678901', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('NUIP', input)).toBe(expected)
+    })
+  })
+
+  describe('NIT - 9 digits, optionally + "-" + 1 check digit', () => {
+    it.each([
+      ['890903938', true],
+      ['890903938-8', true],
+      ['890903938-0', true],
+      ['8909039388', false], // 10 digits pasted without hyphen, server rejects
+      ['890903938-', false], // trailing hyphen, no check digit
+      ['89090393-8', false], // 8 digits base + hyphen + check, under 9
+      ['890903938-88', false], // 2-digit check
+      ['', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('NIT', input)).toBe(expected)
+    })
+  })
+
+  describe('PAS (Passport) - 5-20 alphanumeric', () => {
+    it.each([
+      ['AB123456', true],
+      ['12345', true], // 5 digits, still passport-shaped per spec
+      ['A1', false], // under 5
+      ['A'.repeat(21), false], // over 20
+      ['AB-12', false], // hyphen not allowed
+      ['AB 12345', false], // space not allowed
+      ['', false],
+    ])('%s -> %s', (input, expected) => {
+      expect(isValidDocument('PAS', input)).toBe(expected)
+    })
+  })
+})
+
+describe('sanitizeDocument', () => {
+  it('CC: strips non-digits and truncates to 10', () => {
+    expect(sanitizeDocument('CC', '1.023.456.789')).toBe('1023456789')
+    expect(sanitizeDocument('CC', '99999999999999')).toBe('9999999999')
+    expect(sanitizeDocument('CC', 'CC 4321')).toBe('4321')
+  })
+
+  it('TI: strips non-digits and truncates to 11', () => {
+    expect(sanitizeDocument('TI', '12345678901234')).toBe('12345678901')
+  })
+
+  it('NUIP: strips non-digits and truncates to 10', () => {
+    expect(sanitizeDocument('NUIP', 'NUIP-1023456789')).toBe('1023456789')
+  })
+
+  it('NIT: keeps at most one trailing hyphen + 1 check digit', () => {
+    expect(sanitizeDocument('NIT', '890903938')).toBe('890903938')
+    expect(sanitizeDocument('NIT', '890903938-8')).toBe('890903938-8')
+    expect(sanitizeDocument('NIT', '890.903.938-8')).toBe('890903938-8')
+    // Only one hyphen tolerated (last one wins)
+    expect(sanitizeDocument('NIT', '890-903-938-8')).toBe('890903938-8')
+    // Extra digits after hyphen collapse to 1
+    expect(sanitizeDocument('NIT', '890903938-88')).toBe('890903938-8')
+    // Base gets capped at 9 digits
+    expect(sanitizeDocument('NIT', '89090393812345')).toBe('890903938')
+    expect(sanitizeDocument('NIT', '890903938-abc')).toBe('890903938')
+  })
+
+  it('PAS: alphanumeric, uppercase, truncated to 20', () => {
+    expect(sanitizeDocument('PAS', 'ab123456')).toBe('AB123456')
+    expect(sanitizeDocument('PAS', 'AB-123.456')).toBe('AB123456')
+    expect(sanitizeDocument('PAS', 'a'.repeat(30))).toBe('A'.repeat(20))
+  })
+})
+
+describe('getDocumentKeyboardType', () => {
+  it.each([
+    ['CC', 'numeric'],
+    ['CE', 'numeric'],
+    ['TI', 'numeric'],
+    ['NUIP', 'numeric'],
+    ['NIT', 'default'], // needs hyphen
+    ['PAS', 'default'], // needs letters
+  ] as const)('%s -> %s', (type, expected) => {
+    expect(getDocumentKeyboardType(type)).toBe(expected)
+  })
+})
+
+describe('getDocumentAutoCapitalize', () => {
+  it('PAS uses characters, everything else none', () => {
+    expect(getDocumentAutoCapitalize('PAS')).toBe('characters')
+    expect(getDocumentAutoCapitalize('CC')).toBe('none')
+    expect(getDocumentAutoCapitalize('NIT')).toBe('none')
   })
 })

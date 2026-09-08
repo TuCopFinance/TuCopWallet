@@ -912,6 +912,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/v1/admin/orders/{id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Cancel an unfunded order
+     * @description Closes an order the user never funded: offramp in AWAITING_DEPOSIT, onramp in AWAITING_PROOF. Restricted to superadmin because it terminates an order the user may still have open, with no undo. Once funds have arrived the order is no longer cancelable and must be completed, rejected or refunded instead. No claim is required, since a claim cannot be held before a deposit exists. The reason is recorded on the order and in the audit log, and cancelled_by_operator_id distinguishes this from a user-initiated cancel.
+     */
+    post: operations['adminCancelOrder']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/admin/orders/{id}/note': {
     parameters: {
       query?: never
@@ -1513,6 +1533,8 @@ export interface components {
       /** Format: uuid */
       user_id: string
       full_name: string
+      /** @enum {string} */
+      document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
       cedula_last_4: string | null
       /** Format: email */
       primary_email: string | null
@@ -1521,6 +1543,8 @@ export interface components {
     }
     P2PPatchCedulaRequest: {
       new_cedula: string
+      /** @enum {string} */
+      new_document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
       reason: string
     }
     P2PPatchCedulaResponse: {
@@ -1537,10 +1561,14 @@ export interface components {
       /** @enum {string} */
       bank_account_type?: 'savings' | 'checking'
       cedula: string
+      /** @enum {string} */
+      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
     }
     P2POnrampQuoteRequest: {
       gross_amount_cop: number
       cedula: string
+      /** @enum {string} */
+      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
     }
     P2PQuoteResponse: {
       quote_id: string
@@ -1560,6 +1588,8 @@ export interface components {
     P2POfframpOrderRequest: {
       gross_amount_cop: number
       cedula: string
+      /** @enum {string} */
+      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
       full_name: string
       /** Format: email */
       email?: string
@@ -1587,6 +1617,8 @@ export interface components {
     P2POnrampOrderRequest: {
       gross_amount_cop: number
       cedula: string
+      /** @enum {string} */
+      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
       full_name: string
       /** Format: email */
       email: string
@@ -1682,7 +1714,7 @@ export interface components {
       email: string
       full_name: string | null
       /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin'
+      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
     }
     AdminLogoutResponse: {
       /** @enum {boolean} */
@@ -1739,6 +1771,8 @@ export interface components {
         /** Format: uuid */
         id: string
         cedula: string | null
+        /** @enum {string} */
+        document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
         cedula_last_4: string | null
         cedula_hash: string
         /** Format: email */
@@ -1791,6 +1825,8 @@ export interface components {
       /** Format: date-time */
       cancelled_at: string | null
       cancelled_reason: string | null
+      /** Format: uuid */
+      cancelled_by_operator_id: string | null
       last_operator_note: string | null
       claim: {
         /** Format: uuid */
@@ -1863,6 +1899,14 @@ export interface components {
       reason: string
       retryable?: boolean
     }
+    AdminCancelRequest: {
+      reason: string
+    }
+    AdminCancelResponse: {
+      /** Format: uuid */
+      order_id: string
+      status: string
+    }
     AdminRejectResponse: {
       /** Format: uuid */
       order_id: string
@@ -1881,6 +1925,8 @@ export interface components {
         /** Format: uuid */
         id: string
         cedula: string | null
+        /** @enum {string} */
+        document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
         full_name: string
         /** Format: email */
         primary_email: string | null
@@ -1906,6 +1952,8 @@ export interface components {
     }
     AdminPatchCedulaRequest: {
       new_cedula: string
+      /** @enum {string} */
+      new_document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
       reason: string
     }
     AdminPatchCedulaResponse: {
@@ -1922,7 +1970,7 @@ export interface components {
       google_sub_bound: boolean
       full_name: string | null
       /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin'
+      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
       is_active: boolean
       /** Format: date-time */
       created_at: string | null
@@ -1938,7 +1986,7 @@ export interface components {
       /** Format: email */
       email: string
       /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin'
+      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
     }
     AdminCreateOperatorResponse: {
       /** Format: uuid */
@@ -1946,12 +1994,12 @@ export interface components {
       /** Format: email */
       email: string
       /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin'
+      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
       is_active: boolean
     }
     AdminPatchOperatorRequest: {
       /** @enum {string} */
-      role?: 'viewer' | 'operator' | 'admin'
+      role?: 'viewer' | 'operator' | 'admin' | 'superadmin'
       is_active?: boolean
     }
     AdminPatchOperatorResponse: {
@@ -1960,7 +2008,7 @@ export interface components {
       /** Format: email */
       email: string
       /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin'
+      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
       is_active: boolean
     }
     AdminConsumerOverrides: {
@@ -4388,6 +4436,77 @@ export interface operations {
         }
       }
       /** @description Wrong status, transition not allowed, or claim not held */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminCancelOrder: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCancelRequest']
+      }
+    }
+    responses: {
+      /** @description Order cancelled */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminCancelResponse']
+        }
+      }
+      /** @description Invalid body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below superadmin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Order not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Order is past the point where it can be cancelled */
       409: {
         headers: {
           [name: string]: unknown

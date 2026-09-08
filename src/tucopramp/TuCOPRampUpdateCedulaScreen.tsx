@@ -1,15 +1,33 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
+import DownArrowIcon from 'src/icons/navigation/DownArrowIcon'
 import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { isValidCedula } from 'src/tucopramp/limits'
+import { PickerModal } from 'src/tucopramp/PickerModal'
 import { fetchUserProfile, submitCedulaUpdate } from 'src/tucopramp/saga'
+import {
+  ALL_DOCUMENT_TYPES,
+  DocumentType,
+  MAX_DOCUMENT_LENGTH,
+  getDocumentAutoCapitalize,
+  getDocumentKeyboardType,
+  isValidDocument,
+  sanitizeDocument,
+} from 'src/tucopramp/validation'
 import {
   cedulaUpdateErrorCodeSelector,
   cedulaUpdateStatusSelector,
@@ -45,6 +63,11 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
 
   const [newCedula, setNewCedula] = useState('')
   const [reason, setReason] = useState('')
+  // Default to the profile's current type when it comes back from getMe,
+  // so switching to CE just requires re-typing the number (not re-picking
+  // the same type they already had).
+  const [newDocumentType, setNewDocumentType] = useState<DocumentType>('CC')
+  const [docTypePickerOpen, setDocTypePickerOpen] = useState<boolean>(false)
 
   // Refresh profile on mount so cedula_last_4 is current, and reset the flow
   // slice so any prior error/success state does not linger.
@@ -56,13 +79,38 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const cedulaValid = isValidCedula(newCedula)
+  // Seed the picker with the profile's current document_type once the getMe
+  // response lands. If the user has never had a type set (pre-migration
+  // account or fresh install), profile.document_type is undefined; stay
+  // on the 'CC' default.
+  useEffect(() => {
+    if (profile?.document_type) {
+      setNewDocumentType(profile.document_type as DocumentType)
+    }
+  }, [profile?.document_type])
+
+  const cedulaValid = isValidDocument(newDocumentType, newCedula)
   const reasonValid = reason.trim().length > 0 && reason.length <= REASON_MAX_LENGTH
   const formValid = cedulaValid && reasonValid && status !== 'updating'
 
+  const documentTypeOptions = useMemo(
+    () =>
+      ALL_DOCUMENT_TYPES.map((v) => ({
+        value: v,
+        label: t(`tucopramp.documentType.${v}`),
+      })),
+    [t]
+  )
+
   const onSubmit = () => {
     if (!formValid) return
-    dispatch(submitCedulaUpdate({ new_cedula: newCedula, reason: reason.trim() }))
+    dispatch(
+      submitCedulaUpdate({
+        new_cedula: newCedula,
+        new_document_type: newDocumentType,
+        reason: reason.trim(),
+      })
+    )
   }
 
   const onDone = () => {
@@ -85,7 +133,9 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
         {!!profile?.cedula_last_4 && (
           <View style={styles.currentBlock}>
             <Text style={styles.label}>{t('tucopramp.settings.updateCedula.currentLabel')}</Text>
-            <Text style={styles.currentValue}>••••{profile.cedula_last_4}</Text>
+            <Text style={styles.currentValue}>
+              {profile.document_type ?? 'CC'} ••••{profile.cedula_last_4}
+            </Text>
           </View>
         )}
 
@@ -111,20 +161,36 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
           </View>
         ) : (
           <View>
+            <Text style={styles.label}>{t('tucopramp.documentTypeLabel')}</Text>
+            <TouchableOpacity
+              style={styles.pickerTouchable}
+              onPress={() => setDocTypePickerOpen(true)}
+              testID="tucopramp-cedula-update-doc-type-picker"
+              accessibilityRole="button"
+              disabled={status === 'updating'}
+            >
+              <Text style={styles.pickerValue}>
+                {t(`tucopramp.documentType.${newDocumentType}`)}
+              </Text>
+              <DownArrowIcon color={Colors.accent} strokeWidth={2} />
+            </TouchableOpacity>
+
             <Text style={styles.label}>{t('tucopramp.settings.updateCedula.newCedulaLabel')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('tucopramp.settings.updateCedula.newCedulaPlaceholder') ?? ''}
-              keyboardType="numeric"
-              maxLength={10}
+              keyboardType={getDocumentKeyboardType(newDocumentType)}
+              autoCapitalize={getDocumentAutoCapitalize(newDocumentType)}
+              autoCorrect={false}
+              maxLength={MAX_DOCUMENT_LENGTH}
               value={newCedula}
-              onChangeText={setNewCedula}
+              onChangeText={(v) => setNewCedula(sanitizeDocument(newDocumentType, v))}
               editable={status !== 'updating'}
               testID="tucopramp-update-cedula-new"
             />
             {newCedula.length > 0 && !cedulaValid && (
-              <Text style={styles.helper}>
-                {t('tucopramp.settings.updateCedula.cedulaFormatHelper')}
+              <Text style={styles.helperError}>
+                {t(`tucopramp.documentInvalid.${newDocumentType}`)}
               </Text>
             )}
 
@@ -183,6 +249,19 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
           </View>
         )}
       </ScrollView>
+
+      <PickerModal<DocumentType>
+        visible={docTypePickerOpen}
+        title={t('tucopramp.documentTypePickerTitle')}
+        options={documentTypeOptions}
+        selectedValue={newDocumentType}
+        testIdPrefix="tucopramp-cedula-update-doc-type-option"
+        onClose={() => setDocTypePickerOpen(false)}
+        onSelect={(v) => {
+          setNewDocumentType(v)
+          setNewCedula(sanitizeDocument(v, newCedula))
+        }}
+      />
     </SafeAreaView>
   )
 }
@@ -255,6 +334,26 @@ const styles = StyleSheet.create({
     color: Colors.gray4,
     marginTop: Spacing.Tiny4,
     textAlign: 'right',
+  },
+  helperError: {
+    ...typeScale.bodySmall,
+    color: Colors.errorDark,
+    marginTop: Spacing.Smallest8,
+  },
+  pickerTouchable: {
+    padding: Spacing.Small12,
+    borderColor: Colors.gray2,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  pickerValue: {
+    ...typeScale.bodyMedium,
+    color: Colors.black,
+    flexShrink: 1,
   },
   errorBlock: {
     backgroundColor: Colors.errorLight,

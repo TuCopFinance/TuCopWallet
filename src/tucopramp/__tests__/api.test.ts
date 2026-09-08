@@ -348,6 +348,72 @@ describe('tucopramp/api', () => {
       expect(headers.get('Idempotency-Key')).toBe('idem-abc')
     })
 
+    it('forwards document_type when provided (e.g. PAS)', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          order_id: 'ord2',
+          status: 'AWAITING_DEPOSIT',
+          multisig_address: '0x6399618ab4eA489Ae434F4718b7E572757D95702',
+          chain_id: 42220,
+          gross_amount_copm: 100_000,
+          expires_at: '2026-09-01T23:00:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      await createOfframpOrder(
+        makeAuth(),
+        {
+          gross_amount_cop: 100_000,
+          cedula: 'AB123456',
+          document_type: 'PAS',
+          full_name: 'Tester',
+          email: 't@t.co',
+          payout_method: 'bank_account',
+          bank_code: 'bancolombia',
+          bank_account_type: 'savings',
+          bank_account_number: '111',
+          consent_accepted: true,
+          quote_id: 'q1',
+        },
+        'idem-pas'
+      )
+      const sentBody = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(sentBody.document_type).toBe('PAS')
+      expect(sentBody.cedula).toBe('AB123456')
+    })
+
+    it('omits document_type when not passed (server defaults to CC)', async () => {
+      mockFetch.mockResponseOnce(
+        JSON.stringify({
+          order_id: 'ord3',
+          status: 'AWAITING_DEPOSIT',
+          multisig_address: '0x6399618ab4eA489Ae434F4718b7E572757D95702',
+          chain_id: 42220,
+          gross_amount_copm: 100_000,
+          expires_at: '2026-09-01T23:00:00Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      await createOfframpOrder(
+        makeAuth(),
+        {
+          gross_amount_cop: 100_000,
+          cedula: '1234567890',
+          full_name: 'Tester',
+          email: 't@t.co',
+          payout_method: 'bank_account',
+          bank_code: 'bancolombia',
+          bank_account_type: 'savings',
+          bank_account_number: '111',
+          consent_accepted: true,
+          quote_id: 'q1',
+        },
+        'idem-default'
+      )
+      const sentBody = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(sentBody.document_type).toBeUndefined()
+    })
+
     it('surfaces idempotency_conflict (409) on same key with different body', async () => {
       mockFetch.mockResponseOnce(JSON.stringify({ code: 'idempotency_conflict', status: 409 }), {
         status: 409,

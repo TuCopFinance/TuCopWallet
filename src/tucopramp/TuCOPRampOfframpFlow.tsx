@@ -7,14 +7,12 @@ import {
   ActivityIndicator,
   Image,
   Linking,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -28,17 +26,24 @@ import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
-import { getCachedLimits, isValidCedula } from 'src/tucopramp/limits'
+import { getCachedLimits } from 'src/tucopramp/limits'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
+import { PickerModal } from 'src/tucopramp/PickerModal'
 import {
+  ALL_DOCUMENT_TYPES,
+  DocumentType,
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_BREB_KEY_LENGTH,
-  MAX_CEDULA_LENGTH,
+  MAX_DOCUMENT_LENGTH,
   MAX_NAME_LENGTH,
+  getDocumentAutoCapitalize,
+  getDocumentKeyboardType,
   isValidBankAccountNumber,
   isValidBreBKey,
+  isValidDocument,
   isValidEmail,
   sanitizeDigits,
+  sanitizeDocument,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 import {
@@ -117,11 +122,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const [bankAccountType, setBankAccountType] = useState<BankAccountType>('savings')
   const [bankAccountNumber, setBankAccountNumber] = useState<string>('')
   const [breBKey, setBreBKey] = useState<string>('')
+  const [documentType, setDocumentType] = useState<DocumentType>('CC')
   const [cedula, setCedula] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [firstName, setFirstName] = useState<string>('')
   const [lastName, setLastName] = useState<string>('')
-  const [openPicker, setOpenPicker] = useState<null | 'bank' | 'accountType'>(null)
+  const [openPicker, setOpenPicker] = useState<null | 'bank' | 'accountType' | 'docType'>(null)
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
   const [cancelConfirmVisible, setCancelConfirmVisible] = useState<boolean>(false)
   const errorRetryAfterSeconds = useSelector(offrampErrorRetryAfterSecondsSelector)
@@ -430,7 +436,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
   const firstNameValid = firstName.trim().length > 0
   const lastNameValid = lastName.trim().length > 0
-  const cedulaValid = isValidCedula(cedula)
+  const cedulaValid = isValidDocument(documentType, cedula)
   const emailValid = isValidEmail(email)
   const formValid =
     amountValid && cedulaValid && emailValid && payoutFieldsValid && firstNameValid && lastNameValid
@@ -444,6 +450,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
         bank_code: payoutMethod === 'bank_account' ? bankCode : undefined,
         bank_account_type: payoutMethod === 'bank_account' ? bankAccountType : undefined,
         cedula,
+        document_type: documentType,
       })
     )
   }
@@ -458,6 +465,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
         body: {
           gross_amount_cop: amountNum,
           cedula,
+          document_type: documentType,
           full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
           email,
           payout_method: payoutMethod,
@@ -496,6 +504,15 @@ function TuCOPRampOfframpFlow(_props: Props) {
       label: t(`tucopramp.accountType_${v}`),
     }))
   }, [selectedBank, t])
+
+  const documentTypeOptions = useMemo(
+    () =>
+      ALL_DOCUMENT_TYPES.map((v) => ({
+        value: v,
+        label: t(`tucopramp.documentType.${v}`),
+      })),
+    [t]
+  )
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -825,18 +842,34 @@ function TuCOPRampOfframpFlow(_props: Props) {
               testID="tucopramp-offramp-lastname"
             />
 
-            <Text style={styles.label}>{t('tucopramp.cedulaLabel')}</Text>
+            <Text style={styles.label}>{t('tucopramp.documentTypeLabel')}</Text>
+            <TouchableOpacity
+              style={styles.pickerTouchable}
+              onPress={() => setOpenPicker('docType')}
+              testID="tucopramp-offramp-doc-type-picker"
+              accessibilityRole="button"
+              disabled={status !== 'idle'}
+            >
+              <Text style={styles.pickerValue}>{t(`tucopramp.documentType.${documentType}`)}</Text>
+              <DownArrowIcon color={Colors.accent} strokeWidth={2} />
+            </TouchableOpacity>
+
+            <Text style={styles.label}>{t('tucopramp.documentValueLabel')}</Text>
             <TextInput
               style={styles.input}
-              keyboardType="numeric"
+              keyboardType={getDocumentKeyboardType(documentType)}
+              autoCapitalize={getDocumentAutoCapitalize(documentType)}
+              autoCorrect={false}
               value={cedula}
-              onChangeText={(v) => setCedula(sanitizeDigits(v, MAX_CEDULA_LENGTH))}
-              maxLength={MAX_CEDULA_LENGTH}
+              onChangeText={(v) => setCedula(sanitizeDocument(documentType, v))}
+              maxLength={MAX_DOCUMENT_LENGTH}
               editable={status === 'idle'}
               testID="tucopramp-offramp-cedula"
             />
             {cedula.length > 0 && !cedulaValid && (
-              <Text style={styles.helperError}>{t('tucopramp.cedulaInvalid')}</Text>
+              <Text style={styles.helperError}>
+                {t(`tucopramp.documentInvalid.${documentType}`)}
+              </Text>
             )}
 
             <Text style={styles.label}>{t('tucopramp.emailLabel')}</Text>
@@ -1192,6 +1225,24 @@ function TuCOPRampOfframpFlow(_props: Props) {
         onSelect={setBankAccountType}
       />
 
+      <PickerModal<DocumentType>
+        visible={openPicker === 'docType'}
+        title={t('tucopramp.documentTypePickerTitle')}
+        options={documentTypeOptions}
+        selectedValue={documentType}
+        testIdPrefix="tucopramp-offramp-doc-type-option"
+        onClose={() => setOpenPicker(null)}
+        onSelect={(v) => {
+          setDocumentType(v)
+          // Re-sanitize the current value against the new type's rules so a
+          // CC "12345" that was OK becomes empty when the user switches to
+          // NUIP (which requires exactly 10 digits) or to PAS (which needs
+          // alphanumeric). Prevents a submit body with a mismatched
+          // (type, cedula) pair that would 400 on the server.
+          setCedula(sanitizeDocument(v, cedula))
+        }}
+      />
+
       <Dialog
         isVisible={cancelConfirmVisible}
         title={t('tucopramp.cancelConfirmTitle')}
@@ -1218,120 +1269,6 @@ function TuCOPRampOfframpFlow(_props: Props) {
         {t('tucopramp.cancelConfirmBody')}
       </Dialog>
     </SafeAreaView>
-  )
-}
-
-interface PickerModalProps<T> {
-  visible: boolean
-  title: string
-  options: { value: T; label: string }[]
-  selectedValue: T | undefined
-  testIdPrefix: string
-  onClose(): void
-  onSelect(value: T): void
-  // Opt-in search input above the list, useful for long option sets (e.g. the
-  // 34-bank catalogue). Case-insensitive substring match against `label`
-  // AND `value` so users who know the bank code (`bancolombia`) or the
-  // display name (`Bancolombia`) both land on the same row. Default false —
-  // small pickers (like account type with 2 options) stay uncluttered.
-  searchable?: boolean
-  searchPlaceholder?: string
-  noResultsText?: string
-}
-
-// Bottom-sheet-styled picker rendered as a native Modal so it escapes the
-// parent ScrollView's z-index layer entirely. Works around the known RN iOS
-// gotcha where the shared src/components/Dropdown (position: absolute +
-// zIndex) is overlapped by sibling form fields inside a ScrollView.
-function PickerModal<T extends string>({
-  visible,
-  title,
-  options,
-  selectedValue,
-  testIdPrefix,
-  onClose,
-  onSelect,
-  searchable = false,
-  searchPlaceholder,
-  noResultsText,
-}: PickerModalProps<T>) {
-  const [query, setQuery] = useState('')
-
-  // Reset the search input every time the modal reopens so a stale filter
-  // does not shadow options on a subsequent open.
-  useEffect(() => {
-    if (visible) setQuery('')
-  }, [visible])
-
-  const filteredOptions = useMemo(() => {
-    if (!searchable) return options
-    const q = query.trim().toLowerCase()
-    if (q.length === 0) return options
-    return options.filter(
-      (opt) => opt.label.toLowerCase().includes(q) || String(opt.value).toLowerCase().includes(q)
-    )
-  }, [options, query, searchable])
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.pickerBackdrop} />
-      </TouchableWithoutFeedback>
-      <View style={styles.pickerSheet}>
-        <View style={styles.pickerHandle} />
-        <Text style={styles.pickerTitle}>{title}</Text>
-        {searchable && (
-          <View style={styles.pickerSearchRow}>
-            <TextInput
-              style={styles.pickerSearchInput}
-              value={query}
-              onChangeText={setQuery}
-              placeholder={searchPlaceholder ?? ''}
-              placeholderTextColor={Colors.gray3}
-              autoCorrect={false}
-              autoCapitalize="none"
-              returnKeyType="search"
-              testID={`${testIdPrefix}-search`}
-            />
-            {query.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setQuery('')}
-                style={styles.pickerSearchClear}
-                testID={`${testIdPrefix}-search-clear`}
-              >
-                <Text style={styles.pickerSearchClearText}>×</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        <ScrollView style={styles.pickerList} keyboardShouldPersistTaps="handled">
-          {filteredOptions.length === 0 ? (
-            <View style={styles.pickerEmpty}>
-              <Text style={styles.pickerEmptyText}>{noResultsText ?? ''}</Text>
-            </View>
-          ) : (
-            filteredOptions.map((opt) => {
-              const isSelected = opt.value === selectedValue
-              return (
-                <TouchableOpacity
-                  key={String(opt.value)}
-                  style={styles.pickerRow}
-                  onPress={() => {
-                    onSelect(opt.value)
-                    onClose()
-                  }}
-                  testID={`${testIdPrefix}-${opt.value}`}
-                >
-                  <Text style={[styles.pickerRowText, isSelected && styles.pickerRowTextSelected]}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              )
-            })
-          )}
-        </ScrollView>
-      </View>
-    </Modal>
   )
 }
 
@@ -1623,84 +1560,6 @@ const styles = StyleSheet.create({
     ...typeScale.bodyMedium,
     color: Colors.black,
     flexShrink: 1,
-  },
-  pickerBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  pickerSheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    maxHeight: '75%',
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingTop: Spacing.Small12,
-    paddingBottom: Spacing.Thick24,
-    paddingHorizontal: Spacing.Regular16,
-  },
-  pickerHandle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.gray2,
-    marginBottom: Spacing.Regular16,
-  },
-  pickerTitle: {
-    ...typeScale.titleMedium,
-    color: Colors.black,
-    marginBottom: Spacing.Regular16,
-  },
-  pickerList: {
-    flexGrow: 0,
-  },
-  pickerSearchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray2,
-    borderRadius: 8,
-    paddingHorizontal: Spacing.Regular16,
-    marginBottom: Spacing.Regular16,
-  },
-  pickerSearchInput: {
-    flex: 1,
-    ...typeScale.bodyMedium,
-    color: Colors.black,
-    paddingVertical: Spacing.Small12,
-  },
-  pickerSearchClear: {
-    paddingHorizontal: Spacing.Smallest8,
-    paddingVertical: Spacing.Tiny4,
-  },
-  pickerSearchClearText: {
-    ...typeScale.titleMedium,
-    color: Colors.gray4,
-  },
-  pickerEmpty: {
-    paddingVertical: Spacing.Thick24,
-    alignItems: 'center',
-  },
-  pickerEmptyText: {
-    ...typeScale.bodySmall,
-    color: Colors.gray4,
-    textAlign: 'center',
-  },
-  pickerRow: {
-    paddingVertical: Spacing.Small12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray1,
-  },
-  pickerRowText: {
-    ...typeScale.bodyMedium,
-    color: Colors.black,
-  },
-  pickerRowTextSelected: {
-    color: Colors.accent,
-    fontWeight: '600',
   },
 })
 

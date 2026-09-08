@@ -297,7 +297,7 @@ export function* fetchLimitsSaga() {
         yield* put(limitsBackgroundRevalidateFinished())
         captureBusinessError(err, {
           feature: 'tucopramp',
-          provider: 'ramp',
+          provider: 'internal',
           action: 'get_limits',
         })
       }
@@ -339,6 +339,7 @@ export function* requestOfframpQuoteSaga(action: PayloadAction<OfframpQuoteReque
     yield* put(offrampQuoteReady(quote))
   } catch (err) {
     yield* put(offrampError(errorMeta(err)))
+    reportTucoprampError(err, 'offramp_quote')
   }
 }
 
@@ -402,6 +403,7 @@ export function* submitOfframpOrderSaga(
     )
   } catch (err) {
     yield* put(offrampError(errorMeta(err)))
+    reportTucoprampError(err, 'offramp_submit_order')
   }
 }
 
@@ -427,12 +429,17 @@ function* ensureFreshOfframpQuote(auth: TucopRampAuth, body: OfframpOrderRequest
       bank_code: body.bank_code,
       bank_account_type: body.bank_account_type,
       cedula: body.cedula,
+      // Propagate document_type so the refetched quote pins to the same
+      // (type, number) identity the caller submitted; missing = server
+      // default to 'CC' which would mis-price a CE / TI / PAS user.
+      document_type: body.document_type,
     }
     const fresh = yield* call(apiGetOfframpQuote, auth, quoteRequest)
     yield* put(offrampQuoteReady(fresh))
     return { ...body, quote_id: fresh.quote_id }
   } catch (err) {
     yield* put(offrampError(errorMeta(err)))
+    reportTucoprampError(err, 'offramp_refetch_quote')
     return null
   }
 }
@@ -663,6 +670,7 @@ export function* cancelOfframpOrderSaga(
       return
     }
     yield* put(offrampError(errorMeta(err)))
+    reportTucoprampError(err, 'offramp_cancel_order')
   }
 }
 
@@ -689,6 +697,7 @@ export function* cancelOnrampOrderSaga(
       return
     }
     yield* put(onrampError(errorMeta(err)))
+    reportTucoprampError(err, 'onramp_cancel_order')
   }
 }
 
@@ -706,6 +715,7 @@ export function* requestOnrampQuoteSaga(action: PayloadAction<OnrampQuoteRequest
     yield* put(onrampQuoteReady(quote))
   } catch (err) {
     yield* put(onrampError(errorMeta(err)))
+    reportTucoprampError(err, 'onramp_quote')
   }
 }
 
@@ -731,6 +741,7 @@ export function* submitOnrampOrderSaga(
     yield* put(onrampOrderCreated(order))
   } catch (err) {
     yield* put(onrampError(errorMeta(err)))
+    reportTucoprampError(err, 'onramp_submit_order')
   }
 }
 
@@ -749,12 +760,17 @@ function* ensureFreshOnrampQuote(auth: TucopRampAuth, body: OnrampOrderRequest) 
     const quoteRequest: OnrampQuoteRequest = {
       gross_amount_cop: body.gross_amount_cop,
       cedula: body.cedula,
+      // Same reason as offramp: keep the (type, number) identity aligned
+      // between the quote and the order so pricing / KYC gating do not
+      // fall back to CC when the user is on CE / TI / PAS.
+      document_type: body.document_type,
     }
     const fresh = yield* call(apiGetOnrampQuote, auth, quoteRequest)
     yield* put(onrampQuoteReady(fresh))
     return { ...body, quote_id: fresh.quote_id }
   } catch (err) {
     yield* put(onrampError(errorMeta(err)))
+    reportTucoprampError(err, 'onramp_refetch_quote')
     return null
   }
 }
@@ -773,6 +789,7 @@ export function* uploadOnrampProofSaga(
     yield* put(onrampProofUploaded())
   } catch (err) {
     yield* put(onrampError(errorMeta(err)))
+    reportTucoprampError(err, 'onramp_upload_proof')
   }
 }
 
@@ -829,6 +846,43 @@ function errorCode(err: unknown): string {
   if (err instanceof TucopRampError) return err.code
   if (err instanceof Error) return err.message.slice(0, 80)
   return 'unknown'
+}
+
+// Wire every catch in the TuCOPRamp saga into the shared business-error
+// fingerprint. Expected 4xx-style codes (rate_limited, cedula_invalid_format,
+// idempotency_key_required, wallet_not_linked, wallet_linked_to_other_user)
+// are surfaced to the user via offrampError/onrampError but NOT to Sentry:
+// they are legitimate server-driven UX branches, not bugs. Everything else
+// (transport failures, 5xx, unknown TucopRampError codes, non-Error throws)
+// lands with feature:'tucopramp', provider:'internal', action:<caller>, so
+// the Sentry dashboard groups all TuCOPRamp incidents under one filterable
+// slice regardless of which flow step tripped.
+const TUCOPRAMP_EXPECTED_ERROR_CODES = new Set<string>([
+  'rate_limited',
+  'wallet_not_linked',
+  'wallet_linked_to_other_user',
+  'cedula_invalid_format',
+  'cedula_locked_by_active_order',
+  'idempotency_key_required',
+  'no_wallet',
+  'user_not_found',
+  'amount_limit_exceeded',
+  'proof_signature_invalid',
+  'proof_not_found',
+  'invalid_upload',
+  'quote_expired',
+  'order_not_cancelable',
+  'order_not_found',
+])
+function reportTucoprampError(err: unknown, action: string): void {
+  const code = errorCode(err)
+  if (TUCOPRAMP_EXPECTED_ERROR_CODES.has(code)) return
+  captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+    feature: 'tucopramp',
+    provider: 'internal',
+    action,
+    errorCode: code,
+  })
 }
 
 // Extract the full error metadata (code + optional retry-after + request_id)

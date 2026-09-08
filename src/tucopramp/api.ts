@@ -121,6 +121,11 @@ export function getMe(auth: TucopRampAuth, opts?: CallOpts): Promise<MeResponse>
 // success to refresh the cached profile with the new cedula_last_4.
 export interface UpdateCedulaRequest {
   new_cedula: string
+  // Optional after the 2026-09-08 multi-document expansion. Server defaults
+  // to 'CC' when omitted (backwards-compat for wallets on older builds).
+  // Enum kept as a string literal union to avoid a circular import from
+  // types.ts, mirrors DocumentType exactly.
+  new_document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
   reason: string
 }
 
