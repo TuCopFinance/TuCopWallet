@@ -1,4 +1,5 @@
 import { endTransactional, pinTransactional } from 'src/pincode/PasswordCache'
+import { addTxSubmittedBreadcrumb } from 'src/sentry/breadcrumbs'
 import { nativeFeeCurrencySelector, tokensByIdSelector } from 'src/tokens/selectors'
 import { BaseStandbyTransaction, addStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId } from 'src/transactions/types'
@@ -226,6 +227,17 @@ export function* sendPreparedTransactions(
       if (standByTx) {
         yield* put(addStandbyTransaction(standByTx))
       }
+      // Single choke-point for tx.submitted breadcrumbs. Every feature that
+      // routes through sendPreparedTransactions (send, swap, gold, earn,
+      // tucopramp offramp deposit, dollars_spend, jumpstart, WRI) gets the
+      // breadcrumb for free. Feature label is derived from the standby tx
+      // context description when available, so the Sentry trail can tell
+      // apart "swap tx" from "send tx" without extra callsite plumbing.
+      addTxSubmittedBreadcrumb({
+        feature: standByTx?.context?.description ?? 'unknown',
+        feeCurrencySymbol: tokensById[feeCurrencyId ?? '']?.symbol,
+        networkId,
+      })
       txHashes.push(hash)
     }
 
