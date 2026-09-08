@@ -14,6 +14,8 @@ import {
   getOrder as apiGetOrder,
   getProofUrl as apiGetProofUrl,
   getReceivingAccount as apiGetReceivingAccount,
+  ListOrdersParams,
+  listOrders as apiListOrders,
   ProofFile,
   ProofKind,
   TucopRampAuth,
@@ -34,10 +36,18 @@ import {
   limitsBackgroundRevalidateFinished,
   limitsBackgroundRevalidateStarted,
   limitsFetched,
+  LastOfframpPayout,
+  offrampActiveCheckFailed,
+  offrampActiveCheckStarted,
+  offrampActiveResumed,
   offrampAdvance,
   offrampCancelling,
   offrampCreatingOrder,
+  offrampDepositBroadcast,
+  offrampDepositFailed,
+  offrampDepositSubmitting,
   offrampError,
+  offrampNoActiveFound,
   offrampOrderCreated,
   offrampProofUrlFailed,
   offrampProofUrlLoaded,
@@ -45,6 +55,7 @@ import {
   offrampQuoteReady,
   offrampQuoting,
   onrampAdvance,
+  onrampCancelling,
   onrampCreatingOrder,
   onrampError,
   onrampOrderCreated,
@@ -57,6 +68,12 @@ import {
   setReceivingAccount,
   setUserProfile,
 } from 'src/tucopramp/slice'
+import { publicClient } from 'src/viem'
+import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
+import { sendPreparedTransactions } from 'src/viem/saga'
+import { BaseStandbyTransaction } from 'src/transactions/slice'
+import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
+import { networkIdToNetwork, COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import {
   OfframpOrderRequest,
   OfframpOrderStatus,
@@ -70,7 +87,7 @@ import Logger from 'src/utils/Logger'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { call, delay, fork, put, select, takeLatest } from 'typed-redux-saga'
+import { call, delay, fork, put, select, takeLatest, takeLeading } from 'typed-redux-saga'
 
 const TAG = 'tucopramp/saga'
 
@@ -108,6 +125,22 @@ export const cancelOfframpOrder = createAction<{ orderId: string; idempotencyKey
 export const fetchOfframpProofUrl = createAction<{ orderId: string; kind: ProofKind }>(
   'tucopramp/fetchOfframpProofUrl'
 )
+// The on-chain COPm transfer from the user's wallet to the offramp multisig.
+// Broadcast happens inside the wallet (sendPreparedTransactions primitive);
+// the server detects the deposit on-chain via its own watcher, no
+// wallet-side POST of the tx hash is required. Kept as a takeLeading action
+// so a stray double-tap can't broadcast twice.
+export const sendOfframpDeposit = createAction<{
+  orderId: string
+  multisigAddress: string
+  amountCopm: number
+  serializablePreparedTransaction: SerializableTransactionRequest
+}>('tucopramp/sendOfframpDeposit')
+// Fetches the wallet's recent offramp orders on screen mount to enforce the
+// "one active order at a time" invariant. If an active order is found, resumes
+// its flow; otherwise reads the most recent completed order's payout details
+// so the fresh form can prefill bank_code/type/bre_b_key without asking again.
+export const checkActiveOfframpOrder = createAction('tucopramp/checkActiveOfframpOrder')
 
 export const requestOnrampQuote = createAction<OnrampQuoteRequest>('tucopramp/requestOnrampQuote')
 export const submitOnrampOrder = createAction<{
@@ -118,6 +151,9 @@ export const uploadOnrampProof = createAction<{ orderId: string; file: ProofFile
   'tucopramp/uploadOnrampProof'
 )
 export const pollOnrampOrder = createAction<{ orderId: string }>('tucopramp/pollOnrampOrder')
+export const cancelOnrampOrder = createAction<{ orderId: string; idempotencyKey?: string }>(
+  'tucopramp/cancelOnrampOrder'
+)
 
 // Terminal state predicates shared with pollers.
 function isOfframpTerminal(status: OfframpOrderStatus): boolean {
@@ -395,6 +431,157 @@ export function* pollOfframpOrderSaga(action: PayloadAction<{ orderId: string }>
   Logger.warn(TAG, `pollOfframpOrder gave up after ${POLL_MAX_ATTEMPTS} attempts`)
 }
 
+// Broadcast the on-chain COPm transfer to the offramp multisig, keeping the
+// user on the offramp screen and storing the tx hash in the offramp slice.
+// Deliberately does NOT reuse src/send/saga.ts sendPaymentSaga because that
+// one navigates to TransactionSuccessScreen on success, which would drop the
+// user out of the offramp flow and lose the poll + proof state.
+export function* sendOfframpDepositSaga(
+  action: PayloadAction<{
+    orderId: string
+    multisigAddress: string
+    amountCopm: number
+    serializablePreparedTransaction: SerializableTransactionRequest
+  }>
+) {
+  const { orderId, multisigAddress, amountCopm, serializablePreparedTransaction } = action.payload
+  yield* put(offrampDepositSubmitting())
+  try {
+    const networkId = NetworkId['celo-mainnet']
+    const context = newTransactionContext(TAG, `Offramp deposit ${orderId}`)
+    const createStandbyTransaction = (
+      transactionHash: string,
+      feeCurrencyId?: string
+    ): BaseStandbyTransaction => ({
+      type: TokenTransactionTypeV2.Sent,
+      context,
+      networkId,
+      amount: {
+        // Negated because from the wallet's ledger POV this is an outflow.
+        value: `-${amountCopm}`,
+        tokenId: COPM_TOKEN_ID_MAINNET,
+      },
+      address: multisigAddress,
+      metadata: {},
+      transactionHash,
+      feeCurrencyId,
+    })
+    const [hash] = yield* call(
+      sendPreparedTransactions,
+      [serializablePreparedTransaction],
+      networkId,
+      [createStandbyTransaction],
+      false,
+      `offramp-deposit-${orderId}`
+    )
+    yield* put(offrampDepositBroadcast({ txHash: hash }))
+    // Wait for on-chain confirmation so we surface a revert to the user
+    // instead of silently sitting on the awaiting-deposit screen. The
+    // pollOfframpOrder saga already handles the server-side transition once
+    // the deposit lands; this receipt wait is purely a client-side guard.
+    const receipt = yield* call(
+      [publicClient[networkIdToNetwork[networkId]], 'waitForTransactionReceipt'],
+      { hash }
+    )
+    if (receipt.status === 'reverted') {
+      Logger.warn(TAG, `Offramp deposit tx reverted: ${hash}`)
+      yield* put(offrampDepositFailed({ code: 'reverted' }))
+      captureBusinessError(new Error(`Offramp deposit reverted: ${hash}`), {
+        feature: 'tucopramp',
+        provider: 'internal',
+        action: 'deposit_reverted',
+        extra: { orderId },
+      })
+    }
+  } catch (err) {
+    Logger.warn(TAG, 'sendOfframpDeposit failed', err)
+    yield* put(offrampDepositFailed({ code: 'broadcast_failed' }))
+    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+      feature: 'tucopramp',
+      provider: 'internal',
+      action: 'deposit_broadcast_failed',
+      extra: { orderId },
+    })
+  }
+}
+
+// On offramp screen mount: fetch recent orders from the server to enforce
+// the "one active order at a time" invariant. If one is found, resume its
+// flow (blocks the fresh-form path). Otherwise, look up the most recent
+// completed order's payout details and cache them for auto-fill.
+//
+// The server-facing GET /v1/p2p/orders/{id} response does NOT include the
+// deposit multisig_address, so if the local slice was wiped (cold boot,
+// reinstall) and the server has an AWAITING_DEPOSIT order for us, we cannot
+// recover the multisig to broadcast the deposit ourselves. The UI in that
+// case surfaces a cancel-only path.
+export function* checkActiveOfframpOrderSaga() {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(offrampActiveCheckFailed())
+    return
+  }
+  yield* put(offrampActiveCheckStarted())
+  try {
+    // Ask for a small window: the server orders newest-first per the guide,
+    // and the invariant is one active order, so 10 is generous enough to
+    // find both an active order (if any) and the most recent completed one
+    // for the prefill cache.
+    const params: ListOrdersParams = { type: 'offramp', limit: 10 }
+    const page = yield* call(apiListOrders, auth, params)
+    const summaries = page.orders ?? []
+    // Server status enums are uppercase; match to activity buckets.
+    const activeSummary = summaries.find(
+      (o) =>
+        o.status === 'AWAITING_DEPOSIT' ||
+        o.status === 'DEPOSIT_CONFIRMED' ||
+        o.status === 'PROCESSING'
+    )
+    if (activeSummary) {
+      const detail = yield* call(apiGetOrder, auth, activeSummary.id)
+      // Check the local slice - if we still have currentOrder for this exact
+      // orderId, its multisig_address is authoritative. Otherwise, the server
+      // has an active order that we can't broadcast for anymore.
+      const localCurrent = yield* select((s) => s.tucopramp.offramp.currentOrder)
+      const localMatches = !!localCurrent && localCurrent.order_id === activeSummary.id
+      yield* put(
+        offrampActiveResumed({
+          detail,
+          currentOrder: localMatches ? localCurrent : null,
+          status: mapOfframpDetailStatus(activeSummary.status as OfframpOrderStatus),
+        })
+      )
+      return
+    }
+    // No active order - fetch the most recent COMPLETED order's detail to
+    // grab its payout section and stash it as the prefill cache. Falls
+    // through with null if there is no completed order yet.
+    const lastCompleted = summaries.find((o) => o.status === 'COMPLETED')
+    let lastPayout: LastOfframpPayout | null = null
+    if (lastCompleted) {
+      try {
+        const detail = yield* call(apiGetOrder, auth, lastCompleted.id)
+        if (detail.payout) {
+          lastPayout = {
+            method: detail.payout.method,
+            bank_code: detail.payout.bank_code ?? null,
+            bank_account_type: detail.payout.bank_account_type ?? null,
+            bank_account_number_last_4: detail.payout.bank_account_number_last_4 ?? null,
+            bre_b_key: detail.payout.bre_b_key ?? null,
+          }
+        }
+      } catch (err) {
+        // Non-fatal: prefill is a UX nicety, not required for the fresh form.
+        Logger.warn(TAG, 'lastCompleted detail fetch failed', err)
+      }
+    }
+    yield* put(offrampNoActiveFound({ lastPayout }))
+  } catch (err) {
+    Logger.warn(TAG, 'checkActiveOfframpOrder failed', err)
+    yield* put(offrampActiveCheckFailed())
+  }
+}
+
 // Fetch the short-lived HMAC-signed URL for a proof (operator_outgoing on
 // COMPLETED offramp orders, or user_incoming on onramp). Server returns
 // { url, expires_at } with a 300 s TTL. Consumer opens the URL directly in
@@ -434,7 +621,42 @@ export function* cancelOfframpOrderSaga(
     yield* call(apiCancelOrder, auth, action.payload.orderId, idempotencyKey)
     yield* put(offrampAdvance({ status: 'cancelled' }))
   } catch (err) {
+    // Race: user tapped cancel while server was confirming the deposit.
+    // Server returns 409 order_not_cancelable; treat it as "deposit already
+    // landed, poll will move you forward" rather than a hard error so the UI
+    // does not scare a user whose money is actually in flight.
+    if (errorCode(err) === 'order_not_cancelable') {
+      Logger.info(TAG, 'cancelOfframpOrder race: deposit already landed, resuming poll')
+      yield* put(pollOfframpOrder({ orderId: action.payload.orderId }))
+      return
+    }
     yield* put(offrampError(errorMeta(err)))
+  }
+}
+
+export function* cancelOnrampOrderSaga(
+  action: PayloadAction<{ orderId: string; idempotencyKey?: string }>
+) {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(onrampError({ code: 'no_wallet' }))
+    return
+  }
+  const idempotencyKey = action.payload.idempotencyKey ?? uuidv4()
+  yield* put(onrampCancelling())
+  try {
+    yield* call(apiCancelOrder, auth, action.payload.orderId, idempotencyKey)
+    yield* put(onrampAdvance({ status: 'cancelled' }))
+  } catch (err) {
+    // Race: user tapped cancel while server was moving the order into review
+    // after a proof upload. Server returns 409 order_not_cancelable; resume
+    // the poll so the UI advances naturally.
+    if (errorCode(err) === 'order_not_cancelable') {
+      Logger.info(TAG, 'cancelOnrampOrder race: order moved out of cancelable state, resuming poll')
+      yield* put(pollOnrampOrder({ orderId: action.payload.orderId }))
+      return
+    }
+    yield* put(onrampError(errorMeta(err)))
   }
 }
 
@@ -654,8 +876,15 @@ export function* tucoprampSaga() {
   yield* takeLatest(pollOfframpOrder.type, pollOfframpOrderSaga)
   yield* takeLatest(cancelOfframpOrder.type, cancelOfframpOrderSaga)
   yield* takeLatest(fetchOfframpProofUrl.type, fetchOfframpProofUrlSaga)
+  // takeLeading: ignore concurrent dispatches so a rapid re-render or a
+  // double-tap can't broadcast the same deposit twice. The dispatchedSendOrderIdRef
+  // guard in the component is defense in depth; the saga registration is the
+  // authoritative single-flight lock.
+  yield* takeLeading(sendOfframpDeposit.type, sendOfframpDepositSaga)
+  yield* takeLatest(checkActiveOfframpOrder.type, checkActiveOfframpOrderSaga)
   yield* takeLatest(requestOnrampQuote.type, requestOnrampQuoteSaga)
   yield* takeLatest(submitOnrampOrder.type, submitOnrampOrderSaga)
   yield* takeLatest(uploadOnrampProof.type, uploadOnrampProofSaga)
   yield* takeLatest(pollOnrampOrder.type, pollOnrampOrderSaga)
+  yield* takeLatest(cancelOnrampOrder.type, cancelOnrampOrderSaga)
 }
