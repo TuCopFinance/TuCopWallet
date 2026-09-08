@@ -3924,6 +3924,27 @@ export const v255Schema = {
   },
 }
 
+// v256: TuCOPRamp multi-document support (2026-09-08). `document_type`
+// became required in P2PMeResponse; the migration backfills 'CC' onto
+// existing persisted profiles. The schema snapshot below asserts the
+// backfilled shape so future migrations can key off it.
+export const v256Schema = {
+  ...v255Schema,
+  _persist: {
+    ...v255Schema._persist,
+    version: 256,
+  },
+  tucopramp: {
+    ...(v255Schema as any).tucopramp,
+    userProfile: (v255Schema as any).tucopramp?.userProfile
+      ? {
+          ...(v255Schema as any).tucopramp.userProfile,
+          document_type: (v255Schema as any).tucopramp.userProfile.document_type ?? 'CC',
+        }
+      : (v255Schema as any).tucopramp?.userProfile,
+  },
+}
+
 export function getLatestSchema(): Partial<RootState> {
-  return v255Schema as Partial<RootState>
+  return v256Schema as Partial<RootState>
 }

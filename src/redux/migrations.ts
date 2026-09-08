@@ -2171,4 +2171,23 @@ export const migrations = {
     const { buckspay: _buckspay, ...rest } = state
     return rest
   },
+  256: (state: any) => {
+    // TuCOPRamp multi-document support (2026-09-08). `document_type` became
+    // required in P2PMeResponse. Backfill `'CC'` on the persisted user
+    // profile for wallets that cached a profile against a pre-2026-09-08
+    // server response so the required-field schema validation stays happy.
+    // Sagas will overwrite with the fresh value on the next getMe call.
+    if (!state?.tucopramp?.userProfile) return state
+    if (state.tucopramp.userProfile.document_type) return state
+    return {
+      ...state,
+      tucopramp: {
+        ...state.tucopramp,
+        userProfile: {
+          ...state.tucopramp.userProfile,
+          document_type: 'CC',
+        },
+      },
+    }
+  },
 }

@@ -2938,12 +2938,12 @@
     "cedulaLabel": "ID number",
     "cedulaInvalid": "The ID number must have between 6 and 10 digits.",
     "documentTypeLabel": "Document type",
-    "documentTypePickerTitle": "Choose your document type",
     "documentValueLabel": "Document number",
     "documentType": {
-      "CC": "ID card (Cedula)",
-      "CE": "Foreign ID card",
-      "TI": "Minor ID card",
+      "pickerTitle": "Select document type",
+      "CC": "ID card",
+      "CE": "Foreign ID",
+      "TI": "Minor ID",
       "NUIP": "NUIP",
       "NIT": "NIT (company)",
       "PAS": "Passport"

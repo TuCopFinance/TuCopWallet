@@ -26,24 +26,26 @@ import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
-import { getCachedLimits } from 'src/tucopramp/limits'
+import {
+  DOCUMENT_TYPES,
+  DocumentType,
+  MAX_DOCUMENT_LENGTH,
+  getCachedLimits,
+  getDocumentAutoCapitalize,
+  getDocumentKeyboardType,
+  isValidDocument,
+  sanitizeDocument,
+} from 'src/tucopramp/limits'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
 import { PickerModal } from 'src/tucopramp/PickerModal'
 import {
-  ALL_DOCUMENT_TYPES,
-  DocumentType,
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_BREB_KEY_LENGTH,
-  MAX_DOCUMENT_LENGTH,
   MAX_NAME_LENGTH,
-  getDocumentAutoCapitalize,
-  getDocumentKeyboardType,
   isValidBankAccountNumber,
   isValidBreBKey,
-  isValidDocument,
   isValidEmail,
   sanitizeDigits,
-  sanitizeDocument,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 import {
@@ -507,7 +509,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
   const documentTypeOptions = useMemo(
     () =>
-      ALL_DOCUMENT_TYPES.map((v) => ({
+      DOCUMENT_TYPES.map((v) => ({
         value: v,
         label: t(`tucopramp.documentType.${v}`),
       })),
@@ -1227,7 +1229,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
 
       <PickerModal<DocumentType>
         visible={openPicker === 'docType'}
-        title={t('tucopramp.documentTypePickerTitle')}
+        title={t('tucopramp.documentType.pickerTitle')}
         options={documentTypeOptions}
         selectedValue={documentType}
         testIdPrefix="tucopramp-offramp-doc-type-option"

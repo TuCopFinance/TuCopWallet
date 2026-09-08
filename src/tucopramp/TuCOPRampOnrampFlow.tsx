@@ -26,21 +26,19 @@ import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
-import { getCachedLimits } from 'src/tucopramp/limits'
-import { PickerModal } from 'src/tucopramp/PickerModal'
-import { toTitleCase } from 'src/tucopramp/nameFormat'
 import {
-  ALL_DOCUMENT_TYPES,
+  DOCUMENT_TYPES,
   DocumentType,
   MAX_DOCUMENT_LENGTH,
-  MAX_NAME_LENGTH,
+  getCachedLimits,
   getDocumentAutoCapitalize,
   getDocumentKeyboardType,
   isValidDocument,
-  isValidEmail,
   sanitizeDocument,
-  sanitizePersonName,
-} from 'src/tucopramp/validation'
+} from 'src/tucopramp/limits'
+import { PickerModal } from 'src/tucopramp/PickerModal'
+import { toTitleCase } from 'src/tucopramp/nameFormat'
+import { MAX_NAME_LENGTH, isValidEmail, sanitizePersonName } from 'src/tucopramp/validation'
 import {
   cancelOnrampOrder,
   fetchReceivingAccount,
@@ -208,7 +206,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
 
   const documentTypeOptions = useMemo(
     () =>
-      ALL_DOCUMENT_TYPES.map((v) => ({
+      DOCUMENT_TYPES.map((v) => ({
         value: v,
         label: t(`tucopramp.documentType.${v}`),
       })),
@@ -534,7 +532,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
 
       <PickerModal<DocumentType>
         visible={docTypePickerOpen}
-        title={t('tucopramp.documentTypePickerTitle')}
+        title={t('tucopramp.documentType.pickerTitle')}
         options={documentTypeOptions}
         selectedValue={documentType}
         testIdPrefix="tucopramp-onramp-doc-type-option"

@@ -1,19 +1,20 @@
 import {
-  ALL_DOCUMENT_TYPES,
-  MAX_ACCOUNT_NUMBER_LENGTH,
-  MAX_CEDULA_LENGTH,
+  DOCUMENT_TYPES,
   MAX_DOCUMENT_LENGTH,
-  MAX_NAME_LENGTH,
-  detectBreBKeyKind,
   getDocumentAutoCapitalize,
   getDocumentKeyboardType,
+  isValidDocument,
+  sanitizeDocument,
+} from 'src/tucopramp/limits'
+import {
+  MAX_ACCOUNT_NUMBER_LENGTH,
+  MAX_NAME_LENGTH,
+  detectBreBKeyKind,
   isValidBankAccountNumber,
   isValidBreBKey,
-  isValidDocument,
   isValidEmail,
   isValidPersonName,
   sanitizeDigits,
-  sanitizeDocument,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
 
@@ -133,15 +134,9 @@ describe('isValidBreBKey', () => {
   })
 })
 
-describe('MAX_CEDULA_LENGTH', () => {
-  it('exports 10', () => {
-    expect(MAX_CEDULA_LENGTH).toBe(10)
-  })
-})
-
-describe('ALL_DOCUMENT_TYPES', () => {
+describe('DOCUMENT_TYPES', () => {
   it('exposes the 6 openapi enum values', () => {
-    expect(ALL_DOCUMENT_TYPES).toEqual(['CC', 'CE', 'TI', 'NUIP', 'NIT', 'PAS'])
+    expect(DOCUMENT_TYPES).toEqual(['CC', 'CE', 'TI', 'NUIP', 'NIT', 'PAS'])
   })
 
   it('MAX_DOCUMENT_LENGTH matches the openapi cedula.maxLength cap (20)', () => {

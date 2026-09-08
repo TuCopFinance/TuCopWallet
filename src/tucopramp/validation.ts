@@ -21,143 +21,18 @@ export const MAX_NAME_LENGTH = 60
 export const MIN_ACCOUNT_NUMBER_LENGTH = 4
 export const MAX_ACCOUNT_NUMBER_LENGTH = 20
 
-// Legacy cap held over from the CC-only era. Kept as an export so callers
-// that only bind to Cédula de Ciudadanía can still size their TextInput
-// without importing the full per-type table. New callers should prefer
-// MAX_DOCUMENT_LENGTH so the field grows to fit CE / TI / NUIP / NIT / PAS.
-export const MAX_CEDULA_LENGTH = 10
-
 // Bre-B key spec (per placeholder text): cedula, celular, correo, or a
 // personal alias starting with @. Server accepts up to 100 chars; we keep
 // the same cap and validate the four allowed shapes.
 export const MIN_BREB_KEY_LENGTH = 3
 export const MAX_BREB_KEY_LENGTH = 100
 
-// --------------- document types (multi-doc support, 2026-09-08) ---------------
-
-// Ramp expanded the identity model from CC-only to 6 document types. Server
-// still stores the value under the `cedula` wire field for backwards compat;
-// the tuple (document_type, cedula) is the actual identity now.
-export type DocumentType = 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
-
-export const ALL_DOCUMENT_TYPES: readonly DocumentType[] = [
-  'CC',
-  'CE',
-  'TI',
-  'NUIP',
-  'NIT',
-  'PAS',
-] as const
-
-// Longest tolerated by the server (`cedula` maxLength on the openapi is 20).
-// Sized to fit PAS which is the widest shape.
-export const MAX_DOCUMENT_LENGTH = 20
-
-// Per-type validation rules, direct from Ramp's 2026-09-08 spec.
-// Server re-validates in every POST/PATCH; these mirror the rules so the
-// wallet can disable the submit button and surface a per-type helper.
-interface DocumentSpec {
-  regex: RegExp
-  // Which sanitizer to apply on every keystroke. digits-with-hyphen is
-  // NIT-specific (accepts an optional check-digit after a hyphen), everything
-  // else is either strict digits-only or alphanumeric.
-  sanitize: (raw: string) => string
-  // Native keyboardType hint for the TextInput. NIT + PAS need to allow
-  // non-digit characters (hyphen or letters); the rest are pure numeric.
-  keyboardType: 'numeric' | 'default'
-  // Auto-capitalize hint. PAS values are usually printed uppercase on
-  // passports; the rest are digits-only where autoCapitalize is a no-op.
-  autoCapitalize: 'none' | 'characters'
-}
-
-// NIT: digits, optionally followed by "-" + one check digit. Sanitizer
-// preserves at most one hyphen in the last position and never in the middle
-// (server rejects "890-903938" or "890903938-88"). Truncates to 11 chars
-// which fits the widest legit NIT ("123456789-0").
-function sanitizeNit(value: string): string {
-  // Strip everything except digits and hyphens.
-  const cleaned = value.replace(/[^\d-]/g, '')
-  // Find the last hyphen (if any) and keep only one check digit after it.
-  const hyphenIdx = cleaned.lastIndexOf('-')
-  if (hyphenIdx === -1) {
-    return cleaned.slice(0, 9)
-  }
-  const base = cleaned.slice(0, hyphenIdx).replace(/-/g, '').slice(0, 9)
-  const rest = cleaned
-    .slice(hyphenIdx + 1)
-    .replace(/\D/g, '')
-    .slice(0, 1)
-  return rest.length > 0 ? `${base}-${rest}` : base
-}
-
-// PAS: 5-20 alphanumeric, case-insensitive input but the server accepts
-// mixed case. Uppercase-on-type for consistency with real passports.
-function sanitizePassport(value: string): string {
-  return value
-    .replace(/[^A-Za-z0-9]/g, '')
-    .toUpperCase()
-    .slice(0, 20)
-}
-
-const DOCUMENT_SPECS: Record<DocumentType, DocumentSpec> = {
-  // Historic FIX: CC minimum bumped down from 6 to 1 to accept legit old
-  // cedulas issued before the 6-digit reform. Server accepts anything 1-10
-  // digits under type=CC; the old client rule rejected them at the door.
-  CC: {
-    regex: /^\d{1,10}$/,
-    sanitize: (v) => sanitizeDigits(v, 10),
-    keyboardType: 'numeric',
-    autoCapitalize: 'none',
-  },
-  CE: {
-    regex: /^\d{1,10}$/,
-    sanitize: (v) => sanitizeDigits(v, 10),
-    keyboardType: 'numeric',
-    autoCapitalize: 'none',
-  },
-  TI: {
-    regex: /^\d{10,11}$/,
-    sanitize: (v) => sanitizeDigits(v, 11),
-    keyboardType: 'numeric',
-    autoCapitalize: 'none',
-  },
-  NUIP: {
-    regex: /^\d{10}$/,
-    sanitize: (v) => sanitizeDigits(v, 10),
-    keyboardType: 'numeric',
-    autoCapitalize: 'none',
-  },
-  NIT: {
-    regex: /^\d{9}(?:-\d)?$/,
-    sanitize: sanitizeNit,
-    keyboardType: 'default',
-    autoCapitalize: 'none',
-  },
-  PAS: {
-    regex: /^[A-Za-z0-9]{5,20}$/,
-    sanitize: sanitizePassport,
-    keyboardType: 'default',
-    autoCapitalize: 'characters',
-  },
-}
-
-export function isValidDocument(type: DocumentType, value: string): boolean {
-  const trimmed = value.trim()
-  if (trimmed.length === 0) return false
-  return DOCUMENT_SPECS[type].regex.test(trimmed)
-}
-
-export function sanitizeDocument(type: DocumentType, raw: string): string {
-  return DOCUMENT_SPECS[type].sanitize(raw)
-}
-
-export function getDocumentKeyboardType(type: DocumentType): 'numeric' | 'default' {
-  return DOCUMENT_SPECS[type].keyboardType
-}
-
-export function getDocumentAutoCapitalize(type: DocumentType): 'none' | 'characters' {
-  return DOCUMENT_SPECS[type].autoCapitalize
-}
+// Document-type validation (CC / CE / TI / NUIP / NIT / PAS) lives in
+// src/tucopramp/limits.ts alongside the server-driven amount limits, since
+// both are Ramp-authoritative rules the wallet mirrors. Import from there:
+//   import { DocumentType, DOCUMENT_TYPES, MAX_DOCUMENT_LENGTH,
+//            isValidDocument, sanitizeDocument, getDocumentKeyboardType,
+//            getDocumentAutoCapitalize } from 'src/tucopramp/limits'
 
 // --------------- email ---------------
 

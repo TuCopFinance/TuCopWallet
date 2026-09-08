@@ -17,17 +17,17 @@ import { navigateBack } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
 import { useDispatch, useSelector } from 'src/redux/hooks'
-import { PickerModal } from 'src/tucopramp/PickerModal'
-import { fetchUserProfile, submitCedulaUpdate } from 'src/tucopramp/saga'
 import {
-  ALL_DOCUMENT_TYPES,
+  DOCUMENT_TYPES,
   DocumentType,
   MAX_DOCUMENT_LENGTH,
   getDocumentAutoCapitalize,
   getDocumentKeyboardType,
   isValidDocument,
   sanitizeDocument,
-} from 'src/tucopramp/validation'
+} from 'src/tucopramp/limits'
+import { PickerModal } from 'src/tucopramp/PickerModal'
+import { fetchUserProfile, submitCedulaUpdate } from 'src/tucopramp/saga'
 import {
   cedulaUpdateErrorCodeSelector,
   cedulaUpdateStatusSelector,
@@ -95,7 +95,7 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
 
   const documentTypeOptions = useMemo(
     () =>
-      ALL_DOCUMENT_TYPES.map((v) => ({
+      DOCUMENT_TYPES.map((v) => ({
         value: v,
         label: t(`tucopramp.documentType.${v}`),
       })),
@@ -134,7 +134,7 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
           <View style={styles.currentBlock}>
             <Text style={styles.label}>{t('tucopramp.settings.updateCedula.currentLabel')}</Text>
             <Text style={styles.currentValue}>
-              {profile.document_type ?? 'CC'} ••••{profile.cedula_last_4}
+              {profile.document_type ?? 'CC'} ****{profile.cedula_last_4}
             </Text>
           </View>
         )}
@@ -252,7 +252,7 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
 
       <PickerModal<DocumentType>
         visible={docTypePickerOpen}
-        title={t('tucopramp.documentTypePickerTitle')}
+        title={t('tucopramp.documentType.pickerTitle')}
         options={documentTypeOptions}
         selectedValue={newDocumentType}
         testIdPrefix="tucopramp-cedula-update-doc-type-option"

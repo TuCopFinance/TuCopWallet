@@ -3413,10 +3413,10 @@
     "cedulaLabel": "Cédula",
     "cedulaInvalid": "La cédula debe tener entre 6 y 10 dígitos.",
     "documentTypeLabel": "Tipo de documento",
-    "documentTypePickerTitle": "Elige tu tipo de documento",
     "documentValueLabel": "Número de documento",
     "documentType": {
-      "CC": "Cédula de ciudadanía",
+      "pickerTitle": "Elige tipo de documento",
+      "CC": "Cédula",
       "CE": "Cédula de extranjería",
       "TI": "Tarjeta de identidad",
       "NUIP": "NUIP",
