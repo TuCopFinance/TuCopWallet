@@ -502,6 +502,40 @@ describe('tucopramp/api', () => {
         httpStatus: 409,
       })
     })
+
+    // Regression guard: cancel is POST with no body, so wallet must sign the
+    // canonical bodyHash = sha256('') = e3b0c442...b855 (server hashes
+    // Buffer.alloc(0) because express.json only populates rawBody for JSON).
+    // Ramp's message 2026-09-07 explicitly warned about this trap. If a future
+    // refactor regresses signTucopRampRequest to signing '' for no-body POST,
+    // this test breaks loud before any live cancel returns 401.
+    it('signs POST /cancel with sha256("") body-hash (no-body mutating trap)', async () => {
+      const capturedMessages: string[] = []
+      const authCapturing: TucopRampAuth = {
+        walletAddress: TEST_WALLET,
+        keychainAccounts: {
+          getAccounts: () => [TEST_WALLET],
+          isUnlocked: () => true,
+          unlock: async () => true,
+          getViemAccount: () => ({
+            address: TEST_WALLET,
+            signMessage: async ({ message }: { message: string }) => {
+              capturedMessages.push(message)
+              return '0xdeadbeef'
+            },
+          }),
+        } as unknown as KeychainAccounts,
+      }
+      mockFetch.mockResponseOnce(
+        JSON.stringify({ id: 'ord-9', status: 'CANCELLED', cancelled_at: '2026-09-07T05:00:00Z' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+      await cancelOrder(authCapturing, 'ord-9', 'idem-cancel-9', { now: () => 1_700_000_000_000 })
+      expect(capturedMessages).toHaveLength(1)
+      expect(capturedMessages[0]).toBe(
+        'TuCOPRamp:POST:/v1/p2p/orders/ord-9/cancel:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+      )
+    })
   })
 
   describe('getProofUrl', () => {

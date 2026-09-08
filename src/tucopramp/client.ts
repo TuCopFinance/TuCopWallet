@@ -47,10 +47,21 @@ export async function signTucopRampRequest(
 ): Promise<SignedRequestFields> {
   assertUpstreamPath(args.upstreamPath)
   const now = args.now ?? (() => Date.now())
+  const method = args.method.toUpperCase()
   const address = args.walletAddress.toLowerCase() as Address
   const timestamp = String(Math.floor(now() / 1000))
-  const bodyHash = args.body === undefined ? '' : sha256Hex(args.body)
-  const canonical = `${CANONICAL_PREFIX}:${args.method.toUpperCase()}:${args.upstreamPath}:${address}:${timestamp}:${bodyHash}`
+  // Body-hash rule per Ramp server's middleware/wallet-auth.ts:72-74:
+  //   - GET/DELETE (non-mutating): bodyHashHex = null -> canonical body = ''
+  //   - POST/PATCH/PUT (mutating): bodyHashHex = sha256(req.rawBody ?? Buffer.alloc(0))
+  // For POST/PATCH/PUT the server ALWAYS hashes something (rawBody bytes, or
+  // sha256('') = e3b0c442...b855 when rawBody is undefined — which happens for
+  // multipart uploads and for JSON-less POST like /orders/{id}/cancel). Wallet
+  // must produce the same digest. sha256Hex('') matches server's empty-buffer
+  // hash byte-per-byte, so treating a missing body as '' on mutating methods
+  // covers both edge cases (multipart + no-body POST) automatically.
+  const isMutating = method === 'POST' || method === 'PATCH' || method === 'PUT'
+  const bodyHash = isMutating ? sha256Hex(args.body ?? '') : ''
+  const canonical = `${CANONICAL_PREFIX}:${method}:${args.upstreamPath}:${address}:${timestamp}:${bodyHash}`
   const signMessage = getSiweSigningFunction(args.keychainAccounts)
   const signature = (await signMessage(canonical)) as Hex
   return { timestamp, signature, canonical }
