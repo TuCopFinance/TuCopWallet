@@ -70,6 +70,7 @@ import {
   offrampProofUrlErrorCodeSelector,
   offrampProofUrlLoadingSelector,
   offrampProofUrlSelector,
+  offrampSavedPayoutProfilesSelector,
   offrampStatusSelector,
   userProfileSelector,
 } from 'src/tucopramp/selectors'
@@ -140,6 +141,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const activeOrderDetail = useSelector(offrampActiveOrderDetailSelector)
   const lastPayout = useSelector(offrampLastPayoutSelector)
   const userProfile = useSelector(userProfileSelector)
+  const savedPayoutProfiles = useSelector(offrampSavedPayoutProfilesSelector)
   const { prepareTransactionsResult, refreshPreparedTransactions, clearPreparedTransactions } =
     usePrepareSendTransactions()
   // Guards against dispatching sendOfframpDeposit twice for the same order
@@ -214,6 +216,48 @@ function TuCOPRampOfframpFlow(_props: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfile?.primary_email, userProfile?.full_name])
+
+  // Destination-match override. As the user types a Bre-B key or a full bank
+  // account, look for a saved payout profile that shares the destination.
+  // When a match hits, OVERWRITE the personal info (nombres, apellidos,
+  // cedula, email) with the ones tied to that specific destination. This
+  // handles the "one wallet, many beneficiaries" case: e.g. sending to
+  // spouse's account should not carry over the /me profile's name; the
+  // user typed the same account before with different personal info and we
+  // reuse it exactly. Bank_account_type is also overwritten because it
+  // pairs 1:1 with the account number.
+  useEffect(() => {
+    if (savedPayoutProfiles.length === 0) return
+    const match = savedPayoutProfiles.find((p) => {
+      if (payoutMethod === 'bre_b_key') {
+        return p.method === 'bre_b_key' && !!breBKey && p.bre_b_key === breBKey.trim()
+      }
+      return (
+        p.method === 'bank_account' &&
+        !!bankAccountNumber &&
+        !!bankCode &&
+        p.bank_code === bankCode &&
+        p.bank_account_number === bankAccountNumber.trim()
+      )
+    })
+    if (!match) return
+    if (match.full_name) {
+      const words = match.full_name.trim().split(/\s+/)
+      const givenCount = Math.ceil(words.length / 2)
+      setFirstName(words.slice(0, givenCount).join(' '))
+      setLastName(words.slice(givenCount).join(' '))
+    }
+    if (match.cedula) setCedula(match.cedula)
+    if (match.email) setEmail(match.email)
+    if (
+      match.method === 'bank_account' &&
+      match.bank_account_type &&
+      match.bank_account_type !== bankAccountType
+    ) {
+      setBankAccountType(match.bank_account_type as BankAccountType)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [breBKey, bankAccountNumber, bankCode, payoutMethod, savedPayoutProfiles])
 
   useEffect(() => {
     if (banks && banks.length > 0 && !bankCode) {
