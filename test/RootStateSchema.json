@@ -7378,6 +7378,17 @@
                                         "string"
                                     ]
                                 },
+                                "document_type": {
+                                    "enum": [
+                                        "CC",
+                                        "CE",
+                                        "NIT",
+                                        "NUIP",
+                                        "PAS",
+                                        "TI"
+                                    ],
+                                    "type": "string"
+                                },
                                 "full_name": {
                                     "type": "string"
                                 },
@@ -7404,6 +7415,7 @@
                             },
                             "required": [
                                 "cedula_last_4",
+                                "document_type",
                                 "full_name",
                                 "primary_email",
                                 "primary_phone",
