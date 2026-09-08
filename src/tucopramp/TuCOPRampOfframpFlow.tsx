@@ -71,6 +71,7 @@ import {
   offrampProofUrlLoadingSelector,
   offrampProofUrlSelector,
   offrampStatusSelector,
+  userProfileSelector,
 } from 'src/tucopramp/selectors'
 import { offrampReset } from 'src/tucopramp/slice'
 import { BankAccountType, PayoutMethod } from 'src/tucopramp/types'
@@ -138,6 +139,7 @@ function TuCOPRampOfframpFlow(_props: Props) {
   const activeOrderMissingMultisig = useSelector(offrampActiveOrderMissingMultisigSelector)
   const activeOrderDetail = useSelector(offrampActiveOrderDetailSelector)
   const lastPayout = useSelector(offrampLastPayoutSelector)
+  const userProfile = useSelector(userProfileSelector)
   const { prepareTransactionsResult, refreshPreparedTransactions, clearPreparedTransactions } =
     usePrepareSendTransactions()
   // Guards against dispatching sendOfframpDeposit twice for the same order
@@ -190,6 +192,28 @@ function TuCOPRampOfframpFlow(_props: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastPayout?.method, lastPayout?.bank_code, lastPayout?.bre_b_key])
+
+  // Prefill personal info from the /me endpoint. Server persists the user's
+  // full_name and primary_email so the second order onwards autofills them.
+  // cedula is intentionally omitted: server only returns cedula_last_4 for
+  // privacy, so the user must always retype the full number. full_name is
+  // split into given / family halves for the two-input form: an even word
+  // count splits down the middle, an odd count places the extra word on
+  // the given-name side (Colombian convention where 2+2 is most common but
+  // 1+2 or 2+1 also occur).
+  useEffect(() => {
+    if (!userProfile) return
+    if (userProfile.primary_email && !email) {
+      setEmail(userProfile.primary_email)
+    }
+    if (userProfile.full_name && !firstName && !lastName) {
+      const words = userProfile.full_name.trim().split(/\s+/)
+      const givenCount = Math.ceil(words.length / 2)
+      setFirstName(words.slice(0, givenCount).join(' '))
+      setLastName(words.slice(givenCount).join(' '))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile?.primary_email, userProfile?.full_name])
 
   useEffect(() => {
     if (banks && banks.length > 0 && !bankCode) {
@@ -568,15 +592,28 @@ function TuCOPRampOfframpFlow(_props: Props) {
               <View style={styles.activeOrderFooter}>
                 <InLineNotification
                   variant={NotificationVariant.Info}
-                  description={t('tucopramp.activeOrderSupportHint')}
+                  description={t('tucopramp.activeOrderCancelHint')}
                   style={styles.activeOrderNotice}
-                  testID="tucopramp-active-order-support-hint"
+                  testID="tucopramp-active-order-cancel-hint"
+                />
+                {/* Cancel is the primary action here: the slice comment says
+                    "user must cancel + retry" for this stuck state (server has
+                    an AWAITING_DEPOSIT order but wallet lost the multisig, so
+                    the deposit tx cannot be broadcast). Backing out only
+                    without cancelling leaves the daily cap locked for 24h. */}
+                <Button
+                  text={t('tucopramp.cancelOrderButton')}
+                  onPress={() => setCancelConfirmVisible(true)}
+                  size={BtnSizes.FULL}
+                  type={BtnTypes.PRIMARY}
+                  testID="tucopramp-offramp-active-cancel"
                 />
                 <Button
                   text={t('tucopramp.backCta')}
                   onPress={onCloseAndExit}
                   size={BtnSizes.FULL}
-                  type={BtnTypes.PRIMARY}
+                  type={BtnTypes.SECONDARY}
+                  style={styles.cancelOrderButton}
                   testID="tucopramp-offramp-active-back"
                 />
               </View>
@@ -1007,6 +1044,21 @@ function TuCOPRampOfframpFlow(_props: Props) {
                       : t('tucopramp.cancelled')}
             </Text>
 
+            {/* Terminal-state body explains what just happened and what the
+                user can do next. Kept per-state because "cancelaste" reads
+                very different from "se vencio" or "recibiras reembolso". */}
+            {status !== 'completed' && (
+              <Text style={styles.terminalBody}>
+                {status === 'refunded'
+                  ? t('tucopramp.refundedBody')
+                  : status === 'refund-owed'
+                    ? t('tucopramp.refundOwedBody')
+                    : status === 'expired'
+                      ? t('tucopramp.expiredBody')
+                      : t('tucopramp.cancelledBody')}
+              </Text>
+            )}
+
             {status === 'completed' && (
               <View style={styles.proofBlock}>
                 <Text style={styles.proofTitle}>{t('tucopramp.offramp.completed.proofTitle')}</Text>
@@ -1102,8 +1154,16 @@ function TuCOPRampOfframpFlow(_props: Props) {
         actionText={t('tucopramp.cancelConfirmYes') ?? ''}
         actionPress={() => {
           setCancelConfirmVisible(false)
-          if (order?.order_id) {
-            dispatch(cancelOfframpOrder({ orderId: order.order_id }))
+          // Two entry points can open this dialog:
+          //   1) awaiting-deposit block with the freshly-created `order` in
+          //      slice state (normal happy path after createOfframpOrder).
+          //   2) activeOrderMissingMultisig block where the slice only holds
+          //      `activeOrderDetail` from checkActiveOfframpOrder (recovering
+          //      a server-side order after cold boot / reinstall).
+          // Prefer the fresh order if present, fall back to the recovered id.
+          const orderId = order?.order_id ?? activeOrderDetail?.id
+          if (orderId) {
+            dispatch(cancelOfframpOrder({ orderId }))
           }
         }}
         secondaryActionText={t('tucopramp.cancelConfirmNo') ?? ''}
@@ -1371,6 +1431,13 @@ const styles = StyleSheet.create({
     color: Colors.errorDark,
     marginBottom: Spacing.Regular16,
     textAlign: 'center',
+  },
+  terminalBody: {
+    ...typeScale.bodyMedium,
+    color: Colors.gray4,
+    textAlign: 'center',
+    marginBottom: Spacing.Thick24,
+    paddingHorizontal: Spacing.Regular16,
   },
   body: {
     ...typeScale.bodyMedium,
