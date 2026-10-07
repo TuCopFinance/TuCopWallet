@@ -1,6 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 import { adaptNeeruMeta } from 'src/earn/neeru/api'
 import { NEERU_META_HARDCODED_FALLBACK } from 'src/earn/neeru/configSelectors'
+import { NEERU_CATEGORY_IDS } from 'src/earn/neeru/constants'
 import { NeeruMeta } from 'src/earn/neeru/types'
 
 // Gate the whole suite behind an env var so local `yarn test` runs offline
@@ -97,15 +98,16 @@ describeLive('Neeru meta drift check (live backend)', () => {
     )
   })
 
-  it('catalogue exposes the 4 expected category IDs (structural, no rate assertion)', () => {
+  it('catalogue exposes the 6 expected category IDs (structural, no rate assertion)', () => {
     const ids = liveCatalogue.categories.map((c: { id: number }) => c.id).sort()
     // Rates fluctuate operationally so we only validate the structural shape:
-    // the same 4 categories that the wallet hardcodes exist upstream. Retunes
-    // do not fail this check; adding or removing a category does.
-    expect(ids).toEqual([0, 1, 2, 3])
+    // the same 6 categories that the wallet hardcodes in NEERU_CATEGORY_IDS
+    // exist upstream. Retunes do not fail this check; adding or removing a
+    // category does.
+    expect(ids).toEqual([...NEERU_CATEGORY_IDS].sort())
   })
 
-  it('catalogue category lock periods (secs) are the 4 expected buckets', () => {
+  it('catalogue category lock periods (secs) are the 6 expected buckets', () => {
     const secsByCategory = new Map<number, string>(
       liveCatalogue.categories.map((c: { id: number; secs: string }) => [c.id, c.secs])
     )
@@ -113,5 +115,7 @@ describeLive('Neeru meta drift check (live backend)', () => {
     expect(secsByCategory.get(1)).toBe(String(30 * 86400))
     expect(secsByCategory.get(2)).toBe(String(60 * 86400))
     expect(secsByCategory.get(3)).toBe(String(90 * 86400))
+    expect(secsByCategory.get(4)).toBe(String(180 * 86400))
+    expect(secsByCategory.get(5)).toBe(String(365 * 86400))
   })
 })
