@@ -21,7 +21,7 @@ exports[`TextInputWithButtons renders correctly 1`] = `
         {
           "flex": 1,
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 22,
           "paddingHorizontal": 0,
           "paddingVertical": 12,

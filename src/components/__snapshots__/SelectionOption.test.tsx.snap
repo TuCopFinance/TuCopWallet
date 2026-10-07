@@ -86,7 +86,7 @@ exports[`renders selected correctly 1`] = `
         {
           "flex": 1,
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 24,
           "marginRight": 16,
         }
@@ -184,7 +184,7 @@ exports[`renders unselected correctly 1`] = `
         {
           "flex": 1,
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 24,
           "marginRight": 16,
         }

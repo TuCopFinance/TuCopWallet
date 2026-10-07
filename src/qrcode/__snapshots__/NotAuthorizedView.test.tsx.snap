@@ -84,7 +84,7 @@ exports[`NotAuthorizedView renders correctly 1`] = `
         {
           "color": "#666666",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 24,
           "marginBottom": 32,
           "textAlign": "center",
@@ -254,7 +254,7 @@ exports[`NotAuthorizedView renders correctly 1`] = `
                   {
                     "color": "#FFFFFF",
                     "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "fontWeight": "normal",
                     "lineHeight": 24,
                     "marginLeft": 0,
@@ -370,7 +370,7 @@ exports[`NotAuthorizedView renders correctly 1`] = `
                   {
                     "color": "#2F4ACD",
                     "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "fontWeight": "normal",
                     "lineHeight": 24,
                     "marginLeft": 0,

@@ -38,7 +38,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -51,7 +51,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -67,7 +67,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -95,7 +95,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -108,7 +108,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
@@ -124,7 +124,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
@@ -172,7 +172,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -185,7 +185,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -198,7 +198,7 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -227,7 +227,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -250,7 +250,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               [
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                 },
               ]
@@ -340,7 +340,7 @@ exports[`SimplexScreen renders correctly 1`] = `
                 [
                   {
                     "fontFamily": "RedHatDisplayRegular",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "lineHeight": 24,
                   },
                 ],
@@ -363,7 +363,7 @@ exports[`SimplexScreen renders correctly 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -376,12 +376,12 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -394,12 +394,12 @@ exports[`SimplexScreen renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -411,7 +411,7 @@ exports[`SimplexScreen renders correctly 1`] = `
                 [
                   {
                     "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "lineHeight": 24,
                   },
                 ],
@@ -573,7 +573,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -586,7 +586,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -602,7 +602,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -630,7 +630,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -643,7 +643,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
@@ -659,7 +659,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
@@ -707,7 +707,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -720,7 +720,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -733,7 +733,7 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -762,7 +762,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -785,7 +785,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               [
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                 },
               ]
@@ -875,7 +875,7 @@ exports[`SimplexScreen renders correctly 2`] = `
                 [
                   {
                     "fontFamily": "RedHatDisplayRegular",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "lineHeight": 24,
                   },
                 ],
@@ -898,7 +898,7 @@ exports[`SimplexScreen renders correctly 2`] = `
               "display": "flex",
               "flexDirection": "row",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "justifyContent": "space-between",
               "lineHeight": 24,
               "paddingVertical": 4,
@@ -911,12 +911,12 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -929,12 +929,12 @@ exports[`SimplexScreen renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ]
@@ -946,7 +946,7 @@ exports[`SimplexScreen renders correctly 2`] = `
                 [
                   {
                     "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "lineHeight": 24,
                   },
                 ],
@@ -1117,7 +1117,7 @@ exports[`SimplexScreen renders correctly 2`] = `
                 {
                   "color": "#FFFFFF",
                   "fontFamily": "RedHatDisplaySemiBold",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "fontWeight": "normal",
                   "lineHeight": 24,
                   "marginLeft": 0,

@@ -20,8 +20,8 @@ exports[`CodeRow renders correctly for all CodeRowStatus states 1`] = `
       {
         "color": "#505050",
         "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 15,
-        "lineHeight": 24,
+        "fontSize": 14,
+        "lineHeight": 20,
       }
     }
   >
@@ -65,7 +65,7 @@ exports[`CodeRow renders correctly for all CodeRowStatus states 2`] = `
           "color": "#2E3338",
           "flex": 1,
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 22,
           "paddingHorizontal": 0,
           "paddingVertical": 12,
@@ -100,8 +100,8 @@ exports[`CodeRow renders correctly for all CodeRowStatus states 3`] = `
       {
         "color": "#505050",
         "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 15,
-        "lineHeight": 24,
+        "fontSize": 14,
+        "lineHeight": 20,
       }
     }
   >
@@ -143,8 +143,8 @@ exports[`CodeRow renders correctly for all CodeRowStatus states 4`] = `
       {
         "color": "#505050",
         "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 15,
-        "lineHeight": 24,
+        "fontSize": 14,
+        "lineHeight": 20,
       }
     }
   >
@@ -173,8 +173,8 @@ exports[`CodeRow renders correctly for all CodeRowStatus states 5`] = `
       {
         "color": "#505050",
         "fontFamily": "RedHatDisplayRegular",
-        "fontSize": 15,
-        "lineHeight": 24,
+        "fontSize": 14,
+        "lineHeight": 20,
       }
     }
   >

@@ -18,7 +18,7 @@ exports[`ReviewFees renders correctly 1`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -31,7 +31,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -47,7 +47,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -75,7 +75,7 @@ exports[`ReviewFees renders correctly 1`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -88,7 +88,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
@@ -104,7 +104,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
@@ -152,7 +152,7 @@ exports[`ReviewFees renders correctly 1`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -165,7 +165,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -178,7 +178,7 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -207,7 +207,7 @@ exports[`ReviewFees renders correctly 1`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -230,7 +230,7 @@ exports[`ReviewFees renders correctly 1`] = `
           [
             {
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             },
           ]
@@ -320,7 +320,7 @@ exports[`ReviewFees renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ],
@@ -343,7 +343,7 @@ exports[`ReviewFees renders correctly 1`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -356,12 +356,12 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
             "fontFamily": "RedHatDisplaySemiBold",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -374,12 +374,12 @@ exports[`ReviewFees renders correctly 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
             "fontFamily": "RedHatDisplaySemiBold",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -391,7 +391,7 @@ exports[`ReviewFees renders correctly 1`] = `
             [
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ],
@@ -428,7 +428,7 @@ exports[`ReviewFees renders correctly 2`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -441,7 +441,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -457,7 +457,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -485,7 +485,7 @@ exports[`ReviewFees renders correctly 2`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -498,7 +498,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
@@ -514,7 +514,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
@@ -562,7 +562,7 @@ exports[`ReviewFees renders correctly 2`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -575,7 +575,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -588,7 +588,7 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -617,7 +617,7 @@ exports[`ReviewFees renders correctly 2`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -640,7 +640,7 @@ exports[`ReviewFees renders correctly 2`] = `
           [
             {
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             },
           ]
@@ -726,7 +726,7 @@ exports[`ReviewFees renders correctly 2`] = `
         {
           "color": "#2F4ACD",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "lineHeight": 24,
         }
       }
@@ -741,7 +741,7 @@ exports[`ReviewFees renders correctly 2`] = `
           "display": "flex",
           "flexDirection": "row",
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 12,
+          "fontSize": 16,
           "justifyContent": "space-between",
           "lineHeight": 24,
           "paddingVertical": 4,
@@ -754,12 +754,12 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
             "fontFamily": "RedHatDisplaySemiBold",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -772,12 +772,12 @@ exports[`ReviewFees renders correctly 2`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
           {
             "fontFamily": "RedHatDisplaySemiBold",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
           },
         ]
@@ -789,7 +789,7 @@ exports[`ReviewFees renders correctly 2`] = `
             [
               {
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               },
             ],

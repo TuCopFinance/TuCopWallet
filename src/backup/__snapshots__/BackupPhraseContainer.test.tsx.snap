@@ -52,7 +52,7 @@ exports[`BackupPhraseContainer renders correctly for input backup phrase 1`] = `
         [
           {
             "fontFamily": "RedHatDisplayRegular",
-            "fontSize": 12,
+            "fontSize": 16,
             "lineHeight": 24,
             "minHeight": 125,
             "padding": 14,
@@ -147,7 +147,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -190,7 +190,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -233,7 +233,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -276,7 +276,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -319,7 +319,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -362,7 +362,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -405,7 +405,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -448,7 +448,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -491,7 +491,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -534,7 +534,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -577,7 +577,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -620,7 +620,7 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 12-word phr
             {
               "color": "#505050",
               "fontFamily": "RedHatDisplayRegular",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             }
           }
@@ -700,8 +700,8 @@ exports[`BackupPhraseContainer renders correctly for readonly backup 24-word phr
       style={
         {
           "fontFamily": "RedHatDisplayRegular",
-          "fontSize": 22,
-          "lineHeight": 32,
+          "fontSize": 18,
+          "lineHeight": 28,
         }
       }
     >
