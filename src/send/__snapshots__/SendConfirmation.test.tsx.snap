@@ -5,153 +5,191 @@ exports[`SendConfirmation renders correctly 1`] = `
   edges={
     {
       "bottom": "additive",
-      "left": "additive",
-      "right": "additive",
+      "left": "off",
+      "right": "off",
       "top": "additive",
     }
   }
   style={
-    {
-      "flex": 1,
-      "paddingHorizontal": 8,
-    }
+    [
+      {
+        "flex": 1,
+      },
+      {
+        "backgroundColor": "#FFFFFF",
+      },
+      undefined,
+    ]
   }
 >
   <View
     style={
       [
         {
-          "alignItems": "center",
-          "flexDirection": "row",
-          "height": 56,
-          "justifyContent": "space-between",
-          "overflow": "hidden",
-          "width": "100%",
+          "flex": 1,
         },
-        {
-          "paddingHorizontal": 8,
-        },
+        [
+          {
+            "paddingHorizontal": 8,
+          },
+          undefined,
+        ],
       ]
     }
   >
     <View
       style={
-        {
-          "alignItems": "center",
-          "height": "100%",
-          "justifyContent": "center",
-        }
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "height": 56,
+            "justifyContent": "space-between",
+            "overflow": "hidden",
+            "width": "100%",
+          },
+          {
+            "paddingHorizontal": 8,
+          },
+        ]
       }
     >
       <View
         style={
-          [
+          {
+            "alignItems": "center",
+            "justifyContent": "center",
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+          }
+        }
+      >
+        <Text
+          style={
             {
-              "alignItems": "center",
-              "justifyContent": "center",
-            },
-            undefined,
-          ]
+              "color": "#2F4ACD",
+              "fontFamily": "RedHatDisplayBold",
+              "fontSize": 24,
+              "lineHeight": 32,
+              "maxWidth": 450,
+            }
+          }
+          testID="CustomHeaderTitle"
+        >
+          reviewPayment
+        </Text>
+      </View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "height": "100%",
+            "justifyContent": "center",
+          }
         }
       >
         <View
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": undefined,
-              "expanded": undefined,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          focusable={true}
-          hitSlop={
-            {
-              "bottom": 10,
-              "left": 10,
-              "right": 10,
-              "top": 10,
-            }
-          }
-          nativeBackgroundAndroid={
-            {
-              "attribute": "selectableItemBackgroundBorderless",
-              "rippleRadius": undefined,
-              "type": "ThemeAttrAndroid",
-            }
-          }
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
-            {
-              "left": -16,
-              "paddingHorizontal": 16,
-              "paddingVertical": 12,
-            }
-          }
-        >
-          <svg
-            fill="none"
-            height={16}
-            viewBox="0 0 15 29"
-            width="15"
-          >
-            <path
-              d="M14.6697 27.0803C15.098 27.5114 15.1122 28.2101 14.6982 28.656C14.2843 29.102 13.6134 29.1169 13.1852 28.6858C13.1852 28.6858 13.1709 28.6709 13.1567 28.656L0.31045 15.2775C-0.103483 14.8464 -0.103483 14.1329 0.31045 13.7018L13.1567 0.323314C13.5706 -0.107771 14.2558 -0.107771 14.6697 0.323314C15.0837 0.7544 15.0837 1.46792 14.6697 1.899L2.57999 14.4897L14.6697 27.0803Z"
-              fill="#2E3338"
-            />
-          </svg>
-        </View>
-      </View>
-    </View>
-  </View>
-  <View
-    style={
-      [
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        undefined,
-      ]
-    }
-  >
-    <RCTScrollView
-      contentContainerStyle={
-        {
-          "paddingVertical": 10,
-        }
-      }
-      keyboardShouldPersistTaps="handled"
-      testID="KeyboardAwareScrollView"
-    >
-      <View>
-        <View
-          style={
-            {
-              "marginHorizontal": 16,
-            }
+            [
+              {
+                "alignItems": "center",
+                "justifyContent": "center",
+              },
+              undefined,
+            ]
           }
         >
           <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            focusable={true}
+            hitSlop={
+              {
+                "bottom": 10,
+                "left": 10,
+                "right": 10,
+                "top": 10,
+              }
+            }
+            nativeBackgroundAndroid={
+              {
+                "attribute": "selectableItemBackgroundBorderless",
+                "rippleRadius": undefined,
+                "type": "ThemeAttrAndroid",
+              }
+            }
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
             style={
               {
-                "alignItems": "flex-start",
-                "paddingBottom": 24,
+                "left": -16,
+                "paddingHorizontal": 16,
+                "paddingVertical": 12,
+              }
+            }
+          >
+            <svg
+              fill="none"
+              height={16}
+              viewBox="0 0 15 29"
+              width="15"
+            >
+              <path
+                d="M14.6697 27.0803C15.098 27.5114 15.1122 28.2101 14.6982 28.656C14.2843 29.102 13.6134 29.1169 13.1852 28.6858C13.1852 28.6858 13.1709 28.6709 13.1567 28.656L0.31045 15.2775C-0.103483 14.8464 -0.103483 14.1329 0.31045 13.7018L13.1567 0.323314C13.5706 -0.107771 14.2558 -0.107771 14.6697 0.323314C15.0837 0.7544 15.0837 1.46792 14.6697 1.899L2.57999 14.4897L14.6697 27.0803Z"
+                fill="#2E3338"
+              />
+            </svg>
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "#FFFFFF",
+            "flex": 1,
+          },
+          undefined,
+        ]
+      }
+    >
+      <RCTScrollView
+        contentContainerStyle={
+          {
+            "paddingVertical": 10,
+          }
+        }
+        keyboardShouldPersistTaps="handled"
+        testID="KeyboardAwareScrollView"
+      >
+        <View>
+          <View
+            style={
+              {
+                "marginHorizontal": 16,
               }
             }
           >
@@ -159,20 +197,16 @@ exports[`SendConfirmation renders correctly 1`] = `
               style={
                 {
                   "alignItems": "flex-start",
-                  "flexDirection": "row",
+                  "paddingBottom": 24,
                 }
               }
             >
               <View
                 style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "flexDirection": "row",
-                      "justifyContent": "center",
-                    },
-                    undefined,
-                  ]
+                  {
+                    "alignItems": "flex-start",
+                    "flexDirection": "row",
+                  }
                 }
               >
                 <View
@@ -180,500 +214,470 @@ exports[`SendConfirmation renders correctly 1`] = `
                     [
                       {
                         "alignItems": "center",
+                        "flexDirection": "row",
                         "justifyContent": "center",
                       },
-                      {
-                        "backgroundColor": "#FFFFFF",
-                        "borderRadius": 20,
-                        "height": 40,
-                        "width": 40,
-                      },
-                      {
-                        "borderColor": "#2F4ACD",
-                        "borderWidth": 1,
-                      },
+                      undefined,
                     ]
                   }
                 >
-                  <svg
-                    fill="none"
-                    height={24}
-                    viewBox="0 0 22 27"
-                    width={24}
+                  <View
+                    style={
+                      [
+                        {
+                          "alignItems": "center",
+                          "justifyContent": "center",
+                        },
+                        {
+                          "backgroundColor": "#FFFFFF",
+                          "borderRadius": 20,
+                          "height": 40,
+                          "width": 40,
+                        },
+                        {
+                          "borderColor": "#2F4ACD",
+                          "borderWidth": 1,
+                        },
+                      ]
+                    }
                   >
-                    <path
-                      d="M10.9928 14.5244C15.1115 14.5244 18.4491 11.2737 18.4491 7.26218C18.4491 3.25069 15.1115 0 10.9928 0C6.87406 0 3.53648 3.25069 3.53648 7.26218C3.53648 11.2737 6.87406 14.5244 10.9928 14.5244ZM10.9928 2.07491C13.9327 2.07491 16.3187 4.39881 16.3187 7.26218C16.3187 10.1256 13.9327 12.4495 10.9928 12.4495C8.05287 12.4495 5.66685 10.1256 5.66685 7.26218C5.66685 4.39881 8.05287 2.07491 10.9928 2.07491ZM21.9997 21.745V23.1421C21.9997 24.4286 21.5168 25.6735 20.6363 26.628C20.2528 27.0706 19.5853 27.126 19.1308 26.7525C18.6763 26.379 18.6195 25.7289 19.003 25.2862C19.0172 25.2724 19.0314 25.2586 19.0456 25.2309C19.5711 24.6499 19.8693 23.903 19.8693 23.1283V21.7312C19.8835 19.6563 18.4633 17.8442 16.4039 17.3186C16.0489 17.2356 15.6654 17.2771 15.3387 17.4569C12.6403 18.9093 9.3595 18.9093 6.64683 17.4569C6.32017 17.2771 5.9367 17.2218 5.58164 17.3186C3.52228 17.8442 2.08782 19.6563 2.11623 21.7312V23.1283C2.11623 23.903 2.40026 24.6499 2.93995 25.2309C3.32342 25.6735 3.25241 26.3237 2.81214 26.6972C2.38606 27.043 1.74697 27.0153 1.3635 26.6142C0.482945 25.6597 7.20182e-05 24.4148 7.20182e-05 23.1283V21.7312C-0.0141305 18.7157 2.07362 16.0598 5.08454 15.3128C5.9793 15.0915 6.91667 15.216 7.71201 15.6587C9.77137 16.7653 12.2568 16.7653 14.3019 15.6587C15.0973 15.2298 16.0347 15.1053 16.9294 15.3267C19.9261 16.0736 22.0281 18.7157 21.9997 21.745Z"
-                      fill="#2F4ACD"
-                    />
-                  </svg>
+                    <svg
+                      fill="none"
+                      height={24}
+                      viewBox="0 0 22 27"
+                      width={24}
+                    >
+                      <path
+                        d="M10.9928 14.5244C15.1115 14.5244 18.4491 11.2737 18.4491 7.26218C18.4491 3.25069 15.1115 0 10.9928 0C6.87406 0 3.53648 3.25069 3.53648 7.26218C3.53648 11.2737 6.87406 14.5244 10.9928 14.5244ZM10.9928 2.07491C13.9327 2.07491 16.3187 4.39881 16.3187 7.26218C16.3187 10.1256 13.9327 12.4495 10.9928 12.4495C8.05287 12.4495 5.66685 10.1256 5.66685 7.26218C5.66685 4.39881 8.05287 2.07491 10.9928 2.07491ZM21.9997 21.745V23.1421C21.9997 24.4286 21.5168 25.6735 20.6363 26.628C20.2528 27.0706 19.5853 27.126 19.1308 26.7525C18.6763 26.379 18.6195 25.7289 19.003 25.2862C19.0172 25.2724 19.0314 25.2586 19.0456 25.2309C19.5711 24.6499 19.8693 23.903 19.8693 23.1283V21.7312C19.8835 19.6563 18.4633 17.8442 16.4039 17.3186C16.0489 17.2356 15.6654 17.2771 15.3387 17.4569C12.6403 18.9093 9.3595 18.9093 6.64683 17.4569C6.32017 17.2771 5.9367 17.2218 5.58164 17.3186C3.52228 17.8442 2.08782 19.6563 2.11623 21.7312V23.1283C2.11623 23.903 2.40026 24.6499 2.93995 25.2309C3.32342 25.6735 3.25241 26.3237 2.81214 26.6972C2.38606 27.043 1.74697 27.0153 1.3635 26.6142C0.482945 25.6597 7.20182e-05 24.4148 7.20182e-05 23.1283V21.7312C-0.0141305 18.7157 2.07362 16.0598 5.08454 15.3128C5.9793 15.0915 6.91667 15.216 7.71201 15.6587C9.77137 16.7653 12.2568 16.7653 14.3019 15.6587C15.0973 15.2298 16.0347 15.1053 16.9294 15.3267C19.9261 16.0736 22.0281 18.7157 21.9997 21.745Z"
+                        fill="#2F4ACD"
+                      />
+                    </svg>
+                  </View>
+                </View>
+                <View
+                  style={
+                    {
+                      "paddingLeft": 8,
+                    }
+                  }
+                >
+                  <Text
+                    style={
+                      {
+                        "color": "#666666",
+                        "fontFamily": "RedHatDisplayMedium",
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="HeaderText"
+                  >
+                    sending
+                  </Text>
+                  <Text
+                    style={
+                      {
+                        "color": "#2E3338",
+                        "fontFamily": "RedHatDisplayMedium",
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="DisplayName"
+                  >
+                    feedItemAddress, {"address":"0x0000...7E57"}
+                  </Text>
                 </View>
               </View>
-              <View
+              <Text
                 style={
                   {
-                    "paddingLeft": 8,
+                    "color": "#2E3338",
+                    "fontFamily": "RedHatDisplayBold",
+                    "fontSize": 32,
+                    "letterSpacing": -0.32,
+                    "lineHeight": 36,
+                    "paddingVertical": 8,
                   }
                 }
+                testID="SendAmount"
               >
-                <Text
-                  style={
-                    {
-                      "color": "#666666",
-                      "fontFamily": "RedHatDisplayMedium",
-                      "fontSize": 12,
-                      "lineHeight": 24,
-                    }
+                1.00
+                 assets.dollars
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#505050",
+                    "fontFamily": "RedHatDisplayRegular",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                    "paddingBottom": 16,
                   }
-                  testID="HeaderText"
-                >
-                  sending
-                </Text>
-                <Text
-                  style={
-                    {
-                      "color": "#2E3338",
-                      "fontFamily": "RedHatDisplayMedium",
-                      "fontSize": 12,
-                      "lineHeight": 24,
-                    }
-                  }
-                  testID="DisplayName"
-                >
-                  feedItemAddress, {"address":"0x0000...7E57"}
-                </Text>
-              </View>
+                }
+                testID="SendAmountFiat"
+              >
+                COP$
+                1.33
+              </Text>
             </View>
-            <Text
-              style={
-                {
-                  "color": "#2E3338",
-                  "fontFamily": "RedHatDisplayBold",
-                  "fontSize": 32,
-                  "letterSpacing": -0.32,
-                  "lineHeight": 36,
-                  "paddingVertical": 8,
-                }
-              }
-              testID="SendAmount"
-            >
-              1.00
-               assets.dollars
-            </Text>
-            <Text
-              style={
-                {
-                  "color": "#505050",
-                  "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
-                  "lineHeight": 24,
-                  "paddingBottom": 16,
-                }
-              }
-              testID="SendAmountFiat"
-            >
-              COP$
-              1.33
-            </Text>
           </View>
         </View>
-      </View>
-    </RCTScrollView>
-    <View
-      style={
-        {
-          "padding": 16,
-          "paddingBottom": 8,
-        }
-      }
-    >
+      </RCTScrollView>
       <View
         style={
-          [
-            {
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "space-between",
-              "marginVertical": 5,
-            },
-            undefined,
-          ]
+          {
+            "padding": 16,
+            "paddingBottom": 8,
+          }
         }
       >
         <View
-          style={
-            {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "marginRight": 5,
-            }
-          }
-        >
-          <Text
-            style={
-              [
-                {
-                  "color": "#2E3338",
-                  "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 12,
-                  "lineHeight": 24,
-                },
-                {
-                  "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
-                  "lineHeight": 24,
-                },
-              ]
-            }
-            testID="LineItemRowTitle/SendConfirmation/fee"
-          >
-            feeEstimate
-          </Text>
-        </View>
-        <Text
           style={
             [
               {
-                "color": "#2E3338",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
-                "lineHeight": 24,
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "space-between",
+                "marginVertical": 5,
               },
-              {
-                "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 12,
-                "lineHeight": 24,
-              },
+              undefined,
             ]
           }
-          testID="LineItemRow/SendConfirmation/fee"
         >
-          <Text
-            adjustsFontSizeToFit={true}
-            minimumFontScale={0.7}
-            numberOfLines={1}
+          <View
             style={
-              [
-                {
-                  "color": "#2E3338",
-                  "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
-                  "lineHeight": 24,
-                },
-                undefined,
-              ]
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "marginRight": 5,
+              }
             }
-            testID="SendConfirmation/FeeSummary"
           >
-            0.01 CELO ≈ COP$0.067
-          </Text>
-        </Text>
-      </View>
-      <View
-        style={
-          [
-            {
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "space-between",
-              "marginVertical": 5,
-            },
-            undefined,
-          ]
-        }
-      >
-        <View
-          style={
-            {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "marginRight": 5,
-            }
-          }
-        >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#2E3338",
+                    "fontFamily": "RedHatDisplayMedium",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                  {
+                    "fontFamily": "RedHatDisplayRegular",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                ]
+              }
+              testID="LineItemRowTitle/SendConfirmation/fee"
+            >
+              feeEstimate
+            </Text>
+          </View>
           <Text
             style={
               [
                 {
                   "color": "#2E3338",
                   "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 12,
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "RedHatDisplayRegular",
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            testID="LineItemRow/SendConfirmation/fee"
+          >
+            <Text
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.7}
+              numberOfLines={1}
+              style={
+                [
+                  {
+                    "color": "#2E3338",
+                    "fontFamily": "RedHatDisplayRegular",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                  undefined,
+                ]
+              }
+              testID="SendConfirmation/FeeSummary"
+            >
+              0.01 CELO ≈ COP$0.067
+            </Text>
+          </Text>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "space-between",
+                "marginVertical": 5,
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "marginRight": 5,
+              }
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#2E3338",
+                    "fontFamily": "RedHatDisplayMedium",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                  {
+                    "fontFamily": "RedHatDisplaySemiBold",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                ]
+              }
+              testID="LineItemRowTitle/undefined"
+            >
+              total
+            </Text>
+          </View>
+          <Text
+            style={
+              [
+                {
+                  "color": "#2E3338",
+                  "fontFamily": "RedHatDisplayMedium",
+                  "fontSize": 16,
                   "lineHeight": 24,
                 },
                 {
                   "fontFamily": "RedHatDisplaySemiBold",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                 },
               ]
             }
-            testID="LineItemRowTitle/undefined"
-          >
-            total
-          </Text>
-        </View>
-        <Text
-          style={
-            [
-              {
-                "color": "#2E3338",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
-                "lineHeight": 24,
-              },
-              {
-                "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
-                "lineHeight": 24,
-              },
-            ]
-          }
-          testID="LineItemRow/undefined"
-        >
-          <Text
-            testID="TotalLineItem/Total"
-          >
-            ≈ 
-            1.05
-             assets.dollars
-          </Text>
-        </Text>
-      </View>
-      <View
-        style={
-          [
-            {
-              "flexDirection": "row",
-              "flexWrap": "wrap",
-              "justifyContent": "space-between",
-              "marginVertical": 5,
-            },
-            {
-              "marginVertical": 0,
-            },
-          ]
-        }
-      >
-        <View
-          style={
-            {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "marginRight": 5,
-            }
-          }
-        >
-          <Text
-            style={
-              [
-                {
-                  "color": "#2E3338",
-                  "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 12,
-                  "lineHeight": 24,
-                },
-                {
-                  "color": "#666666",
-                  "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 14,
-                  "lineHeight": 20,
-                },
-              ]
-            }
-            testID="LineItemRowTitle/undefined"
+            testID="LineItemRow/undefined"
           >
             <Text
-              style={
-                {
-                  "color": "#666666",
-                  "fontFamily": "RedHatDisplayMedium",
-                  "fontSize": 14,
-                  "lineHeight": 20,
-                }
-              }
-              testID="TotalLineItem/ExchangeRate"
+              testID="TotalLineItem/Total"
             >
-              tokenExchangeRateApprox, {"symbol":"USDm"}
-              <Text>
-                COP$
-                1.33
-              </Text>
+              ≈ 
+              1.05
+               assets.dollars
             </Text>
           </Text>
         </View>
-        <Text
-          style={
-            [
-              {
-                "color": "#2E3338",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
-                "lineHeight": 24,
-              },
-              {
-                "color": "#666666",
-                "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 14,
-                "lineHeight": 20,
-              },
-            ]
-          }
-          testID="LineItemRow/undefined"
-        >
-          <Text
-            testID="TotalLineItem/Subtotal"
-          >
-            COP$
-            1.40
-          </Text>
-        </Text>
-      </View>
-    </View>
-    <View
-      style={
-        {
-          "marginHorizontal": 16,
-          "paddingVertical": 16,
-        }
-      }
-    >
-      <View
-        distance={8}
-        offset={
-          [
-            0,
-            4,
-          ]
-        }
-        startColor="rgba(190, 201, 255, 0.28)"
-        style={
-          {
-            "alignSelf": "stretch",
-            "borderRadius": 15,
-          }
-        }
-      >
         <View
           style={
             [
               {
-                "flexDirection": "column",
-                "width": "100%",
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+                "justifyContent": "space-between",
+                "marginVertical": 5,
               },
               {
-                "marginBottom": 16,
+                "marginVertical": 0,
               },
             ]
           }
         >
           <View
             style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "marginRight": 5,
+              }
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#2E3338",
+                    "fontFamily": "RedHatDisplayMedium",
+                    "fontSize": 16,
+                    "lineHeight": 24,
+                  },
+                  {
+                    "color": "#666666",
+                    "fontFamily": "RedHatDisplayMedium",
+                    "fontSize": 14,
+                    "lineHeight": 20,
+                  },
+                ]
+              }
+              testID="LineItemRowTitle/undefined"
+            >
+              <Text
+                style={
+                  {
+                    "color": "#666666",
+                    "fontFamily": "RedHatDisplayMedium",
+                    "fontSize": 14,
+                    "lineHeight": 20,
+                  }
+                }
+                testID="TotalLineItem/ExchangeRate"
+              >
+                tokenExchangeRateApprox, {"symbol":"USDm"}
+                <Text>
+                  COP$
+                  1.33
+                </Text>
+              </Text>
+            </Text>
+          </View>
+          <Text
+            style={
               [
                 {
-                  "overflow": "hidden",
+                  "color": "#2E3338",
+                  "fontFamily": "RedHatDisplayMedium",
+                  "fontSize": 16,
+                  "lineHeight": 24,
                 },
                 {
-                  "borderRadius": 100,
+                  "color": "#666666",
+                  "fontFamily": "RedHatDisplayMedium",
+                  "fontSize": 14,
+                  "lineHeight": 20,
+                },
+              ]
+            }
+            testID="LineItemRow/undefined"
+          >
+            <Text
+              testID="TotalLineItem/Subtotal"
+            >
+              COP$
+              1.40
+            </Text>
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "marginHorizontal": 16,
+            "paddingVertical": 16,
+          }
+        }
+      >
+        <View
+          distance={8}
+          offset={
+            [
+              0,
+              4,
+            ]
+          }
+          startColor="rgba(190, 201, 255, 0.28)"
+          style={
+            {
+              "alignSelf": "stretch",
+              "borderRadius": 15,
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "flexDirection": "column",
+                  "width": "100%",
+                },
+                {
+                  "marginBottom": 16,
                 },
               ]
             }
           >
             <View
-              accessibilityState={
-                {
-                  "busy": undefined,
-                  "checked": undefined,
-                  "disabled": false,
-                  "expanded": undefined,
-                  "selected": undefined,
-                }
-              }
-              accessibilityValue={
-                {
-                  "max": undefined,
-                  "min": undefined,
-                  "now": undefined,
-                  "text": undefined,
-                }
-              }
-              accessible={true}
-              focusable={true}
-              nativeBackgroundAndroid={
-                {
-                  "attribute": "selectableItemBackground",
-                  "rippleRadius": undefined,
-                  "type": "ThemeAttrAndroid",
-                }
-              }
-              onClick={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
               style={
                 [
                   {
-                    "alignItems": "center",
-                    "backgroundColor": "#2F4ACD",
-                    "flexDirection": "row",
-                    "flexGrow": 1,
-                    "height": 48,
-                    "justifyContent": "center",
-                    "maxHeight": 56,
-                    "opacity": 1,
-                    "paddingHorizontal": 24,
-                    "paddingVertical": 5,
-                    "width": "100%",
+                    "overflow": "hidden",
                   },
-                  undefined,
+                  {
+                    "borderRadius": 100,
+                  },
                 ]
               }
-              testID="ConfirmButton"
             >
               <View
-                style={
+                accessibilityState={
                   {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": undefined,
                   }
                 }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                focusable={true}
+                nativeBackgroundAndroid={
+                  {
+                    "attribute": "selectableItemBackground",
+                    "rippleRadius": undefined,
+                    "type": "ThemeAttrAndroid",
+                  }
+                }
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "backgroundColor": "#2F4ACD",
+                      "flexDirection": "row",
+                      "flexGrow": 1,
+                      "height": 48,
+                      "justifyContent": "center",
+                      "maxHeight": 56,
+                      "opacity": 1,
+                      "paddingHorizontal": 24,
+                      "paddingVertical": 5,
+                      "width": "100%",
+                    },
+                    undefined,
+                  ]
+                }
+                testID="ConfirmButton"
               >
-                <BVLinearGradient
-                  borderRadii={
-                    [
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                    ]
-                  }
-                  colors={
-                    [
-                      -13677875,
-                      -15194777,
-                    ]
-                  }
-                  endPoint={
-                    [
-                      1,
-                      0,
-                    ]
-                  }
-                  locations={null}
-                  startPoint={
-                    [
-                      0,
-                      0,
-                    ]
-                  }
+                <View
                   style={
                     {
                       "bottom": 0,
@@ -683,46 +687,89 @@ exports[`SendConfirmation renders correctly 1`] = `
                       "top": 0,
                     }
                   }
-                />
-              </View>
-              <Text
-                accessibilityLabel="send"
-                maxFontSizeMultiplier={1}
-                style={
-                  {
-                    "color": "#FFFFFF",
-                    "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
-                    "fontWeight": "normal",
-                    "lineHeight": 24,
-                    "marginLeft": 0,
-                    "marginRight": 0,
+                >
+                  <BVLinearGradient
+                    borderRadii={
+                      [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                      ]
+                    }
+                    colors={
+                      [
+                        -13677875,
+                        -15194777,
+                      ]
+                    }
+                    endPoint={
+                      [
+                        1,
+                        0,
+                      ]
+                    }
+                    locations={null}
+                    startPoint={
+                      [
+                        0,
+                        0,
+                      ]
+                    }
+                    style={
+                      {
+                        "bottom": 0,
+                        "left": 0,
+                        "position": "absolute",
+                        "right": 0,
+                        "top": 0,
+                      }
+                    }
+                  />
+                </View>
+                <Text
+                  accessibilityLabel="send"
+                  maxFontSizeMultiplier={1}
+                  style={
+                    {
+                      "color": "#FFFFFF",
+                      "fontFamily": "RedHatDisplaySemiBold",
+                      "fontSize": 16,
+                      "fontWeight": "normal",
+                      "lineHeight": 24,
+                      "marginLeft": 0,
+                      "marginRight": 0,
+                    }
                   }
-                }
-              >
-                send
-              </Text>
+                >
+                  send
+                </Text>
+              </View>
             </View>
           </View>
         </View>
       </View>
+      <View
+        collapsable={false}
+        style={
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "right": 0,
+            },
+            {
+              "height": 0,
+            },
+            undefined,
+          ]
+        }
+      />
     </View>
-    <View
-      collapsable={false}
-      style={
-        [
-          {
-            "bottom": 0,
-            "left": 0,
-            "right": 0,
-          },
-          {
-            "height": 0,
-          },
-          undefined,
-        ]
-      }
-    />
   </View>
 </RNCSafeAreaView>
 `;

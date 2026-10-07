@@ -164,7 +164,7 @@ exports[`renders correctly 1`] = `
               style={
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                   "marginBottom": 24,
                   "textAlign": "center",
@@ -226,7 +226,7 @@ exports[`renders correctly 1`] = `
                   {
                     "color": "#2F4ACD",
                     "fontFamily": "RedHatDisplaySemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "lineHeight": 24,
                   },
                   {

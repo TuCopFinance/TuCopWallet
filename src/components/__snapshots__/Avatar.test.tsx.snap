@@ -49,7 +49,7 @@ exports[`Avatar renders correctly with address and name but no number 1`] = `
           [
             {
               "fontFamily": "RedHatDisplayMedium",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             },
             {
@@ -357,7 +357,7 @@ exports[`Avatar renders correctly with number and name 1`] = `
           [
             {
               "fontFamily": "RedHatDisplayMedium",
-              "fontSize": 12,
+              "fontSize": 16,
               "lineHeight": 24,
             },
             {

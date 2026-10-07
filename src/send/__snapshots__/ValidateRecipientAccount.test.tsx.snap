@@ -34,7 +34,7 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
               style={
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                   "paddingBottom": 16,
                 }
@@ -46,7 +46,7 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
               style={
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                   "paddingBottom": 16,
                 }
@@ -100,7 +100,7 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
                       "color": "#2E3338",
                       "flex": 1,
                       "fontFamily": "RedHatDisplayRegular",
-                      "fontSize": 12,
+                      "fontSize": 16,
                       "lineHeight": 22,
                       "paddingHorizontal": 0,
                       "paddingVertical": 12,
@@ -275,7 +275,7 @@ exports[`ValidateRecipientAccount renders correctly when full validation require
                     {
                       "color": "#FFFFFF",
                       "fontFamily": "RedHatDisplaySemiBold",
-                      "fontSize": 12,
+                      "fontSize": 16,
                       "fontWeight": "normal",
                       "lineHeight": 24,
                       "marginLeft": 0,
@@ -388,7 +388,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
               style={
                 {
                   "fontFamily": "RedHatDisplayRegular",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "lineHeight": 24,
                   "paddingBottom": 16,
                 }
@@ -458,7 +458,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                           "color": "#2E3338",
                           "flex": 1,
                           "fontFamily": "RedHatDisplayRegular",
-                          "fontSize": 12,
+                          "fontSize": 16,
                           "lineHeight": 22,
                           "paddingHorizontal": 0,
                           "paddingVertical": 12,
@@ -518,7 +518,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                           "color": "#2E3338",
                           "flex": 1,
                           "fontFamily": "RedHatDisplayRegular",
-                          "fontSize": 12,
+                          "fontSize": 16,
                           "lineHeight": 22,
                           "paddingHorizontal": 0,
                           "paddingVertical": 12,
@@ -578,7 +578,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                           "color": "#2E3338",
                           "flex": 1,
                           "fontFamily": "RedHatDisplayRegular",
-                          "fontSize": 12,
+                          "fontSize": 16,
                           "lineHeight": 22,
                           "paddingHorizontal": 0,
                           "paddingVertical": 12,
@@ -638,7 +638,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                           "color": "#2E3338",
                           "flex": 1,
                           "fontFamily": "RedHatDisplayRegular",
-                          "fontSize": 12,
+                          "fontSize": 16,
                           "lineHeight": 22,
                           "paddingHorizontal": 0,
                           "paddingVertical": 12,
@@ -818,7 +818,7 @@ exports[`ValidateRecipientAccount renders correctly when partial validation requ
                     {
                       "color": "#FFFFFF",
                       "fontFamily": "RedHatDisplaySemiBold",
-                      "fontSize": 12,
+                      "fontSize": 16,
                       "fontWeight": "normal",
                       "lineHeight": 24,
                       "marginLeft": 0,

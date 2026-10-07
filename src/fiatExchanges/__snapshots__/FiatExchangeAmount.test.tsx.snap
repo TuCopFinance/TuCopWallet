@@ -43,7 +43,7 @@ exports[`FiatExchangeAmount cashIn renders correctly with COP as app currency 1`
             style={
               {
                 "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               }
             }
@@ -62,8 +62,8 @@ exports[`FiatExchangeAmount cashIn renders correctly with COP as app currency 1`
             [
               {
                 "flex": 1,
-                "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 19,
+                "fontFamily": "RedHatDisplayBold",
+                "fontSize": 24,
                 "lineHeight": 27,
                 "marginLeft": 10,
                 "minHeight": 48,
@@ -235,7 +235,7 @@ exports[`FiatExchangeAmount cashIn renders correctly with COP as app currency 1`
               {
                 "color": "#FFFFFF",
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "fontWeight": "normal",
                 "lineHeight": 24,
                 "marginLeft": 0,
@@ -311,7 +311,7 @@ exports[`FiatExchangeAmount cashIn renders correctly with USD as app currency 1`
             style={
               {
                 "fontFamily": "RedHatDisplayMedium",
-                "fontSize": 12,
+                "fontSize": 16,
                 "lineHeight": 24,
               }
             }
@@ -330,8 +330,8 @@ exports[`FiatExchangeAmount cashIn renders correctly with USD as app currency 1`
             [
               {
                 "flex": 1,
-                "fontFamily": "RedHatDisplayRegular",
-                "fontSize": 19,
+                "fontFamily": "RedHatDisplayBold",
+                "fontSize": 24,
                 "lineHeight": 27,
                 "marginLeft": 10,
                 "minHeight": 48,
@@ -503,7 +503,7 @@ exports[`FiatExchangeAmount cashIn renders correctly with USD as app currency 1`
               {
                 "color": "#FFFFFF",
                 "fontFamily": "RedHatDisplaySemiBold",
-                "fontSize": 12,
+                "fontSize": 16,
                 "fontWeight": "normal",
                 "lineHeight": 24,
                 "marginLeft": 0,

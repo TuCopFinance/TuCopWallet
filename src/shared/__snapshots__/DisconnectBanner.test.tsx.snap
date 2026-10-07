@@ -15,7 +15,7 @@ exports[`renders banner when app is disconnected 1`] = `
       },
       {
         "fontFamily": "RedHatDisplaySemiBold",
-        "fontSize": 12,
+        "fontSize": 16,
         "lineHeight": 24,
       },
     ]
