@@ -47,11 +47,7 @@ const INCLUDE_TYPES = [
 // spike v2 hashes 0x6ee3c5aa..., 0xf6f97aed..., 0xaca26b5c...). Valora
 // emits the same on-chain tx as generic SENT / RECEIVED. Hash-only
 // equality now catches them as Common.
-const DEFERRED_TYPES = new Set([
-  'NFT_RECEIVED',
-  'NFT_SENT',
-  'CROSS_CHAIN_SWAP_TRANSACTION',
-])
+const DEFERRED_TYPES = new Set(['NFT_RECEIVED', 'NFT_SENT', 'CROSS_CHAIN_SWAP_TRANSACTION'])
 
 const NETWORK_IDS = 'celo-mainnet'
 
@@ -229,7 +225,8 @@ async function main() {
   for (const tx of tucopTxs) {
     const legs = Array.isArray(tx.fromTokenAmounts) ? tx.fromTokenAmounts : []
     for (const leg of legs) {
-      const legHash = typeof leg?.transactionHash === 'string' ? leg.transactionHash.toLowerCase() : null
+      const legHash =
+        typeof leg?.transactionHash === 'string' ? leg.transactionHash.toLowerCase() : null
       if (legHash) tucopLegHashes.add(legHash)
     }
   }
