@@ -32,6 +32,9 @@ function SelectOfframpProvider() {
               </View>
               <View style={styles.providerInfo}>
                 <Text style={styles.providerName}>{t('tucopramp.providerName')}</Text>
+                <Text style={styles.providerBy} testID="offramp-provider-tucopramp-by">
+                  {t('tucopramp.providerBy')}
+                </Text>
                 <Text style={styles.providerSubtitle}>{t('tucopramp.offrampProviderTagline')}</Text>
               </View>
             </View>
@@ -94,6 +97,10 @@ const styles = StyleSheet.create({
   providerName: {
     ...typeScale.labelSemiBoldMedium,
     color: Colors.black,
+  },
+  providerBy: {
+    ...typeScale.labelSmall,
+    color: Colors.gray4,
   },
   providerSubtitle: {
     ...typeScale.bodySmall,
