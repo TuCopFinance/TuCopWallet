@@ -1035,10 +1035,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
                       : t('tucopramp.preparingDepositHeading')
                   : t('tucopramp.processingHeading')}
               </Text>
-              <Text style={styles.body}>
-                {t('tucopramp.sendingDepositBody', {
-                  amount: order.gross_amount_copm.toLocaleString('es-CO'),
-                })}
+              <Text style={styles.body} testID="tucopramp-offramp-status-body">
+                {status === 'awaiting-deposit'
+                  ? t('tucopramp.sendingDepositBody', {
+                      amount: order.gross_amount_copm.toLocaleString('es-CO'),
+                    })
+                  : t('tucopramp.processingBody')}
               </Text>
               {depositTxStatus !== 'failed' && <ActivityIndicator style={styles.spinner} />}
               {!!depositTxHash && (
