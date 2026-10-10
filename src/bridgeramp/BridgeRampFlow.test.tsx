@@ -1,6 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import BigNumber from 'bignumber.js'
 import * as React from 'react'
+import { AppState } from 'react-native'
 import { Provider } from 'react-redux'
 import BridgeRampFlow from 'src/bridgeramp/BridgeRampFlow'
 import { getCopmOracleStatus } from 'src/bridgeramp/mentoOracle'
@@ -318,6 +319,36 @@ describe('BridgeRampFlow', () => {
         ])
       )
       expect(getByTestId('bridgeramp-continue')).toBeDisabled()
+    })
+
+    it('re-checks the party when the app comes back to the foreground with verification pending', async () => {
+      const listeners: Array<(status: string) => void> = []
+      jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+        listeners.push(handler as (status: string) => void)
+        return { remove: jest.fn() } as any
+      })
+      const { store } = renderFlow(
+        'offramp',
+        readyState({
+          party: {
+            status: 'loaded',
+            value: {
+              ...verifiedParty,
+              status: { kyc: 'pending', tos: 'accepted', endorsements: [] },
+            },
+            needsOnboarding: false,
+            errorCode: null,
+            onboarding: { status: 'idle', errorCode: null },
+          },
+        })
+      )
+      const before = store.getActions().filter((a) => a.type === fetchBridgeRampParty.type).length
+      expect(listeners).toHaveLength(1)
+      await act(async () => {
+        listeners[0]('active')
+      })
+      const after = store.getActions().filter((a) => a.type === fetchBridgeRampParty.type).length
+      expect(after).toBe(before + 1)
     })
 
     it('quotes the typed amount and starts the withdraw for the guaranteed USDC', async () => {

@@ -4,6 +4,8 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  AppState,
+  AppStateStatus,
   Linking,
   StyleSheet,
   Text,
@@ -97,11 +99,25 @@ interface Props {
 function BridgeRampWithdraw({ oracleStale }: Props) {
   const dispatch = useDispatch()
   const withdraw = useSelector(bridgeRampWithdrawSelector)
+  const party = useSelector(bridgeRampPartySelector)
+  const verificationPending =
+    party.status === 'loaded' && !!party.value && !partyCanTransact(party.value)
 
   useEffect(() => {
     dispatch(fetchBridgeRampParty())
     dispatch(fetchBridgeRampDestinations())
   }, [])
+
+  // Identity verification happens in the browser; when the user comes back
+  // to the app with it pending, ask TuCOPRamp again instead of making them
+  // tap retry.
+  useEffect(() => {
+    if (!verificationPending) return
+    const sub = AppState.addEventListener('change', (status: AppStateStatus) => {
+      if (status === 'active') dispatch(fetchBridgeRampParty())
+    })
+    return () => sub.remove()
+  }, [verificationPending])
 
   if (withdraw.status === 'review' && withdraw.withdrawal && withdraw.quote) {
     return <ReviewStep withdrawal={withdraw.withdrawal} oracleStale={oracleStale} />
