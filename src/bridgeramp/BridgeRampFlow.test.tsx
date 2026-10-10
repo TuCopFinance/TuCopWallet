@@ -5,21 +5,20 @@ import { AppState } from 'react-native'
 import { Provider } from 'react-redux'
 import BridgeRampFlow from 'src/bridgeramp/BridgeRampFlow'
 import { getCopmOracleStatus } from 'src/bridgeramp/mentoOracle'
-import {
-  MentoOracleUnavailableError,
-  MentoQuote,
-  USDC_ADDRESS_CELO,
-  quoteMentoSwap,
-} from 'src/bridgeramp/mentoRouter'
+import { MentoQuote, USDC_ADDRESS_CELO, quoteMentoSwap } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
+  checkBridgeRampDeposit,
   createBridgeRampParty,
   executeBridgeRampSwap,
   fetchBridgeRampDestinations,
   fetchBridgeRampParty,
+  retryBridgeRampDepositConversion,
+  startBridgeRampDeposit,
   startBridgeRampWithdraw,
 } from 'src/bridgeramp/saga'
-import { initialState as bridgerampInitialState } from 'src/bridgeramp/slice'
+import { depositReset, initialState as bridgerampInitialState } from 'src/bridgeramp/slice'
+import { refreshAllBalances } from 'src/home/actions'
 import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
 import { NetworkId } from 'src/transactions/types'
@@ -199,8 +198,66 @@ describe('BridgeRampFlow', () => {
     jest.useRealTimers()
   })
 
-  describe('deposit preview', () => {
-    it('quotes USDC -> COPm for a deposit and keeps continue disabled', async () => {
+  describe('deposit', () => {
+    const depositAccount = {
+      id: 'dep_1',
+      product: 'deposit' as const,
+      status: 'active',
+      wallet: USER as `0x${string}`,
+      instructions: {
+        rail: 'bre_b' as const,
+        bre_b_key: '@U6X8YSHWJ',
+        holder_name: 'BRIDGE PARTNER BANK',
+        bank: null,
+      },
+      destination: {
+        chain: 'eip155:42220' as const,
+        asset: 'USDC' as const,
+        token_contract: USDC_ADDRESS_CELO,
+      },
+      created_at: '',
+      updated_at: '',
+    }
+
+    it('loads the party and asks for the deposit account once it can transact', () => {
+      const { store } = renderFlow('onramp', readyState())
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining([fetchBridgeRampParty(), startBridgeRampDeposit()])
+      )
+      expect(store.getActions()).not.toEqual(
+        expect.arrayContaining([fetchBridgeRampDestinations()])
+      )
+    })
+
+    it('shows the Bre-B key to pay and checks for arrivals while waiting', async () => {
+      const { getByTestId, store } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            status: 'ready',
+            account: depositAccount,
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '0',
+            pending: null,
+          },
+        })
+      )
+      expect(getByTestId('bridgeramp-deposit-instructions')).toBeTruthy()
+      expect(getByTestId('bridgeramp-deposit-key/Value')).toHaveTextContent('@U6X8YSHWJ')
+      expect(getByTestId('bridgeramp-deposit-waiting')).toBeTruthy()
+      expect(store.getActions()).toEqual(expect.arrayContaining([checkBridgeRampDeposit()]))
+
+      await act(async () => {
+        jest.advanceTimersByTime(15_000)
+      })
+      expect(store.getActions()).toEqual(expect.arrayContaining([refreshAllBalances()]))
+      expect(store.getActions().filter((a) => a.type === checkBridgeRampDeposit.type)).toHaveLength(
+        2
+      )
+    })
+
+    it('estimates USDC -> COPm for an amount the user types', async () => {
       mockQuote.mockResolvedValue({
         direction: 'usdcToCopm',
         amountIn: BigInt(100_000_000),
@@ -210,24 +267,94 @@ describe('BridgeRampFlow', () => {
         copPerUsd: new BigNumber('3190'),
         quotedAt: 0,
       })
-
-      const { getByTestId } = renderFlow('onramp')
+      const { getByTestId } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            status: 'ready',
+            account: depositAccount,
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '0',
+            pending: null,
+          },
+        })
+      )
       await typeAmount(getByTestId, '320000')
-
       await waitFor(() => expect(getByTestId('bridgeramp-quote')).toBeTruthy())
       expect(mockQuote).toHaveBeenCalledWith('usdcToCopm', expect.any(BigInt))
       expect(getByTestId('bridgeramp-quote')).toHaveTextContent('319,000 pesos digitales')
-      expect(getByTestId('bridgeramp-continue')).toBeDisabled()
     })
 
-    it('shows the banking-hours notice when the oracle has no valid median', async () => {
-      mockQuote.mockRejectedValue(new MentoOracleUnavailableError())
+    it('shows the conversion in progress once USDC arrived', () => {
+      const { getByTestId, queryByTestId } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            status: 'ready',
+            account: depositAccount,
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '0',
+            pending: { usdcAmount: '100000000', flowId: 'dep-1' },
+          },
+          swap: { ...bridgerampInitialState.swap, status: 'broadcast', swapTxHash: '0xabc' },
+        })
+      )
+      expect(getByTestId('bridgeramp-deposit-converting')).toBeTruthy()
+      expect(getByTestId('bridgeramp-deposit-converting')).toHaveTextContent(/"usdc":"100.00"/)
+      expect(getByTestId('bridgeramp-swap-hash')).toHaveTextContent('0xabc')
+      expect(queryByTestId('bridgeramp-deposit-instructions')).toBeNull()
+    })
 
-      const { getByTestId, queryByTestId } = renderFlow('onramp')
-      await typeAmount(getByTestId, '100000')
+    it('offers retry and keep-USDC when the conversion failed', () => {
+      const { getByTestId, store } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            status: 'ready',
+            account: depositAccount,
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '0',
+            pending: { usdcAmount: '100000000', flowId: 'dep-1' },
+          },
+          swap: {
+            ...bridgerampInitialState.swap,
+            status: 'failed',
+            flowId: 'dep-1',
+            errorCode: 'reverted',
+          },
+        })
+      )
+      fireEvent.press(getByTestId('bridgeramp-deposit-retry'))
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining([retryBridgeRampDepositConversion()])
+      )
+      fireEvent.press(getByTestId('bridgeramp-deposit-keep'))
+      expect(store.getActions()).toEqual(expect.arrayContaining([depositReset()]))
+    })
 
-      await waitFor(() => expect(getByTestId('bridgeramp-oracle-stale')).toBeTruthy())
-      expect(queryByTestId('bridgeramp-quote')).toBeNull()
+    it('shows the account error with a retry', () => {
+      const { getByTestId, store } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            status: 'failed',
+            account: null,
+            errorCode: 'provider_unavailable',
+            errorRequestId: null,
+            usdcBaseline: null,
+            pending: null,
+          },
+        })
+      )
+      expect(getByTestId('bridgeramp-deposit-error')).toHaveTextContent('provider_unavailable')
+      const before = store.getActions().filter((a) => a.type === startBridgeRampDeposit.type).length
+      fireEvent.press(getByTestId('bridgeramp-deposit-error/bridgeramp.retry'))
+      expect(
+        store.getActions().filter((a) => a.type === startBridgeRampDeposit.type).length
+      ).toBeGreaterThan(before)
     })
   })
 

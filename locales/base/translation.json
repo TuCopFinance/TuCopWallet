@@ -3630,8 +3630,7 @@
       "title": "Fast deposit with Bridge",
       "explainer": "You transfer pesos via Bre-B, Bridge delivers digital dollars to your wallet and the app converts them to digital pesos.",
       "quoteIn": "Digital dollars received",
-      "quoteOut": "You will receive",
-      "comingSoon": "Bridge Ramp is not available for deposits yet. You will be able to complete the deposit from here soon."
+      "quoteOut": "You will receive"
     },
     "amountLabel": "Amount (Pesos)",
     "amountPlaceholder": "Enter the amount",
@@ -3717,6 +3716,27 @@
         "not_supported_yet": "Only individuals can register for now.",
         "generic": "We could not create your account ({{code}}). Try again."
       }
+    },
+    "deposit": {
+      "payTitle": "Pay by Bre-B to this key",
+      "payBody": "From your bank, send pesos by Bre-B to the key below. Bridge converts the payment to digital dollars, sends them to your wallet and the app swaps them to digital pesos automatically.",
+      "breBKey": "Bre-B key",
+      "keyCopied": "Key copied",
+      "holder": "Account holder",
+      "bank": "Bank",
+      "minimum": "Minimum per deposit",
+      "onlyCop": "Colombian pesos over Bre-B only. This key is yours: whatever you send to it arrives in this wallet as digital pesos.",
+      "estimateLabel": "How much will you deposit? (optional, for an estimate)",
+      "estimateNote": "Estimate at Mento's current rate. The real conversion happens when the digital dollars arrive.",
+      "waiting": "Waiting for your Bre-B payment. This screen refreshes on its own.",
+      "lastConverted": "Your last deposit is in your wallet: {{amount}} digital pesos.",
+      "convertingTitle": "Your digital dollars arrived",
+      "convertingBody": "We received {{usdc}} USDC from Bridge. Confirm with your PIN to swap them to digital pesos.",
+      "convertFailedTitle": "We could not convert to digital pesos",
+      "retryConvert": "Try again",
+      "keepUsdcHint": "Your {{usdc}} USDC are still in your wallet. If you prefer, keep them as digital dollars.",
+      "keepUsdc": "Keep as digital dollars",
+      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again."
     }
   }
 }

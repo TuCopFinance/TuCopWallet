@@ -3644,8 +3644,7 @@
       "title": "Depósito rápido con Bridge",
       "explainer": "Transfieres pesos por Bre-B, Bridge entrega dólares digitales en tu wallet y la app los convierte a pesos digitales.",
       "quoteIn": "Dólares digitales recibidos",
-      "quoteOut": "Recibirás",
-      "comingSoon": "Bridge Ramp todavía no está disponible para depósitos. Pronto podrás completar el depósito desde aquí."
+      "quoteOut": "Recibirás"
     },
     "amountLabel": "Monto (Pesos)",
     "amountPlaceholder": "Ingresa el monto",
@@ -3731,6 +3730,27 @@
         "not_supported_yet": "Por ahora solo personas naturales pueden registrarse.",
         "generic": "No pudimos crear tu cuenta ({{code}}). Intenta de nuevo."
       }
+    },
+    "deposit": {
+      "payTitle": "Paga por Bre-B a esta llave",
+      "payBody": "Desde tu banco, envía pesos por Bre-B a la llave de abajo. Bridge convierte el pago a dólares digitales, los envía a tu wallet y la app los cambia a pesos digitales automáticamente.",
+      "breBKey": "Llave Bre-B",
+      "keyCopied": "Llave copiada",
+      "holder": "Titular",
+      "bank": "Banco",
+      "minimum": "Mínimo por depósito",
+      "onlyCop": "Solo pesos colombianos por Bre-B. Esta llave es tuya: el dinero que le envíes llega a esta wallet como pesos digitales.",
+      "estimateLabel": "¿Cuánto vas a depositar? (opcional, para ver un estimado)",
+      "estimateNote": "Estimado con la tasa actual de Mento. La conversión real se hace cuando lleguen los dólares digitales.",
+      "waiting": "Esperando tu pago por Bre-B. Esta pantalla se actualiza sola.",
+      "lastConverted": "Tu último depósito ya está en tu wallet: {{amount}} pesos digitales.",
+      "convertingTitle": "Llegaron tus dólares digitales",
+      "convertingBody": "Recibimos {{usdc}} USDC de Bridge. Confirma con tu PIN para cambiarlos a pesos digitales.",
+      "convertFailedTitle": "No pudimos convertir a pesos digitales",
+      "retryConvert": "Intentar de nuevo",
+      "keepUsdcHint": "Tus {{usdc}} USDC siguen en tu wallet. Si prefieres, déjalos como dólares digitales.",
+      "keepUsdc": "Dejar como dólares digitales",
+      "accountError": "No pudimos preparar tu cuenta de depósito en TuCOP ({{code}}). Intenta de nuevo."
     }
   },
   "transactionSuccess": {

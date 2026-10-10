@@ -740,6 +740,83 @@
             ],
             "type": "object"
         },
+        "BridgeRampDepositState": {
+            "additionalProperties": false,
+            "properties": {
+                "account": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/DepositAccount"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "errorRequestId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "pending": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "flowId": {
+                                    "type": "string"
+                                },
+                                "usdcAmount": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "flowId",
+                                "usdcAmount"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/BridgeRampDepositStatus"
+                },
+                "usdcBaseline": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "account",
+                "errorCode",
+                "errorRequestId",
+                "pending",
+                "status",
+                "usdcBaseline"
+            ],
+            "type": "object"
+        },
+        "BridgeRampDepositStatus": {
+            "enum": [
+                "creating",
+                "failed",
+                "idle",
+                "ready"
+            ],
+            "type": "string"
+        },
         "BridgeRampDestinationsState": {
             "additionalProperties": false,
             "properties": {
@@ -1669,6 +1746,100 @@
                 "mostPopular"
             ],
             "type": "string"
+        },
+        "DepositAccount": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "destination": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "asset": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "chain": {
+                            "const": "eip155:42220",
+                            "type": "string"
+                        },
+                        "token_contract": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "asset",
+                        "chain",
+                        "token_contract"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "instructions": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "bank": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "bre_b_key": {
+                            "type": "string"
+                        },
+                        "holder_name": {
+                            "type": "string"
+                        },
+                        "rail": {
+                            "const": "bre_b",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "bank",
+                        "bre_b_key",
+                        "holder_name",
+                        "rail"
+                    ],
+                    "type": "object"
+                },
+                "minimum": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "product": {
+                    "const": "deposit",
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "created_at",
+                "destination",
+                "id",
+                "instructions",
+                "product",
+                "status",
+                "updated_at",
+                "wallet"
+            ],
+            "type": "object"
         },
         "DepositEarnClaimHistory": {
             "additionalProperties": false,
@@ -7994,6 +8165,9 @@
         "State_27": {
             "additionalProperties": false,
             "properties": {
+                "deposit": {
+                    "$ref": "#/definitions/BridgeRampDepositState"
+                },
                 "destinations": {
                     "$ref": "#/definitions/BridgeRampDestinationsState"
                 },
@@ -8028,6 +8202,7 @@
                 }
             },
             "required": [
+                "deposit",
                 "destinations",
                 "lastCompletedSwap",
                 "party",

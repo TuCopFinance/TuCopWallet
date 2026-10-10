@@ -216,6 +216,14 @@ describe('store state', () => {
           "walletConnectV2Enabled": true,
         },
         "bridgeramp": {
+          "deposit": {
+            "account": null,
+            "errorCode": null,
+            "errorRequestId": null,
+            "pending": null,
+            "status": "idle",
+            "usdcBaseline": null,
+          },
           "destinations": {
             "errorCode": null,
             "items": [],

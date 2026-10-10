@@ -269,7 +269,7 @@ function AmountStep({ oracleStale }: Props) {
   )
 }
 
-function PartySection() {
+export function PartySection() {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const party = useSelector(bridgeRampPartySelector)

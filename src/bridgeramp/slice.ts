@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
-import { Destination, Party, WithdrawQuote, Withdrawal } from 'src/bridgeramp/api'
+import { DepositAccount, Destination, Party, WithdrawQuote, Withdrawal } from 'src/bridgeramp/api'
 import { MentoDirection } from 'src/bridgeramp/mentoRouter'
 import { getRehydratePayload } from 'src/redux/persist-helper'
 
@@ -113,11 +113,30 @@ export interface BridgeRampWithdrawState {
   errorRequestId: string | null
 }
 
+// On-ramp through Bridge. The user pays COP by Bre-B to the virtual account
+// in `account`; Bridge sends USDC to the wallet; the app converts it to COPm.
+// There is no per-deposit operation on TuCOPRamp's side, so arrival is
+// detected from the wallet's own USDC balance against `usdcBaseline`.
+export type BridgeRampDepositStatus = 'idle' | 'creating' | 'ready' | 'failed'
+
+export interface BridgeRampDepositState {
+  status: BridgeRampDepositStatus
+  account: DepositAccount | null
+  errorCode: string | null
+  errorRequestId: string | null
+  // USDC balance, base units, when the instructions were shown. Any increase
+  // while a deposit is open is treated as Bridge's payout.
+  usdcBaseline: string | null
+  // USDC detected and handed to convertBridgeDeposit, until the swap confirms.
+  pending: { usdcAmount: string; flowId: string } | null
+}
+
 interface State {
   session: BridgeRampSession | null
   party: BridgeRampPartyState
   destinations: BridgeRampDestinationsState
   withdraw: BridgeRampWithdrawState
+  deposit: BridgeRampDepositState
   swap: BridgeRampSwapState
   // Most recent confirmed swap, kept across restarts so the flow screen can
   // show "your USDC reached Bridge, COP is on its way" after a cold start.
@@ -162,11 +181,21 @@ const initialWithdrawState: BridgeRampWithdrawState = {
   errorRequestId: null,
 }
 
+const initialDepositState: BridgeRampDepositState = {
+  status: 'idle',
+  account: null,
+  errorCode: null,
+  errorRequestId: null,
+  usdcBaseline: null,
+  pending: null,
+}
+
 export const initialState: State = {
   session: null,
   party: initialPartyState,
   destinations: initialDestinationsState,
   withdraw: initialWithdrawState,
+  deposit: initialDepositState,
   swap: initialSwapState,
   lastCompletedSwap: null,
 }
@@ -297,6 +326,43 @@ const slice = createSlice({
       state.withdraw = initialWithdrawState
       state.swap = initialSwapState
     },
+    depositCreating: (state) => {
+      state.deposit.status = 'creating'
+      state.deposit.errorCode = null
+      state.deposit.errorRequestId = null
+    },
+    depositReady: (
+      state,
+      action: PayloadAction<{ account: DepositAccount; usdcBaseline: string }>
+    ) => {
+      state.deposit.status = 'ready'
+      state.deposit.account = action.payload.account
+      state.deposit.errorCode = null
+      state.deposit.errorRequestId = null
+      // The baseline is set once and kept until a deposit settles: a payout
+      // that landed while the app was closed must still read as an increase
+      // when the user comes back to this screen.
+      state.deposit.usdcBaseline = state.deposit.usdcBaseline ?? action.payload.usdcBaseline
+    },
+    depositFailed: (state, action: PayloadAction<{ code: string; requestId?: string }>) => {
+      state.deposit.status = 'failed'
+      state.deposit.errorCode = action.payload.code
+      state.deposit.errorRequestId = action.payload.requestId ?? null
+    },
+    // USDC above the baseline showed up in the wallet: hand it to the swap.
+    depositDetected: (state, action: PayloadAction<{ usdcAmount: string; flowId: string }>) => {
+      state.deposit.pending = action.payload
+    },
+    // The swap confirmed (or the user gave up on it): the new USDC balance is
+    // the baseline for the next deposit.
+    depositSettled: (state, action: PayloadAction<{ usdcBaseline: string }>) => {
+      state.deposit.pending = null
+      state.deposit.usdcBaseline = action.payload.usdcBaseline
+    },
+    depositReset: (state) => {
+      state.deposit = { ...initialDepositState, account: state.deposit.account }
+      state.swap = initialSwapState
+    },
     swapSubmitting: (
       state,
       action: PayloadAction<{
@@ -359,9 +425,23 @@ const slice = createSlice({
         persistedWithdraw?.status === 'awaiting_payout' ||
         persistedWithdraw?.status === 'completed' ||
         persistedWithdraw?.status === 'failed'
+      // The deposit account is permanent and the baseline/pending pair is what
+      // lets a payout that arrived while the app was closed be converted on
+      // the next visit, so all three survive. Transient status does not.
+      const persistedDeposit = rehydrated?.deposit
+      const deposit: BridgeRampDepositState = persistedDeposit?.account
+        ? {
+            ...initialDepositState,
+            status: 'ready',
+            account: persistedDeposit.account,
+            usdcBaseline: persistedDeposit.usdcBaseline ?? null,
+            pending: persistedDeposit.pending ?? null,
+          }
+        : state.deposit
       return {
         ...state,
         withdraw: keepWithdraw ? { ...initialWithdrawState, ...persistedWithdraw } : state.withdraw,
+        deposit,
         lastCompletedSwap: rehydrated?.lastCompletedSwap ?? state.lastCompletedSwap,
       }
     })
@@ -389,6 +469,12 @@ export const {
   withdrawalUpdated,
   withdrawFailed,
   withdrawPollTimedOut,
+  depositCreating,
+  depositReady,
+  depositFailed,
+  depositDetected,
+  depositSettled,
+  depositReset,
   withdrawReset,
   swapSubmitting,
   swapBroadcast,

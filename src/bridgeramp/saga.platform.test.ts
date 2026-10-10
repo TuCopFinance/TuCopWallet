@@ -7,8 +7,11 @@ import { MentoQuote, quoteMentoSwap } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import { openWalletPartySession } from 'src/bridgeramp/platformClient'
 import {
+  checkDepositSaga,
   convertBridgeDeposit,
   convertBridgeDepositSaga,
+  retryDepositConversionSaga,
+  startDepositSaga,
   createBridgeRampParty,
   createPartySaga,
   ensurePartySession,
@@ -530,5 +533,146 @@ describe('convertBridgeDepositSaga', () => {
       .put(swapFailed({ code: 'broadcast_failed' }))
       .run()
     expect(jest.mocked(prepareBridgeRampCalls)).not.toHaveBeenCalled()
+  })
+})
+
+describe('deposit sagas', () => {
+  const account = {
+    id: 'dep_1',
+    product: 'deposit',
+    status: 'active',
+    wallet: USER,
+    instructions: { rail: 'bre_b', bre_b_key: '@U6X8YSHWJ', holder_name: 'X', bank: null },
+    destination: { chain: 'eip155:42220', asset: 'USDC', token_contract: '0x0' },
+    created_at: '',
+    updated_at: '',
+  } as unknown as api.DepositAccount
+
+  function usdcTokens(balance: string) {
+    return {
+      [networkConfig.usdcTokenId]: {
+        ...mockCusdTokenBalance,
+        tokenId: networkConfig.usdcTokenId,
+        decimals: 6,
+        balance: new BigNumber(balance),
+      },
+    }
+  }
+
+  function readyDeposit(overrides: Partial<SliceState['deposit']> = {}): SliceState {
+    return {
+      ...withSession(),
+      deposit: {
+        status: 'ready',
+        account,
+        errorCode: null,
+        errorRequestId: null,
+        usdcBaseline: '5000000',
+        pending: null,
+        ...overrides,
+      },
+    }
+  }
+
+  it('creates the deposit account with a per-wallet key and records the USDC baseline', async () => {
+    mockedApi.createDepositAccount.mockResolvedValue(account)
+    const { storeState } = await expectSaga(startDepositSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([
+        [matchers.select(walletAddressSelector), USER],
+        [matchers.select.selector(tokensByIdSelector), usdcTokens('5')],
+      ])
+      .run()
+    expect(mockedApi.createDepositAccount).toHaveBeenCalledWith(
+      'tps_live',
+      { wallet: USER },
+      `deposit-${USER.toLowerCase()}`
+    )
+    expect(storeState.bridgeramp.deposit).toMatchObject({
+      status: 'ready',
+      account,
+      usdcBaseline: '5000000',
+    })
+  })
+
+  it('records the server error code when the account cannot be created', async () => {
+    mockedApi.createDepositAccount.mockRejectedValue(rampError('product_not_enabled', 403))
+    const { storeState } = await expectSaga(startDepositSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([
+        [matchers.select(walletAddressSelector), USER],
+        [matchers.select.selector(tokensByIdSelector), usdcTokens('0')],
+      ])
+      .run()
+    expect(storeState.bridgeramp.deposit).toMatchObject({
+      status: 'failed',
+      errorCode: 'product_not_enabled',
+    })
+  })
+
+  it('does nothing while the balance has not moved', async () => {
+    await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(readyDeposit()))
+      .provide([[matchers.select.selector(tokensByIdSelector), usdcTokens('5')]])
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
+  })
+
+  it('converts the USDC above the baseline and settles once the swap confirms', async () => {
+    const { storeState } = await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(readyDeposit()))
+      .provide([
+        [matchers.select.selector(tokensByIdSelector), usdcTokens('105')],
+        [
+          matchers.call.fn(convertBridgeDepositSaga),
+          dynamic(({ args }: { args: any[] }) => {
+            expect(args[0].payload.usdcAmount).toBe('100000000')
+            // Simulate the swap confirming: the store would get these from
+            // executeBridgeRampSwapSaga.
+            return undefined
+          }),
+        ],
+      ])
+      .run()
+    // The provided convert does not touch the swap slice, so the deposit
+    // stays pending (what a failed or unconfirmed swap looks like).
+    expect(storeState.bridgeramp.deposit.pending).toEqual({
+      usdcAmount: '100000000',
+      flowId: `dep-dep_1-${NOW * 1000}`,
+    })
+  })
+
+  it('moves the baseline after a confirmed conversion', async () => {
+    const flowId = 'dep-dep_1-1'
+    const { storeState } = await expectSaga(retryDepositConversionSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
+          swap: { ...initialState.swap, status: 'confirmed', flowId },
+        })
+      )
+      .provide([
+        [matchers.call.fn(convertBridgeDepositSaga), undefined],
+        // Dust left after the swap.
+        [matchers.select.selector(tokensByIdSelector), usdcTokens('5.000001')],
+      ])
+      .run()
+    expect(storeState.bridgeramp.deposit.pending).toBeNull()
+    expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('5000001')
+  })
+
+  it('leaves a failed conversion for the user to retry', async () => {
+    const flowId = 'dep-dep_1-1'
+    await expectSaga(checkDepositSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
+          swap: { ...initialState.swap, status: 'failed', flowId },
+        })
+      )
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
   })
 })

@@ -13,6 +13,7 @@ import {
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
   CreatePartyRequest,
+  createDepositAccount,
   Destination,
   Withdrawal,
   createFirstPartyDestination,
@@ -26,6 +27,7 @@ import {
 } from 'src/bridgeramp/api'
 import { openWalletPartySession } from 'src/bridgeramp/platformClient'
 import {
+  bridgeRampDepositSelector,
   bridgeRampSessionSelector,
   bridgeRampSwapSelector,
   bridgeRampWithdrawSelector,
@@ -37,6 +39,11 @@ import {
   destinationUpdated,
   destinationsFailed,
   destinationsLoaded,
+  depositCreating,
+  depositDetected,
+  depositFailed,
+  depositReady,
+  depositSettled,
   destinationsLoading,
   onboardingFailed,
   onboardingSubmitting,
@@ -670,7 +677,117 @@ export function* convertBridgeDepositSaga(
   }
 }
 
+// ---------------------------------------------------------------------------
+// On-ramp: deposit account and arrival detection
+// ---------------------------------------------------------------------------
+
+export const startBridgeRampDeposit = createAction('bridgeramp/startDeposit')
+export const checkBridgeRampDeposit = createAction('bridgeramp/checkDeposit')
+export const retryBridgeRampDepositConversion = createAction('bridgeramp/retryDepositConversion')
+
+// Current USDC balance in base units, from the token store the home screen
+// keeps refreshed. Null when the token is not loaded yet.
+function* readUsdcBalance() {
+  const tokensById = yield* select(tokensByIdSelector, [NetworkId['celo-mainnet']])
+  const usdc = tokensById[networkConfig.usdcTokenId]
+  if (!usdc) return null
+  return BigInt(usdc.balance.shiftedBy(usdc.decimals).toFixed(0))
+}
+
+// Asks TuCOPRamp for the virtual account the user pays (create or return;
+// the idempotency key is per wallet because there is one account per wallet)
+// and records the USDC balance the arrival check compares against.
+export function* startDepositSaga() {
+  yield* put(depositCreating())
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    yield* put(depositFailed({ code: 'no_wallet' }))
+    return
+  }
+  const balance = yield* call(readUsdcBalance)
+  try {
+    const account = yield* withSession((token) =>
+      createDepositAccount(
+        token,
+        { wallet: walletAddress as Address },
+        `deposit-${walletAddress.toLowerCase()}`
+      )
+    )
+    yield* put(depositReady({ account, usdcBaseline: (balance ?? BigInt(0)).toString() }))
+  } catch (err) {
+    Logger.warn(TAG, 'deposit account failed', err)
+    const code = errorCodeOf(err, 'create_failed')
+    yield* put(depositFailed({ code, requestId: requestIdOf(err) }))
+    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+      feature: 'bridgeramp',
+      provider: 'bridge',
+      action: 'deposit_account_failed',
+      errorCode: code,
+    })
+  }
+}
+
+// Runs convertBridgeDepositSaga for the pending USDC and, once the swap
+// confirms, moves the baseline to whatever USDC is left so the next deposit
+// starts clean. A failed swap leaves `pending` in place for a retry.
+function* convertPendingDeposit() {
+  const deposit = yield* select(bridgeRampDepositSelector)
+  if (!deposit.pending) return
+  yield* call(
+    convertBridgeDepositSaga,
+    convertBridgeDeposit({ usdcAmount: deposit.pending.usdcAmount, flowId: deposit.pending.flowId })
+  )
+  const swap = yield* select(bridgeRampSwapSelector)
+  if (swap.status === 'confirmed' && swap.flowId === deposit.pending.flowId) {
+    const balance = yield* call(readUsdcBalance)
+    const before = BigInt(deposit.usdcBaseline ?? '0')
+    // The store may not have caught up with the swap yet; never let the
+    // baseline jump above what was there before the deposit plus the dust a
+    // swap can leave, or the next arrival would be under-counted.
+    const settled =
+      balance === null || balance > before + BigInt(deposit.pending.usdcAmount) ? before : balance
+    yield* put(depositSettled({ usdcBaseline: settled.toString() }))
+  }
+}
+
+// Called while the deposit screen is open (after each balance refresh) and
+// when it mounts: USDC above the baseline is Bridge's payout, convert it.
+export function* checkDepositSaga() {
+  const deposit = yield* select(bridgeRampDepositSelector)
+  if (deposit.status !== 'ready' || deposit.usdcBaseline === null) return
+  const swap = yield* select(bridgeRampSwapSelector)
+  if (swap.status === 'submitting' || swap.status === 'broadcast') return
+  if (deposit.pending) {
+    // A conversion is already queued (crash, app closed mid-way): finish it
+    // only if it has not failed; a failed one waits for the user's retry.
+    if (swap.status === 'failed' && swap.flowId === deposit.pending.flowId) return
+    yield* call(convertPendingDeposit)
+    return
+  }
+  const balance = yield* call(readUsdcBalance)
+  if (balance === null) return
+  const delta = balance - BigInt(deposit.usdcBaseline)
+  if (delta <= BigInt(0)) return
+  Logger.info(TAG, `deposit detected: ${delta.toString()} USDC base units above baseline`)
+  yield* put(
+    depositDetected({
+      usdcAmount: delta.toString(),
+      flowId: `dep-${deposit.account?.id ?? 'unknown'}-${Date.now()}`,
+    })
+  )
+  yield* call(convertPendingDeposit)
+}
+
+export function* retryDepositConversionSaga() {
+  const deposit = yield* select(bridgeRampDepositSelector)
+  if (!deposit.pending) return
+  yield* call(convertPendingDeposit)
+}
+
 export function* bridgeRampSaga() {
+  yield* takeLeading(startBridgeRampDeposit.type, startDepositSaga)
+  yield* takeLeading(checkBridgeRampDeposit.type, checkDepositSaga)
+  yield* takeLeading(retryBridgeRampDepositConversion.type, retryDepositConversionSaga)
   yield* takeLeading(convertBridgeDeposit.type, convertBridgeDepositSaga)
   yield* takeLeading(executeBridgeRampSwap.type, executeBridgeRampSwapSaga)
   yield* takeLatest(fetchBridgeRampParty.type, fetchPartySaga)

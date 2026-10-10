@@ -1,5 +1,8 @@
 import { REHYDRATE } from 'redux-persist'
 import reducer, {
+  depositDetected,
+  depositReady,
+  depositSettled,
   initialState,
   swapBroadcast,
   swapConfirmed,
@@ -80,5 +83,51 @@ describe('bridgeramp slice', () => {
     } as any)
     expect(state.swap).toEqual(initialState.swap)
     expect(state.lastCompletedSwap?.swapTxHash).toBe('0x9')
+  })
+})
+
+describe('bridgeramp deposit', () => {
+  const account = { id: 'dep_1' } as any
+
+  it('keeps the first baseline across account refreshes', () => {
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
+    state = reducer(state, depositReady({ account, usdcBaseline: '105' }))
+    expect(state.deposit.usdcBaseline).toBe('5')
+  })
+
+  it('tracks a detected deposit until it settles', () => {
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
+    state = reducer(state, depositDetected({ usdcAmount: '100', flowId: 'f' }))
+    expect(state.deposit.pending).toEqual({ usdcAmount: '100', flowId: 'f' })
+    state = reducer(state, depositSettled({ usdcBaseline: '6' }))
+    expect(state.deposit.pending).toBeNull()
+    expect(state.deposit.usdcBaseline).toBe('6')
+  })
+
+  it('rehydrates the account, baseline and pending conversion', () => {
+    const state = reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: {
+        bridgeramp: {
+          deposit: {
+            status: 'creating',
+            account,
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '5',
+            pending: { usdcAmount: '100', flowId: 'f' },
+          },
+        },
+      },
+    } as any)
+    expect(state.deposit).toEqual({
+      status: 'ready',
+      account,
+      errorCode: null,
+      errorRequestId: null,
+      usdcBaseline: '5',
+      pending: { usdcAmount: '100', flowId: 'f' },
+    })
   })
 })

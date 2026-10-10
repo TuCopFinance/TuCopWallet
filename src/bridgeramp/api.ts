@@ -263,3 +263,69 @@ export function getWithdrawal(
     partySession,
   })
 }
+
+// ---------------------------------------------------------------------------
+// Deposit (COP over Bre-B -> USDC to the user's wallet)
+// ---------------------------------------------------------------------------
+//
+// NOT SHIPPED BY TUCOPRAMP YET. docs/platform/SPEC.md: "POST /v1/deposit
+// creates or returns a virtual account pointing to a verified wallet". The
+// virtual account is Bridge's: a Bre-B key the user pays in COP; Bridge
+// converts and sends USDC on Celo to the wallet the party session was opened
+// with. One per party and wallet, reused across deposits, so the wallet asks
+// for it once and keeps it. The COPm conversion happens in the app
+// (convertBridgeDeposit). Paths are placeholders until TuCOPRamp confirms.
+
+const DEPOSITS_PATH = '/v1/deposits'
+
+export type DepositAccountStatus = 'active' | 'pending' | 'deactivated' | string
+
+export interface DepositAccount {
+  id: string
+  product: 'deposit'
+  status: DepositAccountStatus
+  // Where Bridge sends the USDC: the party's proven wallet.
+  wallet: Address
+  // What the user pays. Bre-B keys for Bridge virtual accounts look like
+  // "@U6X8YSHWJ"; the holder is Bridge's partner bank account, not the user.
+  instructions: {
+    rail: 'bre_b'
+    bre_b_key: string
+    holder_name: string
+    bank: string | null
+  }
+  destination: { chain: 'eip155:42220'; asset: 'USDC'; token_contract: Address }
+  // Bridge's minimum per deposit, in COP, when the server reports it.
+  minimum?: MoneyAmount
+  created_at: string
+  updated_at: string
+}
+
+export function createDepositAccount(
+  partySession: string,
+  request: { wallet: Address },
+  idempotencyKey: string,
+  opts?: CallOpts
+): Promise<DepositAccount> {
+  return platformFetch<DepositAccount>({
+    ...opts,
+    method: 'POST',
+    path: DEPOSITS_PATH,
+    body: request,
+    partySession,
+    idempotencyKey,
+  })
+}
+
+export function getDepositAccount(
+  partySession: string,
+  depositId: string,
+  opts?: CallOpts
+): Promise<DepositAccount> {
+  return platformFetch<DepositAccount>({
+    ...opts,
+    method: 'GET',
+    path: `${DEPOSITS_PATH}/${encodeURIComponent(depositId)}`,
+    partySession,
+  })
+}

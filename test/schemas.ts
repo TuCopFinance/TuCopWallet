@@ -3947,6 +3947,14 @@ export const v255Schema = {
       errorCode: null,
       errorRequestId: null,
     },
+    deposit: {
+      status: 'idle',
+      account: null,
+      errorCode: null,
+      errorRequestId: null,
+      usdcBaseline: null,
+      pending: null,
+    },
     swap: {
       status: 'idle',
       flowId: null,
