@@ -46,3 +46,4 @@ export type TransactionOrigin =
   | 'gold-buy'
   | 'gold-sell'
   | 'reficolombia'
+  | 'bridge-ramp'

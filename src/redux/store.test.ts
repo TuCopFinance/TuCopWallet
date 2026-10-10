@@ -215,6 +215,20 @@ describe('store state', () => {
           "supportedBiometryType": null,
           "walletConnectV2Enabled": true,
         },
+        "bridgeramp": {
+          "lastCompletedSwap": null,
+          "swap": {
+            "amountIn": null,
+            "approveTxHash": null,
+            "direction": null,
+            "errorCode": null,
+            "flowId": null,
+            "quotedAmountOut": null,
+            "recipient": null,
+            "status": "idle",
+            "swapTxHash": null,
+          },
+        },
         "dapps": {
           "activeDapp": null,
           "dappListApiUrl": null,

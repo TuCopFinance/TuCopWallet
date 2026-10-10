@@ -11,6 +11,7 @@ export type BusinessFeature =
   | 'swap' // any token-to-token swap
   | 'transactions' // generic tx send / receipt / feed
   | 'tucopramp' // COPm <-> COP semi-manual ramp via Bre-B (offramp + onramp)
+  | 'bridgeramp' // COPm <-> COP via Mento swap + Bridge liquidation / virtual account
   | 'jumpstart' // send-via-link
   | 'positions' // hooks-api positions fetch / trigger
   | 'reficolombia' // ReFi Colombia UBI claim flow (was 'subsidies' pre-1.118.14)
@@ -47,6 +48,7 @@ export type BusinessProvider =
   | 'moonpay'
   | 'simplex'
   | 'blockscout'
+  | 'mento'
 
 export interface BusinessContext {
   feature: BusinessFeature

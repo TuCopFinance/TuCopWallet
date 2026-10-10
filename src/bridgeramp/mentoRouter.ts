@@ -68,7 +68,7 @@ export const MENTO_ROUTER_ABI = [
   },
 ] as const
 
-type MentoDirection = 'copmToUsdc' | 'usdcToCopm'
+export type MentoDirection = 'copmToUsdc' | 'usdcToCopm'
 
 interface MentoRoute {
   from: Address

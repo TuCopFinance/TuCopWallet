@@ -3922,6 +3922,22 @@ export const v255Schema = {
     ...v254Schema._persist,
     version: 255,
   },
+  // bridgeramp slice added without a persist version bump, same policy as
+  // tucopramp above: additive slice with an initialState, no migration.
+  bridgeramp: {
+    swap: {
+      status: 'idle',
+      flowId: null,
+      direction: null,
+      amountIn: null,
+      quotedAmountOut: null,
+      recipient: null,
+      approveTxHash: null,
+      swapTxHash: null,
+      errorCode: null,
+    },
+    lastCompletedSwap: null,
+  },
 }
 
 export function getLatestSchema(): Partial<RootState> {
