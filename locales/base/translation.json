@@ -3644,8 +3644,6 @@
     "retry": "Retry",
     "party": {
       "loadError": "We could not check your TuCOP account. Try again.",
-      "onboardingTitle": "Verify your identity",
-      "onboardingBody": "Withdrawing with Bridge needs a verified TuCOP account. You will be able to finish verification in the app soon; use TuCOP Ramp for now.",
       "pendingTitle": "Verification in progress",
       "pendingBody": "Your identity is still under review (identity: {{kyc}}, terms: {{tos}}). You can withdraw with Bridge once it is approved.",
       "openKyc": "Continue verification"
@@ -3704,6 +3702,21 @@
     },
     "payoutError": {
       "generic": "Bridge could not complete the payout ({{code}}). TuCOP will review the operation."
+    },
+    "onboarding": {
+      "title": "Create your TuCOP account",
+      "body": "Withdrawing with Bridge needs a one-time identity verification. We ask for your legal name, your document and an email; then you finish the verification on a secure TuCOP page.",
+      "legalName": "Full legal name",
+      "legalNamePlaceholder": "As it appears on your document",
+      "email": "Email",
+      "emailHelper": "We write to you there about the verification.",
+      "consent": "I authorize TuCOP to verify my identity and accept the terms and conditions.",
+      "submitCta": "Continue to verification",
+      "error": {
+        "email_required": "We need an email for the verification.",
+        "not_supported_yet": "Only individuals can register for now.",
+        "generic": "We could not create your account ({{code}}). Try again."
+      }
     }
   }
 }

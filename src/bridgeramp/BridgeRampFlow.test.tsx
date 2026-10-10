@@ -12,6 +12,7 @@ import {
 } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
+  createBridgeRampParty,
   executeBridgeRampSwap,
   fetchBridgeRampDestinations,
   fetchBridgeRampParty,
@@ -128,7 +129,13 @@ const withdrawal = {
 function readyState(overrides: RecursivePartial<RootState['bridgeramp']> = {}) {
   return {
     ...bridgerampInitialState,
-    party: { status: 'loaded', value: verifiedParty, needsOnboarding: false, errorCode: null },
+    party: {
+      status: 'loaded',
+      value: verifiedParty,
+      needsOnboarding: false,
+      errorCode: null,
+      onboarding: { status: 'idle', errorCode: null },
+    },
     destinations: {
       status: 'loaded',
       items: [destination],
@@ -231,14 +238,85 @@ describe('BridgeRampFlow', () => {
       )
     })
 
-    it('asks for onboarding when TuCOPRamp has no party for this wallet', () => {
+    it('shows the onboarding form when TuCOPRamp has no party for this wallet', () => {
       const { getByTestId } = renderFlow(
         'offramp',
         readyState({
-          party: { status: 'loaded', value: null, needsOnboarding: true, errorCode: null },
+          party: {
+            status: 'loaded',
+            value: null,
+            needsOnboarding: true,
+            errorCode: null,
+            onboarding: { status: 'idle', errorCode: null },
+          },
         })
       )
       expect(getByTestId('bridgeramp-party-onboarding')).toBeTruthy()
+      expect(getByTestId('bridgeramp-onboarding-submit')).toBeDisabled()
+      expect(getByTestId('bridgeramp-continue')).toBeDisabled()
+    })
+
+    it('creates the party with the typed identity, email and consent', () => {
+      const { getByTestId, store } = renderFlow(
+        'offramp',
+        readyState({
+          party: {
+            status: 'loaded',
+            value: null,
+            needsOnboarding: true,
+            errorCode: null,
+            onboarding: { status: 'idle', errorCode: null },
+          },
+        })
+      )
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-name'), 'Ana Maria Perez')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-document'), '1.017.123.456')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-email'), 'ana@example.com')
+      expect(getByTestId('bridgeramp-onboarding-submit')).toBeDisabled()
+      fireEvent.press(getByTestId('bridgeramp-onboarding-consent'))
+      expect(getByTestId('bridgeramp-onboarding-submit')).toBeEnabled()
+
+      fireEvent.press(getByTestId('bridgeramp-onboarding-submit'))
+      const create = store
+        .getActions()
+        .find((a) => a.type === createBridgeRampParty.type) as ReturnType<
+        typeof createBridgeRampParty
+      >
+      expect(create.payload.request).toMatchObject({
+        type: 'individual',
+        legal_name: 'Ana Maria Perez',
+        document_type: 'CC',
+        document_number: '1017123456',
+        email: 'ana@example.com',
+        consent: { version: '2026-10-10', accepted_at: expect.any(String) },
+        redirect_url: 'https://tucop.xyz/ramp/verificacion-lista',
+      })
+    })
+
+    it('shows the pending verification with the KYC link once the party exists', () => {
+      const { getByTestId, store } = renderFlow(
+        'offramp',
+        readyState({
+          party: {
+            status: 'loaded',
+            value: {
+              ...verifiedParty,
+              status: { kyc: 'not_started', tos: 'pending', endorsements: [] },
+              links: { kyc: 'https://verify.example/kyc/1', tos: 'https://verify.example/tos/1' },
+            },
+            needsOnboarding: false,
+            errorCode: null,
+            onboarding: { status: 'idle', errorCode: null },
+          },
+        })
+      )
+      expect(getByTestId('bridgeramp-party-pending')).toBeTruthy()
+      fireEvent.press(getByTestId('bridgeramp-party-pending/bridgeramp.party.openKyc'))
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ type: 'APP/OPEN_URL', url: 'https://verify.example/kyc/1' }),
+        ])
+      )
       expect(getByTestId('bridgeramp-continue')).toBeDisabled()
     })
 

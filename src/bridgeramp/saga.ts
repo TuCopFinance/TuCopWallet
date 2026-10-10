@@ -10,9 +10,11 @@ import {
   inputTokenFor,
 } from 'src/bridgeramp/mentoRouter'
 import {
+  CreatePartyRequest,
   Destination,
   Withdrawal,
   createFirstPartyDestination,
+  createParty,
   createWithdrawQuote,
   createWithdrawal,
   getDestination,
@@ -34,6 +36,8 @@ import {
   destinationsFailed,
   destinationsLoaded,
   destinationsLoading,
+  onboardingFailed,
+  onboardingSubmitting,
   partyFailed,
   partyLoaded,
   partyLoading,
@@ -303,6 +307,10 @@ export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRa
 
 export const fetchBridgeRampParty = createAction('bridgeramp/fetchParty')
 export const fetchBridgeRampDestinations = createAction('bridgeramp/fetchDestinations')
+export const createBridgeRampParty = createAction<{
+  request: CreatePartyRequest
+  idempotencyKey: string
+}>('bridgeramp/createParty')
 export const registerBridgeRampDestination = createAction<{
   breBKey: string
   idempotencyKey: string
@@ -399,6 +407,22 @@ export function* fetchPartySaga() {
     }
     Logger.warn(TAG, 'fetchParty failed', err)
     yield* put(partyFailed({ code: errorCodeOf(err, 'party_fetch_failed') }))
+  }
+}
+
+// Creates (or links) the party for this wallet. TuCOPRamp answers with the
+// party and its hosted KYC / TOS links; the screen shows them as pending.
+export function* createPartySaga(
+  action: PayloadAction<{ request: CreatePartyRequest; idempotencyKey: string }>
+) {
+  const { request, idempotencyKey } = action.payload
+  yield* put(onboardingSubmitting())
+  try {
+    const { party } = yield* withSession((token) => createParty(token, request, idempotencyKey))
+    yield* put(partyLoaded(party))
+  } catch (err) {
+    Logger.warn(TAG, 'createParty failed', err)
+    yield* put(onboardingFailed({ code: errorCodeOf(err, 'party_create_failed') }))
   }
 }
 
@@ -559,6 +583,7 @@ export function* bridgeRampSaga() {
   yield* takeLeading(executeBridgeRampSwap.type, executeBridgeRampSwapSaga)
   yield* takeLatest(fetchBridgeRampParty.type, fetchPartySaga)
   yield* takeLatest(fetchBridgeRampDestinations.type, fetchDestinationsSaga)
+  yield* takeLeading(createBridgeRampParty.type, createPartySaga)
   yield* takeLeading(registerBridgeRampDestination.type, registerDestinationSaga)
   yield* takeLeading(startBridgeRampWithdraw.type, startWithdrawSaga)
   yield* takeLatest(pollBridgeRampWithdrawal.type, pollWithdrawalSaga)

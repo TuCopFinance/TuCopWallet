@@ -229,6 +229,10 @@ describe('store state', () => {
           "party": {
             "errorCode": null,
             "needsOnboarding": false,
+            "onboarding": {
+              "errorCode": null,
+              "status": "idle",
+            },
             "status": "idle",
             "value": null,
           },

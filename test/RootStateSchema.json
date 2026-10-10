@@ -803,6 +803,30 @@
                 "needsOnboarding": {
                     "type": "boolean"
                 },
+                "onboarding": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "errorCode": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "status": {
+                            "enum": [
+                                "error",
+                                "idle",
+                                "submitting"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "errorCode",
+                        "status"
+                    ],
+                    "type": "object"
+                },
                 "status": {
                     "$ref": "#/definitions/LoadStatus"
                 },
@@ -820,6 +844,7 @@
             "required": [
                 "errorCode",
                 "needsOnboarding",
+                "onboarding",
                 "status",
                 "value"
             ],

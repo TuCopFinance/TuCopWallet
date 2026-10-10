@@ -3931,6 +3931,7 @@ export const v255Schema = {
       value: null,
       needsOnboarding: false,
       errorCode: null,
+      onboarding: { status: 'idle', errorCode: null },
     },
     destinations: {
       status: 'idle',

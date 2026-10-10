@@ -66,6 +66,8 @@ export interface BridgeRampPartyState {
   // address but no party is linked to this app yet (onboarding needed).
   needsOnboarding: boolean
   errorCode: string | null
+  // POST /v1/parties in flight / refused. Success lands in `value`.
+  onboarding: { status: 'idle' | 'submitting' | 'error'; errorCode: string | null }
 }
 
 export interface BridgeRampDestinationsState {
@@ -134,11 +136,14 @@ const initialSwapState: BridgeRampSwapState = {
   errorCode: null,
 }
 
+const initialOnboarding = { status: 'idle' as const, errorCode: null }
+
 const initialPartyState: BridgeRampPartyState = {
   status: 'idle',
   value: null,
   needsOnboarding: false,
   errorCode: null,
+  onboarding: initialOnboarding,
 }
 
 const initialDestinationsState: BridgeRampDestinationsState = {
@@ -186,10 +191,23 @@ const slice = createSlice({
         value: action.payload,
         needsOnboarding: false,
         errorCode: null,
+        onboarding: initialOnboarding,
       }
     },
     partyNeedsOnboarding: (state) => {
-      state.party = { status: 'loaded', value: null, needsOnboarding: true, errorCode: null }
+      state.party = {
+        ...state.party,
+        status: 'loaded',
+        value: null,
+        needsOnboarding: true,
+        errorCode: null,
+      }
+    },
+    onboardingSubmitting: (state) => {
+      state.party.onboarding = { status: 'submitting', errorCode: null }
+    },
+    onboardingFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.party.onboarding = { status: 'error', errorCode: action.payload.code }
     },
     partyFailed: (state, action: PayloadAction<{ code: string }>) => {
       state.party.status = 'error'
@@ -357,6 +375,8 @@ export const {
   partyLoaded,
   partyNeedsOnboarding,
   partyFailed,
+  onboardingSubmitting,
+  onboardingFailed,
   destinationsLoading,
   destinationsLoaded,
   destinationsFailed,

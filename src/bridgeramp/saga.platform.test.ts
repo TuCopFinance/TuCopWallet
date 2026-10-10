@@ -4,6 +4,8 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import * as api from 'src/bridgeramp/api'
 import { openWalletPartySession } from 'src/bridgeramp/platformClient'
 import {
+  createBridgeRampParty,
+  createPartySaga,
   ensurePartySession,
   fetchPartySaga,
   onSwapConfirmedSaga,
@@ -19,6 +21,8 @@ import reducer, {
   destinationRegistering,
   destinationUpdated,
   initialState,
+  onboardingFailed,
+  onboardingSubmitting,
   partyLoaded,
   partyNeedsOnboarding,
   sessionCleared,
@@ -177,6 +181,48 @@ describe('fetchPartySaga', () => {
       .run()
     expect(mockedApi.getParty).toHaveBeenNthCalledWith(1, 'tps_live')
     expect(mockedApi.getParty).toHaveBeenNthCalledWith(2, 'tps_new')
+  })
+})
+
+describe('createPartySaga', () => {
+  const request: api.CreatePartyRequest = {
+    type: 'individual',
+    legal_name: 'Ana Maria Perez',
+    document_type: 'CC',
+    document_number: '1017123456',
+    email: 'ana@example.com',
+    consent: { version: '2026-10-10', accepted_at: '2026-10-10T18:00:00Z' },
+    redirect_url: 'https://tucop.xyz/ramp/verificacion-lista',
+  }
+
+  it('creates the party and stores it with its verification links', async () => {
+    const created = { ...party, links: { kyc: 'https://verify/kyc', tos: 'https://verify/tos' } }
+    mockedApi.createParty.mockResolvedValue({ party: created })
+    await expectSaga(createPartySaga, createBridgeRampParty({ request, idempotencyKey: 'idem' }))
+      .withReducer(rootReducer, root(withSession()))
+      .put(onboardingSubmitting())
+      .put(partyLoaded(created))
+      .run()
+    expect(mockedApi.createParty).toHaveBeenCalledWith('tps_live', request, 'idem')
+  })
+
+  it('keeps the form with the server code when refused', async () => {
+    mockedApi.createParty.mockRejectedValue(rampError('email_required', 422))
+    const { storeState } = await expectSaga(
+      createPartySaga,
+      createBridgeRampParty({ request, idempotencyKey: 'idem' })
+    )
+      .withReducer(
+        rootReducer,
+        root({
+          ...withSession(),
+          party: { ...initialState.party, needsOnboarding: true, status: 'loaded' },
+        })
+      )
+      .put(onboardingFailed({ code: 'email_required' }))
+      .run()
+    expect(storeState.bridgeramp.party.needsOnboarding).toBe(true)
+    expect(storeState.bridgeramp.party.value).toBeNull()
   })
 })
 

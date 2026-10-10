@@ -583,6 +583,12 @@ Logger.info('Connecting to Celo mainnet')
 export const TUCOPRAMP_API_BASE_URL =
   'https://tucop-backend-production.up.railway.app/api/tucopramp'
 
+// Where TuCOPRamp's hosted identity verification sends the user back after
+// Bridge Ramp onboarding. Must be registered as an allowed redirect for the
+// wallet consumer on TuCOPRamp; the page just tells the user to return to the
+// app (the wallet re-fetches the party when the screen regains focus).
+export const BRIDGE_RAMP_KYC_REDIRECT_URL = 'https://tucop.xyz/ramp/verificacion-lista'
+
 export { COPM_TOKEN_ID_MAINNET }
 
 export default networkConfig

@@ -4,6 +4,7 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Linking,
   StyleSheet,
   Text,
   TextInput,
@@ -22,6 +23,7 @@ import {
 } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
+  createBridgeRampParty,
   executeBridgeRampSwap,
   fetchBridgeRampDestinations,
   fetchBridgeRampParty,
@@ -56,7 +58,15 @@ import { NetworkId } from 'src/transactions/types'
 import Logger from 'src/utils/Logger'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
 import { getSerializablePreparedTransactions } from 'src/viem/preparedTransactionSerialization'
-import { COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
+import {
+  DOCUMENT_TYPES,
+  DocumentType,
+  isValidDocument,
+  sanitizeDocument,
+} from 'src/tucopramp/limits'
+import { PickerModal } from 'src/tucopramp/PickerModal'
+import { userProfileSelector } from 'src/tucopramp/selectors'
+import { BRIDGE_RAMP_KYC_REDIRECT_URL, COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
 import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'bridgeramp/BridgeRampWithdraw'
@@ -67,6 +77,10 @@ const BRIDGE_MIN_COP = 4_000
 // A Bre-B key is a phone, a document, an email or an alphanumeric key; the
 // server validates for real, this only stops obvious typos.
 const BRE_B_KEY_MIN_LENGTH = 6
+// Version of the consent text the user accepts in the onboarding form. Bump
+// when `bridgeramp.onboarding.consent` changes; TuCOPRamp records it per app.
+const BRIDGE_RAMP_CONSENT_VERSION = '2026-10-10'
+const TUCOP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
 interface Props {
   oracleStale: boolean
@@ -260,15 +274,7 @@ function PartySection() {
     )
   }
   if (party.needsOnboarding || !party.value) {
-    return (
-      <InLineNotification
-        variant={NotificationVariant.Info}
-        title={t('bridgeramp.party.onboardingTitle')}
-        description={t('bridgeramp.party.onboardingBody')}
-        style={styles.notice}
-        testID="bridgeramp-party-onboarding"
-      />
-    )
+    return <PartyOnboardingForm />
   }
   if (!partyCanTransact(party.value)) {
     const kycUrl = party.value.links?.kyc
@@ -290,6 +296,171 @@ function PartySection() {
     )
   }
   return null
+}
+
+// Creates the party on TuCOPRamp for this wallet: legal name, identity
+// document, contact email and consent. The answer carries the hosted KYC and
+// TOS links, which PartySection then shows as "verification pending".
+function PartyOnboardingForm() {
+  const { t } = useTranslation()
+  const dispatch = useDispatch()
+  const party = useSelector(bridgeRampPartySelector)
+  // Prefill from the TuCOP Ramp profile when the user already has one; the
+  // document number is never echoed by the server, so it is always typed.
+  const tucopRampProfile = useSelector(userProfileSelector)
+
+  const [legalName, setLegalName] = useState(tucopRampProfile?.full_name ?? '')
+  const [documentType, setDocumentType] = useState<DocumentType>(
+    tucopRampProfile?.document_type ?? 'CC'
+  )
+  const [documentNumber, setDocumentNumber] = useState('')
+  const [email, setEmail] = useState(tucopRampProfile?.primary_email ?? '')
+  const [consent, setConsent] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  const nameValid = legalName.trim().split(/\s+/).length >= 2
+  const documentValid = isValidDocument(documentType, documentNumber)
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  const submitting = party.onboarding.status === 'submitting'
+  const canSubmit = nameValid && documentValid && emailValid && consent && !submitting
+
+  const onSubmit = () => {
+    if (!canSubmit) return
+    dispatch(
+      createBridgeRampParty({
+        request: {
+          type: 'individual',
+          legal_name: legalName.trim(),
+          document_type: documentType,
+          document_number: documentNumber,
+          email: email.trim(),
+          consent: {
+            version: BRIDGE_RAMP_CONSENT_VERSION,
+            accepted_at: new Date().toISOString(),
+          },
+          redirect_url: BRIDGE_RAMP_KYC_REDIRECT_URL,
+        },
+        idempotencyKey: uuidv4(),
+      })
+    )
+  }
+
+  return (
+    <View style={styles.section} testID="bridgeramp-party-onboarding">
+      <Text style={styles.stepTitle}>{t('bridgeramp.onboarding.title')}</Text>
+      <Text style={styles.body}>{t('bridgeramp.onboarding.body')}</Text>
+
+      <Text style={styles.label}>{t('bridgeramp.onboarding.legalName')}</Text>
+      <TextInput
+        style={styles.input}
+        value={legalName}
+        onChangeText={setLegalName}
+        autoCapitalize="words"
+        placeholder={t('bridgeramp.onboarding.legalNamePlaceholder') ?? ''}
+        placeholderTextColor={Colors.gray4}
+        editable={!submitting}
+        testID="bridgeramp-onboarding-name"
+      />
+
+      <Text style={[styles.label, styles.fieldGap]}>{t('tucopramp.documentTypeLabel')}</Text>
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => setPickerOpen(true)}
+        disabled={submitting}
+        testID="bridgeramp-onboarding-doctype"
+      >
+        <Text style={styles.pickerValue}>{t(`tucopramp.documentType.${documentType}`)}</Text>
+      </TouchableOpacity>
+      <PickerModal<DocumentType>
+        visible={pickerOpen}
+        title={t('tucopramp.documentType.pickerTitle')}
+        options={DOCUMENT_TYPES.map((value) => ({
+          value,
+          label: t(`tucopramp.documentType.${value}`),
+        }))}
+        selectedValue={documentType}
+        testIdPrefix="bridgeramp-onboarding-doctype-option"
+        onClose={() => setPickerOpen(false)}
+        onSelect={(value) => {
+          setDocumentType(value)
+          setDocumentNumber(sanitizeDocument(value, documentNumber))
+          setPickerOpen(false)
+        }}
+      />
+
+      <Text style={[styles.label, styles.fieldGap]}>{t('tucopramp.documentValueLabel')}</Text>
+      <TextInput
+        style={styles.input}
+        value={documentNumber}
+        onChangeText={(raw) => setDocumentNumber(sanitizeDocument(documentType, raw))}
+        autoCapitalize="characters"
+        autoCorrect={false}
+        editable={!submitting}
+        testID="bridgeramp-onboarding-document"
+      />
+      {documentNumber.length > 0 && !documentValid && (
+        <Text style={styles.helperError}>{t(`tucopramp.documentInvalid.${documentType}`)}</Text>
+      )}
+
+      <Text style={[styles.label, styles.fieldGap]}>{t('bridgeramp.onboarding.email')}</Text>
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        editable={!submitting}
+        testID="bridgeramp-onboarding-email"
+      />
+      <Text style={styles.helper}>{t('bridgeramp.onboarding.emailHelper')}</Text>
+
+      <TouchableOpacity
+        style={styles.consentRow}
+        onPress={() => setConsent((v) => !v)}
+        disabled={submitting}
+        testID="bridgeramp-onboarding-consent"
+      >
+        <View style={[styles.consentCheckbox, consent && styles.consentCheckboxChecked]}>
+          {consent && <Text style={styles.consentCheckmark}>✓</Text>}
+        </View>
+        <View style={styles.consentTextBlock}>
+          <Text style={styles.consentLabel}>{t('bridgeramp.onboarding.consent')}</Text>
+          <Text
+            style={styles.consentLink}
+            onPress={() => Linking.openURL(TUCOP_TERMS_URL)}
+            testID="bridgeramp-onboarding-terms"
+          >
+            {t('tucopramp.consent.linkText')}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      {party.onboarding.status === 'error' && (
+        <InLineNotification
+          variant={NotificationVariant.Error}
+          description={t(`bridgeramp.onboarding.error.${party.onboarding.errorCode}`, {
+            defaultValue: t('bridgeramp.onboarding.error.generic', {
+              code: party.onboarding.errorCode,
+            }),
+          })}
+          style={styles.noticeTop}
+          testID="bridgeramp-onboarding-error"
+        />
+      )}
+
+      <Button
+        text={t('bridgeramp.onboarding.submitCta')}
+        onPress={onSubmit}
+        disabled={!canSubmit}
+        showLoading={submitting}
+        type={BtnTypes.PRIMARY}
+        size={BtnSizes.FULL}
+        style={styles.cta}
+        testID="bridgeramp-onboarding-submit"
+      />
+    </View>
+  )
 }
 
 function DestinationSection({
@@ -710,6 +881,24 @@ const styles = StyleSheet.create({
   rowLabel: { ...typeScale.bodySmall, color: Colors.gray4 },
   rowValue: { ...typeScale.labelSemiBoldMedium, color: Colors.black },
   quoteNote: { ...typeScale.bodySmall, color: Colors.gray4, marginTop: Spacing.Smallest8 },
+  fieldGap: { marginTop: Spacing.Regular16 },
+  pickerValue: { ...typeScale.bodyMedium, color: Colors.black },
+  consentRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: Spacing.Regular16 },
+  consentCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: Colors.gray3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.Small12,
+  },
+  consentCheckboxChecked: { backgroundColor: Colors.black, borderColor: Colors.black },
+  consentCheckmark: { ...typeScale.labelSmall, color: Colors.white },
+  consentTextBlock: { flex: 1 },
+  consentLabel: { ...typeScale.bodySmall, color: Colors.black },
+  consentLink: { ...typeScale.labelSmall, color: Colors.accent, marginTop: Spacing.Tiny4 },
   hashBlock: { marginBottom: Spacing.Smallest8 },
   hash: { ...typeScale.bodyXSmall, color: Colors.black },
   cta: { marginTop: Spacing.Thick24 },
