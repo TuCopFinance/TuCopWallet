@@ -208,7 +208,7 @@ function sha256Hex(input: string): string {
   return crypto.createHash('sha256').update(input).digest('hex')
 }
 
-async function parseErrorEnvelope(response: Response): Promise<ErrorEnvelope> {
+export async function parseErrorEnvelope(response: Response): Promise<ErrorEnvelope> {
   const text = await response.text()
   if (text.length === 0) {
     return { code: `http_${response.status}`, status: response.status }
