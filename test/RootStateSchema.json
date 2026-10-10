@@ -947,6 +947,12 @@
         "BridgeRampWithdrawState": {
             "additionalProperties": false,
             "properties": {
+                "copmAmountIn": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "errorCode": {
                     "type": [
                         "null",
@@ -984,6 +990,7 @@
                 }
             },
             "required": [
+                "copmAmountIn",
                 "errorCode",
                 "errorRequestId",
                 "quote",

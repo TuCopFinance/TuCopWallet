@@ -3630,7 +3630,8 @@
       "title": "Fast deposit with Bridge",
       "explainer": "You transfer pesos via Bre-B, Bridge delivers digital dollars to your wallet and the app converts them to digital pesos.",
       "quoteIn": "Digital dollars received",
-      "quoteOut": "You will receive"
+      "quoteOut": "You will receive",
+      "comingSoon": "Bridge Ramp is not available for deposits yet. You will be able to complete the deposit from here soon."
     },
     "amountLabel": "Amount (Pesos)",
     "amountPlaceholder": "Enter the amount",
@@ -3639,6 +3640,70 @@
     "quoteNote": "Mento rate right now. It does not include Bridge's rate or TuCOP's fee.",
     "quoteError": "We could not get a quote. Try again.",
     "continueCta": "Continue",
-    "comingSoon": "Bridge Ramp is not available in the app yet. Soon you will complete withdrawals and deposits from here."
+    "insufficientBalance": "You do not have enough pesos digitales. Your balance is {{balance}}.",
+    "retry": "Retry",
+    "party": {
+      "loadError": "We could not check your TuCOP account. Try again.",
+      "onboardingTitle": "Verify your identity",
+      "onboardingBody": "Withdrawing with Bridge needs a verified TuCOP account. You will be able to finish verification in the app soon; use TuCOP Ramp for now.",
+      "pendingTitle": "Verification in progress",
+      "pendingBody": "Your identity is still under review (identity: {{kyc}}, terms: {{tos}}). You can withdraw with Bridge once it is approved.",
+      "openKyc": "Continue verification"
+    },
+    "destination": {
+      "label": "Bre-B key you receive to",
+      "verified": "Verified",
+      "none": "You have no Bre-B key registered yet. Add yours: it must be in your name.",
+      "placeholder": "Your Bre-B key",
+      "add": "Add",
+      "pending": "Checking the key against the Bre-B directory. This takes about a minute.",
+      "registerFailed": "We could not register the key ({{code}}).",
+      "rejected": {
+        "directory_no_match": "The Bre-B directory found no account for that key.",
+        "holder_name_mismatch": "The key is not in your name. You can only withdraw to your own account.",
+        "holder_document_mismatch": "The key holder's document does not match yours.",
+        "verification_timeout": "The Bre-B directory did not answer. Try again in a few minutes.",
+        "other": "The key was rejected."
+      }
+    },
+    "withdraw": {
+      "startFailed": "We could not start the withdrawal ({{code}}). Try again."
+    },
+    "review": {
+      "title": "Review your withdrawal",
+      "receive": "You receive at least",
+      "tucopFee": "TuCOP fee",
+      "bridgeRate": "Bridge rate",
+      "networkFee": "Estimated network fee",
+      "note": "You sign one transaction: your pesos digitales are converted on Mento and the dólares digitales go straight to Bridge. If the conversion fails, your pesos digitales do not move.",
+      "badDeposit": "The deposit address TuCOP returned is not USDC on Celo. Nothing was signed.",
+      "rateMoved": "The rate moved and the conversion no longer reaches the quoted amount. Start over to quote again.",
+      "startOver": "Start over",
+      "notEnoughForGas": "You do not have enough balance to pay the network fee.",
+      "confirmCta": "Confirm and withdraw",
+      "cancelCta": "Cancel"
+    },
+    "swapError": {
+      "reverted": "The conversion reverted on-chain. Your pesos digitales are still in your wallet; try again.",
+      "broadcast_failed": "We could not send the transaction. Try again.",
+      "stale_quote": "The quote expired. Try again.",
+      "invalid_recipient": "The transaction does not match the withdrawal. Nothing was signed.",
+      "generic": "The conversion failed. Try again."
+    },
+    "progress": {
+      "payingTitle": "Bridge is paying your key",
+      "payingBody": "Your dólares digitales reached Bridge. The payout to your Bre-B key takes a few minutes.",
+      "completedTitle": "Withdrawal completed",
+      "completedBody": "Bridge paid {{amount}} pesos to your Bre-B key.",
+      "failedTitle": "The withdrawal did not complete",
+      "swapTx": "Transaction",
+      "operationId": "Operation",
+      "pollTimeout": "Still waiting for Bridge to confirm. Refresh or come back later.",
+      "refresh": "Refresh",
+      "doneCta": "Done"
+    },
+    "payoutError": {
+      "generic": "Bridge could not complete the payout ({{code}}). TuCOP will review the operation."
+    }
   }
 }

@@ -141,19 +141,6 @@ export function createFirstPartyDestination(
   })
 }
 
-export function deleteDestination(
-  partySession: string,
-  destinationId: string,
-  opts?: CallOpts
-): Promise<void> {
-  return platformFetch<void>({
-    ...opts,
-    method: 'DELETE',
-    path: `/v1/destinations/${encodeURIComponent(destinationId)}`,
-    partySession,
-  })
-}
-
 // ---------------------------------------------------------------------------
 // Withdraw (COPm -> COP to the user's own Bre-B key)
 // ---------------------------------------------------------------------------

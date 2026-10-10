@@ -9,6 +9,3 @@ export const bridgeRampDestinationsSelector = (state: RootState) => state.bridge
 export const bridgeRampWithdrawSelector = (state: RootState) => state.bridgeramp.withdraw
 
 export const bridgeRampSwapSelector = (state: RootState) => state.bridgeramp.swap
-
-export const bridgeRampLastCompletedSwapSelector = (state: RootState) =>
-  state.bridgeramp.lastCompletedSwap

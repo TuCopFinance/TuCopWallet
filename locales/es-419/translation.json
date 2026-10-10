@@ -3644,7 +3644,8 @@
       "title": "Depósito rápido con Bridge",
       "explainer": "Transfieres pesos por Bre-B, Bridge entrega dólares digitales en tu wallet y la app los convierte a pesos digitales.",
       "quoteIn": "Dólares digitales recibidos",
-      "quoteOut": "Recibirás"
+      "quoteOut": "Recibirás",
+      "comingSoon": "Bridge Ramp todavía no está disponible para depósitos. Pronto podrás completar el depósito desde aquí."
     },
     "amountLabel": "Monto (Pesos)",
     "amountPlaceholder": "Ingresa el monto",
@@ -3653,7 +3654,71 @@
     "quoteNote": "Tasa de Mento en este momento. No incluye la tasa de Bridge ni la comisión de TuCOP.",
     "quoteError": "No pudimos obtener la cotización. Intenta de nuevo.",
     "continueCta": "Continuar",
-    "comingSoon": "Bridge Ramp todavía no está disponible en la app. Pronto podrás completar el retiro y el depósito desde aquí."
+    "insufficientBalance": "No tienes suficientes pesos digitales. Tu saldo es {{balance}}.",
+    "retry": "Reintentar",
+    "party": {
+      "loadError": "No pudimos consultar tu cuenta en TuCOP. Intenta de nuevo.",
+      "onboardingTitle": "Verifica tu identidad",
+      "onboardingBody": "Para retirar con Bridge necesitas una cuenta verificada en TuCOP. Pronto podrás completar la verificación desde la app; por ahora usa TuCOP Ramp.",
+      "pendingTitle": "Verificación en proceso",
+      "pendingBody": "Tu identidad todavía está en revisión (identidad: {{kyc}}, términos: {{tos}}). Cuando quede aprobada podrás retirar con Bridge.",
+      "openKyc": "Continuar verificación"
+    },
+    "destination": {
+      "label": "Llave Bre-B donde recibes",
+      "verified": "Verificada",
+      "none": "Todavía no tienes una llave Bre-B registrada. Agrega la tuya: debe estar a tu nombre.",
+      "placeholder": "Tu llave Bre-B",
+      "add": "Agregar",
+      "pending": "Verificando la llave con el directorio Bre-B. Toma alrededor de un minuto.",
+      "registerFailed": "No pudimos registrar la llave ({{code}}).",
+      "rejected": {
+        "directory_no_match": "El directorio Bre-B no encontró una cuenta con esa llave.",
+        "holder_name_mismatch": "La llave no está a tu nombre. Solo puedes retirar a una cuenta tuya.",
+        "holder_document_mismatch": "El documento del titular de la llave no coincide con el tuyo.",
+        "verification_timeout": "El directorio Bre-B no respondió. Intenta de nuevo en unos minutos.",
+        "other": "La llave fue rechazada."
+      }
+    },
+    "withdraw": {
+      "startFailed": "No pudimos iniciar el retiro ({{code}}). Intenta de nuevo."
+    },
+    "review": {
+      "title": "Revisa tu retiro",
+      "receive": "Recibes al menos",
+      "tucopFee": "Comisión TuCOP",
+      "bridgeRate": "Tasa Bridge",
+      "networkFee": "Tarifa de red estimada",
+      "note": "Firmas una sola transacción: tus pesos digitales se convierten en Mento y los dólares digitales llegan directo a Bridge. Si la conversión falla, tus pesos digitales no se mueven.",
+      "badDeposit": "La dirección de depósito que devolvió TuCOP no es USDC en Celo. No firmamos nada.",
+      "rateMoved": "La tasa cambió y la conversión ya no alcanza el monto cotizado. Vuelve a empezar para cotizar de nuevo.",
+      "startOver": "Volver a empezar",
+      "notEnoughForGas": "No tienes saldo para pagar la tarifa de red.",
+      "confirmCta": "Confirmar y retirar",
+      "cancelCta": "Cancelar"
+    },
+    "swapError": {
+      "reverted": "La conversión se revirtió en la red. Tus pesos digitales siguen en tu wallet; intenta de nuevo.",
+      "broadcast_failed": "No pudimos enviar la transacción. Intenta de nuevo.",
+      "stale_quote": "La cotización venció. Intenta de nuevo.",
+      "invalid_recipient": "La transacción no coincide con el retiro. No firmamos nada.",
+      "generic": "La conversión falló. Intenta de nuevo."
+    },
+    "progress": {
+      "payingTitle": "Bridge está pagando a tu llave",
+      "payingBody": "Tus dólares digitales ya llegaron a Bridge. El pago a tu llave Bre-B toma unos minutos.",
+      "completedTitle": "Retiro completado",
+      "completedBody": "Bridge pagó {{amount}} pesos a tu llave Bre-B.",
+      "failedTitle": "El retiro no se completó",
+      "swapTx": "Transacción",
+      "operationId": "Operación",
+      "pollTimeout": "Seguimos esperando la confirmación de Bridge. Puedes refrescar o volver más tarde.",
+      "refresh": "Refrescar",
+      "doneCta": "Listo"
+    },
+    "payoutError": {
+      "generic": "Bridge no pudo completar el pago ({{code}}). TuCOP revisará la operación."
+    }
   },
   "transactionSuccess": {
     "swap": {

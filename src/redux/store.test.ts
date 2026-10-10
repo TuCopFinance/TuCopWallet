@@ -245,6 +245,7 @@ describe('store state', () => {
             "swapTxHash": null,
           },
           "withdraw": {
+            "copmAmountIn": null,
             "errorCode": null,
             "errorRequestId": null,
             "quote": null,

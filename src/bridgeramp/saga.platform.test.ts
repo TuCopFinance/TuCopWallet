@@ -221,6 +221,7 @@ describe('registerDestinationSaga', () => {
 describe('startWithdrawSaga', () => {
   const action = startBridgeRampWithdraw({
     destinationId: 'dst_1',
+    copmAmountIn: '800000000000000000000000',
     usdcMinOut: '246.101626',
     idempotencyKey: 'idem',
   })
@@ -231,7 +232,7 @@ describe('startWithdrawSaga', () => {
     await expectSaga(startWithdrawSaga, action)
       .withReducer(rootReducer, root(withSession()))
       .provide([[matchers.select(walletAddressSelector), USER]])
-      .put(withdrawCreating())
+      .put(withdrawCreating({ copmAmountIn: '800000000000000000000000' }))
       .put(withdrawReady({ quote, withdrawal }))
       .run()
     expect(mockedApi.createWithdrawQuote).toHaveBeenCalledWith(

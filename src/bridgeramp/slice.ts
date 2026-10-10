@@ -101,6 +101,9 @@ export type BridgeRampWithdrawErrorCode =
 
 export interface BridgeRampWithdrawState {
   status: BridgeRampWithdrawStatus
+  // COPm the user is sending, base units as a decimal string. Set when the
+  // operation is opened; the review step re-quotes Mento for exactly this.
+  copmAmountIn: string | null
   quote: WithdrawQuote | null
   withdrawal: Withdrawal | null
   errorCode: BridgeRampWithdrawErrorCode | null
@@ -147,6 +150,7 @@ const initialDestinationsState: BridgeRampDestinationsState = {
 
 const initialWithdrawState: BridgeRampWithdrawState = {
   status: 'idle',
+  copmAmountIn: null,
   quote: null,
   withdrawal: null,
   errorCode: null,
@@ -227,13 +231,12 @@ const slice = createSlice({
       state.destinations.registering.status = 'error'
       state.destinations.errorCode = action.payload.code
     },
-    destinationRemoved: (state, action: PayloadAction<{ destinationId: string }>) => {
-      state.destinations.items = state.destinations.items.filter(
-        (d) => d.id !== action.payload.destinationId
-      )
-    },
-    withdrawCreating: (state) => {
-      state.withdraw = { ...initialWithdrawState, status: 'creating' }
+    withdrawCreating: (state, action: PayloadAction<{ copmAmountIn: string }>) => {
+      state.withdraw = {
+        ...initialWithdrawState,
+        status: 'creating',
+        copmAmountIn: action.payload.copmAmountIn,
+      }
     },
     withdrawReady: (
       state,
@@ -360,7 +363,6 @@ export const {
   destinationRegistering,
   destinationUpdated,
   destinationRegisterFailed,
-  destinationRemoved,
   withdrawCreating,
   withdrawReady,
   withdrawAwaitingPayout,

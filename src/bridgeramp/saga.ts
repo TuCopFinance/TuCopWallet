@@ -307,13 +307,18 @@ export const registerBridgeRampDestination = createAction<{
   breBKey: string
   idempotencyKey: string
 }>('bridgeramp/registerDestination')
-export const startBridgeRampWithdraw = createAction<{
+export interface StartBridgeRampWithdrawPayload {
   destinationId: string
+  // COPm the user is sending, base units as a decimal string.
+  copmAmountIn: string
   // Whole USDC (decimal string) the swap is guaranteed to deliver, i.e. the
   // Mento quote's amountOutMin. TuCOPRamp quotes the COP for exactly this.
   usdcMinOut: string
   idempotencyKey: string
-}>('bridgeramp/startWithdraw')
+}
+export const startBridgeRampWithdraw = createAction<StartBridgeRampWithdrawPayload>(
+  'bridgeramp/startWithdraw'
+)
 export const pollBridgeRampWithdrawal = createAction<{ withdrawalId: string }>(
   'bridgeramp/pollWithdrawal'
 )
@@ -397,7 +402,7 @@ export function* fetchPartySaga() {
   }
 }
 
-export function* fetchDestinationsSaga() {
+function* fetchDestinationsSaga() {
   yield* put(destinationsLoading())
   try {
     const destinations = yield* withSession((token) => listDestinations(token))
@@ -445,11 +450,9 @@ export function* registerDestinationSaga(
 
 // Quote the COP for the USDC the swap guarantees, then open the operation so
 // the review step knows the deposit address before anything is signed.
-export function* startWithdrawSaga(
-  action: PayloadAction<{ destinationId: string; usdcMinOut: string; idempotencyKey: string }>
-) {
-  const { destinationId, usdcMinOut, idempotencyKey } = action.payload
-  yield* put(withdrawCreating())
+export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdrawPayload>) {
+  const { destinationId, copmAmountIn, usdcMinOut, idempotencyKey } = action.payload
+  yield* put(withdrawCreating({ copmAmountIn }))
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {
     yield* put(withdrawFailed({ code: 'no_wallet' }))

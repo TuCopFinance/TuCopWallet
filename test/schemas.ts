@@ -3940,6 +3940,7 @@ export const v255Schema = {
     },
     withdraw: {
       status: 'idle',
+      copmAmountIn: null,
       quote: null,
       withdrawal: null,
       errorCode: null,
