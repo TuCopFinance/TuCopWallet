@@ -17,7 +17,7 @@ const REQUEST_TIMEOUT_MS = 30_000
 // (X-TuCOPRamp-Party-Session). The consumer key never ships in the app: the
 // wallet hits the same backend proxy as TuCOP Ramp and the proxy adds the key
 // before forwarding. The party session is the user's and travels end to end.
-export const PARTY_SESSION_HEADER = 'X-TuCOPRamp-Party-Session'
+const PARTY_SESSION_HEADER = 'X-TuCOPRamp-Party-Session'
 
 export interface PlatformFetchArgs {
   method: HttpMethod

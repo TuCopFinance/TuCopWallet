@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
+import { Destination, Party, WithdrawQuote, Withdrawal } from 'src/bridgeramp/api'
 import { MentoDirection } from 'src/bridgeramp/mentoRouter'
 import { getRehydratePayload } from 'src/redux/persist-helper'
 
@@ -48,7 +49,70 @@ export interface BridgeRampCompletedSwap {
   confirmedAt: number
 }
 
+type LoadStatus = 'idle' | 'loading' | 'loaded' | 'error'
+
+// Party session for TuCOPRamp's platform API. Memory only: the token is shown
+// once by the server and lasts an hour, so a cold start simply opens a new one.
+export interface BridgeRampSession {
+  token: string
+  expiresAt: number // unix seconds
+  partyId: string | null
+}
+
+export interface BridgeRampPartyState {
+  status: LoadStatus
+  value: Party | null
+  // True when TuCOPRamp answered party_required: the wallet has proved the
+  // address but no party is linked to this app yet (onboarding needed).
+  needsOnboarding: boolean
+  errorCode: string | null
+}
+
+export interface BridgeRampDestinationsState {
+  status: LoadStatus
+  items: Destination[]
+  errorCode: string | null
+  // The key being registered right now, until the directory answers.
+  registering: { destinationId: string | null; status: 'idle' | 'pending' | 'error' }
+}
+
+// Off-ramp through Bridge, end to end. The chain-side swap is tracked in
+// `swap`; this is the TuCOPRamp side (quote, operation, payout).
+export type BridgeRampWithdrawStatus =
+  | 'idle'
+  // POST /v1/quotes + POST /v1/withdrawals in flight.
+  | 'creating'
+  // Operation exists, deposit address known, waiting for the user to confirm
+  // the swap on the review step.
+  | 'review'
+  // Swap confirmed on-chain; polling TuCOPRamp until the payout is final.
+  | 'awaiting_payout'
+  | 'completed'
+  | 'failed'
+
+export type BridgeRampWithdrawErrorCode =
+  | 'no_wallet'
+  | 'session_failed'
+  | 'quote_failed'
+  | 'create_failed'
+  | 'payout_failed'
+  | 'poll_timeout'
+  | string
+
+export interface BridgeRampWithdrawState {
+  status: BridgeRampWithdrawStatus
+  quote: WithdrawQuote | null
+  withdrawal: Withdrawal | null
+  errorCode: BridgeRampWithdrawErrorCode | null
+  // Server error code / request id for support, when TuCOPRamp said why.
+  errorRequestId: string | null
+}
+
 interface State {
+  session: BridgeRampSession | null
+  party: BridgeRampPartyState
+  destinations: BridgeRampDestinationsState
+  withdraw: BridgeRampWithdrawState
   swap: BridgeRampSwapState
   // Most recent confirmed swap, kept across restarts so the flow screen can
   // show "your USDC reached Bridge, COP is on its way" after a cold start.
@@ -67,7 +131,33 @@ const initialSwapState: BridgeRampSwapState = {
   errorCode: null,
 }
 
+const initialPartyState: BridgeRampPartyState = {
+  status: 'idle',
+  value: null,
+  needsOnboarding: false,
+  errorCode: null,
+}
+
+const initialDestinationsState: BridgeRampDestinationsState = {
+  status: 'idle',
+  items: [],
+  errorCode: null,
+  registering: { destinationId: null, status: 'idle' },
+}
+
+const initialWithdrawState: BridgeRampWithdrawState = {
+  status: 'idle',
+  quote: null,
+  withdrawal: null,
+  errorCode: null,
+  errorRequestId: null,
+}
+
 export const initialState: State = {
+  session: null,
+  party: initialPartyState,
+  destinations: initialDestinationsState,
+  withdraw: initialWithdrawState,
   swap: initialSwapState,
   lastCompletedSwap: null,
 }
@@ -76,6 +166,116 @@ const slice = createSlice({
   name: 'bridgeramp',
   initialState,
   reducers: {
+    sessionOpened: (state, action: PayloadAction<BridgeRampSession>) => {
+      state.session = action.payload
+    },
+    sessionCleared: (state) => {
+      state.session = null
+    },
+    partyLoading: (state) => {
+      state.party.status = 'loading'
+      state.party.errorCode = null
+    },
+    partyLoaded: (state, action: PayloadAction<Party>) => {
+      state.party = {
+        status: 'loaded',
+        value: action.payload,
+        needsOnboarding: false,
+        errorCode: null,
+      }
+    },
+    partyNeedsOnboarding: (state) => {
+      state.party = { status: 'loaded', value: null, needsOnboarding: true, errorCode: null }
+    },
+    partyFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.party.status = 'error'
+      state.party.errorCode = action.payload.code
+    },
+    destinationsLoading: (state) => {
+      state.destinations.status = 'loading'
+      state.destinations.errorCode = null
+    },
+    destinationsLoaded: (state, action: PayloadAction<Destination[]>) => {
+      state.destinations.status = 'loaded'
+      state.destinations.items = action.payload
+      state.destinations.errorCode = null
+    },
+    destinationsFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.destinations.status = 'error'
+      state.destinations.errorCode = action.payload.code
+    },
+    destinationRegistering: (state) => {
+      state.destinations.registering = { destinationId: null, status: 'pending' }
+    },
+    // Upserts the destination (pending, verified or rejected) into the list.
+    destinationUpdated: (state, action: PayloadAction<Destination>) => {
+      const incoming = action.payload
+      const index = state.destinations.items.findIndex((d) => d.id === incoming.id)
+      if (index === -1) {
+        state.destinations.items.unshift(incoming)
+      } else {
+        state.destinations.items[index] = incoming
+      }
+      if (state.destinations.registering.status === 'pending') {
+        state.destinations.registering.destinationId = incoming.id
+        if (incoming.status !== 'pending') {
+          state.destinations.registering.status = 'idle'
+        }
+      }
+    },
+    destinationRegisterFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.destinations.registering.status = 'error'
+      state.destinations.errorCode = action.payload.code
+    },
+    destinationRemoved: (state, action: PayloadAction<{ destinationId: string }>) => {
+      state.destinations.items = state.destinations.items.filter(
+        (d) => d.id !== action.payload.destinationId
+      )
+    },
+    withdrawCreating: (state) => {
+      state.withdraw = { ...initialWithdrawState, status: 'creating' }
+    },
+    withdrawReady: (
+      state,
+      action: PayloadAction<{ quote: WithdrawQuote; withdrawal: Withdrawal }>
+    ) => {
+      state.withdraw.status = 'review'
+      state.withdraw.quote = action.payload.quote
+      state.withdraw.withdrawal = action.payload.withdrawal
+    },
+    withdrawAwaitingPayout: (state) => {
+      state.withdraw.status = 'awaiting_payout'
+    },
+    withdrawalUpdated: (state, action: PayloadAction<Withdrawal>) => {
+      state.withdraw.withdrawal = action.payload
+      if (action.payload.status === 'completed') {
+        state.withdraw.status = 'completed'
+      } else if (
+        action.payload.status === 'failed' ||
+        action.payload.status === 'refunded' ||
+        action.payload.status === 'canceled'
+      ) {
+        state.withdraw.status = 'failed'
+        state.withdraw.errorCode = action.payload.error_code ?? 'payout_failed'
+      }
+    },
+    withdrawFailed: (
+      state,
+      action: PayloadAction<{ code: BridgeRampWithdrawErrorCode; requestId?: string }>
+    ) => {
+      state.withdraw.status = 'failed'
+      state.withdraw.errorCode = action.payload.code
+      state.withdraw.errorRequestId = action.payload.requestId ?? null
+    },
+    // Polling gave up but the payout may still land; the status stays as is
+    // and the screen offers a manual refresh.
+    withdrawPollTimedOut: (state) => {
+      state.withdraw.errorCode = 'poll_timeout'
+    },
+    withdrawReset: (state) => {
+      state.withdraw = initialWithdrawState
+      state.swap = initialSwapState
+    },
     swapSubmitting: (
       state,
       action: PayloadAction<{
@@ -129,14 +329,50 @@ const slice = createSlice({
       // In-flight swap state resets on cold start: sendPreparedTransactions
       // keeps its own per-flowId record of what was broadcast, and the flow
       // screen re-quotes anyway. Only the last completed swap survives.
+      //
+      // The withdraw operation survives when it was already funded (the swap
+      // is on-chain, TuCOPRamp owes a payout) so the screen can keep polling
+      // after a restart; anything earlier is dropped and the user starts over.
+      const persistedWithdraw = rehydrated?.withdraw
+      const keepWithdraw =
+        persistedWithdraw?.status === 'awaiting_payout' ||
+        persistedWithdraw?.status === 'completed' ||
+        persistedWithdraw?.status === 'failed'
       return {
         ...state,
+        withdraw: keepWithdraw ? { ...initialWithdrawState, ...persistedWithdraw } : state.withdraw,
         lastCompletedSwap: rehydrated?.lastCompletedSwap ?? state.lastCompletedSwap,
       }
     })
   },
 })
 
-export const { swapSubmitting, swapBroadcast, swapConfirmed, swapFailed, swapReset } = slice.actions
+export const {
+  sessionOpened,
+  sessionCleared,
+  partyLoading,
+  partyLoaded,
+  partyNeedsOnboarding,
+  partyFailed,
+  destinationsLoading,
+  destinationsLoaded,
+  destinationsFailed,
+  destinationRegistering,
+  destinationUpdated,
+  destinationRegisterFailed,
+  destinationRemoved,
+  withdrawCreating,
+  withdrawReady,
+  withdrawAwaitingPayout,
+  withdrawalUpdated,
+  withdrawFailed,
+  withdrawPollTimedOut,
+  withdrawReset,
+  swapSubmitting,
+  swapBroadcast,
+  swapConfirmed,
+  swapFailed,
+  swapReset,
+} = slice.actions
 
 export default slice.reducer

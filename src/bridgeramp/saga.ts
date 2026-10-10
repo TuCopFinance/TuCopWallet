@@ -10,22 +10,61 @@ import {
   inputTokenFor,
 } from 'src/bridgeramp/mentoRouter'
 import {
+  Destination,
+  Withdrawal,
+  createFirstPartyDestination,
+  createWithdrawQuote,
+  createWithdrawal,
+  getDestination,
+  getParty,
+  getWithdrawal,
+  listDestinations,
+} from 'src/bridgeramp/api'
+import { openWalletPartySession } from 'src/bridgeramp/platformClient'
+import {
+  bridgeRampSessionSelector,
+  bridgeRampSwapSelector,
+  bridgeRampWithdrawSelector,
+} from 'src/bridgeramp/selectors'
+import {
   BridgeRampSwapErrorCode,
+  destinationRegisterFailed,
+  destinationRegistering,
+  destinationUpdated,
+  destinationsFailed,
+  destinationsLoaded,
+  destinationsLoading,
+  partyFailed,
+  partyLoaded,
+  partyLoading,
+  partyNeedsOnboarding,
+  sessionCleared,
+  sessionOpened,
   swapBroadcast,
   swapConfirmed,
   swapFailed,
   swapSubmitting,
+  withdrawAwaitingPayout,
+  withdrawCreating,
+  withdrawFailed,
+  withdrawPollTimedOut,
+  withdrawReady,
+  withdrawalUpdated,
 } from 'src/bridgeramp/slice'
 import { BRIDGE_RAMP_QUOTE_TTL_SECONDS } from 'src/bridgeramp/swapCalls'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
+import { TucopRampError } from 'src/tucopramp/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { getKeychainAccounts } from 'src/web3/contracts'
+import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
-import { call, put, takeLeading } from 'typed-redux-saga'
+import { walletAddressSelector } from 'src/web3/selectors'
+import { call, delay, put, select, takeEvery, takeLatest, takeLeading } from 'typed-redux-saga'
 
 const TAG = 'bridgeramp/saga'
 
@@ -258,6 +297,267 @@ export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRa
   }
 }
 
+// ---------------------------------------------------------------------------
+// TuCOPRamp side: session, party, destinations, withdraw operation
+// ---------------------------------------------------------------------------
+
+export const fetchBridgeRampParty = createAction('bridgeramp/fetchParty')
+export const fetchBridgeRampDestinations = createAction('bridgeramp/fetchDestinations')
+export const registerBridgeRampDestination = createAction<{
+  breBKey: string
+  idempotencyKey: string
+}>('bridgeramp/registerDestination')
+export const startBridgeRampWithdraw = createAction<{
+  destinationId: string
+  // Whole USDC (decimal string) the swap is guaranteed to deliver, i.e. the
+  // Mento quote's amountOutMin. TuCOPRamp quotes the COP for exactly this.
+  usdcMinOut: string
+  idempotencyKey: string
+}>('bridgeramp/startWithdraw')
+export const pollBridgeRampWithdrawal = createAction<{ withdrawalId: string }>(
+  'bridgeramp/pollWithdrawal'
+)
+
+// Reopen when less than this is left, so a request never races the expiry.
+const SESSION_MIN_REMAINING_SECONDS = 60
+const DESTINATION_POLL_DELAY_MS = 5_000
+// The Bre-B directory answers in about a minute; TuCOPRamp gives up at 5.
+const DESTINATION_POLL_MAX_ATTEMPTS = 66
+const WITHDRAWAL_POLL_DELAY_MS = 10_000
+// Bridge payouts take minutes; stop asking after 20.
+const WITHDRAWAL_POLL_MAX_ATTEMPTS = 120
+
+function errorCodeOf(err: unknown, fallback: string): string {
+  return err instanceof TucopRampError ? err.code : fallback
+}
+
+function requestIdOf(err: unknown): string | undefined {
+  return err instanceof TucopRampError ? err.request_id : undefined
+}
+
+function isSessionError(err: unknown): boolean {
+  return (
+    err instanceof TucopRampError &&
+    (err.code === 'party_session_invalid' || err.code === 'party_session_required')
+  )
+}
+
+// Returns a usable party session token, opening a new one with a wallet
+// signature when there is none or it is about to expire. Throws when the
+// wallet is missing or TuCOPRamp refuses.
+export function* ensurePartySession(force = false) {
+  const now = Math.floor(Date.now() / 1000)
+  const existing = yield* select(bridgeRampSessionSelector)
+  if (!force && existing && existing.expiresAt - now > SESSION_MIN_REMAINING_SECONDS) {
+    return existing.token
+  }
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    throw new Error('no_wallet')
+  }
+  const keychainAccounts: KeychainAccounts = yield* call(getKeychainAccounts)
+  const session = yield* call(openWalletPartySession, walletAddress as Address, keychainAccounts)
+  yield* put(
+    sessionOpened({
+      token: session.token,
+      expiresAt: Math.floor(new Date(session.expires_at).getTime() / 1000),
+      partyId: session.party_id,
+    })
+  )
+  return session.token
+}
+
+// Runs a session-bound API call; on a session error it opens a fresh session
+// once and retries, so a token that expired in the background is invisible
+// to the caller.
+function* withSession<T>(request: (token: string) => Promise<T>) {
+  let token = yield* call(ensurePartySession)
+  try {
+    return yield* call(request, token)
+  } catch (err) {
+    if (!isSessionError(err)) throw err
+    yield* put(sessionCleared())
+    token = yield* call(ensurePartySession, true)
+    return yield* call(request, token)
+  }
+}
+
+export function* fetchPartySaga() {
+  yield* put(partyLoading())
+  try {
+    const party = yield* withSession((token) => getParty(token))
+    yield* put(partyLoaded(party))
+  } catch (err) {
+    if (err instanceof TucopRampError && err.code === 'party_required') {
+      yield* put(partyNeedsOnboarding())
+      return
+    }
+    Logger.warn(TAG, 'fetchParty failed', err)
+    yield* put(partyFailed({ code: errorCodeOf(err, 'party_fetch_failed') }))
+  }
+}
+
+export function* fetchDestinationsSaga() {
+  yield* put(destinationsLoading())
+  try {
+    const destinations = yield* withSession((token) => listDestinations(token))
+    yield* put(destinationsLoaded(destinations))
+  } catch (err) {
+    Logger.warn(TAG, 'fetchDestinations failed', err)
+    yield* put(destinationsFailed({ code: errorCodeOf(err, 'destinations_fetch_failed') }))
+  }
+}
+
+// Registers the user's own Bre-B key and follows it until the Bre-B
+// directory has answered (verified or rejected).
+export function* registerDestinationSaga(
+  action: PayloadAction<{ breBKey: string; idempotencyKey: string }>
+) {
+  const { breBKey, idempotencyKey } = action.payload
+  yield* put(destinationRegistering())
+  let destination: Destination
+  try {
+    destination = yield* withSession((token) =>
+      createFirstPartyDestination(token, breBKey, idempotencyKey)
+    )
+    yield* put(destinationUpdated(destination))
+  } catch (err) {
+    Logger.warn(TAG, 'registerDestination failed', err)
+    yield* put(destinationRegisterFailed({ code: errorCodeOf(err, 'destination_create_failed') }))
+    return
+  }
+  let attempts = 0
+  while (destination.status === 'pending' && attempts < DESTINATION_POLL_MAX_ATTEMPTS) {
+    yield* delay(DESTINATION_POLL_DELAY_MS)
+    attempts++
+    try {
+      destination = yield* withSession((token) => getDestination(token, destination.id))
+      yield* put(destinationUpdated(destination))
+    } catch (err) {
+      Logger.warn(TAG, 'getDestination failed, will retry', err)
+    }
+  }
+  if (destination.status === 'pending') {
+    Logger.warn(TAG, `destination ${destination.id} still pending after polling`)
+    yield* put(destinationRegisterFailed({ code: 'verification_timeout' }))
+  }
+}
+
+// Quote the COP for the USDC the swap guarantees, then open the operation so
+// the review step knows the deposit address before anything is signed.
+export function* startWithdrawSaga(
+  action: PayloadAction<{ destinationId: string; usdcMinOut: string; idempotencyKey: string }>
+) {
+  const { destinationId, usdcMinOut, idempotencyKey } = action.payload
+  yield* put(withdrawCreating())
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    yield* put(withdrawFailed({ code: 'no_wallet' }))
+    return
+  }
+  let quote
+  try {
+    quote = yield* withSession((token) =>
+      createWithdrawQuote(
+        token,
+        { destination_id: destinationId, source_amount: { amount: usdcMinOut, asset: 'USDC' } },
+        `${idempotencyKey}-quote`
+      )
+    )
+  } catch (err) {
+    Logger.warn(TAG, 'withdraw quote failed', err)
+    yield* put(
+      withdrawFailed({ code: errorCodeOf(err, 'quote_failed'), requestId: requestIdOf(err) })
+    )
+    return
+  }
+  try {
+    const withdrawal = yield* withSession((token) =>
+      createWithdrawal(
+        token,
+        { quote_id: quote.id, return_address: walletAddress as Address },
+        `${idempotencyKey}-withdrawal`
+      )
+    )
+    yield* put(withdrawReady({ quote, withdrawal }))
+  } catch (err) {
+    Logger.warn(TAG, 'withdrawal create failed', err)
+    yield* put(
+      withdrawFailed({ code: errorCodeOf(err, 'create_failed'), requestId: requestIdOf(err) })
+    )
+    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+      feature: 'bridgeramp',
+      provider: 'bridge',
+      action: 'withdrawal_create_failed',
+      errorCode: errorCodeOf(err, 'create_failed'),
+    })
+  }
+}
+
+function isWithdrawalFinal(withdrawal: Withdrawal): boolean {
+  return (
+    withdrawal.status === 'completed' ||
+    withdrawal.status === 'failed' ||
+    withdrawal.status === 'refunded' ||
+    withdrawal.status === 'canceled'
+  )
+}
+
+export function* pollWithdrawalSaga(action: PayloadAction<{ withdrawalId: string }>) {
+  const { withdrawalId } = action.payload
+  let attempts = 0
+  while (attempts < WITHDRAWAL_POLL_MAX_ATTEMPTS) {
+    try {
+      const withdrawal = yield* withSession((token) => getWithdrawal(token, withdrawalId))
+      yield* put(withdrawalUpdated(withdrawal))
+      if (isWithdrawalFinal(withdrawal)) {
+        if (withdrawal.status !== 'completed') {
+          captureBusinessError(new Error(`Bridge Ramp withdrawal ${withdrawal.status}`), {
+            feature: 'bridgeramp',
+            provider: 'bridge',
+            action: 'withdrawal_not_completed',
+            errorCode: withdrawal.error_code ?? withdrawal.status,
+          })
+        }
+        return
+      }
+    } catch (err) {
+      Logger.warn(TAG, 'getWithdrawal failed, will retry', err)
+    }
+    yield* delay(WITHDRAWAL_POLL_DELAY_MS)
+    attempts++
+  }
+  Logger.warn(TAG, `pollWithdrawal gave up after ${WITHDRAWAL_POLL_MAX_ATTEMPTS} attempts`)
+  yield* put(withdrawPollTimedOut())
+}
+
+// The swap landed: if it was the deposit for the withdraw under review, the
+// USDC is now at the liquidation address and TuCOPRamp owes the payout.
+export function* onSwapConfirmedSaga() {
+  const withdraw = yield* select(bridgeRampWithdrawSelector)
+  const swap = yield* select(bridgeRampSwapSelector)
+  const deposit = withdraw.withdrawal?.deposit.address
+  if (
+    withdraw.status !== 'review' ||
+    !withdraw.withdrawal ||
+    !deposit ||
+    swap.recipient?.toLowerCase() !== deposit.toLowerCase()
+  ) {
+    return
+  }
+  yield* put(withdrawAwaitingPayout())
+  yield* call(
+    pollWithdrawalSaga,
+    pollBridgeRampWithdrawal({ withdrawalId: withdraw.withdrawal.id })
+  )
+}
+
 export function* bridgeRampSaga() {
   yield* takeLeading(executeBridgeRampSwap.type, executeBridgeRampSwapSaga)
+  yield* takeLatest(fetchBridgeRampParty.type, fetchPartySaga)
+  yield* takeLatest(fetchBridgeRampDestinations.type, fetchDestinationsSaga)
+  yield* takeLeading(registerBridgeRampDestination.type, registerDestinationSaga)
+  yield* takeLeading(startBridgeRampWithdraw.type, startWithdrawSaga)
+  yield* takeLatest(pollBridgeRampWithdrawal.type, pollWithdrawalSaga)
+  yield* takeEvery(swapConfirmed.type, onSwapConfirmedSaga)
 }

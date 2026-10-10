@@ -740,6 +740,114 @@
             ],
             "type": "object"
         },
+        "BridgeRampDestinationsState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "items": {
+                    "items": {
+                        "$ref": "#/definitions/Destination"
+                    },
+                    "type": "array"
+                },
+                "registering": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "destinationId": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "status": {
+                            "enum": [
+                                "error",
+                                "idle",
+                                "pending"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "destinationId",
+                        "status"
+                    ],
+                    "type": "object"
+                },
+                "status": {
+                    "$ref": "#/definitions/LoadStatus"
+                }
+            },
+            "required": [
+                "errorCode",
+                "items",
+                "registering",
+                "status"
+            ],
+            "type": "object"
+        },
+        "BridgeRampPartyState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "needsOnboarding": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "$ref": "#/definitions/LoadStatus"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Party"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "errorCode",
+                "needsOnboarding",
+                "status",
+                "value"
+            ],
+            "type": "object"
+        },
+        "BridgeRampSession": {
+            "additionalProperties": false,
+            "properties": {
+                "expiresAt": {
+                    "type": "number"
+                },
+                "partyId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "expiresAt",
+                "partyId",
+                "token"
+            ],
+            "type": "object"
+        },
         "BridgeRampSwapState": {
             "additionalProperties": false,
             "properties": {
@@ -833,6 +941,65 @@
                 "failed",
                 "idle",
                 "submitting"
+            ],
+            "type": "string"
+        },
+        "BridgeRampWithdrawState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "errorRequestId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "quote": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/WithdrawQuote"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/BridgeRampWithdrawStatus"
+                },
+                "withdrawal": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Withdrawal"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "errorCode",
+                "errorRequestId",
+                "quote",
+                "status",
+                "withdrawal"
+            ],
+            "type": "object"
+        },
+        "BridgeRampWithdrawStatus": {
+            "enum": [
+                "awaiting_payout",
+                "completed",
+                "creating",
+                "failed",
+                "idle",
+                "review"
             ],
             "type": "string"
         },
@@ -1575,6 +1742,111 @@
                 "type"
             ],
             "type": "object"
+        },
+        "Destination": {
+            "additionalProperties": false,
+            "properties": {
+                "confirmed_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "holder": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "bank": {
+                                    "type": "string"
+                                },
+                                "document_last4": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "bank",
+                                "document_last4",
+                                "name"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key_masked": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "ownership": {
+                    "enum": [
+                        "first_party",
+                        "third_party"
+                    ],
+                    "type": "string"
+                },
+                "rail": {
+                    "const": "bre_b",
+                    "type": "string"
+                },
+                "rejection_reason": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/DestinationStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "verified_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "confirmed_at",
+                "created_at",
+                "holder",
+                "id",
+                "key_masked",
+                "owner_name",
+                "ownership",
+                "rail",
+                "rejection_reason",
+                "status",
+                "updated_at",
+                "verified_at"
+            ],
+            "type": "object"
+        },
+        "DestinationStatus": {
+            "enum": [
+                "pending",
+                "rejected",
+                "verified"
+            ],
+            "type": "string"
         },
         "DollarSymbol": {
             "enum": [
@@ -2665,6 +2937,15 @@
             ],
             "type": "object"
         },
+        "LoadStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "loaded",
+                "loading"
+            ],
+            "type": "string"
+        },
         "LocalAmount": {
             "additionalProperties": false,
             "properties": {
@@ -2691,6 +2972,22 @@
                 "usdcToCopm"
             ],
             "type": "string"
+        },
+        "MoneyAmount": {
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "asset": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "amount",
+                "asset"
+            ],
+            "type": "object"
         },
         "MultichainBetaStatus": {
             "enum": [
@@ -4200,6 +4497,87 @@
                     "type": "object"
                 }
             },
+            "type": "object"
+        },
+        "Party": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "links": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "kyc": {
+                            "type": "string"
+                        },
+                        "tos": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "restricted": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "endorsements": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "status"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "kyc": {
+                            "type": "string"
+                        },
+                        "tos": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "endorsements",
+                        "kyc",
+                        "tos"
+                    ],
+                    "type": "object"
+                },
+                "type": {
+                    "enum": [
+                        "business",
+                        "individual"
+                    ],
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "created_at",
+                "id",
+                "restricted",
+                "status",
+                "type",
+                "updated_at"
+            ],
             "type": "object"
         },
         "PaymentInfo": {
@@ -7584,6 +7962,9 @@
         "State_27": {
             "additionalProperties": false,
             "properties": {
+                "destinations": {
+                    "$ref": "#/definitions/BridgeRampDestinationsState"
+                },
                 "lastCompletedSwap": {
                     "anyOf": [
                         {
@@ -7594,13 +7975,33 @@
                         }
                     ]
                 },
+                "party": {
+                    "$ref": "#/definitions/BridgeRampPartyState"
+                },
+                "session": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/BridgeRampSession"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
                 "swap": {
                     "$ref": "#/definitions/BridgeRampSwapState"
+                },
+                "withdraw": {
+                    "$ref": "#/definitions/BridgeRampWithdrawState"
                 }
             },
             "required": [
+                "destinations",
                 "lastCompletedSwap",
-                "swap"
+                "party",
+                "session",
+                "swap",
+                "withdraw"
             ],
             "type": "object"
         },
@@ -8887,6 +9288,216 @@
                 "verified"
             ],
             "type": "object"
+        },
+        "WithdrawQuote": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "destination_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "destination_id": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "fees": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "fx_buffer": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        "tucop": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        }
+                    },
+                    "required": [
+                        "tucop"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "const": "withdraw",
+                    "type": "string"
+                },
+                "rate": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "base": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "observed_at": {
+                            "type": "string"
+                        },
+                        "quote": {
+                            "const": "COP",
+                            "type": "string"
+                        },
+                        "source": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "base",
+                        "observed_at",
+                        "quote",
+                        "source",
+                        "value"
+                    ],
+                    "type": "object"
+                },
+                "rounding_mode": {
+                    "const": "ceil",
+                    "type": "string"
+                },
+                "source_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                }
+            },
+            "required": [
+                "created_at",
+                "destination_amount",
+                "destination_id",
+                "expires_at",
+                "fees",
+                "id",
+                "product",
+                "rate",
+                "rounding_mode",
+                "source_amount"
+            ],
+            "type": "object"
+        },
+        "Withdrawal": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deposit": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "address": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "amount": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        "asset": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "chain": {
+                            "const": "eip155:42220",
+                            "type": "string"
+                        },
+                        "token_contract": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "address",
+                        "amount",
+                        "asset",
+                        "chain",
+                        "token_contract"
+                    ],
+                    "type": "object"
+                },
+                "destination_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "destination_id": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "fees": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "tucop": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        }
+                    },
+                    "required": [
+                        "tucop"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "const": "withdraw",
+                    "type": "string"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "return_address": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "source_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "status": {
+                    "$ref": "#/definitions/WithdrawalStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "created_at",
+                "deposit",
+                "destination_amount",
+                "destination_id",
+                "error_code",
+                "fees",
+                "id",
+                "product",
+                "quote_id",
+                "return_address",
+                "source_amount",
+                "status",
+                "updated_at"
+            ],
+            "type": "object"
+        },
+        "WithdrawalStatus": {
+            "enum": [
+                "awaiting_funds",
+                "canceled",
+                "completed",
+                "creating",
+                "failed",
+                "processing",
+                "refunded"
+            ],
+            "type": "string"
         },
         "YieldRate": {
             "additionalProperties": false,

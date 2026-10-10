@@ -216,7 +216,23 @@ describe('store state', () => {
           "walletConnectV2Enabled": true,
         },
         "bridgeramp": {
+          "destinations": {
+            "errorCode": null,
+            "items": [],
+            "registering": {
+              "destinationId": null,
+              "status": "idle",
+            },
+            "status": "idle",
+          },
           "lastCompletedSwap": null,
+          "party": {
+            "errorCode": null,
+            "needsOnboarding": false,
+            "status": "idle",
+            "value": null,
+          },
+          "session": null,
           "swap": {
             "amountIn": null,
             "approveTxHash": null,
@@ -227,6 +243,13 @@ describe('store state', () => {
             "recipient": null,
             "status": "idle",
             "swapTxHash": null,
+          },
+          "withdraw": {
+            "errorCode": null,
+            "errorRequestId": null,
+            "quote": null,
+            "status": "idle",
+            "withdrawal": null,
           },
         },
         "dapps": {

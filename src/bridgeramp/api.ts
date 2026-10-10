@@ -171,8 +171,8 @@ export function deleteDestination(
 // liquidation-address design; the paths are placeholders until TuCOPRamp
 // confirms them.
 
-export const WITHDRAW_QUOTES_PATH = '/v1/quotes'
-export const WITHDRAWALS_PATH = '/v1/withdrawals'
+const WITHDRAW_QUOTES_PATH = '/v1/quotes'
+const WITHDRAWALS_PATH = '/v1/withdrawals'
 
 export interface MoneyAmount {
   // Decimal string.

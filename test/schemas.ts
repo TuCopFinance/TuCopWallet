@@ -3925,6 +3925,26 @@ export const v255Schema = {
   // bridgeramp slice added without a persist version bump, same policy as
   // tucopramp above: additive slice with an initialState, no migration.
   bridgeramp: {
+    session: null,
+    party: {
+      status: 'idle',
+      value: null,
+      needsOnboarding: false,
+      errorCode: null,
+    },
+    destinations: {
+      status: 'idle',
+      items: [],
+      errorCode: null,
+      registering: { destinationId: null, status: 'idle' },
+    },
+    withdraw: {
+      status: 'idle',
+      quote: null,
+      withdrawal: null,
+      errorCode: null,
+      errorRequestId: null,
+    },
     swap: {
       status: 'idle',
       flowId: null,
