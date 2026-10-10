@@ -8,7 +8,9 @@ import {
   MentoDirection,
   USDC_DECIMALS,
   inputTokenFor,
+  quoteMentoSwap,
 } from 'src/bridgeramp/mentoRouter'
+import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
   CreatePartyRequest,
   Destination,
@@ -55,14 +57,21 @@ import {
   withdrawReady,
   withdrawalUpdated,
 } from 'src/bridgeramp/slice'
-import { BRIDGE_RAMP_QUOTE_TTL_SECONDS } from 'src/bridgeramp/swapCalls'
+import {
+  BRIDGE_RAMP_QUOTE_TTL_SECONDS,
+  buildBridgeDepositConversionCalls,
+} from 'src/bridgeramp/swapCalls'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
 import { TucopRampError } from 'src/tucopramp/types'
 import Logger from 'src/utils/Logger'
 import { publicClient } from 'src/viem'
-import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
+import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import {
+  SerializableTransactionRequest,
+  getSerializablePreparedTransactions,
+} from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { KeychainAccounts } from 'src/web3/KeychainAccounts'
@@ -579,7 +588,90 @@ export function* onSwapConfirmedSaga() {
   )
 }
 
+// ---------------------------------------------------------------------------
+// On-ramp: convert the USDC Bridge delivered into COPm
+// ---------------------------------------------------------------------------
+
+export const convertBridgeDeposit = createAction<{
+  // USDC in the user's wallet to convert, base units as a decimal string.
+  usdcAmount: string
+  // Stable per deposit so a retry after a crash reuses the same
+  // sendPreparedTransactions idempotency record.
+  flowId: string
+}>('bridgeramp/convertDeposit')
+
+// Bridge pays the on-ramp in USDC to the user's own wallet; the user wanted
+// COPm. This quotes USDC -> COPm on Mento, prices approve + swap back into the
+// same wallet and hands them to executeBridgeRampSwapSaga. Everything that
+// can fail before signing fails closed with the USDC untouched.
+export function* convertBridgeDepositSaga(
+  action: PayloadAction<{ usdcAmount: string; flowId: string }>
+) {
+  const { usdcAmount, flowId } = action.payload
+  const walletAddress = yield* select(walletAddressSelector)
+  if (!walletAddress) {
+    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    return
+  }
+  const networkId = NetworkId['celo-mainnet']
+  const tokensById = yield* select(tokensByIdSelector, [networkId])
+  const usdcToken = tokensById[networkConfig.usdcTokenId]
+  const feeCurrencies = yield* select(feeCurrenciesSelector, networkId)
+  if (!usdcToken) {
+    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    captureBusinessError(new Error('USDC token info missing for deposit conversion'), {
+      feature: 'bridgeramp',
+      provider: 'mento',
+      action: 'deposit_conversion_no_token',
+    })
+    return
+  }
+  try {
+    // typed-redux-saga cannot type the optional `now` parameter; wrap it.
+    const quote = yield* call(() => quoteMentoSwap('usdcToCopm', BigInt(usdcAmount)))
+    const calls = buildBridgeDepositConversionCalls({
+      quote,
+      user: walletAddress as Address,
+    })
+    const prepared = yield* call(prepareBridgeRampCalls, {
+      calls,
+      from: walletAddress as Address,
+      spendToken: usdcToken,
+      spendTokenAmount: quote.amountIn,
+      feeCurrencies,
+    })
+    if (prepared.type !== 'possible') {
+      Logger.warn(TAG, `deposit conversion cannot pay gas: ${prepared.type}`)
+      yield* put(swapFailed({ code: 'broadcast_failed' }))
+      return
+    }
+    yield* call(
+      executeBridgeRampSwapSaga,
+      executeBridgeRampSwap({
+        flowId,
+        direction: 'usdcToCopm',
+        amountIn: quote.amountIn.toString(),
+        quotedAmountOut: quote.amountOut.toString(),
+        quotedAt: quote.quotedAt,
+        recipient: walletAddress as Address,
+        serializablePreparedTransactions: getSerializablePreparedTransactions(
+          prepared.transactions
+        ),
+      })
+    )
+  } catch (err) {
+    Logger.warn(TAG, 'deposit conversion failed before signing', err)
+    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+      feature: 'bridgeramp',
+      provider: 'mento',
+      action: 'deposit_conversion_prepare_failed',
+    })
+  }
+}
+
 export function* bridgeRampSaga() {
+  yield* takeLeading(convertBridgeDeposit.type, convertBridgeDepositSaga)
   yield* takeLeading(executeBridgeRampSwap.type, executeBridgeRampSwapSaga)
   yield* takeLatest(fetchBridgeRampParty.type, fetchPartySaga)
   yield* takeLatest(fetchBridgeRampDestinations.type, fetchDestinationsSaga)

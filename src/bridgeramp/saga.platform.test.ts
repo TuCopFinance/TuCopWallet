@@ -1,9 +1,14 @@
 import { combineReducers } from '@reduxjs/toolkit'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
+import { dynamic } from 'redux-saga-test-plan/providers'
 import * as api from 'src/bridgeramp/api'
+import { MentoQuote, quoteMentoSwap } from 'src/bridgeramp/mentoRouter'
+import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import { openWalletPartySession } from 'src/bridgeramp/platformClient'
 import {
+  convertBridgeDeposit,
+  convertBridgeDepositSaga,
   createBridgeRampParty,
   createPartySaga,
   ensurePartySession,
@@ -27,6 +32,7 @@ import reducer, {
   partyNeedsOnboarding,
   sessionCleared,
   sessionOpened,
+  swapFailed,
   withdrawAwaitingPayout,
   withdrawCreating,
   withdrawFailed,
@@ -37,11 +43,24 @@ import reducer, {
 import { TucopRampError } from 'src/tucopramp/types'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { walletAddressSelector } from 'src/web3/selectors'
+import { feeCurrenciesSelector, tokensByIdSelector } from 'src/tokens/selectors'
+import networkConfig from 'src/web3/networkConfig'
+import { mockCeloTokenBalance, mockCusdTokenBalance } from 'test/values'
+import BigNumber from 'bignumber.js'
+import { executeBridgeRampSwapSaga, executeBridgeRampSwap } from 'src/bridgeramp/saga'
 
 jest.mock('src/utils/Logger')
 jest.mock('src/sentry/captureBusinessError', () => ({ captureBusinessError: jest.fn() }))
 jest.mock('src/bridgeramp/api')
 jest.mock('src/bridgeramp/platformClient')
+jest.mock('src/bridgeramp/mentoRouter', () => ({
+  ...jest.requireActual('src/bridgeramp/mentoRouter'),
+  quoteMentoSwap: jest.fn(),
+}))
+jest.mock('src/bridgeramp/prepare', () => ({
+  ...jest.requireActual('src/bridgeramp/prepare'),
+  prepareBridgeRampCalls: jest.fn(),
+}))
 jest.mock('src/web3/contracts', () => ({ getKeychainAccounts: jest.fn() }))
 
 const mockedApi = api as jest.Mocked<typeof api>
@@ -420,3 +439,96 @@ function provideDelays(effect: any, next: () => any) {
   }
   return next()
 }
+
+describe('convertBridgeDepositSaga', () => {
+  const depositQuote: MentoQuote = {
+    direction: 'usdcToCopm',
+    amountIn: BigInt(100_000_000),
+    amountOut: BigInt('319000000000000000000000'),
+    amountInWhole: new BigNumber('100'),
+    amountOutWhole: new BigNumber('319000'),
+    copPerUsd: new BigNumber('3190'),
+    quotedAt: NOW,
+  }
+  const usdcToken = { ...mockCusdTokenBalance, tokenId: networkConfig.usdcTokenId }
+  const prepared = {
+    type: 'possible' as const,
+    transactions: [
+      { from: USER, to: '0x1', data: '0x01', gas: BigInt(1), maxFeePerGas: BigInt(1) },
+      { from: USER, to: '0x2', data: '0x02', gas: BigInt(2), maxFeePerGas: BigInt(1) },
+    ] as any[],
+    feeCurrency: mockCeloTokenBalance,
+  }
+  const providers = [
+    [matchers.select(walletAddressSelector), USER],
+    [matchers.select.selector(tokensByIdSelector), { [networkConfig.usdcTokenId]: usdcToken }],
+    [matchers.select.selector(feeCurrenciesSelector), [mockCeloTokenBalance]],
+  ] as any[]
+
+  it('quotes, prices and executes the swap back into the wallet', async () => {
+    jest.mocked(quoteMentoSwap).mockResolvedValue(depositQuote)
+    jest.mocked(prepareBridgeRampCalls).mockResolvedValue(prepared)
+    const executed = jest.fn()
+    await expectSaga(
+      convertBridgeDepositSaga,
+      convertBridgeDeposit({ usdcAmount: '100000000', flowId: 'dep_1' })
+    )
+      .withReducer(rootReducer, root(initialState))
+      .provide([
+        ...providers,
+        [
+          matchers.call.fn(executeBridgeRampSwapSaga),
+          dynamic(({ args }: { args: any[] }) => {
+            executed(args[0])
+          }),
+        ],
+      ])
+      .run()
+
+    expect(jest.mocked(quoteMentoSwap)).toHaveBeenCalledWith('usdcToCopm', BigInt(100_000_000))
+    const prepareArgs = jest.mocked(prepareBridgeRampCalls).mock.calls[0][0]
+    expect(prepareArgs.spendToken).toBe(usdcToken)
+    expect(prepareArgs.spendTokenAmount).toBe(BigInt(100_000_000))
+    expect(executed).toHaveBeenCalledWith(
+      executeBridgeRampSwap({
+        flowId: 'dep_1',
+        direction: 'usdcToCopm',
+        amountIn: '100000000',
+        quotedAmountOut: '319000000000000000000000',
+        quotedAt: NOW,
+        recipient: USER,
+        serializablePreparedTransactions: expect.any(Array),
+      })
+    )
+  })
+
+  it('fails closed when gas cannot be paid', async () => {
+    jest.mocked(quoteMentoSwap).mockResolvedValue(depositQuote)
+    jest.mocked(prepareBridgeRampCalls).mockResolvedValue({
+      type: 'not-enough-balance-for-gas',
+      feeCurrencies: [mockCeloTokenBalance],
+    })
+    await expectSaga(
+      convertBridgeDepositSaga,
+      convertBridgeDeposit({ usdcAmount: '100000000', flowId: 'dep_1' })
+    )
+      .withReducer(rootReducer, root(initialState))
+      .provide(providers)
+      .put(swapFailed({ code: 'broadcast_failed' }))
+      .not.call.fn(executeBridgeRampSwapSaga)
+      .run()
+  })
+
+  it('fails closed when the oracle cannot quote', async () => {
+    jest.mocked(quoteMentoSwap).mockRejectedValue(new Error('no valid median'))
+    await expectSaga(
+      convertBridgeDepositSaga,
+      convertBridgeDeposit({ usdcAmount: '100000000', flowId: 'dep_1' })
+    )
+      .withReducer(rootReducer, root(initialState))
+      .provide(providers)
+      .put(swapFailed({ code: 'broadcast_failed' }))
+      .run()
+    expect(jest.mocked(prepareBridgeRampCalls)).not.toHaveBeenCalled()
+  })
+})
