@@ -249,7 +249,7 @@ export const useActions = (token: TokenBalance) => {
       details: t('tokenDetails.actionDescriptions.withdraw'),
       iconComponent: QuickActionsWithdraw,
       onPress: () => {
-        navigate(Screens.SelectOfframpProvider)
+        navigate(Screens.SelectRampProvider, { direction: 'offramp' })
       },
       visible: showWithdraw,
     },

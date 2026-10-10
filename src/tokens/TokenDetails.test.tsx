@@ -467,7 +467,7 @@ describe('TokenDetails', () => {
       tokenSymbol: 'CELO',
     })
     fireEvent.press(getByTestId('TokenDetailsMoreActions/Withdraw'))
-    expect(navigate).toHaveBeenCalledWith(Screens.SelectOfframpProvider)
+    expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
     expect(AppAnalytics.track).toHaveBeenCalledTimes(6) // 4 actions + 1 more action + 1 celo news
   })
 

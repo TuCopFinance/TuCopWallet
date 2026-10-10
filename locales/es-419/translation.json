@@ -3594,6 +3594,67 @@
       "reverted": "La transacción fue rechazada en cadena. Intenta de nuevo o cancela la orden."
     }
   },
+  "rampProviders": {
+    "offramp": {
+      "title": "Retirar Fondos",
+      "subtitle": "Elige cómo convertir tus pesos digitales a pesos en tu cuenta."
+    },
+    "onramp": {
+      "title": "Recibir pesos digitales",
+      "subtitle": "Elige cómo convertir los pesos de tu cuenta a pesos digitales."
+    },
+    "noneAvailable": "Por ahora no hay opciones de retiro o depósito disponibles.",
+    "tucopramp": {
+      "logo": "TC",
+      "name": "TuCOP Ramp",
+      "by": "by TuCOP Solutions",
+      "timing": "Hasta 24 horas",
+      "cost": "Sin comisión",
+      "offramp": {
+        "tagline": "Envías tus pesos digitales y TuCOP te paga a tu cuenta bancaria o llave Bre-B."
+      },
+      "onramp": {
+        "tagline": "Transfieres por Bre-B y TuCOP te envía tus pesos digitales."
+      }
+    },
+    "bridgeramp": {
+      "logo": "BR",
+      "name": "Bridge Ramp",
+      "by": "by TuCOP Solutions through Bridge",
+      "timing": "Minutos",
+      "cost": "Con comisión",
+      "offramp": {
+        "tagline": "Tus pesos digitales se convierten y Bridge paga a tu llave Bre-B en minutos."
+      },
+      "onramp": {
+        "tagline": "Transfieres por Bre-B y recibes pesos digitales en minutos."
+      },
+      "outsideHours": "Disponible en horario bancario. Por ahora puedes usar TuCOP Ramp.",
+      "unreachable": "No pudimos verificar la disponibilidad. Intenta de nuevo o usa TuCOP Ramp."
+    }
+  },
+  "bridgeramp": {
+    "offramp": {
+      "title": "Retiro rápido con Bridge",
+      "explainer": "Tus pesos digitales se convierten a dólares digitales en Mento y Bridge los paga en pesos a tu llave Bre-B. Todo en una sola transacción: si algo falla, tus pesos digitales no se mueven.",
+      "quoteIn": "Envías",
+      "quoteOut": "Dólares digitales a liquidar"
+    },
+    "onramp": {
+      "title": "Depósito rápido con Bridge",
+      "explainer": "Transfieres pesos por Bre-B, Bridge entrega dólares digitales en tu wallet y la app los convierte a pesos digitales.",
+      "quoteIn": "Dólares digitales recibidos",
+      "quoteOut": "Recibirás"
+    },
+    "amountLabel": "Monto (Pesos)",
+    "amountPlaceholder": "Ingresa el monto",
+    "amountBelowMin": "El monto mínimo es {{min}} pesos",
+    "rateLabel": "Tasa de conversión",
+    "quoteNote": "Tasa de Mento en este momento. No incluye la tasa de Bridge ni la comisión de TuCOP.",
+    "quoteError": "No pudimos obtener la cotización. Intenta de nuevo.",
+    "continueCta": "Continuar",
+    "comingSoon": "Bridge Ramp todavía no está disponible en la app. Pronto podrás completar el retiro y el depósito desde aquí."
+  },
   "transactionSuccess": {
     "swap": {
       "title": "¡Intercambio exitoso!",

@@ -68,9 +68,9 @@ export const MENTO_ROUTER_ABI = [
   },
 ] as const
 
-export type MentoDirection = 'copmToUsdc' | 'usdcToCopm'
+type MentoDirection = 'copmToUsdc' | 'usdcToCopm'
 
-export interface MentoRoute {
+interface MentoRoute {
   from: Address
   to: Address
   factory: Address
@@ -177,7 +177,7 @@ export function minAmountOut(quote: MentoQuote, slippageBps: number): bigint {
   return (quote.amountOut * BigInt(10_000 - slippageBps)) / BigInt(10_000)
 }
 
-export interface SwapCallArgs {
+interface SwapCallArgs {
   direction: MentoDirection
   amountIn: bigint
   amountOutMin: bigint

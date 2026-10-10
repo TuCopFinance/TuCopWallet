@@ -26,7 +26,9 @@ export default function WithdrawSpend() {
   const appState = useSelector((state) => state.app.appState)
 
   const { links } = getDynamicConfigParams(DynamicConfigs[StatsigDynamicConfigs.APP_CONFIG])
-  const tucopRampOnrampEnabled = getFeatureGate(StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP)
+  const rampOnrampEnabled =
+    getFeatureGate(StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP) ||
+    getFeatureGate(StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP)
 
   useEffect(() => {
     if (appState === AppState.Active && timestamp) {
@@ -43,8 +45,8 @@ export default function WithdrawSpend() {
     })
   }
 
-  function goToTucopRampOnramp() {
-    navigate(Screens.TuCOPRampOnrampFlow)
+  function goToRampOnramp() {
+    navigate(Screens.SelectRampProvider, { direction: 'onramp' })
   }
 
   const { t } = useTranslation()
@@ -71,8 +73,8 @@ export default function WithdrawSpend() {
               {t(`fiatExchangeFlow.cashOut.fiatExchangeSubtitle`)}
             </Text>
           </ListItem>
-          {tucopRampOnrampEnabled && (
-            <ListItem onPress={goToTucopRampOnramp}>
+          {rampOnrampEnabled && (
+            <ListItem onPress={goToRampOnramp}>
               <Text testID="tucoprampOnramp" style={styles.optionTitle}>
                 {t('tucopramp.onrampEntryTitle')}
               </Text>

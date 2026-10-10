@@ -16,7 +16,7 @@ const TAG = 'bridgeramp/mentoOracle'
 export const SORTED_ORACLES_ADDRESS_CELO: Address = '0xefB84935239dAcdecF7c5bA76d8dE40b077B7b33'
 export const COPM_USDM_RATE_FEED_ID: Address = '0x0196D1F4FdA21fA442e53EaF18Bf31282F6139F1'
 
-export const SORTED_ORACLES_ABI = [
+const SORTED_ORACLES_ABI = [
   {
     name: 'medianTimestamp',
     type: 'function',

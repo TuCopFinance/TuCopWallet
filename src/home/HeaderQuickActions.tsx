@@ -55,7 +55,7 @@ export default function HeaderQuickActions() {
   }
 
   const onPressWithdraw = () => {
-    navigate(Screens.SelectOfframpProvider)
+    navigate(Screens.SelectRampProvider, { direction: 'offramp' })
   }
 
   return (

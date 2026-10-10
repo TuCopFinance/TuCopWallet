@@ -3579,5 +3579,66 @@
       "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
       "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
     }
+  },
+  "rampProviders": {
+    "offramp": {
+      "title": "Withdraw funds",
+      "subtitle": "Choose how to turn your digital pesos into pesos in your account."
+    },
+    "onramp": {
+      "title": "Get digital pesos",
+      "subtitle": "Choose how to turn the pesos in your account into digital pesos."
+    },
+    "noneAvailable": "No withdrawal or deposit options are available right now.",
+    "tucopramp": {
+      "logo": "TC",
+      "name": "TuCOP Ramp",
+      "by": "by TuCOP Solutions",
+      "timing": "Up to 24 hours",
+      "cost": "No fee",
+      "offramp": {
+        "tagline": "You send your digital pesos and TuCOP pays your bank account or Bre-B key."
+      },
+      "onramp": {
+        "tagline": "You transfer via Bre-B and TuCOP sends your digital pesos."
+      }
+    },
+    "bridgeramp": {
+      "logo": "BR",
+      "name": "Bridge Ramp",
+      "by": "by TuCOP Solutions through Bridge",
+      "timing": "Minutes",
+      "cost": "With a fee",
+      "offramp": {
+        "tagline": "Your digital pesos are converted and Bridge pays your Bre-B key within minutes."
+      },
+      "onramp": {
+        "tagline": "You transfer via Bre-B and receive digital pesos within minutes."
+      },
+      "outsideHours": "Available during banking hours. You can use TuCOP Ramp for now.",
+      "unreachable": "We could not check availability. Try again or use TuCOP Ramp."
+    }
+  },
+  "bridgeramp": {
+    "offramp": {
+      "title": "Fast withdrawal with Bridge",
+      "explainer": "Your digital pesos are converted to digital dollars on Mento and Bridge pays them out in pesos to your Bre-B key. All in one transaction: if anything fails, your digital pesos do not move.",
+      "quoteIn": "You send",
+      "quoteOut": "Digital dollars to liquidate"
+    },
+    "onramp": {
+      "title": "Fast deposit with Bridge",
+      "explainer": "You transfer pesos via Bre-B, Bridge delivers digital dollars to your wallet and the app converts them to digital pesos.",
+      "quoteIn": "Digital dollars received",
+      "quoteOut": "You will receive"
+    },
+    "amountLabel": "Amount (Pesos)",
+    "amountPlaceholder": "Enter the amount",
+    "amountBelowMin": "The minimum amount is {{min}} pesos",
+    "rateLabel": "Conversion rate",
+    "quoteNote": "Mento rate right now. It does not include Bridge's rate or TuCOP's fee.",
+    "quoteError": "We could not get a quote. Try again.",
+    "continueCta": "Continue",
+    "comingSoon": "Bridge Ramp is not available in the app yet. Soon you will complete withdrawals and deposits from here."
   }
 }
