@@ -396,7 +396,10 @@ describe('pollWithdrawalSaga', () => {
       .run({ timeout: 10_000 })
     expect(storeState.bridgeramp.withdraw.status).toBe('awaiting_payout')
     expect(mockedApi.getWithdrawal).toHaveBeenCalledTimes(120)
-  })
+    // 120 polls through the saga runner; the saga's own run timeout is 10 s,
+    // so the test needs more than jest's 5 s default when the suite runs in
+    // parallel with the rest of the repo.
+  }, 15_000)
 })
 
 describe('onSwapConfirmedSaga', () => {

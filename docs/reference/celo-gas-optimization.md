@@ -56,7 +56,7 @@ export const CELO_MIN_GAS_PRICES = {
 6. Fall back to standard estimation if it fails
 ```
 
-### 3. **Updated Optimizer for L2** (`src/viem/celoGasOptimizer.ts`)
+### 3. **Updated Optimizer for L2** (removed: `src/viem/celoGasOptimizer.ts` was never wired in and was deleted in 2026-10)
 
 **L2 improvements:**
 
@@ -125,7 +125,7 @@ USDC: 0x4822e58de6f5e485ef90df51c41ce01721331dc0(Adapter)
 
 1. `src/viem/estimateFeesPerGas.ts` - Migrated to EIP-1559 for L2
 2. `src/viem/celoGasConfig.ts` - Removed Gas Price Minimum, updated for L2
-3. `src/viem/celoGasOptimizer.ts` - Optimized for L2 with new limits
+3. ~~`src/viem/celoGasOptimizer.ts`~~ - removed (unused)
 
 ### **Usage in Code**
 

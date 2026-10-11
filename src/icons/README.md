@@ -65,7 +65,7 @@ All token icons are SVG for consistency and scalability.
 
 ### `misc/` - Miscellaneous/Illustrations
 
-- Celebration, ThumbsUpIllustration, MagicWand
+- Celebration, ThumbsUpIllustration
 
 ### `user/` - User Icons
 

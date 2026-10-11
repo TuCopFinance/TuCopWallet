@@ -219,15 +219,9 @@ TuCopWallet/
 │
 ├── services/                       # Backend microservices (Railway)
 │   ├── README.md                   #   Services overview
-│   ├── version-api/                #   App version management (→ railway-backend/)
-│   ├── buckspay-webhook/           #   BucksPay proxy (Express, keeps creds server-side)
+│   ├── version-api/                #   App version management (Express + Prisma + PostgreSQL)
 │   ├── api-wallet-tlf/             #   Phone verification OTP service
 │   └── twilio-service/             #   Keyless backup SMS service
-│
-├── railway-backend/                # Version API source (Express + Prisma + PostgreSQL)
-│   ├── index.js                    #   Server entry point
-│   ├── prisma/                     #   DB schema + migrations
-│   └── src/                        #   Middleware, services, validators
 │
 ├── docs/                           # Project documentation
 │   ├── README.md                   #   Documentation index
@@ -358,12 +352,11 @@ Release build: `cd android && ./gradlew bundleMainnetRelease`
 
 All backend services are hosted on Railway:
 
-| Service                | Purpose                                     | URL                                               |
-| ---------------------- | ------------------------------------------- | ------------------------------------------------- |
-| **Version API**        | App version management, forced updates      | `tucopwallet-production.up.railway.app`           |
-| **BucksPay Proxy**     | Offramp API proxy (keeps creds server-side) | `buckspay-webhook-production-ad81.up.railway.app` |
-| **Phone Verification** | OTP-based phone-wallet linking              | `api-wallet-tlf-production.up.railway.app`        |
-| **Keyless Backup**     | SMS + cloud-based mnemonic backup           | `twilio-service.up.railway.app`                   |
+| Service                | Purpose                                | URL                                        |
+| ---------------------- | -------------------------------------- | ------------------------------------------ |
+| **Version API**        | App version management, forced updates | `tucopwallet-production.up.railway.app`    |
+| **Phone Verification** | OTP-based phone-wallet linking         | `api-wallet-tlf-production.up.railway.app` |
+| **Keyless Backup**     | SMS + cloud-based mnemonic backup      | `twilio-service.up.railway.app`            |
 
 ## Release Process
 
@@ -395,7 +388,7 @@ Full documentation index: [docs/README.md](docs/README.md)
 | **CI/CD**        | [guides/ci-cd.md](docs/guides/ci-cd.md)                                                                                                                                                                                                                          |
 | **Reference**    | [reference/DESIGN_SYSTEM.md](docs/reference/DESIGN_SYSTEM.md), [reference/celo-gas-optimization.md](docs/reference/celo-gas-optimization.md), [reference/deeplinks.md](docs/reference/deeplinks.md), [reference/integrations.md](docs/reference/integrations.md) |
 | **Integrations** | [reference/integrations.md](docs/reference/integrations.md), [guides/connecting-dapps.md](docs/guides/connecting-dapps.md), [guides/phone-verification.md](docs/guides/phone-verification.md), [guides/navigation-flows.md](docs/guides/navigation-flows.md)     |
-| **Backend**      | [railway-backend/README.md](railway-backend/README.md), [services/README.md](services/README.md)                                                                                                                                                                 |
+| **Backend**      | [services/README.md](services/README.md), [services/version-api/README.md](services/version-api/README.md)                                                                                                                                                       |
 | **Architecture** | [architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md), [adr/](docs/adr/)                                                                                                                                                                                     |
 
 ## URLs & Links
