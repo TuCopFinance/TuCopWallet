@@ -30,12 +30,13 @@ yarn knip --no-gitignore  # Dead code detection
 ```text
 src/
 ├── components/      # Reusable UI
-├── redux/           # State (slices, sagas, migrations v238)
+├── redux/           # State (slices, sagas, migrations v255)
 ├── navigator/       # Navigation config
 ├── web3/            # Blockchain, networkConfig.ts
 ├── tokens/          # Token management
 ├── send/            # Send money
-├── buckspay/        # COPm → COP offramp
+├── tucopramp/       # TuCOP Ramp P2P (COPm <-> COP, operator payout)
+├── bridgeramp/      # TuCOP Ramp powered by Bridge (Mento swap + Bridge)
 ├── earn/            # Yield/staking
 ├── swap/            # Token swapping
 └── subsidies/       # ReFi Colombia UBI
@@ -84,7 +85,7 @@ src/
 
 ## Version Info
 
-- **App**: 1.118.5 (build: 255 / versionCode 1021081774)
+- **App**: 1.118.13 (build: 263 / versionCode 1021081782)
 - **Network**: Celo mainnet only
 - **Node**: 24.18.1 (Krypton LTS); 22.x also supported per `engines`
 
@@ -95,7 +96,7 @@ src/
 @.claude/rules/tokens.md - Token ecosystem & addresses
 @.claude/rules/ios-build.md - iOS schemes & troubleshooting
 @.claude/rules/android-build.md - Android config & SoLoader fix
-@.claude/rules/railway.md - Backend sibling services (phone verification, twilio, buckspay)
+@.claude/rules/railway.md - Backend sibling services (phone verification, twilio)
 @.claude/rules/ci-cd.md - CI checks & Knip
 @.claude/rules/observability.md - Sentry + PostHog + Statsig stack, captureBusinessError taxonomy, PII scrub, auto-attached contexts (connectivity/app_state/feature_gates)
 @.claude/rules/design-system.md - Screen wrapper, typography scale, spacing tokens, color tokens, shared primitives (Screen/Row/Card/TopBarIcon/InLineNotification), banned patterns

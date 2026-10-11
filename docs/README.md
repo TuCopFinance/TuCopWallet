@@ -128,7 +128,7 @@ See [research/README.md](research/README.md) for the spike inventory + verdicts.
 
 | Document                                                                     | Description                                      |
 | ---------------------------------------------------------------------------- | ------------------------------------------------ |
-| [../railway-backend/README.md](../railway-backend/README.md)                 | Version API source (Express + Prisma + Postgres) |
+| [../services/version-api/README.md](../services/version-api/README.md)       | Version API source (Express + Prisma + Postgres) |
 | [../services/README.md](../services/README.md)                               | Backend services overview and index              |
 | [../services/api-wallet-tlf/README.md](../services/api-wallet-tlf/README.md) | Phone verification OTP service                   |
 | [../services/twilio-service/README.md](../services/twilio-service/README.md) | Keyless backup SMS service                       |
