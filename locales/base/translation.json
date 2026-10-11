@@ -3366,7 +3366,7 @@
     "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
   },
   "tucopramp": {
-    "providerName": "TuCOP Ramp",
+    "providerName": "TuCOP Ramp P2P",
     "providerBy": "by TuCOP Solutions",
     "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
     "offrampTitle": "Withdraw to your bank",
@@ -3592,10 +3592,10 @@
     "noneAvailable": "No withdrawal or deposit options are available right now.",
     "tucopramp": {
       "logo": "TC",
-      "name": "TuCOP Ramp",
+      "name": "TuCOP Ramp P2P",
       "by": "by TuCOP Solutions",
       "timing": "Up to 24 hours",
-      "cost": "No fee",
+      "cost": "Zero fees",
       "offramp": {
         "tagline": "You send your digital pesos and TuCOP pays your bank account or Bre-B key."
       },
@@ -3605,18 +3605,18 @@
     },
     "bridgeramp": {
       "logo": "BR",
-      "name": "Bridge Ramp",
-      "by": "by TuCOP Solutions through Bridge",
-      "timing": "Minutes",
-      "cost": "With a fee",
+      "name": "TuCOP Ramp",
+      "by": "Powered by Bridge",
+      "timing": "Arrives in minutes",
+      "cost": "Fees vary between 1.5% and 2%",
       "offramp": {
         "tagline": "Your digital pesos are converted and Bridge pays your Bre-B key within minutes."
       },
       "onramp": {
         "tagline": "You transfer via Bre-B and receive digital pesos within minutes."
       },
-      "outsideHours": "Available during banking hours. You can use TuCOP Ramp for now.",
-      "unreachable": "We could not check availability. Try again or use TuCOP Ramp."
+      "outsideHours": "Available during banking hours. You can use TuCOP Ramp P2P for now.",
+      "unreachable": "We could not check availability. Try again or use TuCOP Ramp P2P."
     }
   },
   "bridgeramp": {

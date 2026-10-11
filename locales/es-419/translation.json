@@ -3380,7 +3380,7 @@
     }
   },
   "tucopramp": {
-    "providerName": "TuCOP Ramp",
+    "providerName": "TuCOP Ramp P2P",
     "providerBy": "by TuCOP Solutions",
     "offrampProviderTagline": "Convierte tus pesos digitales a pesos en tu cuenta",
     "offrampTitle": "Retirar a tu banco",
@@ -3606,7 +3606,7 @@
     "noneAvailable": "Por ahora no hay opciones de retiro o depósito disponibles.",
     "tucopramp": {
       "logo": "TC",
-      "name": "TuCOP Ramp",
+      "name": "TuCOP Ramp P2P",
       "by": "by TuCOP Solutions",
       "timing": "Hasta 24 horas",
       "cost": "Sin comisión",
@@ -3619,18 +3619,18 @@
     },
     "bridgeramp": {
       "logo": "BR",
-      "name": "Bridge Ramp",
-      "by": "by TuCOP Solutions through Bridge",
-      "timing": "Minutos",
-      "cost": "Con comisión",
+      "name": "TuCOP Ramp",
+      "by": "Powered by Bridge",
+      "timing": "Llega en minutos",
+      "cost": "Comisión entre 1,5% y 2%",
       "offramp": {
         "tagline": "Tus pesos digitales se convierten y Bridge paga a tu llave Bre-B en minutos."
       },
       "onramp": {
         "tagline": "Transfieres por Bre-B y recibes pesos digitales en minutos."
       },
-      "outsideHours": "Disponible en horario bancario. Por ahora puedes usar TuCOP Ramp.",
-      "unreachable": "No pudimos verificar la disponibilidad. Intenta de nuevo o usa TuCOP Ramp."
+      "outsideHours": "Disponible en horario bancario. Por ahora puedes usar TuCOP Ramp P2P.",
+      "unreachable": "No pudimos verificar la disponibilidad. Intenta de nuevo o usa TuCOP Ramp P2P."
     }
   },
   "bridgeramp": {
