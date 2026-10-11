@@ -133,7 +133,8 @@ import VerificationCodeInputScreen from 'src/verify/VerificationCodeInputScreen'
 import VerificationStartScreen from 'src/verify/VerificationStartScreen'
 import WalletConnectSessionsScreen from 'src/walletConnect/screens/Sessions'
 import WalletConnectRequest from 'src/walletConnect/screens/WalletConnectRequest'
-import SelectOfframpProvider from 'src/fiatExchanges/SelectOfframpProvider'
+import SelectRampProvider from 'src/fiatExchanges/SelectRampProvider'
+import BridgeRampFlow from 'src/bridgeramp/BridgeRampFlow'
 import TuCOPRampOfframpFlow from 'src/tucopramp/TuCOPRampOfframpFlow'
 import TuCOPRampOnrampFlow from 'src/tucopramp/TuCOPRampOnrampFlow'
 import TuCOPRampUpdateCedulaScreen from 'src/tucopramp/TuCOPRampUpdateCedulaScreen'
@@ -626,8 +627,13 @@ const pointsScreens = (Navigator: typeof Stack) => (
 const bucksPayScreens = (Navigator: typeof Stack) => (
   <>
     <Navigator.Screen
-      name={Screens.SelectOfframpProvider}
-      component={SelectOfframpProvider}
+      name={Screens.SelectRampProvider}
+      component={SelectRampProvider}
+      options={headerWithBackButton}
+    />
+    <Navigator.Screen
+      name={Screens.BridgeRampFlow}
+      component={BridgeRampFlow}
       options={headerWithBackButton}
     />
     <Navigator.Screen

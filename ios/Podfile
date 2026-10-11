@@ -89,9 +89,10 @@ post_install do |installer|
     target.build_configurations.each do |config|
       config.build_settings["ENABLE_BITCODE"] = "NO"
 
-      # Fix deployment target warnings for iOS 12.0 minimum
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      # Pods below the app's own minimum (15.1) fail on Xcode 26, which only
+      # builds for iOS 15.0 and up.
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.1
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
       end
 
       # Fix RCT-Folly C++17 compatibility issue with Xcode 16

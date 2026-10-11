@@ -90,13 +90,20 @@ export enum StatsigFeatureGates {
   // the masking pass covers every surface.
   POSTHOG_SESSION_REPLAY_ENABLED = 'posthog_session_replay_enabled',
   // Surfaces the TuCOPRamp off-ramp entry (COPm -> COP via Bre-B) in the
-  // SelectOfframpProvider screen. Default OFF; ramps once the Phase 5
+  // SelectRampProvider screen. Default OFF; ramps once the Phase 5
   // real-deposit smoke passes against the prod proxy.
   SHOW_TUCOPRAMP_OFFRAMP = 'show_tucopramp_offramp',
   // Surfaces the TuCOPRamp on-ramp entry (COP via Bre-B -> COPm) in the
   // on-ramp entry point. Default OFF; independent of the off-ramp flag so
   // we can ramp scopes separately.
   SHOW_TUCOPRAMP_ONRAMP = 'show_tucopramp_onramp',
+  // Surfaces the Bridge Ramp card (COPm -> USDC on Mento -> COP via Bridge
+  // to the user's own Bre-B key) next to TuCOP Ramp in SelectRampProvider.
+  // Default OFF until TuCOPRamp ships /v1/withdraw for the wallet consumer.
+  SHOW_BRIDGERAMP_OFFRAMP = 'show_bridgeramp_offramp',
+  // Surfaces the Bridge Ramp card for deposits (COP via Bre-B -> USDC on
+  // Celo -> COPm on Mento). Default OFF until TuCOPRamp ships /v1/deposit.
+  SHOW_BRIDGERAMP_ONRAMP = 'show_bridgeramp_onramp',
 }
 
 export enum StatsigExperiments {

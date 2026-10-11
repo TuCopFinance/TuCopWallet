@@ -2,6 +2,7 @@ import { KycSchema } from '@fiatconnect/fiatconnect-types'
 import { SendOrigin, WalletConnectPairingOrigin } from 'src/analytics/types'
 import { EarnActiveMode, EarnTabType } from 'src/earn/types'
 import { ExternalExchangeProvider } from 'src/fiatExchanges/ExternalExchanges'
+import { RampDirection } from 'src/fiatExchanges/rampProviders'
 import FiatConnectQuote from 'src/fiatExchanges/quotes/FiatConnectQuote'
 import { CICOFlow, FiatExchangeFlow, SimplexQuote } from 'src/fiatExchanges/utils'
 import { Props as KycLandingProps } from 'src/fiatconnect/KycLanding'
@@ -351,7 +352,8 @@ export type StackParamList = {
     walletAddress: string
   }
   [Screens.MarranitosMyStakes]: undefined
-  [Screens.SelectOfframpProvider]: undefined
+  [Screens.SelectRampProvider]: { direction: RampDirection }
+  [Screens.BridgeRampFlow]: { direction: RampDirection }
   [Screens.TuCOPRampOfframpFlow]: undefined
   [Screens.TuCOPRampOnrampFlow]: undefined
   [Screens.TuCOPRampUpdateCedulaScreen]: undefined

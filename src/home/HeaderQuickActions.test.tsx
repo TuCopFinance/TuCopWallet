@@ -105,6 +105,6 @@ describe('HeaderQuickActions', () => {
   it('Tapping spend money (Gasta) opens the offramp provider screen when idle', () => {
     const { getByTestId } = renderComponent()
     fireEvent.press(getByTestId('Header/SpendMoney'))
-    expect(navigate).toHaveBeenCalledWith(Screens.SelectOfframpProvider)
+    expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
   })
 })

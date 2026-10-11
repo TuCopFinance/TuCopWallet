@@ -3366,7 +3366,7 @@
     "staleBanner": "You have an operation that has been incomplete for over a day. Tap to review it."
   },
   "tucopramp": {
-    "providerName": "TuCOP Ramp",
+    "providerName": "TuCOP Ramp P2P",
     "providerBy": "by TuCOP Solutions",
     "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
     "offrampTitle": "Withdraw to your bank",
@@ -3578,6 +3578,165 @@
     "depositTxErrors": {
       "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
       "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
+    }
+  },
+  "rampProviders": {
+    "offramp": {
+      "title": "Withdraw funds",
+      "subtitle": "Choose how to turn your digital pesos into pesos in your account."
+    },
+    "onramp": {
+      "title": "Get digital pesos",
+      "subtitle": "Choose how to turn the pesos in your account into digital pesos."
+    },
+    "noneAvailable": "No withdrawal or deposit options are available right now.",
+    "tucopramp": {
+      "logo": "TC",
+      "name": "TuCOP Ramp P2P",
+      "by": "by TuCOP Solutions",
+      "timing": "Up to 24 hours",
+      "cost": "Zero fees",
+      "offramp": {
+        "tagline": "You send your digital pesos and TuCOP pays your bank account or Bre-B key."
+      },
+      "onramp": {
+        "tagline": "You transfer via Bre-B and TuCOP sends your digital pesos."
+      }
+    },
+    "bridgeramp": {
+      "logo": "BR",
+      "name": "TuCOP Ramp",
+      "by": "Powered by Bridge",
+      "timing": "Arrives in minutes",
+      "cost": "Fees vary between 1.5% and 2%",
+      "offramp": {
+        "tagline": "Your digital pesos are converted and Bridge pays your Bre-B key within minutes."
+      },
+      "onramp": {
+        "tagline": "You transfer via Bre-B and receive digital pesos within minutes."
+      },
+      "outsideHours": "Available during banking hours. You can use TuCOP Ramp P2P for now.",
+      "unreachable": "We could not check availability. Try again or use TuCOP Ramp P2P."
+    }
+  },
+  "bridgeramp": {
+    "offramp": {
+      "title": "Fast withdrawal with Bridge",
+      "explainer": "Your digital pesos are converted to digital dollars on Mento and Bridge pays them out in pesos to your Bre-B key. All in one transaction: if anything fails, your digital pesos do not move.",
+      "quoteIn": "You send",
+      "quoteOut": "Digital dollars to liquidate"
+    },
+    "onramp": {
+      "title": "Fast deposit with Bridge",
+      "explainer": "You transfer pesos via Bre-B, Bridge delivers digital dollars to your wallet and the app converts them to digital pesos.",
+      "quoteIn": "Digital dollars received",
+      "quoteOut": "You will receive"
+    },
+    "amountLabel": "Amount (Pesos)",
+    "amountPlaceholder": "Enter the amount",
+    "amountBelowMin": "The minimum amount is {{min}} pesos",
+    "rateLabel": "Conversion rate",
+    "quoteNote": "Mento rate right now. It does not include Bridge's rate or TuCOP's fee.",
+    "quoteError": "We could not get a quote. Try again.",
+    "continueCta": "Continue",
+    "insufficientBalance": "You do not have enough pesos digitales. Your balance is {{balance}}.",
+    "retry": "Retry",
+    "party": {
+      "loadError": "We could not check your TuCOP account. Try again.",
+      "pendingTitle": "Verification in progress",
+      "pendingBody": "Your identity is still under review (identity: {{kyc}}, terms: {{tos}}). You can withdraw with Bridge once it is approved.",
+      "openKyc": "Continue verification"
+    },
+    "destination": {
+      "label": "Bre-B key you receive to",
+      "verified": "Verified",
+      "none": "You have no Bre-B key registered yet. Add yours: it must be in your name.",
+      "placeholder": "Your Bre-B key",
+      "add": "Add",
+      "pending": "Checking the key against the Bre-B directory. This takes about a minute.",
+      "registerFailed": "We could not register the key ({{code}}).",
+      "rejected": {
+        "directory_no_match": "The Bre-B directory found no account for that key.",
+        "holder_name_mismatch": "The key is not in your name. You can only withdraw to your own account.",
+        "holder_document_mismatch": "The key holder's document does not match yours.",
+        "verification_timeout": "The Bre-B directory did not answer. Try again in a few minutes.",
+        "other": "The key was rejected."
+      }
+    },
+    "withdraw": {
+      "startFailed": "We could not start the withdrawal ({{code}}). Try again."
+    },
+    "review": {
+      "title": "Review your withdrawal",
+      "receive": "You receive at least",
+      "tucopFee": "TuCOP fee",
+      "bridgeRate": "Bridge rate",
+      "networkFee": "Estimated network fee",
+      "note": "You sign one transaction: your pesos digitales are converted on Mento and the dólares digitales go straight to Bridge. If the conversion fails, your pesos digitales do not move.",
+      "badDeposit": "The deposit address TuCOP returned is not USDC on Celo. Nothing was signed.",
+      "rateMoved": "The rate moved and the conversion no longer reaches the quoted amount. Start over to quote again.",
+      "startOver": "Start over",
+      "notEnoughForGas": "You do not have enough balance to pay the network fee.",
+      "confirmCta": "Confirm and withdraw",
+      "cancelCta": "Cancel"
+    },
+    "swapError": {
+      "reverted": "The conversion reverted on-chain. Your pesos digitales are still in your wallet; try again.",
+      "broadcast_failed": "We could not send the transaction. Try again.",
+      "stale_quote": "The quote expired. Try again.",
+      "invalid_recipient": "The transaction does not match the withdrawal. Nothing was signed.",
+      "generic": "The conversion failed. Try again."
+    },
+    "progress": {
+      "payingTitle": "Bridge is paying your key",
+      "payingBody": "Your dólares digitales reached Bridge. The payout to your Bre-B key takes a few minutes.",
+      "completedTitle": "Withdrawal completed",
+      "completedBody": "Bridge paid {{amount}} pesos to your Bre-B key.",
+      "failedTitle": "The withdrawal did not complete",
+      "swapTx": "Transaction",
+      "operationId": "Operation",
+      "pollTimeout": "Still waiting for Bridge to confirm. Refresh or come back later.",
+      "refresh": "Refresh",
+      "doneCta": "Done"
+    },
+    "payoutError": {
+      "generic": "Bridge could not complete the payout ({{code}}). TuCOP will review the operation."
+    },
+    "onboarding": {
+      "title": "Create your TuCOP account",
+      "body": "Withdrawing with Bridge needs a one-time identity verification. We ask for your legal name, your document and an email; then you finish the verification on a secure TuCOP page.",
+      "legalName": "Full legal name",
+      "legalNamePlaceholder": "As it appears on your document",
+      "email": "Email",
+      "emailHelper": "We write to you there about the verification.",
+      "consent": "I authorize TuCOP to verify my identity and accept the terms and conditions.",
+      "submitCta": "Continue to verification",
+      "error": {
+        "email_required": "We need an email for the verification.",
+        "not_supported_yet": "Only individuals can register for now.",
+        "generic": "We could not create your account ({{code}}). Try again."
+      }
+    },
+    "deposit": {
+      "payTitle": "Pay by Bre-B to this key",
+      "payBody": "From your bank, send pesos by Bre-B to the key below. Bridge converts the payment to digital dollars, sends them to your wallet and the app swaps them to digital pesos automatically.",
+      "breBKey": "Bre-B key",
+      "keyCopied": "Key copied",
+      "holder": "Account holder",
+      "bank": "Bank",
+      "minimum": "Minimum per deposit",
+      "onlyCop": "Colombian pesos over Bre-B only. This key is yours: whatever you send to it arrives in this wallet as digital pesos.",
+      "estimateLabel": "How much will you deposit? (optional, for an estimate)",
+      "estimateNote": "Estimate at Mento's current rate. The real conversion happens when the digital dollars arrive.",
+      "waiting": "Waiting for your Bre-B payment. This screen refreshes on its own.",
+      "lastConverted": "Your last deposit is in your wallet: {{amount}} digital pesos.",
+      "convertingTitle": "Your digital dollars arrived",
+      "convertingBody": "We received {{usdc}} USDC from Bridge. Confirm with your PIN to swap them to digital pesos.",
+      "convertFailedTitle": "We could not convert to digital pesos",
+      "retryConvert": "Try again",
+      "keepUsdcHint": "Your {{usdc}} USDC are still in your wallet. If you prefer, keep them as digital dollars.",
+      "keepUsdc": "Keep as digital dollars",
+      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again."
     }
   }
 }

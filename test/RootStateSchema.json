@@ -704,6 +704,414 @@
                 }
             ]
         },
+        "BridgeRampCompletedSwap": {
+            "additionalProperties": false,
+            "properties": {
+                "amountIn": {
+                    "type": "string"
+                },
+                "confirmedAt": {
+                    "type": "number"
+                },
+                "direction": {
+                    "$ref": "#/definitions/MentoDirection"
+                },
+                "flowId": {
+                    "type": "string"
+                },
+                "quotedAmountOut": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "swapTxHash": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "amountIn",
+                "confirmedAt",
+                "direction",
+                "flowId",
+                "quotedAmountOut",
+                "recipient",
+                "swapTxHash"
+            ],
+            "type": "object"
+        },
+        "BridgeRampDepositState": {
+            "additionalProperties": false,
+            "properties": {
+                "account": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/DepositAccount"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "errorRequestId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "pending": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "flowId": {
+                                    "type": "string"
+                                },
+                                "usdcAmount": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "flowId",
+                                "usdcAmount"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/BridgeRampDepositStatus"
+                },
+                "usdcBaseline": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "account",
+                "errorCode",
+                "errorRequestId",
+                "pending",
+                "status",
+                "usdcBaseline"
+            ],
+            "type": "object"
+        },
+        "BridgeRampDepositStatus": {
+            "enum": [
+                "creating",
+                "failed",
+                "idle",
+                "ready"
+            ],
+            "type": "string"
+        },
+        "BridgeRampDestinationsState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "items": {
+                    "items": {
+                        "$ref": "#/definitions/Destination"
+                    },
+                    "type": "array"
+                },
+                "registering": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "destinationId": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "status": {
+                            "enum": [
+                                "error",
+                                "idle",
+                                "pending"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "destinationId",
+                        "status"
+                    ],
+                    "type": "object"
+                },
+                "status": {
+                    "$ref": "#/definitions/LoadStatus"
+                }
+            },
+            "required": [
+                "errorCode",
+                "items",
+                "registering",
+                "status"
+            ],
+            "type": "object"
+        },
+        "BridgeRampPartyState": {
+            "additionalProperties": false,
+            "properties": {
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "needsOnboarding": {
+                    "type": "boolean"
+                },
+                "onboarding": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "errorCode": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "status": {
+                            "enum": [
+                                "error",
+                                "idle",
+                                "submitting"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "errorCode",
+                        "status"
+                    ],
+                    "type": "object"
+                },
+                "status": {
+                    "$ref": "#/definitions/LoadStatus"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Party"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "errorCode",
+                "needsOnboarding",
+                "onboarding",
+                "status",
+                "value"
+            ],
+            "type": "object"
+        },
+        "BridgeRampSession": {
+            "additionalProperties": false,
+            "properties": {
+                "expiresAt": {
+                    "type": "number"
+                },
+                "partyId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "expiresAt",
+                "partyId",
+                "token"
+            ],
+            "type": "object"
+        },
+        "BridgeRampSwapState": {
+            "additionalProperties": false,
+            "properties": {
+                "amountIn": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "approveTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "direction": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "copmToUsdc",
+                                "usdcToCopm"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "errorCode": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "broadcast_failed",
+                                "invalid_recipient",
+                                "reverted",
+                                "stale_quote"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "flowId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "quotedAmountOut": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "recipient": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/BridgeRampSwapStatus"
+                },
+                "swapTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "amountIn",
+                "approveTxHash",
+                "direction",
+                "errorCode",
+                "flowId",
+                "quotedAmountOut",
+                "recipient",
+                "status",
+                "swapTxHash"
+            ],
+            "type": "object"
+        },
+        "BridgeRampSwapStatus": {
+            "enum": [
+                "broadcast",
+                "confirmed",
+                "failed",
+                "idle",
+                "submitting"
+            ],
+            "type": "string"
+        },
+        "BridgeRampWithdrawState": {
+            "additionalProperties": false,
+            "properties": {
+                "copmAmountIn": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "errorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "errorRequestId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "quote": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/WithdrawQuote"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/BridgeRampWithdrawStatus"
+                },
+                "withdrawal": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Withdrawal"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "copmAmountIn",
+                "errorCode",
+                "errorRequestId",
+                "quote",
+                "status",
+                "withdrawal"
+            ],
+            "type": "object"
+        },
+        "BridgeRampWithdrawStatus": {
+            "enum": [
+                "awaiting_payout",
+                "completed",
+                "creating",
+                "failed",
+                "idle",
+                "review"
+            ],
+            "type": "string"
+        },
         "CICOFlow": {
             "enum": [
                 "CashIn",
@@ -1339,6 +1747,100 @@
             ],
             "type": "string"
         },
+        "DepositAccount": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "destination": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "asset": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "chain": {
+                            "const": "eip155:42220",
+                            "type": "string"
+                        },
+                        "token_contract": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "asset",
+                        "chain",
+                        "token_contract"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "instructions": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "bank": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "bre_b_key": {
+                            "type": "string"
+                        },
+                        "holder_name": {
+                            "type": "string"
+                        },
+                        "rail": {
+                            "const": "bre_b",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "bank",
+                        "bre_b_key",
+                        "holder_name",
+                        "rail"
+                    ],
+                    "type": "object"
+                },
+                "minimum": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "product": {
+                    "const": "deposit",
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "created_at",
+                "destination",
+                "id",
+                "instructions",
+                "product",
+                "status",
+                "updated_at",
+                "wallet"
+            ],
+            "type": "object"
+        },
         "DepositEarnClaimHistory": {
             "additionalProperties": false,
             "properties": {
@@ -1443,6 +1945,111 @@
                 "type"
             ],
             "type": "object"
+        },
+        "Destination": {
+            "additionalProperties": false,
+            "properties": {
+                "confirmed_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "holder": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "bank": {
+                                    "type": "string"
+                                },
+                                "document_last4": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "bank",
+                                "document_last4",
+                                "name"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key_masked": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "ownership": {
+                    "enum": [
+                        "first_party",
+                        "third_party"
+                    ],
+                    "type": "string"
+                },
+                "rail": {
+                    "const": "bre_b",
+                    "type": "string"
+                },
+                "rejection_reason": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/DestinationStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "verified_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "required": [
+                "confirmed_at",
+                "created_at",
+                "holder",
+                "id",
+                "key_masked",
+                "owner_name",
+                "ownership",
+                "rail",
+                "rejection_reason",
+                "status",
+                "updated_at",
+                "verified_at"
+            ],
+            "type": "object"
+        },
+        "DestinationStatus": {
+            "enum": [
+                "pending",
+                "rejected",
+                "verified"
+            ],
+            "type": "string"
         },
         "DollarSymbol": {
             "enum": [
@@ -2533,6 +3140,15 @@
             ],
             "type": "object"
         },
+        "LoadStatus": {
+            "enum": [
+                "error",
+                "idle",
+                "loaded",
+                "loading"
+            ],
+            "type": "string"
+        },
         "LocalAmount": {
             "additionalProperties": false,
             "properties": {
@@ -2550,6 +3166,29 @@
                 "currencyCode",
                 "exchangeRate",
                 "value"
+            ],
+            "type": "object"
+        },
+        "MentoDirection": {
+            "enum": [
+                "copmToUsdc",
+                "usdcToCopm"
+            ],
+            "type": "string"
+        },
+        "MoneyAmount": {
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "asset": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "amount",
+                "asset"
             ],
             "type": "object"
         },
@@ -4063,6 +4702,87 @@
             },
             "type": "object"
         },
+        "Party": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "links": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "kyc": {
+                            "type": "string"
+                        },
+                        "tos": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "restricted": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "endorsements": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "status"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "kyc": {
+                            "type": "string"
+                        },
+                        "tos": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "endorsements",
+                        "kyc",
+                        "tos"
+                    ],
+                    "type": "object"
+                },
+                "type": {
+                    "enum": [
+                        "business",
+                        "individual"
+                    ],
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "created_at",
+                "id",
+                "restricted",
+                "status",
+                "type",
+                "updated_at"
+            ],
+            "type": "object"
+        },
         "PaymentInfo": {
             "additionalProperties": false,
             "properties": {
@@ -5266,6 +5986,7 @@
                 "BackupPhrase",
                 "BackupQuiz",
                 "BidaliScreen",
+                "BridgeRampFlow",
                 "CashInSuccess",
                 "ChooseYourAdventure",
                 "CoinbasePayScreen",
@@ -5343,8 +6064,8 @@
                 "SecuritySubmenu",
                 "SelectCountry",
                 "SelectLocalCurrency",
-                "SelectOfframpProvider",
                 "SelectProvider",
+                "SelectRampProvider",
                 "SendConfirmation",
                 "SendConfirmationModal",
                 "SendEnterAmount",
@@ -7444,6 +8165,56 @@
         "State_27": {
             "additionalProperties": false,
             "properties": {
+                "deposit": {
+                    "$ref": "#/definitions/BridgeRampDepositState"
+                },
+                "destinations": {
+                    "$ref": "#/definitions/BridgeRampDestinationsState"
+                },
+                "lastCompletedSwap": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/BridgeRampCompletedSwap"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "party": {
+                    "$ref": "#/definitions/BridgeRampPartyState"
+                },
+                "session": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/BridgeRampSession"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "swap": {
+                    "$ref": "#/definitions/BridgeRampSwapState"
+                },
+                "withdraw": {
+                    "$ref": "#/definitions/BridgeRampWithdrawState"
+                }
+            },
+            "required": [
+                "deposit",
+                "destinations",
+                "lastCompletedSwap",
+                "party",
+                "session",
+                "swap",
+                "withdraw"
+            ],
+            "type": "object"
+        },
+        "State_28": {
+            "additionalProperties": false,
+            "properties": {
                 "buyStatus": {
                     "$ref": "#/definitions/GoldOperationStatus"
                 },
@@ -7537,23 +8308,11 @@
             ],
             "type": "object"
         },
-        "State_28": {
-            "additionalProperties": false,
-            "properties": {
-                "byFlow": {
-                    "$ref": "#/definitions/Record<string,InFlightDescriptor>"
-                }
-            },
-            "required": [
-                "byFlow"
-            ],
-            "type": "object"
-        },
         "State_29": {
             "additionalProperties": false,
             "properties": {
                 "byFlow": {
-                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
+                    "$ref": "#/definitions/Record<string,InFlightDescriptor>"
                 }
             },
             "required": [
@@ -7572,6 +8331,18 @@
             ]
         },
         "State_30": {
+            "additionalProperties": false,
+            "properties": {
+                "byFlow": {
+                    "$ref": "#/definitions/Record<string,SentTxRecord[]>"
+                }
+            },
+            "required": [
+                "byFlow"
+            ],
+            "type": "object"
+        },
+        "State_31": {
             "additionalProperties": false,
             "properties": {
                 "byAdapter": {
@@ -7856,6 +8627,7 @@
                         "BackupPhrase",
                         "BackupQuiz",
                         "BidaliScreen",
+                        "BridgeRampFlow",
                         "CashInSuccess",
                         "ChooseYourAdventure",
                         "CoinbasePayScreen",
@@ -7931,8 +8703,8 @@
                         "SecuritySubmenu",
                         "SelectCountry",
                         "SelectLocalCurrency",
-                        "SelectOfframpProvider",
                         "SelectProvider",
+                        "SelectRampProvider",
                         "SendConfirmation",
                         "SendConfirmationModal",
                         "SendEnterAmount",
@@ -8724,6 +9496,216 @@
             ],
             "type": "object"
         },
+        "WithdrawQuote": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "destination_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "destination_id": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "fees": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "fx_buffer": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        "tucop": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        }
+                    },
+                    "required": [
+                        "tucop"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "const": "withdraw",
+                    "type": "string"
+                },
+                "rate": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "base": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "observed_at": {
+                            "type": "string"
+                        },
+                        "quote": {
+                            "const": "COP",
+                            "type": "string"
+                        },
+                        "source": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "base",
+                        "observed_at",
+                        "quote",
+                        "source",
+                        "value"
+                    ],
+                    "type": "object"
+                },
+                "rounding_mode": {
+                    "const": "ceil",
+                    "type": "string"
+                },
+                "source_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                }
+            },
+            "required": [
+                "created_at",
+                "destination_amount",
+                "destination_id",
+                "expires_at",
+                "fees",
+                "id",
+                "product",
+                "rate",
+                "rounding_mode",
+                "source_amount"
+            ],
+            "type": "object"
+        },
+        "Withdrawal": {
+            "additionalProperties": false,
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deposit": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "address": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "amount": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        "asset": {
+                            "const": "USDC",
+                            "type": "string"
+                        },
+                        "chain": {
+                            "const": "eip155:42220",
+                            "type": "string"
+                        },
+                        "token_contract": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "address",
+                        "amount",
+                        "asset",
+                        "chain",
+                        "token_contract"
+                    ],
+                    "type": "object"
+                },
+                "destination_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "destination_id": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "fees": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "tucop": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        }
+                    },
+                    "required": [
+                        "tucop"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "const": "withdraw",
+                    "type": "string"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "return_address": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "source_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "status": {
+                    "$ref": "#/definitions/WithdrawalStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "created_at",
+                "deposit",
+                "destination_amount",
+                "destination_id",
+                "error_code",
+                "fees",
+                "id",
+                "product",
+                "quote_id",
+                "return_address",
+                "source_amount",
+                "status",
+                "updated_at"
+            ],
+            "type": "object"
+        },
+        "WithdrawalStatus": {
+            "enum": [
+                "awaiting_funds",
+                "canceled",
+                "completed",
+                "creating",
+                "failed",
+                "processing",
+                "refunded"
+            ],
+            "type": "string"
+        },
         "YieldRate": {
             "additionalProperties": false,
             "properties": {
@@ -9473,6 +10455,9 @@
         "app": {
             "$ref": "#/definitions/State"
         },
+        "bridgeramp": {
+            "$ref": "#/definitions/State_27"
+        },
         "dapps": {
             "$ref": "#/definitions/State_16"
         },
@@ -9489,7 +10474,7 @@
             "$ref": "#/definitions/State_13"
         },
         "gold": {
-            "$ref": "#/definitions/State_27"
+            "$ref": "#/definitions/State_28"
         },
         "home": {
             "$ref": "#/definitions/State_5"
@@ -9560,7 +10545,7 @@
             "$ref": "#/definitions/State_4"
         },
         "sentTransactionLog": {
-            "$ref": "#/definitions/State_29"
+            "$ref": "#/definitions/State_30"
         },
         "swap": {
             "$ref": "#/definitions/State_19"
@@ -9569,7 +10554,7 @@
             "$ref": "#/definitions/State_15"
         },
         "transactionInFlight": {
-            "$ref": "#/definitions/State_28"
+            "$ref": "#/definitions/State_29"
         },
         "transactions": {
             "$ref": "#/definitions/State_6"
@@ -9584,7 +10569,7 @@
             "$ref": "#/definitions/State_7"
         },
         "wriFeeAdapterBootstrap": {
-            "$ref": "#/definitions/State_30"
+            "$ref": "#/definitions/State_31"
         }
     },
     "required": [
@@ -9592,6 +10577,7 @@
         "account",
         "alert",
         "app",
+        "bridgeramp",
         "dapps",
         "dollarsSpend",
         "earn",
