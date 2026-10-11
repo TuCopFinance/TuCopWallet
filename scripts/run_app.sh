@@ -138,7 +138,12 @@ elif [ "$PLATFORM" = "ios" ]; then
     mainnetdev) SCHEME="TuCop-mainnetdev-DO-NOT-SHIP" ;;
     *)          SCHEME="TuCop-${ENV_NAME}" ;;
   esac
-  yarn react-native run-ios --scheme "$SCHEME" --configuration "$CONFIGURATION" --no-packager "${simulator_param}" "${device_param}"
+  # RN CLI 15+ renamed --configuration to --mode; empty "" args are not
+  # accepted as positionals, so only pass the device flags that are set.
+  extra_params=()
+  [ -n "$simulator_param" ] && extra_params+=("$simulator_param")
+  [ -n "$device_param" ] && extra_params+=("$device_param")
+  yarn react-native run-ios --scheme "$SCHEME" --mode "$CONFIGURATION" --no-packager ${extra_params[@]+"${extra_params[@]}"}
 
 else
   echo "Invalid value for platform, must be 'android' or 'ios'"
