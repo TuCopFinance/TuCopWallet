@@ -18,6 +18,10 @@ const REQUEST_TIMEOUT_MS = 30_000
 // wallet hits the same backend proxy as TuCOP Ramp and the proxy adds the key
 // before forwarding. The party session is the user's and travels end to end.
 const PARTY_SESSION_HEADER = 'X-TuCOPRamp-Party-Session'
+// Platform API behavior version the wallet is written against
+// (developer-docs/conventions.mdx). Pinning it here means a newer default on
+// TuCOPRamp's side cannot change shapes under an app already in stores.
+const TUCOPRAMP_API_VERSION = '2026-10-08'
 
 export interface PlatformFetchArgs {
   method: HttpMethod
@@ -40,7 +44,7 @@ export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
     args.fetchImpl ?? ((url, init) => fetchWithTimeout(url, init ?? null, REQUEST_TIMEOUT_MS))
 
   const bodyStr = args.body === undefined ? undefined : JSON.stringify(args.body)
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = { 'TuCOPRamp-Version': TUCOPRAMP_API_VERSION }
   if (bodyStr !== undefined) {
     headers['Content-Type'] = 'application/json'
   }

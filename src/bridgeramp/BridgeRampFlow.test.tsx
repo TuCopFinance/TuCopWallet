@@ -105,25 +105,21 @@ const tucopQuote = {
 }
 
 const withdrawal = {
-  id: 'wd_1',
+  id: 'wdr_1',
   product: 'withdraw' as const,
-  status: 'awaiting_funds' as const,
-  quote_id: 'qte_1',
+  status: 'active' as const,
   destination_id: 'dst_1',
-  destination_amount: tucopQuote.destination_amount,
-  source_amount: tucopQuote.source_amount,
-  fees: tucopQuote.fees,
   deposit: {
     address: LIQUIDATION as `0x${string}`,
     chain: 'eip155:42220' as const,
     asset: 'USDC' as const,
     token_contract: USDC_ADDRESS_CELO,
-    amount: tucopQuote.source_amount,
+    minimum_destination_amount: { amount: '4000.00', asset: 'COP' },
   },
+  fee_bps: 150,
   return_address: USER as `0x${string}`,
-  error_code: null,
+  payouts: [],
   created_at: '',
-  updated_at: '',
 }
 
 function readyState(overrides: RecursivePartial<RootState['bridgeramp']> = {}) {
@@ -203,20 +199,21 @@ describe('BridgeRampFlow', () => {
       id: 'dep_1',
       product: 'deposit' as const,
       status: 'active',
-      wallet: USER as `0x${string}`,
-      instructions: {
+      deposit_instructions: {
         rail: 'bre_b' as const,
+        currency: 'COP' as const,
         bre_b_key: '@U6X8YSHWJ',
-        holder_name: 'BRIDGE PARTNER BANK',
-        bank: null,
+        account_holder_name: 'BRIDGE PARTNER BANK',
+        bank_name: null,
       },
       destination: {
+        address: USER as `0x${string}`,
         chain: 'eip155:42220' as const,
         asset: 'USDC' as const,
         token_contract: USDC_ADDRESS_CELO,
       },
+      fee_bps: 150,
       created_at: '',
-      updated_at: '',
     }
 
     it('loads the party and asks for the deposit account once it can transact', () => {
@@ -528,6 +525,9 @@ describe('BridgeRampFlow', () => {
           copmAmountIn: '800000000000000000000000',
           quote: tucopQuote,
           withdrawal,
+          estimatedCop: '778136',
+          knownPayoutIds: [],
+          payout: null,
           errorCode: null,
           errorRequestId: null,
         },
@@ -564,8 +564,9 @@ describe('BridgeRampFlow', () => {
       })
       await waitFor(() => expect(getByTestId('bridgeramp-confirm')).toBeEnabled())
 
-      expect(getByTestId('bridgeramp-review')).toHaveTextContent('790,000 pesos')
-      expect(getByTestId('bridgeramp-review')).toHaveTextContent('2.46 USDC')
+      // 246.101626 USDC guaranteed x 3210 COP/USDC, less 1.5 percent, floored
+      expect(getByTestId('bridgeramp-review')).toHaveTextContent('778,136 pesos')
+      expect(getByTestId('bridgeramp-review')).toHaveTextContent('1.5 %')
       const prepareArgs = mockPrepare.mock.calls[0][0]
       expect(prepareArgs.spendTokenAmount).toBe(withdrawQuote.amountIn)
       expect(prepareArgs.calls[1].to).toBe('0x4861840C2EfB2b98312B0aE34d86fD73E8f9B6f6')
@@ -577,7 +578,7 @@ describe('BridgeRampFlow', () => {
         typeof executeBridgeRampSwap
       >
       expect(exec.payload).toMatchObject({
-        flowId: 'wd_1',
+        flowId: 'wdr_1',
         direction: 'copmToUsdc',
         amountIn: '800000000000000000000000',
         quotedAmountOut: '247338318',
@@ -586,11 +587,11 @@ describe('BridgeRampFlow', () => {
       expect(exec.payload.serializablePreparedTransactions).toHaveLength(2)
     })
 
-    it('refuses to sign when the fresh quote no longer reaches the required USDC', async () => {
+    it('refuses to sign when the fresh quote falls under the payout floor', async () => {
       mockQuote.mockResolvedValue({
         ...withdrawQuote,
-        amountOut: BigInt(246_000_000),
-        amountOutWhole: new BigNumber('246'),
+        amountOut: BigInt(1_000_000),
+        amountOutWhole: new BigNumber('1'),
       })
       const { getByTestId } = renderFlow('offramp', reviewState())
       await act(async () => {
@@ -614,6 +615,9 @@ describe('BridgeRampFlow', () => {
               ...withdrawal,
               deposit: { ...withdrawal.deposit, token_contract: USER as `0x${string}` },
             },
+            estimatedCop: '778136',
+            knownPayoutIds: [],
+            payout: null,
             errorCode: null,
             errorRequestId: null,
           },
@@ -637,7 +641,17 @@ describe('BridgeRampFlow', () => {
             status: 'completed',
             copmAmountIn: '800000000000000000000000',
             quote: tucopQuote,
-            withdrawal: { ...withdrawal, status: 'completed' },
+            withdrawal,
+            estimatedCop: '778136',
+            knownPayoutIds: [],
+            payout: {
+              id: 'drn_1',
+              status: 'payment_processed',
+              amount: { amount: '246.20', asset: 'USDC' },
+              destination_amount: { amount: '790000.00', asset: 'COP' },
+              created_at: '',
+              updated_at: '',
+            },
             errorCode: null,
             errorRequestId: null,
           },

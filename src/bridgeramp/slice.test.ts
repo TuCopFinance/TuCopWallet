@@ -87,7 +87,7 @@ describe('bridgeramp slice', () => {
 })
 
 describe('bridgeramp deposit', () => {
-  const account = { id: 'dep_1' } as any
+  const account = { id: 'dep_1', deposit_instructions: { bre_b_key: '@K' } } as any
 
   it('keeps the first baseline across account refreshes', () => {
     let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
@@ -129,5 +129,66 @@ describe('bridgeramp deposit', () => {
       usdcBaseline: '5',
       pending: { usdcAmount: '100', flowId: 'f' },
     })
+  })
+
+  it('drops an account stored before deposit_instructions but keeps the pending conversion', () => {
+    const state = reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: {
+        bridgeramp: {
+          deposit: {
+            status: 'ready',
+            account: { id: 'dep_1', instructions: { bre_b_key: '@K' } },
+            errorCode: null,
+            errorRequestId: null,
+            usdcBaseline: '5',
+            pending: { usdcAmount: '100', flowId: 'f' },
+          },
+        },
+      },
+    } as any)
+    expect(state.deposit.account).toBeNull()
+    expect(state.deposit.status).toBe(initialState.deposit.status)
+    expect(state.deposit.usdcBaseline).toBe('5')
+    expect(state.deposit.pending).toEqual({ usdcAmount: '100', flowId: 'f' })
+  })
+})
+
+describe('bridgeramp withdraw rehydration', () => {
+  it('drops a withdraw stored before the reusable address', () => {
+    const state = reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: {
+        bridgeramp: {
+          withdraw: {
+            status: 'awaiting_payout',
+            copmAmountIn: '1',
+            quote: null,
+            withdrawal: { id: 'wd_1' },
+            errorCode: null,
+            errorRequestId: null,
+          },
+        },
+      },
+    } as any)
+    expect(state.withdraw).toEqual(initialState.withdraw)
+  })
+
+  it('keeps a funded withdraw so the payout is still followed', () => {
+    const persisted = {
+      ...initialState.withdraw,
+      status: 'awaiting_payout',
+      withdrawal: { id: 'wdr_1' },
+      knownPayoutIds: ['drn_old'],
+      estimatedCop: '778136',
+    }
+    const state = reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: { bridgeramp: { withdraw: persisted } },
+    } as any)
+    expect(state.withdraw).toEqual(persisted)
   })
 })

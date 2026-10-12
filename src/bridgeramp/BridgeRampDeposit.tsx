@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from 'src/redux/hooks'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { walletAddressSelector } from 'src/web3/selectors'
 
 // Bridge pays nothing below this (COP). Enforced here until TuCOPRamp returns
 // limits for the wallet consumer.
@@ -92,6 +93,7 @@ function DepositSection({ oracleStale }: Props) {
   const dispatch = useDispatch()
   const deposit = useSelector(bridgeRampDepositSelector)
   const swap = useSelector(bridgeRampSwapSelector)
+  const walletAddress = useSelector(walletAddressSelector)
 
   if (deposit.status === 'idle' || deposit.status === 'creating') {
     return <ActivityIndicator style={styles.spinner} testID="bridgeramp-deposit-loading" />
@@ -116,7 +118,19 @@ function DepositSection({ oracleStale }: Props) {
     return <ConversionProgress usdcAmount={deposit.pending.usdcAmount} />
   }
 
-  const { instructions } = deposit.account
+  const { deposit_instructions: instructions, destination, fee_bps: feeBps } = deposit.account
+  // The account pays a fixed wallet. Never show a key that would send the
+  // USDC somewhere other than this wallet.
+  if (!walletAddress || destination.address.toLowerCase() !== walletAddress.toLowerCase()) {
+    return (
+      <InLineNotification
+        variant={NotificationVariant.Error}
+        description={t('bridgeramp.deposit.wrongWallet')}
+        style={styles.notice}
+        testID="bridgeramp-deposit-wrong-wallet"
+      />
+    )
+  }
   return (
     <View testID="bridgeramp-deposit-instructions">
       <Text style={styles.stepTitle}>{t('bridgeramp.deposit.payTitle')}</Text>
@@ -128,13 +142,15 @@ function DepositSection({ oracleStale }: Props) {
         testID="bridgeramp-deposit-key"
         style={styles.copyField}
       />
-      <Row label={t('bridgeramp.deposit.holder')} value={instructions.holder_name} />
-      {!!instructions.bank && (
-        <Row label={t('bridgeramp.deposit.bank')} value={instructions.bank} />
+      {!!instructions.account_holder_name && (
+        <Row label={t('bridgeramp.deposit.holder')} value={instructions.account_holder_name} />
+      )}
+      {!!instructions.bank_name && (
+        <Row label={t('bridgeramp.deposit.bank')} value={instructions.bank_name} />
       )}
       <Row
-        label={t('bridgeramp.deposit.minimum')}
-        value={`${new BigNumber(deposit.account.minimum?.amount ?? BRIDGE_MIN_COP).toFormat(0)} COP`}
+        label={t('bridgeramp.deposit.fee')}
+        value={`${new BigNumber(feeBps).dividedBy(100).toFormat()} %`}
       />
       <InLineNotification
         variant={NotificationVariant.Warning}

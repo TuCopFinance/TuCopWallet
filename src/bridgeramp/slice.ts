@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
-import { DepositAccount, Destination, Party, WithdrawQuote, Withdrawal } from 'src/bridgeramp/api'
+import {
+  DepositAccount,
+  Destination,
+  Party,
+  WithdrawQuote,
+  Withdrawal,
+  WithdrawalPayout,
+} from 'src/bridgeramp/api'
 import { MentoDirection } from 'src/bridgeramp/mentoRouter'
 import { getRehydratePayload } from 'src/redux/persist-helper'
 
@@ -82,12 +89,12 @@ export interface BridgeRampDestinationsState {
 // `swap`; this is the TuCOPRamp side (quote, operation, payout).
 export type BridgeRampWithdrawStatus =
   | 'idle'
-  // POST /v1/quotes + POST /v1/withdrawals in flight.
+  // POST /v1/withdrawals (the reusable address) + POST /v1/quotes in flight.
   | 'creating'
-  // Operation exists, deposit address known, waiting for the user to confirm
-  // the swap on the review step.
+  // Address known, waiting for the user to confirm the swap on review.
   | 'review'
-  // Swap confirmed on-chain; polling TuCOPRamp until the payout is final.
+  // Swap confirmed on-chain; polling the address until Bridge's payout for
+  // this swap reaches a final state.
   | 'awaiting_payout'
   | 'completed'
   | 'failed'
@@ -106,8 +113,17 @@ export interface BridgeRampWithdrawState {
   // COPm the user is sending, base units as a decimal string. Set when the
   // operation is opened; the review step re-quotes Mento for exactly this.
   copmAmountIn: string | null
+  // Price from TuCOPRamp (Bridge rate, fee); only used to estimate the COP.
   quote: WithdrawQuote | null
+  // The party's reusable withdrawal address for the chosen key.
   withdrawal: Withdrawal | null
+  // COP the user should receive for the swap's guaranteed USDC, whole pesos.
+  estimatedCop: string | null
+  // Payouts already on the address before this swap, so the one this swap
+  // causes can be told apart.
+  knownPayoutIds: string[]
+  // Bridge's payout for this swap, once it shows up.
+  payout: WithdrawalPayout | null
   errorCode: BridgeRampWithdrawErrorCode | null
   // Server error code / request id for support, when TuCOPRamp said why.
   errorRequestId: string | null
@@ -177,6 +193,9 @@ const initialWithdrawState: BridgeRampWithdrawState = {
   copmAmountIn: null,
   quote: null,
   withdrawal: null,
+  estimatedCop: null,
+  knownPayoutIds: [],
+  payout: null,
   errorCode: null,
   errorRequestId: null,
 }
@@ -198,6 +217,15 @@ export const initialState: State = {
   deposit: initialDepositState,
   swap: initialSwapState,
   lastCompletedSwap: null,
+}
+
+// Bridge drain states: payment_processed is the COP delivered; the rest of
+// the final ones mean the USDC came back or the payout stopped.
+const PAYOUT_FAILED = new Set(['undeliverable', 'returned', 'refunded', 'canceled', 'error'])
+export function payoutOutcome(payout: WithdrawalPayout): 'completed' | 'failed' | 'processing' {
+  if (payout.status === 'payment_processed') return 'completed'
+  if (PAYOUT_FAILED.has(payout.status)) return 'failed'
+  return 'processing'
 }
 
 const slice = createSlice({
@@ -287,26 +315,31 @@ const slice = createSlice({
     },
     withdrawReady: (
       state,
-      action: PayloadAction<{ quote: WithdrawQuote; withdrawal: Withdrawal }>
+      action: PayloadAction<{
+        quote: WithdrawQuote
+        withdrawal: Withdrawal
+        estimatedCop: string
+        knownPayoutIds: string[]
+      }>
     ) => {
       state.withdraw.status = 'review'
       state.withdraw.quote = action.payload.quote
       state.withdraw.withdrawal = action.payload.withdrawal
+      state.withdraw.estimatedCop = action.payload.estimatedCop
+      state.withdraw.knownPayoutIds = action.payload.knownPayoutIds
+      state.withdraw.payout = null
     },
     withdrawAwaitingPayout: (state) => {
       state.withdraw.status = 'awaiting_payout'
     },
-    withdrawalUpdated: (state, action: PayloadAction<Withdrawal>) => {
-      state.withdraw.withdrawal = action.payload
-      if (action.payload.status === 'completed') {
+    withdrawPayoutUpdated: (state, action: PayloadAction<WithdrawalPayout>) => {
+      const payout = action.payload
+      state.withdraw.payout = payout
+      if (payoutOutcome(payout) === 'completed') {
         state.withdraw.status = 'completed'
-      } else if (
-        action.payload.status === 'failed' ||
-        action.payload.status === 'refunded' ||
-        action.payload.status === 'canceled'
-      ) {
+      } else if (payoutOutcome(payout) === 'failed') {
         state.withdraw.status = 'failed'
-        state.withdraw.errorCode = action.payload.error_code ?? 'payout_failed'
+        state.withdraw.errorCode = `payout_${payout.status}`
       }
     },
     withdrawFailed: (
@@ -421,19 +454,27 @@ const slice = createSlice({
       // is on-chain, TuCOPRamp owes a payout) so the screen can keep polling
       // after a restart; anything earlier is dropped and the user starts over.
       const persistedWithdraw = rehydrated?.withdraw
+      // Pre-2026-10-08 state (one withdrawal per operation) has no
+      // knownPayoutIds and cannot be followed any more; drop it.
       const keepWithdraw =
-        persistedWithdraw?.status === 'awaiting_payout' ||
-        persistedWithdraw?.status === 'completed' ||
-        persistedWithdraw?.status === 'failed'
+        Array.isArray(persistedWithdraw?.knownPayoutIds) &&
+        (persistedWithdraw?.status === 'awaiting_payout' ||
+          persistedWithdraw?.status === 'completed' ||
+          persistedWithdraw?.status === 'failed')
       // The deposit account is permanent and the baseline/pending pair is what
       // lets a payout that arrived while the app was closed be converted on
       // the next visit, so all three survive. Transient status does not.
       const persistedDeposit = rehydrated?.deposit
+      // An account stored before 2026-10-08 lacks deposit_instructions: drop
+      // it so the screen fetches it again, but keep the baseline and pending.
+      const persistedAccount = persistedDeposit?.account?.deposit_instructions
+        ? persistedDeposit.account
+        : null
       const deposit: BridgeRampDepositState = persistedDeposit?.account
         ? {
             ...initialDepositState,
-            status: 'ready',
-            account: persistedDeposit.account,
+            status: persistedAccount ? 'ready' : initialDepositState.status,
+            account: persistedAccount,
             usdcBaseline: persistedDeposit.usdcBaseline ?? null,
             pending: persistedDeposit.pending ?? null,
           }
@@ -466,7 +507,7 @@ export const {
   withdrawCreating,
   withdrawReady,
   withdrawAwaitingPayout,
-  withdrawalUpdated,
+  withdrawPayoutUpdated,
   withdrawFailed,
   withdrawPollTimedOut,
   depositCreating,

@@ -3738,7 +3738,6 @@
       "keyCopied": "Llave copiada",
       "holder": "Titular",
       "bank": "Banco",
-      "minimum": "Mínimo por depósito",
       "onlyCop": "Solo pesos colombianos por Bre-B. Esta llave es tuya: el dinero que le envíes llega a esta wallet como pesos digitales.",
       "estimateLabel": "¿Cuánto vas a depositar? (opcional, para ver un estimado)",
       "estimateNote": "Estimado con la tasa actual de Mento. La conversión real se hace cuando lleguen los dólares digitales.",
@@ -3750,7 +3749,9 @@
       "retryConvert": "Intentar de nuevo",
       "keepUsdcHint": "Tus {{usdc}} USDC siguen en tu wallet. Si prefieres, déjalos como dólares digitales.",
       "keepUsdc": "Dejar como dólares digitales",
-      "accountError": "No pudimos preparar tu cuenta de depósito en TuCOP ({{code}}). Intenta de nuevo."
+      "accountError": "No pudimos preparar tu cuenta de depósito en TuCOP ({{code}}). Intenta de nuevo.",
+      "fee": "Comisión TuCOP",
+      "wrongWallet": "Esta cuenta de depósito no apunta a tu wallet. No la uses y escribe a support@tucop.org."
     }
   },
   "transactionSuccess": {

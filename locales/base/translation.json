@@ -3724,7 +3724,6 @@
       "keyCopied": "Key copied",
       "holder": "Account holder",
       "bank": "Bank",
-      "minimum": "Minimum per deposit",
       "onlyCop": "Colombian pesos over Bre-B only. This key is yours: whatever you send to it arrives in this wallet as digital pesos.",
       "estimateLabel": "How much will you deposit? (optional, for an estimate)",
       "estimateNote": "Estimate at Mento's current rate. The real conversion happens when the digital dollars arrive.",
@@ -3736,7 +3735,9 @@
       "retryConvert": "Try again",
       "keepUsdcHint": "Your {{usdc}} USDC are still in your wallet. If you prefer, keep them as digital dollars.",
       "keepUsdc": "Keep as digital dollars",
-      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again."
+      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again.",
+      "fee": "TuCOP fee",
+      "wrongWallet": "This deposit account does not point to your wallet. Do not use it and write to support@tucop.org."
     }
   }
 }

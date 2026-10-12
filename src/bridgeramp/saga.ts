@@ -62,7 +62,8 @@ import {
   withdrawFailed,
   withdrawPollTimedOut,
   withdrawReady,
-  withdrawalUpdated,
+  withdrawPayoutUpdated,
+  payoutOutcome,
 } from 'src/bridgeramp/slice'
 import {
   BRIDGE_RAMP_QUOTE_TTL_SECONDS,
@@ -336,7 +337,7 @@ export interface StartBridgeRampWithdrawPayload {
   // COPm the user is sending, base units as a decimal string.
   copmAmountIn: string
   // Whole USDC (decimal string) the swap is guaranteed to deliver, i.e. the
-  // Mento quote's amountOutMin. TuCOPRamp quotes the COP for exactly this.
+  // Mento quote's amountOutMin. The COP estimate is computed for this.
   usdcMinOut: string
   idempotencyKey: string
 }
@@ -488,8 +489,22 @@ export function* registerDestinationSaga(
   }
 }
 
-// Quote the COP for the USDC the swap guarantees, then open the operation so
-// the review step knows the deposit address before anything is signed.
+// Bridge does not pay out below this (withdrawals.mdx); the address reports
+// its own floor and that wins when present.
+const WITHDRAW_MIN_COP = 4_000
+
+// COP Bridge should pay for `usdc` at the quote's rate, after TuCOP's fee.
+// Whole pesos, rounded down: the user sees the least they will get.
+export function estimateWithdrawCop(usdc: string, rate: string, feeBps: number): BigNumber {
+  return new BigNumber(usdc)
+    .times(rate)
+    .times(new BigNumber(10_000 - feeBps).dividedBy(10_000))
+    .integerValue(BigNumber.ROUND_FLOOR)
+}
+
+// Get (or create) the party's withdrawal address for the chosen key, note the
+// payouts it already has, and price the swap's guaranteed USDC in COP. Nothing
+// here moves money: the review step builds the swap to that address.
 export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdrawPayload>) {
   const { destinationId, copmAmountIn, usdcMinOut, idempotencyKey } = action.payload
   yield* put(withdrawCreating({ copmAmountIn }))
@@ -498,12 +513,41 @@ export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdraw
     yield* put(withdrawFailed({ code: 'no_wallet' }))
     return
   }
+  let withdrawal: Withdrawal
+  try {
+    const created = yield* withSession((token) =>
+      createWithdrawal(token, { destination_id: destinationId }, `${idempotencyKey}-address`)
+    )
+    // A read lists the payouts already made from the address.
+    withdrawal = yield* withSession((token) => getWithdrawal(token, created.id))
+  } catch (err) {
+    Logger.warn(TAG, 'withdrawal address failed', err)
+    yield* put(
+      withdrawFailed({ code: errorCodeOf(err, 'create_failed'), requestId: requestIdOf(err) })
+    )
+    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+      feature: 'bridgeramp',
+      provider: 'bridge',
+      action: 'withdrawal_create_failed',
+      errorCode: errorCodeOf(err, 'create_failed'),
+    })
+    return
+  }
+  if (withdrawal.status !== 'active') {
+    yield* put(withdrawFailed({ code: 'withdrawal_disabled' }))
+    return
+  }
+  const minCop = new BigNumber(
+    withdrawal.deposit.minimum_destination_amount?.amount ?? WITHDRAW_MIN_COP
+  )
   let quote
   try {
+    // Priced at the floor: only the rate is used, and a quote below the
+    // floor would be refused.
     quote = yield* withSession((token) =>
       createWithdrawQuote(
         token,
-        { destination_id: destinationId, source_amount: { amount: usdcMinOut, asset: 'USDC' } },
+        { destination_id: destinationId, amount_cop: { amount: minCop.toFixed(2), asset: 'COP' } },
         `${idempotencyKey}-quote`
       )
     )
@@ -514,35 +558,18 @@ export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdraw
     )
     return
   }
-  try {
-    const withdrawal = yield* withSession((token) =>
-      createWithdrawal(
-        token,
-        { quote_id: quote.id, return_address: walletAddress as Address },
-        `${idempotencyKey}-withdrawal`
-      )
-    )
-    yield* put(withdrawReady({ quote, withdrawal }))
-  } catch (err) {
-    Logger.warn(TAG, 'withdrawal create failed', err)
-    yield* put(
-      withdrawFailed({ code: errorCodeOf(err, 'create_failed'), requestId: requestIdOf(err) })
-    )
-    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
-      feature: 'bridgeramp',
-      provider: 'bridge',
-      action: 'withdrawal_create_failed',
-      errorCode: errorCodeOf(err, 'create_failed'),
-    })
+  const estimatedCop = estimateWithdrawCop(usdcMinOut, quote.rate.value, withdrawal.fee_bps ?? 0)
+  if (estimatedCop.isLessThan(minCop)) {
+    yield* put(withdrawFailed({ code: 'amount_below_minimum' }))
+    return
   }
-}
-
-function isWithdrawalFinal(withdrawal: Withdrawal): boolean {
-  return (
-    withdrawal.status === 'completed' ||
-    withdrawal.status === 'failed' ||
-    withdrawal.status === 'refunded' ||
-    withdrawal.status === 'canceled'
+  yield* put(
+    withdrawReady({
+      quote,
+      withdrawal,
+      estimatedCop: estimatedCop.toFixed(0),
+      knownPayoutIds: (withdrawal.payouts ?? []).map((p) => p.id),
+    })
   )
 }
 
@@ -552,17 +579,23 @@ export function* pollWithdrawalSaga(action: PayloadAction<{ withdrawalId: string
   while (attempts < WITHDRAWAL_POLL_MAX_ATTEMPTS) {
     try {
       const withdrawal = yield* withSession((token) => getWithdrawal(token, withdrawalId))
-      yield* put(withdrawalUpdated(withdrawal))
-      if (isWithdrawalFinal(withdrawal)) {
-        if (withdrawal.status !== 'completed') {
-          captureBusinessError(new Error(`Bridge Ramp withdrawal ${withdrawal.status}`), {
-            feature: 'bridgeramp',
-            provider: 'bridge',
-            action: 'withdrawal_not_completed',
-            errorCode: withdrawal.error_code ?? withdrawal.status,
-          })
+      const { knownPayoutIds } = yield* select(bridgeRampWithdrawSelector)
+      // The newest payout that was not on the address before this swap.
+      const payout = (withdrawal.payouts ?? []).find((p) => !knownPayoutIds.includes(p.id))
+      if (payout) {
+        yield* put(withdrawPayoutUpdated(payout))
+        const outcome = payoutOutcome(payout)
+        if (outcome !== 'processing') {
+          if (outcome === 'failed') {
+            captureBusinessError(new Error(`Bridge Ramp payout ${payout.status}`), {
+              feature: 'bridgeramp',
+              provider: 'bridge',
+              action: 'withdrawal_not_completed',
+              errorCode: payout.status,
+            })
+          }
+          return
         }
-        return
       }
     } catch (err) {
       Logger.warn(TAG, 'getWithdrawal failed, will retry', err)
@@ -574,8 +607,8 @@ export function* pollWithdrawalSaga(action: PayloadAction<{ withdrawalId: string
   yield* put(withdrawPollTimedOut())
 }
 
-// The swap landed: if it was the deposit for the withdraw under review, the
-// USDC is now at the liquidation address and TuCOPRamp owes the payout.
+// The swap landed: if it went to the withdrawal address under review, the
+// USDC is there and Bridge will pay it out.
 export function* onSwapConfirmedSaga() {
   const withdraw = yield* select(bridgeRampWithdrawSelector)
   const swap = yield* select(bridgeRampSwapSelector)
@@ -709,7 +742,7 @@ export function* startDepositSaga() {
     const account = yield* withSession((token) =>
       createDepositAccount(
         token,
-        { wallet: walletAddress as Address },
+        { wallet_address: walletAddress as Address },
         `deposit-${walletAddress.toLowerCase()}`
       )
     )

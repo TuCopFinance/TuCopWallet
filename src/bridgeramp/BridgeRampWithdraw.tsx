@@ -26,6 +26,7 @@ import {
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
   createBridgeRampParty,
+  estimateWithdrawCop,
   executeBridgeRampSwap,
   fetchBridgeRampDestinations,
   fetchBridgeRampParty,
@@ -83,6 +84,12 @@ const BRE_B_KEY_MIN_LENGTH = 6
 // when `bridgeramp.onboarding.consent` changes; TuCOPRamp records it per app.
 const BRIDGE_RAMP_CONSENT_VERSION = '2026-10-10'
 const TUCOP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
+// TuCOPRamp verifies people (individuals) here; NIT is a company document and
+// POST /v1/parties refuses it for an individual.
+type IndividualDocumentType = Exclude<DocumentType, 'NIT'>
+const INDIVIDUAL_DOCUMENT_TYPES = DOCUMENT_TYPES.filter(
+  (d): d is IndividualDocumentType => d !== 'NIT'
+)
 
 interface Props {
   oracleStale: boolean
@@ -326,8 +333,10 @@ function PartyOnboardingForm() {
   const tucopRampProfile = useSelector(userProfileSelector)
 
   const [legalName, setLegalName] = useState(tucopRampProfile?.full_name ?? '')
-  const [documentType, setDocumentType] = useState<DocumentType>(
-    tucopRampProfile?.document_type ?? 'CC'
+  const [documentType, setDocumentType] = useState<IndividualDocumentType>(
+    tucopRampProfile?.document_type && tucopRampProfile.document_type !== 'NIT'
+      ? tucopRampProfile.document_type
+      : 'CC'
   )
   const [documentNumber, setDocumentNumber] = useState('')
   const [email, setEmail] = useState(tucopRampProfile?.primary_email ?? '')
@@ -346,6 +355,7 @@ function PartyOnboardingForm() {
       createBridgeRampParty({
         request: {
           type: 'individual',
+          country: 'COL',
           legal_name: legalName.trim(),
           document_type: documentType,
           document_number: documentNumber,
@@ -387,10 +397,10 @@ function PartyOnboardingForm() {
       >
         <Text style={styles.pickerValue}>{t(`tucopramp.documentType.${documentType}`)}</Text>
       </TouchableOpacity>
-      <PickerModal<DocumentType>
+      <PickerModal<IndividualDocumentType>
         visible={pickerOpen}
         title={t('tucopramp.documentType.pickerTitle')}
-        options={DOCUMENT_TYPES.map((value) => ({
+        options={INDIVIDUAL_DOCUMENT_TYPES.map((value) => ({
           value,
           label: t(`tucopramp.documentType.${value}`),
         }))}
@@ -590,11 +600,6 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
 
   // Re-quote Mento for the review so the calls are built on a fresh price,
   // for exactly the COPm the user typed in step 1.
-  const requiredUsdc = useMemo(
-    () =>
-      BigInt(new BigNumber(withdrawal.deposit.amount.amount).shiftedBy(USDC_DECIMALS).toFixed(0)),
-    [withdrawal.deposit.amount.amount]
-  )
   const copmAmountIn = useMemo(
     () => (withdraw.copmAmountIn ? BigInt(withdraw.copmAmountIn) : null),
     [withdraw.copmAmountIn]
@@ -605,10 +610,20 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
     withdrawal.deposit.chain === 'eip155:42220' &&
     withdrawal.deposit.token_contract.toLowerCase() === USDC_ADDRESS_CELO.toLowerCase()
 
-  // The swap must guarantee at least what TuCOPRamp needs for the payout.
+  // The address pays out anything at or above Bridge's floor; re-check the
+  // estimate on the fresh Mento price so a moved rate cannot drop it below.
   const minOut =
     quoteState.state === 'ready' ? minAmountOut(quoteState.quote, BRIDGE_RAMP_SLIPPAGE_BPS) : null
-  const rateMoved = minOut !== null && minOut < requiredUsdc
+  const estimatedCop =
+    minOut !== null && quote
+      ? estimateWithdrawCop(
+          new BigNumber(minOut.toString()).shiftedBy(-USDC_DECIMALS).toFixed(),
+          quote.rate.value,
+          withdrawal.fee_bps ?? 0
+        )
+      : null
+  const minCop = new BigNumber(withdrawal.deposit.minimum_destination_amount?.amount ?? 4000)
+  const rateMoved = estimatedCop !== null && estimatedCop.isLessThan(minCop)
 
   const calls = useMemo(() => {
     if (quoteState.state !== 'ready' || !walletAddress || rateMoved || !depositOk) return null
@@ -687,11 +702,11 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
           />
           <Row
             label={t('bridgeramp.review.receive')}
-            value={`${new BigNumber(quote.destination_amount.amount).toFormat(0)} pesos`}
+            value={`${(estimatedCop ?? new BigNumber(0)).toFormat(0)} pesos`}
           />
           <Row
             label={t('bridgeramp.review.tucopFee')}
-            value={formatUsdc(new BigNumber(quote.fees.tucop.amount))}
+            value={`${new BigNumber(withdrawal.fee_bps ?? 0).dividedBy(100).toFormat()} %`}
           />
           <Row
             label={t('bridgeramp.review.bridgeRate')}
@@ -787,7 +802,9 @@ function ProgressStep() {
   const body =
     withdraw.status === 'completed'
       ? t('bridgeramp.progress.completedBody', {
-          amount: new BigNumber(withdrawal?.destination_amount.amount ?? 0).toFormat(0),
+          amount: new BigNumber(
+            withdraw.payout?.destination_amount?.amount ?? withdraw.estimatedCop ?? 0
+          ).toFormat(0),
         })
       : withdraw.status === 'failed'
         ? t(`bridgeramp.payoutError.${withdraw.errorCode}`, {
