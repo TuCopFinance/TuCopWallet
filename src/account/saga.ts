@@ -6,7 +6,6 @@ import {
   initializeAccountSuccess,
   saveSignedMessage,
 } from 'src/account/actions'
-import { revokeBridgeRampSessionSaga } from 'src/bridgeramp/saga'
 import { choseToRestoreAccountSelector } from 'src/account/selectors'
 import { updateAccountRegistration } from 'src/account/updateAccountRegistration'
 import { showError } from 'src/alert/actions'
@@ -48,8 +47,6 @@ export const SENTINEL_MIGRATE_COMMENT = '__CELO_MIGRATE_TX__'
 
 function* clearStoredAccountSaga({ account }: ClearStoredAccountAction) {
   try {
-    // Needs the wallet's session still in memory; never blocks the reset.
-    yield* call(revokeBridgeRampSessionSaga)
     yield* call(removeAccountLocally, account)
     yield* call(clearStoredMnemonic)
     yield* call(AppAnalytics.reset)

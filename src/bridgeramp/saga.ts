@@ -10,6 +10,7 @@ import {
   inputTokenFor,
   quoteMentoSwap,
 } from 'src/bridgeramp/mentoRouter'
+import { Actions as AccountActions } from 'src/account/actions'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
   CreatePartyRequest,
@@ -25,7 +26,8 @@ import {
   getWithdrawal,
   listDestinations,
 } from 'src/bridgeramp/api'
-import { openWalletPartySession, revokePartySession } from 'src/bridgeramp/platformClient'
+import { openWalletPartySession } from 'src/bridgeramp/platformClient'
+import { revokeBridgeRampSessionSaga } from 'src/bridgeramp/revokeSession'
 import {
   bridgeRampDepositSelector,
   bridgeRampSessionSelector,
@@ -409,20 +411,6 @@ function* withSession<T>(request: (token: string) => Promise<T>) {
     yield* put(sessionCleared())
     token = yield* call(ensurePartySession, true)
     return yield* call(request, token)
-  }
-}
-
-// Sign-out for TuCOPRamp: revoke the party session before the wallet that
-// opened it goes away. Best effort; an unrevoked session still dies within the
-// hour.
-export function* revokeBridgeRampSessionSaga() {
-  const session = yield* select(bridgeRampSessionSelector)
-  if (!session) return
-  yield* put(sessionCleared())
-  try {
-    yield* call(revokePartySession, session.token)
-  } catch (err) {
-    Logger.warn(TAG, 'Could not revoke the TuCOPRamp party session', err)
   }
 }
 
@@ -844,4 +832,5 @@ export function* bridgeRampSaga() {
   yield* takeLeading(startBridgeRampWithdraw.type, startWithdrawSaga)
   yield* takeLatest(pollBridgeRampWithdrawal.type, pollWithdrawalSaga)
   yield* takeEvery(swapConfirmed.type, onSwapConfirmedSaga)
+  yield* takeLeading(AccountActions.CLEAR_STORED_ACCOUNT, revokeBridgeRampSessionSaga)
 }

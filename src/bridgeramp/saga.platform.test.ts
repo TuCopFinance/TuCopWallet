@@ -21,10 +21,10 @@ import {
   pollWithdrawalSaga,
   registerBridgeRampDestination,
   registerDestinationSaga,
-  revokeBridgeRampSessionSaga,
   startBridgeRampWithdraw,
   startWithdrawSaga,
 } from 'src/bridgeramp/saga'
+import { revokeBridgeRampSessionSaga } from 'src/bridgeramp/revokeSession'
 import reducer, {
   destinationRegisterFailed,
   destinationRegistering,
