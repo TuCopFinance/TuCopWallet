@@ -1,11 +1,11 @@
 import { combineReducers } from '@reduxjs/toolkit'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { dynamic } from 'redux-saga-test-plan/providers'
+import { dynamic, throwError } from 'redux-saga-test-plan/providers'
 import * as api from 'src/bridgeramp/api'
 import { MentoQuote, quoteMentoSwap } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
-import { openWalletPartySession } from 'src/bridgeramp/platformClient'
+import { openWalletPartySession, revokePartySession } from 'src/bridgeramp/platformClient'
 import {
   checkDepositSaga,
   convertBridgeDeposit,
@@ -21,6 +21,7 @@ import {
   pollWithdrawalSaga,
   registerBridgeRampDestination,
   registerDestinationSaga,
+  revokeBridgeRampSessionSaga,
   startBridgeRampWithdraw,
   startWithdrawSaga,
 } from 'src/bridgeramp/saga'
@@ -190,6 +191,32 @@ describe('ensurePartySession', () => {
         .provide([[matchers.select(walletAddressSelector), null]])
         .run()
     ).rejects.toThrow('no_wallet')
+  })
+})
+
+describe('revokeBridgeRampSessionSaga', () => {
+  it('drops the session and revokes it on TuCOPRamp', async () => {
+    const { storeState } = await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([[matchers.call.fn(revokePartySession), undefined]])
+      .call(revokePartySession, freshSession.token)
+      .run()
+    expect(storeState.bridgeramp.session).toBeNull()
+  })
+
+  it('does not fail when the revoke call fails', async () => {
+    const { storeState } = await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([[matchers.call.fn(revokePartySession), throwError(new Error('offline'))]])
+      .run()
+    expect(storeState.bridgeramp.session).toBeNull()
+  })
+
+  it('does nothing without a session', async () => {
+    await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(initialState))
+      .not.call.fn(revokePartySession)
+      .run()
   })
 })
 

@@ -86,9 +86,11 @@ const BRIDGE_RAMP_CONSENT_VERSION = '2026-10-10'
 const TUCOP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 // TuCOPRamp verifies people (individuals) here; NIT is a company document and
 // POST /v1/parties refuses it for an individual.
-type IndividualDocumentType = Exclude<DocumentType, 'NIT'>
+type IndividualDocumentType = Exclude<DocumentType, 'NIT' | 'TI'>
+// TuCOPRamp parties take CC, CE, NUIP and PAS for a person: NIT is a business
+// document and TI a minor's (identity verification is for adults only).
 const INDIVIDUAL_DOCUMENT_TYPES = DOCUMENT_TYPES.filter(
-  (d): d is IndividualDocumentType => d !== 'NIT'
+  (d): d is IndividualDocumentType => d !== 'NIT' && d !== 'TI'
 )
 
 interface Props {
@@ -334,9 +336,7 @@ function PartyOnboardingForm() {
 
   const [legalName, setLegalName] = useState(tucopRampProfile?.full_name ?? '')
   const [documentType, setDocumentType] = useState<IndividualDocumentType>(
-    tucopRampProfile?.document_type && tucopRampProfile.document_type !== 'NIT'
-      ? tucopRampProfile.document_type
-      : 'CC'
+    INDIVIDUAL_DOCUMENT_TYPES.find((d) => d === tucopRampProfile?.document_type) ?? 'CC'
   )
   const [documentNumber, setDocumentNumber] = useState('')
   const [email, setEmail] = useState(tucopRampProfile?.primary_email ?? '')

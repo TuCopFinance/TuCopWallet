@@ -25,7 +25,7 @@ import {
   getWithdrawal,
   listDestinations,
 } from 'src/bridgeramp/api'
-import { openWalletPartySession } from 'src/bridgeramp/platformClient'
+import { openWalletPartySession, revokePartySession } from 'src/bridgeramp/platformClient'
 import {
   bridgeRampDepositSelector,
   bridgeRampSessionSelector,
@@ -409,6 +409,20 @@ function* withSession<T>(request: (token: string) => Promise<T>) {
     yield* put(sessionCleared())
     token = yield* call(ensurePartySession, true)
     return yield* call(request, token)
+  }
+}
+
+// Sign-out for TuCOPRamp: revoke the party session before the wallet that
+// opened it goes away. Best effort; an unrevoked session still dies within the
+// hour.
+export function* revokeBridgeRampSessionSaga() {
+  const session = yield* select(bridgeRampSessionSelector)
+  if (!session) return
+  yield* put(sessionCleared())
+  try {
+    yield* call(revokePartySession, session.token)
+  } catch (err) {
+    Logger.warn(TAG, 'Could not revoke the TuCOPRamp party session', err)
   }
 }
 

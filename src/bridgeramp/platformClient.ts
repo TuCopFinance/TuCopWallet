@@ -86,6 +86,20 @@ export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
   })
 }
 
+// Sign-out: the token stops working at once. Answers 204 whether or not the
+// session was still live.
+export function revokePartySession(
+  partySession: string,
+  opts: Pick<PlatformFetchArgs, 'baseUrl' | 'fetchImpl'> = {}
+): Promise<void> {
+  return platformFetch<void>({
+    ...opts,
+    method: 'DELETE',
+    path: '/v1/sessions/current',
+    partySession,
+  })
+}
+
 export interface PartySession {
   token: string
   method: 'wallet' | 'email_otp'

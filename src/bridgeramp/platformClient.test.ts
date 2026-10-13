@@ -5,7 +5,11 @@ import {
   getParty,
   partyCanTransact,
 } from 'src/bridgeramp/api'
-import { openWalletPartySession, platformFetch } from 'src/bridgeramp/platformClient'
+import {
+  openWalletPartySession,
+  platformFetch,
+  revokePartySession,
+} from 'src/bridgeramp/platformClient'
 import { TucopRampError } from 'src/tucopramp/types'
 
 jest.mock('src/utils/Logger')
@@ -196,5 +200,15 @@ describe('api wrappers', () => {
       fetchImpl,
     })
     expect(fetchImpl.mock.calls[0][1].headers['TuCOPRamp-Version']).toBe('2026-10-08')
+  })
+
+  it('signs out with DELETE /v1/sessions/current and the session header', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(response(204))
+    await revokePartySession('tps_1', { baseUrl: BASE, fetchImpl })
+    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/sessions/current`, {
+      method: 'DELETE',
+      headers: { 'TuCOPRamp-Version': '2026-10-08', 'X-TuCOPRamp-Party-Session': 'tps_1' },
+      body: undefined,
+    })
   })
 })

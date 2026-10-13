@@ -55,8 +55,9 @@ export interface CreatePartyRequest {
   // ISO 3166-1 alpha-3 of the document's issuer. TuCOPRamp defaults to COL.
   country?: 'COL'
   legal_name: string
-  // Individuals in Colombia: NIT is a business document and is refused.
-  document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'PAS'
+  // Individuals in Colombia (GET /v1/document-types). NIT is a business
+  // document; TI is a minor's and Bridge verifies adults only.
+  document_type: 'CC' | 'CE' | 'NUIP' | 'PAS'
   document_number: string
   consent: { version: string; accepted_at: string }
   // Required for wallet sessions when the party has no verified email yet.
