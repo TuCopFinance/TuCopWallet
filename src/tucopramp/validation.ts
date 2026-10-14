@@ -123,7 +123,7 @@ export function isValidBreBKey(value: string): boolean {
 
 // COP amounts are whole pesos. 12 digits (hundreds of billions) is far above
 // any order limit and keeps Number() exact.
-export const MAX_AMOUNT_DIGITS = 12
+const MAX_AMOUNT_DIGITS = 12
 
 // Keep digits only, so "100.000", "100,000" and "100 000" all become
 // "100000" instead of 100 / NaN. Leading zeros are dropped.
