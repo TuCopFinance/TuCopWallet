@@ -15,6 +15,7 @@ import Touchable from 'src/components/Touchable'
 import EarthquakeDonationSheet from 'src/donation/earthquake/EarthquakeDonationSheet'
 import { useFeatureGate } from 'src/statsig/hooks'
 import { StatsigFeatureGates } from 'src/statsig/types'
+import { navigateToDeposit } from 'src/fiatExchanges/rampEntry'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import { refreshAllBalances, visitHome } from 'src/home/actions'
 import Add from 'src/icons/quick-actions/Add'
@@ -320,12 +321,14 @@ function AddCOPmBottomSheet({
 
   function onPressPurchaseCOPm() {
     // AppAnalytics.track(TabHomeEvents.add_ckes_from_cash_in)
-    !!COPmToken &&
+    navigateToDeposit(() => {
+      if (!COPmToken) return
       navigate(Screens.FiatExchangeAmount, {
         tokenId: COPmToken.tokenId,
         flow: CICOFlow.CashIn,
         tokenSymbol: COPmToken.symbol,
       })
+    })
     forwardedRef.current?.dismiss()
   }
 

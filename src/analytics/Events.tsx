@@ -354,6 +354,10 @@ export enum FiatExchangeEvents {
   cico_landing_select_flow = 'cico_landing_select_flow',
   cico_landing_how_to_fund = 'cico_landing_how_to_fund',
 
+  // Ramp chooser (SelectRampProvider): TuCOP Ramp P2P vs TuCOP Ramp (Bridge)
+  ramp_chooser_open = 'ramp_chooser_open',
+  ramp_chooser_select = 'ramp_chooser_select',
+
   // The CICO Amount screen where the user selects the amount of money
   cico_amount_chosen = 'cico_amount_chosen',
   cico_amount_chosen_invalid = 'cico_amount_chosen_invalid',

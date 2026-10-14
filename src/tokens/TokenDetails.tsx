@@ -15,6 +15,11 @@ import TokenDisplay from 'src/components/TokenDisplay'
 import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
+import {
+  isRampDirectionEnabled,
+  navigateToDeposit,
+  navigateToWithdraw,
+} from 'src/fiatExchanges/rampEntry'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import ArrowRightThick from 'src/icons/navigation/ArrowRightThick'
 import DataDown from 'src/icons/data/DataDown'
@@ -189,6 +194,10 @@ export const useActions = (token: TokenBalance) => {
   const cashOutTokens = useCashOutTokens()
   const isSwapEnabled = useSelector(isAppSwapsEnabledSelector)
   const showWithdraw = !!cashOutTokens.find((tokenInfo) => tokenInfo.tokenId === token.tokenId)
+  // Both ramps deliver and take COPm, so "Agregar" on COPm opens the ramp
+  // chooser when a deposit ramp is on; other tokens keep the provider flow.
+  const isCopm = token.tokenId === networkConfig.copmTokenId
+  const depositThroughRamp = isCopm && isRampDirectionEnabled('onramp')
 
   return [
     {
@@ -235,13 +244,21 @@ export const useActions = (token: TokenBalance) => {
       details: t('tokenDetails.actionDescriptions.add'),
       iconComponent: QuickActionsAdd,
       onPress: () => {
-        navigate(Screens.FiatExchangeAmount, {
-          tokenId: token.tokenId,
-          flow: CICOFlow.CashIn,
-          tokenSymbol: token.symbol,
-        })
+        const legacyCashIn = () =>
+          navigate(Screens.FiatExchangeAmount, {
+            tokenId: token.tokenId,
+            flow: CICOFlow.CashIn,
+            tokenSymbol: token.symbol,
+          })
+        if (isCopm) {
+          navigateToDeposit(legacyCashIn)
+        } else {
+          legacyCashIn()
+        }
       },
-      visible: !!cashInTokens.find((tokenInfo) => tokenInfo.tokenId === token.tokenId),
+      visible:
+        depositThroughRamp ||
+        !!cashInTokens.find((tokenInfo) => tokenInfo.tokenId === token.tokenId),
     },
     {
       name: TokenActionName.Withdraw,
@@ -249,7 +266,7 @@ export const useActions = (token: TokenBalance) => {
       details: t('tokenDetails.actionDescriptions.withdraw'),
       iconComponent: QuickActionsWithdraw,
       onPress: () => {
-        navigate(Screens.SelectRampProvider, { direction: 'offramp' })
+        navigateToWithdraw()
       },
       visible: showWithdraw,
     },

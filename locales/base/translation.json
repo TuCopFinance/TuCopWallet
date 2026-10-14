@@ -411,7 +411,7 @@
   "celoReal": "Digital Real",
   "celoDollars": "Digital Dollars",
   "ether": "Ether",
-  "tapToCopyCeloDollarsAddress": "Tap to copy your {{appName}} CUSD address",
+  "tapToCopyCeloDollarsAddress": "Tap to copy your {{appName}} Dollars address",
   "disclaimerFiat": "{{currency}} values are estimates.",
   "dollarsNotYetEnabledNote": "Digital dollars are not yet available on any providers. Try converting other assets inside your wallet.",
   "selectDigitalCurrency": "Select an asset",
@@ -3129,7 +3129,7 @@
     "addCOPm": "Add Pesos",
     "sendMoney": "Send Money",
     "receiveMoney": "Receive Money",
-    "spendMoney": "Spend Money",
+    "spendMoney": "Withdraw",
     "holdUSD": "Hold US Dollars",
     "swap": "Swap your currencies",
     "swapSubtitle": "Change between your assets",
@@ -3617,12 +3617,18 @@
       "subtitle": "Choose how to turn your digital pesos into pesos in your account."
     },
     "onramp": {
-      "title": "Get digital pesos",
+      "title": "Add digital pesos",
       "subtitle": "Choose how to turn the pesos in your account into digital pesos."
     },
     "noneAvailable": "No withdrawal or deposit options are available right now.",
+    "retry": "Retry",
+    "resumeOfframp": {
+      "title": "You have a withdrawal in progress",
+      "description": "Check how it is going or pick up where you left off.",
+      "cta": "View my withdrawal"
+    },
     "tucopramp": {
-      "logo": "TC",
+      "logo": "P2P",
       "name": "TuCOP Ramp P2P",
       "by": "by TuCOP Solutions",
       "timing": "Up to 24 hours",
@@ -3635,7 +3641,7 @@
       }
     },
     "bridgeramp": {
-      "logo": "BR",
+      "logo": "TC",
       "name": "TuCOP Ramp",
       "by": "Powered by Bridge",
       "timing": "Arrives in minutes",
@@ -3647,7 +3653,9 @@
         "tagline": "You transfer via Bre-B and receive digital pesos within minutes."
       },
       "outsideHours": "Available during banking hours. You can use TuCOP Ramp P2P for now.",
-      "unreachable": "We could not check availability. Try again or use TuCOP Ramp P2P."
+      "outsideHoursNoAlternative": "Available during banking hours. Please try again later.",
+      "unreachable": "We could not check availability. Retry or use TuCOP Ramp P2P.",
+      "unreachableNoAlternative": "We could not check availability."
     }
   },
   "bridgeramp": {

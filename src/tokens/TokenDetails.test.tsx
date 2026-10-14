@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import { fireEvent, render, renderHook, waitFor } from '@testing-library/react-native'
 import React from 'react'
 import { Provider } from 'react-redux'
 import AppAnalytics from 'src/analytics/AppAnalytics'
@@ -7,9 +7,13 @@ import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { Price } from 'src/priceHistory/slice'
 import { getFeatureGate } from 'src/statsig'
-import TokenDetailsScreen from 'src/tokens/TokenDetails'
+import { StatsigFeatureGates } from 'src/statsig/types'
+import TokenDetailsScreen, { useActions } from 'src/tokens/TokenDetails'
+import { TokenBalance } from 'src/tokens/slice'
+import { TokenActionName } from 'src/tokens/types'
 import { NetworkId } from 'src/transactions/types'
 import { ONE_DAY_IN_MILLIS } from 'src/utils/time'
+import networkConfig from 'src/web3/networkConfig'
 import MockedNavigator from 'test/MockedNavigator'
 import { createMockStore } from 'test/utils'
 import {
@@ -466,8 +470,9 @@ describe('TokenDetails', () => {
       flow: CICOFlow.CashIn,
       tokenSymbol: 'CELO',
     })
+    // No withdraw ramp gate on: the legacy withdraw screen, never an empty chooser.
     fireEvent.press(getByTestId('TokenDetailsMoreActions/Withdraw'))
-    expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
+    expect(navigate).toHaveBeenCalledWith(Screens.WithdrawSpend)
     expect(AppAnalytics.track).toHaveBeenCalledTimes(6) // 4 actions + 1 more action + 1 celo news
   })
 
@@ -505,5 +510,56 @@ describe('TokenDetails', () => {
     // More is shown because imported tokens with balance are now included in
     // cashIn/cashOut selectors, giving 4 visible actions > MAX_ACTION_BUTTONS
     expect(getByTestId('TokenDetails/Action/More')).toBeTruthy()
+  })
+  describe('ramp entry points', () => {
+    const copmToken = {
+      tokenId: networkConfig.copmTokenId,
+      networkId: NetworkId['celo-mainnet'],
+      address: networkConfig.copmTokenId.split(':')[1],
+      name: 'COPm',
+      symbol: 'COPm',
+      decimals: 18,
+      balance: '1000',
+      priceUsd: '0.00025',
+      priceFetchedAt: Date.now(),
+      isCashInEligible: true,
+      isCashOutEligible: true,
+    }
+
+    function getActions(gates: StatsigFeatureGates[], token = copmToken) {
+      jest.mocked(getFeatureGate).mockImplementation((gate) => gates.includes(gate))
+      const store = createMockStore({
+        tokens: { tokenBalances: { [token.tokenId]: token } },
+      })
+      const { result } = renderHook(() => useActions(token as unknown as TokenBalance), {
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      })
+      return result.current
+    }
+
+    function press(actions: ReturnType<typeof useActions>, name: TokenActionName) {
+      const action = actions.find((a) => a.name === name)
+      expect(action).toBeDefined()
+      action!.onPress()
+    }
+
+    afterEach(() => {
+      jest.mocked(getFeatureGate).mockReset().mockReturnValue(true)
+    })
+
+    it('opens the deposit ramp chooser from "Agregar" on COPm when a deposit ramp is on', () => {
+      press(getActions([StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP]), TokenActionName.Add)
+      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'onramp' })
+    })
+
+    it('hides "Agregar" on COPm when no deposit ramp is on (COPm is not a cash-in token)', () => {
+      const actions = getActions([])
+      expect(actions.find((a) => a.name === TokenActionName.Add)).toBeUndefined()
+    })
+
+    it('opens the withdraw ramp chooser from "Retirar" when a withdraw ramp is on', () => {
+      press(getActions([StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP]), TokenActionName.Withdraw)
+      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
+    })
   })
 })

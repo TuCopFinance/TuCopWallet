@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import AppAnalytics from 'src/analytics/AppAnalytics'
 import { TabHomeEvents } from 'src/analytics/Events'
+import { navigateToDeposit, navigateToWithdraw } from 'src/fiatExchanges/rampEntry'
 import { CICOFlow } from 'src/fiatExchanges/utils'
 import QuickActionsWithdraw from 'src/icons/quick-actions/Withdraw'
 import Receive from 'src/icons/tab-home/Receive'
@@ -45,17 +46,23 @@ export default function HeaderQuickActions() {
     navigate(Screens.QRNavigator, { screen: Screens.QRCode })
   }
 
+  // "Recarga": the ramp chooser when a deposit ramp is on, otherwise the
+  // legacy cash-in flow with USDT preselected.
   const onPressRecharge = () => {
-    if (!USDTToken) return
-    navigate(Screens.FiatExchangeAmount, {
-      tokenId: USDTToken.tokenId,
-      flow: CICOFlow.CashIn,
-      tokenSymbol: USDTToken.symbol,
+    navigateToDeposit(() => {
+      if (!USDTToken) return
+      navigate(Screens.FiatExchangeAmount, {
+        tokenId: USDTToken.tokenId,
+        flow: CICOFlow.CashIn,
+        tokenSymbol: USDTToken.symbol,
+      })
     })
   }
 
+  // "Retira": the ramp chooser when a withdraw ramp is on, otherwise the
+  // legacy withdraw screen. Never an empty chooser.
   const onPressWithdraw = () => {
-    navigate(Screens.SelectRampProvider, { direction: 'offramp' })
+    navigateToWithdraw()
   }
 
   return (

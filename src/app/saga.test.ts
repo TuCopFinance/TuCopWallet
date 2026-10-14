@@ -37,12 +37,13 @@ import {
   currentLanguageSelector,
   otaTranslationsAppVersionSelector,
 } from 'src/i18n/selectors'
-import { navigate } from 'src/navigator/NavigationService'
+import { navigate, navigateHome } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { handleEnableHooksPreviewDeepLink } from 'src/positions/saga'
 import { allowHooksPreviewSelector } from 'src/positions/selectors'
 import { handlePaymentDeeplink } from 'src/send/utils'
 import { getFeatureGate, patchUpdateStatsigUser } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { navigateToURI } from 'src/utils/linking'
 import Logger from 'src/utils/Logger'
 import { ONE_DAY_IN_MILLIS } from 'src/utils/time'
@@ -172,6 +173,46 @@ describe('handleDeepLink', () => {
       pathStartsWith: 'openScreen',
       fullPath: '/openScreen',
       query: 'screen=FiatExchangeCurrency&flow=CashIn',
+    })
+  })
+
+  describe('openScreen deep links to ramp screens', () => {
+    const openScreen = (query: string) =>
+      expectSaga(
+        handleDeepLink,
+        openDeepLink(`${DEEP_LINK_URL_SCHEME}://wallet/openScreen?${query}`, true)
+      )
+        .provide([[select(walletAddressSelector), mockAccount]])
+        .run()
+
+    const enableGates = (gates: StatsigFeatureGates[]) =>
+      jest.mocked(getFeatureGate).mockImplementation((gate) => gates.includes(gate))
+
+    afterEach(() => {
+      jest.mocked(getFeatureGate).mockReset()
+    })
+
+    it('opens the TuCOP Ramp P2P withdraw flow when its gate is on', async () => {
+      enableGates([StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP])
+      await openScreen(`screen=${Screens.TuCOPRampOfframpFlow}`)
+      expect(navigate).toHaveBeenCalledWith(
+        Screens.TuCOPRampOfframpFlow,
+        expect.objectContaining({ screen: Screens.TuCOPRampOfframpFlow })
+      )
+    })
+
+    it('falls back to the chooser when the target ramp is off but another one is on', async () => {
+      enableGates([StatsigFeatureGates.SHOW_BRIDGERAMP_OFFRAMP])
+      await openScreen(`screen=${Screens.TuCOPRampOfframpFlow}`)
+      expect(navigate).toHaveBeenCalledTimes(1)
+      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
+    })
+
+    it('falls back to home when no ramp is on for that direction', async () => {
+      enableGates([StatsigFeatureGates.SHOW_BRIDGERAMP_OFFRAMP])
+      await openScreen(`screen=${Screens.BridgeRampFlow}&direction=onramp`)
+      expect(navigate).not.toHaveBeenCalled()
+      expect(navigateHome).toHaveBeenCalled()
     })
   })
 

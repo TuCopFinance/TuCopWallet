@@ -5,6 +5,8 @@ import HeaderQuickActions from 'src/home/HeaderQuickActions'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
+import { getFeatureGate } from 'src/statsig'
+import { StatsigFeatureGates } from 'src/statsig/types'
 import { NetworkId } from 'src/transactions/types'
 import networkConfig from 'src/web3/networkConfig'
 import { RecursivePartial, createMockStore } from 'test/utils'
@@ -13,6 +15,12 @@ import { RecursivePartial, createMockStore } from 'test/utils'
 // header. Previously these lived in TabHome.test.tsx when the quick
 // actions were mounted as a bar under the balance card; they moved here
 // after PR (this one) promoted the row into tabHeader.headerLeft.
+
+jest.mock('src/statsig')
+
+function enableGates(gates: StatsigFeatureGates[]) {
+  jest.mocked(getFeatureGate).mockImplementation((gate) => gates.includes(gate))
+}
 
 jest.mock('src/tokens/hooks', () => {
   const nc = jest.requireActual('src/web3/networkConfig').default
@@ -76,6 +84,7 @@ function renderComponent(storeOverrides: RecursivePartial<RootState> = {}) {
 describe('HeaderQuickActions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    enableGates([])
   })
 
   it('Tapping send money opens the send flow', () => {
@@ -92,7 +101,7 @@ describe('HeaderQuickActions', () => {
     expect(navigate).toHaveBeenCalledWith('QRNavigator', { screen: 'QRCode' })
   })
 
-  it('Tapping add COPm (Recarga) navigates to the cash-in screen with USDT preselected', () => {
+  it('Tapping add COPm (Recarga) keeps the cash-in flow with USDT when no deposit ramp is on', () => {
     const { getByTestId } = renderComponent()
     fireEvent.press(getByTestId('Header/AddCOPm'))
     expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
@@ -102,9 +111,30 @@ describe('HeaderQuickActions', () => {
     })
   })
 
-  it('Tapping spend money (Gasta) opens the offramp provider screen when idle', () => {
+  it.each([StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP, StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP])(
+    'Tapping add COPm (Recarga) opens the deposit ramp chooser when %s is on',
+    (gate) => {
+      enableGates([gate])
+      const { getByTestId } = renderComponent()
+      fireEvent.press(getByTestId('Header/AddCOPm'))
+      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'onramp' })
+    }
+  )
+
+  it.each([
+    StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP,
+    StatsigFeatureGates.SHOW_BRIDGERAMP_OFFRAMP,
+  ])('Tapping withdraw (Retira) opens the withdraw ramp chooser when %s is on', (gate) => {
+    enableGates([gate])
     const { getByTestId } = renderComponent()
     fireEvent.press(getByTestId('Header/SpendMoney'))
     expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'offramp' })
+  })
+
+  it('Tapping withdraw (Retira) opens the legacy withdraw screen when no withdraw ramp is on', () => {
+    const { getByTestId } = renderComponent()
+    fireEvent.press(getByTestId('Header/SpendMoney'))
+    expect(navigate).toHaveBeenCalledWith(Screens.WithdrawSpend)
+    expect(navigate).not.toHaveBeenCalledWith(Screens.SelectRampProvider, expect.anything())
   })
 })

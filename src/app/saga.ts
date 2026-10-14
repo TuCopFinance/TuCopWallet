@@ -33,6 +33,7 @@ import {
 } from 'src/app/selectors'
 import { CeloNewsConfig } from 'src/celoNews/types'
 import { DEFAULT_APP_LANGUAGE, isE2EEnv } from 'src/config'
+import { redirectGatedRampDeepLink } from 'src/fiatExchanges/rampEntry'
 import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { FiatAccountSchemaCountryOverrides } from 'src/fiatconnect/types'
 import { initI18n } from 'src/i18n'
@@ -290,7 +291,11 @@ export function* handleDeepLink(action: OpenDeepLink) {
         // The isSecureOrigin is important. We don't want it to be possible to fire this deep link from outside
         // of our own notifications for security reasons.
         const params = convertQueryToScreenParams(rawParams.query)
-        navigate(params.screen as keyof StackParamList, params)
+        // Ramp screens honour their Statsig gates: a notification for a ramp
+        // that is now off lands on the chooser (or home) instead.
+        if (!redirectGatedRampDeepLink(params.screen, params)) {
+          navigate(params.screen as keyof StackParamList, params)
+        }
       } else if (
         (yield* select(allowHooksPreviewSelector)) &&
         rawParams.pathname === '/hooks/enablePreview'

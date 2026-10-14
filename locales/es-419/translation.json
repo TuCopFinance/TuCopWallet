@@ -418,7 +418,7 @@
   "celoReal": "Reales",
   "celoDollars": "Dólares",
   "ether": "Ether",
-  "tapToCopyCeloDollarsAddress": "`Toca para copiar tu dirección de Dólares de {{appName}}",
+  "tapToCopyCeloDollarsAddress": "Toca para copiar tu dirección de Dólares de {{appName}}",
   "disclaimerFiat": "Los valores en {{currency}} son estimativos.",
   "dollarsNotYetEnabledNote": "Los dólares digitales aún no están disponibles en ningún proveedor. Prueba convertir otros activos dentro de tu billetera.",
   "selectDigitalCurrency": "Selecciona un activo",
@@ -3147,9 +3147,9 @@
     "investmentDeposit": "Depósitos {{appName}}",
     "investmentRewards": "Recompensas {{appName}}",
     "addCOPm": "Recarga",
-    "sendMoney": "Envia",
+    "sendMoney": "Envía",
     "receiveMoney": "Recibe",
-    "spendMoney": "Gasta",
+    "spendMoney": "Retira",
     "holdUSD": "Mantener dólares estadounidenses",
     "swap": "Intercambia tus divisas",
     "swapSubtitle": "Cambia entre tus activos",
@@ -3627,16 +3627,22 @@
   },
   "rampProviders": {
     "offramp": {
-      "title": "Retirar Fondos",
+      "title": "Retirar fondos",
       "subtitle": "Elige cómo convertir tus pesos digitales a pesos en tu cuenta."
     },
     "onramp": {
-      "title": "Recibir pesos digitales",
+      "title": "Recargar pesos digitales",
       "subtitle": "Elige cómo convertir los pesos de tu cuenta a pesos digitales."
     },
     "noneAvailable": "Por ahora no hay opciones de retiro o depósito disponibles.",
+    "retry": "Reintentar",
+    "resumeOfframp": {
+      "title": "Tienes un retiro en curso",
+      "description": "Revisa cómo va o continúa donde lo dejaste.",
+      "cta": "Ver mi retiro"
+    },
     "tucopramp": {
-      "logo": "TC",
+      "logo": "P2P",
       "name": "TuCOP Ramp P2P",
       "by": "by TuCOP Solutions",
       "timing": "Hasta 24 horas",
@@ -3649,7 +3655,7 @@
       }
     },
     "bridgeramp": {
-      "logo": "BR",
+      "logo": "TC",
       "name": "TuCOP Ramp",
       "by": "Powered by Bridge",
       "timing": "Llega en minutos",
@@ -3661,7 +3667,9 @@
         "tagline": "Transfieres por Bre-B y recibes pesos digitales en minutos."
       },
       "outsideHours": "Disponible en horario bancario. Por ahora puedes usar TuCOP Ramp P2P.",
-      "unreachable": "No pudimos verificar la disponibilidad. Intenta de nuevo o usa TuCOP Ramp P2P."
+      "outsideHoursNoAlternative": "Disponible en horario bancario. Vuelve a intentarlo más tarde.",
+      "unreachable": "No pudimos verificar la disponibilidad. Reintenta o usa TuCOP Ramp P2P.",
+      "unreachableNoAlternative": "No pudimos verificar la disponibilidad."
     }
   },
   "bridgeramp": {

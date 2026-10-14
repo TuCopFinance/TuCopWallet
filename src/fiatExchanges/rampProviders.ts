@@ -4,29 +4,36 @@ import { StatsigFeatureGates } from 'src/statsig/types'
 // 'onramp': the user turns COP from their bank into COPm (deposit).
 export type RampDirection = 'offramp' | 'onramp'
 
-// The two providers the wallet offers under Spend, in display order.
+// The two providers the wallet offers for deposits and withdrawals, in display
+// order.
 //
-// TuCOP Ramp is the direct ramp: COPm goes to the TuCOP multisig and an
+// TuCOP Ramp P2P (`tucopramp`) is the direct ramp: COPm goes to the TuCOP multisig and an
 // operator pays COP from TuCOP's Bancolombia account (or the other way round
 // for deposits). 1:1, no fee, up to 24 hours.
 //
-// Bridge Ramp uses Bridge as the provider: COPm is swapped to USDC on Mento
+// TuCOP Ramp (`bridgeramp`, powered by Bridge) uses Bridge as the provider: COPm is swapped to USDC on Mento
 // and liquidated by Bridge to the user's own Bre-B key (or the other way
 // round). Minutes, with a fee, and only while Mento's COPm oracle is live.
 type RampProviderId = 'tucopramp' | 'bridgeramp'
 
+// Value reported to analytics. Named after what the user sees (both are
+// "TuCOP Ramp"), not after the code modules.
+export type RampAnalyticsId = 'tucopramp_p2p' | 'tucopramp_bridge'
+
 export interface RampProviderDefinition {
   id: RampProviderId
+  analyticsId: RampAnalyticsId
   gate: Record<RampDirection, StatsigFeatureGates>
   // i18n keys live under `rampProviders.<id>.*`
   i18nKey: string
-  // Bridge Ramp depends on the Mento COPm oracle; TuCOP Ramp does not.
+  // TuCOP Ramp (Bridge) depends on the Mento COPm oracle; TuCOP Ramp P2P does not.
   requiresCopmOracle: boolean
 }
 
 export const RAMP_PROVIDERS: RampProviderDefinition[] = [
   {
     id: 'tucopramp',
+    analyticsId: 'tucopramp_p2p',
     gate: {
       offramp: StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP,
       onramp: StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP,
@@ -36,6 +43,7 @@ export const RAMP_PROVIDERS: RampProviderDefinition[] = [
   },
   {
     id: 'bridgeramp',
+    analyticsId: 'tucopramp_bridge',
     gate: {
       offramp: StatsigFeatureGates.SHOW_BRIDGERAMP_OFFRAMP,
       onramp: StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP,
