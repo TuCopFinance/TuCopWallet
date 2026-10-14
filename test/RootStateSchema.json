@@ -704,42 +704,6 @@
                 }
             ]
         },
-        "BridgeRampCompletedSwap": {
-            "additionalProperties": false,
-            "properties": {
-                "amountIn": {
-                    "type": "string"
-                },
-                "confirmedAt": {
-                    "type": "number"
-                },
-                "direction": {
-                    "$ref": "#/definitions/MentoDirection"
-                },
-                "flowId": {
-                    "type": "string"
-                },
-                "quotedAmountOut": {
-                    "type": "string"
-                },
-                "recipient": {
-                    "type": "string"
-                },
-                "swapTxHash": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "amountIn",
-                "confirmedAt",
-                "direction",
-                "flowId",
-                "quotedAmountOut",
-                "recipient",
-                "swapTxHash"
-            ],
-            "type": "object"
-        },
         "BridgeRampDepositState": {
             "additionalProperties": false,
             "properties": {
@@ -889,6 +853,12 @@
                                 "string"
                             ]
                         },
+                        "errorRequestId": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
                         "status": {
                             "enum": [
                                 "error",
@@ -900,6 +870,7 @@
                     },
                     "required": [
                         "errorCode",
+                        "errorRequestId",
                         "status"
                     ],
                     "type": "object"
@@ -985,6 +956,8 @@
                             "enum": [
                                 "broadcast_failed",
                                 "invalid_recipient",
+                                "market_closed",
+                                "receipt_unknown",
                                 "reverted",
                                 "stale_quote"
                             ],
@@ -1049,6 +1022,12 @@
         "BridgeRampWithdrawState": {
             "additionalProperties": false,
             "properties": {
+                "attemptId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "copmAmountIn": {
                     "type": [
                         "null",
@@ -1102,6 +1081,12 @@
                 "status": {
                     "$ref": "#/definitions/BridgeRampWithdrawStatus"
                 },
+                "swapTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "withdrawal": {
                     "anyOf": [
                         {
@@ -1114,6 +1099,7 @@
                 }
             },
             "required": [
+                "attemptId",
                 "copmAmountIn",
                 "errorCode",
                 "errorRequestId",
@@ -1122,6 +1108,7 @@
                 "payout",
                 "quote",
                 "status",
+                "swapTxHash",
                 "withdrawal"
             ],
             "type": "object"
@@ -1133,7 +1120,8 @@
                 "creating",
                 "failed",
                 "idle",
-                "review"
+                "review",
+                "start_failed"
             ],
             "type": "string"
         },
@@ -3237,13 +3225,6 @@
                 "value"
             ],
             "type": "object"
-        },
-        "MentoDirection": {
-            "enum": [
-                "copmToUsdc",
-                "usdcToCopm"
-            ],
-            "type": "string"
         },
         "MoneyAmount": {
             "additionalProperties": false,
@@ -8240,16 +8221,6 @@
                 "destinations": {
                     "$ref": "#/definitions/BridgeRampDestinationsState"
                 },
-                "lastCompletedSwap": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/BridgeRampCompletedSwap"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
                 "party": {
                     "$ref": "#/definitions/BridgeRampPartyState"
                 },
@@ -8273,7 +8244,6 @@
             "required": [
                 "deposit",
                 "destinations",
-                "lastCompletedSwap",
                 "party",
                 "session",
                 "swap",

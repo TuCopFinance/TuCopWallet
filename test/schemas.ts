@@ -3931,7 +3931,7 @@ export const v255Schema = {
       value: null,
       needsOnboarding: false,
       errorCode: null,
-      onboarding: { status: 'idle', errorCode: null },
+      onboarding: { status: 'idle', errorCode: null, errorRequestId: null },
     },
     destinations: {
       status: 'idle',
@@ -3945,6 +3945,8 @@ export const v255Schema = {
       quote: null,
       withdrawal: null,
       estimatedCop: null,
+      attemptId: null,
+      swapTxHash: null,
       knownPayoutIds: [],
       payout: null,
       errorCode: null,
@@ -3969,7 +3971,6 @@ export const v255Schema = {
       swapTxHash: null,
       errorCode: null,
     },
-    lastCompletedSwap: null,
   },
 }
 

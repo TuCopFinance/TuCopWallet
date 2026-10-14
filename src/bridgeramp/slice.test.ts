@@ -1,14 +1,19 @@
 import { REHYDRATE } from 'redux-persist'
 import reducer, {
+  depositBaselineUpdated,
   depositDetected,
   depositReady,
   depositSettled,
   initialState,
+  onboardingFailed,
   swapBroadcast,
   swapConfirmed,
   swapFailed,
-  swapReset,
   swapSubmitting,
+  withdrawCreating,
+  withdrawFailed,
+  withdrawReady,
+  withdrawReset,
 } from 'src/bridgeramp/slice'
 
 const submitting = swapSubmitting({
@@ -20,7 +25,7 @@ const submitting = swapSubmitting({
 })
 
 describe('bridgeramp slice', () => {
-  it('walks submitting -> broadcast -> confirmed and keeps the completed swap', () => {
+  it('walks submitting -> broadcast -> confirmed', () => {
     let state = reducer(initialState, submitting)
     expect(state.swap.status).toBe('submitting')
     expect(state.swap.flowId).toBe('flow-1')
@@ -31,19 +36,7 @@ describe('bridgeramp slice', () => {
 
     state = reducer(state, swapConfirmed({ confirmedAt: 1_791_600_000 }))
     expect(state.swap.status).toBe('confirmed')
-    expect(state.lastCompletedSwap).toEqual({
-      flowId: 'flow-1',
-      direction: 'copmToUsdc',
-      amountIn: '800000000000000000000000',
-      quotedAmountOut: '247338318',
-      recipient: '0xe2d21f9bd38d4555c340395d31af39ee3b11a995',
-      swapTxHash: '0x2',
-      confirmedAt: 1_791_600_000,
-    })
-
-    state = reducer(state, swapReset())
-    expect(state.swap).toEqual(initialState.swap)
-    expect(state.lastCompletedSwap?.swapTxHash).toBe('0x2')
+    expect(state.swap.swapTxHash).toBe('0x2')
   })
 
   it('records the error code on failure and clears it on the next attempt', () => {
@@ -57,24 +50,18 @@ describe('bridgeramp slice', () => {
     expect(state.swap.errorCode).toBeNull()
   })
 
-  it('does not record a completed swap without a broadcast hash', () => {
-    let state = reducer(initialState, submitting)
-    state = reducer(state, swapConfirmed({ confirmedAt: 1 }))
-    expect(state.lastCompletedSwap).toBeNull()
+  it('tags a failure before signing with its flow', () => {
+    const state = reducer(initialState, swapFailed({ code: 'market_closed', flowId: 'dep-1' }))
+    expect(state.swap).toMatchObject({
+      status: 'failed',
+      errorCode: 'market_closed',
+      flowId: 'dep-1',
+    })
   })
 
-  it('only rehydrates the last completed swap', () => {
+  it('does not rehydrate the in-flight swap', () => {
     const persisted = {
       swap: { ...initialState.swap, status: 'broadcast', swapTxHash: '0x2' },
-      lastCompletedSwap: {
-        flowId: 'old',
-        direction: 'usdcToCopm',
-        amountIn: '1',
-        quotedAmountOut: '2',
-        recipient: '0xabc',
-        swapTxHash: '0x9',
-        confirmedAt: 5,
-      },
     }
     const state = reducer(initialState, {
       type: REHYDRATE,
@@ -82,7 +69,81 @@ describe('bridgeramp slice', () => {
       payload: { bridgeramp: persisted },
     } as any)
     expect(state.swap).toEqual(initialState.swap)
-    expect(state.lastCompletedSwap?.swapTxHash).toBe('0x9')
+    expect(state).not.toHaveProperty('lastCompletedSwap')
+  })
+
+  it('keeps the onboarding request id for support', () => {
+    const state = reducer(
+      initialState,
+      onboardingFailed({ code: 'party_identity_not_proven', requestId: 'req_1' })
+    )
+    expect(state.party.onboarding).toEqual({
+      status: 'error',
+      errorCode: 'party_identity_not_proven',
+      errorRequestId: 'req_1',
+    })
+  })
+})
+
+describe('bridgeramp withdraw', () => {
+  const withdrawal = { id: 'wdr_1', deposit: { address: '0xabc' } } as any
+  const quote = { id: 'qte_1' } as any
+
+  function inReview() {
+    let state = reducer(initialState, withdrawCreating({ copmAmountIn: '1' }))
+    state = reducer(
+      state,
+      withdrawReady({
+        quote,
+        withdrawal,
+        estimatedCop: '5000',
+        knownPayoutIds: [],
+        attemptId: 'a1',
+      })
+    )
+    return state
+  }
+
+  it('keeps a failed start apart from a failed payout', () => {
+    let state = reducer(initialState, withdrawCreating({ copmAmountIn: '1' }))
+    state = reducer(state, withdrawFailed({ code: 'quote_failed', requestId: 'req_9' }))
+    expect(state.withdraw).toMatchObject({
+      status: 'start_failed',
+      errorCode: 'quote_failed',
+      errorRequestId: 'req_9',
+    })
+  })
+
+  it('stores the attempt id and the hash of the swap that funds the withdrawal', () => {
+    let state = inReview()
+    expect(state.withdraw.attemptId).toBe('a1')
+    state = reducer(state, submitting)
+    state = reducer(state, swapBroadcast({ approveTxHash: '0x1', swapTxHash: '0x2' }))
+    expect(state.withdraw.swapTxHash).toBe('0x2')
+  })
+
+  it('does not take the hash of a deposit conversion', () => {
+    let state = inReview()
+    state = reducer(
+      state,
+      swapSubmitting({
+        flowId: 'dep-1',
+        direction: 'usdcToCopm',
+        amountIn: '1',
+        quotedAmountOut: '1',
+        recipient: '0xuser',
+      })
+    )
+    state = reducer(state, swapBroadcast({ approveTxHash: null, swapTxHash: '0x9' }))
+    expect(state.withdraw.swapTxHash).toBeNull()
+  })
+
+  it('starts over on reset', () => {
+    let state = inReview()
+    state = reducer(state, submitting)
+    state = reducer(state, withdrawReset())
+    expect(state.withdraw).toEqual(initialState.withdraw)
+    expect(state.swap).toEqual(initialState.swap)
   })
 })
 
@@ -93,6 +154,15 @@ describe('bridgeramp deposit', () => {
     let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
     state = reducer(state, depositReady({ account, usdcBaseline: '105' }))
     expect(state.deposit.usdcBaseline).toBe('5')
+  })
+
+  it('waits for a known balance before setting the baseline', () => {
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: null }))
+    expect(state.deposit.usdcBaseline).toBeNull()
+    state = reducer(state, depositReady({ account, usdcBaseline: '7' }))
+    expect(state.deposit.usdcBaseline).toBe('7')
+    state = reducer(state, depositBaselineUpdated({ usdcBaseline: '3' }))
+    expect(state.deposit.usdcBaseline).toBe('3')
   })
 
   it('tracks a detected deposit until it settles', () => {
@@ -176,6 +246,14 @@ describe('bridgeramp withdraw rehydration', () => {
     expect(state.withdraw).toEqual(initialState.withdraw)
   })
 
+  function rehydrateWithdraw(withdraw: object) {
+    return reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: { bridgeramp: { withdraw } },
+    } as any)
+  }
+
   it('keeps a funded withdraw so the payout is still followed', () => {
     const persisted = {
       ...initialState.withdraw,
@@ -183,12 +261,23 @@ describe('bridgeramp withdraw rehydration', () => {
       withdrawal: { id: 'wdr_1' },
       knownPayoutIds: ['drn_old'],
       estimatedCop: '778136',
+      attemptId: 'a1',
+      swapTxHash: '0x2',
     }
-    const state = reducer(initialState, {
-      type: REHYDRATE,
-      key: 'root',
-      payload: { bridgeramp: { withdraw: persisted } },
-    } as any)
-    expect(state.withdraw).toEqual(persisted)
+    expect(rehydrateWithdraw(persisted).withdraw).toEqual(persisted)
   })
+
+  it.each(['completed', 'failed', 'start_failed', 'review'])(
+    'drops a %s withdraw so reopening the screen starts fresh',
+    (status) => {
+      const state = rehydrateWithdraw({
+        ...initialState.withdraw,
+        status,
+        withdrawal: { id: 'wdr_1' },
+        knownPayoutIds: ['drn_old'],
+        errorCode: status === 'failed' ? 'payout_returned' : null,
+      })
+      expect(state.withdraw).toEqual(initialState.withdraw)
+    }
+  )
 })

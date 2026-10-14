@@ -6,6 +6,7 @@ import {
   MENTO_ROUTER_ABI,
   MENTO_ROUTER_ADDRESS_CELO,
   MentoDirection,
+  MentoOracleUnavailableError,
   USDC_DECIMALS,
   inputTokenFor,
   quoteMentoSwap,
@@ -41,6 +42,7 @@ import {
   destinationUpdated,
   destinationsFailed,
   destinationsLoaded,
+  depositBaselineUpdated,
   depositCreating,
   depositDetected,
   depositFailed,
@@ -83,6 +85,7 @@ import {
   getSerializablePreparedTransactions,
 } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { clearFlow, findRecordByIndexSelector } from 'src/viem/sentTransactionLog'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import networkConfig, { networkIdToNetwork } from 'src/web3/networkConfig'
@@ -182,11 +185,24 @@ function wholeAmount(baseUnits: string, direction: MentoDirection, side: 'in' | 
   return new BigNumber(baseUnits).shiftedBy(-decimals).toString()
 }
 
+// Index of the swap in the [approve, swap] pair sent by sendPreparedTransactions.
+const SWAP_TX_INDEX = 1
+
+// The sendPreparedTransactions idempotency key for a ramp swap.
+function sentLogFlowId(flowId: string): string {
+  return `bridgeramp-${flowId}`
+}
+
 // Signs and broadcasts the [approve, swap] pair, then waits for the swap
 // receipt. The swap is one transaction with the output delivered straight
 // to `recipient`, so for the off-ramp a revert means the user still has
 // every COPm (minus gas) and nothing reached Bridge; there is no partial
 // state to clean up.
+//
+// The per-flowId sent-tx record is cleared once the outcome is known
+// (mined, success or revert), so the next attempt signs fresh transactions.
+// When the receipt cannot be read the record is kept: a retry with the same
+// flowId only waits for that transaction and never signs a second one.
 export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRampSwapPayload>) {
   const {
     flowId,
@@ -197,6 +213,7 @@ export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRa
     recipient,
     serializablePreparedTransactions,
   } = action.payload
+  const logFlowId = sentLogFlowId(flowId)
   yield* put(swapSubmitting({ flowId, direction, amountIn, quotedAmountOut, recipient }))
 
   const fail = function* (code: BridgeRampSwapErrorCode, error: Error, actionName: string) {
@@ -211,98 +228,120 @@ export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRa
     })
   }
 
-  const now = Math.floor(Date.now() / 1000)
-  if (now - quotedAt > BRIDGE_RAMP_QUOTE_TTL_SECONDS) {
-    yield* fail('stale_quote', new Error('quote expired before signing'), 'swap_stale_quote')
-    return
-  }
-  try {
-    assertRampTransactions(serializablePreparedTransactions, {
-      direction,
-      amountIn: BigInt(amountIn),
-      recipient,
-    })
-  } catch (err) {
-    yield* fail(
-      'invalid_recipient',
-      err instanceof Error ? err : new Error(String(err)),
-      'swap_guard_rejected'
-    )
-    return
-  }
-
-  const networkId = NetworkId['celo-mainnet']
-  const { inTokenId, outTokenId } = tokenIdsFor(direction)
-  const approveContext = newTransactionContext(TAG, `Bridge Ramp approve ${flowId}`)
-  const swapContext = newTransactionContext(TAG, `Bridge Ramp swap ${flowId}`)
-
-  const createApproveStandbyTx = (
-    transactionHash: string,
-    feeCurrencyId?: string
-  ): BaseStandbyTransaction => ({
-    context: approveContext,
-    networkId,
-    type: TokenTransactionTypeV2.Approval,
-    transactionHash,
-    tokenId: inTokenId,
-    approvedAmount: wholeAmount(amountIn, direction, 'in'),
-    feeCurrencyId,
-  })
-  // Off-ramp: from the user's ledger this is COPm leaving towards Bridge, so
-  // it shows as a send to the liquidation address. On-ramp conversion: a
-  // plain USDC -> COPm swap back into the same wallet.
-  const createSwapStandbyTx = (
-    transactionHash: string,
-    feeCurrencyId?: string
-  ): BaseStandbyTransaction =>
-    direction === 'copmToUsdc'
-      ? {
-          context: swapContext,
-          networkId,
-          type: TokenTransactionTypeV2.Sent,
-          amount: { value: `-${wholeAmount(amountIn, direction, 'in')}`, tokenId: inTokenId },
-          address: recipient,
-          metadata: {},
-          transactionHash,
-          feeCurrencyId,
-        }
-      : {
-          context: swapContext,
-          networkId,
-          type: TokenTransactionTypeV2.SwapTransaction,
-          inAmount: { value: wholeAmount(quotedAmountOut, direction, 'out'), tokenId: outTokenId },
-          outAmount: { value: wholeAmount(amountIn, direction, 'in'), tokenId: inTokenId },
-          transactionHash,
-          feeCurrencyId,
-        }
-
   let swapHash: Hex
-  let approveHash: Hex
-  try {
-    const hashes = yield* call(
-      sendPreparedTransactions,
-      serializablePreparedTransactions,
-      networkId,
-      [createApproveStandbyTx, createSwapStandbyTx],
-      false,
-      `bridgeramp-${flowId}`
-    )
-    ;[approveHash, swapHash] = hashes
+  let approveHash: Hex | null = null
+  // A swap already broadcast for this flow (receipt unknown last time, or the
+  // app closed while waiting): only wait for it. Nothing is signed, so the
+  // quote age and the new calldata do not matter.
+  const alreadySent = yield* select(findRecordByIndexSelector, logFlowId, SWAP_TX_INDEX)
+  if (alreadySent && alreadySent.status !== 'failed') {
+    const approveRecord = yield* select(findRecordByIndexSelector, logFlowId, 0)
+    swapHash = alreadySent.hash as Hex
+    approveHash = (approveRecord?.hash as Hex | undefined) ?? null
+    Logger.info(TAG, `swap ${flowId} already broadcast, waiting for its receipt`, swapHash)
     yield* put(swapBroadcast({ approveTxHash: approveHash, swapTxHash: swapHash }))
-  } catch (err) {
-    yield* fail(
-      'broadcast_failed',
-      err instanceof Error ? err : new Error(String(err)),
-      'swap_broadcast_failed'
-    )
-    return
+  } else {
+    const now = Math.floor(Date.now() / 1000)
+    if (now - quotedAt > BRIDGE_RAMP_QUOTE_TTL_SECONDS) {
+      yield* fail('stale_quote', new Error('quote expired before signing'), 'swap_stale_quote')
+      return
+    }
+    try {
+      assertRampTransactions(serializablePreparedTransactions, {
+        direction,
+        amountIn: BigInt(amountIn),
+        recipient,
+      })
+    } catch (err) {
+      yield* fail(
+        'invalid_recipient',
+        err instanceof Error ? err : new Error(String(err)),
+        'swap_guard_rejected'
+      )
+      return
+    }
+
+    const networkId = NetworkId['celo-mainnet']
+    const { inTokenId, outTokenId } = tokenIdsFor(direction)
+    const approveContext = newTransactionContext(TAG, `Bridge Ramp approve ${flowId}`)
+    const swapContext = newTransactionContext(TAG, `Bridge Ramp swap ${flowId}`)
+
+    const createApproveStandbyTx = (
+      transactionHash: string,
+      feeCurrencyId?: string
+    ): BaseStandbyTransaction => ({
+      context: approveContext,
+      networkId,
+      type: TokenTransactionTypeV2.Approval,
+      transactionHash,
+      tokenId: inTokenId,
+      approvedAmount: wholeAmount(amountIn, direction, 'in'),
+      feeCurrencyId,
+    })
+    // Off-ramp: from the user's ledger this is COPm leaving towards Bridge, so
+    // it shows as a send to the liquidation address. On-ramp conversion: a
+    // plain USDC -> COPm swap back into the same wallet.
+    const createSwapStandbyTx = (
+      transactionHash: string,
+      feeCurrencyId?: string
+    ): BaseStandbyTransaction =>
+      direction === 'copmToUsdc'
+        ? {
+            context: swapContext,
+            networkId,
+            type: TokenTransactionTypeV2.Sent,
+            amount: { value: `-${wholeAmount(amountIn, direction, 'in')}`, tokenId: inTokenId },
+            address: recipient,
+            metadata: {},
+            transactionHash,
+            feeCurrencyId,
+          }
+        : {
+            context: swapContext,
+            networkId,
+            type: TokenTransactionTypeV2.SwapTransaction,
+            inAmount: {
+              value: wholeAmount(quotedAmountOut, direction, 'out'),
+              tokenId: outTokenId,
+            },
+            outAmount: { value: wholeAmount(amountIn, direction, 'in'), tokenId: inTokenId },
+            transactionHash,
+            feeCurrencyId,
+          }
+
+    try {
+      const hashes = yield* call(
+        sendPreparedTransactions,
+        serializablePreparedTransactions,
+        networkId,
+        [createApproveStandbyTx, createSwapStandbyTx],
+        false,
+        logFlowId
+      )
+      ;[approveHash, swapHash] = hashes
+      yield* put(swapBroadcast({ approveTxHash: approveHash, swapTxHash: swapHash }))
+    } catch (err) {
+      // If the swap itself made it out before the error, it may still land:
+      // keep its record and report it as unconfirmed, never as "not sent".
+      const sentSwap = yield* select(findRecordByIndexSelector, logFlowId, SWAP_TX_INDEX)
+      const broadcast = !!sentSwap && sentSwap.status !== 'failed'
+      yield* fail(
+        broadcast ? 'receipt_unknown' : 'broadcast_failed',
+        err instanceof Error ? err : new Error(String(err)),
+        broadcast ? 'swap_receipt_failed' : 'swap_broadcast_failed'
+      )
+      return
+    }
   }
 
   try {
     const receipt = yield* call(
-      [publicClient[networkIdToNetwork[networkId]], 'waitForTransactionReceipt'],
+      [publicClient[networkIdToNetwork[NetworkId['celo-mainnet']]], 'waitForTransactionReceipt'],
       { hash: swapHash }
     )
+    // Mined: the outcome is final either way, so the next attempt for this
+    // flowId must sign new transactions instead of replaying these hashes.
+    yield* put(clearFlow({ flowId: logFlowId }))
     if (receipt.status !== 'success') {
       yield* fail('reverted', new Error(`Bridge Ramp swap reverted: ${swapHash}`), 'swap_reverted')
       return
@@ -310,10 +349,10 @@ export function* executeBridgeRampSwapSaga(action: PayloadAction<ExecuteBridgeRa
     yield* put(swapConfirmed({ confirmedAt: Math.floor(Date.now() / 1000) }))
     Logger.info(TAG, `swap ${flowId} confirmed`, swapHash)
   } catch (err) {
-    // The tx was broadcast; we just could not confirm it from here. Treat as
-    // a broadcast failure for the UI, the feed will pick the real status up.
+    // The tx was broadcast; we just could not confirm it from here. Keep the
+    // sent-tx record so a retry waits for this same transaction.
     yield* fail(
-      'broadcast_failed',
+      'receipt_unknown',
       err instanceof Error ? err : new Error(String(err)),
       'swap_receipt_failed'
     )
@@ -441,7 +480,12 @@ export function* createPartySaga(
     yield* put(partyLoaded(party))
   } catch (err) {
     Logger.warn(TAG, 'createParty failed', err)
-    yield* put(onboardingFailed({ code: errorCodeOf(err, 'party_create_failed') }))
+    yield* put(
+      onboardingFailed({
+        code: errorCodeOf(err, 'party_create_failed'),
+        requestId: requestIdOf(err),
+      })
+    )
   }
 }
 
@@ -571,6 +615,8 @@ export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdraw
       withdrawal,
       estimatedCop: estimatedCop.toFixed(0),
       knownPayoutIds: (withdrawal.payouts ?? []).map((p) => p.id),
+      // One per Continue press: the swap's flowId is `${withdrawal.id}:${attemptId}`.
+      attemptId: idempotencyKey,
     })
   )
 }
@@ -624,10 +670,15 @@ export function* onSwapConfirmedSaga() {
     return
   }
   yield* put(withdrawAwaitingPayout())
-  yield* call(
-    pollWithdrawalSaga,
-    pollBridgeRampWithdrawal({ withdrawalId: withdraw.withdrawal.id })
-  )
+  // Through the action so takeLatest keeps a single poll running, also when
+  // the screen restarts polling on mount.
+  yield* put(pollBridgeRampWithdrawal({ withdrawalId: withdraw.withdrawal.id }))
+}
+
+// The swap flowId for a withdrawal attempt: the address is reusable, so the
+// attempt id keeps two withdrawals to the same key apart.
+export function withdrawSwapFlowId(withdrawalId: string, attemptId: string | null): string {
+  return attemptId ? `${withdrawalId}:${attemptId}` : withdrawalId
 }
 
 // ---------------------------------------------------------------------------
@@ -652,7 +703,26 @@ export function* convertBridgeDepositSaga(
   const { usdcAmount, flowId } = action.payload
   const walletAddress = yield* select(walletAddressSelector)
   if (!walletAddress) {
-    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    yield* put(swapFailed({ code: 'broadcast_failed', flowId }))
+    return
+  }
+  // The conversion was already broadcast (receipt unknown, or the app closed
+  // while waiting): only wait for it, whatever the market does now.
+  const alreadySent = yield* select(findRecordByIndexSelector, sentLogFlowId(flowId), SWAP_TX_INDEX)
+  if (alreadySent && alreadySent.status !== 'failed') {
+    const swap = yield* select(bridgeRampSwapSelector)
+    yield* call(
+      executeBridgeRampSwapSaga,
+      executeBridgeRampSwap({
+        flowId,
+        direction: 'usdcToCopm',
+        amountIn: usdcAmount,
+        quotedAmountOut: (swap.flowId === flowId && swap.quotedAmountOut) || '0',
+        quotedAt: 0,
+        recipient: walletAddress as Address,
+        serializablePreparedTransactions: [],
+      })
+    )
     return
   }
   const networkId = NetworkId['celo-mainnet']
@@ -660,7 +730,7 @@ export function* convertBridgeDepositSaga(
   const usdcToken = tokensById[networkConfig.usdcTokenId]
   const feeCurrencies = yield* select(feeCurrenciesSelector, networkId)
   if (!usdcToken) {
-    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    yield* put(swapFailed({ code: 'broadcast_failed', flowId }))
     captureBusinessError(new Error('USDC token info missing for deposit conversion'), {
       feature: 'bridgeramp',
       provider: 'mento',
@@ -684,7 +754,7 @@ export function* convertBridgeDepositSaga(
     })
     if (prepared.type !== 'possible') {
       Logger.warn(TAG, `deposit conversion cannot pay gas: ${prepared.type}`)
-      yield* put(swapFailed({ code: 'broadcast_failed' }))
+      yield* put(swapFailed({ code: 'broadcast_failed', flowId }))
       return
     }
     yield* call(
@@ -702,8 +772,15 @@ export function* convertBridgeDepositSaga(
       })
     )
   } catch (err) {
+    if (err instanceof MentoOracleUnavailableError) {
+      // Outside market hours Mento cannot price COPm. The USDC stays in the
+      // wallet and `pending` stays set; checkDepositSaga tries again.
+      Logger.info(TAG, 'deposit conversion waiting for the COPm oracle')
+      yield* put(swapFailed({ code: 'market_closed', flowId }))
+      return
+    }
     Logger.warn(TAG, 'deposit conversion failed before signing', err)
-    yield* put(swapFailed({ code: 'broadcast_failed' }))
+    yield* put(swapFailed({ code: 'broadcast_failed', flowId }))
     captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
       feature: 'bridgeramp',
       provider: 'mento',
@@ -719,6 +796,10 @@ export function* convertBridgeDepositSaga(
 export const startBridgeRampDeposit = createAction('bridgeramp/startDeposit')
 export const checkBridgeRampDeposit = createAction('bridgeramp/checkDeposit')
 export const retryBridgeRampDepositConversion = createAction('bridgeramp/retryDepositConversion')
+
+// Below this (0.01 USDC) an increase is rounding or dust, not a Bridge payout
+// worth a swap.
+const MIN_DEPOSIT_USDC_BASE_UNITS = BigInt(10_000)
 
 // Current USDC balance in base units, from the token store the home screen
 // keeps refreshed. Null when the token is not loaded yet.
@@ -748,7 +829,11 @@ export function* startDepositSaga() {
         `deposit-${walletAddress.toLowerCase()}`
       )
     )
-    yield* put(depositReady({ account, usdcBaseline: (balance ?? BigInt(0)).toString() }))
+    // Unknown balance: leave the baseline unset rather than 0, or the whole
+    // existing USDC balance would read as a deposit. checkDepositSaga sets it.
+    yield* put(
+      depositReady({ account, usdcBaseline: balance === null ? null : balance.toString() })
+    )
   } catch (err) {
     Logger.warn(TAG, 'deposit account failed', err)
     const code = errorCodeOf(err, 'create_failed')
@@ -776,11 +861,12 @@ function* convertPendingDeposit() {
   if (swap.status === 'confirmed' && swap.flowId === deposit.pending.flowId) {
     const balance = yield* call(readUsdcBalance)
     const before = BigInt(deposit.usdcBaseline ?? '0')
-    // The store may not have caught up with the swap yet; never let the
-    // baseline jump above what was there before the deposit plus the dust a
-    // swap can leave, or the next arrival would be under-counted.
-    const settled =
-      balance === null || balance > before + BigInt(deposit.pending.usdcAmount) ? before : balance
+    // The swap spent exactly the pending USDC, so what was there before the
+    // deposit is the new baseline. The store may not have caught up with the
+    // swap yet (still showing the converted USDC): never let the baseline go
+    // above `before`, or the next arrival would be under-counted. Anything
+    // that arrived meanwhile stays above it and is detected next time.
+    const settled = balance !== null && balance < before ? balance : before
     yield* put(depositSettled({ usdcBaseline: settled.toString() }))
   }
 }
@@ -789,20 +875,40 @@ function* convertPendingDeposit() {
 // when it mounts: USDC above the baseline is Bridge's payout, convert it.
 export function* checkDepositSaga() {
   const deposit = yield* select(bridgeRampDepositSelector)
-  if (deposit.status !== 'ready' || deposit.usdcBaseline === null) return
+  if (deposit.status !== 'ready') return
   const swap = yield* select(bridgeRampSwapSelector)
   if (swap.status === 'submitting' || swap.status === 'broadcast') return
   if (deposit.pending) {
     // A conversion is already queued (crash, app closed mid-way): finish it
     // only if it has not failed; a failed one waits for the user's retry.
-    if (swap.status === 'failed' && swap.flowId === deposit.pending.flowId) return
+    // Market closed is not a failure of the swap: try again on every check
+    // so it converts as soon as the oracle reports.
+    if (
+      swap.status === 'failed' &&
+      swap.flowId === deposit.pending.flowId &&
+      swap.errorCode !== 'market_closed'
+    ) {
+      return
+    }
     yield* call(convertPendingDeposit)
     return
   }
   const balance = yield* call(readUsdcBalance)
+  // Never compare against a balance we do not know.
   if (balance === null) return
-  const delta = balance - BigInt(deposit.usdcBaseline)
-  if (delta <= BigInt(0)) return
+  if (deposit.usdcBaseline === null) {
+    yield* put(depositBaselineUpdated({ usdcBaseline: balance.toString() }))
+    return
+  }
+  const baseline = BigInt(deposit.usdcBaseline)
+  if (balance < baseline) {
+    // USDC left the wallet (spent, sent, gas): follow it down so the next
+    // deposit is measured from what is really there.
+    yield* put(depositBaselineUpdated({ usdcBaseline: balance.toString() }))
+    return
+  }
+  const delta = balance - baseline
+  if (delta < MIN_DEPOSIT_USDC_BASE_UNITS) return
   Logger.info(TAG, `deposit detected: ${delta.toString()} USDC base units above baseline`)
   yield* put(
     depositDetected({

@@ -233,12 +233,12 @@ describe('store state', () => {
             },
             "status": "idle",
           },
-          "lastCompletedSwap": null,
           "party": {
             "errorCode": null,
             "needsOnboarding": false,
             "onboarding": {
               "errorCode": null,
+              "errorRequestId": null,
               "status": "idle",
             },
             "status": "idle",
@@ -257,6 +257,7 @@ describe('store state', () => {
             "swapTxHash": null,
           },
           "withdraw": {
+            "attemptId": null,
             "copmAmountIn": null,
             "errorCode": null,
             "errorRequestId": null,
@@ -265,6 +266,7 @@ describe('store state', () => {
             "payout": null,
             "quote": null,
             "status": "idle",
+            "swapTxHash": null,
             "withdrawal": null,
           },
         },
