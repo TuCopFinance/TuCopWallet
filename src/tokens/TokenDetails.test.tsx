@@ -547,9 +547,14 @@ describe('TokenDetails', () => {
       jest.mocked(getFeatureGate).mockReset().mockReturnValue(true)
     })
 
-    it('opens the deposit ramp chooser from "Agregar" on COPm when a deposit ramp is on', () => {
+    it('opens the TuCOP Ramp deposit from "Agregar" on COPm when its deposit gate is on', () => {
       press(getActions([StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP]), TokenActionName.Add)
-      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'onramp' })
+      expect(navigate).toHaveBeenCalledWith(Screens.BridgeRampFlow, { direction: 'onramp' })
+    })
+
+    it('hides "Agregar" on COPm when only the P2P deposit gate is on', () => {
+      const actions = getActions([StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP])
+      expect(actions.find((a) => a.name === TokenActionName.Add)).toBeUndefined()
     })
 
     it('hides "Agregar" on COPm when no deposit ramp is on (COPm is not a cash-in token)', () => {
