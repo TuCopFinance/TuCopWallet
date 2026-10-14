@@ -25,16 +25,12 @@ export function navigateToWithdraw() {
   }
 }
 
-// "Recarga" / "Agregar": fiat in goes straight to TuCOP Ramp (powered by
-// Bridge) when its deposit gate is on; TuCOP Ramp P2P is not offered here.
-// Otherwise the caller's legacy cash-in flow.
-export function isRampDepositEnabled(): boolean {
-  return getFeatureGate(StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP)
-}
-
+// "Recarga" / "Agregar": the chooser when a deposit ramp is on (TuCOP Ramp,
+// with TuCOP Ramp P2P listed as disabled until its gate is on), otherwise the
+// caller's legacy cash-in flow.
 export function navigateToDeposit(legacyFlow: () => void) {
-  if (isRampDepositEnabled()) {
-    navigate(Screens.BridgeRampFlow, { direction: 'onramp' })
+  if (isRampDirectionEnabled('onramp')) {
+    navigate(Screens.SelectRampProvider, { direction: 'onramp' })
   } else {
     legacyFlow()
   }

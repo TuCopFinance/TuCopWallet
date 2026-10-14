@@ -3624,6 +3624,7 @@
     },
     "noneAvailable": "No withdrawal or deposit options are available right now.",
     "retry": "Retry",
+    "comingSoon": "Coming soon",
     "resumeOfframp": {
       "title": "You have a withdrawal in progress",
       "description": "Check how it is going or pick up where you left off.",

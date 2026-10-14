@@ -49,7 +49,7 @@ describe('SelectRampProvider', () => {
     mockOracle.mockResolvedValue(freshOracle)
   })
 
-  it('shows only TuCOP Ramp when the Bridge gate is off and opens the off-ramp flow', () => {
+  it('lists TuCOP Ramp as coming soon when its gate is off and opens the P2P off-ramp flow', () => {
     enableGates([StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP])
 
     const { getByTestId, queryByTestId } = renderScreen('offramp')
@@ -57,8 +57,14 @@ describe('SelectRampProvider', () => {
     expect(getByTestId('ramp-provider-tucopramp-by')).toHaveTextContent(
       'rampProviders.tucopramp.by'
     )
-    expect(queryByTestId('ramp-provider-bridgeramp')).toBeNull()
+    expect(getByTestId('ramp-provider-bridgeramp-coming-soon')).toHaveTextContent(
+      'rampProviders.comingSoon'
+    )
+    expect(queryByTestId('ramp-provider-bridgeramp-blocked')).toBeNull()
     expect(mockOracle).not.toHaveBeenCalled()
+
+    fireEvent.press(getByTestId('ramp-provider-bridgeramp'))
+    expect(navigate).not.toHaveBeenCalled()
 
     fireEvent.press(getByTestId('ramp-provider-tucopramp'))
     expect(navigate).toHaveBeenCalledWith(Screens.TuCOPRampOfframpFlow)
@@ -209,15 +215,25 @@ describe('SelectRampProvider', () => {
   it('offers to resume an active P2P withdrawal even when its gate is off', () => {
     enableGates([StatsigFeatureGates.SHOW_BRIDGERAMP_OFFRAMP])
 
-    const { getByTestId, queryByTestId } = renderScreen('offramp', {
+    const { getByTestId } = renderScreen('offramp', {
       tucopramp: { offramp: { activeCheckStatus: 'done', activeOrderId: 'order-1' } },
     })
 
-    expect(queryByTestId('ramp-provider-tucopramp')).toBeNull()
+    expect(getByTestId('ramp-provider-tucopramp-coming-soon')).toBeTruthy()
     expect(getByTestId('ramp-resume-offramp')).toBeTruthy()
 
     fireEvent.press(getByTestId('ramp-resume-offramp/rampProviders.resumeOfframp.cta'))
     expect(navigate).toHaveBeenCalledWith(Screens.TuCOPRampOfframpFlow)
+  })
+
+  it('lists TuCOP Ramp P2P as coming soon for deposits while its gate is off', () => {
+    enableGates([StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP])
+
+    const { getByTestId } = renderScreen('onramp')
+
+    expect(getByTestId('ramp-provider-tucopramp-coming-soon')).toBeTruthy()
+    fireEvent.press(getByTestId('ramp-provider-tucopramp'))
+    expect(navigate).not.toHaveBeenCalledWith(Screens.TuCOPRampOnrampFlow)
   })
 
   it('shows the resume banner while a local P2P withdrawal is processing', () => {
