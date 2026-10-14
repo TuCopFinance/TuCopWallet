@@ -111,20 +111,15 @@ describe('HeaderQuickActions', () => {
     })
   })
 
-  it('Tapping add COPm (Recarga) opens the TuCOP Ramp deposit when show_bridgeramp_onramp is on', () => {
-    enableGates([StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP])
-    const { getByTestId } = renderComponent()
-    fireEvent.press(getByTestId('Header/AddCOPm'))
-    expect(navigate).toHaveBeenCalledWith(Screens.BridgeRampFlow, { direction: 'onramp' })
-  })
-
-  it('Tapping add COPm (Recarga) does not offer TuCOP Ramp P2P', () => {
-    enableGates([StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP])
-    const { getByTestId } = renderComponent()
-    fireEvent.press(getByTestId('Header/AddCOPm'))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, expect.anything())
-    expect(navigate).not.toHaveBeenCalledWith(Screens.SelectRampProvider, expect.anything())
-  })
+  it.each([StatsigFeatureGates.SHOW_TUCOPRAMP_ONRAMP, StatsigFeatureGates.SHOW_BRIDGERAMP_ONRAMP])(
+    'Tapping add COPm (Recarga) opens the deposit ramp chooser when %s is on',
+    (gate) => {
+      enableGates([gate])
+      const { getByTestId } = renderComponent()
+      fireEvent.press(getByTestId('Header/AddCOPm'))
+      expect(navigate).toHaveBeenCalledWith(Screens.SelectRampProvider, { direction: 'onramp' })
+    }
+  )
 
   it.each([
     StatsigFeatureGates.SHOW_TUCOPRAMP_OFFRAMP,

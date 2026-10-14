@@ -16,7 +16,7 @@ import TokenIcon, { IconSize } from 'src/components/TokenIcon'
 import Touchable from 'src/components/Touchable'
 import CustomHeader from 'src/components/header/CustomHeader'
 import {
-  isRampDepositEnabled,
+  isRampDirectionEnabled,
   navigateToDeposit,
   navigateToWithdraw,
 } from 'src/fiatExchanges/rampEntry'
@@ -197,7 +197,7 @@ export const useActions = (token: TokenBalance) => {
   // Both ramps deliver and take COPm, so "Agregar" on COPm opens the ramp
   // chooser when a deposit ramp is on; other tokens keep the provider flow.
   const isCopm = token.tokenId === networkConfig.copmTokenId
-  const depositThroughRamp = isCopm && isRampDepositEnabled()
+  const depositThroughRamp = isCopm && isRampDirectionEnabled('onramp')
 
   return [
     {

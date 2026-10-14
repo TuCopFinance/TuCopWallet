@@ -81,9 +81,14 @@ function SelectRampProvider({ route }: Props) {
   const direction: RampDirection = route.params?.direction ?? 'offramp'
   const [availabilityAttempt, setAvailabilityAttempt] = useState(0)
 
-  const providers = RAMP_PROVIDERS.filter((provider) => getFeatureGate(provider.gate[direction]))
-  const bridgeEnabled = providers.some((provider) => provider.requiresCopmOracle)
-  const p2pShown = providers.some((provider) => !provider.requiresCopmOracle)
+  // Every ramp is listed; one whose gate is off for this direction shows as
+  // disabled ("Próximamente") instead of disappearing.
+  const enabledProviders = RAMP_PROVIDERS.filter((provider) =>
+    getFeatureGate(provider.gate[direction])
+  )
+  const isEnabled = (provider: RampProviderDefinition) => enabledProviders.includes(provider)
+  const bridgeEnabled = enabledProviders.some((provider) => provider.requiresCopmOracle)
+  const p2pShown = enabledProviders.some((provider) => !provider.requiresCopmOracle)
   const hasActiveP2POfframp = useHasActiveP2POfframp()
 
   useEffect(() => {
@@ -115,12 +120,15 @@ function SelectRampProvider({ route }: Props) {
         <BridgeAvailability key={availabilityAttempt} enabled={bridgeEnabled}>
           {(availability) => (
             <>
-              {providers.map((provider) => (
+              {RAMP_PROVIDERS.map((provider) => (
                 <ProviderCard
                   key={provider.id}
                   provider={provider}
                   direction={direction}
-                  availability={provider.requiresCopmOracle ? availability : null}
+                  enabled={isEnabled(provider)}
+                  availability={
+                    provider.requiresCopmOracle && isEnabled(provider) ? availability : null
+                  }
                   p2pShown={p2pShown}
                   onRetryAvailability={() => setAvailabilityAttempt((attempt) => attempt + 1)}
                 />
@@ -129,7 +137,7 @@ function SelectRampProvider({ route }: Props) {
           )}
         </BridgeAvailability>
 
-        {providers.length === 0 && (
+        {enabledProviders.length === 0 && (
           <Text style={styles.empty} testID="ramp-provider-none">
             {t('rampProviders.noneAvailable')}
           </Text>
@@ -142,12 +150,14 @@ function SelectRampProvider({ route }: Props) {
 function ProviderCard({
   provider,
   direction,
+  enabled,
   availability,
   p2pShown,
   onRetryAvailability,
 }: {
   provider: RampProviderDefinition
   direction: RampDirection
+  enabled: boolean
   availability: BridgeRampAvailability | null
   p2pShown: boolean
   onRetryAvailability: () => void
@@ -155,7 +165,7 @@ function ProviderCard({
   const { t } = useTranslation()
   const checking = availability?.state === 'checking'
   const failed = availability?.state === 'error'
-  const blocked = availability?.state === 'unavailable' || failed
+  const blocked = !enabled || availability?.state === 'unavailable' || failed
 
   const onPress = () => {
     if (failed) {
@@ -211,7 +221,12 @@ function ProviderCard({
         <Text style={styles.badge}>{t(`${provider.i18nKey}.timing`)}</Text>
         <Text style={styles.badge}>{t(`${provider.i18nKey}.cost`)}</Text>
       </View>
-      {blocked && (
+      {!enabled && (
+        <Text style={styles.blockedNote} testID={`ramp-provider-${provider.id}-coming-soon`}>
+          {t('rampProviders.comingSoon')}
+        </Text>
+      )}
+      {enabled && blocked && (
         <Text style={styles.blockedNote} testID={`ramp-provider-${provider.id}-blocked`}>
           {failed
             ? t(
