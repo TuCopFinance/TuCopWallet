@@ -624,7 +624,7 @@ const pointsScreens = (Navigator: typeof Stack) => (
     <Navigator.Screen name={Screens.PointsIntro} component={PointsIntro} options={noHeader} />
   </>
 )
-const bucksPayScreens = (Navigator: typeof Stack) => (
+const rampScreens = (Navigator: typeof Stack) => (
   <>
     <Navigator.Screen
       name={Screens.SelectRampProvider}
@@ -748,7 +748,7 @@ function MainStackScreen() {
       {nftScreens(Stack)}
       {assetScreens(Stack)}
       {pointsScreens(Stack)}
-      {bucksPayScreens(Stack)}
+      {rampScreens(Stack)}
       {goldScreens(Stack)}
       <Stack.Screen
         name={Screens.MarranitoStaking}

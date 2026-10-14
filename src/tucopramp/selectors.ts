@@ -1,11 +1,16 @@
 import { RootState } from 'src/redux/reducers'
+import { TUCOPRAMP_HARDCODED_LIMITS } from 'src/tucopramp/limits'
 
 // Reference data
 export const banksSelector = (state: RootState) => state.tucopramp.banks
 export const receivingAccountSelector = (state: RootState) => state.tucopramp.receivingAccount
 export const userProfileSelector = (state: RootState) => state.tucopramp.userProfile
-export const limitsSelector = (state: RootState) => state.tucopramp.limits.value
 export const limitsFetchedAtSelector = (state: RootState) => state.tucopramp.limits.fetchedAt
+// Limits the screens render against: the cached server value, or the
+// hardcoded fallback on a cold cache. Being a selector, screens re-render
+// as soon as GET /v1/p2p/limits lands.
+export const effectiveLimitsSelector = (state: RootState) =>
+  state.tucopramp.limits.value ?? TUCOPRAMP_HARDCODED_LIMITS
 
 // Off-ramp flow
 export const offrampStatusSelector = (state: RootState) => state.tucopramp.offramp.status
@@ -17,6 +22,10 @@ export const offrampErrorRetryAfterSecondsSelector = (state: RootState) =>
   state.tucopramp.offramp.errorRetryAfterSeconds
 export const offrampErrorRequestIdSelector = (state: RootState) =>
   state.tucopramp.offramp.errorRequestId
+export const offrampErrorRemainingDailySelector = (state: RootState) =>
+  state.tucopramp.offramp.errorRemainingDailyCop
+export const offrampErrorRemainingMonthlySelector = (state: RootState) =>
+  state.tucopramp.offramp.errorRemainingMonthlyCop
 export const offrampPendingIdempotencyKeySelector = (state: RootState) =>
   state.tucopramp.offramp.pendingIdempotencyKey
 export const offrampProofUrlSelector = (state: RootState) => state.tucopramp.offramp.proofUrl
@@ -51,6 +60,14 @@ export const onrampErrorRetryAfterSecondsSelector = (state: RootState) =>
   state.tucopramp.onramp.errorRetryAfterSeconds
 export const onrampErrorRequestIdSelector = (state: RootState) =>
   state.tucopramp.onramp.errorRequestId
+export const onrampErrorRemainingDailySelector = (state: RootState) =>
+  state.tucopramp.onramp.errorRemainingDailyCop
+export const onrampErrorRemainingMonthlySelector = (state: RootState) =>
+  state.tucopramp.onramp.errorRemainingMonthlyCop
+export const onrampProofUploadErrorCodeSelector = (state: RootState) =>
+  state.tucopramp.onramp.proofUploadErrorCode
+export const onrampActiveCheckStatusSelector = (state: RootState) =>
+  state.tucopramp.onramp.activeCheckStatus
 export const onrampPendingIdempotencyKeySelector = (state: RootState) =>
   state.tucopramp.onramp.pendingIdempotencyKey
 // True while the user is in the awaiting-proof-upload step AFTER a retryable

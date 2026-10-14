@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import type { TFunction } from 'i18next'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
@@ -17,6 +18,16 @@ import { v4 as uuidv4 } from 'uuid'
 import { Address } from 'viem'
 import { Destination, Withdrawal, partyCanTransact } from 'src/bridgeramp/api'
 import {
+  BRIDGE_MIN_COP,
+  PartyBlocker,
+  digitalPesosLabel,
+  dollarsLabel,
+  feeUnitLabel,
+  formatCop,
+  partyBlocker,
+  pesosLabel,
+} from 'src/bridgeramp/display'
+import {
   COPM_DECIMALS,
   MentoQuote,
   USDC_ADDRESS_CELO,
@@ -25,6 +36,7 @@ import {
 } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
+  checkBridgeRampWithdrawSwap,
   createBridgeRampParty,
   estimateWithdrawCop,
   executeBridgeRampSwap,
@@ -33,6 +45,7 @@ import {
   pollBridgeRampWithdrawal,
   registerBridgeRampDestination,
   startBridgeRampWithdraw,
+  withdrawSwapFlowId,
 } from 'src/bridgeramp/saga'
 import {
   bridgeRampDestinationsSelector,
@@ -40,7 +53,7 @@ import {
   bridgeRampSwapSelector,
   bridgeRampWithdrawSelector,
 } from 'src/bridgeramp/selectors'
-import { withdrawReset } from 'src/bridgeramp/slice'
+import { BridgeRampWithdrawStatus, withdrawReset } from 'src/bridgeramp/slice'
 import {
   BRIDGE_RAMP_SLIPPAGE_BPS,
   InvalidRecipientError,
@@ -74,9 +87,6 @@ import { walletAddressSelector } from 'src/web3/selectors'
 
 const TAG = 'bridgeramp/BridgeRampWithdraw'
 
-// Bridge pays nothing below this (COP). Enforced here until TuCOPRamp returns
-// limits for the wallet consumer.
-const BRIDGE_MIN_COP = 4_000
 // A Bre-B key is a phone, a document, an email or an alphanumeric key; the
 // server validates for real, this only stops obvious typos.
 const BRE_B_KEY_MIN_LENGTH = 6
@@ -92,9 +102,26 @@ type IndividualDocumentType = Exclude<DocumentType, 'NIT' | 'TI'>
 const INDIVIDUAL_DOCUMENT_TYPES = DOCUMENT_TYPES.filter(
   (d): d is IndividualDocumentType => d !== 'NIT' && d !== 'TI'
 )
+// Results the user has seen; leaving the screen on one of these starts the
+// next withdrawal from scratch.
+const FINISHED_STATUSES: ReadonlySet<BridgeRampWithdrawStatus> = new Set([
+  'completed',
+  'failed',
+  'start_failed',
+])
 
 interface Props {
   oracleStale: boolean
+}
+
+// Appends TuCOPRamp's request id, when there is one, so support can find the
+// call.
+export function withSupportCode(
+  t: TFunction,
+  message: string,
+  requestId: string | null | undefined
+): string {
+  return requestId ? `${message}\n${t('bridgeramp.supportCode', { requestId })}` : message
 }
 
 // COPm -> COP to the user's own Bre-B key through Bridge. Three steps:
@@ -109,24 +136,38 @@ function BridgeRampWithdraw({ oracleStale }: Props) {
   const dispatch = useDispatch()
   const withdraw = useSelector(bridgeRampWithdrawSelector)
   const party = useSelector(bridgeRampPartySelector)
-  const verificationPending =
-    party.status === 'loaded' && !!party.value && !partyCanTransact(party.value)
+  const partyReady = party.status === 'loaded' && !!party.value && partyCanTransact(party.value)
 
   useEffect(() => {
     dispatch(fetchBridgeRampParty())
-    dispatch(fetchBridgeRampDestinations())
+    // A payout that was still owed when the app closed: follow it again.
+    if (withdraw.status === 'awaiting_payout' && withdraw.withdrawal) {
+      dispatch(pollBridgeRampWithdrawal({ withdrawalId: withdraw.withdrawal.id }))
+    }
+    // The swap was broadcast but its outcome was never seen (the app closed
+    // while waiting): check that same transaction again.
+    if (withdraw.status === 'review' && withdraw.withdrawal && withdraw.swapTxHash) {
+      dispatch(checkBridgeRampWithdrawSwap())
+    }
   }, [])
 
-  // Identity verification happens in the browser; when the user comes back
-  // to the app with it pending, ask TuCOPRamp again instead of making them
-  // tap retry.
+  // Destinations belong to a party: before onboarding TuCOPRamp answers
+  // party_required. Ask once the party can transact (also after onboarding
+  // or KYC finishes while the screen is open).
   useEffect(() => {
-    if (!verificationPending) return
-    const sub = AppState.addEventListener('change', (status: AppStateStatus) => {
-      if (status === 'active') dispatch(fetchBridgeRampParty())
-    })
-    return () => sub.remove()
-  }, [verificationPending])
+    if (partyReady) dispatch(fetchBridgeRampDestinations())
+  }, [partyReady])
+
+  // Leaving the screen after a result (or a failed start) resets the
+  // withdrawal, so coming back starts a new one.
+  const statusRef = useRef(withdraw.status)
+  statusRef.current = withdraw.status
+  useEffect(
+    () => () => {
+      if (FINISHED_STATUSES.has(statusRef.current)) dispatch(withdrawReset())
+    },
+    []
+  )
 
   if (withdraw.status === 'review' && withdraw.withdrawal && withdraw.quote) {
     return <ReviewStep withdrawal={withdraw.withdrawal} oracleStale={oracleStale} />
@@ -219,13 +260,13 @@ function AmountStep({ oracleStale }: Props) {
       />
       {amountCop.length > 0 && !amountValid && (
         <Text style={styles.helperError}>
-          {t('bridgeramp.amountBelowMin', { min: BRIDGE_MIN_COP.toLocaleString('es-CO') })}
+          {t('bridgeramp.amountBelowMin', { min: formatCop(BRIDGE_MIN_COP) })}
         </Text>
       )}
       {exceedsBalance && (
         <Text style={styles.helperError} testID="bridgeramp-insufficient">
           {t('bridgeramp.insufficientBalance', {
-            balance: copmTokenInfo?.balance.toFormat(0) ?? '0',
+            balance: formatCop(copmTokenInfo?.balance ?? 0),
           })}
         </Text>
       )}
@@ -235,15 +276,15 @@ function AmountStep({ oracleStale }: Props) {
         <View style={styles.quoteBox} testID="bridgeramp-quote">
           <Row
             label={t('bridgeramp.offramp.quoteIn')}
-            value={formatCopm(quoteState.quote.amountInWhole)}
+            value={digitalPesosLabel(t, quoteState.quote.amountInWhole)}
           />
           <Row
             label={t('bridgeramp.offramp.quoteOut')}
-            value={formatUsdc(quoteState.quote.amountOutWhole)}
+            value={dollarsLabel(t, quoteState.quote.amountOutWhole)}
           />
           <Row
             label={t('bridgeramp.rateLabel')}
-            value={`${quoteState.quote.copPerUsd.toFormat(2)} COP / USD`}
+            value={t('bridgeramp.units.rate', { rate: quoteState.quote.copPerUsd.toFormat(2) })}
           />
           <Text style={styles.quoteNote}>{t('bridgeramp.quoteNote')}</Text>
         </View>
@@ -255,10 +296,19 @@ function AmountStep({ oracleStale }: Props) {
           style={styles.notice}
         />
       )}
-      {withdraw.status === 'failed' && (
+      {withdraw.status === 'start_failed' && (
         <InLineNotification
           variant={NotificationVariant.Error}
-          description={t('bridgeramp.withdraw.startFailed', { code: withdraw.errorCode })}
+          description={withSupportCode(
+            t,
+            t(`bridgeramp.withdraw.startError.${withdraw.errorCode}`, {
+              defaultValue: t('bridgeramp.withdraw.startFailed', { code: withdraw.errorCode }),
+              min: formatCop(
+                withdraw.withdrawal?.deposit.minimum_destination_amount?.amount ?? BRIDGE_MIN_COP
+              ),
+            }),
+            withdraw.errorRequestId
+          )}
           style={styles.noticeTop}
           testID="bridgeramp-start-failed"
         />
@@ -278,10 +328,24 @@ function AmountStep({ oracleStale }: Props) {
   )
 }
 
+// Party state shared by the deposit and the withdraw screens: loading,
+// onboarding form, or what is still missing before the party can transact.
 export function PartySection() {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const party = useSelector(bridgeRampPartySelector)
+  const blocker = party.status === 'loaded' && party.value ? partyBlocker(party.value) : null
+
+  // Verification and the terms happen in the browser; when the user comes
+  // back to the app with something pending, ask TuCOPRamp again instead of
+  // making them tap retry.
+  useEffect(() => {
+    if (!blocker) return
+    const sub = AppState.addEventListener('change', (status: AppStateStatus) => {
+      if (status === 'active') dispatch(fetchBridgeRampParty())
+    })
+    return () => sub.remove()
+  }, [blocker])
 
   if (party.status === 'idle' || party.status === 'loading') {
     return <ActivityIndicator style={styles.spinner} testID="bridgeramp-party-loading" />
@@ -301,24 +365,50 @@ export function PartySection() {
   if (party.needsOnboarding || !party.value) {
     return <PartyOnboardingForm />
   }
-  if (!partyCanTransact(party.value)) {
-    const kycUrl = party.value.links?.kyc
+  if (blocker) {
+    const link = blockerLink(blocker, party.value.links)
     return (
       <InLineNotification
-        variant={NotificationVariant.Warning}
-        title={t('bridgeramp.party.pendingTitle')}
-        description={t('bridgeramp.party.pendingBody', {
-          kyc: party.value.status.kyc,
-          tos: party.value.status.tos,
-        })}
-        ctaLabel={kycUrl ? t('bridgeramp.party.openKyc') : undefined}
-        onPressCta={kycUrl ? () => dispatch(openUrl(kycUrl, true)) : undefined}
-        ctaLabel2={t('bridgeramp.retry')}
+        variant={
+          BLOCKER_IS_FINAL[blocker] ? NotificationVariant.Error : NotificationVariant.Warning
+        }
+        title={t(`bridgeramp.party.state.${blocker}.title`)}
+        description={t(`bridgeramp.party.state.${blocker}.body`)}
+        ctaLabel={link ? t(link.label) : undefined}
+        onPressCta={link ? () => dispatch(openUrl(link.url, true)) : undefined}
+        ctaLabel2={t('bridgeramp.party.refresh')}
         onPressCta2={() => dispatch(fetchBridgeRampParty())}
         style={styles.notice}
         testID="bridgeramp-party-pending"
       />
     )
+  }
+  return null
+}
+
+// Blockers only support can lift.
+const BLOCKER_IS_FINAL: Record<PartyBlocker, boolean> = {
+  restricted: true,
+  rejected: true,
+  suspended: true,
+  under_review: false,
+  kyc_incomplete: false,
+  tos_pending: false,
+  endorsement_pending: false,
+}
+
+// The hosted page that moves the party forward, when there is one.
+function blockerLink(
+  blocker: PartyBlocker,
+  links: { kyc?: string; tos?: string } | undefined
+): { url: string; label: string } | null {
+  if (blocker === 'kyc_incomplete' && links?.kyc) {
+    return { url: links.kyc, label: 'bridgeramp.party.openKyc' }
+  }
+  if (blocker === 'tos_pending') {
+    if (links?.tos) return { url: links.tos, label: 'bridgeramp.party.openTos' }
+    // Bridge's KYC page also collects the terms when there is no separate link.
+    if (links?.kyc) return { url: links.kyc, label: 'bridgeramp.party.openTos' }
   }
   return null
 }
@@ -464,6 +554,8 @@ function PartyOnboardingForm() {
         style={styles.consentRow}
         onPress={() => setConsent((v) => !v)}
         disabled={submitting}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: consent, disabled: submitting }}
         testID="bridgeramp-onboarding-consent"
       >
         <View style={[styles.consentCheckbox, consent && styles.consentCheckboxChecked]}>
@@ -484,11 +576,15 @@ function PartyOnboardingForm() {
       {party.onboarding.status === 'error' && (
         <InLineNotification
           variant={NotificationVariant.Error}
-          description={t(`bridgeramp.onboarding.error.${party.onboarding.errorCode}`, {
-            defaultValue: t('bridgeramp.onboarding.error.generic', {
-              code: party.onboarding.errorCode,
+          description={withSupportCode(
+            t,
+            t(`bridgeramp.onboarding.error.${party.onboarding.errorCode}`, {
+              defaultValue: t('bridgeramp.onboarding.error.generic', {
+                code: party.onboarding.errorCode,
+              }),
             }),
-          })}
+            party.onboarding.errorRequestId
+          )}
           style={styles.noticeTop}
           testID="bridgeramp-onboarding-error"
         />
@@ -539,11 +635,23 @@ function DestinationSection({
       {state.status === 'loading' && destinations.length === 0 && (
         <ActivityIndicator style={styles.spinner} />
       )}
+      {state.status === 'error' && (
+        <InLineNotification
+          variant={NotificationVariant.Error}
+          description={t('bridgeramp.destination.loadError')}
+          ctaLabel={t('bridgeramp.retry')}
+          onPressCta={() => dispatch(fetchBridgeRampDestinations())}
+          style={styles.notice}
+          testID="bridgeramp-destinations-error"
+        />
+      )}
       {destinations.map((d) => (
         <TouchableOpacity
           key={d.id}
           style={[styles.destination, d.id === selectedId && styles.destinationSelected]}
           onPress={() => onSelect(d.id)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: d.id === selectedId }}
           testID={`bridgeramp-destination-${d.id}`}
         >
           <Text style={styles.destinationKey}>{d.key_masked}</Text>
@@ -594,13 +702,23 @@ function DestinationSection({
       )}
       {state.registering.status === 'error' && (
         <Text style={styles.helperError} testID="bridgeramp-destination-failed">
-          {state.errorCode === 'destination_already_registered'
-            ? t('bridgeramp.destination.alreadyRegistered')
-            : t('bridgeramp.destination.registerFailed', { code: state.errorCode })}
+          {destinationErrorMessage(t, state.errorCode)}
         </Text>
       )}
     </View>
   )
+}
+
+function destinationErrorMessage(t: TFunction, code: string | null): string {
+  // A real 409 from TuCOPRamp: the key is on this party already.
+  if (code === 'destination_already_registered')
+    return t('bridgeramp.destination.alreadyRegistered')
+  // The directory did not answer while we polled; same advice as a rejection.
+  if (code === 'verification_timeout')
+    return t('bridgeramp.destination.rejected.verification_timeout')
+  return t(`bridgeramp.destination.error.${code}`, {
+    defaultValue: t('bridgeramp.destination.registerFailed', { code }),
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -618,6 +736,8 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
     feeCurrenciesSelector(state, NetworkId['celo-mainnet'])
   )
   const quote = withdraw.quote
+  // Bumped by the retry on the inline notices: re-quote and re-price now.
+  const [retryKey, setRetryKey] = useState(0)
 
   // Re-quote Mento for the review so the calls are built on a fresh price,
   // for exactly the COPm the user typed in step 1.
@@ -625,7 +745,7 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
     () => (withdraw.copmAmountIn ? BigInt(withdraw.copmAmountIn) : null),
     [withdraw.copmAmountIn]
   )
-  const quoteState = useMentoQuote('copmToUsdc', copmAmountIn)
+  const quoteState = useMentoQuote('copmToUsdc', copmAmountIn, undefined, retryKey)
 
   const depositOk =
     withdrawal.deposit.chain === 'eip155:42220' &&
@@ -643,7 +763,9 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
           withdrawal.fee_bps ?? 0
         )
       : null
-  const minCop = new BigNumber(withdrawal.deposit.minimum_destination_amount?.amount ?? 4000)
+  const minCop = new BigNumber(
+    withdrawal.deposit.minimum_destination_amount?.amount ?? BRIDGE_MIN_COP
+  )
   const rateMoved = estimatedCop !== null && estimatedCop.isLessThan(minCop)
 
   const calls = useMemo(() => {
@@ -680,25 +802,45 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
       })
       .catch((error) => Logger.warn(TAG, 'prepare rejected', error))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calls, walletAddress, copmTokenInfo?.tokenId, feeCurrencies.length])
+  }, [calls, walletAddress, copmTokenInfo?.tokenId, feeCurrencies.length, retryKey])
 
   const prepared = prepare.result
   const { feeCurrency, estimatedFeeAmount } = getFeeCurrencyAndAmounts(prepared)
   const submitting = swap.status === 'submitting' || swap.status === 'broadcast'
-  const canConfirm =
-    !!calls &&
-    prepared?.type === 'possible' &&
-    quoteState.state === 'ready' &&
+  const flowId = withdrawSwapFlowId(withdrawal.id, withdraw.attemptId)
+  // The last attempt for this withdrawal was sent but not confirmed (receipt
+  // unknown, or the app restarted while waiting): the button only checks it.
+  // The saga waits for the same transaction and never signs, so it needs no
+  // fresh quote or pricing, which would fail anyway once the swap landed
+  // and the COPm left. Cancelling now would lose track of a swap that may
+  // still deliver.
+  const receiptUnknown =
     !submitting &&
-    !oracleStale
+    ((swap.status === 'failed' && swap.errorCode === 'receipt_unknown' && swap.flowId === flowId) ||
+      !!withdraw.swapTxHash)
+  const retry = () => setRetryKey((k) => k + 1)
+  // Never sign while a refresh is pricing new calldata: the result on screen
+  // belongs to the previous quote.
+  const canConfirm = receiptUnknown
+    ? !submitting
+    : !!calls &&
+      prepared?.type === 'possible' &&
+      !prepare.loading &&
+      quoteState.state === 'ready' &&
+      !submitting &&
+      !oracleStale
 
   const onConfirm = () => {
+    if (receiptUnknown) {
+      if (canConfirm) dispatch(checkBridgeRampWithdrawSwap())
+      return
+    }
     if (!canConfirm || !calls || prepared?.type !== 'possible' || quoteState.state !== 'ready')
       return
     const q: MentoQuote = quoteState.quote
     dispatch(
       executeBridgeRampSwap({
-        flowId: withdrawal.id,
+        flowId,
         direction: 'copmToUsdc',
         amountIn: q.amountIn.toString(),
         quotedAmountOut: q.amountOut.toString(),
@@ -719,30 +861,59 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
         <View style={styles.quoteBox}>
           <Row
             label={t('bridgeramp.offramp.quoteIn')}
-            value={formatCopm(quoteState.quote.amountInWhole)}
+            value={digitalPesosLabel(t, quoteState.quote.amountInWhole)}
           />
-          <Row
-            label={t('bridgeramp.review.receive')}
-            value={`${(estimatedCop ?? new BigNumber(0)).toFormat(0)} pesos`}
-          />
+          <Row label={t('bridgeramp.review.receive')} value={pesosLabel(t, estimatedCop ?? 0)} />
           <Row
             label={t('bridgeramp.review.tucopFee')}
             value={`${new BigNumber(withdrawal.fee_bps ?? 0).dividedBy(100).toFormat()} %`}
           />
           <Row
             label={t('bridgeramp.review.bridgeRate')}
-            value={`${new BigNumber(quote.rate.value).toFormat(2)} COP / USD`}
+            value={t('bridgeramp.units.rate', {
+              rate: new BigNumber(quote.rate.value).toFormat(2),
+            })}
           />
           {feeCurrency && estimatedFeeAmount && (
             <Row
               label={t('bridgeramp.review.networkFee')}
-              value={`${estimatedFeeAmount.toFormat(4)} ${feeCurrency.symbol}`}
+              value={`${estimatedFeeAmount.toFormat(4)} ${feeUnitLabel(t, feeCurrency.symbol)}`}
             />
           )}
           <Text style={styles.quoteNote}>{t('bridgeramp.review.note')}</Text>
         </View>
       )}
 
+      {quoteState.state === 'oracle-unavailable' && (
+        <InLineNotification
+          variant={NotificationVariant.Warning}
+          description={t('bridgeramp.review.marketClosed')}
+          ctaLabel={t('bridgeramp.retry')}
+          onPressCta={retry}
+          style={styles.noticeTop}
+          testID="bridgeramp-review-market-closed"
+        />
+      )}
+      {quoteState.state === 'error' && (
+        <InLineNotification
+          variant={NotificationVariant.Error}
+          description={t('bridgeramp.review.quoteFailed')}
+          ctaLabel={t('bridgeramp.retry')}
+          onPressCta={retry}
+          style={styles.noticeTop}
+          testID="bridgeramp-review-quote-error"
+        />
+      )}
+      {!!prepare.error && !prepare.loading && (
+        <InLineNotification
+          variant={NotificationVariant.Error}
+          description={t('bridgeramp.review.prepareFailed')}
+          ctaLabel={t('bridgeramp.retry')}
+          onPressCta={retry}
+          style={styles.noticeTop}
+          testID="bridgeramp-review-prepare-error"
+        />
+      )}
       {!depositOk && (
         <InLineNotification
           variant={NotificationVariant.Error}
@@ -754,9 +925,9 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
       {rateMoved && (
         <InLineNotification
           variant={NotificationVariant.Warning}
-          description={t('bridgeramp.review.rateMoved')}
-          ctaLabel={t('bridgeramp.review.startOver')}
-          onPressCta={() => dispatch(withdrawReset())}
+          description={t('bridgeramp.review.rateMoved', { min: formatCop(minCop) })}
+          ctaLabel={receiptUnknown ? undefined : t('bridgeramp.review.startOver')}
+          onPressCta={receiptUnknown ? undefined : () => dispatch(withdrawReset())}
           style={styles.noticeTop}
           testID="bridgeramp-rate-moved"
         />
@@ -779,12 +950,22 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
           testID="bridgeramp-swap-failed"
         />
       )}
+      {receiptUnknown && swap.status !== 'failed' && (
+        <InLineNotification
+          variant={NotificationVariant.Warning}
+          description={t('bridgeramp.swapError.receipt_unknown')}
+          style={styles.noticeTop}
+          testID="bridgeramp-swap-unconfirmed"
+        />
+      )}
 
       <Button
-        text={t('bridgeramp.review.confirmCta')}
+        text={
+          receiptUnknown ? t('bridgeramp.review.checkStatusCta') : t('bridgeramp.review.confirmCta')
+        }
         onPress={onConfirm}
         disabled={!canConfirm}
-        showLoading={submitting || prepare.loading}
+        showLoading={submitting || (!receiptUnknown && prepare.loading)}
         type={BtnTypes.PRIMARY}
         size={BtnSizes.FULL}
         style={styles.cta}
@@ -793,7 +974,7 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
       <Button
         text={t('bridgeramp.review.cancelCta')}
         onPress={() => dispatch(withdrawReset())}
-        disabled={submitting}
+        disabled={submitting || receiptUnknown}
         type={BtnTypes.SECONDARY}
         size={BtnSizes.FULL}
         style={styles.secondaryCta}
@@ -813,7 +994,7 @@ function ProgressStep() {
   const withdraw = useSelector(bridgeRampWithdrawSelector)
   const swap = useSelector(bridgeRampSwapSelector)
   const withdrawal = withdraw.withdrawal
-
+  const swapTxHash = withdraw.swapTxHash ?? swap.swapTxHash
   const title =
     withdraw.status === 'completed'
       ? t('bridgeramp.progress.completedTitle')
@@ -823,9 +1004,9 @@ function ProgressStep() {
   const body =
     withdraw.status === 'completed'
       ? t('bridgeramp.progress.completedBody', {
-          amount: new BigNumber(
+          amount: formatCop(
             withdraw.payout?.destination_amount?.amount ?? withdraw.estimatedCop ?? 0
-          ).toFormat(0),
+          ),
         })
       : withdraw.status === 'failed'
         ? t(`bridgeramp.payoutError.${withdraw.errorCode}`, {
@@ -838,15 +1019,19 @@ function ProgressStep() {
       <Text style={styles.stepTitle}>{title}</Text>
       <Text style={styles.body}>{body}</Text>
       {withdraw.status === 'awaiting_payout' && <ActivityIndicator style={styles.spinner} />}
-      {!!swap.swapTxHash && (
+      {!!swapTxHash && (
         <View style={styles.hashBlock}>
           <Text style={styles.rowLabel}>{t('bridgeramp.progress.swapTx')}</Text>
           <Text style={styles.hash} selectable testID="bridgeramp-swap-hash">
-            {swap.swapTxHash}
+            {swapTxHash}
           </Text>
         </View>
       )}
-      {withdrawal && <Row label={t('bridgeramp.progress.operationId')} value={withdrawal.id} />}
+      {/* Bridge's payout id is what identifies this withdrawal; the address
+          id is shared by every withdrawal to the same key. */}
+      {!!withdraw.payout && (
+        <Row label={t('bridgeramp.progress.operationId')} value={withdraw.payout.id} />
+      )}
       {withdraw.errorCode === 'poll_timeout' && withdrawal && (
         <InLineNotification
           variant={NotificationVariant.Info}
@@ -873,15 +1058,7 @@ function ProgressStep() {
 
 // ---------------------------------------------------------------------------
 
-function formatCopm(whole: BigNumber): string {
-  return `${whole.toFormat(0)} pesos digitales`
-}
-
-function formatUsdc(whole: BigNumber): string {
-  return `${whole.toFormat(2)} USDC`
-}
-
-function Row({ label, value }: { label: string; value: string }) {
+export function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>

@@ -1,6 +1,6 @@
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
-import { Address } from 'viem'
+import { Address, Hex } from 'viem'
 import { captureBusinessError } from 'src/sentry/captureBusinessError'
 import {
   cancelOrder as apiCancelOrder,
@@ -27,9 +27,16 @@ import { RootState } from 'src/redux/reducers'
 import {
   limitsFetchedAtSelector,
   offrampPendingIdempotencyKeySelector,
+  offrampStatusSelector,
   onrampPendingIdempotencyKeySelector,
+  receivingAccountSelector,
 } from 'src/tucopramp/selectors'
 import {
+  FlowErrorPayload,
+  OFFRAMP_FINAL_STATUSES,
+  OfframpFlowStatus,
+  ONRAMP_FINAL_STATUSES,
+  OnrampFlowStatus,
   cedulaUpdateFailed,
   cedulaUpdateSucceeded,
   cedulaUpdating,
@@ -49,19 +56,28 @@ import {
   offrampError,
   offrampNoActiveFound,
   offrampOrderCreated,
+  offrampPendingIdempotencyKeyCleared,
+  offrampPollTimedOut,
   offrampProofUrlFailed,
   offrampProofUrlLoaded,
   offrampProofUrlLoading,
   offrampQuoteReady,
   offrampQuoting,
   offrampSavePayoutProfile,
+  onrampActiveCheckFailed,
+  onrampActiveCheckStarted,
+  onrampActiveResumed,
   onrampAdvance,
   onrampCancelling,
   onrampCreatingOrder,
   onrampError,
+  onrampNoActiveFound,
   onrampOrderCreated,
+  onrampPendingIdempotencyKeyCleared,
+  onrampPollTimedOut,
   onrampProofRejectedForRetry,
   onrampProofUploaded,
+  onrampProofUploadFailed,
   onrampQuoteReady,
   onrampQuoting,
   onrampUploadingProof,
@@ -72,6 +88,7 @@ import {
 import { publicClient } from 'src/viem'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { clearFlow, findRecordByIndexSelector } from 'src/viem/sentTransactionLog'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
 import { networkIdToNetwork, COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
@@ -80,23 +97,52 @@ import {
   OfframpOrderStatus,
   OfframpQuoteRequest,
   OnrampOrderRequest,
+  OnrampOrderResponse,
   OnrampOrderStatus,
   OnrampQuoteRequest,
+  OrderDetail,
+  QuoteResponse,
   TucopRampError,
 } from 'src/tucopramp/types'
 import Logger from 'src/utils/Logger'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import { walletAddressSelector } from 'src/web3/selectors'
-import { call, delay, fork, put, select, takeLatest, takeLeading } from 'typed-redux-saga'
+import {
+  call,
+  delay,
+  fork,
+  put,
+  race,
+  select,
+  take,
+  takeLatest,
+  takeLeading,
+} from 'typed-redux-saga'
 
 const TAG = 'tucopramp/saga'
 
-// Poll cadence per guide sec 10: 15 s during AWAITING_DEPOSIT / AWAITING_PROOF,
-// back off to 30 s once the operator has claimed, stop on terminal state.
-const POLL_INITIAL_DELAY_MS = 15_000
-const POLL_ACTIVE_DELAY_MS = 30_000
-const POLL_MAX_ATTEMPTS = 60 // 60 * 15s = 15min ceiling before saga bails
+// Poll cadence. Operators settle by hand and can take up to 24 h, so the
+// poller backs off instead of giving up after a few minutes: 15 s for the
+// first 2 min, 30 s up to 10 min, 60 s up to 30 min, then every 5 min. Never
+// faster than 30 s once the operator has the order. After 24 h of polling
+// the flow moves to `poll-timeout`, where the user can refresh by hand. The
+// screen stops the poller on close (stop*Polling) and re-polls when the app
+// returns to the foreground.
+const POLL_SCHEDULE: ReadonlyArray<{ untilMs: number; delayMs: number }> = [
+  { untilMs: 2 * 60_000, delayMs: 15_000 },
+  { untilMs: 10 * 60_000, delayMs: 30_000 },
+  { untilMs: 30 * 60_000, delayMs: 60_000 },
+]
+const POLL_MAX_DELAY_MS = 5 * 60_000
+const POLL_OPERATOR_ACTIVE_MIN_DELAY_MS = 30_000
+export const POLL_GIVE_UP_AFTER_MS = 24 * 60 * 60_000
+
+export function pollDelayMs(elapsedMs: number, operatorActive: boolean): number {
+  const step = POLL_SCHEDULE.find((s) => elapsedMs < s.untilMs)
+  const base = step ? step.delayMs : POLL_MAX_DELAY_MS
+  return operatorActive ? Math.max(base, POLL_OPERATOR_ACTIVE_MIN_DELAY_MS) : base
+}
 
 // GET /v1/p2p/limits is cached client-side per guide sec 10 (server also
 // advertises Cache-Control: max-age=300). We skip refetching within this
@@ -120,6 +166,8 @@ export const submitOfframpOrder = createAction<{
   idempotencyKey?: string
 }>('tucopramp/submitOfframpOrder')
 export const pollOfframpOrder = createAction<{ orderId: string }>('tucopramp/pollOfframpOrder')
+// Dispatched by the screen on close: cancels the running off-ramp poller.
+export const stopOfframpPolling = createAction('tucopramp/stopOfframpPolling')
 export const cancelOfframpOrder = createAction<{ orderId: string; idempotencyKey?: string }>(
   'tucopramp/cancelOfframpOrder'
 )
@@ -152,6 +200,10 @@ export const uploadOnrampProof = createAction<{ orderId: string; file: ProofFile
   'tucopramp/uploadOnrampProof'
 )
 export const pollOnrampOrder = createAction<{ orderId: string }>('tucopramp/pollOnrampOrder')
+export const stopOnrampPolling = createAction('tucopramp/stopOnrampPolling')
+// On-ramp counterpart of checkActiveOfframpOrder: resumes an open on-ramp
+// order (AWAITING_PROOF / AWAITING_REVIEW / VERIFYING) on screen mount.
+export const checkActiveOnrampOrder = createAction('tucopramp/checkActiveOnrampOrder')
 export const cancelOnrampOrder = createAction<{ orderId: string; idempotencyKey?: string }>(
   'tucopramp/cancelOnrampOrder'
 )
@@ -167,7 +219,44 @@ function isOfframpTerminal(status: OfframpOrderStatus): boolean {
 }
 
 function isOnrampTerminal(status: OnrampOrderStatus): boolean {
-  return status === 'COMPLETED' || status === 'CANCELLED' || status === 'EXPIRED'
+  return (
+    status === 'COMPLETED' ||
+    status === 'REJECTED' ||
+    status === 'CANCELLED' ||
+    status === 'EXPIRED'
+  )
+}
+
+// A local status the poller must not overwrite with a non-final server
+// status: a cancel in flight, or a final state already reached (a stale
+// response that was in flight while the order ended).
+function isOfframpLocallySettled(status: OfframpFlowStatus): boolean {
+  return status === 'cancelling' || OFFRAMP_FINAL_STATUSES.includes(status)
+}
+
+function isOnrampLocallySettled(status: OnrampFlowStatus): boolean {
+  return status === 'cancelling' || ONRAMP_FINAL_STATUSES.includes(status)
+}
+
+// Stable fingerprint of an order request, used to decide whether a submit is
+// a retry of the pending request (reuse its Idempotency-Key) or a new one.
+// quote_id is left out: a retry after the quote expired is still the same
+// request. Two 32-bit string hashes, so no personal data is persisted.
+export function orderRequestFingerprint(body: OfframpOrderRequest | OnrampOrderRequest): string {
+  const { quote_id: _quoteId, ...rest } = body as Record<string, unknown>
+  const canonical = JSON.stringify(
+    Object.keys(rest)
+      .sort()
+      .map((k) => [k, rest[k] ?? null])
+  )
+  let djb2 = 5381
+  let sdbm = 0
+  for (let i = 0; i < canonical.length; i++) {
+    const c = canonical.charCodeAt(i)
+    djb2 = ((djb2 << 5) + djb2 + c) | 0
+    sdbm = (c + (sdbm << 6) + (sdbm << 16) - sdbm) | 0
+  }
+  return `${(djb2 >>> 0).toString(16)}${(sdbm >>> 0).toString(16)}`
 }
 
 // Auth context resolver. Reused by every wallet-scoped saga. Return typing is
@@ -333,12 +422,13 @@ export function* requestOfframpQuoteSaga(action: PayloadAction<OfframpQuoteReque
     yield* put(offrampError({ code: 'no_wallet' }))
     return
   }
+  const previousQuote = yield* select((s: RootState) => s.tucopramp.offramp.lastQuote)
   yield* put(offrampQuoting())
   try {
     const quote = yield* call(apiGetOfframpQuote, auth, action.payload)
     yield* put(offrampQuoteReady(quote))
   } catch (err) {
-    yield* put(offrampError(errorMeta(err)))
+    yield* put(offrampError(errorMeta(err, previousQuote)))
     reportTucoprampError(err, 'offramp_quote')
   }
 }
@@ -359,14 +449,24 @@ export function* submitOfframpOrderSaga(
   const bodyWithFreshQuote = yield* call(ensureFreshOfframpQuote, auth, action.payload.body)
   if (bodyWithFreshQuote === null) return // refetch failed, error already dispatched
 
-  // Idempotency-Key precedence: caller-provided > previously persisted
-  // (mid-createOrder crash / retry) > fresh UUID for a new intent. The
-  // persisted key survives cold boot via REHYDRATE, so a crash+relaunch
-  // reuses the same header and the server dedups instead of creating a
-  // duplicate real-money order. Cleared on order confirmation.
+  // Idempotency-Key precedence: caller-provided > previously persisted key
+  // of the SAME request (mid-createOrder crash / timeout retry) > fresh UUID
+  // for a new intent. The persisted key survives reset and cold boot, so a
+  // retry reuses the same header and the server dedups instead of creating a
+  // duplicate real-money order. Cleared on order confirmation. A pending key
+  // without a fingerprint (persisted by an older build) is reused as before.
+  const fingerprint = orderRequestFingerprint(bodyWithFreshQuote)
   const persistedKey = yield* select(offrampPendingIdempotencyKeySelector)
-  const idempotencyKey = action.payload.idempotencyKey ?? persistedKey ?? uuidv4()
-  yield* put(offrampCreatingOrder({ idempotencyKey }))
+  const persistedFingerprint = yield* select(
+    (s: RootState) => s.tucopramp.offramp.pendingRequestFingerprint
+  )
+  const reusableKey =
+    persistedKey && (!persistedFingerprint || persistedFingerprint === fingerprint)
+      ? persistedKey
+      : null
+  const idempotencyKey = action.payload.idempotencyKey ?? reusableKey ?? uuidv4()
+  const previousQuote = yield* select((s: RootState) => s.tucopramp.offramp.lastQuote)
+  yield* put(offrampCreatingOrder({ idempotencyKey, fingerprint }))
   try {
     const order = yield* call(apiCreateOfframpOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(offrampOrderCreated(order))
@@ -402,7 +502,17 @@ export function* submitOfframpOrderSaga(
       })
     )
   } catch (err) {
-    yield* put(offrampError(errorMeta(err)))
+    if (errorCode(err) === 'idempotency_key_reuse') {
+      // The key was already used for a different body: an earlier attempt
+      // of this request reached the server (e.g. it timed out on our side).
+      // Drop the key and look for the order that attempt may have created;
+      // if there is one, the check resumes it instead of erroring.
+      yield* put(offrampPendingIdempotencyKeyCleared())
+      yield* call(checkActiveOfframpOrderSaga)
+      const resumedId = yield* select((s: RootState) => s.tucopramp.offramp.activeOrderId)
+      if (resumedId) return
+    }
+    yield* put(offrampError(errorMeta(err, previousQuote)))
     reportTucoprampError(err, 'offramp_submit_order')
   }
 }
@@ -444,30 +554,109 @@ function* ensureFreshOfframpQuote(auth: TucopRampAuth, body: OfframpOrderRequest
   }
 }
 
+// True while the screen still tracks this order (local order or resumed
+// active order). Lets a poller that outlived its order stop instead of
+// writing a stale status into a reset flow.
+function* isOfframpOrderTracked(orderId: string) {
+  const offramp = yield* select((s: RootState) => s.tucopramp.offramp)
+  return offramp.currentOrder?.order_id === orderId || offramp.activeOrderId === orderId
+}
+
 export function* pollOfframpOrderSaga(action: PayloadAction<{ orderId: string }>) {
+  const { orderId } = action.payload
   const auth = yield* call(resolveAuth)
   if (!auth) {
     yield* put(offrampError({ code: 'no_wallet' }))
     return
   }
-  let attempts = 0
-  let delayMs = POLL_INITIAL_DELAY_MS
-  while (attempts < POLL_MAX_ATTEMPTS) {
+  let elapsedMs = 0
+  let operatorActive = false
+  while (elapsedMs < POLL_GIVE_UP_AFTER_MS) {
     try {
-      const detail = yield* call(apiGetOrder, auth, action.payload.orderId)
-      const status = detail.status as OfframpOrderStatus
-      yield* put(offrampAdvance({ status: mapOfframpDetailStatus(status) }))
-      if (isOfframpTerminal(status)) return
-      if (status === 'DEPOSIT_CONFIRMED' || status === 'PROCESSING') {
-        delayMs = POLL_ACTIVE_DELAY_MS
+      const detail = yield* call(apiGetOrder, auth, orderId)
+      if (!(yield* call(isOfframpOrderTracked, orderId))) {
+        Logger.info(TAG, `pollOfframpOrder: order ${orderId} no longer tracked, stopping`)
+        return
       }
+      const status = detail.status as OfframpOrderStatus
+      const mapped = mapOfframpDetailStatus(status)
+      const terminal = isOfframpTerminal(status)
+      const localStatus = yield* select(offrampStatusSelector)
+      if (mapped && (terminal || !isOfframpLocallySettled(localStatus))) {
+        yield* put(offrampAdvance({ status: mapped }))
+      }
+      if (terminal) return
+      operatorActive = status === 'DEPOSIT_CONFIRMED' || status === 'PROCESSING'
     } catch (err) {
       Logger.warn(TAG, 'pollOfframpOrder failed, will retry', err)
     }
+    const delayMs = pollDelayMs(elapsedMs, operatorActive)
     yield* delay(delayMs)
-    attempts++
+    elapsedMs += delayMs
   }
-  Logger.warn(TAG, `pollOfframpOrder gave up after ${POLL_MAX_ATTEMPTS} attempts`)
+  Logger.warn(TAG, `pollOfframpOrder gave up after ${POLL_GIVE_UP_AFTER_MS} ms`)
+  if (yield* call(isOfframpOrderTracked, orderId)) {
+    yield* put(offrampPollTimedOut())
+  }
+}
+
+// takeLatest worker: a new poll replaces the running one, and the screen's
+// stopOfframpPolling (on close) cancels it.
+function* pollOfframpOrderUntilStopped(action: PayloadAction<{ orderId: string }>) {
+  yield* race({
+    poll: call(pollOfframpOrderSaga, action),
+    stop: take(stopOfframpPolling.type),
+  })
+}
+
+// The sendPreparedTransactions idempotency key of an order's COPm deposit.
+// The deposit is a single transaction, logged at index 0.
+export function offrampDepositFlowId(orderId: string): string {
+  return `offramp-deposit-${orderId}`
+}
+
+// Before anything is signed for an order: the server must still be waiting
+// for its deposit. A stale order (expired, cancelled, already funded) must
+// never be funded by the auto-send. Returns true when it is safe to send.
+function* offrampOrderAcceptsDeposit(orderId: string) {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(offrampDepositFailed({ code: 'order_check_failed' }))
+    return false
+  }
+  let detail: OrderDetail
+  try {
+    detail = yield* call(apiGetOrder, auth, orderId)
+  } catch (err) {
+    Logger.warn(TAG, `could not check order ${orderId} before the deposit`, err)
+    yield* put(offrampDepositFailed({ code: 'order_check_failed' }))
+    return false
+  }
+  const expiresAtMs = new Date(detail.expires_at).getTime()
+  const open =
+    detail.status === 'AWAITING_DEPOSIT' && isFinite(expiresAtMs) && expiresAtMs > Date.now()
+  if (open) return true
+  Logger.warn(TAG, `order ${orderId} no longer awaits a deposit (${detail.status}), not sending`)
+  yield* put(offrampDepositFailed({ code: 'order_not_open' }))
+  const mapped =
+    detail.status === 'AWAITING_DEPOSIT'
+      ? 'expired'
+      : mapOfframpDetailStatus(detail.status as OfframpOrderStatus)
+  if (mapped && mapped !== 'awaiting-deposit') {
+    yield* put(offrampAdvance({ status: mapped }))
+  }
+  return false
+}
+
+function* reportDepositBroadcastFailed(orderId: string, err: unknown) {
+  Logger.warn(TAG, 'sendOfframpDeposit failed', err)
+  yield* put(offrampDepositFailed({ code: 'broadcast_failed' }))
+  captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+    feature: 'tucopramp',
+    provider: 'internal',
+    action: 'deposit_broadcast_failed',
+    extra: { orderId },
+  })
 }
 
 // Broadcast the on-chain COPm transfer to the offramp multisig, keeping the
@@ -484,9 +673,17 @@ export function* sendOfframpDepositSaga(
   }>
 ) {
   const { orderId, multisigAddress, amountCopm, serializablePreparedTransaction } = action.payload
+  const flowId = offrampDepositFlowId(orderId)
   yield* put(offrampDepositSubmitting())
+  const networkId = NetworkId['celo-mainnet']
+  // A deposit already sent for this order is only waited for (inside
+  // sendPreparedTransactions); anything new is checked against the server.
+  const alreadySent = yield* select(findRecordByIndexSelector, flowId, 0)
+  if (!alreadySent && !(yield* call(offrampOrderAcceptsDeposit, orderId))) {
+    return
+  }
+  let hash: Hex
   try {
-    const networkId = NetworkId['celo-mainnet']
     const context = newTransactionContext(TAG, `Offramp deposit ${orderId}`)
     const createStandbyTransaction = (
       transactionHash: string,
@@ -505,25 +702,47 @@ export function* sendOfframpDepositSaga(
       transactionHash,
       feeCurrencyId,
     })
-    const [hash] = yield* call(
+    const [sent] = yield* call(
       sendPreparedTransactions,
       [serializablePreparedTransaction],
       networkId,
       [createStandbyTransaction],
       false,
-      `offramp-deposit-${orderId}`
+      flowId
     )
-    yield* put(offrampDepositBroadcast({ txHash: hash }))
-    // Wait for on-chain confirmation so we surface a revert to the user
-    // instead of silently sitting on the awaiting-deposit screen. The
-    // pollOfframpOrder saga already handles the server-side transition once
-    // the deposit lands; this receipt wait is purely a client-side guard.
+    hash = sent
+  } catch (err) {
+    // The transfer may have reached the network before the error (e.g. the
+    // mempool poll failed after the broadcast): then it is on its way, and
+    // the user must not be offered to cancel or to send it again.
+    const sent = yield* select(findRecordByIndexSelector, flowId, 0)
+    if (sent) {
+      Logger.warn(TAG, 'sendOfframpDeposit failed after the broadcast, following the tx', err)
+      hash = sent.hash as Hex
+    } else {
+      yield* call(reportDepositBroadcastFailed, orderId, err)
+      return
+    }
+  }
+  yield* put(offrampDepositBroadcast({ txHash: hash }))
+  // Wait for on-chain confirmation so we surface a revert to the user
+  // instead of silently sitting on the awaiting-deposit screen. The
+  // pollOfframpOrder saga already handles the server-side transition once
+  // the deposit lands; this receipt wait is purely a client-side guard.
+  // Once the tx is broadcast, a failure of the wait itself (RPC timeout,
+  // network) is NOT a failed deposit: the tx may well land, so the flow
+  // stays `submitted` and the poller confirms it. Only a mined revert fails.
+  try {
     const receipt = yield* call(
       [publicClient[networkIdToNetwork[networkId]], 'waitForTransactionReceipt'],
       { hash }
     )
     if (receipt.status === 'reverted') {
       Logger.warn(TAG, `Offramp deposit tx reverted: ${hash}`)
+      // Mined and final: nothing moved, so "Intentar de nuevo" must sign a
+      // new transfer instead of waiting on this hash again. (When the wait
+      // itself fails the outcome is unknown and the record is kept.)
+      yield* put(clearFlow({ flowId }))
       yield* put(offrampDepositFailed({ code: 'reverted' }))
       captureBusinessError(new Error(`Offramp deposit reverted: ${hash}`), {
         feature: 'tucopramp',
@@ -533,14 +752,7 @@ export function* sendOfframpDepositSaga(
       })
     }
   } catch (err) {
-    Logger.warn(TAG, 'sendOfframpDeposit failed', err)
-    yield* put(offrampDepositFailed({ code: 'broadcast_failed' }))
-    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
-      feature: 'tucopramp',
-      provider: 'internal',
-      action: 'deposit_broadcast_failed',
-      extra: { orderId },
-    })
+    Logger.warn(TAG, `Offramp deposit receipt wait failed for ${hash}, relying on polling`, err)
   }
 }
 
@@ -579,15 +791,30 @@ export function* checkActiveOfframpOrderSaga() {
     if (activeSummary) {
       const detail = yield* call(apiGetOrder, auth, activeSummary.id)
       // Check the local slice - if we still have currentOrder for this exact
-      // orderId, its multisig_address is authoritative. Otherwise, the server
-      // has an active order that we can't broadcast for anymore.
-      const localCurrent = yield* select((s) => s.tucopramp.offramp.currentOrder)
+      // orderId (kept across leaving the screen), its multisig_address and
+      // deposit tx state are authoritative. Otherwise, past AWAITING_DEPOSIT
+      // the UI renders from the detail; in AWAITING_DEPOSIT the server has an
+      // order we can't broadcast for anymore.
+      const localCurrent = yield* select((s: RootState) => s.tucopramp.offramp.currentOrder)
       const localMatches = !!localCurrent && localCurrent.order_id === activeSummary.id
+      const status =
+        mapOfframpDetailStatus(detail.status as OfframpOrderStatus) ??
+        mapOfframpDetailStatus(activeSummary.status as OfframpOrderStatus) ??
+        'processing'
+      // The deposit for this order was broadcast from this wallet (the app
+      // may have been killed before the server saw it): it is on its way,
+      // whatever the local slice says.
+      const sentDeposit = yield* select(
+        findRecordByIndexSelector,
+        offrampDepositFlowId(activeSummary.id),
+        0
+      )
       yield* put(
         offrampActiveResumed({
           detail,
           currentOrder: localMatches ? localCurrent : null,
-          status: mapOfframpDetailStatus(activeSummary.status as OfframpOrderStatus),
+          status,
+          ...(sentDeposit ? { sentDepositTxHash: sentDeposit.hash } : {}),
         })
       )
       return
@@ -709,12 +936,13 @@ export function* requestOnrampQuoteSaga(action: PayloadAction<OnrampQuoteRequest
     yield* put(onrampError({ code: 'no_wallet' }))
     return
   }
+  const previousQuote = yield* select((s: RootState) => s.tucopramp.onramp.lastQuote)
   yield* put(onrampQuoting())
   try {
     const quote = yield* call(apiGetOnrampQuote, auth, action.payload)
     yield* put(onrampQuoteReady(quote))
   } catch (err) {
-    yield* put(onrampError(errorMeta(err)))
+    yield* put(onrampError(errorMeta(err, previousQuote)))
     reportTucoprampError(err, 'onramp_quote')
   }
 }
@@ -731,16 +959,34 @@ export function* submitOnrampOrderSaga(
   const bodyWithFreshQuote = yield* call(ensureFreshOnrampQuote, auth, action.payload.body)
   if (bodyWithFreshQuote === null) return
 
-  // Idempotency-Key precedence: caller > persisted (cross-restart) > fresh.
-  // See submitOfframpOrderSaga for the rationale.
+  // Idempotency-Key precedence: caller > persisted key of the same request
+  // (cross-restart / timeout retry) > fresh. See submitOfframpOrderSaga.
+  const fingerprint = orderRequestFingerprint(bodyWithFreshQuote)
   const persistedKey = yield* select(onrampPendingIdempotencyKeySelector)
-  const idempotencyKey = action.payload.idempotencyKey ?? persistedKey ?? uuidv4()
-  yield* put(onrampCreatingOrder({ idempotencyKey }))
+  const persistedFingerprint = yield* select(
+    (s: RootState) => s.tucopramp.onramp.pendingRequestFingerprint
+  )
+  const reusableKey =
+    persistedKey && (!persistedFingerprint || persistedFingerprint === fingerprint)
+      ? persistedKey
+      : null
+  const idempotencyKey = action.payload.idempotencyKey ?? reusableKey ?? uuidv4()
+  const previousQuote = yield* select((s: RootState) => s.tucopramp.onramp.lastQuote)
+  yield* put(onrampCreatingOrder({ idempotencyKey, fingerprint }))
   try {
     const order = yield* call(apiCreateOnrampOrder, auth, bodyWithFreshQuote, idempotencyKey)
     yield* put(onrampOrderCreated(order))
   } catch (err) {
-    yield* put(onrampError(errorMeta(err)))
+    if (errorCode(err) === 'idempotency_key_reuse') {
+      yield* put(onrampPendingIdempotencyKeyCleared())
+      yield* call(checkActiveOnrampOrderSaga)
+      const resumed = yield* select(
+        (s: RootState) =>
+          s.tucopramp.onramp.activeCheckStatus === 'done' && !!s.tucopramp.onramp.currentOrder
+      )
+      if (resumed) return
+    }
+    yield* put(onrampError(errorMeta(err, previousQuote)))
     reportTucoprampError(err, 'onramp_submit_order')
   }
 }
@@ -780,7 +1026,7 @@ export function* uploadOnrampProofSaga(
 ) {
   const auth = yield* call(resolveAuth)
   if (!auth) {
-    yield* put(onrampError({ code: 'no_wallet' }))
+    yield* put(onrampProofUploadFailed({ code: 'no_wallet' }))
     return
   }
   yield* put(onrampUploadingProof())
@@ -788,7 +1034,9 @@ export function* uploadOnrampProofSaga(
     yield* call(apiUploadProof, auth, action.payload.orderId, action.payload.file)
     yield* put(onrampProofUploaded())
   } catch (err) {
-    yield* put(onrampError(errorMeta(err)))
+    // The user already paid: keep the order on the upload step with an
+    // inline error and let them retry the upload only.
+    yield* put(onrampProofUploadFailed({ code: errorCode(err) }))
     reportTucoprampError(err, 'onramp_upload_proof')
   }
 }
@@ -800,19 +1048,36 @@ export function* uploadOnrampProofSaga(
 // upload step". The latter drives the UI banner via onrampProofRejectedForRetry.
 const RETRYABLE_ROLLBACK_ORIGINS = new Set<OnrampOrderStatus>(['AWAITING_REVIEW', 'VERIFYING'])
 
+function* isOnrampOrderTracked(orderId: string) {
+  const current = yield* select((s: RootState) => s.tucopramp.onramp.currentOrder)
+  return current?.order_id === orderId
+}
+
 export function* pollOnrampOrderSaga(action: PayloadAction<{ orderId: string }>) {
+  const { orderId } = action.payload
   const auth = yield* call(resolveAuth)
   if (!auth) {
     yield* put(onrampError({ code: 'no_wallet' }))
     return
   }
-  let attempts = 0
-  let delayMs = POLL_INITIAL_DELAY_MS
-  let previousStatus: OnrampOrderStatus | null = null
-  while (attempts < POLL_MAX_ATTEMPTS) {
+  let elapsedMs = 0
+  let operatorActive = false
+  // When the poll (re)starts after the proof was uploaded, treat the order as
+  // in review so a server AWAITING_PROOF is recognised as a rejection.
+  const proofAlreadyUploaded = yield* select((s: RootState) => s.tucopramp.onramp.proofUploaded)
+  let previousStatus: OnrampOrderStatus | null = proofAlreadyUploaded ? 'AWAITING_REVIEW' : null
+  while (elapsedMs < POLL_GIVE_UP_AFTER_MS) {
     try {
-      const detail = yield* call(apiGetOrder, auth, action.payload.orderId)
+      const detail = yield* call(apiGetOrder, auth, orderId)
+      if (!(yield* call(isOnrampOrderTracked, orderId))) {
+        Logger.info(TAG, `pollOnrampOrder: order ${orderId} no longer tracked, stopping`)
+        return
+      }
       const status = detail.status as OnrampOrderStatus
+      const terminal = isOnrampTerminal(status)
+      const { status: localStatus, proofUploaded } = yield* select(
+        (s: RootState) => s.tucopramp.onramp
+      )
       // Regressive transition from a review-side state back to AWAITING_PROOF
       // only happens when an operator rejected the proof with retryable=true.
       // Dispatch a dedicated action so the slice flips the rejection banner
@@ -823,21 +1088,100 @@ export function* pollOnrampOrderSaga(action: PayloadAction<{ orderId: string }>)
         status === 'AWAITING_PROOF' &&
         previousStatus !== null &&
         RETRYABLE_ROLLBACK_ORIGINS.has(previousStatus)
+      // An AWAITING_PROOF answer while the upload is in flight, or one that
+      // was requested before the upload landed, is stale: keep the local
+      // uploading / in-review state until the server catches up.
+      const isStaleAwaitingProof =
+        status === 'AWAITING_PROOF' &&
+        !isRetryableRollback &&
+        (localStatus === 'uploading-proof' || (localStatus === 'awaiting-review' && proofUploaded))
       if (isRetryableRollback) {
         yield* put(onrampProofRejectedForRetry())
-      } else {
-        yield* put(onrampAdvance({ status: mapOnrampDetailStatus(status) }))
+      } else if (!isStaleAwaitingProof) {
+        const mapped = mapOnrampDetailStatus(status)
+        if (mapped && (terminal || !isOnrampLocallySettled(localStatus))) {
+          yield* put(onrampAdvance({ status: mapped }))
+        }
       }
       previousStatus = status
-      if (isOnrampTerminal(status)) return
-      if (status === 'VERIFYING') delayMs = POLL_ACTIVE_DELAY_MS
+      if (terminal) return
+      operatorActive = status === 'VERIFYING'
     } catch (err) {
       Logger.warn(TAG, 'pollOnrampOrder failed, will retry', err)
     }
+    const delayMs = pollDelayMs(elapsedMs, operatorActive)
     yield* delay(delayMs)
-    attempts++
+    elapsedMs += delayMs
   }
-  Logger.warn(TAG, `pollOnrampOrder gave up after ${POLL_MAX_ATTEMPTS} attempts`)
+  Logger.warn(TAG, `pollOnrampOrder gave up after ${POLL_GIVE_UP_AFTER_MS} ms`)
+  if (yield* call(isOnrampOrderTracked, orderId)) {
+    yield* put(onrampPollTimedOut())
+  }
+}
+
+function* pollOnrampOrderUntilStopped(action: PayloadAction<{ orderId: string }>) {
+  yield* race({
+    poll: call(pollOnrampOrderSaga, action),
+    stop: take(stopOnrampPolling.type),
+  })
+}
+
+// On on-ramp screen mount: resume an open order instead of offering a fresh
+// form. For AWAITING_PROOF the user needs the receiving Bre-B key and the
+// exact amount again, so the order is rebuilt from the local copy when it is
+// the same order, else from the server detail + the public receiving account.
+export function* checkActiveOnrampOrderSaga() {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(onrampActiveCheckFailed())
+    return
+  }
+  yield* put(onrampActiveCheckStarted())
+  try {
+    const params: ListOrdersParams = { type: 'onramp', limit: 10 }
+    const page = yield* call(apiListOrders, auth, params)
+    const activeSummary = (page.orders ?? []).find(
+      (o) =>
+        o.status === 'AWAITING_PROOF' || o.status === 'AWAITING_REVIEW' || o.status === 'VERIFYING'
+    )
+    if (!activeSummary) {
+      yield* put(onrampNoActiveFound())
+      return
+    }
+    const detail = yield* call(apiGetOrder, auth, activeSummary.id)
+    const status =
+      mapOnrampDetailStatus(detail.status as OnrampOrderStatus) ??
+      mapOnrampDetailStatus(activeSummary.status as OnrampOrderStatus) ??
+      'awaiting-review'
+    const localCurrent = yield* select((s: RootState) => s.tucopramp.onramp.currentOrder)
+    let currentOrder: OnrampOrderResponse
+    if (localCurrent && localCurrent.order_id === detail.id) {
+      currentOrder = localCurrent
+    } else {
+      let account = yield* select(receivingAccountSelector)
+      if (!account) {
+        try {
+          account = yield* call(apiGetReceivingAccount)
+          yield* put(setReceivingAccount(account))
+        } catch (err) {
+          Logger.warn(TAG, 'checkActiveOnrampOrder: receiving account fetch failed', err)
+        }
+      }
+      currentOrder = {
+        order_id: detail.id,
+        status: detail.status,
+        receiving_account: account ?? { kind: 'bre_b_key', bre_b_key: '', display_name: '' },
+        gross_amount_cop: detail.gross_amount_cop,
+        expires_at: detail.expires_at,
+        proof_upload_required: true,
+        instructions: '',
+      }
+    }
+    yield* put(onrampActiveResumed({ currentOrder, status }))
+  } catch (err) {
+    Logger.warn(TAG, 'checkActiveOnrampOrder failed', err)
+    yield* put(onrampActiveCheckFailed())
+  }
 }
 
 // ---------- Helpers ----------
@@ -849,7 +1193,7 @@ function errorCode(err: unknown): string {
 }
 
 // Wire every catch in the TuCOPRamp saga into the shared business-error
-// fingerprint. Expected 4xx-style codes (rate_limited, cedula_invalid_format,
+// fingerprint. Expected 4xx-style codes (rate_limited_*, cedula_invalid_format,
 // idempotency_key_required, wallet_not_linked, wallet_linked_to_other_user)
 // are surfaced to the user via offrampError/onrampError but NOT to Sentry:
 // they are legitimate server-driven UX branches, not bugs. Everything else
@@ -857,8 +1201,9 @@ function errorCode(err: unknown): string {
 // lands with feature:'tucopramp', provider:'internal', action:<caller>, so
 // the Sentry dashboard groups all TuCOPRamp incidents under one filterable
 // slice regardless of which flow step tripped.
+// Every 429 bucket (rate_limited_ip / _consumer / _wallet / _api_key) is
+// matched by prefix in isExpectedErrorCode.
 const TUCOPRAMP_EXPECTED_ERROR_CODES = new Set<string>([
-  'rate_limited',
   'wallet_not_linked',
   'wallet_linked_to_other_user',
   'cedula_invalid_format',
@@ -873,10 +1218,17 @@ const TUCOPRAMP_EXPECTED_ERROR_CODES = new Set<string>([
   'quote_expired',
   'order_not_cancelable',
   'order_not_found',
+  'idempotency_key_reuse',
+  'proof_invalid_type',
+  'proof_too_large',
+  'proof_not_acceptable_in_state',
 ])
+function isExpectedErrorCode(code: string): boolean {
+  return code.startsWith('rate_limited') || TUCOPRAMP_EXPECTED_ERROR_CODES.has(code)
+}
 function reportTucoprampError(err: unknown, action: string): void {
   const code = errorCode(err)
-  if (TUCOPRAMP_EXPECTED_ERROR_CODES.has(code)) return
+  if (isExpectedErrorCode(code)) return
   captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
     feature: 'tucopramp',
     provider: 'internal',
@@ -887,25 +1239,50 @@ function reportTucoprampError(err: unknown, action: string): void {
 
 // Extract the full error metadata (code + optional retry-after + request_id)
 // for propagation into flow error dispatches. Retry-After only lands when the
-// server sent it (typically 429 rate_limited); request_id lands whenever the
+// server sent it (typically a 429 rate_limited_*); request_id lands whenever the
 // RFC 7807 envelope carried it. Non-TucopRampError paths still surface the
 // code but leave retry/request_id null.
-function errorMeta(err: unknown): {
-  code: string
-  retryAfterSeconds: number | null
-  request_id: string | null
-} {
+// For amount_limit_exceeded the remaining daily / monthly amounts come from
+// the error body when the server includes them (top level, or under
+// `details` / `limits` on the legacy bodies), else from the last quote.
+function errorMeta(err: unknown, lastQuote?: QuoteResponse | null): FlowErrorPayload {
   if (err instanceof TucopRampError) {
+    const remaining =
+      err.code === 'amount_limit_exceeded' ? remainingFromError(err, lastQuote) : null
     return {
       code: err.code,
       retryAfterSeconds: err.retryAfterSeconds ?? null,
       request_id: err.request_id ?? null,
+      remainingDailyCop: remaining?.daily ?? null,
+      remainingMonthlyCop: remaining?.monthly ?? null,
     }
   }
   return { code: errorCode(err), retryAfterSeconds: null, request_id: null }
 }
 
-function mapOfframpDetailStatus(status: OfframpOrderStatus) {
+function remainingFromError(
+  err: TucopRampError,
+  lastQuote?: QuoteResponse | null
+): { daily: number | null; monthly: number | null } {
+  const asRecord = (v: unknown): Record<string, unknown> | null =>
+    v && typeof v === 'object' ? (v as Record<string, unknown>) : null
+  const envelope = asRecord(err.envelope)
+  const details = asRecord(envelope?.details)
+  const sources = [envelope, details, asRecord(envelope?.limits), asRecord(details?.limits)]
+  const pick = (key: string): number | null => {
+    for (const source of sources) {
+      const value = source?.[key]
+      if (typeof value === 'number' && Number.isFinite(value)) return value
+    }
+    return null
+  }
+  return {
+    daily: pick('remaining_daily_cop') ?? lastQuote?.remaining_daily_cop ?? null,
+    monthly: pick('remaining_monthly_cop') ?? lastQuote?.remaining_monthly_cop ?? null,
+  }
+}
+
+function mapOfframpDetailStatus(status: OfframpOrderStatus): OfframpFlowStatus | null {
   switch (status) {
     case 'AWAITING_DEPOSIT':
       return 'awaiting-deposit'
@@ -923,10 +1300,13 @@ function mapOfframpDetailStatus(status: OfframpOrderStatus) {
       return 'refund-owed'
     case 'REFUNDED':
       return 'refunded'
+    default:
+      // A status this build does not know: leave the local state alone.
+      return null
   }
 }
 
-function mapOnrampDetailStatus(status: OnrampOrderStatus) {
+function mapOnrampDetailStatus(status: OnrampOrderStatus): OnrampFlowStatus | null {
   switch (status) {
     case 'AWAITING_PROOF':
       return 'awaiting-proof-upload'
@@ -936,10 +1316,14 @@ function mapOnrampDetailStatus(status: OnrampOrderStatus) {
       return 'verifying'
     case 'COMPLETED':
       return 'completed'
+    case 'REJECTED':
+      return 'rejected'
     case 'CANCELLED':
       return 'cancelled'
     case 'EXPIRED':
       return 'expired'
+    default:
+      return null
   }
 }
 
@@ -959,7 +1343,7 @@ export function* tucoprampSaga() {
   yield* takeLatest(submitCedulaUpdate.type, submitCedulaUpdateSaga)
   yield* takeLatest(requestOfframpQuote.type, requestOfframpQuoteSaga)
   yield* takeLatest(submitOfframpOrder.type, submitOfframpOrderSaga)
-  yield* takeLatest(pollOfframpOrder.type, pollOfframpOrderSaga)
+  yield* takeLatest(pollOfframpOrder.type, pollOfframpOrderUntilStopped)
   yield* takeLatest(cancelOfframpOrder.type, cancelOfframpOrderSaga)
   yield* takeLatest(fetchOfframpProofUrl.type, fetchOfframpProofUrlSaga)
   // takeLeading: ignore concurrent dispatches so a rapid re-render or a
@@ -971,6 +1355,7 @@ export function* tucoprampSaga() {
   yield* takeLatest(requestOnrampQuote.type, requestOnrampQuoteSaga)
   yield* takeLatest(submitOnrampOrder.type, submitOnrampOrderSaga)
   yield* takeLatest(uploadOnrampProof.type, uploadOnrampProofSaga)
-  yield* takeLatest(pollOnrampOrder.type, pollOnrampOrderSaga)
+  yield* takeLatest(pollOnrampOrder.type, pollOnrampOrderUntilStopped)
   yield* takeLatest(cancelOnrampOrder.type, cancelOnrampOrderSaga)
+  yield* takeLatest(checkActiveOnrampOrder.type, checkActiveOnrampOrderSaga)
 }

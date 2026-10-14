@@ -118,3 +118,28 @@ export function isValidBreBKey(value: string): boolean {
   }
   return detectBreBKeyKind(trimmed) !== null
 }
+
+// --------------- amounts ---------------
+
+// COP amounts are whole pesos. 12 digits (hundreds of billions) is far above
+// any order limit and keeps Number() exact.
+const MAX_AMOUNT_DIGITS = 12
+
+// Keep digits only, so "100.000", "100,000" and "100 000" all become
+// "100000" instead of 100 / NaN. Leading zeros are dropped.
+export function sanitizeAmountDigits(value: string): string {
+  return value.replace(/\D/g, '').replace(/^0+/, '').slice(0, MAX_AMOUNT_DIGITS)
+}
+
+// Render a digits-only amount with es-CO thousands separators (dots) for the
+// input field: "1500000" -> "1.500.000". Done by hand rather than through
+// Intl so the output does not depend on the engine's ICU data.
+export function formatAmountDigits(digits: string): string {
+  if (digits.length === 0) return ''
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+// Parse a digits-only amount into a number (0 when empty).
+export function parseAmountDigits(digits: string): number {
+  return digits.length === 0 ? 0 : Number(digits)
+}

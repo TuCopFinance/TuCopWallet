@@ -21,11 +21,13 @@ export type MentoQuoteState =
 
 // Live Mento quote for `amountIn` (base units), re-fetched when the amount
 // changes and every `refreshMs` so a quote on screen never goes stale past
-// the execution TTL. `amountIn` null means nothing to quote.
+// the execution TTL. `amountIn` null means nothing to quote. Bumping
+// `retryKey` asks again right away (a retry button after an error).
 export function useMentoQuote(
   direction: MentoDirection,
   amountIn: bigint | null,
-  refreshMs: number = 60_000
+  refreshMs: number = 60_000,
+  retryKey: number = 0
 ): MentoQuoteState {
   const [quoteState, setQuoteState] = useState<MentoQuoteState>({ state: 'idle' })
   // bigint is not a stable dependency for React; compare by string.
@@ -66,7 +68,7 @@ export function useMentoQuote(
       clearTimeout(timer)
       if (refresh) clearInterval(refresh)
     }
-  }, [amountKey, direction, refreshMs])
+  }, [amountKey, direction, refreshMs, retryKey])
 
   return quoteState
 }

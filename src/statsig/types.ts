@@ -97,11 +97,11 @@ export enum StatsigFeatureGates {
   // on-ramp entry point. Default OFF; independent of the off-ramp flag so
   // we can ramp scopes separately.
   SHOW_TUCOPRAMP_ONRAMP = 'show_tucopramp_onramp',
-  // Surfaces the Bridge Ramp card (COPm -> USDC on Mento -> COP via Bridge
+  // Surfaces the TuCOP Ramp (Bridge) card (COPm -> USDC on Mento -> COP via Bridge
   // to the user's own Bre-B key) next to TuCOP Ramp in SelectRampProvider.
   // Default OFF until TuCOPRamp ships /v1/withdraw for the wallet consumer.
   SHOW_BRIDGERAMP_OFFRAMP = 'show_bridgeramp_offramp',
-  // Surfaces the Bridge Ramp card for deposits (COP via Bre-B -> USDC on
+  // Surfaces the TuCOP Ramp (Bridge) card for deposits (COP via Bre-B -> USDC on
   // Celo -> COPm on Mento). Default OFF until TuCOPRamp ships /v1/deposit.
   SHOW_BRIDGERAMP_ONRAMP = 'show_bridgeramp_onramp',
 }

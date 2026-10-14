@@ -3922,6 +3922,26 @@ export const v255Schema = {
     ...v254Schema._persist,
     version: 255,
   },
+  // tucopramp P2P flow fields added additively (request fingerprint for the
+  // pending idempotency key, remaining limits on errors, on-ramp resume and
+  // inline upload errors). No field removed or renamed, so no migration.
+  tucopramp: {
+    ...v254Schema.tucopramp,
+    offramp: {
+      ...v254Schema.tucopramp.offramp,
+      pendingRequestFingerprint: null,
+      errorRemainingDailyCop: null,
+      errorRemainingMonthlyCop: null,
+    },
+    onramp: {
+      ...v254Schema.tucopramp.onramp,
+      pendingRequestFingerprint: null,
+      proofUploadErrorCode: null,
+      activeCheckStatus: 'idle',
+      errorRemainingDailyCop: null,
+      errorRemainingMonthlyCop: null,
+    },
+  },
   // bridgeramp slice added without a persist version bump, same policy as
   // tucopramp above: additive slice with an initialState, no migration.
   bridgeramp: {
@@ -3931,7 +3951,7 @@ export const v255Schema = {
       value: null,
       needsOnboarding: false,
       errorCode: null,
-      onboarding: { status: 'idle', errorCode: null },
+      onboarding: { status: 'idle', errorCode: null, errorRequestId: null },
     },
     destinations: {
       status: 'idle',
@@ -3945,6 +3965,8 @@ export const v255Schema = {
       quote: null,
       withdrawal: null,
       estimatedCop: null,
+      attemptId: null,
+      swapTxHash: null,
       knownPayoutIds: [],
       payout: null,
       errorCode: null,
@@ -3956,7 +3978,10 @@ export const v255Schema = {
       errorCode: null,
       errorRequestId: null,
       usdcBaseline: null,
+      instructionsShownAt: null,
+      settledAt: null,
       pending: null,
+      converting: false,
     },
     swap: {
       status: 'idle',
@@ -3969,7 +3994,6 @@ export const v255Schema = {
       swapTxHash: null,
       errorCode: null,
     },
-    lastCompletedSwap: null,
   },
 }
 

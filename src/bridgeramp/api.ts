@@ -344,16 +344,3 @@ export function createDepositAccount(
     idempotencyKey,
   })
 }
-
-export function getDepositAccount(
-  partySession: string,
-  depositId: string,
-  opts?: CallOpts
-): Promise<DepositAccount> {
-  return platformFetch<DepositAccount>({
-    ...opts,
-    method: 'GET',
-    path: `${DEPOSITS_PATH}/${encodeURIComponent(depositId)}`,
-    partySession,
-  })
-}

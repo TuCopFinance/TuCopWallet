@@ -704,42 +704,6 @@
                 }
             ]
         },
-        "BridgeRampCompletedSwap": {
-            "additionalProperties": false,
-            "properties": {
-                "amountIn": {
-                    "type": "string"
-                },
-                "confirmedAt": {
-                    "type": "number"
-                },
-                "direction": {
-                    "$ref": "#/definitions/MentoDirection"
-                },
-                "flowId": {
-                    "type": "string"
-                },
-                "quotedAmountOut": {
-                    "type": "string"
-                },
-                "recipient": {
-                    "type": "string"
-                },
-                "swapTxHash": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "amountIn",
-                "confirmedAt",
-                "direction",
-                "flowId",
-                "quotedAmountOut",
-                "recipient",
-                "swapTxHash"
-            ],
-            "type": "object"
-        },
         "BridgeRampDepositState": {
             "additionalProperties": false,
             "properties": {
@@ -753,6 +717,9 @@
                         }
                     ]
                 },
+                "converting": {
+                    "type": "boolean"
+                },
                 "errorCode": {
                     "type": [
                         "null",
@@ -765,11 +732,20 @@
                         "string"
                     ]
                 },
+                "instructionsShownAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "pending": {
                     "anyOf": [
                         {
                             "additionalProperties": false,
                             "properties": {
+                                "convertAmount": {
+                                    "type": "string"
+                                },
                                 "flowId": {
                                     "type": "string"
                                 },
@@ -788,6 +764,12 @@
                         }
                     ]
                 },
+                "settledAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "status": {
                     "$ref": "#/definitions/BridgeRampDepositStatus"
                 },
@@ -800,9 +782,12 @@
             },
             "required": [
                 "account",
+                "converting",
                 "errorCode",
                 "errorRequestId",
+                "instructionsShownAt",
                 "pending",
+                "settledAt",
                 "status",
                 "usdcBaseline"
             ],
@@ -889,6 +874,12 @@
                                 "string"
                             ]
                         },
+                        "errorRequestId": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
                         "status": {
                             "enum": [
                                 "error",
@@ -900,6 +891,7 @@
                     },
                     "required": [
                         "errorCode",
+                        "errorRequestId",
                         "status"
                     ],
                     "type": "object"
@@ -984,7 +976,10 @@
                         {
                             "enum": [
                                 "broadcast_failed",
+                                "insufficient_gas",
                                 "invalid_recipient",
+                                "market_closed",
+                                "receipt_unknown",
                                 "reverted",
                                 "stale_quote"
                             ],
@@ -1049,6 +1044,12 @@
         "BridgeRampWithdrawState": {
             "additionalProperties": false,
             "properties": {
+                "attemptId": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "copmAmountIn": {
                     "type": [
                         "null",
@@ -1102,6 +1103,12 @@
                 "status": {
                     "$ref": "#/definitions/BridgeRampWithdrawStatus"
                 },
+                "swapTxHash": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "withdrawal": {
                     "anyOf": [
                         {
@@ -1114,6 +1121,7 @@
                 }
             },
             "required": [
+                "attemptId",
                 "copmAmountIn",
                 "errorCode",
                 "errorRequestId",
@@ -1122,6 +1130,7 @@
                 "payout",
                 "quote",
                 "status",
+                "swapTxHash",
                 "withdrawal"
             ],
             "type": "object"
@@ -1133,7 +1142,8 @@
                 "creating",
                 "failed",
                 "idle",
-                "review"
+                "review",
+                "start_failed"
             ],
             "type": "string"
         },
@@ -3238,13 +3248,6 @@
             ],
             "type": "object"
         },
-        "MentoDirection": {
-            "enum": [
-                "copmToUsdc",
-                "usdcToCopm"
-            ],
-            "type": "string"
-        },
         "MoneyAmount": {
             "additionalProperties": false,
             "properties": {
@@ -4260,6 +4263,18 @@
                         "string"
                     ]
                 },
+                "errorRemainingDailyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "errorRemainingMonthlyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "errorRequestId": {
                     "type": [
                         "null",
@@ -4358,6 +4373,12 @@
                         "string"
                     ]
                 },
+                "pendingRequestFingerprint": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofUrl": {
                     "anyOf": [
                         {
@@ -4397,12 +4418,15 @@
                 "depositTxHash",
                 "depositTxStatus",
                 "errorCode",
+                "errorRemainingDailyCop",
+                "errorRemainingMonthlyCop",
                 "errorRequestId",
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastPayout",
                 "lastQuote",
                 "pendingIdempotencyKey",
+                "pendingRequestFingerprint",
                 "proofUrl",
                 "proofUrlErrorCode",
                 "proofUrlLoading",
@@ -4422,6 +4446,7 @@
                 "error",
                 "expired",
                 "idle",
+                "poll-timeout",
                 "processing",
                 "quote-ready",
                 "quoting",
@@ -4433,6 +4458,15 @@
         "OnrampFlow": {
             "additionalProperties": false,
             "properties": {
+                "activeCheckStatus": {
+                    "enum": [
+                        "checking",
+                        "done",
+                        "failed",
+                        "idle"
+                    ],
+                    "type": "string"
+                },
                 "currentOrder": {
                     "anyOf": [
                         {
@@ -4501,6 +4535,18 @@
                     "type": [
                         "null",
                         "string"
+                    ]
+                },
+                "errorRemainingDailyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "errorRemainingMonthlyCop": {
+                    "type": [
+                        "null",
+                        "number"
                     ]
                 },
                 "errorRequestId": {
@@ -4591,8 +4637,20 @@
                         "string"
                     ]
                 },
+                "pendingRequestFingerprint": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofRejectedForRetry": {
                     "type": "boolean"
+                },
+                "proofUploadErrorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
                 },
                 "proofUploaded": {
                     "type": "boolean"
@@ -4602,14 +4660,19 @@
                 }
             },
             "required": [
+                "activeCheckStatus",
                 "currentOrder",
                 "errorCode",
+                "errorRemainingDailyCop",
+                "errorRemainingMonthlyCop",
                 "errorRequestId",
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
                 "pendingIdempotencyKey",
+                "pendingRequestFingerprint",
                 "proofRejectedForRetry",
+                "proofUploadErrorCode",
                 "proofUploaded",
                 "status"
             ],
@@ -4626,8 +4689,10 @@
                 "error",
                 "expired",
                 "idle",
+                "poll-timeout",
                 "quote-ready",
                 "quoting",
+                "rejected",
                 "uploading-proof",
                 "verifying"
             ],
@@ -8240,16 +8305,6 @@
                 "destinations": {
                     "$ref": "#/definitions/BridgeRampDestinationsState"
                 },
-                "lastCompletedSwap": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/BridgeRampCompletedSwap"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
                 "party": {
                     "$ref": "#/definitions/BridgeRampPartyState"
                 },
@@ -8273,7 +8328,6 @@
             "required": [
                 "deposit",
                 "destinations",
-                "lastCompletedSwap",
                 "party",
                 "session",
                 "swap",

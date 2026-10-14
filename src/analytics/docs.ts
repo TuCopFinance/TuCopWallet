@@ -320,6 +320,10 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [FiatExchangeEvents.cico_landing_select_flow]: `User taps which CICO flow they want (Cash in, cash out, spend)`,
   [FiatExchangeEvents.cico_landing_how_to_fund]: `User taps help article link at the bottom`,
 
+  // Ramp chooser (SelectRampProvider)
+  [FiatExchangeEvents.ramp_chooser_open]: `User opens the ramp chooser to deposit (direction onramp) or withdraw (direction offramp)`,
+  [FiatExchangeEvents.ramp_chooser_select]: `User picks a ramp in the chooser: tucopramp_p2p (TuCOP Ramp P2P) or tucopramp_bridge (TuCOP Ramp powered by Bridge)`,
+
   // The CICO Amount screen where the user selects the amount of money
   [FiatExchangeEvents.cico_amount_chosen]: `User selects a valid amount and taps next`,
   [FiatExchangeEvents.cico_amount_chosen_invalid]: `User attempts to click next but the amount is invalid`,

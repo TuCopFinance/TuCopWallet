@@ -1,10 +1,17 @@
 import BigNumber from 'bignumber.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native'
 import { partyCanTransact } from 'src/bridgeramp/api'
-import { PartySection } from 'src/bridgeramp/BridgeRampWithdraw'
-import { COPM_DECIMALS, MentoQuote, USDC_DECIMALS } from 'src/bridgeramp/mentoRouter'
+import { PartySection, Row, withSupportCode } from 'src/bridgeramp/BridgeRampWithdraw'
+import {
+  BRIDGE_MIN_COP,
+  digitalPesosLabel,
+  dollarsLabel,
+  formatCop,
+  pesosLabel,
+} from 'src/bridgeramp/display'
+import { COPM_DECIMALS, USDC_DECIMALS } from 'src/bridgeramp/mentoRouter'
 import {
   checkBridgeRampDeposit,
   fetchBridgeRampParty,
@@ -17,7 +24,6 @@ import {
   bridgeRampSwapSelector,
 } from 'src/bridgeramp/selectors'
 import { depositReset } from 'src/bridgeramp/slice'
-import { useMentoQuote } from 'src/bridgeramp/useMentoQuote'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import DataFieldWithCopy from 'src/components/DataFieldWithCopy'
 import InLineNotification, { NotificationVariant } from 'src/components/InLineNotification'
@@ -28,20 +34,10 @@ import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
 import { walletAddressSelector } from 'src/web3/selectors'
 
-// Bridge pays nothing below this (COP). Enforced here until TuCOPRamp returns
-// limits for the wallet consumer.
-const BRIDGE_MIN_COP = 4_000
-// Rough rate used only to size a USDC input from a COP amount for the
-// estimate; the number shown comes from the Mento quote itself.
-const FALLBACK_COP_PER_USD = 3_200
 // How often the screen refreshes balances while waiting for Bridge's payout.
 // Bridge settles a Bre-B deposit in a few minutes; 15 s keeps the wait short
 // without hammering the balance endpoint.
 const ARRIVAL_POLL_MS = 15_000
-
-interface Props {
-  oracleStale: boolean
-}
 
 // COP -> COPm through Bridge. The user pays Bre-B to the virtual account
 // TuCOPRamp returns for this wallet; Bridge sends USDC to the wallet; the
@@ -50,7 +46,7 @@ interface Props {
 //   1. account: party must be onboarded and verified (PartySection).
 //   2. instructions: the Bre-B key to pay, an optional amount estimate.
 //   3. arrival: balance polling until USDC lands, then the swap's progress.
-function BridgeRampDeposit({ oracleStale }: Props) {
+function BridgeRampDeposit() {
   const dispatch = useDispatch()
   const party = useSelector(bridgeRampPartySelector)
   const deposit = useSelector(bridgeRampDepositSelector)
@@ -83,12 +79,12 @@ function BridgeRampDeposit({ oracleStale }: Props) {
   return (
     <View>
       <PartySection />
-      {canTransact && <DepositSection oracleStale={oracleStale} />}
+      {canTransact && <DepositSection />}
     </View>
   )
 }
 
-function DepositSection({ oracleStale }: Props) {
+function DepositSection() {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const deposit = useSelector(bridgeRampDepositSelector)
@@ -102,9 +98,15 @@ function DepositSection({ oracleStale }: Props) {
     return (
       <InLineNotification
         variant={NotificationVariant.Error}
-        description={t('bridgeramp.deposit.accountError', {
-          code: deposit.errorCode ?? 'unknown',
-        })}
+        description={withSupportCode(
+          t,
+          t(`bridgeramp.deposit.accountErrors.${deposit.errorCode}`, {
+            defaultValue: t('bridgeramp.deposit.accountError', {
+              code: deposit.errorCode ?? 'unknown',
+            }),
+          }),
+          deposit.errorRequestId
+        )}
         ctaLabel={t('bridgeramp.retry')}
         onPressCta={() => dispatch(startBridgeRampDeposit())}
         style={styles.notice}
@@ -115,7 +117,12 @@ function DepositSection({ oracleStale }: Props) {
 
   // USDC arrived: the conversion is what the user is looking at now.
   if (deposit.pending) {
-    return <ConversionProgress usdcAmount={deposit.pending.usdcAmount} />
+    return (
+      <ConversionProgress
+        usdcAmount={deposit.pending.convertAmount ?? deposit.pending.usdcAmount}
+        converting={deposit.converting}
+      />
+    )
   }
 
   const { deposit_instructions: instructions, destination, fee_bps: feeBps } = deposit.account
@@ -158,7 +165,7 @@ function DepositSection({ oracleStale }: Props) {
         style={styles.noticeTop}
       />
 
-      <EstimateBox oracleStale={oracleStale} />
+      <EstimateBox feeBps={feeBps} />
 
       <View style={styles.waiting} testID="bridgeramp-deposit-waiting">
         <ActivityIndicator />
@@ -168,7 +175,7 @@ function DepositSection({ oracleStale }: Props) {
         <InLineNotification
           variant={NotificationVariant.Info}
           description={t('bridgeramp.deposit.lastConverted', {
-            amount: new BigNumber(swap.quotedAmountOut ?? 0).shiftedBy(-COPM_DECIMALS).toFormat(0),
+            amount: formatCop(new BigNumber(swap.quotedAmountOut ?? 0).shiftedBy(-COPM_DECIMALS)),
           })}
           style={styles.noticeTop}
           testID="bridgeramp-deposit-last"
@@ -178,26 +185,21 @@ function DepositSection({ oracleStale }: Props) {
   )
 }
 
-// Live Mento estimate for an amount the user is about to pay. Informational:
-// the real conversion uses the quote taken when the USDC lands.
-function EstimateBox({ oracleStale }: Props) {
+// Rough estimate for an amount the user is about to pay. Bridge converts
+// the pesos at its own rate when they arrive and the app swaps the dollars
+// on Mento right after, so the only number known now is the fee: show the
+// amount less TuCOP's fee as an approximation and say the rate decides.
+function estimateDepositPesos(amountCop: number, feeBps: number): BigNumber {
+  return new BigNumber(amountCop)
+    .times(new BigNumber(10_000 - feeBps).dividedBy(10_000))
+    .integerValue(BigNumber.ROUND_FLOOR)
+}
+
+function EstimateBox({ feeBps }: { feeBps: number }) {
   const { t } = useTranslation()
   const [amountCop, setAmountCop] = useState('')
   const amountNum = Number(amountCop.replace(/[^0-9]/g, ''))
   const amountValid = Number.isFinite(amountNum) && amountNum >= BRIDGE_MIN_COP
-  const amountIn = useMemo(
-    () =>
-      amountValid && !oracleStale
-        ? BigInt(
-            new BigNumber(amountNum)
-              .dividedBy(FALLBACK_COP_PER_USD)
-              .shiftedBy(USDC_DECIMALS)
-              .toFixed(0)
-          )
-        : null,
-    [amountNum, amountValid, oracleStale]
-  )
-  const quoteState = useMentoQuote('usdcToCopm', amountIn)
 
   return (
     <View style={styles.section}>
@@ -213,59 +215,55 @@ function EstimateBox({ oracleStale }: Props) {
       />
       {amountCop.length > 0 && !amountValid && (
         <Text style={styles.helperError}>
-          {t('bridgeramp.amountBelowMin', { min: BRIDGE_MIN_COP.toLocaleString('es-CO') })}
+          {t('bridgeramp.amountBelowMin', { min: formatCop(BRIDGE_MIN_COP) })}
         </Text>
       )}
-      {quoteState.state === 'loading' && <ActivityIndicator style={styles.spinner} />}
-      {quoteState.state === 'ready' && (
+      {amountValid && (
         <View style={styles.quoteBox} testID="bridgeramp-quote">
-          <Row
-            label={t('bridgeramp.onramp.quoteIn')}
-            value={formatAmount(quoteState.quote, 'in')}
-          />
+          <Row label={t('bridgeramp.onramp.quoteIn')} value={pesosLabel(t, amountNum)} />
           <Row
             label={t('bridgeramp.onramp.quoteOut')}
-            value={formatAmount(quoteState.quote, 'out')}
-          />
-          <Row
-            label={t('bridgeramp.rateLabel')}
-            value={`${quoteState.quote.copPerUsd.toFormat(2)} COP / USD`}
+            value={t('bridgeramp.deposit.estimateApprox', {
+              amount: digitalPesosLabel(t, estimateDepositPesos(amountNum, feeBps)),
+            })}
           />
           <Text style={styles.quoteNote}>{t('bridgeramp.deposit.estimateNote')}</Text>
         </View>
-      )}
-      {quoteState.state === 'oracle-unavailable' && (
-        <InLineNotification
-          variant={NotificationVariant.Warning}
-          description={t('rampProviders.bridgeramp.outsideHours')}
-          style={styles.noticeTop}
-          testID="bridgeramp-oracle-stale"
-        />
-      )}
-      {quoteState.state === 'error' && (
-        <InLineNotification
-          variant={NotificationVariant.Error}
-          description={t('bridgeramp.quoteError')}
-          style={styles.noticeTop}
-        />
       )}
     </View>
   )
 }
 
-function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
+function ConversionProgress({
+  usdcAmount,
+  converting,
+}: {
+  usdcAmount: string
+  converting: boolean
+}) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const swap = useSelector(bridgeRampSwapSelector)
-  const usdc = new BigNumber(usdcAmount).shiftedBy(-USDC_DECIMALS).toFormat(2)
+  const usdc = dollarsLabel(t, new BigNumber(usdcAmount).shiftedBy(-USDC_DECIMALS))
   const failed = swap.status === 'failed'
+  // Mento cannot price COPm right now; the conversion runs on its own once
+  // it can (checkDepositSaga keeps trying while this screen is open).
+  const marketClosed = failed && swap.errorCode === 'market_closed'
+  // A conversion is being quoted, signed or awaited right now: a second one
+  // must not start, so retry and keep are hidden until it ends.
+  const busy = converting || swap.status === 'submitting' || swap.status === 'broadcast'
+  // The swap was broadcast and may still land: keeping the dollars now
+  // would forget a conversion that can still spend them.
+  const mayStillLand = failed && swap.errorCode === 'receipt_unknown'
 
   return (
     <View testID="bridgeramp-deposit-converting">
       <Text style={styles.stepTitle}>
-        {failed
-          ? t('bridgeramp.deposit.convertFailedTitle')
-          : t('bridgeramp.deposit.convertingTitle')}
+        {marketClosed
+          ? t('bridgeramp.deposit.marketClosedTitle')
+          : failed
+            ? t('bridgeramp.deposit.convertFailedTitle')
+            : t('bridgeramp.deposit.convertingTitle')}
       </Text>
       <Text style={styles.body}>
         {failed
@@ -274,7 +272,7 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
             })
           : t('bridgeramp.deposit.convertingBody', { usdc })}
       </Text>
-      {!failed && <ActivityIndicator style={styles.spinner} />}
+      {(!failed || marketClosed || busy) && <ActivityIndicator style={styles.spinner} />}
       {!!swap.swapTxHash && (
         <View style={styles.hashBlock}>
           <Text style={styles.rowLabel}>{t('bridgeramp.progress.swapTx')}</Text>
@@ -283,7 +281,7 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
           </Text>
         </View>
       )}
-      {failed && (
+      {failed && !busy && (
         <>
           <Button
             text={t('bridgeramp.deposit.retryConvert')}
@@ -293,31 +291,20 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
             style={styles.cta}
             testID="bridgeramp-deposit-retry"
           />
-          <Text style={styles.body}>{t('bridgeramp.deposit.keepUsdcHint', { usdc })}</Text>
-          <Button
-            text={t('bridgeramp.deposit.keepUsdc')}
-            onPress={() => dispatch(depositReset())}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.FULL}
-            testID="bridgeramp-deposit-keep"
-          />
+          {!mayStillLand && (
+            <>
+              <Text style={styles.body}>{t('bridgeramp.deposit.keepUsdcHint', { usdc })}</Text>
+              <Button
+                text={t('bridgeramp.deposit.keepUsdc')}
+                onPress={() => dispatch(depositReset())}
+                type={BtnTypes.SECONDARY}
+                size={BtnSizes.FULL}
+                testID="bridgeramp-deposit-keep"
+              />
+            </>
+          )}
         </>
       )}
-    </View>
-  )
-}
-
-function formatAmount(quote: MentoQuote, side: 'in' | 'out'): string {
-  const whole = side === 'in' ? quote.amountInWhole : quote.amountOutWhole
-  const isCopm = (quote.direction === 'copmToUsdc') === (side === 'in')
-  return isCopm ? `${whole.toFormat(0)} pesos digitales` : `${whole.toFormat(2)} USDC`
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
     </View>
   )
 }
@@ -346,9 +333,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.Small12,
     backgroundColor: Colors.gray1,
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.Smallest8 },
   rowLabel: { ...typeScale.bodySmall, color: Colors.gray4 },
-  rowValue: { ...typeScale.labelSemiBoldMedium, color: Colors.black },
   quoteNote: { ...typeScale.bodySmall, color: Colors.gray4, marginTop: Spacing.Smallest8 },
   waiting: { flexDirection: 'row', alignItems: 'center', marginTop: Spacing.Thick24 },
   waitingText: { ...typeScale.bodySmall, color: Colors.gray4, marginLeft: Spacing.Small12 },

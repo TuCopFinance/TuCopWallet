@@ -10,10 +10,13 @@ import {
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_NAME_LENGTH,
   detectBreBKeyKind,
+  formatAmountDigits,
   isValidBankAccountNumber,
   isValidBreBKey,
   isValidEmail,
   isValidPersonName,
+  parseAmountDigits,
+  sanitizeAmountDigits,
   sanitizeDigits,
   sanitizePersonName,
 } from 'src/tucopramp/validation'
@@ -275,5 +278,41 @@ describe('getDocumentAutoCapitalize', () => {
     expect(getDocumentAutoCapitalize('PAS')).toBe('characters')
     expect(getDocumentAutoCapitalize('CC')).toBe('none')
     expect(getDocumentAutoCapitalize('NIT')).toBe('none')
+  })
+})
+
+describe('amount input helpers', () => {
+  it.each([
+    ['100.000', '100000'],
+    ['100,000', '100000'],
+    ['1 500 000', '1500000'],
+    ['$ 250.000', '250000'],
+    ['000123', '123'],
+    ['', ''],
+  ])('sanitizeAmountDigits(%p) -> %p', (input, expected) => {
+    expect(sanitizeAmountDigits(input)).toBe(expected)
+  })
+
+  it('caps the number of digits', () => {
+    expect(sanitizeAmountDigits('9'.repeat(20))).toHaveLength(12)
+  })
+
+  it.each([
+    ['', ''],
+    ['5', '5'],
+    ['1000', '1.000'],
+    ['100000', '100.000'],
+    ['1500000', '1.500.000'],
+  ])('formatAmountDigits(%p) -> %p', (digits, expected) => {
+    expect(formatAmountDigits(digits)).toBe(expected)
+  })
+
+  it('round-trips a typed formatted value', () => {
+    // The user types one more digit at the end of "100.000".
+    const digits = sanitizeAmountDigits('100.0005')
+    expect(digits).toBe('1000005')
+    expect(formatAmountDigits(digits)).toBe('1.000.005')
+    expect(parseAmountDigits(digits)).toBe(1_000_005)
+    expect(parseAmountDigits('')).toBe(0)
   })
 })

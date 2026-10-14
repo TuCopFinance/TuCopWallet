@@ -15,7 +15,7 @@ import { Spacing } from 'src/styles/styles'
 
 type Props = NativeStackScreenProps<StackParamList, Screens.BridgeRampFlow>
 
-// Bridge Ramp entry screen: the off-ramp (BridgeRampWithdraw) or the on-ramp
+// TuCOP Ramp (powered by Bridge) entry screen: the off-ramp (BridgeRampWithdraw) or the on-ramp
 // (BridgeRampDeposit) under a shared header. Gated by SHOW_BRIDGERAMP_*; the
 // provider card only reaches this screen while the COPm oracle is fresh, and
 // the notice below covers it going stale in-flow.
@@ -24,6 +24,12 @@ function BridgeRampFlow({ route }: Props) {
   const direction = route.params.direction
   const availability = useBridgeRampAvailability(true)
   const oracleStale = availability.state === 'unavailable' || availability.state === 'error'
+  // 'error' means the oracle could not be read at all (RPC down, offline),
+  // which is not the same as being outside banking hours.
+  const staleMessage =
+    availability.state === 'error'
+      ? t('rampProviders.bridgeramp.unreachable')
+      : t('rampProviders.bridgeramp.outsideHours')
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -35,7 +41,7 @@ function BridgeRampFlow({ route }: Props) {
         {oracleStale && (
           <InLineNotification
             variant={NotificationVariant.Warning}
-            description={t('rampProviders.bridgeramp.outsideHours')}
+            description={staleMessage}
             style={styles.notice}
             testID="bridgeramp-oracle-stale"
           />
@@ -44,7 +50,7 @@ function BridgeRampFlow({ route }: Props) {
         {direction === 'offramp' ? (
           <BridgeRampWithdraw oracleStale={oracleStale} />
         ) : (
-          <BridgeRampDeposit oracleStale={oracleStale} />
+          <BridgeRampDeposit />
         )}
       </ScrollView>
     </SafeAreaView>

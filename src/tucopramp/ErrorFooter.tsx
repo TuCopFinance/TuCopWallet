@@ -6,6 +6,7 @@ import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
 import { Spacing } from 'src/styles/styles'
+import { isRateLimitedCode } from 'src/tucopramp/errorCopy'
 
 // Platform-native monospace stack. iOS ships Menlo; Android ships monospace
 // (Droid Sans Mono under the hood). Falling back to whatever the OS considers
@@ -17,8 +18,9 @@ const MONO_FONT = Platform.select({ ios: 'Menlo', android: 'monospace', default:
 //
 // Adds two UX affordances the sagas surface via extended error state:
 //
-//   1. Rate-limit countdown: when the server returned 429 with a Retry-After
-//      header, the saga persists retryAfterSeconds. We render a live countdown
+//   1. Rate-limit countdown: when the server returned 429 (any rate_limited_*
+//      bucket) with a Retry-After header, the saga persists
+//      retryAfterSeconds. We render a live countdown
 //      + gate the retry callback until it hits 0, so users cannot spam-tap
 //      through the throttle window and rack up more 429s.
 //
@@ -46,7 +48,7 @@ export default function TucopRampErrorFooter({
   retryButtonTestId,
 }: Props) {
   const { t } = useTranslation()
-  const showCountdown = errorCode === 'rate_limited' && !!retryAfterSeconds && retryAfterSeconds > 0
+  const showCountdown = isRateLimitedCode(errorCode) && !!retryAfterSeconds && retryAfterSeconds > 0
   const [remaining, setRemaining] = useState<number>(
     showCountdown ? Math.ceil(retryAfterSeconds ?? 0) : 0
   )

@@ -26,6 +26,7 @@ import {
   isValidDocument,
   sanitizeDocument,
 } from 'src/tucopramp/limits'
+import { errorMessageKey } from 'src/tucopramp/errorCopy'
 import { PickerModal } from 'src/tucopramp/PickerModal'
 import { fetchUserProfile, submitCedulaUpdate } from 'src/tucopramp/saga'
 import {
@@ -118,10 +119,10 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
     navigateBack()
   }
 
+  // Retry keeps what the user typed: most failures (network, a lock that
+  // has since cleared) are fixed by resubmitting the same values.
   const onEditAgain = () => {
     dispatch(cedulaUpdateReset())
-    setNewCedula('')
-    setReason('')
   }
 
   return (
@@ -134,7 +135,10 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
           <View style={styles.currentBlock}>
             <Text style={styles.label}>{t('tucopramp.settings.updateCedula.currentLabel')}</Text>
             <Text style={styles.currentValue}>
-              {profile.document_type ?? 'CC'} ****{profile.cedula_last_4}
+              {t('tucopramp.settings.updateCedula.currentValue', {
+                type: t(`tucopramp.documentType.${profile.document_type ?? 'CC'}`),
+                last4: profile.cedula_last_4,
+              })}
             </Text>
           </View>
         )}
@@ -178,7 +182,7 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
             <Text style={styles.label}>{t('tucopramp.settings.updateCedula.newCedulaLabel')}</Text>
             <TextInput
               style={styles.input}
-              placeholder={t('tucopramp.settings.updateCedula.newCedulaPlaceholder') ?? ''}
+              placeholder={t(`tucopramp.documentHint.${newDocumentType}`) ?? ''}
               keyboardType={getDocumentKeyboardType(newDocumentType)}
               autoCapitalize={getDocumentAutoCapitalize(newDocumentType)}
               autoCorrect={false}
@@ -215,7 +219,7 @@ function TuCOPRampUpdateCedulaScreen(_props: Props) {
                   {t('tucopramp.settings.updateCedula.errorHeading')}
                 </Text>
                 <Text style={styles.errorBody}>
-                  {t(`tucopramp.errors.${errorCode}`, {
+                  {t(errorMessageKey(errorCode), {
                     defaultValue: t('tucopramp.errors.unknown'),
                   })}
                 </Text>

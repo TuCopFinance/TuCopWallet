@@ -56,6 +56,7 @@ import { TokenPickerOrigin } from 'src/components/TokenBottomSheet'
 import { DappSection } from 'src/dapps/types'
 import { BeforeDepositActionName, EarnActiveMode, SerializableRewardsInfo } from 'src/earn/types'
 import { ProviderSelectionAnalyticsData } from 'src/fiatExchanges/types'
+import { RampAnalyticsId, RampDirection } from 'src/fiatExchanges/rampProviders'
 import { CICOFlow, FiatExchangeFlow, PaymentMethod } from 'src/fiatExchanges/utils'
 import { HomeActionName, NotificationBannerCTATypes, NotificationType } from 'src/home/types'
 import {
@@ -733,6 +734,8 @@ interface FiatExchangeEventsProperties {
   [FiatExchangeEvents.cico_landing_token_balance]: { totalBalance?: string }
   [FiatExchangeEvents.cico_landing_select_flow]: { flow: FiatExchangeFlow }
   [FiatExchangeEvents.cico_landing_how_to_fund]: undefined
+  [FiatExchangeEvents.ramp_chooser_open]: { direction: RampDirection }
+  [FiatExchangeEvents.ramp_chooser_select]: { ramp: RampAnalyticsId; direction: RampDirection }
   [FiatExchangeEvents.cico_amount_chosen]: {
     amount: number
     currency: string

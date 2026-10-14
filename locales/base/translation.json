@@ -411,7 +411,7 @@
   "celoReal": "Digital Real",
   "celoDollars": "Digital Dollars",
   "ether": "Ether",
-  "tapToCopyCeloDollarsAddress": "Tap to copy your {{appName}} CUSD address",
+  "tapToCopyCeloDollarsAddress": "Tap to copy your {{appName}} Dollars address",
   "disclaimerFiat": "{{currency}} values are estimates.",
   "dollarsNotYetEnabledNote": "Digital dollars are not yet available on any providers. Try converting other assets inside your wallet.",
   "selectDigitalCurrency": "Select an asset",
@@ -3129,7 +3129,7 @@
     "addCOPm": "Add Pesos",
     "sendMoney": "Send Money",
     "receiveMoney": "Receive Money",
-    "spendMoney": "Spend Money",
+    "spendMoney": "Withdraw",
     "holdUSD": "Hold US Dollars",
     "swap": "Swap your currencies",
     "swapSubtitle": "Change between your assets",
@@ -3368,14 +3368,13 @@
   "tucopramp": {
     "providerName": "TuCOP Ramp P2P",
     "providerBy": "by TuCOP Solutions",
-    "offrampProviderTagline": "Convert your digital pesos to pesos in your bank account",
     "offrampTitle": "Withdraw to your bank",
     "onrampTitle": "Get digital pesos",
     "onrampEntryTitle": "Get digital pesos",
-    "onrampEntrySubtitle": "Convert pesos in your bank account to digital pesos with TuCOP Ramp",
+    "onrampEntrySubtitle": "Convert pesos in your bank account to digital pesos with TuCOP Ramp P2P",
     "amountLabel": "Amount (Pesos)",
     "amountPlaceholder": "Enter the amount",
-    "amountRange": "Amount between {{min}} and {{max}} pesos",
+    "amountRange": "Amount between {{min}} and {{max}} pesos.",
     "bankLabel": "Bank",
     "bankPickerDefault": "Select a bank",
     "bankPickerTitle": "Choose your bank",
@@ -3397,8 +3396,6 @@
     "breBKeyPlaceholder": "ID, mobile, email or @ alias",
     "breBKeyHelp": "Enter the Bre-B key you registered with your bank (ID, mobile, email or a custom alias starting with @).",
     "breBKeyInvalid": "Invalid format. Use an ID, a mobile number (10 digits starting with 3), an email or an @ alias.",
-    "cedulaLabel": "ID",
-    "cedulaInvalid": "The ID must have between 6 and 10 digits.",
     "documentTypeLabel": "Document type",
     "documentValueLabel": "Document number",
     "documentType": {
@@ -3421,7 +3418,6 @@
     "emailLabel": "Email",
     "emailInvalid": "Invalid email. Check that it has an @ and a domain.",
     "accountNumberInvalid": "The account number must have between 4 and 20 digits.",
-    "fullNameLabel": "Full name",
     "firstNameLabel": "First names",
     "firstNamePlaceholder": "E.g. Juan Pablo",
     "lastNameLabel": "Last names",
@@ -3433,18 +3429,14 @@
     "confirmSendCta": "Confirm and send",
     "confirmCreateOrderCta": "Confirm",
     "creatingOrder": "Preparing your order...",
-    "awaitingDepositHeading": "Send your digital pesos",
-    "awaitingDepositBody": "Send {{amount}} digital pesos to complete your withdrawal.",
     "processingHeading": "Processing",
     "processingBody": "We received your digital pesos. The money arrives in your account within 24 hours.",
     "awaitingProofHeading": "Transfer your pesos via Bre-B",
     "transferToLabel": "Transfer to",
     "transferAmountLabel": "Amount to transfer",
     "uploadProofCta": "Upload receipt",
-    "uploadingOrVerifying": "Verifying...",
     "awaitingReviewHeading": "Reviewing your transfer",
-    "awaitingReviewBody": "An operator will confirm your transfer and we will send the digital pesos to your wallet.",
-    "cancelCta": "Cancel",
+    "awaitingReviewBody": "An operator will confirm your transfer and we will send the digital pesos to your wallet. It can take up to 24 hours.",
     "cancelOrderButton": "Cancel order",
     "cancelConfirmTitle": "Cancel this order?",
     "cancelConfirmBody": "We will cancel this order. You can create a new one later, but this one cannot be recovered.",
@@ -3476,41 +3468,47 @@
       "order_not_found": "We could not find this order.",
       "order_not_cancelable": "This order can no longer be cancelled.",
       "proof_missing_file": "You did not send the receipt.",
-      "proof_invalid_type": "The file must be an image (PNG, JPG).",
-      "proof_too_large": "The file is too large. Maximum 10 MB.",
+      "proof_invalid_type": "The receipt must be a PNG or JPG image.",
+      "proof_too_large": "The file is too large. The maximum is 10 MB.",
       "proof_not_acceptable_in_state": "The receipt cannot be uploaded right now.",
       "proof_url_expired": "The link expired. Reload to get a new one.",
-      "rate_limited": "Too many requests. Wait a moment.",
       "rate_limited_ip": "Too many requests. Wait a moment.",
       "rate_limited_consumer": "Service busy. Try again in a minute.",
       "rate_limited_wallet": "Wait a moment before retrying.",
-      "idempotency_key_reuse": "Duplicate request. Close and try again.",
+      "idempotency_key_reuse": "We already sent the same request. Try again.",
       "proxy_disabled": "Service under maintenance. Try again later.",
       "proxy_misconfigured": "Service unavailable due to configuration.",
-      "wallet_linked_to_other_user": "This wallet is already linked to another user",
-      "cedula_invalid_format": "Invalid ID",
-      "cedula_locked_by_active_order": "Cannot change ID while an order is active",
-      "user_not_found": "User not found",
-      "payout_invalid_shape": "Invalid payout details",
-      "idempotency_key_required": "Please retry the operation",
-      "proof_signature_invalid": "Invalid receipt, take it again",
-      "proof_not_found": "Receipt not found",
-      "invalid_upload": "The file is invalid",
-      "internal_error": "Service error, please try again",
-      "rate_limited_countdown": "Too many requests, try again in {{seconds}}s",
+      "wallet_linked_to_other_user": "This wallet is already linked to another user.",
+      "cedula_invalid_format": "The document number is not valid.",
+      "cedula_locked_by_active_order": "You cannot change the document while an order is active.",
+      "user_not_found": "We could not find your user.",
+      "payout_invalid_shape": "The payout details are not valid. Check them and try again.",
+      "idempotency_key_required": "Please retry the operation.",
+      "proof_signature_invalid": "The receipt link is no longer valid. Open the order again.",
+      "proof_not_found": "We could not find the receipt.",
+      "invalid_upload": "The file is not valid.",
+      "internal_error": "There was a service error. Try again.",
+      "rate_limited_countdown": "Too many requests. Try again in {{seconds}} s.",
       "referenceCode": "Reference code",
       "copyReference": "Copy code",
-      "copied": "Copied"
+      "copied": "Copied",
+      "proof_picker_failed": "We could not open the image. Try again with another photo.",
+      "proof_picker_permission": "Allow access to your photos to upload the receipt.",
+      "proof_upload_failed": "We could not upload the receipt. Check your connection and try again.",
+      "product_not_enabled": "This service is not enabled right now. Try again later.",
+      "rate_limited_api_key": "Service busy. Try again in a minute.",
+      "invalid_query": "We could not process the request. Try again.",
+      "invalid_json": "We could not process the request. Try again.",
+      "http_409": "The request clashed with another one in progress. Try again in a moment.",
+      "http_5xx": "The service is not available right now. Try again in a few minutes."
     },
     "settings": {
       "updateCedula": {
         "title": "Change your ID",
-        "subtitle": "Update the ID number linked to your TuCOP Ramp account.",
+        "subtitle": "Update the document number linked to your TuCOP Ramp P2P account.",
         "currentLabel": "Current ID",
         "activeOrderWarning": "If you have an active order, close it before changing the ID. The server will reject the change while an order is active.",
         "newCedulaLabel": "New ID",
-        "newCedulaPlaceholder": "Digits only (6 to 10)",
-        "cedulaFormatHelper": "The ID must be 6 to 10 digits, no letters or separators.",
         "reasonLabel": "Reason for change",
         "reasonPlaceholder": "e.g. I typed the wrong ID on the first order",
         "submitCta": "Update ID",
@@ -3519,45 +3517,42 @@
         "successHeading": "ID updated",
         "successBody": "Your next order will use the new ID.",
         "doneCta": "Done",
-        "errorHeading": "Could not update"
+        "errorHeading": "Could not update",
+        "currentValue": "{{type}} ****{{last4}}"
       }
     },
     "offramp": {
       "completed": {
         "proofTitle": "Payout receipt",
         "proofLoading": "Loading receipt...",
-        "proofError": "Could not load the receipt. Try re-opening the order."
+        "proofError": "Could not load the receipt. Try opening the order again.",
+        "viewProof": "View receipt",
+        "proofNotYet": "The receipt is not available yet."
       }
     },
     "consent": {
-      "label": "I have read and accept the TuCOP Ramp terms and conditions",
-      "linkText": "View terms",
-      "required": "Accept the terms to continue"
+      "label": "I have read and accept the TuCOP Ramp P2P terms and conditions",
+      "linkText": "View terms"
     },
     "proofRejectedForRetryTitle": "Receipt rejected",
     "proofRejectedForRetryBody": "The operator could not verify your receipt. Upload a new one with the transfer clearly visible.",
-    "selectProvider": "Withdraw Funds",
-    "selectProviderSubtitle": "Choose a provider to convert your digital assets to local currency.",
-    "amountBelowMin": "The minimum amount is {{min}} pesos",
-    "amountAboveMax": "The maximum amount is {{max}} pesos",
-    "confirmSubtitle": "Review the details before confirming the withdrawal",
+    "amountBelowMin": "The minimum amount is {{min}} pesos.",
+    "amountAboveMax": "The maximum amount is {{max}} pesos.",
+    "confirmSubtitle": "Review the details before confirming the withdrawal.",
     "breakdown": {
       "amountToSend": "Amount to send",
       "offrampCommission": "Withdrawal commission ({{percent}}%)",
-      "assumedByTuCop": "Assumed by TuCop",
+      "assumedByTuCop": "Covered by TuCOP",
       "networkFee": "Network fee",
       "youReceive": "You receive"
     },
     "checkingActiveOrder": "Checking your open orders...",
     "activeOrderExistsHeading": "You already have an active order",
     "activeOrderMissingMultisigBody": "You already have an order open with the operator. This wallet no longer has the deposit address for it, so you cannot resume the deposit from here.",
-    "activeOrderSupportHint": "Only the operator can cancel or refund an order. Contact support with the reference id below to close it or request a refund if you already sent your digital pesos.",
-    "activeOrderCancelHint": "You can cancel the order from here to free up your daily cap. If the deposit already left your wallet, you cannot cancel it: contact support with the reference id to request a refund.",
+    "activeOrderCancelHint": "You can cancel the order from here to free up your daily limit. If the deposit already left your wallet, you cannot cancel it: contact support with the reference id to request a refund.",
     "backCta": "Back",
     "activeOrder": {
-      "amountsSection": "Amounts",
       "destinationSection": "Destination",
-      "datesSection": "Dates",
       "referenceSection": "Reference id",
       "amountLabel": "Amount to send",
       "netReceiveLabel": "You would receive",
@@ -3577,7 +3572,45 @@
     "viewOnCeloscan": "View on Celoscan",
     "depositTxErrors": {
       "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
-      "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
+      "reverted": "The transaction was rejected on-chain. Try again or cancel the order.",
+      "order_check_failed": "We could not confirm the order is still waiting for your deposit. Nothing was sent. Try again or cancel the order.",
+      "order_not_open": "This order no longer accepts deposits, so nothing was sent."
+    },
+    "amountPesos": "{{amount}} pesos",
+    "amountDigitalPesos": "{{amount}} digital pesos",
+    "noFee": "No fee",
+    "remainingLimits": "Available limit: {{daily}} pesos today and {{monthly}} pesos this month.",
+    "limitsSummary": "You can move up to {{daily}} pesos per day and {{monthly}} pesos per month.",
+    "editCta": "Edit",
+    "balanceErrors": {
+      "insufficientBalance": "You don't have enough digital pesos. Your balance is {{balance}} digital pesos.",
+      "needDecreaseForGas": "Your balance does not cover the amount plus the network fee. Lower the amount and try again.",
+      "notEnoughForGas": "You don't have enough balance to pay the network fee."
+    },
+    "preparingDepositBody": "We are about to send {{amount}} digital pesos from your wallet.",
+    "depositSubmittedBody": "Your digital pesos are on the way. Once they arrive, an operator sends you the money; it can take up to 24 hours.",
+    "depositFailedHeading": "We could not send your digital pesos",
+    "depositFailedBody": "Your digital pesos are still in your wallet. You can try again or cancel the order.",
+    "retryDepositCta": "Try again",
+    "pollTimeout": {
+      "heading": "Your order is still in progress",
+      "body": "Your order is still in progress; it can take up to 24 hours. Tap Refresh to see its status.",
+      "refreshCta": "Refresh"
+    },
+    "rejected": "Payment rejected",
+    "rejectedBody": "The operator could not confirm your transfer. If you already sent the money, contact support with your order id.",
+    "orderReference": "Order id: {{id}}",
+    "uploadingProof": "Uploading your receipt...",
+    "retryUploadCta": "Upload again",
+    "verifyingHeading": "Verifying your transfer",
+    "verifyingBody": "An operator is checking your payment. Once it is confirmed, we send the digital pesos to your wallet.",
+    "documentHint": {
+      "CC": "Between 1 and 10 digits",
+      "CE": "Between 1 and 10 digits",
+      "TI": "10 or 11 digits",
+      "NUIP": "10 digits",
+      "NIT": "9 digits, optionally with a hyphen and check digit",
+      "PAS": "Between 5 and 20 letters or numbers"
     }
   },
   "rampProviders": {
@@ -3586,12 +3619,18 @@
       "subtitle": "Choose how to turn your digital pesos into pesos in your account."
     },
     "onramp": {
-      "title": "Get digital pesos",
+      "title": "Add digital pesos",
       "subtitle": "Choose how to turn the pesos in your account into digital pesos."
     },
     "noneAvailable": "No withdrawal or deposit options are available right now.",
+    "retry": "Retry",
+    "resumeOfframp": {
+      "title": "You have a withdrawal in progress",
+      "description": "Check how it is going or pick up where you left off.",
+      "cta": "View my withdrawal"
+    },
     "tucopramp": {
-      "logo": "TC",
+      "logo": "P2P",
       "name": "TuCOP Ramp P2P",
       "by": "by TuCOP Solutions",
       "timing": "Up to 24 hours",
@@ -3604,7 +3643,7 @@
       }
     },
     "bridgeramp": {
-      "logo": "BR",
+      "logo": "TC",
       "name": "TuCOP Ramp",
       "by": "Powered by Bridge",
       "timing": "Arrives in minutes",
@@ -3616,20 +3655,22 @@
         "tagline": "You transfer via Bre-B and receive digital pesos within minutes."
       },
       "outsideHours": "Available during banking hours. You can use TuCOP Ramp P2P for now.",
-      "unreachable": "We could not check availability. Try again or use TuCOP Ramp P2P."
+      "outsideHoursNoAlternative": "Available during banking hours. Please try again later.",
+      "unreachable": "We could not check availability. Retry or use TuCOP Ramp P2P.",
+      "unreachableNoAlternative": "We could not check availability."
     }
   },
   "bridgeramp": {
     "offramp": {
-      "title": "Fast withdrawal with Bridge",
-      "explainer": "Your digital pesos are converted to digital dollars on Mento and Bridge pays them out in pesos to your Bre-B key. All in one transaction: if anything fails, your digital pesos do not move.",
+      "title": "TuCOP Ramp",
+      "explainer": "Your digital pesos are converted to digital dollars on Mento and Bridge pays you in pesos to your Bre-B key. It is a single transaction: if anything fails, your digital pesos do not move.",
       "quoteIn": "You send",
       "quoteOut": "Digital dollars to liquidate"
     },
     "onramp": {
-      "title": "Fast deposit with Bridge",
+      "title": "TuCOP Ramp",
       "explainer": "You transfer pesos via Bre-B, Bridge delivers digital dollars to your wallet and the app converts them to digital pesos.",
-      "quoteIn": "Digital dollars received",
+      "quoteIn": "You pay",
       "quoteOut": "You will receive"
     },
     "amountLabel": "Amount (Pesos)",
@@ -3639,13 +3680,43 @@
     "quoteNote": "Mento rate right now. It does not include Bridge's rate or TuCOP's fee.",
     "quoteError": "We could not get a quote. Try again.",
     "continueCta": "Continue",
-    "insufficientBalance": "You do not have enough pesos digitales. Your balance is {{balance}}.",
+    "insufficientBalance": "You do not have enough digital pesos. Your balance is {{balance}}.",
     "retry": "Retry",
     "party": {
       "loadError": "We could not check your TuCOP account. Try again.",
-      "pendingTitle": "Verification in progress",
-      "pendingBody": "Your identity is still under review (identity: {{kyc}}, terms: {{tos}}). You can withdraw with Bridge once it is approved.",
-      "openKyc": "Continue verification"
+      "openKyc": "Continue verification",
+      "refresh": "Check again",
+      "openTos": "Accept the terms",
+      "state": {
+        "kyc_incomplete": {
+          "title": "Finish your verification",
+          "body": "To use TuCOP Ramp you still need to finish the identity verification. Continue it on the secure page and come back to the app."
+        },
+        "under_review": {
+          "title": "We are reviewing your identity",
+          "body": "Your verification is under review. It usually takes a few minutes and we will email you. Once it is approved you can use TuCOP Ramp."
+        },
+        "tos_pending": {
+          "title": "Accept Bridge's terms",
+          "body": "Your identity is verified. You only need to accept Bridge's terms of service to use TuCOP Ramp."
+        },
+        "endorsement_pending": {
+          "title": "We are enabling your account",
+          "body": "Your identity is verified and we are enabling peso payments. It takes a few minutes."
+        },
+        "rejected": {
+          "title": "We could not verify your identity",
+          "body": "The verification was not approved, so you cannot use TuCOP Ramp for now. Write to support@tucop.org so we can review your case."
+        },
+        "suspended": {
+          "title": "Your account is suspended",
+          "body": "You cannot use TuCOP Ramp for now. Write to support@tucop.org to find out how to continue."
+        },
+        "restricted": {
+          "title": "Your account is restricted",
+          "body": "You cannot use TuCOP Ramp for now. Write to support@tucop.org so we can review your case."
+        }
+      }
     },
     "destination": {
       "label": "Bre-B key you receive to",
@@ -3662,35 +3733,58 @@
         "holder_document_mismatch": "The key holder's document does not match yours.",
         "verification_timeout": "The Bre-B directory did not answer. Try again in a few minutes.",
         "other": "The key was rejected."
+      },
+      "loadError": "We could not load your Bre-B keys.",
+      "error": {
+        "invalid_bre_b_key": "That Bre-B key is not valid. Check it and try again.",
+        "kyc_name_missing": "We do not have your verified name yet to match the key. Finish the identity verification and try again.",
+        "destination_invalid": "We could not use that key. Make sure it is a Bre-B key in your name."
       }
     },
     "withdraw": {
-      "startFailed": "We could not start the withdrawal ({{code}}). Try again."
+      "startFailed": "We could not start the withdrawal ({{code}}). Try again.",
+      "startError": {
+        "create_failed": "We could not open your withdrawal right now. Try again.",
+        "quote_failed": "We could not get Bridge's rate. Try again in a few minutes.",
+        "amount_below_minimum": "At the current rate that amount does not reach the minimum payout of {{min}} pesos. Try a larger amount.",
+        "withdrawal_disabled": "Withdrawals to this key are disabled. Write to support@tucop.org.",
+        "no_wallet": "We could not find your wallet. Close and reopen the app.",
+        "party_not_verified": "Your identity verification is not ready for withdrawals yet.",
+        "destination_not_verified": "That Bre-B key is not verified yet. Pick another one or wait until it is verified.",
+        "provider_unavailable": "Bridge is not available right now. Try again in a few minutes."
+      }
     },
     "review": {
       "title": "Review your withdrawal",
-      "receive": "You receive at least",
+      "receive": "You receive approx.",
       "tucopFee": "TuCOP fee",
       "bridgeRate": "Bridge rate",
       "networkFee": "Estimated network fee",
-      "note": "You sign one transaction: your pesos digitales are converted on Mento and the dólares digitales go straight to Bridge. If the conversion fails, your pesos digitales do not move.",
-      "badDeposit": "The deposit address TuCOP returned is not USDC on Celo. Nothing was signed.",
-      "rateMoved": "The rate moved and the conversion no longer reaches the quoted amount. Start over to quote again.",
+      "note": "You sign one transaction: your digital pesos are converted on Mento and the digital dollars go straight to Bridge, which pays you at its own rate. If the conversion fails, your digital pesos do not move.",
+      "badDeposit": "The deposit address TuCOP returned is not for digital dollars on Celo. Nothing was signed.",
+      "rateMoved": "The rate moved and this amount no longer reaches the minimum payout of {{min}} pesos. Start over with a larger amount.",
       "startOver": "Start over",
       "notEnoughForGas": "You do not have enough balance to pay the network fee.",
       "confirmCta": "Confirm and withdraw",
-      "cancelCta": "Cancel"
+      "cancelCta": "Cancel",
+      "marketClosed": "The conversion market is closed right now. Try again during banking hours.",
+      "quoteFailed": "We could not refresh the quote.",
+      "prepareFailed": "We could not prepare the transaction.",
+      "checkStatusCta": "Check status"
     },
     "swapError": {
-      "reverted": "The conversion reverted on-chain. Your pesos digitales are still in your wallet; try again.",
+      "reverted": "The conversion reverted on-chain and your balance did not move (only the network fee was charged). Try again.",
       "broadcast_failed": "We could not send the transaction. Try again.",
       "stale_quote": "The quote expired. Try again.",
       "invalid_recipient": "The transaction does not match the withdrawal. Nothing was signed.",
-      "generic": "The conversion failed. Try again."
+      "generic": "The conversion failed. Try again.",
+      "receipt_unknown": "We sent the transaction but have no confirmation yet. Retrying checks its status without sending it twice.",
+      "market_closed": "We will convert your dollars when the market opens. They are safe in your wallet; keep this screen open or come back later.",
+      "insufficient_gas": "You do not have enough balance to pay the network fee for the conversion. Your dollars are still in your wallet."
     },
     "progress": {
       "payingTitle": "Bridge is paying your key",
-      "payingBody": "Your dólares digitales reached Bridge. The payout to your Bre-B key takes a few minutes.",
+      "payingBody": "Your digital dollars reached Bridge. The payout to your Bre-B key takes a few minutes.",
       "completedTitle": "Withdrawal completed",
       "completedBody": "Bridge paid {{amount}} pesos to your Bre-B key.",
       "failedTitle": "The withdrawal did not complete",
@@ -3701,11 +3795,13 @@
       "doneCta": "Done"
     },
     "payoutError": {
-      "generic": "Bridge could not complete the payout ({{code}}). TuCOP will review the operation."
+      "generic": "Bridge could not complete the payout ({{code}}). TuCOP will review the operation.",
+      "payout_returned": "Bridge could not pay your Bre-B key and sent the dollars back to your wallet.",
+      "payout_refunded": "Bridge refunded the payout: the dollars are back in your wallet."
     },
     "onboarding": {
       "title": "Create your TuCOP account",
-      "body": "Withdrawing with Bridge needs a one-time identity verification. We ask for your names, your document and an email; then you finish the verification on a secure TuCOP page.",
+      "body": "To use TuCOP Ramp you need a one-time identity verification. We ask for your names, your document and an email; then you finish the verification on a secure TuCOP page.",
       "firstNames": "Given names",
       "lastNames": "Surnames",
       "namesPlaceholder": "As on your ID",
@@ -3716,7 +3812,13 @@
       "error": {
         "email_required": "We need an email for the verification.",
         "not_supported_yet": "Only individuals can register for now.",
-        "generic": "We could not create your account ({{code}}). Try again."
+        "generic": "We could not create your account ({{code}}). Try again.",
+        "party_identity_not_proven": "We could not confirm this wallet is yours. Try again and, if it keeps happening, write to support@tucop.org with the code below.",
+        "invalid_document": "The document number is not valid. Check it and try again.",
+        "invalid_name": "Check your names: write them as they appear on your ID.",
+        "invalid_nationality": "We could not validate your nationality with that document. Check the document type.",
+        "rate_limited_party_session": "Too many attempts in a row. Wait a few minutes and try again.",
+        "provider_unavailable": "The verification service is not available right now. Try again in a few minutes."
       }
     },
     "deposit": {
@@ -3726,20 +3828,38 @@
       "keyCopied": "Key copied",
       "holder": "Account holder",
       "bank": "Bank",
-      "onlyCop": "Colombian pesos over Bre-B only. This key is yours: whatever you send to it arrives in this wallet as digital pesos.",
+      "onlyCop": "Send only Colombian pesos over Bre-B, from an account in your own name. Whatever you send to this key arrives in this wallet as digital pesos.",
       "estimateLabel": "How much will you deposit? (optional, for an estimate)",
-      "estimateNote": "Estimate at Mento's current rate. The real conversion happens when the digital dollars arrive.",
+      "estimateNote": "Estimate: the amount less TuCOP's fee. What you finally receive depends on Bridge's and Mento's exchange rates when your payment arrives.",
       "waiting": "Waiting for your Bre-B payment. This screen refreshes on its own.",
       "lastConverted": "Your last deposit is in your wallet: {{amount}} digital pesos.",
       "convertingTitle": "Your digital dollars arrived",
-      "convertingBody": "We received {{usdc}} USDC from Bridge. Confirm with your PIN to swap them to digital pesos.",
+      "convertingBody": "We received {{usdc}} from Bridge. Confirm with your PIN to swap them to digital pesos.",
       "convertFailedTitle": "We could not convert to digital pesos",
       "retryConvert": "Try again",
-      "keepUsdcHint": "Your {{usdc}} USDC are still in your wallet. If you prefer, keep them as digital dollars.",
+      "keepUsdcHint": "Your {{usdc}} are still in your wallet. If you prefer, keep them as digital dollars.",
       "keepUsdc": "Keep as digital dollars",
       "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again.",
       "fee": "TuCOP fee",
-      "wrongWallet": "This deposit account does not point to your wallet. Do not use it and write to support@tucop.org."
-    }
+      "wrongWallet": "This deposit account does not point to your wallet. Do not use it and write to support@tucop.org.",
+      "estimateApprox": "approx. {{amount}}",
+      "marketClosedTitle": "Your dollars arrived",
+      "accountErrors": {
+        "party_not_verified": "Your identity verification is not ready for deposits yet.",
+        "provider_unavailable": "Bridge is not available right now. Try again in a few minutes.",
+        "rate_limited_party_session": "Too many attempts in a row. Wait a few minutes and try again.",
+        "no_wallet": "We could not find your wallet. Close and reopen the app.",
+        "product_not_enabled": "Deposits with TuCOP Ramp are not enabled for your account yet."
+      }
+    },
+    "units": {
+      "digitalPesos": "{{amount}} digital pesos",
+      "pesos": "{{amount}} pesos",
+      "dollars": "{{amount}} dollars",
+      "pesosWord": "pesos",
+      "dollarsWord": "dollars",
+      "rate": "{{rate}} pesos per dollar"
+    },
+    "supportCode": "Support code: {{requestId}}"
   }
 }
