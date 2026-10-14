@@ -1067,6 +1067,28 @@
                         "string"
                     ]
                 },
+                "estimatedCop": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "knownPayoutIds": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "payout": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/WithdrawalPayout"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
                 "quote": {
                     "anyOf": [
                         {
@@ -1095,6 +1117,9 @@
                 "copmAmountIn",
                 "errorCode",
                 "errorRequestId",
+                "estimatedCop",
+                "knownPayoutIds",
+                "payout",
                 "quote",
                 "status",
                 "withdrawal"
@@ -1753,15 +1778,56 @@
                 "created_at": {
                     "type": "string"
                 },
+                "deposit_instructions": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "account_holder_name": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "bank_name": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "bre_b_key": {
+                            "type": "string"
+                        },
+                        "currency": {
+                            "const": "COP",
+                            "type": "string"
+                        },
+                        "rail": {
+                            "const": "bre_b",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "account_holder_name",
+                        "bank_name",
+                        "bre_b_key",
+                        "currency",
+                        "rail"
+                    ],
+                    "type": "object"
+                },
                 "destination": {
                     "additionalProperties": false,
                     "properties": {
+                        "address": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
                         "asset": {
                             "const": "USDC",
                             "type": "string"
                         },
                         "chain": {
-                            "const": "eip155:42220",
                             "type": "string"
                         },
                         "token_contract": {
@@ -1772,45 +1838,24 @@
                         }
                     },
                     "required": [
+                        "address",
                         "asset",
                         "chain",
                         "token_contract"
                     ],
                     "type": "object"
                 },
+                "events": {
+                    "items": {
+                        "$ref": "#/definitions/DepositEvent"
+                    },
+                    "type": "array"
+                },
+                "fee_bps": {
+                    "type": "number"
+                },
                 "id": {
                     "type": "string"
-                },
-                "instructions": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "bank": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "bre_b_key": {
-                            "type": "string"
-                        },
-                        "holder_name": {
-                            "type": "string"
-                        },
-                        "rail": {
-                            "const": "bre_b",
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "bank",
-                        "bre_b_key",
-                        "holder_name",
-                        "rail"
-                    ],
-                    "type": "object"
-                },
-                "minimum": {
-                    "$ref": "#/definitions/MoneyAmount"
                 },
                 "product": {
                     "const": "deposit",
@@ -1818,26 +1863,16 @@
                 },
                 "status": {
                     "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "wallet": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
                 }
             },
             "required": [
                 "created_at",
+                "deposit_instructions",
                 "destination",
+                "fee_bps",
                 "id",
-                "instructions",
                 "product",
-                "status",
-                "updated_at",
-                "wallet"
+                "status"
             ],
             "type": "object"
         },
@@ -1872,6 +1907,40 @@
                 "createdAt",
                 "metadata",
                 "pointsAmount"
+            ],
+            "type": "object"
+        },
+        "DepositEvent": {
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "created_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "amount",
+                "created_at",
+                "id",
+                "type"
             ],
             "type": "object"
         },
@@ -9514,6 +9583,9 @@
                 "fees": {
                     "additionalProperties": false,
                     "properties": {
+                        "consumer": {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
                         "fx_buffer": {
                             "$ref": "#/definitions/MoneyAmount"
                         },
@@ -9564,10 +9636,12 @@
                     "type": "object"
                 },
                 "rounding_mode": {
-                    "const": "ceil",
                     "type": "string"
                 },
                 "source_amount": {
+                    "$ref": "#/definitions/MoneyAmount"
+                },
+                "total_amount": {
                     "$ref": "#/definitions/MoneyAmount"
                 }
             },
@@ -9600,16 +9674,15 @@
                             },
                             "type": "array"
                         },
-                        "amount": {
-                            "$ref": "#/definitions/MoneyAmount"
-                        },
                         "asset": {
                             "const": "USDC",
                             "type": "string"
                         },
                         "chain": {
-                            "const": "eip155:42220",
                             "type": "string"
+                        },
+                        "minimum_destination_amount": {
+                            "$ref": "#/definitions/MoneyAmount"
                         },
                         "token_contract": {
                             "items": {
@@ -9620,91 +9693,113 @@
                     },
                     "required": [
                         "address",
-                        "amount",
                         "asset",
                         "chain",
+                        "minimum_destination_amount",
                         "token_contract"
                     ],
                     "type": "object"
                 },
-                "destination_amount": {
-                    "$ref": "#/definitions/MoneyAmount"
-                },
                 "destination_id": {
                     "type": "string"
                 },
-                "error_code": {
+                "fee_bps": {
                     "type": [
                         "null",
-                        "string"
+                        "number"
                     ]
-                },
-                "fees": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "tucop": {
-                            "$ref": "#/definitions/MoneyAmount"
-                        }
-                    },
-                    "required": [
-                        "tucop"
-                    ],
-                    "type": "object"
                 },
                 "id": {
                     "type": "string"
+                },
+                "payouts": {
+                    "items": {
+                        "$ref": "#/definitions/WithdrawalPayout"
+                    },
+                    "type": "array"
                 },
                 "product": {
                     "const": "withdraw",
                     "type": "string"
                 },
-                "quote_id": {
-                    "type": "string"
-                },
                 "return_address": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "source_amount": {
-                    "$ref": "#/definitions/MoneyAmount"
+                    "anyOf": [
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
                 },
                 "status": {
-                    "$ref": "#/definitions/WithdrawalStatus"
-                },
-                "updated_at": {
+                    "enum": [
+                        "active",
+                        "disabled"
+                    ],
                     "type": "string"
                 }
             },
             "required": [
                 "created_at",
                 "deposit",
-                "destination_amount",
                 "destination_id",
-                "error_code",
-                "fees",
+                "fee_bps",
                 "id",
                 "product",
-                "quote_id",
                 "return_address",
-                "source_amount",
+                "status"
+            ],
+            "type": "object"
+        },
+        "WithdrawalPayout": {
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "destination_amount": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/MoneyAmount"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "amount",
+                "created_at",
+                "destination_amount",
+                "id",
                 "status",
                 "updated_at"
             ],
             "type": "object"
-        },
-        "WithdrawalStatus": {
-            "enum": [
-                "awaiting_funds",
-                "canceled",
-                "completed",
-                "creating",
-                "failed",
-                "processing",
-                "refunded"
-            ],
-            "type": "string"
         },
         "YieldRate": {
             "additionalProperties": false,

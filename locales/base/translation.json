@@ -3655,6 +3655,7 @@
       "add": "Add",
       "pending": "Checking the key against the Bre-B directory. This takes about a minute.",
       "registerFailed": "We could not register the key ({{code}}).",
+      "alreadyRegistered": "That key is already registered to your account and could not be reused. Contact support.",
       "rejected": {
         "directory_no_match": "The Bre-B directory found no account for that key.",
         "holder_name_mismatch": "The key is not in your name. You can only withdraw to your own account.",
@@ -3704,9 +3705,10 @@
     },
     "onboarding": {
       "title": "Create your TuCOP account",
-      "body": "Withdrawing with Bridge needs a one-time identity verification. We ask for your legal name, your document and an email; then you finish the verification on a secure TuCOP page.",
-      "legalName": "Full legal name",
-      "legalNamePlaceholder": "As it appears on your document",
+      "body": "Withdrawing with Bridge needs a one-time identity verification. We ask for your names, your document and an email; then you finish the verification on a secure TuCOP page.",
+      "firstNames": "Given names",
+      "lastNames": "Surnames",
+      "namesPlaceholder": "As on your ID",
       "email": "Email",
       "emailHelper": "We write to you there about the verification.",
       "consent": "I authorize TuCOP to verify my identity and accept the terms and conditions.",
@@ -3724,7 +3726,6 @@
       "keyCopied": "Key copied",
       "holder": "Account holder",
       "bank": "Bank",
-      "minimum": "Minimum per deposit",
       "onlyCop": "Colombian pesos over Bre-B only. This key is yours: whatever you send to it arrives in this wallet as digital pesos.",
       "estimateLabel": "How much will you deposit? (optional, for an estimate)",
       "estimateNote": "Estimate at Mento's current rate. The real conversion happens when the digital dollars arrive.",
@@ -3736,7 +3737,9 @@
       "retryConvert": "Try again",
       "keepUsdcHint": "Your {{usdc}} USDC are still in your wallet. If you prefer, keep them as digital dollars.",
       "keepUsdc": "Keep as digital dollars",
-      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again."
+      "accountError": "We could not prepare your deposit account at TuCOP ({{code}}). Try again.",
+      "fee": "TuCOP fee",
+      "wrongWallet": "This deposit account does not point to your wallet. Do not use it and write to support@tucop.org."
     }
   }
 }

@@ -5,7 +5,11 @@ import {
   getParty,
   partyCanTransact,
 } from 'src/bridgeramp/api'
-import { openWalletPartySession, platformFetch } from 'src/bridgeramp/platformClient'
+import {
+  openWalletPartySession,
+  platformFetch,
+  revokePartySession,
+} from 'src/bridgeramp/platformClient'
 import { TucopRampError } from 'src/tucopramp/types'
 
 jest.mock('src/utils/Logger')
@@ -42,6 +46,7 @@ describe('platformFetch', () => {
         'Content-Type': 'application/json',
         'X-TuCOPRamp-Party-Session': 'tps_abc',
         'Idempotency-Key': 'idem-1',
+        'TuCOPRamp-Version': '2026-10-08',
       },
       body: JSON.stringify({ ownership: 'first_party' }),
     })
@@ -56,7 +61,7 @@ describe('platformFetch', () => {
       fetchImpl,
     })
     expect(result).toBeUndefined()
-    expect(fetchImpl.mock.calls[0][1].headers).toEqual({})
+    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ 'TuCOPRamp-Version': '2026-10-08' })
   })
 
   it('throws a TucopRampError with the server code on non-2xx', async () => {
@@ -166,27 +171,44 @@ describe('api wrappers', () => {
     expect(fetchImpl.mock.calls[0][1].headers['Idempotency-Key']).toBe('idem-2')
   })
 
-  it('withdraw quote and withdrawal carry the product and the return address', async () => {
+  it('withdraw quote prices COP; withdrawal asks only for the destination', async () => {
     const fetchImpl = jest.fn().mockImplementation(async () => response(200, {}))
     await createWithdrawQuote(
       'tps_1',
-      { destination_id: 'dst_1', source_amount: { amount: '247.338318', asset: 'USDC' } },
+      { destination_id: 'dst_1', amount_cop: { amount: '4000.00', asset: 'COP' } },
       'idem-3',
       { baseUrl: BASE, fetchImpl }
     )
+    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/v1/quotes`)
     expect(JSON.parse(fetchImpl.mock.calls[0][1].body)).toEqual({
       product: 'withdraw',
       destination_id: 'dst_1',
-      source_amount: { amount: '247.338318', asset: 'USDC' },
+      amount_cop: { amount: '4000.00', asset: 'COP' },
     })
-    await createWithdrawal('tps_1', { quote_id: 'qte_1', return_address: USER }, 'idem-4', {
+    await createWithdrawal('tps_1', { destination_id: 'dst_1' }, 'idem-4', {
       baseUrl: BASE,
       fetchImpl,
     })
     expect(fetchImpl.mock.calls[1][0]).toBe(`${BASE}/v1/withdrawals`)
-    expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toEqual({
-      quote_id: 'qte_1',
-      return_address: USER,
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toEqual({ destination_id: 'dst_1' })
+  })
+
+  it('pins the platform API version on every call', async () => {
+    const fetchImpl = jest.fn().mockImplementation(async () => response(200, {}))
+    await createWithdrawal('tps_1', { destination_id: 'dst_1' }, 'idem-5', {
+      baseUrl: BASE,
+      fetchImpl,
+    })
+    expect(fetchImpl.mock.calls[0][1].headers['TuCOPRamp-Version']).toBe('2026-10-08')
+  })
+
+  it('signs out with DELETE /v1/sessions/current and the session header', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(response(204))
+    await revokePartySession('tps_1', { baseUrl: BASE, fetchImpl })
+    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/sessions/current`, {
+      method: 'DELETE',
+      headers: { 'TuCOPRamp-Version': '2026-10-08', 'X-TuCOPRamp-Party-Session': 'tps_1' },
+      body: undefined,
     })
   })
 })

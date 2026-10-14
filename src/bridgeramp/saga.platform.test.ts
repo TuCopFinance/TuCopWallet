@@ -1,11 +1,11 @@
 import { combineReducers } from '@reduxjs/toolkit'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { dynamic } from 'redux-saga-test-plan/providers'
+import { dynamic, throwError } from 'redux-saga-test-plan/providers'
 import * as api from 'src/bridgeramp/api'
 import { MentoQuote, quoteMentoSwap } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
-import { openWalletPartySession } from 'src/bridgeramp/platformClient'
+import { openWalletPartySession, revokePartySession } from 'src/bridgeramp/platformClient'
 import {
   checkDepositSaga,
   convertBridgeDeposit,
@@ -24,6 +24,7 @@ import {
   startBridgeRampWithdraw,
   startWithdrawSaga,
 } from 'src/bridgeramp/saga'
+import { revokeBridgeRampSessionSaga } from 'src/bridgeramp/revokeSession'
 import reducer, {
   destinationRegisterFailed,
   destinationRegistering,
@@ -41,7 +42,7 @@ import reducer, {
   withdrawFailed,
   withdrawPollTimedOut,
   withdrawReady,
-  withdrawalUpdated,
+  withdrawPayoutUpdated,
 } from 'src/bridgeramp/slice'
 import { TucopRampError } from 'src/tucopramp/types'
 import { getKeychainAccounts } from 'src/web3/contracts'
@@ -98,15 +99,39 @@ const pendingDestination: api.Destination = {
   created_at: '',
   updated_at: '',
 }
-const quote = { id: 'qte_1', product: 'withdraw' } as api.WithdrawQuote
+const quote = {
+  id: 'qte_1',
+  product: 'withdraw',
+  rate: { value: '3800.5', base: 'USDC', quote: 'COP', source: 'bridge', observed_at: '' },
+} as api.WithdrawQuote
+const oldPayout: api.WithdrawalPayout = {
+  id: 'drn_old',
+  status: 'payment_processed',
+  amount: { amount: '10.000000', asset: 'USDC' },
+  destination_amount: { amount: '37000.00', asset: 'COP' },
+  created_at: '',
+  updated_at: '',
+}
 const withdrawal = {
   id: 'wd_1',
   product: 'withdraw',
-  status: 'awaiting_funds',
-  quote_id: 'qte_1',
-  deposit: { address: LIQUIDATION },
-  error_code: null,
+  status: 'active',
+  destination_id: 'dst_1',
+  deposit: {
+    address: LIQUIDATION,
+    chain: 'eip155:42220',
+    asset: 'USDC',
+    token_contract: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',
+    minimum_destination_amount: { amount: '4000.00', asset: 'COP' },
+  },
+  fee_bps: 150,
+  return_address: USER,
+  payouts: [oldPayout],
+  created_at: '',
 } as unknown as api.Withdrawal
+function payout(id: string, status: string): api.WithdrawalPayout {
+  return { ...oldPayout, id, status, destination_amount: { amount: '925000.00', asset: 'COP' } }
+}
 
 function rampError(code: string, httpStatus = 400) {
   return new TucopRampError({ httpStatus, code, message: code, envelope: { code } })
@@ -169,6 +194,32 @@ describe('ensurePartySession', () => {
   })
 })
 
+describe('revokeBridgeRampSessionSaga', () => {
+  it('drops the session and revokes it on TuCOPRamp', async () => {
+    const { storeState } = await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([[matchers.call.fn(revokePartySession), undefined]])
+      .call(revokePartySession, freshSession.token)
+      .run()
+    expect(storeState.bridgeramp.session).toBeNull()
+  })
+
+  it('does not fail when the revoke call fails', async () => {
+    const { storeState } = await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(withSession()))
+      .provide([[matchers.call.fn(revokePartySession), throwError(new Error('offline'))]])
+      .run()
+    expect(storeState.bridgeramp.session).toBeNull()
+  })
+
+  it('does nothing without a session', async () => {
+    await expectSaga(revokeBridgeRampSessionSaga)
+      .withReducer(rootReducer, root(initialState))
+      .not.call.fn(revokePartySession)
+      .run()
+  })
+})
+
 describe('fetchPartySaga', () => {
   it('loads the party', async () => {
     mockedApi.getParty.mockResolvedValue(party)
@@ -209,7 +260,9 @@ describe('fetchPartySaga', () => {
 describe('createPartySaga', () => {
   const request: api.CreatePartyRequest = {
     type: 'individual',
-    legal_name: 'Ana Maria Perez',
+    first_names: 'Ana Maria',
+    last_names: 'Perez Gomez',
+    nationality: 'COL',
     document_type: 'CC',
     document_number: '1017123456',
     email: 'ana@example.com',
@@ -294,35 +347,63 @@ describe('startWithdrawSaga', () => {
     idempotencyKey: 'idem',
   })
 
-  it('quotes the guaranteed USDC and opens the operation', async () => {
+  it('gets the address, notes its payouts and estimates the COP for the swap', async () => {
+    mockedApi.createWithdrawal.mockResolvedValue({ ...withdrawal, payouts: undefined })
+    mockedApi.getWithdrawal.mockResolvedValue(withdrawal)
     mockedApi.createWithdrawQuote.mockResolvedValue(quote)
-    mockedApi.createWithdrawal.mockResolvedValue(withdrawal)
     await expectSaga(startWithdrawSaga, action)
       .withReducer(rootReducer, root(withSession()))
       .provide([[matchers.select(walletAddressSelector), USER]])
       .put(withdrawCreating({ copmAmountIn: '800000000000000000000000' }))
-      .put(withdrawReady({ quote, withdrawal }))
+      .put(
+        withdrawReady({
+          quote,
+          withdrawal,
+          // 246.101626 USDC x 3800.5 x 0.985, rounded down.
+          estimatedCop: '921279',
+          knownPayoutIds: ['drn_old'],
+        })
+      )
       .run()
-    expect(mockedApi.createWithdrawQuote).toHaveBeenCalledWith(
-      'tps_live',
-      { destination_id: 'dst_1', source_amount: { amount: '246.101626', asset: 'USDC' } },
-      'idem-quote'
-    )
     expect(mockedApi.createWithdrawal).toHaveBeenCalledWith(
       'tps_live',
-      { quote_id: 'qte_1', return_address: USER },
-      'idem-withdrawal'
+      { destination_id: 'dst_1' },
+      'idem-address'
+    )
+    expect(mockedApi.createWithdrawQuote).toHaveBeenCalledWith(
+      'tps_live',
+      { destination_id: 'dst_1', amount_cop: { amount: '4000.00', asset: 'COP' } },
+      'idem-quote'
     )
   })
 
-  it('fails with the server code when the quote is refused', async () => {
-    mockedApi.createWithdrawQuote.mockRejectedValue(rampError('amount_below_minimum', 422))
+  it('refuses a swap that would pay out below the floor', async () => {
+    mockedApi.createWithdrawal.mockResolvedValue(withdrawal)
+    mockedApi.getWithdrawal.mockResolvedValue(withdrawal)
+    mockedApi.createWithdrawQuote.mockResolvedValue(quote)
+    await expectSaga(
+      startWithdrawSaga,
+      startBridgeRampWithdraw({
+        destinationId: 'dst_1',
+        copmAmountIn: '1',
+        usdcMinOut: '1.000000',
+        idempotencyKey: 'idem',
+      })
+    )
+      .withReducer(rootReducer, root(withSession()))
+      .provide([[matchers.select(walletAddressSelector), USER]])
+      .put(withdrawFailed({ code: 'amount_below_minimum' }))
+      .run()
+  })
+
+  it('fails with the server code when the address is refused', async () => {
+    mockedApi.createWithdrawal.mockRejectedValue(rampError('destination_not_verified', 409))
     await expectSaga(startWithdrawSaga, action)
       .withReducer(rootReducer, root(withSession()))
       .provide([[matchers.select(walletAddressSelector), USER]])
-      .put(withdrawFailed({ code: 'amount_below_minimum', requestId: undefined }))
+      .put(withdrawFailed({ code: 'destination_not_verified', requestId: undefined }))
       .run()
-    expect(mockedApi.createWithdrawal).not.toHaveBeenCalled()
+    expect(mockedApi.createWithdrawQuote).not.toHaveBeenCalled()
   })
 
   it('fails without a wallet before calling TuCOPRamp', async () => {
@@ -331,51 +412,55 @@ describe('startWithdrawSaga', () => {
       .provide([[matchers.select(walletAddressSelector), null]])
       .put(withdrawFailed({ code: 'no_wallet' }))
       .run()
-    expect(mockedApi.createWithdrawQuote).not.toHaveBeenCalled()
+    expect(mockedApi.createWithdrawal).not.toHaveBeenCalled()
   })
 })
 
 describe('pollWithdrawalSaga', () => {
-  it('polls until the payout is final', async () => {
-    const processing = { ...withdrawal, status: 'processing' } as api.Withdrawal
-    const completed = { ...withdrawal, status: 'completed' } as api.Withdrawal
-    mockedApi.getWithdrawal.mockResolvedValueOnce(processing).mockResolvedValueOnce(completed)
+  const awaiting = {
+    ...withSession(),
+    withdraw: {
+      ...initialState.withdraw,
+      status: 'awaiting_payout' as const,
+      withdrawal,
+      knownPayoutIds: ['drn_old'],
+    },
+  }
+
+  it('follows the new payout until Bridge processes it, ignoring older ones', async () => {
+    const submitted = payout('drn_new', 'payment_submitted')
+    const processed = payout('drn_new', 'payment_processed')
+    mockedApi.getWithdrawal
+      .mockResolvedValueOnce(withdrawal)
+      .mockResolvedValueOnce({ ...withdrawal, payouts: [submitted, oldPayout] })
+      .mockResolvedValueOnce({ ...withdrawal, payouts: [processed, oldPayout] })
     const { storeState } = await expectSaga(
       pollWithdrawalSaga,
       pollBridgeRampWithdrawal({ withdrawalId: 'wd_1' })
     )
-      .withReducer(
-        rootReducer,
-        root({
-          ...withSession(),
-          withdraw: { ...initialState.withdraw, status: 'awaiting_payout', withdrawal },
-        })
-      )
+      .withReducer(rootReducer, root(awaiting))
       .provide({ call: provideDelays })
-      .put(withdrawalUpdated(processing))
-      .put(withdrawalUpdated(completed))
+      .put(withdrawPayoutUpdated(submitted))
+      .put(withdrawPayoutUpdated(processed))
       .run()
     expect(storeState.bridgeramp.withdraw.status).toBe('completed')
-    expect(mockedApi.getWithdrawal).toHaveBeenCalledTimes(2)
+    expect(storeState.bridgeramp.withdraw.payout?.destination_amount?.amount).toBe('925000.00')
+    expect(mockedApi.getWithdrawal).toHaveBeenCalledTimes(3)
   })
 
-  it('marks the operation failed when Bridge refunds', async () => {
-    const refunded = { ...withdrawal, status: 'refunded', error_code: 'payout_rejected' }
-    mockedApi.getWithdrawal.mockResolvedValue(refunded as api.Withdrawal)
+  it('marks the withdraw failed when Bridge cannot deliver', async () => {
+    mockedApi.getWithdrawal.mockResolvedValue({
+      ...withdrawal,
+      payouts: [payout('drn_new', 'undeliverable'), oldPayout],
+    })
     const { storeState } = await expectSaga(
       pollWithdrawalSaga,
       pollBridgeRampWithdrawal({ withdrawalId: 'wd_1' })
     )
-      .withReducer(
-        rootReducer,
-        root({
-          ...withSession(),
-          withdraw: { ...initialState.withdraw, status: 'awaiting_payout', withdrawal },
-        })
-      )
+      .withReducer(rootReducer, root(awaiting))
       .run()
     expect(storeState.bridgeramp.withdraw.status).toBe('failed')
-    expect(storeState.bridgeramp.withdraw.errorCode).toBe('payout_rejected')
+    expect(storeState.bridgeramp.withdraw.errorCode).toBe('payout_undeliverable')
   })
 
   it('gives up without failing the operation', async () => {
@@ -388,7 +473,12 @@ describe('pollWithdrawalSaga', () => {
         rootReducer,
         root({
           ...withSession(),
-          withdraw: { ...initialState.withdraw, status: 'awaiting_payout', withdrawal },
+          withdraw: {
+            ...initialState.withdraw,
+            status: 'awaiting_payout',
+            withdrawal,
+            knownPayoutIds: ['drn_old'],
+          },
         })
       )
       .provide({ call: provideDelays })
@@ -409,7 +499,10 @@ describe('onSwapConfirmedSaga', () => {
   }
 
   it('moves the withdraw to awaiting payout when the swap paid the deposit address', async () => {
-    mockedApi.getWithdrawal.mockResolvedValue({ ...withdrawal, status: 'completed' })
+    mockedApi.getWithdrawal.mockResolvedValue({
+      ...withdrawal,
+      payouts: [payout('drn_new', 'payment_processed')],
+    })
     await expectSaga(onSwapConfirmedSaga)
       .withReducer(
         rootReducer,
@@ -545,8 +638,14 @@ describe('deposit sagas', () => {
     product: 'deposit',
     status: 'active',
     wallet: USER,
-    instructions: { rail: 'bre_b', bre_b_key: '@U6X8YSHWJ', holder_name: 'X', bank: null },
-    destination: { chain: 'eip155:42220', asset: 'USDC', token_contract: '0x0' },
+    deposit_instructions: {
+      rail: 'bre_b',
+      currency: 'COP',
+      bre_b_key: '@U6X8YSHWJ',
+      account_holder_name: 'X',
+      bank_name: null,
+    },
+    destination: { address: USER, chain: 'eip155:42220', asset: 'USDC', token_contract: '0x0' },
     created_at: '',
     updated_at: '',
   } as unknown as api.DepositAccount
@@ -588,7 +687,7 @@ describe('deposit sagas', () => {
       .run()
     expect(mockedApi.createDepositAccount).toHaveBeenCalledWith(
       'tps_live',
-      { wallet: USER },
+      { wallet_address: USER },
       `deposit-${USER.toLowerCase()}`
     )
     expect(storeState.bridgeramp.deposit).toMatchObject({

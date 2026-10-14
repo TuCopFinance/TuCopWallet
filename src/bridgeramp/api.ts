@@ -1,10 +1,9 @@
 import { Address } from 'viem'
 import { PlatformFetchArgs, platformFetch } from 'src/bridgeramp/platformClient'
 
-// Typed wrappers over TuCOPRamp's platform API for Bridge Ramp. Shapes follow
-// TuCOPRamp PR #34 (developer-docs/parties.mdx, destinations.mdx,
-// payments.mdx). Everything under "Withdraw" is the wallet's side of a product
-// TuCOPRamp has designed but not shipped; see the note there.
+// Typed wrappers over TuCOPRamp's platform API for TuCOP Ramp powered by
+// Bridge. Shapes follow TuCOPRamp main developer-docs (parties.mdx,
+// destinations.mdx, withdrawals.mdx, deposits.mdx; API version 2026-10-08).
 
 type CallOpts = Pick<PlatformFetchArgs, 'baseUrl' | 'fetchImpl'>
 
@@ -12,7 +11,14 @@ type CallOpts = Pick<PlatformFetchArgs, 'baseUrl' | 'fetchImpl'>
 // Parties
 // ---------------------------------------------------------------------------
 
-export type PartyKycStatus = 'not_started' | 'pending' | 'approved' | 'rejected' | string
+export type PartyKycStatus =
+  | 'not_started'
+  | 'incomplete'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'suspended'
+  | string
 export type PartyTosStatus = 'pending' | 'accepted' | string
 
 export interface Party {
@@ -46,8 +52,18 @@ export function getParty(partySession: string, opts?: CallOpts): Promise<Party> 
 
 export interface CreatePartyRequest {
   type: 'individual'
-  legal_name: string
-  document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
+  // ISO 3166-1 alpha-3 of the document's issuer. TuCOPRamp defaults to COL.
+  country?: 'COL'
+  // A person's given names and surnames, as on the document. TuCOPRamp builds
+  // the legal name from them (legal_name is the one-string fallback).
+  first_names: string
+  last_names: string
+  // ISO 3166-1 alpha-3. Optional; it can differ from country (a foreigner
+  // with a Colombian CE).
+  nationality?: string
+  // Individuals in Colombia (GET /v1/document-types). NIT is a business
+  // document; TI is a minor's and Bridge verifies adults only.
+  document_type: 'CC' | 'CE' | 'NUIP' | 'PAS'
   document_number: string
   consent: { version: string; accepted_at: string }
   // Required for wallet sessions when the party has no verified email yet.
@@ -145,24 +161,19 @@ export function createFirstPartyDestination(
 // Withdraw (COPm -> COP to the user's own Bre-B key)
 // ---------------------------------------------------------------------------
 //
-// NOT SHIPPED BY TUCOPRAMP YET. PR #34 ships `pay` (third-party payouts with a
-// per-payment deposit address and an exact USDC amount). The `withdraw`
-// product exists only as the `first_party` destination kind and a product
-// flag. The wallet needs it to differ from `pay` in one way: the deposit
-// address must accept ANY amount at or above the quote. The Mento Router has
-// no exact-output swap (swapTokensForExactTokens / getAmountsIn are absent
-// from the deployed bytecode, checked 2026-10-10), so COPm -> USDC always
-// lands a little above amountOutMin and the wallet cannot hit an exact figure
-// in one atomic transaction. A per-party Bridge liquidation address does that
-// naturally; a fixed-amount transfer does not. The shapes below assume the
-// liquidation-address design; the paths are placeholders until TuCOPRamp
-// confirms them.
+// TuCOPRamp developer-docs/withdrawals.mdx. A withdrawal is the party's
+// reusable address for one of its own verified Bre-B keys (a Bridge
+// liquidation address): any USDC on Celo that arrives there is paid out in
+// COP to that key, at or above Bridge's 4,000 COP floor. There is no
+// per-withdrawal operation and no exact amount, which is what the Mento swap
+// needs (it always lands a little above amountOutMin). A quote is only a
+// price; nothing takes it.
 
-const WITHDRAW_QUOTES_PATH = '/v1/quotes'
 const WITHDRAWALS_PATH = '/v1/withdrawals'
+const QUOTES_PATH = '/v1/quotes'
 
 export interface MoneyAmount {
-  // Decimal string.
+  // Decimal string with the asset's decimals (COP 2, USDC 6).
   amount: string
   asset: 'COP' | 'USDC' | string
 }
@@ -171,73 +182,70 @@ export interface WithdrawQuote {
   id: string
   product: 'withdraw'
   destination_id: string
-  // What the user receives.
+  // COP that arrives at the destination.
   destination_amount: MoneyAmount
-  // USDC that must reach the deposit address for destination_amount to be
-  // paid out. Includes TuCOP's fee and the FX buffer.
+  // USDC to send for at least destination_amount, fee and FX buffer included.
   source_amount: MoneyAmount
-  fees: { tucop: MoneyAmount; fx_buffer?: MoneyAmount }
+  fees: { tucop: MoneyAmount; consumer?: MoneyAmount; fx_buffer?: MoneyAmount }
+  total_amount?: MoneyAmount
+  // COP per USDC as Bridge gave it.
   rate: { value: string; base: 'USDC'; quote: 'COP'; source: string; observed_at: string }
-  rounding_mode: 'ceil'
+  rounding_mode: 'ceil' | string
   expires_at: string
   created_at: string
 }
 
-// Quote by the USDC the user will deliver (what the Mento swap produces) so
-// TuCOPRamp tells us the COP the user gets, instead of the other way round.
-export function createWithdrawQuote(
-  partySession: string,
-  request: { destination_id: string; source_amount: MoneyAmount },
-  idempotencyKey: string,
-  opts?: CallOpts
-): Promise<WithdrawQuote> {
-  return platformFetch<WithdrawQuote>({
-    ...opts,
-    method: 'POST',
-    path: WITHDRAW_QUOTES_PATH,
-    body: { product: 'withdraw', ...request },
-    partySession,
-    idempotencyKey,
-  })
-}
-
-export type WithdrawalStatus =
-  | 'creating'
+// Bridge drain states, passed through as they come.
+export type WithdrawalPayoutStatus =
   | 'awaiting_funds'
-  | 'processing'
-  | 'completed'
-  | 'failed'
+  | 'in_review'
+  | 'funds_received'
+  | 'payment_submitted'
+  | 'payment_processed'
+  | 'undeliverable'
+  | 'returned'
   | 'refunded'
   | 'canceled'
+  | 'error'
+  | string
 
-export interface Withdrawal {
+export interface WithdrawalPayout {
   id: string
-  product: 'withdraw'
-  status: WithdrawalStatus
-  quote_id: string
-  destination_id: string
-  destination_amount: MoneyAmount
-  source_amount: MoneyAmount
-  fees: { tucop: MoneyAmount }
-  deposit: {
-    // The user's own Bridge liquidation address: USDC on Celo in, COP to
-    // their Bre-B key out. This is the Router swap's `to`.
-    address: Address
-    chain: 'eip155:42220'
-    asset: 'USDC'
-    token_contract: Address
-    // Minimum USDC that must arrive for destination_amount to be paid.
-    amount: MoneyAmount
-  }
-  return_address: Address
-  error_code: string | null
+  status: WithdrawalPayoutStatus
+  // USDC received at the address.
+  amount: MoneyAmount | null
+  // COP sent to the key.
+  destination_amount: MoneyAmount | null
   created_at: string
   updated_at: string
 }
 
+export interface Withdrawal {
+  id: string
+  product: 'withdraw'
+  status: 'active' | 'disabled'
+  destination_id: string
+  deposit: {
+    // The Router swap's `to`. Reusable.
+    address: Address
+    chain: 'eip155:42220' | string
+    asset: 'USDC'
+    token_contract: Address
+    minimum_destination_amount: MoneyAmount
+  }
+  // TuCOP's fee on this address, e.g. 150 = 1.5 percent of what arrives.
+  fee_bps: number | null
+  return_address: Address | null
+  // Only on GET /v1/withdrawals/{id}; most recent first.
+  payouts?: WithdrawalPayout[]
+  created_at: string
+}
+
+// Creates the address the first time (201), returns the same one later (200).
+// return_address defaults to the wallet the session was opened with.
 export function createWithdrawal(
   partySession: string,
-  request: { quote_id: string; return_address: Address },
+  request: { destination_id: string; return_address?: Address },
   idempotencyKey: string,
   opts?: CallOpts
 ): Promise<Withdrawal> {
@@ -264,46 +272,66 @@ export function getWithdrawal(
   })
 }
 
+// The USDC to send so that at least amount_cop arrives, with Bridge's rate.
+export function createWithdrawQuote(
+  partySession: string,
+  request: { destination_id: string; amount_cop: MoneyAmount },
+  idempotencyKey: string,
+  opts?: CallOpts
+): Promise<WithdrawQuote> {
+  return platformFetch<WithdrawQuote>({
+    ...opts,
+    method: 'POST',
+    path: QUOTES_PATH,
+    body: { product: 'withdraw', ...request },
+    partySession,
+    idempotencyKey,
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Deposit (COP over Bre-B -> USDC to the user's wallet)
 // ---------------------------------------------------------------------------
 //
-// NOT SHIPPED BY TUCOPRAMP YET. docs/platform/SPEC.md: "POST /v1/deposit
-// creates or returns a virtual account pointing to a verified wallet". The
-// virtual account is Bridge's: a Bre-B key the user pays in COP; Bridge
-// converts and sends USDC on Celo to the wallet the party session was opened
-// with. One per party and wallet, reused across deposits, so the wallet asks
-// for it once and keeps it. The COPm conversion happens in the app
-// (convertBridgeDeposit). Paths are placeholders until TuCOPRamp confirms.
+// TuCOPRamp developer-docs/deposits.mdx. The deposit account is the party's
+// Bridge virtual account: a Bre-B key issued for the party, tied to one
+// wallet, created once and reused. The COPm conversion happens in the app
+// (convertBridgeDeposit).
 
 const DEPOSITS_PATH = '/v1/deposits'
 
-export type DepositAccountStatus = 'active' | 'pending' | 'deactivated' | string
+export interface DepositEvent {
+  id: string
+  type: string
+  amount: MoneyAmount | null
+  created_at: string | null
+}
 
 export interface DepositAccount {
   id: string
   product: 'deposit'
-  status: DepositAccountStatus
-  // Where Bridge sends the USDC: the party's proven wallet.
-  wallet: Address
-  // What the user pays. Bre-B keys for Bridge virtual accounts look like
-  // "@U6X8YSHWJ"; the holder is Bridge's partner bank account, not the user.
-  instructions: {
+  status: 'active' | 'deactivated' | string
+  // What the user pays.
+  deposit_instructions: {
     rail: 'bre_b'
+    currency: 'COP'
     bre_b_key: string
-    holder_name: string
-    bank: string | null
+    account_holder_name: string | null
+    bank_name: string | null
   }
-  destination: { chain: 'eip155:42220'; asset: 'USDC'; token_contract: Address }
-  // Bridge's minimum per deposit, in COP, when the server reports it.
-  minimum?: MoneyAmount
+  // Where Bridge sends the USDC.
+  destination: { address: Address; chain: string; asset: 'USDC'; token_contract: Address }
+  fee_bps: number
+  // Only on GET /v1/deposits/{id}; most recent first.
+  events?: DepositEvent[]
   created_at: string
-  updated_at: string
 }
 
+// The wallet defaults to the one the session was opened with; a different
+// wallet gets its own account. 201 the first time, 200 after.
 export function createDepositAccount(
   partySession: string,
-  request: { wallet: Address },
+  request: { wallet_address?: Address },
   idempotencyKey: string,
   opts?: CallOpts
 ): Promise<DepositAccount> {
