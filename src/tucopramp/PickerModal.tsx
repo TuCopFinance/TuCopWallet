@@ -118,6 +118,8 @@ export function PickerModal<T extends string>({
                     onSelect(opt.value)
                     onClose()
                   }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
                   testID={`${testIdPrefix}-${opt.value}`}
                 >
                   <Text style={[styles.pickerRowText, isSelected && styles.pickerRowTextSelected]}>

@@ -30,6 +30,9 @@ export type OfframpFlowStatus =
   | 'expired'
   | 'refund-owed'
   | 'refunded'
+  // The poller gave up (24h of backoff) while the order was still open. The
+  // order is NOT final: the UI offers a manual refresh.
+  | 'poll-timeout'
   | 'error'
 
 export type OnrampFlowStatus =
@@ -42,10 +45,29 @@ export type OnrampFlowStatus =
   | 'awaiting-review'
   | 'verifying'
   | 'completed'
+  | 'rejected'
   | 'cancelling'
   | 'cancelled'
   | 'expired'
+  | 'poll-timeout'
   | 'error'
+
+// Local flow statuses that mean the order reached a final server state. Used
+// by the reset reducers (a final order is dropped, an open one is kept so the
+// user can come back to it) and by the pollers (never overwrite a final
+// state with a stale non-final poll response).
+export const OFFRAMP_FINAL_STATUSES: readonly OfframpFlowStatus[] = [
+  'completed',
+  'cancelled',
+  'expired',
+  'refunded',
+]
+export const ONRAMP_FINAL_STATUSES: readonly OnrampFlowStatus[] = [
+  'completed',
+  'rejected',
+  'cancelled',
+  'expired',
+]
 
 // Short-lived HMAC-signed URL from GET /v1/p2p/orders/{id}/proof-url. Not
 // persisted across app restarts (server TTL 300 s, wallet re-fetches on
@@ -61,10 +83,23 @@ interface ProofUrl {
 // the server's Retry-After response header via TucopRampError.retryAfterSeconds).
 // request_id is populated for every RFC 7807 error envelope the server returns
 // (client.ts parses it out of the JSON body).
+// errorRemainingDailyCop / errorRemainingMonthlyCop carry the user's remaining
+// daily / monthly amounts for amount_limit_exceeded, read from the error body
+// when the server includes them, else from the last quote.
 interface FlowErrorMeta {
   errorCode: string | null
   errorRetryAfterSeconds: number | null
   errorRequestId: string | null
+  errorRemainingDailyCop: number | null
+  errorRemainingMonthlyCop: number | null
+}
+
+export interface FlowErrorPayload {
+  code: string
+  retryAfterSeconds?: number | null
+  request_id?: string | null
+  remainingDailyCop?: number | null
+  remainingMonthlyCop?: number | null
 }
 
 // Local state for the on-chain COPm deposit that the wallet broadcasts as
@@ -117,11 +152,15 @@ interface OfframpFlow extends FlowErrorMeta {
   currentOrder: OfframpOrderResponse | null
   idempotencyKey: string | null
   // Persisted across app restarts. Generated once when the user first hits
-  // Confirm; reused on every subsequent submit until the order is confirmed
-  // (server dedups server-side via Idempotency-Key header) or the user
-  // explicitly resets the flow. Prevents duplicate real-money orders when
-  // the app crashes mid-createOrder and the user retries after cold boot.
+  // Confirm; reused on every subsequent submit of the same request until the
+  // order is confirmed (server dedups server-side via Idempotency-Key header)
+  // or the user changes the request. Survives offrampReset, so a retry after
+  // a timeout reuses the key and cannot create a duplicate real-money order.
   pendingIdempotencyKey: string | null
+  // Hash of the order request (minus quote_id) the pending key belongs to.
+  // A submit whose fingerprint differs is a new request and gets a new key.
+  // A hash rather than the body so no personal data is persisted here.
+  pendingRequestFingerprint: string | null
   proofUrl: ProofUrl | null
   proofUrlLoading: boolean
   proofUrlErrorCode: string | null
@@ -159,7 +198,15 @@ interface OnrampFlow extends FlowErrorMeta {
   currentOrder: OnrampOrderResponse | null
   idempotencyKey: string | null
   pendingIdempotencyKey: string | null
+  pendingRequestFingerprint: string | null
   proofUploaded: boolean
+  // Inline error on the receipt upload step (proof_too_large, network, ...).
+  // Upload failures never leave the upload step: the user already paid, so
+  // the order must stay on screen with a retry of the upload only.
+  proofUploadErrorCode: string | null
+  // Same contract as OfframpFlow.activeCheckStatus: on mount the screen asks
+  // the server for an open on-ramp order and resumes it.
+  activeCheckStatus: 'idle' | 'checking' | 'done' | 'failed'
   // True when the server state machine moved the order backwards from
   // AWAITING_REVIEW / VERIFYING to AWAITING_PROOF, which is the signal that an
   // operator rejected the previous proof with retryable=true and expects the
@@ -172,8 +219,8 @@ interface OnrampFlow extends FlowErrorMeta {
 
 // Server-provided operational caps (min / max / daily / monthly in COP).
 // value=null means never fetched (fresh install). Consumers should fall back
-// to TUCOPRAMP_HARDCODED_LIMITS in that case (helper in limits.ts does the
-// lookup). fetchedAt is a unix-ms timestamp used by the fetch saga to gate
+// to TUCOPRAMP_HARDCODED_LIMITS in that case (effectiveLimitsSelector does
+// the lookup). fetchedAt is a unix-ms timestamp used by the fetch saga to gate
 // refetches; serverMaxAgeMs is the last observed Cache-Control: max-age from
 // the /limits response (300 s per current server config, but respected per-
 // response so a future server bump propagates without a wallet release).
@@ -207,15 +254,22 @@ export interface State {
   cedulaUpdate: CedulaUpdateState
 }
 
+const initialErrorMeta: FlowErrorMeta = {
+  errorCode: null,
+  errorRetryAfterSeconds: null,
+  errorRequestId: null,
+  errorRemainingDailyCop: null,
+  errorRemainingMonthlyCop: null,
+}
+
 const initialOfframp: OfframpFlow = {
   status: 'idle',
   lastQuote: null,
   currentOrder: null,
   idempotencyKey: null,
   pendingIdempotencyKey: null,
-  errorCode: null,
-  errorRetryAfterSeconds: null,
-  errorRequestId: null,
+  pendingRequestFingerprint: null,
+  ...initialErrorMeta,
   proofUrl: null,
   proofUrlLoading: false,
   proofUrlErrorCode: null,
@@ -236,11 +290,24 @@ const initialOnramp: OnrampFlow = {
   currentOrder: null,
   idempotencyKey: null,
   pendingIdempotencyKey: null,
+  pendingRequestFingerprint: null,
   proofUploaded: false,
+  proofUploadErrorCode: null,
+  activeCheckStatus: 'idle',
   proofRejectedForRetry: false,
-  errorCode: null,
-  errorRetryAfterSeconds: null,
-  errorRequestId: null,
+  ...initialErrorMeta,
+}
+
+function applyError(flow: FlowErrorMeta, payload: FlowErrorPayload) {
+  flow.errorCode = payload.code
+  flow.errorRetryAfterSeconds = payload.retryAfterSeconds ?? null
+  flow.errorRequestId = payload.request_id ?? null
+  flow.errorRemainingDailyCop = payload.remainingDailyCop ?? null
+  flow.errorRemainingMonthlyCop = payload.remainingMonthlyCop ?? null
+}
+
+function clearError(flow: FlowErrorMeta) {
+  Object.assign(flow, initialErrorMeta)
 }
 
 const initialLimits: LimitsState = {
@@ -304,23 +371,68 @@ export const slice = createSlice({
     },
 
     // Off-ramp transitions
+    //
+    // Runs on screen unmount, Retry and Close. Clears the transient flow
+    // state but keeps what must outlive the screen:
+    //   - savedPayoutProfiles / lastPayout: prefill caches.
+    //   - pendingIdempotencyKey (+ fingerprint): until the order is confirmed
+    //     created or the request changes, so a retry cannot duplicate it.
+    //   - currentOrder + deposit tx state while the order is still open, so
+    //     leaving and coming back resumes it (multisig and tx hash included)
+    //     instead of the cancel-only view.
     offrampReset: (state) => {
-      state.offramp = { ...initialOfframp }
+      const prev = state.offramp
+      const keepOrder = !!prev.currentOrder && !OFFRAMP_FINAL_STATUSES.includes(prev.status)
+      state.offramp = {
+        ...initialOfframp,
+        pendingIdempotencyKey: prev.pendingIdempotencyKey,
+        pendingRequestFingerprint: prev.pendingRequestFingerprint,
+        lastPayout: prev.lastPayout,
+        savedPayoutProfiles: prev.savedPayoutProfiles,
+        ...(keepOrder
+          ? {
+              currentOrder: prev.currentOrder,
+              depositTxHash: prev.depositTxHash,
+              depositTxStatus: prev.depositTxStatus,
+              depositTxErrorCode: prev.depositTxErrorCode,
+            }
+          : {}),
+      }
+    },
+    // Retry from the error view. A failure while creating the order goes
+    // back to the confirm step with the same quote, so the resubmit is the
+    // identical request under the same Idempotency-Key (the server replays
+    // the first answer instead of creating a second order). Anything else
+    // goes back to the form, whose values live in the screen.
+    offrampRetryAfterError: (state) => {
+      const canResubmit = !!state.offramp.lastQuote && !!state.offramp.pendingIdempotencyKey
+      state.offramp.status = canResubmit ? 'quote-ready' : 'idle'
+      clearError(state.offramp)
+    },
+    // "Editar" on the confirm step: back to the form with its values.
+    offrampEditRequest: (state) => {
+      state.offramp.status = 'idle'
+      state.offramp.lastQuote = null
+      clearError(state.offramp)
     },
     offrampQuoting: (state) => {
       state.offramp.status = 'quoting'
-      state.offramp.errorCode = null
+      clearError(state.offramp)
     },
     offrampQuoteReady: (state, action: PayloadAction<QuoteResponse>) => {
       state.offramp.status = 'quote-ready'
       state.offramp.lastQuote = action.payload
     },
-    offrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
+    offrampCreatingOrder: (
+      state,
+      action: PayloadAction<{ idempotencyKey: string; fingerprint?: string | null }>
+    ) => {
       state.offramp.status = 'creating-order'
       state.offramp.idempotencyKey = action.payload.idempotencyKey
       // Persist the key so a mid-createOrder crash + cold-boot retry reuses
       // the same Idempotency-Key header (server dedups). Cleared on success.
       state.offramp.pendingIdempotencyKey = action.payload.idempotencyKey
+      state.offramp.pendingRequestFingerprint = action.payload.fingerprint ?? null
     },
     offrampOrderCreated: (state, action: PayloadAction<OfframpOrderResponse>) => {
       state.offramp.status = 'awaiting-deposit'
@@ -328,6 +440,17 @@ export const slice = createSlice({
       // Order confirmed on the server; clear the pending key so the next
       // NEW intent gets a fresh UUID rather than colliding on the same key.
       state.offramp.pendingIdempotencyKey = null
+      state.offramp.pendingRequestFingerprint = null
+      state.offramp.depositTxHash = null
+      state.offramp.depositTxStatus = 'idle'
+      state.offramp.depositTxErrorCode = null
+      state.offramp.activeOrderMissingMultisig = false
+    },
+    // The server answered idempotency_key_reuse: the pending key belongs to
+    // a different body. Drop it so the next submit starts a fresh request.
+    offrampPendingIdempotencyKeyCleared: (state) => {
+      state.offramp.pendingIdempotencyKey = null
+      state.offramp.pendingRequestFingerprint = null
     },
     offrampAdvance: (
       state,
@@ -344,18 +467,12 @@ export const slice = createSlice({
     offrampCancelling: (state) => {
       state.offramp.status = 'cancelling'
     },
-    offrampError: (
-      state,
-      action: PayloadAction<{
-        code: string
-        retryAfterSeconds?: number | null
-        request_id?: string | null
-      }>
-    ) => {
+    offrampPollTimedOut: (state) => {
+      state.offramp.status = 'poll-timeout'
+    },
+    offrampError: (state, action: PayloadAction<FlowErrorPayload>) => {
       state.offramp.status = 'error'
-      state.offramp.errorCode = action.payload.code
-      state.offramp.errorRetryAfterSeconds = action.payload.retryAfterSeconds ?? null
-      state.offramp.errorRequestId = action.payload.request_id ?? null
+      applyError(state.offramp, action.payload)
     },
     offrampProofUrlLoading: (state) => {
       state.offramp.proofUrlLoading = true
@@ -388,6 +505,14 @@ export const slice = createSlice({
       state.offramp.depositTxStatus = 'failed'
       state.offramp.depositTxErrorCode = action.payload.code
     },
+    // "Intentar de nuevo" after a failed deposit (broadcast failure or an
+    // on-chain revert, where no funds moved). The screen re-prepares and
+    // re-sends from the idle state.
+    offrampDepositRetry: (state) => {
+      state.offramp.depositTxStatus = 'idle'
+      state.offramp.depositTxHash = null
+      state.offramp.depositTxErrorCode = null
+    },
     // Active-order check lifecycle. Dispatched by checkActiveOfframpOrderSaga
     // on offramp screen mount to enforce the "one active order at a time"
     // invariant server-side. See OfframpFlow.activeCheckStatus for details.
@@ -407,14 +532,21 @@ export const slice = createSlice({
       state.offramp.activeOrderId = action.payload.detail.id
       state.offramp.activeOrderDetail = action.payload.detail
       state.offramp.status = action.payload.status
+      clearError(state.offramp)
       if (action.payload.currentOrder) {
         state.offramp.currentOrder = action.payload.currentOrder
         state.offramp.activeOrderMissingMultisig = false
       } else {
-        // Server has an active AWAITING_DEPOSIT order but we lack the
-        // multisig_address (never created it locally, or slice was wiped).
-        // UI shows cancel-only in this case.
-        state.offramp.activeOrderMissingMultisig = true
+        // The local order (if any) is a different one: drop it together
+        // with its deposit tx state. Past AWAITING_DEPOSIT the UI renders
+        // from activeOrderDetail. In AWAITING_DEPOSIT the wallet lacks the
+        // multisig_address (never created it locally, or the slice was
+        // wiped), so the UI shows cancel-only.
+        state.offramp.currentOrder = null
+        state.offramp.depositTxHash = null
+        state.offramp.depositTxStatus = 'idle'
+        state.offramp.depositTxErrorCode = null
+        state.offramp.activeOrderMissingMultisig = action.payload.status === 'awaiting-deposit'
       }
     },
     offrampNoActiveFound: (
@@ -423,14 +555,31 @@ export const slice = createSlice({
     ) => {
       state.offramp.activeCheckStatus = 'done'
       state.offramp.activeOrderId = null
+      state.offramp.activeOrderDetail = null
       state.offramp.activeOrderMissingMultisig = false
       state.offramp.lastPayout = action.payload.lastPayout
+      // The server has no open order, so a locally kept one already ended
+      // (completed, expired, ...) while the screen was closed.
+      state.offramp.currentOrder = null
+      state.offramp.depositTxHash = null
+      state.offramp.depositTxStatus = 'idle'
+      state.offramp.depositTxErrorCode = null
     },
     offrampActiveCheckFailed: (state) => {
       // Fail-open: if the check fails (network, 5xx), don't block the user
       // from creating a new order. Server-side idempotency + the deposit
-      // guard still catch double-broadcasts.
+      // guard still catch double-broadcasts. A kept order whose deposit was
+      // already sent (or failed) is resumed locally and the poller corrects
+      // its status. One still waiting for its first send is not: without the
+      // server's word that it is open, the wallet must not auto-send to it.
       state.offramp.activeCheckStatus = 'failed'
+      if (
+        state.offramp.currentOrder &&
+        state.offramp.status === 'idle' &&
+        state.offramp.depositTxStatus !== 'idle'
+      ) {
+        state.offramp.status = 'awaiting-deposit'
+      }
     },
     // Upsert a payout profile keyed by destination (bre_b_key OR
     // bank_code + bank_account_number). Called by submitOfframpOrderSaga
@@ -455,29 +604,62 @@ export const slice = createSlice({
     },
 
     // On-ramp transitions
+    //
+    // Same contract as offrampReset: keep the pending idempotency key and,
+    // while the order is still open, the order itself.
     onrampReset: (state) => {
-      state.onramp = { ...initialOnramp }
+      const prev = state.onramp
+      const keepOrder = !!prev.currentOrder && !ONRAMP_FINAL_STATUSES.includes(prev.status)
+      state.onramp = {
+        ...initialOnramp,
+        pendingIdempotencyKey: prev.pendingIdempotencyKey,
+        pendingRequestFingerprint: prev.pendingRequestFingerprint,
+        currentOrder: keepOrder ? prev.currentOrder : null,
+      }
+    },
+    onrampRetryAfterError: (state) => {
+      const canResubmit = !!state.onramp.lastQuote && !!state.onramp.pendingIdempotencyKey
+      state.onramp.status = canResubmit ? 'quote-ready' : 'idle'
+      clearError(state.onramp)
+    },
+    onrampEditRequest: (state) => {
+      state.onramp.status = 'idle'
+      state.onramp.lastQuote = null
+      clearError(state.onramp)
     },
     onrampQuoting: (state) => {
       state.onramp.status = 'quoting'
-      state.onramp.errorCode = null
+      clearError(state.onramp)
     },
     onrampQuoteReady: (state, action: PayloadAction<QuoteResponse>) => {
       state.onramp.status = 'quote-ready'
       state.onramp.lastQuote = action.payload
     },
-    onrampCreatingOrder: (state, action: PayloadAction<{ idempotencyKey: string }>) => {
+    onrampCreatingOrder: (
+      state,
+      action: PayloadAction<{ idempotencyKey: string; fingerprint?: string | null }>
+    ) => {
       state.onramp.status = 'creating-order'
       state.onramp.idempotencyKey = action.payload.idempotencyKey
       state.onramp.pendingIdempotencyKey = action.payload.idempotencyKey
+      state.onramp.pendingRequestFingerprint = action.payload.fingerprint ?? null
     },
     onrampOrderCreated: (state, action: PayloadAction<OnrampOrderResponse>) => {
       state.onramp.status = 'awaiting-proof-upload'
       state.onramp.currentOrder = action.payload
       state.onramp.pendingIdempotencyKey = null
+      state.onramp.pendingRequestFingerprint = null
+      state.onramp.proofUploaded = false
+      state.onramp.proofUploadErrorCode = null
+      state.onramp.proofRejectedForRetry = false
+    },
+    onrampPendingIdempotencyKeyCleared: (state) => {
+      state.onramp.pendingIdempotencyKey = null
+      state.onramp.pendingRequestFingerprint = null
     },
     onrampUploadingProof: (state) => {
       state.onramp.status = 'uploading-proof'
+      state.onramp.proofUploadErrorCode = null
       // Starting a new upload clears the rejection banner from any previous
       // retryable rejection. If the operator rejects THIS upload too, the
       // polling saga will re-set the flag on the next regressive transition.
@@ -486,12 +668,52 @@ export const slice = createSlice({
     onrampProofUploaded: (state) => {
       state.onramp.status = 'awaiting-review'
       state.onramp.proofUploaded = true
+      state.onramp.proofUploadErrorCode = null
+    },
+    // Upload (or local file check) failed: stay on the upload step with an
+    // inline error. The order is kept, the user only retries the upload.
+    onrampProofUploadFailed: (state, action: PayloadAction<{ code: string }>) => {
+      state.onramp.status = 'awaiting-proof-upload'
+      state.onramp.proofUploadErrorCode = action.payload.code
     },
     onrampAdvance: (state, action: PayloadAction<{ status: OnrampFlowStatus }>) => {
       state.onramp.status = action.payload.status
     },
     onrampCancelling: (state) => {
       state.onramp.status = 'cancelling'
+    },
+    onrampPollTimedOut: (state) => {
+      state.onramp.status = 'poll-timeout'
+    },
+    onrampActiveCheckStarted: (state) => {
+      state.onramp.activeCheckStatus = 'checking'
+    },
+    onrampActiveResumed: (
+      state,
+      action: PayloadAction<{ currentOrder: OnrampOrderResponse; status: OnrampFlowStatus }>
+    ) => {
+      state.onramp.activeCheckStatus = 'done'
+      if (state.onramp.currentOrder?.order_id !== action.payload.currentOrder.order_id) {
+        state.onramp.proofRejectedForRetry = false
+      }
+      state.onramp.currentOrder = action.payload.currentOrder
+      state.onramp.status = action.payload.status
+      state.onramp.proofUploaded =
+        action.payload.status === 'awaiting-review' || action.payload.status === 'verifying'
+      state.onramp.proofUploadErrorCode = null
+      clearError(state.onramp)
+    },
+    onrampNoActiveFound: (state) => {
+      state.onramp.activeCheckStatus = 'done'
+      state.onramp.currentOrder = null
+    },
+    onrampActiveCheckFailed: (state) => {
+      // Fail-open, same as the off-ramp check, including the local resume of
+      // a kept order (the poller corrects its status).
+      state.onramp.activeCheckStatus = 'failed'
+      if (state.onramp.currentOrder && state.onramp.status === 'idle') {
+        state.onramp.status = 'awaiting-proof-upload'
+      }
     },
     // Dispatched by the polling saga when it detects the specific regressive
     // transition AWAITING_REVIEW / VERIFYING -> AWAITING_PROOF, which the
@@ -503,18 +725,9 @@ export const slice = createSlice({
       state.onramp.proofUploaded = false
       state.onramp.proofRejectedForRetry = true
     },
-    onrampError: (
-      state,
-      action: PayloadAction<{
-        code: string
-        retryAfterSeconds?: number | null
-        request_id?: string | null
-      }>
-    ) => {
+    onrampError: (state, action: PayloadAction<FlowErrorPayload>) => {
       state.onramp.status = 'error'
-      state.onramp.errorCode = action.payload.code
-      state.onramp.errorRetryAfterSeconds = action.payload.retryAfterSeconds ?? null
-      state.onramp.errorRequestId = action.payload.request_id ?? null
+      applyError(state.onramp, action.payload)
     },
 
     // Cedula update transitions
@@ -543,7 +756,8 @@ export const slice = createSlice({
       // the user reopens a screen mid-flow. EXCEPTION: pendingIdempotencyKey
       // survives across cold boot so a mid-createOrder crash + retry reuses
       // the same Idempotency-Key header (server dedups). Cleared on order
-      // confirmation. Prevents duplicate real-money orders.
+      // confirmation. Prevents duplicate real-money orders. The request
+      // fingerprint travels with the key.
       return {
         ...state,
         banks: rehydrated?.banks ?? state.banks,
@@ -554,6 +768,9 @@ export const slice = createSlice({
           ...state.offramp,
           pendingIdempotencyKey:
             rehydrated?.offramp?.pendingIdempotencyKey ?? state.offramp.pendingIdempotencyKey,
+          pendingRequestFingerprint:
+            rehydrated?.offramp?.pendingRequestFingerprint ??
+            state.offramp.pendingRequestFingerprint,
           savedPayoutProfiles:
             rehydrated?.offramp?.savedPayoutProfiles ?? state.offramp.savedPayoutProfiles,
         },
@@ -561,6 +778,8 @@ export const slice = createSlice({
           ...state.onramp,
           pendingIdempotencyKey:
             rehydrated?.onramp?.pendingIdempotencyKey ?? state.onramp.pendingIdempotencyKey,
+          pendingRequestFingerprint:
+            rehydrated?.onramp?.pendingRequestFingerprint ?? state.onramp.pendingRequestFingerprint,
         },
       }
     })
@@ -575,12 +794,16 @@ export const {
   limitsBackgroundRevalidateStarted,
   limitsBackgroundRevalidateFinished,
   offrampReset,
+  offrampRetryAfterError,
+  offrampEditRequest,
   offrampQuoting,
   offrampQuoteReady,
   offrampCreatingOrder,
   offrampOrderCreated,
+  offrampPendingIdempotencyKeyCleared,
   offrampAdvance,
   offrampCancelling,
+  offrampPollTimedOut,
   offrampError,
   offrampProofUrlLoading,
   offrampProofUrlLoaded,
@@ -588,20 +811,30 @@ export const {
   offrampDepositSubmitting,
   offrampDepositBroadcast,
   offrampDepositFailed,
+  offrampDepositRetry,
   offrampActiveCheckStarted,
   offrampActiveResumed,
   offrampNoActiveFound,
   offrampActiveCheckFailed,
   offrampSavePayoutProfile,
   onrampReset,
+  onrampRetryAfterError,
+  onrampEditRequest,
   onrampQuoting,
   onrampQuoteReady,
   onrampCreatingOrder,
   onrampOrderCreated,
+  onrampPendingIdempotencyKeyCleared,
   onrampUploadingProof,
   onrampProofUploaded,
+  onrampProofUploadFailed,
   onrampAdvance,
   onrampCancelling,
+  onrampPollTimedOut,
+  onrampActiveCheckStarted,
+  onrampActiveResumed,
+  onrampNoActiveFound,
+  onrampActiveCheckFailed,
   onrampProofRejectedForRetry,
   onrampError,
   cedulaUpdateReset,

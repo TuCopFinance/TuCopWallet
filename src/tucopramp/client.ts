@@ -218,6 +218,16 @@ export async function parseErrorEnvelope(response: Response): Promise<ErrorEnvel
     if (parsed && typeof parsed === 'object' && typeof parsed.code === 'string') {
       return parsed as ErrorEnvelope
     }
+    // Legacy P2P bodies (e.g. 409 idempotency_key_reuse on order creation)
+    // carry only `error_code` + `message`, without the RFC 7807 `code`.
+    if (parsed && typeof parsed === 'object' && typeof parsed.error_code === 'string') {
+      return {
+        ...parsed,
+        code: parsed.error_code,
+        status: response.status,
+        detail: typeof parsed.message === 'string' ? parsed.message : undefined,
+      } as ErrorEnvelope
+    }
     return {
       code: `http_${response.status}`,
       status: response.status,

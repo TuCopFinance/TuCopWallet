@@ -247,6 +247,31 @@ describe('tucopRampFetch', () => {
     expect(caught?.code).toBe('http_502')
   })
 
+  it('reads the code from error_code on legacy P2P bodies (409 idempotency_key_reuse)', async () => {
+    const fetchMock: FetchMock = jest.fn(
+      async (_url, _init) =>
+        new Response(
+          JSON.stringify({ error_code: 'idempotency_key_reuse', message: 'Key reused' }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        )
+    )
+    let caught: TucopRampError | undefined
+    try {
+      await tucopRampFetch({
+        method: 'GET',
+        upstreamPath: '/v1/p2p/banks',
+        skipWalletAuth: true,
+        baseUrl: TEST_BASE_URL,
+        fetchImpl: fetchMock,
+      })
+    } catch (e) {
+      caught = e as TucopRampError
+    }
+    expect(caught?.httpStatus).toBe(409)
+    expect(caught?.code).toBe('idempotency_key_reuse')
+    expect(caught?.message).toBe('Key reused')
+  })
+
   it('throws when a wallet-scoped call omits walletAddress or keychainAccounts', async () => {
     const fetchMock: FetchMock = jest.fn()
     await expect(

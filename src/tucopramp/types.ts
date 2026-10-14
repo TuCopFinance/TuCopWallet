@@ -59,11 +59,13 @@ export type OfframpOrderStatus =
   | 'EXPIRED'
 
 // On-ramp state machine (guide section 6.2). Same caveat as off-ramp.
+// REJECTED is final: the operator could not match the user's payment.
 export type OnrampOrderStatus =
   | 'AWAITING_PROOF'
   | 'AWAITING_REVIEW'
   | 'VERIFYING'
   | 'COMPLETED'
+  | 'REJECTED'
   | 'CANCELLED'
   | 'EXPIRED'
 
@@ -111,6 +113,7 @@ export type TucopRampErrorCode =
   | 'cedula_locked_by_active_order'
   // Body / validation
   | 'invalid_body'
+  | 'invalid_json'
   | 'invalid_query'
   | 'consent_required'
   | 'payout_invalid_shape'
@@ -133,6 +136,9 @@ export type TucopRampErrorCode =
   | 'rate_limited_ip'
   | 'rate_limited_consumer'
   | 'rate_limited_wallet'
+  | 'rate_limited_api_key'
+  // Product gating
+  | 'product_not_enabled'
   // Idempotency
   | 'idempotency_key_reuse'
   | 'idempotency_key_required'

@@ -3922,6 +3922,26 @@ export const v255Schema = {
     ...v254Schema._persist,
     version: 255,
   },
+  // tucopramp P2P flow fields added additively (request fingerprint for the
+  // pending idempotency key, remaining limits on errors, on-ramp resume and
+  // inline upload errors). No field removed or renamed, so no migration.
+  tucopramp: {
+    ...v254Schema.tucopramp,
+    offramp: {
+      ...v254Schema.tucopramp.offramp,
+      pendingRequestFingerprint: null,
+      errorRemainingDailyCop: null,
+      errorRemainingMonthlyCop: null,
+    },
+    onramp: {
+      ...v254Schema.tucopramp.onramp,
+      pendingRequestFingerprint: null,
+      proofUploadErrorCode: null,
+      activeCheckStatus: 'idle',
+      errorRemainingDailyCop: null,
+      errorRemainingMonthlyCop: null,
+    },
+  },
   // bridgeramp slice added without a persist version bump, same policy as
   // tucopramp above: additive slice with an initialState, no migration.
   bridgeramp: {

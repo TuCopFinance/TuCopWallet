@@ -4241,6 +4241,18 @@
                         "string"
                     ]
                 },
+                "errorRemainingDailyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "errorRemainingMonthlyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "errorRequestId": {
                     "type": [
                         "null",
@@ -4339,6 +4351,12 @@
                         "string"
                     ]
                 },
+                "pendingRequestFingerprint": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofUrl": {
                     "anyOf": [
                         {
@@ -4378,12 +4396,15 @@
                 "depositTxHash",
                 "depositTxStatus",
                 "errorCode",
+                "errorRemainingDailyCop",
+                "errorRemainingMonthlyCop",
                 "errorRequestId",
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastPayout",
                 "lastQuote",
                 "pendingIdempotencyKey",
+                "pendingRequestFingerprint",
                 "proofUrl",
                 "proofUrlErrorCode",
                 "proofUrlLoading",
@@ -4403,6 +4424,7 @@
                 "error",
                 "expired",
                 "idle",
+                "poll-timeout",
                 "processing",
                 "quote-ready",
                 "quoting",
@@ -4414,6 +4436,15 @@
         "OnrampFlow": {
             "additionalProperties": false,
             "properties": {
+                "activeCheckStatus": {
+                    "enum": [
+                        "checking",
+                        "done",
+                        "failed",
+                        "idle"
+                    ],
+                    "type": "string"
+                },
                 "currentOrder": {
                     "anyOf": [
                         {
@@ -4482,6 +4513,18 @@
                     "type": [
                         "null",
                         "string"
+                    ]
+                },
+                "errorRemainingDailyCop": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "errorRemainingMonthlyCop": {
+                    "type": [
+                        "null",
+                        "number"
                     ]
                 },
                 "errorRequestId": {
@@ -4572,8 +4615,20 @@
                         "string"
                     ]
                 },
+                "pendingRequestFingerprint": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
                 "proofRejectedForRetry": {
                     "type": "boolean"
+                },
+                "proofUploadErrorCode": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
                 },
                 "proofUploaded": {
                     "type": "boolean"
@@ -4583,14 +4638,19 @@
                 }
             },
             "required": [
+                "activeCheckStatus",
                 "currentOrder",
                 "errorCode",
+                "errorRemainingDailyCop",
+                "errorRemainingMonthlyCop",
                 "errorRequestId",
                 "errorRetryAfterSeconds",
                 "idempotencyKey",
                 "lastQuote",
                 "pendingIdempotencyKey",
+                "pendingRequestFingerprint",
                 "proofRejectedForRetry",
+                "proofUploadErrorCode",
                 "proofUploaded",
                 "status"
             ],
@@ -4607,8 +4667,10 @@
                 "error",
                 "expired",
                 "idle",
+                "poll-timeout",
                 "quote-ready",
                 "quoting",
+                "rejected",
                 "uploading-proof",
                 "verifying"
             ],

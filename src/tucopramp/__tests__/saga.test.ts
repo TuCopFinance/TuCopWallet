@@ -236,7 +236,9 @@ describe('submitOfframpOrderSaga quote expiry guard', () => {
       .provide([[matchers.call.fn(api.createOfframpOrder), orderResponse]])
       .not.put(offrampQuoting())
       .not.call.fn(api.getOfframpQuote)
-      .put(offrampCreatingOrder({ idempotencyKey: 'idem-2' }))
+      .put.like({
+        action: { type: offrampCreatingOrder.type, payload: { idempotencyKey: 'idem-2' } },
+      })
       .run()
   })
 
@@ -250,7 +252,9 @@ describe('submitOfframpOrderSaga quote expiry guard', () => {
       .withState(buildState({ offrampLastQuote: badQuote }))
       .provide([[matchers.call.fn(api.createOfframpOrder), orderResponse]])
       .not.put(offrampQuoting())
-      .put(offrampCreatingOrder({ idempotencyKey: 'idem-3' }))
+      .put.like({
+        action: { type: offrampCreatingOrder.type, payload: { idempotencyKey: 'idem-3' } },
+      })
       .run()
   })
 
@@ -352,7 +356,9 @@ describe('submitOnrampOrderSaga quote expiry guard', () => {
       .provide([[matchers.call.fn(api.createOnrampOrder), orderResponse]])
       .not.put(onrampQuoting())
       .not.call.fn(api.getOnrampQuote)
-      .put(onrampCreatingOrder({ idempotencyKey: 'idem-6' }))
+      .put.like({
+        action: { type: onrampCreatingOrder.type, payload: { idempotencyKey: 'idem-6' } },
+      })
       .run()
   })
 

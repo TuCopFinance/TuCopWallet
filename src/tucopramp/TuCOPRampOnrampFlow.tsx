@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  AppState,
   Linking,
   ScrollView,
   StyleSheet,
@@ -26,11 +27,12 @@ import { getFeatureGate } from 'src/statsig'
 import { StatsigFeatureGates } from 'src/statsig/types'
 import { addConsentBreadcrumb } from 'src/tucopramp/consentBreadcrumb'
 import ErrorFooter from 'src/tucopramp/ErrorFooter'
+import { errorMessageKey } from 'src/tucopramp/errorCopy'
+import { formatCop } from 'src/tucopramp/format'
 import {
   DOCUMENT_TYPES,
   DocumentType,
   MAX_DOCUMENT_LENGTH,
-  getCachedLimits,
   getDocumentAutoCapitalize,
   getDocumentKeyboardType,
   isValidDocument,
@@ -38,27 +40,46 @@ import {
 } from 'src/tucopramp/limits'
 import { PickerModal } from 'src/tucopramp/PickerModal'
 import { toTitleCase } from 'src/tucopramp/nameFormat'
-import { MAX_NAME_LENGTH, isValidEmail, sanitizePersonName } from 'src/tucopramp/validation'
+import {
+  MAX_NAME_LENGTH,
+  formatAmountDigits,
+  isValidEmail,
+  parseAmountDigits,
+  sanitizeAmountDigits,
+  sanitizePersonName,
+} from 'src/tucopramp/validation'
 import {
   cancelOnrampOrder,
+  checkActiveOnrampOrder,
   fetchReceivingAccount,
   fetchUserProfile,
   pollOnrampOrder,
   requestOnrampQuote,
+  stopOnrampPolling,
   submitOnrampOrder,
   uploadOnrampProof,
 } from 'src/tucopramp/saga'
 import {
+  effectiveLimitsSelector,
+  onrampActiveCheckStatusSelector,
   onrampCurrentOrderSelector,
   onrampErrorCodeSelector,
+  onrampErrorRemainingDailySelector,
+  onrampErrorRemainingMonthlySelector,
   onrampErrorRequestIdSelector,
   onrampErrorRetryAfterSecondsSelector,
   onrampLastQuoteSelector,
   onrampProofRejectedForRetrySelector,
+  onrampProofUploadErrorCodeSelector,
   onrampStatusSelector,
   receivingAccountSelector,
 } from 'src/tucopramp/selectors'
-import { onrampError, onrampReset } from 'src/tucopramp/slice'
+import {
+  onrampEditRequest,
+  onrampProofUploadFailed,
+  onrampReset,
+  onrampRetryAfterError,
+} from 'src/tucopramp/slice'
 import Logger from 'src/utils/Logger'
 import Colors from 'src/styles/colors'
 import { typeScale } from 'src/styles/fonts'
@@ -73,12 +94,24 @@ const TUCOPRAMP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 
 const TAG = 'tucopramp/OnrampFlow'
 
-// react-native-image-picker MIME whitelist for the Bre-B receipt. Server
-// enforces the same list with `proof_invalid_type` (400) if anything else
-// slips through. PDFs are not supported by launchImageLibrary today; users
-// with a PDF receipt would need a separate document picker (out of scope
-// for the first release).
+// react-native-image-picker MIME whitelist for the Bre-B receipt. The server
+// also accepts PDF (proof_invalid_type otherwise), but the wallet has no
+// document picker dependency, so receipts are PNG / JPEG images only and the
+// proof_invalid_type copy says so.
 const ALLOWED_PROOF_MIME = ['image/png', 'image/jpeg', 'image/jpg']
+// Server cap (proof_too_large). Checked before uploading to save the trip.
+const MAX_PROOF_BYTES = 10 * 1024 * 1024
+
+// Statuses with an open order the poller follows (also during the upload
+// step, so an order that expires or is cancelled by an operator is noticed
+// before a late upload).
+const POLLED_STATUSES = ['awaiting-proof-upload', 'uploading-proof', 'awaiting-review', 'verifying']
+
+function proofFileName(uri: string, type: string): string {
+  const fromUri = uri.split('?')[0].split('/').pop()
+  if (fromUri && /\.[a-z0-9]+$/i.test(fromUri)) return fromUri
+  return `comprobante.${type === 'image/png' ? 'png' : 'jpg'}`
+}
 
 function TuCOPRampOnrampFlow(_props: Props) {
   const { t } = useTranslation()
@@ -91,8 +124,14 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const errorCode = useSelector(onrampErrorCodeSelector)
   const errorRetryAfterSeconds = useSelector(onrampErrorRetryAfterSecondsSelector)
   const errorRequestId = useSelector(onrampErrorRequestIdSelector)
+  const errorRemainingDaily = useSelector(onrampErrorRemainingDailySelector)
+  const errorRemainingMonthly = useSelector(onrampErrorRemainingMonthlySelector)
   const proofRejectedForRetry = useSelector(onrampProofRejectedForRetrySelector)
+  const proofUploadErrorCode = useSelector(onrampProofUploadErrorCodeSelector)
+  const activeCheckStatus = useSelector(onrampActiveCheckStatusSelector)
+  const limits = useSelector(effectiveLimitsSelector)
 
+  // `amount` holds digits only; the input renders it with es-CO dots.
   const [amount, setAmount] = useState('')
   const [documentType, setDocumentType] = useState<DocumentType>('CC')
   const [cedula, setCedula] = useState('')
@@ -102,6 +141,9 @@ function TuCOPRampOnrampFlow(_props: Props) {
   const [consentAccepted, setConsentAccepted] = useState<boolean>(false)
   const [docTypePickerOpen, setDocTypePickerOpen] = useState<boolean>(false)
   const [cancelConfirmVisible, setCancelConfirmVisible] = useState<boolean>(false)
+
+  const orderId = order?.order_id ?? null
+  const pollActive = POLLED_STATUSES.includes(status)
 
   useEffect(() => {
     // Defensive: the on-ramp entry in WithdrawSpend is already gated on
@@ -114,20 +156,36 @@ function TuCOPRampOnrampFlow(_props: Props) {
     }
     dispatch(fetchReceivingAccount())
     dispatch(fetchUserProfile())
+    // Resume an open on-ramp order (the user may have paid already) instead
+    // of offering a fresh form.
+    dispatch(checkActiveOnrampOrder())
     return () => {
+      dispatch(stopOnrampPolling())
       dispatch(onrampReset())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // One poller per open order, keyed on the order id + "is open" so moving
+  // between open statuses does not restart it (rejection detection relies on
+  // the poller seeing consecutive server statuses). Stopped on close.
   useEffect(() => {
-    if (status === 'awaiting-review' && order?.order_id) {
-      dispatch(pollOnrampOrder({ orderId: order.order_id }))
+    if (pollActive && orderId) {
+      dispatch(pollOnrampOrder({ orderId }))
     }
-  }, [status, order, dispatch])
+  }, [pollActive, orderId, dispatch])
 
-  const amountNum = useMemo(() => Number(amount) || 0, [amount])
-  const limits = getCachedLimits()
+  // Re-poll right away when the app returns to the foreground.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && orderId && (pollActive || status === 'poll-timeout')) {
+        dispatch(pollOnrampOrder({ orderId }))
+      }
+    })
+    return () => subscription.remove()
+  }, [pollActive, status, orderId, dispatch])
+
+  const amountNum = useMemo(() => parseAmountDigits(amount), [amount])
   const amountValid = amountNum >= limits.min_order_cop && amountNum <= limits.max_order_cop
   const firstNameValid = firstName.trim().length > 0
   const lastNameValid = lastName.trim().length > 0
@@ -160,6 +218,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
     )
   }
 
+  // Every failure here stays on the upload step as an inline error: the
+  // order is open and the user may have paid already.
   const onUploadProof = async () => {
     if (!order?.order_id) return
     let response: ImagePickerResponse
@@ -173,35 +233,70 @@ function TuCOPRampOnrampFlow(_props: Props) {
       })
     } catch (err) {
       Logger.warn(TAG, 'launchImageLibrary threw', err)
+      dispatch(onrampProofUploadFailed({ code: 'proof_picker_failed' }))
       return
     }
     if (response.didCancel) return
+    if (response.errorCode) {
+      Logger.warn(TAG, `image picker failed: ${response.errorCode}`)
+      dispatch(
+        onrampProofUploadFailed({
+          code:
+            response.errorCode === 'permission' ? 'proof_picker_permission' : 'proof_picker_failed',
+        })
+      )
+      return
+    }
     const asset = response.assets?.[0]
-    if (!asset?.uri || !asset.type || !asset.fileName) {
-      Logger.warn(TAG, 'image picker returned incomplete asset', response)
+    if (!asset?.uri || !asset.type) {
+      Logger.warn(TAG, 'image picker returned incomplete asset')
+      dispatch(onrampProofUploadFailed({ code: 'proof_picker_failed' }))
       return
     }
     if (!ALLOWED_PROOF_MIME.includes(asset.type)) {
-      // Surface as a soft error via redux so the ErrorFooter shows it; server
-      // would also reject with proof_invalid_type, but this saves the round-trip.
-      dispatch(onrampError({ code: 'proof_invalid_type' }))
+      // Server would also reject with proof_invalid_type; this saves the trip.
+      dispatch(onrampProofUploadFailed({ code: 'proof_invalid_type' }))
+      return
+    }
+    if (asset.fileSize !== undefined && asset.fileSize > MAX_PROOF_BYTES) {
+      dispatch(onrampProofUploadFailed({ code: 'proof_too_large' }))
       return
     }
     dispatch(
       uploadOnrampProof({
         orderId: order.order_id,
-        file: { uri: asset.uri, name: asset.fileName, type: asset.type },
+        file: {
+          uri: asset.uri,
+          // Some Android pickers omit fileName; derive one from the uri.
+          name: asset.fileName ?? proofFileName(asset.uri, asset.type),
+          type: asset.type,
+        },
       })
     )
   }
 
   const onCloseAndExit = () => {
+    dispatch(stopOnrampPolling())
     dispatch(onrampReset())
     navigateBack()
   }
 
-  const onStartOver = () => {
-    dispatch(onrampReset())
+  // Retry from the error view; also re-checks the server for an open order
+  // an earlier (timed-out) attempt may have created.
+  const onRetryAfterError = () => {
+    dispatch(onrampRetryAfterError())
+    dispatch(checkActiveOnrampOrder())
+  }
+
+  const onEditRequest = () => {
+    setConsentAccepted(false)
+    dispatch(onrampEditRequest())
+  }
+
+  const onRefreshOrder = () => {
+    if (orderId) {
+      dispatch(pollOnrampOrder({ orderId }))
+    }
   }
 
   const documentTypeOptions = useMemo(
@@ -213,12 +308,23 @@ function TuCOPRampOnrampFlow(_props: Props) {
     [t]
   )
 
+  const showForm =
+    (status === 'idle' || status === 'quoting' || status === 'quote-ready') &&
+    !(status === 'idle' && activeCheckStatus === 'checking')
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{t('tucopramp.onrampTitle')}</Text>
 
-        {(status === 'idle' || status === 'quoting' || status === 'quote-ready') && (
+        {status === 'idle' && activeCheckStatus === 'checking' && (
+          <View style={styles.centered}>
+            <ActivityIndicator />
+            <Text style={styles.helper}>{t('tucopramp.checkingActiveOrder')}</Text>
+          </View>
+        )}
+
+        {showForm && (
           <View>
             {account && (
               <View style={styles.infoBox}>
@@ -231,24 +337,24 @@ function TuCOPRampOnrampFlow(_props: Props) {
             <TextInput
               style={styles.input}
               placeholder={t('tucopramp.amountPlaceholder') ?? ''}
-              keyboardType="numeric"
-              value={amount}
-              onChangeText={setAmount}
+              keyboardType="number-pad"
+              value={formatAmountDigits(amount)}
+              onChangeText={(v) => setAmount(sanitizeAmountDigits(v))}
               editable={status === 'idle'}
               testID="tucopramp-onramp-amount"
             />
             {amount.length === 0 || amountNum === 0 ? (
               <Text style={styles.helper}>
                 {t('tucopramp.amountRange', {
-                  min: limits.min_order_cop.toLocaleString('es-CO'),
-                  max: limits.max_order_cop.toLocaleString('es-CO'),
+                  min: formatCop(limits.min_order_cop),
+                  max: formatCop(limits.max_order_cop),
                 })}
               </Text>
             ) : amountNum < limits.min_order_cop ? (
               <InLineNotification
                 variant={NotificationVariant.Error}
                 description={t('tucopramp.amountBelowMin', {
-                  min: limits.min_order_cop.toLocaleString('es-CO'),
+                  min: formatCop(limits.min_order_cop),
                 })}
                 style={styles.amountAlert}
                 testID="tucopramp-onramp-amount-below-min"
@@ -257,7 +363,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
               <InLineNotification
                 variant={NotificationVariant.Error}
                 description={t('tucopramp.amountAboveMax', {
-                  max: limits.max_order_cop.toLocaleString('es-CO'),
+                  max: formatCop(limits.max_order_cop),
                 })}
                 style={styles.amountAlert}
                 testID="tucopramp-onramp-amount-above-max"
@@ -297,6 +403,7 @@ function TuCOPRampOnrampFlow(_props: Props) {
               testID="tucopramp-onramp-doc-type-picker"
               accessibilityRole="button"
               disabled={status !== 'idle'}
+              accessibilityState={{ disabled: status !== 'idle' }}
             >
               <Text style={styles.pickerValue}>{t(`tucopramp.documentType.${documentType}`)}</Text>
               <DownArrowIcon color={Colors.accent} strokeWidth={2} />
@@ -353,17 +460,31 @@ function TuCOPRampOnrampFlow(_props: Props) {
             {status === 'quote-ready' && quote && (
               <View style={styles.quoteBox}>
                 <Text style={styles.quoteLabel}>{t('tucopramp.quoteReceivedLabel')}</Text>
-                <Text style={styles.quoteAmount}>
-                  {quote.gross_amount_copm.toLocaleString('es-CO')} COPm
+                <Text style={styles.quoteAmount} testID="tucopramp-onramp-quote-amount">
+                  {t('tucopramp.amountDigitalPesos', {
+                    amount: formatCop(quote.gross_amount_copm),
+                  })}
                 </Text>
-                <Text style={styles.quoteFee}>
-                  {t('tucopramp.quoteFee', {
-                    fee: quote.fee_amount_cop.toLocaleString('es-CO'),
+                {quote.fee_amount_cop > 0 ? (
+                  <Text style={styles.quoteFee}>
+                    {t('tucopramp.quoteFee', { fee: formatCop(quote.fee_amount_cop) })}
+                  </Text>
+                ) : (
+                  <Text style={styles.noFeeNote} testID="tucopramp-onramp-no-fee">
+                    {t('tucopramp.noFee')}
+                  </Text>
+                )}
+                <Text style={styles.quoteFee} testID="tucopramp-onramp-remaining-limits">
+                  {t('tucopramp.remainingLimits', {
+                    daily: formatCop(quote.remaining_daily_cop),
+                    monthly: formatCop(quote.remaining_monthly_cop),
                   })}
                 </Text>
                 <TouchableOpacity
                   style={styles.consentRow}
                   onPress={() => setConsentAccepted((v) => !v)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: consentAccepted }}
                   testID="tucopramp-onramp-consent"
                 >
                   <View
@@ -378,7 +499,11 @@ function TuCOPRampOnrampFlow(_props: Props) {
                     <Text style={styles.consentLabel}>{t('tucopramp.consent.label')}</Text>
                     <Text
                       style={styles.consentLink}
-                      onPress={() => Linking.openURL(TUCOPRAMP_TERMS_URL)}
+                      onPress={() =>
+                        Linking.openURL(TUCOPRAMP_TERMS_URL).catch(() => {
+                          Logger.warn(TAG, 'Failed to open the terms URL')
+                        })
+                      }
                     >
                       {t('tucopramp.consent.linkText')}
                     </Text>
@@ -391,6 +516,14 @@ function TuCOPRampOnrampFlow(_props: Props) {
                   type={BtnTypes.PRIMARY}
                   disabled={!consentAccepted}
                   testID="tucopramp-onramp-create-order"
+                />
+                <Button
+                  text={t('tucopramp.editCta')}
+                  onPress={onEditRequest}
+                  size={BtnSizes.FULL}
+                  type={BtnTypes.SECONDARY}
+                  style={styles.cancelOrderButton}
+                  testID="tucopramp-onramp-edit"
                 />
               </View>
             )}
@@ -417,19 +550,35 @@ function TuCOPRampOnrampFlow(_props: Props) {
               </View>
             )}
             <Text style={styles.statusHeading}>{t('tucopramp.awaitingProofHeading')}</Text>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoLabel}>{t('tucopramp.transferToLabel')}</Text>
-              <Text style={styles.infoValue}>{order.receiving_account.bre_b_key}</Text>
-            </View>
+            {!!order.receiving_account.bre_b_key && (
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>{t('tucopramp.transferToLabel')}</Text>
+                <Text style={styles.infoValue} selectable testID="tucopramp-onramp-transfer-to">
+                  {order.receiving_account.bre_b_key}
+                </Text>
+              </View>
+            )}
             <View style={styles.infoBox}>
               <Text style={styles.infoLabel}>{t('tucopramp.transferAmountLabel')}</Text>
-              <Text style={styles.infoValue}>
-                {order.gross_amount_cop.toLocaleString('es-CO')} COP
+              <Text style={styles.infoValue} testID="tucopramp-onramp-transfer-amount">
+                {t('tucopramp.amountPesos', { amount: formatCop(order.gross_amount_cop) })}
               </Text>
             </View>
-            <Text style={styles.body}>{order.instructions}</Text>
+            {!!order.instructions && <Text style={styles.body}>{order.instructions}</Text>}
+            {!!proofUploadErrorCode && (
+              <InLineNotification
+                variant={NotificationVariant.Error}
+                description={t(errorMessageKey(proofUploadErrorCode), {
+                  defaultValue: t('tucopramp.errors.proof_upload_failed'),
+                })}
+                style={styles.amountAlert}
+                testID="tucopramp-onramp-upload-error"
+              />
+            )}
             <Button
-              text={t('tucopramp.uploadProofCta')}
+              text={
+                proofUploadErrorCode ? t('tucopramp.retryUploadCta') : t('tucopramp.uploadProofCta')
+              }
               onPress={onUploadProof}
               size={BtnSizes.FULL}
               type={BtnTypes.PRIMARY}
@@ -457,32 +606,79 @@ function TuCOPRampOnrampFlow(_props: Props) {
           </View>
         )}
 
-        {(status === 'uploading-proof' || status === 'verifying') && (
+        {status === 'uploading-proof' && (
           <View style={styles.centered}>
             <ActivityIndicator />
-            <Text style={styles.helper}>{t('tucopramp.uploadingOrVerifying')}</Text>
+            <Text style={styles.helper}>{t('tucopramp.uploadingProof')}</Text>
           </View>
         )}
 
-        {status === 'awaiting-review' && (
-          <View style={styles.centered}>
-            <Text style={styles.statusHeading}>{t('tucopramp.awaitingReviewHeading')}</Text>
-            <Text style={styles.body}>{t('tucopramp.awaitingReviewBody')}</Text>
-          </View>
-        )}
-
-        {(status === 'completed' || status === 'cancelled' || status === 'expired') && (
+        {(status === 'awaiting-review' || status === 'verifying') && (
           <View style={styles.centered}>
             <Text style={styles.statusHeading}>
+              {status === 'verifying'
+                ? t('tucopramp.verifyingHeading')
+                : t('tucopramp.awaitingReviewHeading')}
+            </Text>
+            <Text style={styles.body}>
+              {status === 'verifying'
+                ? t('tucopramp.verifyingBody')
+                : t('tucopramp.awaitingReviewBody')}
+            </Text>
+            <ActivityIndicator style={styles.spinner} />
+          </View>
+        )}
+
+        {status === 'poll-timeout' && (
+          <View style={styles.centered}>
+            <Text style={styles.statusHeading}>{t('tucopramp.pollTimeout.heading')}</Text>
+            <Text style={styles.terminalBody} testID="tucopramp-onramp-poll-timeout-body">
+              {t('tucopramp.pollTimeout.body')}
+            </Text>
+            <Button
+              text={t('tucopramp.pollTimeout.refreshCta')}
+              onPress={onRefreshOrder}
+              size={BtnSizes.FULL}
+              type={BtnTypes.PRIMARY}
+              testID="tucopramp-onramp-poll-refresh"
+            />
+            <Button
+              text={t('tucopramp.closeCta')}
+              onPress={onCloseAndExit}
+              size={BtnSizes.FULL}
+              type={BtnTypes.SECONDARY}
+              style={styles.cancelOrderButton}
+              testID="tucopramp-onramp-poll-close"
+            />
+          </View>
+        )}
+
+        {(status === 'completed' ||
+          status === 'rejected' ||
+          status === 'cancelled' ||
+          status === 'expired') && (
+          <View style={styles.centered}>
+            <Text style={styles.statusHeading} testID="tucopramp-onramp-final-heading">
               {status === 'completed'
                 ? t('tucopramp.completed')
-                : status === 'expired'
-                  ? t('tucopramp.expired')
-                  : t('tucopramp.cancelled')}
+                : status === 'rejected'
+                  ? t('tucopramp.rejected')
+                  : status === 'expired'
+                    ? t('tucopramp.expired')
+                    : t('tucopramp.cancelled')}
             </Text>
             {status !== 'completed' && (
               <Text style={styles.terminalBody}>
-                {status === 'expired' ? t('tucopramp.expiredBody') : t('tucopramp.cancelledBody')}
+                {status === 'rejected'
+                  ? t('tucopramp.rejectedBody')
+                  : status === 'expired'
+                    ? t('tucopramp.expiredBody')
+                    : t('tucopramp.cancelledBody')}
+              </Text>
+            )}
+            {status === 'rejected' && !!orderId && (
+              <Text style={styles.referenceValue} selectable testID="tucopramp-onramp-reference">
+                {t('tucopramp.orderReference', { id: orderId })}
               </Text>
             )}
             <Button
@@ -498,14 +694,27 @@ function TuCOPRampOnrampFlow(_props: Props) {
         {status === 'error' && (
           <View style={styles.centered}>
             <Text style={styles.errorHeading}>{t('tucopramp.errorHeading')}</Text>
-            <Text style={styles.body}>
-              {errorCode ? t(`tucopramp.errors.${errorCode}`, t('tucopramp.errors.unknown')) : ''}
+            <Text style={styles.body} testID="tucopramp-onramp-error-body">
+              {t(errorMessageKey(errorCode), { defaultValue: t('tucopramp.errors.unknown') })}
             </Text>
+            {errorCode === 'amount_limit_exceeded' && (
+              <Text style={styles.terminalBody} testID="tucopramp-onramp-error-limits">
+                {errorRemainingDaily !== null || errorRemainingMonthly !== null
+                  ? t('tucopramp.remainingLimits', {
+                      daily: formatCop(errorRemainingDaily ?? limits.max_daily_cop),
+                      monthly: formatCop(errorRemainingMonthly ?? limits.max_monthly_cop),
+                    })
+                  : t('tucopramp.limitsSummary', {
+                      daily: formatCop(limits.max_daily_cop),
+                      monthly: formatCop(limits.max_monthly_cop),
+                    })}
+              </Text>
+            )}
             <ErrorFooter
               errorCode={errorCode}
               retryAfterSeconds={errorRetryAfterSeconds}
               requestId={errorRequestId}
-              onRetry={onStartOver}
+              onRetry={onRetryAfterError}
               retryButtonTestId="tucopramp-onramp-retry"
             />
           </View>
@@ -671,6 +880,17 @@ const styles = StyleSheet.create({
   quoteFee: {
     ...typeScale.bodySmall,
     color: Colors.gray4,
+    marginBottom: Spacing.Smallest8,
+  },
+  noFeeNote: {
+    ...typeScale.labelSemiBoldSmall,
+    color: Colors.successDark,
+    marginBottom: Spacing.Smallest8,
+  },
+  referenceValue: {
+    ...typeScale.bodySmall,
+    color: Colors.gray4,
+    textAlign: 'center',
     marginBottom: Spacing.Regular16,
   },
   consentRow: {

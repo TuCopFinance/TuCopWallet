@@ -2,13 +2,13 @@
 //
 // The server is the source of truth for both. `GET /v1/p2p/limits` is
 // fetched at boot by fetchLimitsSaga and persisted in the tucopramp Redux
-// slice with a 12h TTL; getCachedLimits() reads that. Document validation
-// mirrors Ramp's 2026-09-08 multi-document spec (see below) so the wallet
-// can disable the submit button and surface a targeted helper before the
-// round-trip — the server re-validates on every POST/PATCH.
+// slice with a 12h TTL; screens read it through effectiveLimitsSelector
+// (selectors.ts), which falls back to TUCOPRAMP_HARDCODED_LIMITS on a cold
+// cache. Document validation mirrors Ramp's 2026-09-08 multi-document spec
+// (see below) so the wallet can disable the submit button and surface a
+// targeted helper before the round-trip — the server re-validates on every
+// POST/PATCH.
 
-import { store } from 'src/redux/store'
-import { limitsSelector } from 'src/tucopramp/selectors'
 import type { TucopRampLimits } from 'src/tucopramp/types'
 
 export const TUCOPRAMP_HARDCODED_LIMITS: TucopRampLimits = {
@@ -16,13 +16,6 @@ export const TUCOPRAMP_HARDCODED_LIMITS: TucopRampLimits = {
   max_order_cop: 500_000,
   max_daily_cop: 1_000_000,
   max_monthly_cop: 3_000_000,
-}
-
-// Preferred lookup. Reads the persisted slice value; on cold cache falls back
-// to the hardcoded default so the UI never renders `undefined` limits.
-export function getCachedLimits(): TucopRampLimits {
-  const state = store.getState()
-  return limitsSelector(state) ?? TUCOPRAMP_HARDCODED_LIMITS
 }
 
 // --------------- document types (multi-doc support, 2026-09-08) ---------------

@@ -31,10 +31,20 @@ describe('ErrorFooter', () => {
     expect(toJSON()).toBeNull()
   })
 
-  it('renders a countdown for rate_limited + retryAfterSeconds and disables retry until 0', () => {
+  it.each([
+    'rate_limited_ip',
+    'rate_limited_consumer',
+    'rate_limited_wallet',
+    'rate_limited_api_key',
+  ])('renders a countdown for %s', (errorCode) => {
+    const { getByTestId } = renderFooter({ errorCode, retryAfterSeconds: 5, onRetry: jest.fn() })
+    expect(getByTestId('tucopramp-error-retry-countdown')).toHaveTextContent(/5/)
+  })
+
+  it('renders a countdown for a rate_limited_* code + retryAfterSeconds and disables retry until 0', () => {
     const onRetry = jest.fn()
     const { getByTestId } = renderFooter({
-      errorCode: 'rate_limited',
+      errorCode: 'rate_limited_ip',
       retryAfterSeconds: 3,
       onRetry,
     })
@@ -63,7 +73,7 @@ describe('ErrorFooter', () => {
     expect(onRetry).toHaveBeenCalled()
   })
 
-  it('does NOT render a countdown when the code is not rate_limited', () => {
+  it('does NOT render a countdown when the code is not a rate_limited_* code', () => {
     const { queryByTestId } = renderFooter({
       errorCode: 'invalid_body',
       retryAfterSeconds: 30,

@@ -72,9 +72,9 @@ export function getReceivingAccount(opts?: CallOpts): Promise<ReceivingAccountRe
   })
 }
 
-// Server-provided operational caps. See getCachedLimits() in limits.ts for the
-// caller-facing lookup that falls back to hardcoded defaults when the runtime
-// fetch has not landed yet. Cache-Control: max-age=300 upstream, TTL enforced
+// Server-provided operational caps. See effectiveLimitsSelector (selectors.ts)
+// for the caller-facing lookup that falls back to hardcoded defaults when the
+// runtime fetch has not landed yet. Cache-Control: max-age=300 upstream, TTL enforced
 // by the fetch saga (skip refetch within 12h per guide sec 10).
 export function getLimits(opts?: CallOpts): Promise<TucopRampLimits> {
   return tucopRampFetch<TucopRampLimits>({
