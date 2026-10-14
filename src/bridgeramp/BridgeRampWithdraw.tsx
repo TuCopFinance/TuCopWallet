@@ -323,7 +323,11 @@ export function PartySection() {
   return null
 }
 
-// Creates the party on TuCOPRamp for this wallet: legal name, identity
+// CC and NUIP are issued only to Colombians, so they also settle the
+// nationality; for CE and passports it is left for the verification to read.
+const COLOMBIAN_ONLY_DOCUMENTS: ReadonlySet<IndividualDocumentType> = new Set(['CC', 'NUIP'])
+
+// Creates the party on TuCOPRamp for this wallet: names, identity
 // document, contact email and consent. The answer carries the hosted KYC and
 // TOS links, which PartySection then shows as "verification pending".
 function PartyOnboardingForm() {
@@ -334,7 +338,8 @@ function PartyOnboardingForm() {
   // document number is never echoed by the server, so it is always typed.
   const tucopRampProfile = useSelector(userProfileSelector)
 
-  const [legalName, setLegalName] = useState(tucopRampProfile?.full_name ?? '')
+  const [firstNames, setFirstNames] = useState('')
+  const [lastNames, setLastNames] = useState('')
   const [documentType, setDocumentType] = useState<IndividualDocumentType>(
     INDIVIDUAL_DOCUMENT_TYPES.find((d) => d === tucopRampProfile?.document_type) ?? 'CC'
   )
@@ -343,7 +348,7 @@ function PartyOnboardingForm() {
   const [consent, setConsent] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  const nameValid = legalName.trim().split(/\s+/).length >= 2
+  const nameValid = firstNames.trim().length > 0 && lastNames.trim().length > 0
   const documentValid = isValidDocument(documentType, documentNumber)
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
   const submitting = party.onboarding.status === 'submitting'
@@ -356,7 +361,9 @@ function PartyOnboardingForm() {
         request: {
           type: 'individual',
           country: 'COL',
-          legal_name: legalName.trim(),
+          first_names: firstNames.trim().replace(/\s+/g, ' '),
+          last_names: lastNames.trim().replace(/\s+/g, ' '),
+          ...(COLOMBIAN_ONLY_DOCUMENTS.has(documentType) ? { nationality: 'COL' } : {}),
           document_type: documentType,
           document_number: documentNumber,
           email: email.trim(),
@@ -376,16 +383,28 @@ function PartyOnboardingForm() {
       <Text style={styles.stepTitle}>{t('bridgeramp.onboarding.title')}</Text>
       <Text style={styles.body}>{t('bridgeramp.onboarding.body')}</Text>
 
-      <Text style={styles.label}>{t('bridgeramp.onboarding.legalName')}</Text>
+      <Text style={styles.label}>{t('bridgeramp.onboarding.firstNames')}</Text>
       <TextInput
         style={styles.input}
-        value={legalName}
-        onChangeText={setLegalName}
+        value={firstNames}
+        onChangeText={setFirstNames}
         autoCapitalize="words"
-        placeholder={t('bridgeramp.onboarding.legalNamePlaceholder') ?? ''}
+        placeholder={t('bridgeramp.onboarding.namesPlaceholder') ?? ''}
         placeholderTextColor={Colors.gray4}
         editable={!submitting}
-        testID="bridgeramp-onboarding-name"
+        testID="bridgeramp-onboarding-first-names"
+      />
+
+      <Text style={[styles.label, styles.fieldGap]}>{t('bridgeramp.onboarding.lastNames')}</Text>
+      <TextInput
+        style={styles.input}
+        value={lastNames}
+        onChangeText={setLastNames}
+        autoCapitalize="words"
+        placeholder={t('bridgeramp.onboarding.namesPlaceholder') ?? ''}
+        placeholderTextColor={Colors.gray4}
+        editable={!submitting}
+        testID="bridgeramp-onboarding-last-names"
       />
 
       <Text style={[styles.label, styles.fieldGap]}>{t('tucopramp.documentTypeLabel')}</Text>
@@ -575,7 +594,9 @@ function DestinationSection({
       )}
       {state.registering.status === 'error' && (
         <Text style={styles.helperError} testID="bridgeramp-destination-failed">
-          {t('bridgeramp.destination.registerFailed', { code: state.errorCode })}
+          {state.errorCode === 'destination_already_registered'
+            ? t('bridgeramp.destination.alreadyRegistered')
+            : t('bridgeramp.destination.registerFailed', { code: state.errorCode })}
         </Text>
       )}
     </View>

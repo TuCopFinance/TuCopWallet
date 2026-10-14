@@ -3669,6 +3669,7 @@
       "add": "Agregar",
       "pending": "Verificando la llave con el directorio Bre-B. Toma alrededor de un minuto.",
       "registerFailed": "No pudimos registrar la llave ({{code}}).",
+      "alreadyRegistered": "Esa llave ya está registrada en tu cuenta y no pudimos reutilizarla. Escríbenos a soporte.",
       "rejected": {
         "directory_no_match": "El directorio Bre-B no encontró una cuenta con esa llave.",
         "holder_name_mismatch": "La llave no está a tu nombre. Solo puedes retirar a una cuenta tuya.",
@@ -3718,9 +3719,10 @@
     },
     "onboarding": {
       "title": "Crea tu cuenta en TuCOP",
-      "body": "Para retirar con Bridge necesitas verificar tu identidad una sola vez. Te pedimos tu nombre legal, tu documento y un correo; después completas la verificación en una página segura de TuCOP.",
-      "legalName": "Nombre legal completo",
-      "legalNamePlaceholder": "Como aparece en tu documento",
+      "body": "Para retirar con Bridge necesitas verificar tu identidad una sola vez. Te pedimos tus nombres y apellidos, tu documento y un correo; después completas la verificación en una página segura de TuCOP.",
+      "firstNames": "Nombres",
+      "lastNames": "Apellidos",
+      "namesPlaceholder": "Como aparecen en tu documento",
       "email": "Correo electrónico",
       "emailHelper": "Te escribimos ahí sobre la verificación.",
       "consent": "Autorizo a TuCOP a verificar mi identidad y acepto los términos y condiciones.",

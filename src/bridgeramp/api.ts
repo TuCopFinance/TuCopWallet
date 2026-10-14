@@ -54,7 +54,13 @@ export interface CreatePartyRequest {
   type: 'individual'
   // ISO 3166-1 alpha-3 of the document's issuer. TuCOPRamp defaults to COL.
   country?: 'COL'
-  legal_name: string
+  // A person's given names and surnames, as on the document. TuCOPRamp builds
+  // the legal name from them (legal_name is the one-string fallback).
+  first_names: string
+  last_names: string
+  // ISO 3166-1 alpha-3. Optional; it can differ from country (a foreigner
+  // with a Colombian CE).
+  nationality?: string
   // Individuals in Colombia (GET /v1/document-types). NIT is a business
   // document; TI is a minor's and Bridge verifies adults only.
   document_type: 'CC' | 'CE' | 'NUIP' | 'PAS'

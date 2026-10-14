@@ -260,7 +260,9 @@ describe('fetchPartySaga', () => {
 describe('createPartySaga', () => {
   const request: api.CreatePartyRequest = {
     type: 'individual',
-    legal_name: 'Ana Maria Perez',
+    first_names: 'Ana Maria',
+    last_names: 'Perez Gomez',
+    nationality: 'COL',
     document_type: 'CC',
     document_number: '1017123456',
     email: 'ana@example.com',

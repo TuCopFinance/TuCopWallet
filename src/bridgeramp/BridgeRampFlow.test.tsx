@@ -394,7 +394,8 @@ describe('BridgeRampFlow', () => {
           },
         })
       )
-      fireEvent.changeText(getByTestId('bridgeramp-onboarding-name'), 'Ana Maria Perez')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-first-names'), 'Ana  Maria ')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-last-names'), 'Perez Gomez')
       fireEvent.changeText(getByTestId('bridgeramp-onboarding-document'), '1.017.123.456')
       fireEvent.changeText(getByTestId('bridgeramp-onboarding-email'), 'ana@example.com')
       expect(getByTestId('bridgeramp-onboarding-submit')).toBeDisabled()
@@ -409,13 +410,49 @@ describe('BridgeRampFlow', () => {
       >
       expect(create.payload.request).toMatchObject({
         type: 'individual',
-        legal_name: 'Ana Maria Perez',
+        first_names: 'Ana Maria',
+        last_names: 'Perez Gomez',
+        nationality: 'COL',
         document_type: 'CC',
         document_number: '1017123456',
         email: 'ana@example.com',
         consent: { version: '2026-10-10', accepted_at: expect.any(String) },
         redirect_url: 'https://tucop.xyz/ramp/verificacion-lista',
       })
+    })
+
+    it('leaves the nationality out for a foreigner document and never offers TI', () => {
+      const { getByTestId, queryByTestId, store } = renderFlow(
+        'offramp',
+        readyState({
+          party: {
+            status: 'loaded',
+            value: null,
+            needsOnboarding: true,
+            errorCode: null,
+            onboarding: { status: 'idle', errorCode: null },
+          },
+        })
+      )
+      fireEvent.press(getByTestId('bridgeramp-onboarding-doctype'))
+      expect(queryByTestId('bridgeramp-onboarding-doctype-option-TI')).toBeNull()
+      fireEvent.press(getByTestId('bridgeramp-onboarding-doctype-option-PAS'))
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-first-names'), 'Maria')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-last-names'), 'Rodriguez')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-document'), 'AB123456')
+      fireEvent.changeText(getByTestId('bridgeramp-onboarding-email'), 'maria@example.com')
+      fireEvent.press(getByTestId('bridgeramp-onboarding-consent'))
+      fireEvent.press(getByTestId('bridgeramp-onboarding-submit'))
+      const create = store
+        .getActions()
+        .find((a) => a.type === createBridgeRampParty.type) as ReturnType<
+        typeof createBridgeRampParty
+      >
+      expect(create.payload.request).toMatchObject({
+        document_type: 'PAS',
+        last_names: 'Rodriguez',
+      })
+      expect(create.payload.request).not.toHaveProperty('nationality')
     })
 
     it('shows the pending verification with the KYC link once the party exists', () => {
