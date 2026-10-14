@@ -3109,7 +3109,9 @@
     "viewOnCeloscan": "View on Celoscan",
     "depositTxErrors": {
       "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
-      "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
+      "reverted": "The transaction was rejected on-chain. Try again or cancel the order.",
+      "order_check_failed": "We could not confirm the order is still waiting for your deposit. Nothing was sent. Try again or cancel the order.",
+      "order_not_open": "This order no longer accepts deposits, so nothing was sent."
     },
     "amountPesos": "{{amount}} pesos",
     "amountDigitalPesos": "{{amount}} digital pesos",

@@ -1,6 +1,6 @@
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { throwError } from 'redux-saga-test-plan/providers'
+import { dynamic, throwError } from 'redux-saga-test-plan/providers'
 import * as api from 'src/tucopramp/api'
 import {
   checkActiveOfframpOrderSaga,
@@ -47,6 +47,13 @@ import {
   TucopRampError,
 } from 'src/tucopramp/types'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import {
+  SentTxRecord,
+  clearFlow,
+  recordSent,
+  sentTransactionLogReducer,
+} from 'src/viem/sentTransactionLog'
+import { put } from 'redux-saga/effects'
 import { getKeychainAccounts } from 'src/web3/contracts'
 import type { KeychainAccounts } from 'src/web3/KeychainAccounts'
 import { createMockStore } from 'test/utils'
@@ -470,6 +477,93 @@ describe('checkActiveOfframpOrderSaga', () => {
   })
 })
 
+describe('checkActiveOfframpOrderSaga after an app kill mid-deposit', () => {
+  it('treats the order as submitted when its deposit is in the sent-tx log', async () => {
+    const detail = makeDetail()
+    const state = {
+      ...rootState(),
+      sentTransactionLog: {
+        byFlow: {
+          'offramp-deposit-off-1': [
+            {
+              flowId: 'offramp-deposit-off-1',
+              index: 0,
+              nonce: 4,
+              hash: '0xsent',
+              status: 'pending' as const,
+            },
+          ],
+        },
+      },
+    }
+    const { storeState } = await expectSaga(checkActiveOfframpOrderSaga)
+      .withReducer(
+        (st: any, action: any) => ({ ...st, tucopramp: reducer(st.tucopramp, action) }),
+        state
+      )
+      .provide([
+        [
+          matchers.call.fn(api.listOrders),
+          { orders: [{ ...detail, order_type: 'offramp' }], next_cursor: null },
+        ],
+        [matchers.call.fn(api.getOrder), detail],
+      ])
+      .put(
+        offrampActiveResumed({
+          detail,
+          currentOrder: null,
+          status: 'awaiting-deposit',
+          sentDepositTxHash: '0xsent',
+        })
+      )
+      .run()
+    expect(storeState.tucopramp.offramp).toMatchObject({
+      status: 'awaiting-deposit',
+      depositTxHash: '0xsent',
+      depositTxStatus: 'submitted',
+    })
+  })
+
+  it('drops the pending idempotency key when the server has no open order', async () => {
+    const { storeState } = await expectSaga(checkActiveOfframpOrderSaga)
+      .withReducer(
+        (st: any, action: any) => ({ ...st, tucopramp: reducer(st.tucopramp, action) }),
+        rootState((s) => {
+          s.offramp.pendingIdempotencyKey = 'key-old'
+          s.offramp.pendingRequestFingerprint = 'fp'
+        })
+      )
+      .provide([[matchers.call.fn(api.listOrders), { orders: [], next_cursor: null }]])
+      .put(offrampNoActiveFound({ lastPayout: null }))
+      .run()
+    expect(storeState.tucopramp.offramp.pendingIdempotencyKey).toBeNull()
+    expect(storeState.tucopramp.offramp.pendingRequestFingerprint).toBeNull()
+  })
+})
+
+describe('offrampActiveResumed with a sent deposit', () => {
+  it('marks a kept local order whose send reported a failure as submitted', () => {
+    const state = baseSliceState()
+    state.offramp.currentOrder = offrampOrder
+    state.offramp.depositTxStatus = 'failed'
+    state.offramp.depositTxErrorCode = 'broadcast_failed'
+    const next = reducer(
+      state,
+      offrampActiveResumed({
+        detail: makeDetail(),
+        currentOrder: offrampOrder,
+        status: 'awaiting-deposit',
+        sentDepositTxHash: '0xsent',
+      })
+    )
+    expect(next.offramp).toMatchObject({
+      depositTxStatus: 'submitted',
+      depositTxHash: '0xsent',
+      depositTxErrorCode: null,
+    })
+  })
+})
+
 describe('pollDelayMs', () => {
   it('backs off from 15 s to a 5 min cap', () => {
     expect(pollDelayMs(0, false)).toBe(15_000)
@@ -675,33 +769,127 @@ describe('sendOfframpDepositSaga', () => {
     amountCopm: 150_000,
     serializablePreparedTransaction: {} as any,
   }
+  const flowId = 'offramp-deposit-off-1'
+  const NOW_MS = Date.parse('2026-10-13T12:00:00Z')
+  // The server still waits for this deposit.
+  const openOrder = [matchers.call.fn(api.getOrder), makeDetail()] as any
+
+  function stateWithLog(records: SentTxRecord[] = []) {
+    const state = rootState()
+    return { ...state, sentTransactionLog: { byFlow: records.length ? { [flowId]: records } : {} } }
+  }
+  const withLog = (state: any, action: any) => ({
+    ...state,
+    tucopramp: reducer(state.tucopramp, action),
+    sentTransactionLog: sentTransactionLogReducer(state.sentTransactionLog, action),
+  })
+
+  beforeEach(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(NOW_MS)
+  })
 
   it('keeps the deposit submitted when only the receipt wait fails', async () => {
-    ;(sendPreparedTransactions as jest.Mock).mockReturnValue(['0xhash'])
     publicClient.celo.waitForTransactionReceipt.mockRejectedValue(new Error('rpc timeout'))
     await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
-      .withState(rootState())
-      .provide([[matchers.call.fn(sendPreparedTransactions), ['0xhash']]])
+      .withState(stateWithLog())
+      .provide([openOrder, [matchers.call.fn(sendPreparedTransactions), ['0xhash']]])
       .put(offrampDepositBroadcast({ txHash: '0xhash' }))
       .not.put.actionType(offrampDepositFailed.type)
+      // Outcome unknown: the record stays, a retry only waits for 0xhash.
+      .not.put.actionType(clearFlow.type)
       .run()
   })
 
   it('fails as broadcast_failed when the broadcast itself fails', async () => {
     await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
-      .withState(rootState())
-      .provide([[matchers.call.fn(sendPreparedTransactions), throwError(new Error('nonce'))]])
+      .withState(stateWithLog())
+      .provide([
+        openOrder,
+        [matchers.call.fn(sendPreparedTransactions), throwError(new Error('nonce'))],
+      ])
       .put(offrampDepositFailed({ code: 'broadcast_failed' }))
       .not.put.actionType(offrampDepositBroadcast.type)
       .run()
   })
 
-  it('fails as reverted when the mined tx reverted', async () => {
-    publicClient.celo.waitForTransactionReceipt.mockResolvedValue({ status: 'reverted' })
+  it('follows the transfer instead of failing when the send errored after the broadcast', async () => {
+    publicClient.celo.waitForTransactionReceipt.mockResolvedValue({ status: 'success' })
+    // sendPreparedTransactions logged the transfer, then threw (mempool poll).
     await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
-      .withState(rootState())
-      .provide([[matchers.call.fn(sendPreparedTransactions), ['0xhash']]])
+      .withReducer(withLog, stateWithLog())
+      .provide([
+        openOrder,
+        [
+          matchers.call.fn(sendPreparedTransactions),
+          dynamic(function* () {
+            yield put(recordSent({ flowId, index: 0, nonce: 4, hash: '0xsent' }))
+            throw new Error('mempool poll failed')
+          }),
+        ],
+      ])
+      .put(offrampDepositBroadcast({ txHash: '0xsent' }))
+      .not.put.actionType(offrampDepositFailed.type)
+      .run()
+  })
+
+  it('fails as reverted and clears the sent record so "Intentar de nuevo" signs again', async () => {
+    publicClient.celo.waitForTransactionReceipt.mockResolvedValue({ status: 'reverted' })
+    const { storeState } = await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
+      .withReducer(withLog, stateWithLog())
+      .provide([
+        openOrder,
+        [
+          matchers.call.fn(sendPreparedTransactions),
+          dynamic(function* () {
+            yield put(recordSent({ flowId, index: 0, nonce: 4, hash: '0xhash' }))
+            return ['0xhash']
+          }),
+        ],
+      ])
+      .put(clearFlow({ flowId }))
       .put(offrampDepositFailed({ code: 'reverted' }))
+      .run()
+    expect(storeState.sentTransactionLog.byFlow[flowId]).toBeUndefined()
+  })
+
+  it('does not send to an order that expired', async () => {
+    await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
+      .withState(stateWithLog())
+      .provide([
+        [matchers.call.fn(api.getOrder), makeDetail({ expires_at: '2026-10-13T11:59:00Z' })],
+      ])
+      .not.call.fn(sendPreparedTransactions)
+      .put(offrampDepositFailed({ code: 'order_not_open' }))
+      .put(offrampAdvance({ status: 'expired' }))
+      .run()
+  })
+
+  it('does not send to an order the server no longer waits on', async () => {
+    await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
+      .withState(stateWithLog())
+      .provide([[matchers.call.fn(api.getOrder), makeDetail({ status: 'CANCELLED' })]])
+      .not.call.fn(sendPreparedTransactions)
+      .put(offrampDepositFailed({ code: 'order_not_open' }))
+      .put(offrampAdvance({ status: 'cancelled' }))
+      .run()
+  })
+
+  it('does not send when the order cannot be checked', async () => {
+    await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
+      .withState(stateWithLog())
+      .provide([[matchers.call.fn(api.getOrder), throwError(rampError('upstream_error', 502))]])
+      .not.call.fn(sendPreparedTransactions)
+      .put(offrampDepositFailed({ code: 'order_check_failed' }))
+      .run()
+  })
+
+  it('only waits for a deposit already sent for the order, without re-checking it', async () => {
+    publicClient.celo.waitForTransactionReceipt.mockResolvedValue({ status: 'success' })
+    await expectSaga(sendOfframpDepositSaga, { type: 'x', payload })
+      .withState(stateWithLog([{ flowId, index: 0, nonce: 4, hash: '0xsent', status: 'pending' }]))
+      .provide([[matchers.call.fn(sendPreparedTransactions), ['0xsent']]])
+      .not.call.fn(api.getOrder)
+      .put(offrampDepositBroadcast({ txHash: '0xsent' }))
       .run()
   })
 })

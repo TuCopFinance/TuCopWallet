@@ -36,6 +36,7 @@ import {
 } from 'src/bridgeramp/mentoRouter'
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
+  checkBridgeRampWithdrawSwap,
   createBridgeRampParty,
   estimateWithdrawCop,
   executeBridgeRampSwap,
@@ -142,6 +143,11 @@ function BridgeRampWithdraw({ oracleStale }: Props) {
     // A payout that was still owed when the app closed: follow it again.
     if (withdraw.status === 'awaiting_payout' && withdraw.withdrawal) {
       dispatch(pollBridgeRampWithdrawal({ withdrawalId: withdraw.withdrawal.id }))
+    }
+    // The swap was broadcast but its outcome was never seen (the app closed
+    // while waiting): check that same transaction again.
+    if (withdraw.status === 'review' && withdraw.withdrawal && withdraw.swapTxHash) {
+      dispatch(checkBridgeRampWithdrawSwap())
     }
   }, [])
 
@@ -802,19 +808,33 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
   const { feeCurrency, estimatedFeeAmount } = getFeeCurrencyAndAmounts(prepared)
   const submitting = swap.status === 'submitting' || swap.status === 'broadcast'
   const flowId = withdrawSwapFlowId(withdrawal.id, withdraw.attemptId)
-  // The last attempt for this withdrawal was sent but not confirmed: Confirm
-  // only checks it (the saga waits for the same transaction).
+  // The last attempt for this withdrawal was sent but not confirmed (receipt
+  // unknown, or the app restarted while waiting): the button only checks it.
+  // The saga waits for the same transaction and never signs, so it needs no
+  // fresh quote or pricing, which would fail anyway once the swap landed
+  // and the COPm left. Cancelling now would lose track of a swap that may
+  // still deliver.
   const receiptUnknown =
-    swap.status === 'failed' && swap.errorCode === 'receipt_unknown' && swap.flowId === flowId
-  const retry = () => setRetryKey((k) => k + 1)
-  const canConfirm =
-    !!calls &&
-    prepared?.type === 'possible' &&
-    quoteState.state === 'ready' &&
     !submitting &&
-    !oracleStale
+    ((swap.status === 'failed' && swap.errorCode === 'receipt_unknown' && swap.flowId === flowId) ||
+      !!withdraw.swapTxHash)
+  const retry = () => setRetryKey((k) => k + 1)
+  // Never sign while a refresh is pricing new calldata: the result on screen
+  // belongs to the previous quote.
+  const canConfirm = receiptUnknown
+    ? !submitting
+    : !!calls &&
+      prepared?.type === 'possible' &&
+      !prepare.loading &&
+      quoteState.state === 'ready' &&
+      !submitting &&
+      !oracleStale
 
   const onConfirm = () => {
+    if (receiptUnknown) {
+      if (canConfirm) dispatch(checkBridgeRampWithdrawSwap())
+      return
+    }
     if (!canConfirm || !calls || prepared?.type !== 'possible' || quoteState.state !== 'ready')
       return
     const q: MentoQuote = quoteState.quote
@@ -906,8 +926,8 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
         <InLineNotification
           variant={NotificationVariant.Warning}
           description={t('bridgeramp.review.rateMoved', { min: formatCop(minCop) })}
-          ctaLabel={t('bridgeramp.review.startOver')}
-          onPressCta={() => dispatch(withdrawReset())}
+          ctaLabel={receiptUnknown ? undefined : t('bridgeramp.review.startOver')}
+          onPressCta={receiptUnknown ? undefined : () => dispatch(withdrawReset())}
           style={styles.noticeTop}
           testID="bridgeramp-rate-moved"
         />
@@ -930,6 +950,14 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
           testID="bridgeramp-swap-failed"
         />
       )}
+      {receiptUnknown && swap.status !== 'failed' && (
+        <InLineNotification
+          variant={NotificationVariant.Warning}
+          description={t('bridgeramp.swapError.receipt_unknown')}
+          style={styles.noticeTop}
+          testID="bridgeramp-swap-unconfirmed"
+        />
+      )}
 
       <Button
         text={
@@ -937,7 +965,7 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
         }
         onPress={onConfirm}
         disabled={!canConfirm}
-        showLoading={submitting || prepare.loading}
+        showLoading={submitting || (!receiptUnknown && prepare.loading)}
         type={BtnTypes.PRIMARY}
         size={BtnSizes.FULL}
         style={styles.cta}
@@ -946,7 +974,7 @@ function ReviewStep({ withdrawal, oracleStale }: { withdrawal: Withdrawal; oracl
       <Button
         text={t('bridgeramp.review.cancelCta')}
         onPress={() => dispatch(withdrawReset())}
-        disabled={submitting}
+        disabled={submitting || receiptUnknown}
         type={BtnTypes.SECONDARY}
         size={BtnSizes.FULL}
         style={styles.secondaryCta}

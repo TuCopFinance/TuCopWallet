@@ -37,6 +37,9 @@ export type BridgeRampSwapErrorCode =
   // The Mento COPm oracle has no valid median (market closed). Nothing was
   // signed; a deposit conversion stays pending and runs once it reopens.
   | 'market_closed'
+  // A deposit conversion cannot pay the network fee, not even after
+  // converting less USDC to leave room for it. Nothing was signed.
+  | 'insufficient_gas'
 
 export interface BridgeRampSwapState {
   status: BridgeRampSwapStatus
@@ -152,11 +155,26 @@ export interface BridgeRampDepositState {
   account: DepositAccount | null
   errorCode: string | null
   errorRequestId: string | null
-  // USDC balance, base units, when the instructions were shown. Any increase
-  // while a deposit is open is treated as Bridge's payout.
+  // On-chain USDC balance, base units, the arrival check compares against.
+  // An increase is treated as Bridge's payout only within
+  // DEPOSIT_WINDOW_MS of `instructionsShownAt`.
   usdcBaseline: string | null
-  // USDC detected and handed to convertBridgeDeposit, until the swap confirms.
-  pending: { usdcAmount: string; flowId: string } | null
+  // When the deposit instructions were last on screen (ms). Outside the
+  // window after it, USDC that shows up is not a ramp payout: the baseline
+  // simply moves to the current balance.
+  instructionsShownAt: number | null
+  // When the last conversion settled (ms). Until an on-chain read at or
+  // below the new baseline is seen (or the guard times out), increases are
+  // ignored: a node that has not caught up with the swap still reports the
+  // USDC it spent.
+  settledAt: number | null
+  // USDC detected and handed to the conversion, until the swap confirms.
+  // `convertAmount` is set when the wallet pays gas in USDC and only part of
+  // the deposit can be converted.
+  pending: { usdcAmount: string; flowId: string; convertAmount?: string } | null
+  // A conversion (quote, pricing, signing or waiting) is running right now.
+  // Memory only; the screen hides retry / keep while it is set.
+  converting: boolean
 }
 
 interface State {
@@ -217,7 +235,10 @@ const initialDepositState: BridgeRampDepositState = {
   errorCode: null,
   errorRequestId: null,
   usdcBaseline: null,
+  instructionsShownAt: null,
+  settledAt: null,
   pending: null,
+  converting: false,
 }
 
 export const initialState: State = {
@@ -385,7 +406,7 @@ const slice = createSlice({
     },
     depositReady: (
       state,
-      action: PayloadAction<{ account: DepositAccount; usdcBaseline: string | null }>
+      action: PayloadAction<{ account: DepositAccount; usdcBaseline: string | null; at: number }>
     ) => {
       state.deposit.status = 'ready'
       state.deposit.account = action.payload.account
@@ -396,12 +417,44 @@ const slice = createSlice({
       // when the user comes back to this screen.
       // Null when the USDC balance is not known yet; checkDepositSaga sets it
       // once it is.
-      state.deposit.usdcBaseline = state.deposit.usdcBaseline ?? action.payload.usdcBaseline
+      if (state.deposit.usdcBaseline === null && action.payload.usdcBaseline !== null) {
+        state.deposit.usdcBaseline = action.payload.usdcBaseline
+        state.deposit.instructionsShownAt = action.payload.at
+      }
     },
-    // Initialises the baseline once the balance is known, and lowers it when
-    // USDC left the wallet, so a later deposit is never under-counted.
+    // Lowers the baseline when USDC left the wallet, so a later deposit is
+    // never under-counted.
     depositBaselineUpdated: (state, action: PayloadAction<{ usdcBaseline: string }>) => {
       state.deposit.usdcBaseline = action.payload.usdcBaseline
+    },
+    // A fresh start for arrival detection: the current balance is the
+    // baseline and the window starts now (first check, or the last time the
+    // instructions were shown is too long ago).
+    depositRebaselined: (state, action: PayloadAction<{ usdcBaseline: string; at: number }>) => {
+      state.deposit.usdcBaseline = action.payload.usdcBaseline
+      state.deposit.instructionsShownAt = action.payload.at
+      state.deposit.settledAt = null
+    },
+    // The instructions are on screen: keep the deposit window open.
+    depositInstructionsSeen: (state, action: PayloadAction<{ at: number }>) => {
+      state.deposit.instructionsShownAt = action.payload.at
+    },
+    // An on-chain read caught up with the last conversion.
+    depositSettleGuardCleared: (state) => {
+      state.deposit.settledAt = null
+    },
+    depositConverting: (state, action: PayloadAction<{ converting: boolean }>) => {
+      state.deposit.converting = action.payload.converting
+    },
+    // The wallet pays gas in USDC: only this much of the pending deposit is
+    // converted, the rest pays the fee.
+    depositConvertAmountAdjusted: (
+      state,
+      action: PayloadAction<{ flowId: string; usdcAmount: string }>
+    ) => {
+      if (state.deposit.pending?.flowId === action.payload.flowId) {
+        state.deposit.pending.convertAmount = action.payload.usdcAmount
+      }
     },
     depositFailed: (state, action: PayloadAction<{ code: string; requestId?: string }>) => {
       state.deposit.status = 'failed'
@@ -414,9 +467,13 @@ const slice = createSlice({
     },
     // The swap confirmed (or the user gave up on it): the new USDC balance is
     // the baseline for the next deposit.
-    depositSettled: (state, action: PayloadAction<{ usdcBaseline: string }>) => {
+    depositSettled: (state, action: PayloadAction<{ usdcBaseline: string; at: number }>) => {
       state.deposit.pending = null
       state.deposit.usdcBaseline = action.payload.usdcBaseline
+      state.deposit.settledAt = action.payload.at
+      // The screen was open for the whole conversion (it can wait hours for
+      // the market): the deposit window restarts from here.
+      state.deposit.instructionsShownAt = action.payload.at
     },
     depositReset: (state) => {
       state.deposit = { ...initialDepositState, account: state.deposit.account }
@@ -465,6 +522,15 @@ const slice = createSlice({
       if (action.payload.flowId) {
         state.swap.flowId = action.payload.flowId
       }
+      // A mined revert of the swap funding the withdrawal under review: the
+      // COPm never left, so the next Confirm signs a new swap.
+      if (
+        action.payload.code === 'reverted' &&
+        state.swap.direction === 'copmToUsdc' &&
+        state.withdraw.status === 'review'
+      ) {
+        state.withdraw.swapTxHash = null
+      }
     },
   },
   extraReducers: (builder) => {
@@ -476,16 +542,19 @@ const slice = createSlice({
       //
       // The withdraw operation survives only while it is funded and the
       // payout is still owed (awaiting_payout), so the screen can keep
-      // polling after a restart. Final results (completed/failed) and
-      // anything earlier are dropped: reopening the screen days later must
-      // start a new withdrawal, not show an old outcome.
+      // polling after a restart, or while its swap was broadcast but not
+      // confirmed (review with swapTxHash), so the screen can check that
+      // transaction again. Final results (completed/failed) and anything
+      // earlier are dropped: reopening the screen days later must start a
+      // new withdrawal, not show an old outcome.
       const persistedWithdraw = rehydrated?.withdraw
       // Pre-2026-10-08 state (one withdrawal per operation) has no
       // knownPayoutIds and cannot be followed any more; drop it.
       const keepWithdraw =
         Array.isArray(persistedWithdraw?.knownPayoutIds) &&
-        persistedWithdraw?.status === 'awaiting_payout' &&
-        !!persistedWithdraw?.withdrawal
+        !!persistedWithdraw?.withdrawal &&
+        (persistedWithdraw?.status === 'awaiting_payout' ||
+          (persistedWithdraw?.status === 'review' && !!persistedWithdraw?.swapTxHash))
       // The deposit account is permanent and the baseline/pending pair is what
       // lets a payout that arrived while the app was closed be converted on
       // the next visit, so all three survive. Transient status does not.
@@ -501,6 +570,8 @@ const slice = createSlice({
             status: persistedAccount ? 'ready' : initialDepositState.status,
             account: persistedAccount,
             usdcBaseline: persistedDeposit.usdcBaseline ?? null,
+            instructionsShownAt: persistedDeposit.instructionsShownAt ?? null,
+            settledAt: persistedDeposit.settledAt ?? null,
             pending: persistedDeposit.pending ?? null,
           }
         : state.deposit
@@ -537,6 +608,11 @@ export const {
   depositCreating,
   depositReady,
   depositBaselineUpdated,
+  depositRebaselined,
+  depositInstructionsSeen,
+  depositSettleGuardCleared,
+  depositConverting,
+  depositConvertAmountAdjusted,
   depositFailed,
   depositDetected,
   depositSettled,

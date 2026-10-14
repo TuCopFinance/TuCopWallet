@@ -1,4 +1,6 @@
 import { combineReducers } from '@reduxjs/toolkit'
+import { runSaga, stdChannel } from 'redux-saga'
+import { call as rawCall, takeLeading as rawTakeLeading } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { dynamic, throwError } from 'redux-saga-test-plan/providers'
@@ -7,7 +9,13 @@ import { MentoOracleUnavailableError, MentoQuote, quoteMentoSwap } from 'src/bri
 import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import { openWalletPartySession, revokePartySession } from 'src/bridgeramp/platformClient'
 import {
+  DEPOSIT_WINDOW_MS,
+  SETTLE_GUARD_MS,
+  checkBridgeRampDeposit,
+  depositWorkerSaga,
   checkDepositSaga,
+  fetchUsdcBalanceOnChain,
+  retryBridgeRampDepositConversion,
   convertBridgeDeposit,
   convertBridgeDepositSaga,
   retryDepositConversionSaga,
@@ -26,6 +34,7 @@ import {
 } from 'src/bridgeramp/saga'
 import { revokeBridgeRampSessionSaga } from 'src/bridgeramp/revokeSession'
 import reducer, {
+  depositConverting,
   destinationRegisterFailed,
   destinationRegistering,
   destinationUpdated,
@@ -639,9 +648,80 @@ describe('convertBridgeDepositSaga', () => {
     )
       .withReducer(rootReducer, root(initialState))
       .provide(providers)
-      .put(swapFailed({ code: 'broadcast_failed', flowId: 'dep_1' }))
+      .put(swapFailed({ code: 'insufficient_gas', flowId: 'dep_1' }))
       .not.call.fn(executeBridgeRampSwapSaga)
       .run()
+  })
+
+  it('converts what is left after gas when USDC is the only fee currency', async () => {
+    jest
+      .mocked(quoteMentoSwap)
+      .mockImplementation(async (_d, amountIn) => ({ ...depositQuote, amountIn }))
+    jest
+      .mocked(prepareBridgeRampCalls)
+      .mockResolvedValueOnce({
+        type: 'need-decrease-spend-amount-for-gas',
+        feeCurrency: usdcToken,
+        maxGasFeeInDecimal: new BigNumber('0.05'),
+        estimatedGasFeeInDecimal: new BigNumber('0.04'),
+        // Whole USDC: the balance less the fee.
+        decreasedSpendAmount: new BigNumber('99.95'),
+      })
+      .mockResolvedValueOnce(prepared)
+    const executed = jest.fn()
+    const { storeState } = await expectSaga(
+      convertBridgeDepositSaga,
+      convertBridgeDeposit({ usdcAmount: '100000000', flowId: 'dep_1' })
+    )
+      .withReducer(rootReducer, {
+        ...root(initialState),
+        bridgeramp: {
+          ...initialState,
+          deposit: {
+            ...initialState.deposit,
+            pending: { usdcAmount: '100000000', flowId: 'dep_1' },
+          },
+        },
+      })
+      .provide([
+        ...providers,
+        [
+          matchers.call.fn(executeBridgeRampSwapSaga),
+          dynamic(({ args }: { args: any[] }) => {
+            executed(args[0])
+          }),
+        ],
+      ])
+      .run()
+    expect(jest.mocked(quoteMentoSwap)).toHaveBeenLastCalledWith('usdcToCopm', BigInt(99_950_000))
+    expect(jest.mocked(prepareBridgeRampCalls).mock.calls[1][0].spendTokenAmount).toBe(
+      BigInt(99_950_000)
+    )
+    expect(executed.mock.calls[0][0].payload.amountIn).toBe('99950000')
+    expect(storeState.bridgeramp.deposit.pending?.convertAmount).toBe('99950000')
+  })
+
+  it('says gas cannot be paid when even the smaller amount does not fit', async () => {
+    const needDecrease = {
+      type: 'need-decrease-spend-amount-for-gas' as const,
+      feeCurrency: usdcToken,
+      maxGasFeeInDecimal: new BigNumber('0.05'),
+      estimatedGasFeeInDecimal: new BigNumber('0.04'),
+      decreasedSpendAmount: new BigNumber('99.95'),
+    }
+    jest.mocked(quoteMentoSwap).mockResolvedValue(depositQuote)
+    jest.mocked(prepareBridgeRampCalls).mockResolvedValue(needDecrease)
+    await expectSaga(
+      convertBridgeDepositSaga,
+      convertBridgeDeposit({ usdcAmount: '100000000', flowId: 'dep_1' })
+    )
+      .withReducer(rootReducer, root(initialState))
+      .provide(providers)
+      .put(swapFailed({ code: 'insufficient_gas', flowId: 'dep_1' }))
+      .not.call.fn(executeBridgeRampSwapSaga)
+      .run()
+    // One retry with the smaller amount, never a loop.
+    expect(jest.mocked(prepareBridgeRampCalls)).toHaveBeenCalledTimes(2)
   })
 
   it('waits for the market when the oracle cannot quote', async () => {
@@ -729,40 +809,39 @@ describe('deposit sagas', () => {
     updated_at: '',
   } as unknown as api.DepositAccount
 
-  function usdcTokens(balance: string) {
-    return {
-      [networkConfig.usdcTokenId]: {
-        ...mockCusdTokenBalance,
-        tokenId: networkConfig.usdcTokenId,
-        decimals: 6,
-        balance: new BigNumber(balance),
-      },
-    }
+  // On-chain USDC balance in base units (6 decimals), or null when unknown.
+  function usdcOnChain(whole: string | null) {
+    return [
+      matchers.call.fn(fetchUsdcBalanceOnChain),
+      whole === null ? null : BigInt(new BigNumber(whole).shiftedBy(6).toFixed(0)),
+    ] as any
   }
+  const wallet = [matchers.select(walletAddressSelector), USER] as any
 
   function readyDeposit(overrides: Partial<SliceState['deposit']> = {}): SliceState {
     return {
       ...withSession(),
       deposit: {
+        ...initialState.deposit,
         status: 'ready',
         account,
-        errorCode: null,
-        errorRequestId: null,
         usdcBaseline: '5000000',
-        pending: null,
+        // The instructions were on screen a minute ago.
+        instructionsShownAt: NOW * 1000 - 60_000,
         ...overrides,
       },
     }
   }
 
-  it('creates the deposit account with a per-wallet key and records the USDC baseline', async () => {
+  function confirmedSwap(flowId: string, amountIn = '100000000') {
+    return { ...initialState.swap, status: 'confirmed' as const, flowId, amountIn }
+  }
+
+  it('creates the deposit account with a per-wallet key and records the on-chain baseline', async () => {
     mockedApi.createDepositAccount.mockResolvedValue(account)
     const { storeState } = await expectSaga(startDepositSaga)
       .withReducer(rootReducer, root(withSession()))
-      .provide([
-        [matchers.select(walletAddressSelector), USER],
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('5')],
-      ])
+      .provide([wallet, usdcOnChain('5')])
       .run()
     expect(mockedApi.createDepositAccount).toHaveBeenCalledWith(
       'tps_live',
@@ -773,6 +852,7 @@ describe('deposit sagas', () => {
       status: 'ready',
       account,
       usdcBaseline: '5000000',
+      instructionsShownAt: NOW * 1000,
     })
   })
 
@@ -780,10 +860,7 @@ describe('deposit sagas', () => {
     mockedApi.createDepositAccount.mockRejectedValue(rampError('product_not_enabled', 403))
     const { storeState } = await expectSaga(startDepositSaga)
       .withReducer(rootReducer, root(withSession()))
-      .provide([
-        [matchers.select(walletAddressSelector), USER],
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('0')],
-      ])
+      .provide([wallet, usdcOnChain('0')])
       .run()
     expect(storeState.bridgeramp.deposit).toMatchObject({
       status: 'failed',
@@ -791,25 +868,33 @@ describe('deposit sagas', () => {
     })
   })
 
+  it('reads the USDC balance on-chain, not from the token store', async () => {
+    await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(readyDeposit()))
+      .provide([wallet, usdcOnChain('5')])
+      .call(fetchUsdcBalanceOnChain, USER)
+      .not.select.selector(tokensByIdSelector)
+      .run()
+  })
+
   it('does nothing while the balance has not moved', async () => {
     await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit()))
-      .provide([[matchers.select.selector(tokensByIdSelector), usdcTokens('5')]])
+      .provide([wallet, usdcOnChain('5')])
       .not.call.fn(convertBridgeDepositSaga)
       .run()
   })
 
-  it('converts the USDC above the baseline and settles once the swap confirms', async () => {
+  it('converts the USDC above the baseline', async () => {
     const { storeState } = await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit()))
       .provide([
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('105')],
+        wallet,
+        usdcOnChain('105'),
         [
           matchers.call.fn(convertBridgeDepositSaga),
           dynamic(({ args }: { args: any[] }) => {
             expect(args[0].payload.usdcAmount).toBe('100000000')
-            // Simulate the swap confirming: the store would get these from
-            // executeBridgeRampSwapSaga.
             return undefined
           }),
         ],
@@ -821,6 +906,67 @@ describe('deposit sagas', () => {
       usdcAmount: '100000000',
       flowId: `dep-dep_1-${NOW * 1000}`,
     })
+    expect(storeState.bridgeramp.deposit.converting).toBe(false)
+  })
+
+  it('never converts the same deposit twice when a lagging read still shows the spent USDC', async () => {
+    const flowId = 'dep-dep_1-1'
+    // The conversion confirms; the node read right after still shows the
+    // 100 USDC it spent.
+    const settled = await expectSaga(retryDepositConversionSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
+          swap: confirmedSwap(flowId),
+        })
+      )
+      .provide([
+        wallet,
+        usdcOnChain('105'),
+        [matchers.call.fn(convertBridgeDepositSaga), undefined],
+      ])
+      .run()
+    const afterSettle = settled.storeState.bridgeramp
+    expect(afterSettle.deposit).toMatchObject({
+      pending: null,
+      usdcBaseline: '5000000',
+      settledAt: NOW * 1000,
+    })
+
+    // Next tick: still the stale 105. Nothing is detected or signed.
+    const tick = await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(afterSettle))
+      .provide([wallet, usdcOnChain('105')])
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
+    expect(tick.storeState.bridgeramp.deposit.pending).toBeNull()
+
+    // The node catches up (5 USDC): the guard lifts...
+    const caughtUp = await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(tick.storeState.bridgeramp))
+      .provide([wallet, usdcOnChain('5')])
+      .run()
+    expect(caughtUp.storeState.bridgeramp.deposit.settledAt).toBeNull()
+
+    // ...and the next real deposit is detected again.
+    const next = await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(caughtUp.storeState.bridgeramp))
+      .provide([wallet, usdcOnChain('25'), [matchers.call.fn(convertBridgeDepositSaga), undefined]])
+      .run()
+    expect(next.storeState.bridgeramp.deposit.pending?.usdcAmount).toBe('20000000')
+  })
+
+  it('stops ignoring increases once the settle guard times out', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(NOW * 1000 + SETTLE_GUARD_MS + 1)
+    const { storeState } = await expectSaga(checkDepositSaga)
+      .withReducer(
+        rootReducer,
+        root(readyDeposit({ settledAt: NOW * 1000, instructionsShownAt: NOW * 1000 }))
+      )
+      .provide([wallet, usdcOnChain('25'), [matchers.call.fn(convertBridgeDepositSaga), undefined]])
+      .run()
+    expect(storeState.bridgeramp.deposit.pending?.usdcAmount).toBe('20000000')
   })
 
   it('moves the baseline after a confirmed conversion', async () => {
@@ -830,37 +976,19 @@ describe('deposit sagas', () => {
         rootReducer,
         root({
           ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
-          swap: { ...initialState.swap, status: 'confirmed', flowId },
+          swap: confirmedSwap(flowId),
         })
       )
       .provide([
+        wallet,
         [matchers.call.fn(convertBridgeDepositSaga), undefined],
         // Dust left after the swap.
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('5.000001')],
+        usdcOnChain('5.000001'),
       ])
       .run()
     // The swap spent exactly the pending USDC: the baseline stays where it
     // was, and the extra base unit is left for the next check to see.
     expect(storeState.bridgeramp.deposit.pending).toBeNull()
-    expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('5000000')
-  })
-
-  it('does not raise the baseline when the balance has not caught up with the swap', async () => {
-    const flowId = 'dep-dep_1-1'
-    const { storeState } = await expectSaga(retryDepositConversionSaga)
-      .withReducer(
-        rootReducer,
-        root({
-          ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
-          swap: { ...initialState.swap, status: 'confirmed', flowId },
-        })
-      )
-      .provide([
-        [matchers.call.fn(convertBridgeDepositSaga), undefined],
-        // Still shows the converted 100 USDC.
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('105')],
-      ])
-      .run()
     expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('5000000')
   })
 
@@ -871,21 +999,44 @@ describe('deposit sagas', () => {
         rootReducer,
         root({
           ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
-          swap: { ...initialState.swap, status: 'confirmed', flowId },
+          swap: confirmedSwap(flowId),
         })
       )
       .provide([
+        wallet,
         [matchers.call.fn(convertBridgeDepositSaga), undefined],
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('4.99')],
+        usdcOnChain('4.99'),
       ])
       .run()
     expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('4990000')
   })
 
+  it('keeps the part of a deposit that paid for gas in the baseline', async () => {
+    const flowId = 'dep-dep_1-1'
+    const { storeState } = await expectSaga(retryDepositConversionSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...readyDeposit({
+            pending: { usdcAmount: '100000000', flowId, convertAmount: '99950000' },
+          }),
+          swap: confirmedSwap(flowId, '99950000'),
+        })
+      )
+      .provide([
+        wallet,
+        [matchers.call.fn(convertBridgeDepositSaga), undefined],
+        // Lagging node: still the full deposit.
+        usdcOnChain('105'),
+      ])
+      .run()
+    expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('5050000')
+  })
+
   it('follows the balance down when USDC leaves the wallet', async () => {
     const { storeState } = await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit()))
-      .provide([[matchers.select.selector(tokensByIdSelector), usdcTokens('2')]])
+      .provide([wallet, usdcOnChain('2')])
       .not.call.fn(convertBridgeDepositSaga)
       .run()
     expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('2000000')
@@ -894,10 +1045,7 @@ describe('deposit sagas', () => {
   it('then measures the next deposit from the lowered baseline', async () => {
     const { storeState } = await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit({ usdcBaseline: '2000000' })))
-      .provide([
-        [matchers.select.selector(tokensByIdSelector), usdcTokens('52')],
-        [matchers.call.fn(convertBridgeDepositSaga), undefined],
-      ])
+      .provide([wallet, usdcOnChain('52'), [matchers.call.fn(convertBridgeDepositSaga), undefined]])
       .run()
     expect(storeState.bridgeramp.deposit.pending?.usdcAmount).toBe('50000000')
   })
@@ -905,7 +1053,7 @@ describe('deposit sagas', () => {
   it('ignores dust above the baseline', async () => {
     await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit()))
-      .provide([[matchers.select.selector(tokensByIdSelector), usdcTokens('5.000001')]])
+      .provide([wallet, usdcOnChain('5.000001')])
       .not.call.fn(convertBridgeDepositSaga)
       .run()
   })
@@ -914,10 +1062,7 @@ describe('deposit sagas', () => {
     mockedApi.createDepositAccount.mockResolvedValue(account)
     const { storeState } = await expectSaga(startDepositSaga)
       .withReducer(rootReducer, root(withSession()))
-      .provide([
-        [matchers.select(walletAddressSelector), USER],
-        [matchers.select.selector(tokensByIdSelector), {}],
-      ])
+      .provide([wallet, usdcOnChain(null)])
       .run()
     expect(storeState.bridgeramp.deposit).toMatchObject({ status: 'ready', usdcBaseline: null })
   })
@@ -925,11 +1070,51 @@ describe('deposit sagas', () => {
   it('sets the baseline on the first check once the balance is known, without converting', async () => {
     const { storeState } = await expectSaga(checkDepositSaga)
       .withReducer(rootReducer, root(readyDeposit({ usdcBaseline: null })))
-      .provide([[matchers.select.selector(tokensByIdSelector), usdcTokens('42')]])
+      .provide([wallet, usdcOnChain('42')])
       .not.call.fn(convertBridgeDepositSaga)
       .run()
     expect(storeState.bridgeramp.deposit.usdcBaseline).toBe('42000000')
     expect(storeState.bridgeramp.deposit.pending).toBeNull()
+  })
+
+  it('converts a payout that arrived while the app was closed, within the window', async () => {
+    const { storeState } = await expectSaga(checkDepositSaga)
+      .withReducer(
+        rootReducer,
+        root(readyDeposit({ instructionsShownAt: NOW * 1000 - DEPOSIT_WINDOW_MS + 60_000 }))
+      )
+      .provide([
+        wallet,
+        usdcOnChain('105'),
+        [matchers.call.fn(convertBridgeDepositSaga), undefined],
+      ])
+      .call.fn(convertBridgeDepositSaga)
+      .run()
+    expect(storeState.bridgeramp.deposit.pending?.usdcAmount).toBe('100000000')
+  })
+
+  it('re-baselines instead of converting USDC that arrived long after the instructions', async () => {
+    const { storeState } = await expectSaga(checkDepositSaga)
+      .withReducer(
+        rootReducer,
+        root(readyDeposit({ instructionsShownAt: NOW * 1000 - DEPOSIT_WINDOW_MS - 1 }))
+      )
+      .provide([wallet, usdcOnChain('105')])
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
+    expect(storeState.bridgeramp.deposit).toMatchObject({
+      pending: null,
+      usdcBaseline: '105000000',
+      instructionsShownAt: NOW * 1000,
+    })
+  })
+
+  it('keeps the window open while the instructions are on screen', async () => {
+    const { storeState } = await expectSaga(checkDepositSaga)
+      .withReducer(rootReducer, root(readyDeposit()))
+      .provide([wallet, usdcOnChain('5')])
+      .run()
+    expect(storeState.bridgeramp.deposit.instructionsShownAt).toBe(NOW * 1000)
   })
 
   it('keeps retrying a conversion that waits for the market', async () => {
@@ -959,5 +1144,100 @@ describe('deposit sagas', () => {
       )
       .not.call.fn(convertBridgeDepositSaga)
       .run()
+  })
+
+  it('marks the conversion as running while it quotes, so retry cannot start a second one', async () => {
+    const flowId = 'dep-dep_1-1'
+    const seen: boolean[] = []
+    await expectSaga(retryDepositConversionSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
+          swap: { ...initialState.swap, status: 'failed', flowId, errorCode: 'market_closed' },
+        })
+      )
+      .provide([
+        [
+          matchers.call.fn(convertBridgeDepositSaga),
+          dynamic(() => {
+            seen.push(true)
+            return undefined
+          }),
+        ],
+      ])
+      .put(depositConverting({ converting: true }))
+      .put(depositConverting({ converting: false }))
+      .run()
+    expect(seen).toHaveLength(1)
+  })
+
+  it('does not start a conversion while another one is running', async () => {
+    const flowId = 'dep-dep_1-1'
+    const running = readyDeposit({ pending: { usdcAmount: '100000000', flowId }, converting: true })
+    await expectSaga(retryDepositConversionSaga)
+      .withReducer(rootReducer, root(running))
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
+    await expectSaga(checkDepositSaga)
+      .withReducer(
+        rootReducer,
+        root({
+          ...running,
+          swap: { ...initialState.swap, status: 'failed', flowId, errorCode: 'market_closed' },
+        })
+      )
+      .not.call.fn(convertBridgeDepositSaga)
+      .run()
+  })
+
+  it('runs arrival checks and retries through one worker', async () => {
+    // A real channel: an action that arrives while the worker is busy is
+    // dropped, as on the device (expectSaga would queue it instead).
+    const flowId = 'dep-dep_1-1'
+    let state: any = root({
+      ...readyDeposit({ pending: { usdcAmount: '100000000', flowId } }),
+      swap: { ...initialState.swap, status: 'failed', flowId, errorCode: 'market_closed' },
+    })
+    const channel = stdChannel()
+    let converts = 0
+    let release: () => void = () => undefined
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const task = runSaga(
+      {
+        channel,
+        dispatch: (action: any) => {
+          state = rootReducer(state, action)
+          channel.put(action)
+        },
+        getState: () => state,
+        effectMiddlewares: [
+          (next: (effect: any) => void) => (effect: any) => {
+            if (effect?.type === 'CALL' && effect.payload.fn === convertBridgeDepositSaga) {
+              converts++
+              return next(rawCall(() => gate))
+            }
+            return next(effect)
+          },
+        ],
+      },
+      function* () {
+        yield rawTakeLeading(
+          [checkBridgeRampDeposit.type, retryBridgeRampDepositConversion.type],
+          depositWorkerSaga
+        )
+      }
+    )
+    channel.put(checkBridgeRampDeposit())
+    // The user taps retry and the next tick fires while the first conversion
+    // is still quoting.
+    channel.put(retryBridgeRampDepositConversion())
+    channel.put(checkBridgeRampDeposit())
+    expect(state.bridgeramp.deposit.converting).toBe(true)
+    release()
+    await gate
+    await Promise.resolve()
+    task.cancel()
+    expect(converts).toBe(1)
   })
 })

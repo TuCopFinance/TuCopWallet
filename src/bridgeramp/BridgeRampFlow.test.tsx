@@ -15,6 +15,7 @@ import { prepareBridgeRampCalls } from 'src/bridgeramp/prepare'
 import {
   checkBridgeRampDeposit,
   createBridgeRampParty,
+  checkBridgeRampWithdrawSwap,
   executeBridgeRampSwap,
   fetchBridgeRampDestinations,
   fetchBridgeRampParty,
@@ -333,6 +334,54 @@ describe('BridgeRampFlow', () => {
       )
       fireEvent.press(getByTestId('bridgeramp-deposit-keep'))
       expect(store.getActions()).toEqual(expect.arrayContaining([depositReset()]))
+    })
+
+    it('hides retry and keep while a conversion is running', () => {
+      const { getByTestId, queryByTestId } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            ...bridgerampInitialState.deposit,
+            status: 'ready',
+            account: depositAccount,
+            usdcBaseline: '0',
+            pending: { usdcAmount: '100000000', flowId: 'dep-1' },
+            converting: true,
+          },
+          swap: {
+            ...bridgerampInitialState.swap,
+            status: 'failed',
+            flowId: 'dep-1',
+            errorCode: 'market_closed',
+          },
+        })
+      )
+      expect(getByTestId('bridgeramp-deposit-converting')).toBeTruthy()
+      expect(queryByTestId('bridgeramp-deposit-retry')).toBeNull()
+      expect(queryByTestId('bridgeramp-deposit-keep')).toBeNull()
+    })
+
+    it('does not offer to keep the dollars while a broadcast conversion may still land', () => {
+      const { getByTestId, queryByTestId } = renderFlow(
+        'onramp',
+        readyState({
+          deposit: {
+            ...bridgerampInitialState.deposit,
+            status: 'ready',
+            account: depositAccount,
+            usdcBaseline: '0',
+            pending: { usdcAmount: '100000000', flowId: 'dep-1' },
+          },
+          swap: {
+            ...bridgerampInitialState.swap,
+            status: 'failed',
+            flowId: 'dep-1',
+            errorCode: 'receipt_unknown',
+          },
+        })
+      )
+      expect(getByTestId('bridgeramp-deposit-retry')).toBeTruthy()
+      expect(queryByTestId('bridgeramp-deposit-keep')).toBeNull()
     })
 
     it('waits for the market instead of offering a failed conversion', () => {
@@ -889,6 +938,78 @@ describe('BridgeRampFlow', () => {
       expect(getByTestId('bridgeramp-confirm')).toHaveTextContent(
         'bridgeramp.review.checkStatusCta'
       )
+    })
+
+    it('checks the unconfirmed swap without a new quote and cannot be cancelled meanwhile', async () => {
+      // The swap landed and the COPm left: pricing a new one fails.
+      mockQuote.mockResolvedValue(withdrawQuote)
+      mockPrepare.mockRejectedValue(new Error('insufficient balance'))
+      const { getByTestId, store } = renderFlow(
+        'offramp',
+        readyState({
+          ...reviewState(),
+          withdraw: { ...reviewState().withdraw, swapTxHash: '0xswap' },
+          swap: {
+            ...bridgerampInitialState.swap,
+            status: 'failed',
+            flowId: 'wdr_1:attempt-1',
+            errorCode: 'receipt_unknown',
+          },
+        })
+      )
+      await act(async () => {
+        jest.advanceTimersByTime(500)
+      })
+      expect(getByTestId('bridgeramp-confirm')).toBeEnabled()
+      expect(getByTestId('bridgeramp-cancel')).toBeDisabled()
+      fireEvent.press(getByTestId('bridgeramp-confirm'))
+      expect(store.getActions()).toEqual(expect.arrayContaining([checkBridgeRampWithdrawSwap()]))
+      expect(store.getActions().some((a) => a.type === executeBridgeRampSwap.type)).toBe(false)
+    })
+
+    it('checks a broadcast swap again after a restart', async () => {
+      mockQuote.mockResolvedValue(withdrawQuote)
+      mockPrepare.mockResolvedValue(possiblePrepare())
+      const { getByTestId, store } = renderFlow(
+        'offramp',
+        readyState({
+          ...reviewState(),
+          // Rehydrated: the swap slice is fresh, only the withdraw knows the hash.
+          withdraw: { ...reviewState().withdraw, swapTxHash: '0xswap' },
+        })
+      )
+      expect(store.getActions()).toEqual(expect.arrayContaining([checkBridgeRampWithdrawSwap()]))
+      await act(async () => {
+        jest.advanceTimersByTime(500)
+      })
+      expect(getByTestId('bridgeramp-swap-unconfirmed')).toHaveTextContent(
+        'bridgeramp.swapError.receipt_unknown'
+      )
+      expect(getByTestId('bridgeramp-confirm')).toHaveTextContent(
+        'bridgeramp.review.checkStatusCta'
+      )
+      expect(getByTestId('bridgeramp-cancel')).toBeDisabled()
+    })
+
+    it('does not confirm while a refresh is pricing new calldata', async () => {
+      mockQuote.mockImplementation(async () => ({
+        ...withdrawQuote,
+        quotedAt: Math.floor(Date.now() / 1000),
+      }))
+      mockPrepare
+        .mockResolvedValueOnce(possiblePrepare())
+        .mockImplementation(() => new Promise(() => undefined))
+      const { getByTestId } = renderFlow('offramp', reviewState())
+      await act(async () => {
+        jest.advanceTimersByTime(500)
+      })
+      await waitFor(() => expect(getByTestId('bridgeramp-confirm')).toBeEnabled())
+      // The quote refreshes every minute; the new pricing never finishes here.
+      await act(async () => {
+        jest.advanceTimersByTime(60_000)
+      })
+      await waitFor(() => expect(mockPrepare).toHaveBeenCalledTimes(2))
+      expect(getByTestId('bridgeramp-confirm')).toBeDisabled()
     })
 
     it('shows a retry when Mento cannot quote the review', async () => {

@@ -717,6 +717,9 @@
                         }
                     ]
                 },
+                "converting": {
+                    "type": "boolean"
+                },
                 "errorCode": {
                     "type": [
                         "null",
@@ -729,11 +732,20 @@
                         "string"
                     ]
                 },
+                "instructionsShownAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "pending": {
                     "anyOf": [
                         {
                             "additionalProperties": false,
                             "properties": {
+                                "convertAmount": {
+                                    "type": "string"
+                                },
                                 "flowId": {
                                     "type": "string"
                                 },
@@ -752,6 +764,12 @@
                         }
                     ]
                 },
+                "settledAt": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
                 "status": {
                     "$ref": "#/definitions/BridgeRampDepositStatus"
                 },
@@ -764,9 +782,12 @@
             },
             "required": [
                 "account",
+                "converting",
                 "errorCode",
                 "errorRequestId",
+                "instructionsShownAt",
                 "pending",
+                "settledAt",
                 "status",
                 "usdcBaseline"
             ],
@@ -955,6 +976,7 @@
                         {
                             "enum": [
                                 "broadcast_failed",
+                                "insufficient_gas",
                                 "invalid_recipient",
                                 "market_closed",
                                 "receipt_unknown",

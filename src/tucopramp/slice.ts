@@ -526,8 +526,12 @@ export const slice = createSlice({
         detail: OrderDetail
         currentOrder: OfframpOrderResponse | null
         status: OfframpFlowStatus
+        // Hash of a deposit this wallet already broadcast for the order,
+        // from the sent-tx log.
+        sentDepositTxHash?: string
       }>
     ) => {
+      const sentHash = action.payload.sentDepositTxHash ?? null
       state.offramp.activeCheckStatus = 'done'
       state.offramp.activeOrderId = action.payload.detail.id
       state.offramp.activeOrderDetail = action.payload.detail
@@ -536,15 +540,28 @@ export const slice = createSlice({
       if (action.payload.currentOrder) {
         state.offramp.currentOrder = action.payload.currentOrder
         state.offramp.activeOrderMissingMultisig = false
+        // Broadcast but its outcome never reached the slice (app killed,
+        // or the send errored after the broadcast): it is on its way.
+        if (
+          sentHash &&
+          (state.offramp.depositTxStatus === 'idle' || state.offramp.depositTxStatus === 'failed')
+        ) {
+          state.offramp.depositTxHash = sentHash
+          state.offramp.depositTxStatus = 'submitted'
+          state.offramp.depositTxErrorCode = null
+        }
       } else {
         // The local order (if any) is a different one: drop it together
         // with its deposit tx state. Past AWAITING_DEPOSIT the UI renders
         // from activeOrderDetail. In AWAITING_DEPOSIT the wallet lacks the
         // multisig_address (never created it locally, or the slice was
         // wiped), so the UI shows cancel-only.
+        // A deposit this wallet already broadcast for the order (the app was
+        // killed before the server saw it) is on its way: the UI shows it
+        // instead of offering to cancel.
         state.offramp.currentOrder = null
-        state.offramp.depositTxHash = null
-        state.offramp.depositTxStatus = 'idle'
+        state.offramp.depositTxHash = sentHash
+        state.offramp.depositTxStatus = sentHash ? 'submitted' : 'idle'
         state.offramp.depositTxErrorCode = null
         state.offramp.activeOrderMissingMultisig = action.payload.status === 'awaiting-deposit'
       }
@@ -561,6 +578,11 @@ export const slice = createSlice({
       // The server has no open order, so a locally kept one already ended
       // (completed, expired, ...) while the screen was closed.
       state.offramp.currentOrder = null
+      // A pending idempotency key can only belong to an order that ended (or
+      // was never created). Reusing it could replay that old order instead
+      // of creating a new one, and the auto-send would then fund it.
+      state.offramp.pendingIdempotencyKey = null
+      state.offramp.pendingRequestFingerprint = null
       state.offramp.depositTxHash = null
       state.offramp.depositTxStatus = 'idle'
       state.offramp.depositTxErrorCode = null

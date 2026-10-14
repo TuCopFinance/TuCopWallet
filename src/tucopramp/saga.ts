@@ -88,6 +88,7 @@ import {
 import { publicClient } from 'src/viem'
 import { SerializableTransactionRequest } from 'src/viem/preparedTransactionSerialization'
 import { sendPreparedTransactions } from 'src/viem/saga'
+import { clearFlow, findRecordByIndexSelector } from 'src/viem/sentTransactionLog'
 import { BaseStandbyTransaction } from 'src/transactions/slice'
 import { NetworkId, TokenTransactionTypeV2, newTransactionContext } from 'src/transactions/types'
 import { networkIdToNetwork, COPM_TOKEN_ID_MAINNET } from 'src/web3/networkConfig'
@@ -99,6 +100,7 @@ import {
   OnrampOrderResponse,
   OnrampOrderStatus,
   OnrampQuoteRequest,
+  OrderDetail,
   QuoteResponse,
   TucopRampError,
 } from 'src/tucopramp/types'
@@ -607,6 +609,56 @@ function* pollOfframpOrderUntilStopped(action: PayloadAction<{ orderId: string }
   })
 }
 
+// The sendPreparedTransactions idempotency key of an order's COPm deposit.
+// The deposit is a single transaction, logged at index 0.
+export function offrampDepositFlowId(orderId: string): string {
+  return `offramp-deposit-${orderId}`
+}
+
+// Before anything is signed for an order: the server must still be waiting
+// for its deposit. A stale order (expired, cancelled, already funded) must
+// never be funded by the auto-send. Returns true when it is safe to send.
+function* offrampOrderAcceptsDeposit(orderId: string) {
+  const auth = yield* call(resolveAuth)
+  if (!auth) {
+    yield* put(offrampDepositFailed({ code: 'order_check_failed' }))
+    return false
+  }
+  let detail: OrderDetail
+  try {
+    detail = yield* call(apiGetOrder, auth, orderId)
+  } catch (err) {
+    Logger.warn(TAG, `could not check order ${orderId} before the deposit`, err)
+    yield* put(offrampDepositFailed({ code: 'order_check_failed' }))
+    return false
+  }
+  const expiresAtMs = new Date(detail.expires_at).getTime()
+  const open =
+    detail.status === 'AWAITING_DEPOSIT' && isFinite(expiresAtMs) && expiresAtMs > Date.now()
+  if (open) return true
+  Logger.warn(TAG, `order ${orderId} no longer awaits a deposit (${detail.status}), not sending`)
+  yield* put(offrampDepositFailed({ code: 'order_not_open' }))
+  const mapped =
+    detail.status === 'AWAITING_DEPOSIT'
+      ? 'expired'
+      : mapOfframpDetailStatus(detail.status as OfframpOrderStatus)
+  if (mapped && mapped !== 'awaiting-deposit') {
+    yield* put(offrampAdvance({ status: mapped }))
+  }
+  return false
+}
+
+function* reportDepositBroadcastFailed(orderId: string, err: unknown) {
+  Logger.warn(TAG, 'sendOfframpDeposit failed', err)
+  yield* put(offrampDepositFailed({ code: 'broadcast_failed' }))
+  captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
+    feature: 'tucopramp',
+    provider: 'internal',
+    action: 'deposit_broadcast_failed',
+    extra: { orderId },
+  })
+}
+
 // Broadcast the on-chain COPm transfer to the offramp multisig, keeping the
 // user on the offramp screen and storing the tx hash in the offramp slice.
 // Deliberately does NOT reuse src/send/saga.ts sendPaymentSaga because that
@@ -621,8 +673,15 @@ export function* sendOfframpDepositSaga(
   }>
 ) {
   const { orderId, multisigAddress, amountCopm, serializablePreparedTransaction } = action.payload
+  const flowId = offrampDepositFlowId(orderId)
   yield* put(offrampDepositSubmitting())
   const networkId = NetworkId['celo-mainnet']
+  // A deposit already sent for this order is only waited for (inside
+  // sendPreparedTransactions); anything new is checked against the server.
+  const alreadySent = yield* select(findRecordByIndexSelector, flowId, 0)
+  if (!alreadySent && !(yield* call(offrampOrderAcceptsDeposit, orderId))) {
+    return
+  }
   let hash: Hex
   try {
     const context = newTransactionContext(TAG, `Offramp deposit ${orderId}`)
@@ -649,19 +708,21 @@ export function* sendOfframpDepositSaga(
       networkId,
       [createStandbyTransaction],
       false,
-      `offramp-deposit-${orderId}`
+      flowId
     )
     hash = sent
   } catch (err) {
-    Logger.warn(TAG, 'sendOfframpDeposit failed', err)
-    yield* put(offrampDepositFailed({ code: 'broadcast_failed' }))
-    captureBusinessError(err instanceof Error ? err : new Error(String(err)), {
-      feature: 'tucopramp',
-      provider: 'internal',
-      action: 'deposit_broadcast_failed',
-      extra: { orderId },
-    })
-    return
+    // The transfer may have reached the network before the error (e.g. the
+    // mempool poll failed after the broadcast): then it is on its way, and
+    // the user must not be offered to cancel or to send it again.
+    const sent = yield* select(findRecordByIndexSelector, flowId, 0)
+    if (sent) {
+      Logger.warn(TAG, 'sendOfframpDeposit failed after the broadcast, following the tx', err)
+      hash = sent.hash as Hex
+    } else {
+      yield* call(reportDepositBroadcastFailed, orderId, err)
+      return
+    }
   }
   yield* put(offrampDepositBroadcast({ txHash: hash }))
   // Wait for on-chain confirmation so we surface a revert to the user
@@ -678,6 +739,10 @@ export function* sendOfframpDepositSaga(
     )
     if (receipt.status === 'reverted') {
       Logger.warn(TAG, `Offramp deposit tx reverted: ${hash}`)
+      // Mined and final: nothing moved, so "Intentar de nuevo" must sign a
+      // new transfer instead of waiting on this hash again. (When the wait
+      // itself fails the outcome is unknown and the record is kept.)
+      yield* put(clearFlow({ flowId }))
       yield* put(offrampDepositFailed({ code: 'reverted' }))
       captureBusinessError(new Error(`Offramp deposit reverted: ${hash}`), {
         feature: 'tucopramp',
@@ -736,11 +801,20 @@ export function* checkActiveOfframpOrderSaga() {
         mapOfframpDetailStatus(detail.status as OfframpOrderStatus) ??
         mapOfframpDetailStatus(activeSummary.status as OfframpOrderStatus) ??
         'processing'
+      // The deposit for this order was broadcast from this wallet (the app
+      // may have been killed before the server saw it): it is on its way,
+      // whatever the local slice says.
+      const sentDeposit = yield* select(
+        findRecordByIndexSelector,
+        offrampDepositFlowId(activeSummary.id),
+        0
+      )
       yield* put(
         offrampActiveResumed({
           detail,
           currentOrder: localMatches ? localCurrent : null,
           status,
+          ...(sentDeposit ? { sentDepositTxHash: sentDeposit.hash } : {}),
         })
       )
       return

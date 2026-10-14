@@ -3978,7 +3978,10 @@ export const v255Schema = {
       errorCode: null,
       errorRequestId: null,
       usdcBaseline: null,
+      instructionsShownAt: null,
+      settledAt: null,
       pending: null,
+      converting: false,
     },
     swap: {
       status: 'idle',

@@ -61,6 +61,7 @@ import {
   fetchUserProfile,
   pollOfframpOrder,
   requestOfframpQuote,
+  offrampDepositFlowId,
   sendOfframpDeposit,
   stopOfframpPolling,
   submitOfframpOrder,
@@ -105,6 +106,7 @@ import { useTokenInfo } from 'src/tokens/hooks'
 import { feeCurrenciesSelector } from 'src/tokens/selectors'
 import { NetworkId } from 'src/transactions/types'
 import { getFeeCurrencyAndAmounts } from 'src/viem/prepareTransactions'
+import { findRecordByIndexSelector } from 'src/viem/sentTransactionLog'
 import { getSerializablePreparedTransaction } from 'src/viem/preparedTransactionSerialization'
 import Logger from 'src/utils/Logger'
 import { COPM_TOKEN_ID_MAINNET, networkIdToChainId } from 'src/web3/networkConfig'
@@ -203,6 +205,13 @@ function TuCOPRampOfframpFlow(_props: Props) {
   // The order the screen follows: the one created here (kept across leaving
   // the screen while it is open) or the one resumed from the server.
   const trackedOrderId = order?.order_id ?? activeOrderId
+  // This wallet already broadcast the order's deposit (the record goes away
+  // only after a mined revert).
+  const depositInSentLog = useSelector(
+    (state) =>
+      !!trackedOrderId &&
+      !!findRecordByIndexSelector(state, offrampDepositFlowId(trackedOrderId), 0)
+  )
   const pollActive =
     status === 'awaiting-deposit' || status === 'deposit-confirmed' || status === 'processing'
 
@@ -719,9 +728,15 @@ function TuCOPRampOfframpFlow(_props: Props) {
           status === 'awaiting-deposit' &&
           activeOrderDetail && (
             <View style={styles.activeOrderRoot}>
-              <Text style={styles.activeOrderTitle}>{t('tucopramp.activeOrderExistsHeading')}</Text>
+              <Text style={styles.activeOrderTitle} testID="tucopramp-active-order-heading">
+                {depositTxHash
+                  ? t('tucopramp.depositSubmittedHeading')
+                  : t('tucopramp.activeOrderExistsHeading')}
+              </Text>
               <Text style={styles.activeOrderSubtitle}>
-                {t('tucopramp.activeOrderMissingMultisigBody')}
+                {depositTxHash
+                  ? t('tucopramp.depositSubmittedBody')
+                  : t('tucopramp.activeOrderMissingMultisigBody')}
               </Text>
 
               <View style={styles.activeOrderList}>
@@ -827,12 +842,14 @@ function TuCOPRampOfframpFlow(_props: Props) {
               </View>
 
               <View style={styles.activeOrderFooter}>
-                <InLineNotification
-                  variant={NotificationVariant.Info}
-                  description={t('tucopramp.activeOrderCancelHint')}
-                  style={styles.activeOrderNotice}
-                  testID="tucopramp-active-order-cancel-hint"
-                />
+                {!depositTxHash && (
+                  <InLineNotification
+                    variant={NotificationVariant.Info}
+                    description={t('tucopramp.activeOrderCancelHint')}
+                    style={styles.activeOrderNotice}
+                    testID="tucopramp-active-order-cancel-hint"
+                  />
+                )}
                 {/* Cancel is the primary action here: the slice comment says
                     "user must cancel + retry" for this stuck state (server has
                     an AWAITING_DEPOSIT order but wallet lost the multisig, so
@@ -1333,8 +1350,11 @@ function TuCOPRampOfframpFlow(_props: Props) {
             {/* Cancel escape hatch: only while no deposit is on its way (never
                 sent, or failed). Once a tx is broadcast the server may confirm
                 any second; hiding the button avoids users racing their own
-                money into a 409. Always the secondary action. */}
+                money into a 409. A transfer in the sent-tx log for this order
+                counts as broadcast even when the send reported an error. Always
+                the secondary action. */}
             {status === 'awaiting-deposit' &&
+              !depositInSentLog &&
               (depositFailed || (depositTxStatus === 'idle' && !depositTxHash)) && (
                 <Button
                   text={t('tucopramp.cancelOrderButton')}

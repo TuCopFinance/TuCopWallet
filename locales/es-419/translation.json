@@ -3586,7 +3586,9 @@
     "viewOnCeloscan": "Ver en Celoscan",
     "depositTxErrors": {
       "broadcast_failed": "La transacción no pudo ser enviada. Intenta de nuevo o cancela la orden.",
-      "reverted": "La transacción fue rechazada en cadena. Intenta de nuevo o cancela la orden."
+      "reverted": "La transacción fue rechazada en cadena. Intenta de nuevo o cancela la orden.",
+      "order_check_failed": "No pudimos confirmar que la orden siga esperando tu depósito. No enviamos nada. Intenta de nuevo o cancela la orden.",
+      "order_not_open": "Esta orden ya no recibe depósitos, así que no enviamos nada."
     },
     "amountPesos": "{{amount}} pesos",
     "amountDigitalPesos": "{{amount}} pesos digitales",
@@ -3791,7 +3793,8 @@
       "invalid_recipient": "La transacción no coincide con el retiro. No firmamos nada.",
       "generic": "La conversión falló. Intenta de nuevo.",
       "receipt_unknown": "Enviamos la transacción, pero todavía no tenemos la confirmación. Si reintentas, consultamos su estado sin enviarla dos veces.",
-      "market_closed": "Convertiremos tus dólares cuando abra el mercado. Siguen seguros en tu wallet; deja esta pantalla abierta o vuelve más tarde."
+      "market_closed": "Convertiremos tus dólares cuando abra el mercado. Siguen seguros en tu wallet; deja esta pantalla abierta o vuelve más tarde.",
+      "insufficient_gas": "No te alcanza el saldo para pagar la tarifa de red de la conversión. Tus dólares siguen en tu wallet."
     },
     "progress": {
       "payingTitle": "Bridge está pagando a tu llave",

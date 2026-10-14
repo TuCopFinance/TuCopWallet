@@ -14,6 +14,7 @@ import {
   ExecuteBridgeRampSwapPayload,
   RampTransactionGuardError,
   assertRampTransactions,
+  checkWithdrawSwapSaga,
   executeBridgeRampSwap,
   executeBridgeRampSwapSaga,
 } from 'src/bridgeramp/saga'
@@ -415,6 +416,53 @@ describe('executeBridgeRampSwapSaga', () => {
     })
   })
 
+  it('checks a swap from its stored hash when the log no longer has it, without signing', async () => {
+    await expectSwapSaga({
+      ...withdrawPayload,
+      quotedAt: 0,
+      serializablePreparedTransactions: [],
+      waitOnly: { swapTxHash: '0xb' },
+    })
+      .provide([
+        [
+          call([publicClient[Network.Celo], 'waitForTransactionReceipt'], { hash: '0xb' }),
+          { status: 'success' },
+        ],
+      ])
+      .not.call.fn(sendPreparedTransactions)
+      .put(swapBroadcast({ approveTxHash: null, swapTxHash: '0xb' }))
+      .put(swapConfirmed({ confirmedAt: NOW }))
+      .run()
+  })
+
+  it('a status check trusts a logged swap whose earlier receipt wait failed', async () => {
+    const flowId = 'bridgeramp-flow-1'
+    await expectSwapSaga(
+      { ...withdrawPayload, serializablePreparedTransactions: [], waitOnly: { swapTxHash: null } },
+      [{ flowId, index: 1, nonce: 8, hash: '0xb', status: 'failed' }]
+    )
+      .provide([
+        [
+          call([publicClient[Network.Celo], 'waitForTransactionReceipt'], { hash: '0xb' }),
+          { status: 'success' },
+        ],
+      ])
+      .not.call.fn(sendPreparedTransactions)
+      .put(swapConfirmed({ confirmedAt: NOW }))
+      .run()
+  })
+
+  it('a status check with nothing broadcast fails without signing', async () => {
+    await expectSwapSaga({
+      ...withdrawPayload,
+      serializablePreparedTransactions: [],
+      waitOnly: { swapTxHash: null },
+    })
+      .not.call.fn(sendPreparedTransactions)
+      .put(swapFailed({ code: 'broadcast_failed' }))
+      .run()
+  })
+
   it('refuses a stale quote before signing anything', async () => {
     await expectSwapSaga({ ...withdrawPayload, quotedAt: NOW - 121 })
       .put(swapFailed({ code: 'stale_quote' }))
@@ -446,5 +494,68 @@ describe('executeBridgeRampSwapSaga', () => {
       .run()
     // sanity: the untampered pair is on COPm
     expect(withdrawTxs[0].to).toBe(COPM_ADDRESS_CELO)
+  })
+})
+
+describe('checkWithdrawSwapSaga', () => {
+  const withdrawal = { id: 'wdr_1', deposit: { address: LIQUIDATION } } as any
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    jest.spyOn(Date, 'now').mockReturnValue(NOW * 1000)
+  })
+
+  function reviewState(swapTxHash: string | null) {
+    const base = rootReducer(undefined, { type: 'init' })
+    return {
+      ...base,
+      bridgeramp: {
+        ...base.bridgeramp,
+        withdraw: {
+          ...base.bridgeramp.withdraw,
+          status: 'review' as const,
+          withdrawal,
+          attemptId: 'a1',
+          copmAmountIn: withdrawPayload.amountIn,
+          swapTxHash,
+        },
+      },
+    }
+  }
+
+  it('waits for the stored swap without a new quote and moves on once it confirms', async () => {
+    const { storeState } = await expectSaga(checkWithdrawSwapSaga)
+      .withReducer(rootReducer, reviewState('0xb'))
+      .provide([
+        [
+          call([publicClient[Network.Celo], 'waitForTransactionReceipt'], { hash: '0xb' }),
+          { status: 'success' },
+        ],
+      ])
+      .not.call.fn(sendPreparedTransactions)
+      .put(
+        swapSubmitting({
+          flowId: 'wdr_1:a1',
+          direction: 'copmToUsdc',
+          amountIn: withdrawPayload.amountIn,
+          quotedAmountOut: '0',
+          recipient: LIQUIDATION,
+        })
+      )
+      .put(swapConfirmed({ confirmedAt: NOW }))
+      .run()
+    expect(storeState.bridgeramp.swap).toMatchObject({
+      status: 'confirmed',
+      recipient: LIQUIDATION,
+    })
+  })
+
+  it('does nothing outside the review step', async () => {
+    const state = reviewState('0xb')
+    state.bridgeramp.withdraw.status = 'awaiting_payout' as any
+    await expectSaga(checkWithdrawSwapSaga)
+      .withReducer(rootReducer, state)
+      .not.call.fn(executeBridgeRampSwapSaga)
+      .run()
   })
 })

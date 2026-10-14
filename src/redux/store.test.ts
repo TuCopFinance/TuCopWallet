@@ -218,9 +218,12 @@ describe('store state', () => {
         "bridgeramp": {
           "deposit": {
             "account": null,
+            "converting": false,
             "errorCode": null,
             "errorRequestId": null,
+            "instructionsShownAt": null,
             "pending": null,
+            "settledAt": null,
             "status": "idle",
             "usdcBaseline": null,
           },

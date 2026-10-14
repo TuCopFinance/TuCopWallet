@@ -3572,7 +3572,9 @@
     "viewOnCeloscan": "View on Celoscan",
     "depositTxErrors": {
       "broadcast_failed": "The transaction could not be broadcast. Try again or cancel the order.",
-      "reverted": "The transaction was rejected on-chain. Try again or cancel the order."
+      "reverted": "The transaction was rejected on-chain. Try again or cancel the order.",
+      "order_check_failed": "We could not confirm the order is still waiting for your deposit. Nothing was sent. Try again or cancel the order.",
+      "order_not_open": "This order no longer accepts deposits, so nothing was sent."
     },
     "amountPesos": "{{amount}} pesos",
     "amountDigitalPesos": "{{amount}} digital pesos",
@@ -3777,7 +3779,8 @@
       "invalid_recipient": "The transaction does not match the withdrawal. Nothing was signed.",
       "generic": "The conversion failed. Try again.",
       "receipt_unknown": "We sent the transaction but have no confirmation yet. Retrying checks its status without sending it twice.",
-      "market_closed": "We will convert your dollars when the market opens. They are safe in your wallet; keep this screen open or come back later."
+      "market_closed": "We will convert your dollars when the market opens. They are safe in your wallet; keep this screen open or come back later.",
+      "insufficient_gas": "You do not have enough balance to pay the network fee for the conversion. Your dollars are still in your wallet."
     },
     "progress": {
       "payingTitle": "Bridge is paying your key",

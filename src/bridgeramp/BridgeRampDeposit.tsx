@@ -117,7 +117,12 @@ function DepositSection() {
 
   // USDC arrived: the conversion is what the user is looking at now.
   if (deposit.pending) {
-    return <ConversionProgress usdcAmount={deposit.pending.usdcAmount} />
+    return (
+      <ConversionProgress
+        usdcAmount={deposit.pending.convertAmount ?? deposit.pending.usdcAmount}
+        converting={deposit.converting}
+      />
+    )
   }
 
   const { deposit_instructions: instructions, destination, fee_bps: feeBps } = deposit.account
@@ -229,7 +234,13 @@ function EstimateBox({ feeBps }: { feeBps: number }) {
   )
 }
 
-function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
+function ConversionProgress({
+  usdcAmount,
+  converting,
+}: {
+  usdcAmount: string
+  converting: boolean
+}) {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const swap = useSelector(bridgeRampSwapSelector)
@@ -238,6 +249,12 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
   // Mento cannot price COPm right now; the conversion runs on its own once
   // it can (checkDepositSaga keeps trying while this screen is open).
   const marketClosed = failed && swap.errorCode === 'market_closed'
+  // A conversion is being quoted, signed or awaited right now: a second one
+  // must not start, so retry and keep are hidden until it ends.
+  const busy = converting || swap.status === 'submitting' || swap.status === 'broadcast'
+  // The swap was broadcast and may still land: keeping the dollars now
+  // would forget a conversion that can still spend them.
+  const mayStillLand = failed && swap.errorCode === 'receipt_unknown'
 
   return (
     <View testID="bridgeramp-deposit-converting">
@@ -255,7 +272,7 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
             })
           : t('bridgeramp.deposit.convertingBody', { usdc })}
       </Text>
-      {(!failed || marketClosed) && <ActivityIndicator style={styles.spinner} />}
+      {(!failed || marketClosed || busy) && <ActivityIndicator style={styles.spinner} />}
       {!!swap.swapTxHash && (
         <View style={styles.hashBlock}>
           <Text style={styles.rowLabel}>{t('bridgeramp.progress.swapTx')}</Text>
@@ -264,7 +281,7 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
           </Text>
         </View>
       )}
-      {failed && (
+      {failed && !busy && (
         <>
           <Button
             text={t('bridgeramp.deposit.retryConvert')}
@@ -274,14 +291,18 @@ function ConversionProgress({ usdcAmount }: { usdcAmount: string }) {
             style={styles.cta}
             testID="bridgeramp-deposit-retry"
           />
-          <Text style={styles.body}>{t('bridgeramp.deposit.keepUsdcHint', { usdc })}</Text>
-          <Button
-            text={t('bridgeramp.deposit.keepUsdc')}
-            onPress={() => dispatch(depositReset())}
-            type={BtnTypes.SECONDARY}
-            size={BtnSizes.FULL}
-            testID="bridgeramp-deposit-keep"
-          />
+          {!mayStillLand && (
+            <>
+              <Text style={styles.body}>{t('bridgeramp.deposit.keepUsdcHint', { usdc })}</Text>
+              <Button
+                text={t('bridgeramp.deposit.keepUsdc')}
+                onPress={() => dispatch(depositReset())}
+                type={BtnTypes.SECONDARY}
+                size={BtnSizes.FULL}
+                testID="bridgeramp-deposit-keep"
+              />
+            </>
+          )}
         </>
       )}
     </View>

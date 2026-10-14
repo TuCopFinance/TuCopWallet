@@ -1,8 +1,10 @@
 import { REHYDRATE } from 'redux-persist'
 import reducer, {
   depositBaselineUpdated,
+  depositConvertAmountAdjusted,
   depositDetected,
   depositReady,
+  depositRebaselined,
   depositSettled,
   initialState,
   onboardingFailed,
@@ -138,6 +140,18 @@ describe('bridgeramp withdraw', () => {
     expect(state.withdraw.swapTxHash).toBeNull()
   })
 
+  it('forgets the hash of a reverted withdraw swap so the next Confirm signs again', () => {
+    let state = inReview()
+    state = reducer(state, submitting)
+    state = reducer(state, swapBroadcast({ approveTxHash: '0x1', swapTxHash: '0x2' }))
+    state = reducer(state, swapFailed({ code: 'receipt_unknown' }))
+    expect(state.withdraw.swapTxHash).toBe('0x2')
+    state = reducer(state, submitting)
+    state = reducer(state, swapBroadcast({ approveTxHash: '0x1', swapTxHash: '0x2' }))
+    state = reducer(state, swapFailed({ code: 'reverted' }))
+    expect(state.withdraw.swapTxHash).toBeNull()
+  })
+
   it('starts over on reset', () => {
     let state = inReview()
     state = reducer(state, submitting)
@@ -151,27 +165,73 @@ describe('bridgeramp deposit', () => {
   const account = { id: 'dep_1', deposit_instructions: { bre_b_key: '@K' } } as any
 
   it('keeps the first baseline across account refreshes', () => {
-    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
-    state = reducer(state, depositReady({ account, usdcBaseline: '105' }))
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5', at: 1 }))
+    state = reducer(state, depositReady({ account, usdcBaseline: '105', at: 2 }))
     expect(state.deposit.usdcBaseline).toBe('5')
   })
 
   it('waits for a known balance before setting the baseline', () => {
-    let state = reducer(initialState, depositReady({ account, usdcBaseline: null }))
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: null, at: 1 }))
     expect(state.deposit.usdcBaseline).toBeNull()
-    state = reducer(state, depositReady({ account, usdcBaseline: '7' }))
+    state = reducer(state, depositReady({ account, usdcBaseline: '7', at: 2 }))
     expect(state.deposit.usdcBaseline).toBe('7')
     state = reducer(state, depositBaselineUpdated({ usdcBaseline: '3' }))
     expect(state.deposit.usdcBaseline).toBe('3')
   })
 
   it('tracks a detected deposit until it settles', () => {
-    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5' }))
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5', at: 1 }))
     state = reducer(state, depositDetected({ usdcAmount: '100', flowId: 'f' }))
     expect(state.deposit.pending).toEqual({ usdcAmount: '100', flowId: 'f' })
-    state = reducer(state, depositSettled({ usdcBaseline: '6' }))
+    state = reducer(state, depositSettled({ usdcBaseline: '6', at: 9 }))
     expect(state.deposit.pending).toBeNull()
     expect(state.deposit.usdcBaseline).toBe('6')
+    expect(state.deposit.settledAt).toBe(9)
+    expect(state.deposit.instructionsShownAt).toBe(9)
+  })
+
+  it('records when the baseline was taken and moves it on a re-baseline', () => {
+    let state = reducer(initialState, depositReady({ account, usdcBaseline: '5', at: 1 }))
+    expect(state.deposit.instructionsShownAt).toBe(1)
+    state = reducer(state, depositSettled({ usdcBaseline: '5', at: 2 }))
+    state = reducer(state, depositRebaselined({ usdcBaseline: '50', at: 3 }))
+    expect(state.deposit).toMatchObject({
+      usdcBaseline: '50',
+      instructionsShownAt: 3,
+      settledAt: null,
+    })
+  })
+
+  it('records a reduced conversion only for the pending deposit', () => {
+    let state = reducer(initialState, depositDetected({ usdcAmount: '100', flowId: 'f' }))
+    state = reducer(state, depositConvertAmountAdjusted({ flowId: 'other', usdcAmount: '90' }))
+    expect(state.deposit.pending?.convertAmount).toBeUndefined()
+    state = reducer(state, depositConvertAmountAdjusted({ flowId: 'f', usdcAmount: '90' }))
+    expect(state.deposit.pending).toEqual({ usdcAmount: '100', flowId: 'f', convertAmount: '90' })
+  })
+
+  it('does not rehydrate a running conversion', () => {
+    const state = reducer(initialState, {
+      type: REHYDRATE,
+      key: 'root',
+      payload: {
+        bridgeramp: {
+          deposit: {
+            ...initialState.deposit,
+            account,
+            usdcBaseline: '5',
+            instructionsShownAt: 7,
+            settledAt: 8,
+            converting: true,
+          },
+        },
+      },
+    } as any)
+    expect(state.deposit).toMatchObject({
+      instructionsShownAt: 7,
+      settledAt: 8,
+      converting: false,
+    })
   })
 
   it('rehydrates the account, baseline and pending conversion', () => {
@@ -197,7 +257,10 @@ describe('bridgeramp deposit', () => {
       errorCode: null,
       errorRequestId: null,
       usdcBaseline: '5',
+      instructionsShownAt: null,
+      settledAt: null,
       pending: { usdcAmount: '100', flowId: 'f' },
+      converting: false,
     })
   })
 
@@ -261,6 +324,18 @@ describe('bridgeramp withdraw rehydration', () => {
       withdrawal: { id: 'wdr_1' },
       knownPayoutIds: ['drn_old'],
       estimatedCop: '778136',
+      attemptId: 'a1',
+      swapTxHash: '0x2',
+    }
+    expect(rehydrateWithdraw(persisted).withdraw).toEqual(persisted)
+  })
+
+  it('keeps a review whose swap was broadcast so its status can be checked again', () => {
+    const persisted = {
+      ...initialState.withdraw,
+      status: 'review',
+      withdrawal: { id: 'wdr_1' },
+      knownPayoutIds: [],
       attemptId: 'a1',
       swapTxHash: '0x2',
     }

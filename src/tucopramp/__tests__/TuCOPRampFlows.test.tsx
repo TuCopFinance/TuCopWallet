@@ -82,10 +82,14 @@ function tucopramp(mutate: (s: State) => void = () => undefined): RootState['tuc
   return state
 }
 
-function makeStore(state: RootState['tucopramp']) {
+function makeStore(
+  state: RootState['tucopramp'],
+  sentTransactionLog: RootState['sentTransactionLog'] = { byFlow: {} }
+) {
   return createMockStore({
     web3: { account: USER },
     tucopramp: state,
+    sentTransactionLog,
     tokens: {
       tokenBalances: {
         [mockCeloTokenId]: mockTokenBalances[mockCeloTokenId],
@@ -107,8 +111,11 @@ function makeStore(state: RootState['tucopramp']) {
   })
 }
 
-function renderOfframp(state: RootState['tucopramp']) {
-  const store = makeStore(state)
+function renderOfframp(
+  state: RootState['tucopramp'],
+  sentTransactionLog?: RootState['sentTransactionLog']
+) {
+  const store = makeStore(state, sentTransactionLog)
   const utils = render(
     <Provider store={store}>
       <TuCOPRampOfframpFlow {...getMockStackScreenProps(Screens.TuCOPRampOfframpFlow)} />
@@ -212,6 +219,52 @@ describe('TuCOPRampOfframpFlow', () => {
     expect(getByTestId('tucopramp-offramp-cancel-order-button')).toBeTruthy()
     fireEvent.press(getByTestId('tucopramp-offramp-retry-deposit'))
     expect(store.getActions()).toContainEqual({ type: 'tucopramp/offrampDepositRetry' })
+  })
+
+  it('never offers cancel when the deposit is in the sent-tx log, even after a reported failure', () => {
+    const { queryByTestId } = renderOfframp(
+      tucopramp((s) => {
+        s.offramp.status = 'awaiting-deposit'
+        s.offramp.activeCheckStatus = 'done'
+        s.offramp.currentOrder = offrampOrder
+        s.offramp.depositTxStatus = 'failed'
+        s.offramp.depositTxErrorCode = 'broadcast_failed'
+      }),
+      {
+        byFlow: {
+          [`offramp-deposit-${offrampOrder.order_id}`]: [
+            {
+              flowId: `offramp-deposit-${offrampOrder.order_id}`,
+              index: 0,
+              nonce: 4,
+              hash: '0xsent',
+              status: 'pending',
+            },
+          ],
+        },
+      }
+    )
+    expect(queryByTestId('tucopramp-offramp-cancel-order-button')).toBeNull()
+  })
+
+  it('shows a resumed order whose deposit was already broadcast as on its way, without cancel', () => {
+    const { getByTestId, queryByTestId } = renderOfframp(
+      tucopramp((s) => {
+        s.offramp.status = 'awaiting-deposit'
+        s.offramp.activeCheckStatus = 'done'
+        s.offramp.activeOrderId = processingDetail.id
+        s.offramp.activeOrderDetail = { ...processingDetail, status: 'AWAITING_DEPOSIT' }
+        s.offramp.activeOrderMissingMultisig = true
+        s.offramp.depositTxHash = '0xsent'
+        s.offramp.depositTxStatus = 'submitted'
+      })
+    )
+    expect(getByTestId('tucopramp-active-order-heading')).toHaveTextContent(
+      'tucopramp.depositSubmittedHeading'
+    )
+    expect(getByTestId('tucopramp-offramp-active-deposit-on-the-way')).toBeTruthy()
+    expect(queryByTestId('tucopramp-offramp-active-cancel')).toBeNull()
+    expect(queryByTestId('tucopramp-active-order-cancel-hint')).toBeNull()
   })
 
   it('shows the remaining limits on an amount_limit_exceeded error', () => {
