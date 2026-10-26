@@ -38,6 +38,7 @@ describe('platformFetch', () => {
       idempotencyKey: 'idem-1',
       baseUrl: BASE,
       fetchImpl,
+      requestId: 'req-1',
     })
     expect(result).toEqual({ ok: true })
     expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/destinations`, {
@@ -46,7 +47,7 @@ describe('platformFetch', () => {
         'Content-Type': 'application/json',
         'X-TuCOPRamp-Party-Session': 'tps_abc',
         'Idempotency-Key': 'idem-1',
-        'TuCOPRamp-Version': '2026-10-08',
+        'X-Request-Id': 'req-1',
       },
       body: JSON.stringify({ ownership: 'first_party' }),
     })
@@ -61,7 +62,7 @@ describe('platformFetch', () => {
       fetchImpl,
     })
     expect(result).toBeUndefined()
-    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ 'TuCOPRamp-Version': '2026-10-08' })
+    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ 'X-Request-Id': expect.any(String) })
   })
 
   it('throws a TucopRampError with the server code on non-2xx', async () => {
@@ -193,13 +194,15 @@ describe('api wrappers', () => {
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toEqual({ destination_id: 'dst_1' })
   })
 
-  it('pins the platform API version on every call', async () => {
+  it('sends a fresh request id on every call and never the retired version header', async () => {
     const fetchImpl = jest.fn().mockImplementation(async () => response(200, {}))
     await createWithdrawal('tps_1', { destination_id: 'dst_1' }, 'idem-5', {
       baseUrl: BASE,
       fetchImpl,
     })
-    expect(fetchImpl.mock.calls[0][1].headers['TuCOPRamp-Version']).toBe('2026-10-08')
+    const headers = fetchImpl.mock.calls[0][1].headers
+    expect(headers['X-Request-Id']).toEqual(expect.any(String))
+    expect(headers['TuCOPRamp-Version']).toBeUndefined()
   })
 
   it('signs out with DELETE /v1/sessions/current and the session header', async () => {
@@ -207,7 +210,7 @@ describe('api wrappers', () => {
     await revokePartySession('tps_1', { baseUrl: BASE, fetchImpl })
     expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/sessions/current`, {
       method: 'DELETE',
-      headers: { 'TuCOPRamp-Version': '2026-10-08', 'X-TuCOPRamp-Party-Session': 'tps_1' },
+      headers: { 'X-Request-Id': expect.any(String), 'X-TuCOPRamp-Party-Session': 'tps_1' },
       body: undefined,
     })
   })
