@@ -9,7 +9,7 @@ import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 
 const TAG = 'tucopramp/client'
 const CANONICAL_PREFIX = 'TuCOPRamp'
-const UPSTREAM_PATH_PREFIX = '/v1/p2p/'
+const UPSTREAM_PATH_PREFIX = '/p2p/'
 const REQUEST_TIMEOUT_MS = 30_000
 
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'

@@ -56,7 +56,7 @@ interface CallOpts {
 export async function getBanks(opts?: CallOpts): Promise<Bank[]> {
   const response = await tucopRampFetch<BanksResponse>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/banks',
+    upstreamPath: '/p2p/banks',
     skipWalletAuth: true,
     ...opts,
   })
@@ -66,7 +66,7 @@ export async function getBanks(opts?: CallOpts): Promise<Bank[]> {
 export function getReceivingAccount(opts?: CallOpts): Promise<ReceivingAccountResponse> {
   return tucopRampFetch<ReceivingAccountResponse>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/onramp/receiving-account',
+    upstreamPath: '/p2p/onramp/receiving-account',
     skipWalletAuth: true,
     ...opts,
   })
@@ -79,7 +79,7 @@ export function getReceivingAccount(opts?: CallOpts): Promise<ReceivingAccountRe
 export function getLimits(opts?: CallOpts): Promise<TucopRampLimits> {
   return tucopRampFetch<TucopRampLimits>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/limits',
+    upstreamPath: '/p2p/limits',
     skipWalletAuth: true,
     ...opts,
   })
@@ -94,7 +94,7 @@ export async function getLimitsWithMeta(
 ): Promise<{ value: TucopRampLimits; serverMaxAgeMs: number | null }> {
   const { data, meta } = await tucopRampFetchWithMeta<TucopRampLimits>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/limits',
+    upstreamPath: '/p2p/limits',
     skipWalletAuth: true,
     ...opts,
   })
@@ -106,7 +106,7 @@ export async function getLimitsWithMeta(
 export function getMe(auth: TucopRampAuth, opts?: CallOpts): Promise<MeResponse> {
   return tucopRampFetch<MeResponse>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/users/me',
+    upstreamPath: '/p2p/users/me',
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
     ...opts,
@@ -141,7 +141,7 @@ export function updateCedula(
 ): Promise<UpdateCedulaResponse> {
   return tucopRampFetch<UpdateCedulaResponse>({
     method: 'PATCH',
-    upstreamPath: '/v1/p2p/users/cedula',
+    upstreamPath: '/p2p/users/cedula',
     body,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -158,7 +158,7 @@ export function getOfframpQuote(
 ): Promise<QuoteResponse> {
   return tucopRampFetch<QuoteResponse>({
     method: 'POST',
-    upstreamPath: '/v1/p2p/offramp/quote',
+    upstreamPath: '/p2p/offramp/quote',
     body,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -174,7 +174,7 @@ export function createOfframpOrder(
 ): Promise<OfframpOrderResponse> {
   return tucopRampFetch<OfframpOrderResponse>({
     method: 'POST',
-    upstreamPath: '/v1/p2p/offramp/orders',
+    upstreamPath: '/p2p/offramp/orders',
     body,
     idempotencyKey,
     walletAddress: auth.walletAddress,
@@ -192,7 +192,7 @@ export function getOnrampQuote(
 ): Promise<QuoteResponse> {
   return tucopRampFetch<QuoteResponse>({
     method: 'POST',
-    upstreamPath: '/v1/p2p/onramp/quote',
+    upstreamPath: '/p2p/onramp/quote',
     body,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -208,7 +208,7 @@ export function createOnrampOrder(
 ): Promise<OnrampOrderResponse> {
   return tucopRampFetch<OnrampOrderResponse>({
     method: 'POST',
-    upstreamPath: '/v1/p2p/onramp/orders',
+    upstreamPath: '/p2p/onramp/orders',
     body,
     idempotencyKey,
     walletAddress: auth.walletAddress,
@@ -239,7 +239,7 @@ export function listOrders(
   const queryString = query.toString()
   return tucopRampFetch<OrdersListResponse>({
     method: 'GET',
-    upstreamPath: '/v1/p2p/orders',
+    upstreamPath: '/p2p/orders',
     queryString: queryString || undefined,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -254,7 +254,7 @@ export function getOrder(
 ): Promise<OrderDetail> {
   return tucopRampFetch<OrderDetail>({
     method: 'GET',
-    upstreamPath: `/v1/p2p/orders/${encodeURIComponent(orderId)}`,
+    upstreamPath: `/p2p/orders/${encodeURIComponent(orderId)}`,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
     ...opts,
@@ -269,7 +269,7 @@ export function cancelOrder(
 ): Promise<OrderCancelResponse> {
   return tucopRampFetch<OrderCancelResponse>({
     method: 'POST',
-    upstreamPath: `/v1/p2p/orders/${encodeURIComponent(orderId)}/cancel`,
+    upstreamPath: `/p2p/orders/${encodeURIComponent(orderId)}/cancel`,
     idempotencyKey,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -292,7 +292,7 @@ export function getProofUrl(
 ): Promise<ProofUrlResponse> {
   return tucopRampFetch<ProofUrlResponse>({
     method: 'GET',
-    upstreamPath: `/v1/p2p/orders/${encodeURIComponent(orderId)}/proof-url`,
+    upstreamPath: `/p2p/orders/${encodeURIComponent(orderId)}/proof-url`,
     queryString: `kind=${encodeURIComponent(kind)}`,
     walletAddress: auth.walletAddress,
     keychainAccounts: auth.keychainAccounts,
@@ -345,7 +345,7 @@ export async function uploadProof(
   const baseUrl = opts?.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
     opts?.fetchImpl ?? ((url, init) => fetchWithTimeout(url, init ?? null, PROOF_UPLOAD_TIMEOUT_MS))
-  const upstreamPath = `/v1/p2p/orders/${encodeURIComponent(orderId)}/proof`
+  const upstreamPath = `/p2p/orders/${encodeURIComponent(orderId)}/proof`
 
   const address = auth.walletAddress.toLowerCase() as Address
   const signed = await signTucopRampRequest({

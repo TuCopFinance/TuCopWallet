@@ -88,7 +88,7 @@ describe('tucopramp/api', () => {
       ])
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/banks`,
+        `${TUCOPRAMP_API_BASE_URL}/p2p/banks`,
         expect.objectContaining({ method: 'GET' })
       )
       const init = mockFetch.mock.calls[0][1] as RequestInit
@@ -157,7 +157,7 @@ describe('tucopramp/api', () => {
       const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
       expect(headers.get('X-Wallet-Signature')).toBeNull()
       // URL uses the proxy base + upstream path unchanged
-      expect(mockFetch.mock.calls[0][0]).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/limits`)
+      expect(mockFetch.mock.calls[0][0]).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/limits`)
     })
 
     it('propagates a TucopRampError on 4xx with envelope code intact', async () => {
@@ -176,7 +176,7 @@ describe('tucopramp/api', () => {
   })
 
   describe('getMe', () => {
-    it('signs GET /v1/p2p/users/me and returns the profile on 200', async () => {
+    it('signs GET /p2p/users/me and returns the profile on 200', async () => {
       mockFetch.mockResponseOnce(
         JSON.stringify({ user_id: 'u1', full_name: 'Test', cedula_last_4: '1234' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -184,7 +184,7 @@ describe('tucopramp/api', () => {
       const res = await getMe(makeAuth('0xdead'))
       expect(res.user_id).toBe('u1')
       expect(mockFetch).toHaveBeenCalledWith(
-        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/users/me`,
+        `${TUCOPRAMP_API_BASE_URL}/p2p/users/me`,
         expect.objectContaining({ method: 'GET' })
       )
       const headers = new Headers((mockFetch.mock.calls[0][1] as RequestInit)?.headers)
@@ -225,7 +225,7 @@ describe('tucopramp/api', () => {
       expect(res.userId).toBe('u1')
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/users/cedula`,
+        `${TUCOPRAMP_API_BASE_URL}/p2p/users/cedula`,
         expect.objectContaining({ method: 'PATCH' })
       )
       const init = mockFetch.mock.calls[0][1] as RequestInit
@@ -287,7 +287,7 @@ describe('tucopramp/api', () => {
       expect(res.quote_id).toBe('q1')
 
       const [url, init] = mockFetch.mock.calls[0]
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/offramp/quote`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/offramp/quote`)
       expect((init as RequestInit).method).toBe('POST')
       expect((init as RequestInit).body).toContain('"gross_amount_cop":200000')
       expect((init as RequestInit).body).toContain('"payout_method":"bank_account"')
@@ -497,7 +497,7 @@ describe('tucopramp/api', () => {
       })
       await listOrders(makeAuth(), { cursor: 'abc', limit: 5 })
       const url = mockFetch.mock.calls[0][0] as string
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders?cursor=abc&limit=5`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/orders?cursor=abc&limit=5`)
     })
 
     it('sends no query string when no params provided', async () => {
@@ -507,7 +507,7 @@ describe('tucopramp/api', () => {
       })
       await listOrders(makeAuth())
       const url = mockFetch.mock.calls[0][0] as string
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/orders`)
     })
   })
 
@@ -527,7 +527,7 @@ describe('tucopramp/api', () => {
       )
       await getOrder(makeAuth(), 'ord-1')
       const url = mockFetch.mock.calls[0][0] as string
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/orders/ord-1`)
     })
 
     it('surfaces order_not_found (404)', async () => {
@@ -552,7 +552,7 @@ describe('tucopramp/api', () => {
       expect(res.status).toBe('CANCELLED')
 
       const [url, init] = mockFetch.mock.calls[0]
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/cancel`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/orders/ord-1/cancel`)
       expect((init as RequestInit).method).toBe('POST')
       const headers = new Headers((init as RequestInit)?.headers)
       expect(headers.get('Idempotency-Key')).toBe('idem-cancel-1')
@@ -599,7 +599,7 @@ describe('tucopramp/api', () => {
       await cancelOrder(authCapturing, 'ord-9', 'idem-cancel-9', { now: () => 1_700_000_000_000 })
       expect(capturedMessages).toHaveLength(1)
       expect(capturedMessages[0]).toBe(
-        'TuCOPRamp:POST:/v1/p2p/orders/ord-9/cancel:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        'TuCOPRamp:POST:/p2p/orders/ord-9/cancel:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
       )
     })
   })
@@ -614,7 +614,7 @@ describe('tucopramp/api', () => {
       expect(res.url).toBe('https://x/proof.pdf')
       const url = mockFetch.mock.calls[0][0] as string
       expect(url).toBe(
-        `${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/proof-url?kind=operator_outgoing`
+        `${TUCOPRAMP_API_BASE_URL}/p2p/orders/ord-1/proof-url?kind=operator_outgoing`
       )
     })
   })
@@ -633,7 +633,7 @@ describe('tucopramp/api', () => {
       expect(res.proof_id).toBe('p1')
 
       const [url, init] = mockFetch.mock.calls[0]
-      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/v1/p2p/orders/ord-1/proof`)
+      expect(url).toBe(`${TUCOPRAMP_API_BASE_URL}/p2p/orders/ord-1/proof`)
       const headers = new Headers((init as RequestInit)?.headers)
       expect(headers.get('X-Wallet-Address')).toBe(TEST_WALLET)
       expect(headers.get('X-Wallet-Signature')).toBe('0xsig')
@@ -678,7 +678,7 @@ describe('tucopramp/api', () => {
       // Full canonical string, no truncation. If this fails, the wallet is
       // out of sync with the server's signature verification.
       expect(capturedMessages[0]).toBe(
-        'TuCOPRamp:POST:/v1/p2p/orders/ord-2/proof:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        'TuCOPRamp:POST:/p2p/orders/ord-2/proof:0xabc0000000000000000000000000000000000000:1700000000:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
       )
     })
 

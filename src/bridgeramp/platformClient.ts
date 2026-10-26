@@ -11,9 +11,8 @@ import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 const TAG = 'bridgeramp/platformClient'
 const REQUEST_TIMEOUT_MS = 30_000
 
-// Bridge Ramp talks to TuCOPRamp's platform API (/v1/sessions, /v1/parties,
-// /v1/destinations, /v1/quotes, ...), not to the /v1/p2p/* routes TuCOP Ramp
-// uses. The platform API authenticates the APP with a consumer key
+// Bridge Ramp talks to TuCOPRamp's platform API (/sessions, /parties,
+// /destinations, /quotes, ...), not to the /p2p/* routes TuCOP Ramp uses. The platform API authenticates the APP with a consumer key
 // (X-TuCOPRamp-Key) and the USER with a party session
 // (X-TuCOPRamp-Party-Session). The consumer key never ships in the app: the
 // wallet hits the same backend proxy as TuCOP Ramp and the proxy adds the key
@@ -33,7 +32,7 @@ const REQUEST_ID_HEADER = 'X-Request-Id'
 
 export interface PlatformFetchArgs {
   method: HttpMethod
-  // Upstream path, e.g. '/v1/parties/me'.
+  // Upstream path, e.g. '/parties/me'.
   path: string
   body?: unknown
   partySession?: string
@@ -45,8 +44,10 @@ export interface PlatformFetchArgs {
 }
 
 export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
-  if (!args.path.startsWith('/v1/')) {
-    throw new Error(`platformFetch: path must be an upstream /v1/ path, got "${args.path}"`)
+  // TuCOPRamp dropped the version prefix: the paths carry none. Catch a
+  // leftover `/v1/` here rather than letting it 404 at the proxy.
+  if (!args.path.startsWith('/') || args.path.startsWith('/v1/')) {
+    throw new Error(`platformFetch: path must be an unversioned upstream path, got "${args.path}"`)
   }
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
@@ -107,7 +108,7 @@ export function revokePartySession(
   return platformFetch<void>({
     ...opts,
     method: 'DELETE',
-    path: '/v1/sessions/current',
+    path: '/sessions/current',
     partySession,
   })
 }
@@ -139,14 +140,14 @@ export async function openWalletPartySession(
   const { nonce, message } = await platformFetch<WalletNonceResponse>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet/nonce',
+    path: '/sessions/wallet/nonce',
     body: { address: walletAddress },
   })
   const signature = (await getSiweSigningFunction(keychainAccounts)(message)) as Hex
   return platformFetch<PartySession>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet',
+    path: '/sessions/wallet',
     body: { address: walletAddress, nonce, signature },
   })
 }

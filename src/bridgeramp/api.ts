@@ -3,7 +3,8 @@ import { PlatformFetchArgs, platformFetch } from 'src/bridgeramp/platformClient'
 
 // Typed wrappers over TuCOPRamp's platform API for TuCOP Ramp powered by
 // Bridge. Shapes follow TuCOPRamp main developer-docs (parties.mdx,
-// destinations.mdx, withdrawals.mdx, deposits.mdx; API version 2026-10-08).
+// destinations.mdx, withdrawals.mdx, deposits.mdx). TuCOPRamp runs one
+// unversioned API: paths carry no version.
 
 type CallOpts = Pick<PlatformFetchArgs, 'baseUrl' | 'fetchImpl'>
 
@@ -47,7 +48,7 @@ export function partyCanTransact(party: Party): boolean {
 }
 
 export function getParty(partySession: string, opts?: CallOpts): Promise<Party> {
-  return platformFetch<Party>({ ...opts, method: 'GET', path: '/v1/parties/me', partySession })
+  return platformFetch<Party>({ ...opts, method: 'GET', path: '/parties/me', partySession })
 }
 
 export interface CreatePartyRequest {
@@ -61,7 +62,7 @@ export interface CreatePartyRequest {
   // ISO 3166-1 alpha-3. Optional; it can differ from country (a foreigner
   // with a Colombian CE).
   nationality?: string
-  // Individuals in Colombia (GET /v1/document-types). NIT is a business
+  // Individuals in Colombia (GET /document-types). NIT is a business
   // document; TI is a minor's and Bridge verifies adults only.
   document_type: 'CC' | 'CE' | 'NUIP' | 'PAS'
   document_number: string
@@ -80,7 +81,7 @@ export function createParty(
   return platformFetch<{ party: Party }>({
     ...opts,
     method: 'POST',
-    path: '/v1/parties',
+    path: '/parties',
     body: request,
     partySession,
     idempotencyKey,
@@ -119,7 +120,7 @@ export function listDestinations(partySession: string, opts?: CallOpts): Promise
   return platformFetch<Destination[]>({
     ...opts,
     method: 'GET',
-    path: '/v1/destinations',
+    path: '/destinations',
     partySession,
   })
 }
@@ -132,7 +133,7 @@ export function getDestination(
   return platformFetch<Destination>({
     ...opts,
     method: 'GET',
-    path: `/v1/destinations/${encodeURIComponent(destinationId)}`,
+    path: `/destinations/${encodeURIComponent(destinationId)}`,
     partySession,
   })
 }
@@ -150,7 +151,7 @@ export function createFirstPartyDestination(
   return platformFetch<Destination>({
     ...opts,
     method: 'POST',
-    path: '/v1/destinations',
+    path: '/destinations',
     body: { ownership: 'first_party', bre_b_key: breBKey },
     partySession,
     idempotencyKey,
@@ -169,8 +170,8 @@ export function createFirstPartyDestination(
 // needs (it always lands a little above amountOutMin). A quote is only a
 // price; nothing takes it.
 
-const WITHDRAWALS_PATH = '/v1/withdrawals'
-const QUOTES_PATH = '/v1/quotes'
+const WITHDRAWALS_PATH = '/withdrawals'
+const QUOTES_PATH = '/quotes'
 
 export interface MoneyAmount {
   // Decimal string with the asset's decimals (COP 2, USDC 6).
@@ -302,7 +303,7 @@ export function createWithdrawQuote(
 // wallet, created once and reused. The COPm conversion happens in the app
 // (convertBridgeDeposit).
 
-const DEPOSITS_PATH = '/v1/deposits'
+const DEPOSITS_PATH = '/deposits'
 
 export interface DepositEvent {
   id: string
