@@ -9789,6 +9789,22 @@
                         }
                     ]
                 },
+                "settlement_time": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "max_minutes": {
+                            "type": "number"
+                        },
+                        "min_minutes": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "max_minutes",
+                        "min_minutes"
+                    ],
+                    "type": "object"
+                },
                 "status": {
                     "enum": [
                         "active",
