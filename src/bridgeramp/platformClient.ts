@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { Address, Hex } from 'viem'
 import { getSiweSigningFunction } from 'src/fiatconnect/clients'
 import { FetchImpl, HttpMethod, parseErrorEnvelope } from 'src/tucopramp/client'
@@ -10,22 +11,28 @@ import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 const TAG = 'bridgeramp/platformClient'
 const REQUEST_TIMEOUT_MS = 30_000
 
-// Bridge Ramp talks to TuCOPRamp's platform API (/v1/sessions, /v1/parties,
-// /v1/destinations, /v1/quotes, ...), not to the /v1/p2p/* routes TuCOP Ramp
-// uses. The platform API authenticates the APP with a consumer key
+// Bridge Ramp talks to TuCOPRamp's platform API (/sessions, /parties,
+// /destinations, /quotes, ...), not to the /p2p/* routes TuCOP Ramp uses. The platform API authenticates the APP with a consumer key
 // (X-TuCOPRamp-Key) and the USER with a party session
 // (X-TuCOPRamp-Party-Session). The consumer key never ships in the app: the
 // wallet hits the same backend proxy as TuCOP Ramp and the proxy adds the key
 // before forwarding. The party session is the user's and travels end to end.
 const PARTY_SESSION_HEADER = 'X-TuCOPRamp-Party-Session'
-// Platform API behavior version the wallet is written against
-// (developer-docs/conventions.mdx). Pinning it here means a newer default on
-// TuCOPRamp's side cannot change shapes under an app already in stores.
-const TUCOPRAMP_API_VERSION = '2026-10-08'
+// TuCOPRamp asks every caller to send a fresh id per request and to quote it
+// when reporting a problem, so support can find the call on their side.
+const REQUEST_ID_HEADER = 'X-Request-Id'
+
+// We used to pin `TuCOPRamp-Version: 2026-10-08` here so a newer default
+// upstream could not change shapes under an app already in stores. That
+// protection is gone: TuCOPRamp now runs a single unversioned API and marks
+// the header deprecated, with "do not send it" and a 400 invalid_api_version
+// for any value outside the enum. Pinning buys nothing and turns the day they
+// retire the value into an outage for every shipped build, so we stopped
+// sending it.
 
 export interface PlatformFetchArgs {
   method: HttpMethod
-  // Upstream path, e.g. '/v1/parties/me'.
+  // Upstream path, e.g. '/parties/me'.
   path: string
   body?: unknown
   partySession?: string
@@ -33,18 +40,22 @@ export interface PlatformFetchArgs {
   // Overrides for tests.
   baseUrl?: string
   fetchImpl?: FetchImpl
+  requestId?: string
 }
 
 export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
-  if (!args.path.startsWith('/v1/')) {
-    throw new Error(`platformFetch: path must be an upstream /v1/ path, got "${args.path}"`)
+  // TuCOPRamp dropped the version prefix: the paths carry none. Catch a
+  // leftover `/v1/` here rather than letting it 404 at the proxy.
+  if (!args.path.startsWith('/') || args.path.startsWith('/v1/')) {
+    throw new Error(`platformFetch: path must be an unversioned upstream path, got "${args.path}"`)
   }
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
     args.fetchImpl ?? ((url, init) => fetchWithTimeout(url, init ?? null, REQUEST_TIMEOUT_MS))
 
   const bodyStr = args.body === undefined ? undefined : JSON.stringify(args.body)
-  const headers: Record<string, string> = { 'TuCOPRamp-Version': TUCOPRAMP_API_VERSION }
+  const requestId = args.requestId ?? uuidv4()
+  const headers: Record<string, string> = { [REQUEST_ID_HEADER]: requestId }
   if (bodyStr !== undefined) {
     headers['Content-Type'] = 'application/json'
   }
@@ -74,7 +85,9 @@ export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
     `${args.method} ${args.path} failed`,
     `status=${response.status}`,
     `code=${envelope.code}`,
-    envelope.request_id ? `request_id=${envelope.request_id}` : ''
+    // TuCOPRamp echoes its own id when it reaches them; ours is the fallback
+    // so a failure always leaves something support can be given.
+    `request_id=${envelope.request_id ?? requestId}`
   )
   throw new TucopRampError({
     httpStatus: response.status,
@@ -95,7 +108,7 @@ export function revokePartySession(
   return platformFetch<void>({
     ...opts,
     method: 'DELETE',
-    path: '/v1/sessions/current',
+    path: '/sessions/current',
     partySession,
   })
 }
@@ -127,14 +140,14 @@ export async function openWalletPartySession(
   const { nonce, message } = await platformFetch<WalletNonceResponse>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet/nonce',
+    path: '/sessions/wallet/nonce',
     body: { address: walletAddress },
   })
   const signature = (await getSiweSigningFunction(keychainAccounts)(message)) as Hex
   return platformFetch<PartySession>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet',
+    path: '/sessions/wallet',
     body: { address: walletAddress, nonce, signature },
   })
 }

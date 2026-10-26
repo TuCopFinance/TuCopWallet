@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  '/v1/auth/siwe/nonce': {
+  '/auth/siwe/nonce': {
     parameters: {
       query?: never
       header?: never
@@ -24,7 +24,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/auth/siwe': {
+  '/auth/siwe': {
     parameters: {
       query?: never
       header?: never
@@ -44,7 +44,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/auth/email-otp': {
+  '/auth/email-otp': {
     parameters: {
       query?: never
       header?: never
@@ -64,7 +64,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/auth/email-otp/verify': {
+  '/auth/email-otp/verify': {
     parameters: {
       query?: never
       header?: never
@@ -84,47 +84,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/auth/initiate-kyc': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Initiate KYC
-     * @description Start a KYC flow with Bridge and return the hosted link plus a polling token.
-     */
-    post: operations['initiateKyc']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/kyc-status': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Poll KYC status
-     * @description Poll the KYC flow. Returns { status: pending } until the webhook arrives.
-     */
-    get: operations['pollKycStatus']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me': {
+  '/users/me': {
     parameters: {
       query?: never
       header?: never
@@ -144,7 +104,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/users/me/audit-log': {
+  '/users/me/audit-log': {
     parameters: {
       query?: never
       header?: never
@@ -164,7 +124,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/users/me/email/initiate-change': {
+  '/users/me/email/initiate-change': {
     parameters: {
       query?: never
       header?: never
@@ -184,7 +144,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/users/me/email/confirm-change': {
+  '/users/me/email/confirm-change': {
     parameters: {
       query?: never
       header?: never
@@ -204,7 +164,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/users/me/external-accounts': {
+  '/users/me/external-accounts': {
     parameters: {
       query?: never
       header?: never
@@ -228,7 +188,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/offramp/quote': {
+  '/offramp/quote': {
     parameters: {
       query?: never
       header?: never
@@ -239,7 +199,7 @@ export interface paths {
     put?: never
     /**
      * Request off-ramp quote
-     * @description Request an off-ramp quote (COPm on Celo -> USDC on Base -> COP via Bridge). Returns an opaque envelope to attach to the operation create call.
+     * @description Request an off-ramp quote (COPm on Celo -> USDC on Base -> COP via the payments provider). Returns an opaque envelope to attach to the operation create call.
      */
     post: operations['requestQuote']
     delete?: never
@@ -248,7 +208,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/offramp/operations': {
+  '/offramp/operations': {
     parameters: {
       query?: never
       header?: never
@@ -272,7 +232,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/offramp/operations/{id}/submit': {
+  '/offramp/operations/{id}/submit': {
     parameters: {
       query?: never
       header?: never
@@ -292,7 +252,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/offramp/operations/{id}': {
+  '/offramp/operations/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -312,7 +272,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/webhooks/bridge': {
+  '/webhooks/bridge': {
     parameters: {
       query?: never
       header?: never
@@ -322,8 +282,8 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Bridge.xyz webhook
-     * @description Receive Bridge.xyz webhooks. Authenticated via HMAC signature header (`X-Bridge-Signature`), no bearer auth.
+     * Payments provider webhook
+     * @description Receive payments provider webhooks. Authenticated via HMAC signature header (`X-Bridge-Signature`), no bearer auth.
      */
     post: operations['bridgeWebhook']
     delete?: never
@@ -332,7 +292,184 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/health': {
+  '/prereg/email-otp': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Send a sign-in code to an email
+     * @description Open to any email: this is how a new person starts and how a returning one resumes. Limited to 3 codes per email and 10 per IP every 15 minutes.
+     */
+    post: operations['preregEmailOtpRequest']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/email-otp/verify': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Exchange a code for a session */
+    post: operations['preregEmailOtpVerify']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/me': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Current pre-registration status
+     * @description While `kyc_pending`, re-reads the payments provider at most every 10 seconds, so it is safe to poll.
+     */
+    get: operations['preregStatus']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/start': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Submit name and document and get the provider KYC links
+     * @description Creates the provider customer with the `cop` endorsement requested. Idempotent per email: a second call returns the existing person and links unchanged.
+     */
+    post: operations['preregStart']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/destination': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Validate the person's own Bre-B key
+     * @description Registers the key with the payments provider under the KYC'd legal name. Rejected, and removed at the payments provider, unless the Bre-B directory matches the holder's name and document to the person. The payments provider runs the directory lookup after the account is created, so this call waits for the result and can take up to 90 seconds. Limited to 5 attempts per person every 10 minutes.
+     */
+    post: operations['preregDestination']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/destination/confirm': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Confirm or discard the account found for the key
+     * @description Accepting activates the off-ramp: a liquidation address (USDC on Celo to COP over Bre-B) is created for the person, returned in `offramp` and emailed to them.
+     */
+    post: operations['preregDestinationConfirm']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/prereg/webhooks/bridge': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Payments provider webhook for pre-registration
+     * @description Authenticated by the `X-Webhook-Signature` header (`t=<ms>,v0=<base64>`), an RSA signature verified against the endpoint public key. An event is treated only as a signal to re-read the customer from the payments provider. Mounted only when BRIDGE_WEBHOOK_PUBLIC_KEY is set.
+     */
+    post: operations['preregBridgeWebhook']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/hooks/bridge/ramp': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Payments provider webhook (default key)
+     * @description Authenticated by the `X-Webhook-Signature` header (`t=<ms>,v0=<base64>`), an RSA signature verified against the public key of this webhook only. The provider sends every event to every webhook: the route handles the events whose object belongs to its key and acknowledges the others (200, recorded as skipped). An event already processed by another route is acknowledged as a duplicate. Handling an event re-reads the objects it names from the provider. Handles events owned by the default key, by an alias without a webhook of its own, or by nobody known. Mounted only when BRIDGE_WEBHOOK_PUBLIC_KEY is set.
+     */
+    post: operations['providerWebhookRamp']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/hooks/bridge/{alias}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Payments provider webhook (integrator key alias)
+     * @description Authenticated by the `X-Webhook-Signature` header (`t=<ms>,v0=<base64>`), an RSA signature verified against the public key of this webhook only. The provider sends every event to every webhook: the route handles the events whose object belongs to its key and acknowledges the others (200, recorded as skipped). An event already processed by another route is acknowledged as a duplicate. Handling an event re-reads the objects it names from the provider. Handles events owned by integrators whose provider key alias is `alias`. Mounted only for aliases with BRIDGE_WEBHOOK_PUBLIC_KEY_<ALIAS> set; any other alias answers 404.
+     */
+    post: operations['providerWebhookAlias']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/health/live': {
     parameters: {
       query?: never
       header?: never
@@ -341,7 +478,7 @@ export interface paths {
     }
     /**
      * Liveness probe
-     * @description Liveness check.
+     * @description Liveness check. No API key needed.
      */
     get: operations['healthLive']
     put?: never
@@ -361,7 +498,7 @@ export interface paths {
     }
     /**
      * Readiness probe
-     * @description Readiness check (DB + upstreams).
+     * @description Readiness check (DB + upstreams). No API key needed.
      */
     get: operations['healthReady']
     put?: never
@@ -372,7 +509,519 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/banks': {
+  '/consumer': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get the consumer for the calling API key
+     * @description Return the consumer the API key belongs to, the products and scopes it has, and which key and environment were used. Use it to check that a key works. Consumer key only.
+     */
+    get: operations['getConsumer']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/document-types': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List the identity documents accepted for a country
+     * @description Colombia answers TuCOP types with their own rules. Other countries answer the list the payments provider publishes for that country plus the types it accepts for any non-US country, checked for shape only. Consumer key only. Static data, cacheable for an hour.
+     */
+    get: operations['listDocumentTypes']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List your events
+     * @description Your events, oldest first, after a sequence number. The same events webhooks deliver, so you can catch up after downtime or poll instead of receiving webhooks. Store `next_after` and ask again with it: an event that committed late gets a higher `seq` than anything already returned, so nothing is skipped. Consumer key only.
+     */
+    get: operations['listEvents']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/email-otp': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Send a sign-in code to an email
+     * @description Emails a 6-digit code, valid 10 minutes, to the person using your app. The answer is the same whether or not the email is known. Limited to 3 codes per email per 15 minutes. No Idempotency-Key: this is a credential exchange, see the Parties guide. Consumer key only.
+     */
+    post: operations['sendPartySessionEmailCode']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/email-otp/verify': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Exchange an email code for a party session
+     * @description Checks the newest code sent to this email through your consumer. A code sent through another consumer is not accepted. Five wrong tries spend a code. Consumer key only.
+     */
+    post: operations['verifyPartySessionEmailCode']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/wallet/nonce': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Get a message for a wallet to sign
+     * @description Returns a nonce and the exact message the wallet signs with EIP-191 (personal_sign). The message names your consumer, the wallet, the chain, the nonce and its expiry (5 minutes). Sign `message` as returned, without changing it. Consumer key only.
+     */
+    post: operations['createPartySessionWalletNonce']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/wallet': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Exchange a wallet signature for a party session
+     * @description Verifies the EIP-191 signature of the message from POST /sessions/wallet/nonce. A nonce is used once and only by the consumer it was issued to. EOA signatures only. Consumer key only.
+     */
+    post: operations['createPartySessionFromWallet']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/google/nonce': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Get a nonce for Google sign-in (TuCOP sites)
+     * @description For TuCOP's own sites. Returns a nonce and the Google OAuth client id to sign in with. Put the nonce in the Google sign-in request; the ID token Google returns carries it. Google only runs this client on pages TuCOP registered, so integrators open sessions with the email code or the wallet signature. Valid 10 minutes. Consumer key only.
+     */
+    post: operations['createPartySessionGoogleNonce']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/google': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Exchange a Google ID token for a party session (TuCOP sites)
+     * @description Verifies the Google ID token (signature, issuer, expiry, audience) and the nonce from POST /sessions/google/nonce, used once and only by the consumer it was issued to. Google must have verified the email. The session proves that email, like an email code. Consumer key only.
+     */
+    post: operations['createPartySessionFromGoogle']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sessions/current': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Sign out: revoke the party session
+     * @description Revokes the session sent in X-TuCOPRamp-Party-Session at once; later calls with it get 401 `party_session_invalid`. Only the consumer that opened the session can revoke it. Answers 204 whether or not there was a live session to revoke, so it can be called on every sign-out.
+     */
+    delete: operations['revokePartySession']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/parties': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create or link the session's party
+     * @description Creates the party for the person in the party session and starts identity verification (201), or links the party that already holds the document to your consumer (200). An existing party is linked only when the session's email or wallet is already attached to it; otherwise the answer is 409 `party_identity_not_proven`, which TuCOP reviews. Consumer key, party session and Idempotency-Key.
+     */
+    post: operations['createParty']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/parties/me': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get the session's party
+     * @description Status, endorsements and the instruments your consumer may see. While verification is moving, the status is re-read from the provider (at most every 10 seconds). Consumer key and party session.
+     */
+    get: operations['getMyParty']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/destinations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List destinations
+     * @description The party's destinations your consumer can see: those it created and the party's first-party ones. Newest first, a page at a time: `limit` (1 to 100, default 100) and `starting_after` (the last `id` of the previous page); `has_more` says whether there is another page. Deleted destinations are left out unless `include_disabled=true`; they then come with `active: false` and `disabled_at`.
+     */
+    get: operations['listDestinations']
+    put?: never
+    /**
+     * Register a Bre-B key
+     * @description Registers a Bre-B key for the session's party. When the party already has it (first_party: same key; third_party: same key added by your consumer) the existing destination is returned with 200; that includes a deleted first-party destination that had a withdrawal address, which comes back active. Otherwise TuCOP creates the account with the payments provider and answers 202 with status `pending`; the Bre-B directory answers in about a minute and the result arrives as `destination.verified` or `destination.rejected`, or by polling GET /destinations/{id}. first_party passes only when the directory matches, the holder is the party's KYC'd name and the holder document is the party's. third_party with `owner_name` passes when the directory matches. third_party without `owner_name` is a key lookup: it passes when the directory resolves the key to a holder, and is rejected with `directory_no_match` when it finds none. Either way, confirm a third-party destination (POST /destinations/{id}/confirm) after showing `holder` to the payer; payments need it. Rejected accounts are deleted at the payments provider. There is no limit on how many destinations a party has.
+     */
+    post: operations['createDestination']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/destinations/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get a destination
+     * @description Returns the destination, also after it was deleted (`active: false`), so you can still show it.
+     */
+    get: operations['getDestination']
+    put?: never
+    post?: never
+    /**
+     * Delete a destination
+     * @description Deletes a destination your consumer created, or a first-party destination of the party. It is kept with `active: false` and can no longer be paid or withdrawn to. Deleting it again answers 204 and changes nothing. The account is also deleted at the payments provider, except while a withdrawal address (even a disabled one) pays to it: the provider keeps paying out what reaches a disabled address to its key, so that key must stay. A destination with an active withdrawal address cannot be deleted: disable the withdrawal first (DELETE /withdrawals/{id}). To use the key again, register it again with POST /destinations: a key that had a withdrawal address comes back as the same destination (200, same id, still verified) and its address can be re-enabled; any other key gets a new destination.
+     */
+    delete: operations['deleteDestination']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/destinations/{id}/confirm': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Confirm a verified destination
+     * @description Records that the payer saw the holder name, bank and document last 4 and confirmed this is the account they mean to pay. Payments to a third-party destination need it. Confirming again returns the destination unchanged.
+     */
+    post: operations['confirmDestination']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/quotes': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Quote a payment or a withdrawal
+     * @description `pay`: prices a payment of `amount_cop` to a verified third-party destination at the payments provider's current rate. The quote lasts 2 minutes and is used by one payment. `withdraw`: the USDC to send to the party's liquidation address (POST /withdrawals) so that at least `amount_cop` reaches its own Bre-B key. Nothing takes a withdraw quote.
+     */
+    post: operations['createQuote']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/payments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create a payment
+     * @description Takes a quote and creates the payments provider transfer to its destination, which must be a verified third-party destination the payer confirmed. Answers with the deposit instructions: send exactly `deposit.amount` of USDC on Celo to `deposit.address`. Status changes arrive as `operation.updated`.
+     */
+    post: operations['createPayment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/payments/{id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Cancel a payment
+     * @description Cancels a payment that is still `creating` or `awaiting_funds`: the payer backed out, or the deposit transaction failed. The payment ends `canceled` with `error_code` `canceled_by_integrator` and `operation.updated` is sent. Canceling a canceled payment answers it again. Do not send the deposit after canceling: it would not be credited. TuCOP also cancels on its own any payment that got no deposit within 30 minutes (`expired_unfunded`), unless a deposit of exactly `deposit.amount` from `return_address` is already on-chain.
+     */
+    post: operations['cancelPayment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/payments/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a payment */
+    get: operations['getPayment']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/limits': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get effective pay limits
+     * @description Caps for `pay` for this integrator, and how much of its calendar month in America/Bogota is already used. TuCOP sets the floor and the monthly ceiling per integrator. The same checks run again when a quote or a payment is created.
+     */
+    get: operations['getLimits']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/rates': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get the current rate and estimate a payment
+     * @description The payments provider's current USDC/COP rate and, when the `pay` product is enabled, this integrator's pay fees. With `amount_cop`, also an estimate of how many USDC to send so that exactly that many pesos reach a Bre-B key, priced with the same math as a pay quote, and whether that amount is within this integrator's pay limits (reported, not refused). This is an ESTIMATE: nothing is stored or reserved and the rate moves. The binding amount comes from POST /quotes, which lasts 2 minutes. Consumer key only, no party session. The bare rate needs one of `pay`, `withdraw` or `deposit` enabled; an estimate needs `pay`. Each call reads the rate live: at most 120 requests per minute per consumer.
+     */
+    get: operations['getRates']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/withdrawals': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List withdrawal addresses
+     * @description The party's withdrawal addresses, active and disabled, newest first, at most 50, without payouts. Each has `status` and `disabled_at`. For payouts and their status read one address (GET /withdrawals/{id}) or listen to withdraw.drained.
+     */
+    get: operations['listWithdrawals']
+    put?: never
+    /**
+     * Create or get a withdrawal address
+     * @description Returns the party's liquidation address for a verified first-party destination, creating it the first time (201) and returning the same one afterwards (200). There is one address per destination and integrator (another integrator linked to the person never sees or reuses yours); a party with several keys gets one address per key, each paying only to its own key. When the address was disabled, this re-enables the same address (200, `status: active`); no new address is created. Send USDC on Celo to `deposit.address`; the payments provider pays it out in COP to the destination. Use POST /quotes with `product: withdraw` to know how much to send for a given COP amount.
+     */
+    post: operations['createWithdrawal']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/withdrawals/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a withdrawal address and its payouts */
+    get: operations['getWithdrawal']
+    put?: never
+    post?: never
+    /**
+     * Disable a withdrawal address
+     * @description Disables the address and answers 200 with it (`status: disabled`, `disabled_at`). Disabling it again answers 200 with the same resource. The payments provider cannot turn an address off: USDC sent to it afterwards is still paid out in COP to the same Bre-B key. It is not held or returned. Tell the person to stop using the address. TuCOP keeps reading a disabled address for 7 days, so payouts in that time still arrive as `withdraw.drained`. POST /withdrawals for the same destination re-enables the same address. Sends `withdrawal.disabled` when the status changes.
+     */
+    delete: operations['disableWithdrawal']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/deposits': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List deposit accounts */
+    get: operations['listDeposits']
+    put?: never
+    /**
+     * Create or get a deposit account
+     * @description Returns the party's virtual account for a wallet, creating it the first time (201) and returning the same one afterwards (200). When the payments provider already has an active COP account for the party that sends USDC on Celo to that wallet (opened outside TuCOP) and no integrator holds it yet, TuCOP takes it over instead of opening another one and answers 200: same Bre-B key, and `fee_bps` is that account's own fee. Not available in the sandbox: the payments provider's sandbox does not create COP virtual accounts, so the request answers 422 provider_rejected there.
+     */
+    post: operations['createDeposit']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/deposits/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a deposit account and its activity */
+    get: operations['getDeposit']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * Change the wallet of a deposit account
+     * @description Points the same Bre-B key at another wallet: pesos paid from now on arrive as USDC at `wallet_address`. Only for accounts your integrator opened or took over, and needs `deposit`. The same wallet answers 200 with the account unchanged. Refused with 409 deposit_in_flight while money may still be on its way to the current wallet: a deposit whose latest activity is funds_scheduled, funds_received, in_review or payment_submitted, or any money activity in the last 2 minutes. Retry once the deposit was delivered (payment_processed) or refunded. No webhook is sent for the change: this answer confirms it. The Idempotency-Key header is required.
+     */
+    patch: operations['changeDepositDestination']
+    trace?: never
+  }
+  '/p2p/banks': {
     parameters: {
       query?: never
       header?: never
@@ -392,7 +1041,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/receiving-account': {
+  '/p2p/onramp/receiving-account': {
     parameters: {
       query?: never
       header?: never
@@ -412,7 +1061,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/limits': {
+  '/p2p/limits': {
     parameters: {
       query?: never
       header?: never
@@ -432,7 +1081,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/users/me': {
+  '/p2p/users/me': {
     parameters: {
       query?: never
       header?: never
@@ -452,7 +1101,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/users/cedula': {
+  '/p2p/users/cedula': {
     parameters: {
       query?: never
       header?: never
@@ -472,7 +1121,7 @@ export interface paths {
     patch: operations['p2pPatchCedula']
     trace?: never
   }
-  '/v1/p2p/offramp/quote': {
+  '/p2p/offramp/quote': {
     parameters: {
       query?: never
       header?: never
@@ -492,7 +1141,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/offramp/orders': {
+  '/p2p/offramp/orders': {
     parameters: {
       query?: never
       header?: never
@@ -512,7 +1161,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/quote': {
+  '/p2p/onramp/quote': {
     parameters: {
       query?: never
       header?: never
@@ -532,7 +1181,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/orders': {
+  '/p2p/onramp/orders': {
     parameters: {
       query?: never
       header?: never
@@ -552,7 +1201,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders': {
+  '/p2p/orders': {
     parameters: {
       query?: never
       header?: never
@@ -572,7 +1221,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}': {
+  '/p2p/orders/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -592,7 +1241,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}/cancel': {
+  '/p2p/orders/{id}/cancel': {
     parameters: {
       query?: never
       header?: never
@@ -612,7 +1261,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}/proof': {
+  '/p2p/orders/{id}/sandbox': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Sandbox only: complete or cancel an order without an operator
+     * @description Sandbox deployments only (API_KEY_ENVIRONMENT=test). Production does not mount this route and answers 404. `complete` walks an off-ramp from AWAITING_DEPOSIT through a simulated deposit, claim and payout, and an on-ramp from AWAITING_REVIEW through claim and the outgoing transfer. An on-ramp still in AWAITING_PROOF answers 409 sandbox_proof_required: upload the proof first. `cancel` is legal only from AWAITING_DEPOSIT or AWAITING_PROOF. Repeating the call after the order is already in the target status returns 200. Deposit and payout hashes are synthetic and are not transactions on Celo.
+     */
+    post: operations['p2pSandboxSimulate']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/p2p/orders/{id}/proof': {
     parameters: {
       query?: never
       header?: never
@@ -632,7 +1301,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}/proof-url': {
+  '/p2p/orders/{id}/proof-url': {
     parameters: {
       query?: never
       header?: never
@@ -652,7 +1321,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/proofs/{id}': {
+  '/p2p/proofs/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -661,7 +1330,7 @@ export interface paths {
     }
     /**
      * Serve a proof file via a presigned URL
-     * @description Public endpoint gated by HMAC (ts + sig query params) issued by /v1/p2p/orders/{id}/proof-url. Consumer-key middleware still runs at the app layer, but there is NO wallet-auth on this route.
+     * @description Public endpoint gated by HMAC (ts + sig query params) issued by /p2p/orders/{id}/proof-url. Consumer-key middleware still runs at the app layer, but there is NO wallet-auth on this route.
      */
     get: operations['p2pServeProof']
     put?: never
@@ -672,7 +1341,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/auth/google/login': {
+  '/admin/auth/google/login': {
     parameters: {
       query?: never
       header?: never
@@ -692,7 +1361,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/auth/google/callback': {
+  '/admin/auth/google/callback': {
     parameters: {
       query?: never
       header?: never
@@ -712,7 +1381,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/auth/me': {
+  '/admin/auth/me': {
     parameters: {
       query?: never
       header?: never
@@ -732,7 +1401,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/auth/logout': {
+  '/admin/auth/logout': {
     parameters: {
       query?: never
       header?: never
@@ -743,7 +1412,7 @@ export interface paths {
     put?: never
     /**
      * Revoke the admin session and clear the cookie
-     * @description Revokes the p2p_operator_sessions row and clears the admin_session cookie. Safe to call without an active session (returns 200 in either case).
+     * @description Revokes the staff_sessions row and clears the admin_session cookie. Safe to call without an active session (returns 200 in either case).
      */
     post: operations['adminAuthLogout']
     delete?: never
@@ -752,7 +1421,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders': {
+  '/admin/orders': {
     parameters: {
       query?: never
       header?: never
@@ -772,7 +1441,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}': {
+  '/admin/orders/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -792,7 +1461,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/claim': {
+  '/admin/orders/{id}/claim': {
     parameters: {
       query?: never
       header?: never
@@ -803,7 +1472,7 @@ export interface paths {
     put?: never
     /**
      * Claim an order (5 minute row-lock)
-     * @description Acquires a 5 minute claim on the order. Fails with 409 if another operator already holds the claim. operator+ role.
+     * @description Acquires a 5 minute claim on the order. In the same transaction, an offramp in DEPOSIT_CONFIRMED moves to PROCESSING and an onramp in AWAITING_REVIEW moves to VERIFYING; an order already in PROCESSING or VERIFYING (re-claim after a release or an expired claim) keeps its status. Releasing a claim never moves the status back. Fails with 409 if another operator already holds the claim. operator+ role.
      */
     post: operations['adminClaimOrder']
     delete?: never
@@ -812,7 +1481,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/release': {
+  '/admin/orders/{id}/release': {
     parameters: {
       query?: never
       header?: never
@@ -832,7 +1501,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/complete-offramp': {
+  '/admin/orders/{id}/proofs': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Attach a payment proof to an order (multipart)
+     * @description Multipart body: file (PNG/JPEG/PDF, 10MB max) + optional payout_reference. Does not change order status and does not require a claim. Kind is user_incoming_onramp for onramps and operator_outgoing_offramp for offramps.
+     */
+    post: operations['adminAttachOrderProof']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/orders/{id}/complete-offramp': {
     parameters: {
       query?: never
       header?: never
@@ -852,7 +1541,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/complete-onramp': {
+  '/admin/orders/{id}/complete-onramp': {
     parameters: {
       query?: never
       header?: never
@@ -872,7 +1561,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/refund-offramp': {
+  '/admin/orders/{id}/refund': {
     parameters: {
       query?: never
       header?: never
@@ -882,17 +1571,17 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Execute a refund on a REFUND_OWED offramp order
-     * @description Record the refund COPm transfer tx hash. Transitions REFUND_OWED -> REFUNDED. Requires an active claim held by the caller.
+     * Record the refund of a REFUND_OWED order
+     * @description Transitions REFUND_OWED -> REFUNDED. Offramp: JSON body with the tx hash of the COPm sent back to the wallet. Onramp: multipart body with the bank receipt of the COP sent back to the account the user indicated (file optional when a refund receipt is already attached). Requires an active claim held by the caller.
      */
-    post: operations['adminRefundOfframp']
+    post: operations['adminRefundOrder']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/reject': {
+  '/admin/orders/{id}/reject': {
     parameters: {
       query?: never
       header?: never
@@ -903,7 +1592,7 @@ export interface paths {
     put?: never
     /**
      * Reject an order
-     * @description Reject an order with a reason. Valid for offramp orders in PROCESSING and onramp orders in AWAITING_REVIEW or VERIFYING. Requires an active claim held by the caller. Setting retryable=true routes offramps to REFUND_OWED instead of REJECTED so a refund can follow.
+     * @description Reject an order with a reason and an outcome. Valid for offramp orders in PROCESSING (outcome must be refund: the COPm is already in the multisig, so the order moves to REFUND_OWED) and onramp orders in AWAITING_REVIEW or VERIFYING (retry sends it back to AWAITING_PROOF, no_funds ends it in REJECTED, refund moves it to REFUND_OWED for a bank refund). Requires an active claim held by the caller.
      */
     post: operations['adminRejectOrder']
     delete?: never
@@ -912,7 +1601,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/cancel': {
+  '/admin/orders/{id}/cancel': {
     parameters: {
       query?: never
       header?: never
@@ -932,7 +1621,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/note': {
+  '/admin/orders/{id}/note': {
     parameters: {
       query?: never
       header?: never
@@ -952,7 +1641,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/users/by-cedula-hash/{hash}': {
+  '/admin/users/by-cedula-hash/{hash}': {
     parameters: {
       query?: never
       header?: never
@@ -972,7 +1661,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/users/{id}/cedula': {
+  '/admin/users/{id}/cedula': {
     parameters: {
       query?: never
       header?: never
@@ -992,7 +1681,7 @@ export interface paths {
     patch: operations['adminPatchUserCedula']
     trace?: never
   }
-  '/v1/admin/operators': {
+  '/admin/operators': {
     parameters: {
       query?: never
       header?: never
@@ -1001,7 +1690,7 @@ export interface paths {
     }
     /**
      * List the operator roster (admin only)
-     * @description Returns the full p2p_operators roster ordered by creation date. admin role.
+     * @description Returns the full staff roster ordered by creation date. admin role.
      */
     get: operations['adminListOperators']
     put?: never
@@ -1016,7 +1705,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/operators/{id}': {
+  '/admin/operators/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -1036,7 +1725,7 @@ export interface paths {
     patch: operations['adminPatchOperator']
     trace?: never
   }
-  '/v1/admin/consumers': {
+  '/admin/consumers': {
     parameters: {
       query?: never
       header?: never
@@ -1060,7 +1749,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/consumers/{id}': {
+  '/admin/consumers/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -1075,13 +1764,13 @@ export interface paths {
     options?: never
     head?: never
     /**
-     * Update scopes and/or deactivate a consumer (admin only)
-     * @description Update `scopes` and/or toggle `is_active`. Deactivated consumers immediately fail with 401 invalid_api_key on any request. There is no DELETE because consumers.id is FK-referenced from p2p_orders.
+     * Update scopes, status, overrides or settings of a consumer (admin only)
+     * @description Update `scopes`, toggle `is_active`, set limit `overrides`, or the platform settings `products`, `fee_bps`, `return_urls` and `contact_email`. Each kind of change is audited separately. Deactivated consumers immediately fail with 401 invalid_api_key on any request. There is no DELETE because consumers.id is FK-referenced from p2p_orders.
      */
     patch: operations['adminPatchConsumer']
     trace?: never
   }
-  '/v1/admin/consumers/{id}/usage': {
+  '/admin/consumers/{id}/usage': {
     parameters: {
       query?: never
       header?: never
@@ -1101,7 +1790,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/consumers/{id}/rotate': {
+  '/admin/consumers/{id}/open-p2p-orders': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Open P2P and wallet on-ramp orders opened with this consumer key (operator+)
+     * @description Counts the P2P orders not yet in a final state. The admin warns when there are some and the consumer lacks the P2P service that runs them.
+     */
+    get: operations['adminGetConsumerOpenP2POrders']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/rotate': {
     parameters: {
       query?: never
       header?: never
@@ -1121,7 +1830,448 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/audit-log': {
+  '/admin/consumers/{id}/products/{product}/approve': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Approve a product the integrator requested from its console (admin only)
+     * @description Moves the product from requested_products into products. Audited as consumer_product_approved.
+     */
+    post: operations['adminApproveConsumerProduct']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/products/{product}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Reject a product the integrator requested from its console (admin only)
+     * @description Drops the product from requested_products; products is unchanged. Audited as consumer_product_rejected.
+     */
+    post: operations['adminRejectConsumerProduct']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/keys': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List a consumer's API keys (operator+)
+     * @description Keys of the form tcr_<env>_sk_<public_id>.<secret><checksum>, and older pk_legacy keys, active first. Only the public id is returned; the secret is never stored.
+     */
+    get: operations['adminListConsumerApiKeys']
+    put?: never
+    /**
+     * Issue an API key for a consumer (admin only)
+     * @description Generates an sk key for the environment this deployment runs in (API_KEY_ENVIRONMENT), stores the SHA-256 of its secret, and returns the full key exactly once. Optional per-key scopes, expiry and IP ranges. The issuing operator is recorded as the typed actor. Audited as consumer_api_key_created.
+     */
+    post: operations['adminCreateConsumerApiKey']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/keys/{keyId}/revoke': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Revoke one API key of a consumer (admin only)
+     * @description The key stops authenticating on the next request. Other keys of the consumer, and its legacy key, are not affected. Audited as consumer_api_key_revoked.
+     */
+    post: operations['adminRevokeConsumerApiKey']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-endpoints': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List a consumer's webhook endpoints (operator+) */
+    get: operations['adminListWebhookEndpoints']
+    put?: never
+    /**
+     * Add a webhook endpoint (admin only)
+     * @description https only. The host is resolved and every address must be public. Generates the signing secret and returns it once. Audited as consumer_webhook_endpoint_created.
+     */
+    post: operations['adminCreateWebhookEndpoint']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-endpoints/{endpointId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a webhook endpoint (operator+) */
+    get: operations['adminGetWebhookEndpoint']
+    put?: never
+    post?: never
+    /**
+     * Delete a webhook endpoint (admin only)
+     * @description Pending deliveries are closed. Delivery history is kept without the endpoint. Audited as consumer_webhook_deleted.
+     */
+    delete: operations['adminDeleteWebhookEndpoint']
+    options?: never
+    head?: never
+    /**
+     * Change, disable or enable a webhook endpoint (admin only)
+     * @description Disabling closes the pending deliveries. Enabling clears the failure count and the pause. Audited as consumer_webhook_updated.
+     */
+    patch: operations['adminUpdateWebhookEndpoint']
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-endpoints/{endpointId}/rotate-secret': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Rotate a webhook endpoint's signing secret (admin only)
+     * @description The new secret signs every request from now on. For overlap_hours (default 24) requests also carry a second signature made with the replaced secret. Returned once. Audited as consumer_webhook_secret_rotated.
+     */
+    post: operations['adminRotateWebhookEndpointSecret']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-endpoints/{endpointId}/test': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Send a ping event to one endpoint now (admin only)
+     * @description Records a `ping` event for this endpoint only and attempts its delivery immediately, even while the endpoint is paused. A failed attempt is retried on the normal schedule. Audited as consumer_webhook_tested.
+     */
+    post: operations['adminTestWebhookEndpoint']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-endpoints/{endpointId}/deliveries': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Last 50 deliveries of an endpoint, with attempts (operator+) */
+    get: operations['adminListWebhookEndpointDeliveries']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-deliveries/{deliveryId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get one delivery with every attempt (operator+) */
+    get: operations['adminGetWebhookDelivery']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook-deliveries/{deliveryId}/replay': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Send a delivery again (admin only)
+     * @description Resets the delivery to a fresh retry schedule, due now, and wakes the worker. Works on delivered and failed deliveries. The attempt history is kept. Audited as consumer_webhook_delivery_replayed.
+     */
+    post: operations['adminReplayWebhookDelivery']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/bridge-customer': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Provider customer of a consumer and whether pay accepts its key alone (operator+)
+     * @description Reports the stored customer id, what the payments provider says about it (read live; bridge_unavailable when it cannot be read), the party holding it, its link to the consumer, and ready_for_pay with the missing conditions.
+     */
+    get: operations['adminGetConsumerBridgeCustomer']
+    /**
+     * Link a consumer to a provider customer (admin only)
+     * @description Checks the customer exists at the payments provider, refuses one another consumer holds, sets the customer and, when a party holds it, creates or re-activates the party link with consent version operator-link-v1. A link the party gave itself keeps its consent version. Replacing a customer revokes the operator-created link to the previous one. Audited as consumer_bridge_customer_linked; a repeated PUT with nothing to change writes nothing.
+     */
+    put: operations['adminPutConsumerBridgeCustomer']
+    post?: never
+    /**
+     * Unlink a consumer from its provider customer (admin only)
+     * @description Clears the customer and revokes the party link only when an operator created it. A link the party gave itself stays. Rows are not deleted. Audited as consumer_bridge_customer_unlinked.
+     */
+    delete: operations['adminDeleteConsumerBridgeCustomer']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/integrator-signups': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Pending integrator console signup requests (operator+, integrations area)
+     * @description Registering in the integrator console only stores a request; nothing exists in consumers until an admin approves it. Newest first, without the identity document.
+     */
+    get: operations['adminListIntegratorSignups']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/integrator-signups/{id}/approve': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Approve a console signup request: creates the integrator (admin only)
+     * @description Creates the consumer (no products, fee 0), its console operator and the terms acceptance in one transaction, and emails the person. No API key: the operator creates keys in the console. Audited as integrator_signup_approved.
+     */
+    post: operations['adminApproveIntegratorSignup']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/integrator-signups/{id}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Reject a console signup request (admin only)
+     * @description Marks the request rejected and clears the identity document. The email can ask again. Audited as integrator_signup_rejected.
+     */
+    post: operations['adminRejectIntegratorSignup']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/console-operators': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Emails that can sign in to the integrator console of a consumer (operator+) */
+    get: operations['adminListConsoleOperators']
+    put?: never
+    /**
+     * Let an email sign in to the integrator console of a consumer (admin only)
+     * @description Creates a console operator with only the email and no identity document. The person signs in with Google or an email code. An email belongs to at most one console. Audited as consumer_console_operator_added.
+     */
+    post: operations['adminAddConsoleOperator']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/console-operators/{operatorId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Remove a console operator and end its sessions (admin only)
+     * @description Deletes the operator, its sessions and its terms acceptances. The audit row (consumer_console_operator_removed) keeps the email, who added it and the terms versions it had accepted.
+     */
+    delete: operations['adminRemoveConsoleOperator']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Set the URL of a consumer's oldest webhook endpoint (admin only)
+     * @deprecated
+     * @description Deprecated: use the webhook-endpoints routes. Creates the consumer's first endpoint (and returns its secret once) or changes the URL of its oldest one. Audited as consumer_webhook_updated.
+     */
+    put: operations['adminPutConsumerWebhook']
+    post?: never
+    /**
+     * Delete every webhook endpoint of a consumer (admin only)
+     * @deprecated
+     * @description Deprecated: use the webhook-endpoints routes. Pending deliveries are closed. Audited as consumer_webhook_deleted.
+     */
+    delete: operations['adminDeleteConsumerWebhook']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook/rotate-secret': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Rotate the secret of a consumer's oldest webhook endpoint (admin only)
+     * @deprecated
+     * @description Deprecated: use the webhook-endpoints routes. 24 h overlap. Returned once. Audited as consumer_webhook_secret_rotated.
+     */
+    post: operations['adminRotateConsumerWebhookSecret']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook/test': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Send a ping to a consumer's oldest webhook endpoint now (admin only)
+     * @deprecated
+     * @description Deprecated: use the webhook-endpoints routes. Audited as consumer_webhook_tested.
+     */
+    post: operations['adminTestConsumerWebhook']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/consumers/{id}/webhook/deliveries': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Last 50 webhook deliveries of a consumer, any endpoint (operator+)
+     * @deprecated
+     */
+    get: operations['adminListConsumerWebhookDeliveries']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/audit-log': {
     parameters: {
       query?: never
       header?: never
@@ -1141,7 +2291,141 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/stats': {
+  '/admin/clients': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List people who have a provider customer (operator+)
+     * @description Newest first. q filters by name or email. Excludes the integrator company customer.
+     */
+    get: operations['adminListClients']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/clients/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get one client (operator+) */
+    get: operations['adminGetClient']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/prereg/users': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List pre-registered people, or find one by email (operator+)
+     * @description Without email: newest first, q filters by email or name substring. With email: that one person.
+     */
+    get: operations['adminFindPreregUser']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/prereg/users/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a pre-registered person (operator+) */
+    get: operations['adminGetPreregUser']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/prereg/users/{id}/email': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * Change the login email of a pre-registered person (superadmin)
+     * @description The email is the login. Refuses an address another person, party or ramp user holds. Updates the provider customer when it has a different address, moves the party email and the ramp user with the old address (its sessions are revoked), closes pending one-time codes, and writes one audit row with both addresses masked and the reason.
+     */
+    patch: operations['adminChangePreregUserEmail']
+    trace?: never
+  }
+  '/admin/ledger/accounts': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Ledger accounts with balances (operator+)
+     * @description Every ledger account (ADR-008) with the sum of its postings. Read-only: entries are posted by the services that move money.
+     */
+    get: operations['adminListLedgerAccounts']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/ledger/entries': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Journal entries, newest first (operator+)
+     * @description Entries with their postings, filtered by operation or consumer. Up to 200.
+     */
+    get: operations['adminListLedgerEntries']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/stats': {
     parameters: {
       query?: never
       header?: never
@@ -1150,7 +2434,7 @@ export interface paths {
     }
     /**
      * Dashboard counters (viewer+)
-     * @description Single-query snapshot for the ops portal home strip. Pending / in-progress / completed-today / rejected-today / refund-owed / cop volumes.
+     * @description Snapshot for the P2P panel of the ops portal: current queue counters and the figures of the ?days window (7, 30, 90 or all; default 30), compared with the previous window of the same length.
      */
     get: operations['adminGetStats']
     put?: never
@@ -1161,7 +2445,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/unmatched-deposits': {
+  '/admin/metrics': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Request monitor: API requests and payments provider calls (operator+)
+     * @description Totals, a time series and breakdowns (top 20) of the requests clients make to the ramp API (kind api) or of the HTTP calls the ramp makes to the payments provider (kind provider), over a window. Sistema area.
+     */
+    get: operations['adminGetMetrics']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/unmatched-deposits': {
     parameters: {
       query?: never
       header?: never
@@ -1181,7 +2485,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/unmatched-deposits/{tx_hash}/resolve': {
+  '/admin/unmatched-deposits/{tx_hash}/resolve': {
     parameters: {
       query?: never
       header?: never
@@ -1201,21 +2505,167 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/github/secret-scanning': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Revoke API keys GitHub reports as leaked
+     * @description GitHub secret scanning partner callback. The body is an array of tokens. The request is authenticated by Github-Public-Key-Identifier and Github-Public-Key-Signature, not by a consumer API key. A key this deployment holds is true_positive and is revoked if it is still active. Anything else, including a key of the other environment, is false_positive. The raw token is not logged.
+     */
+    post: operations['githubSecretScanning']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/console/terms': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Terms an integrator accepts at registration */
+    get: operations['consoleTerms']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** @description RFC 7807 problem details, sent as application/problem+json. Every platform route answers errors in this shape. */
     Error: {
+      /**
+       * @description URI derived from `code`. An identifier, not a page.
+       * @example https://errors.tucopramp.xyz/invalid-api-key
+       */
       type?: string
+      /** @example Invalid api key */
       title?: string
+      /** @example 401 */
       status: number
+      /**
+       * @description Machine-readable code in snake_case. Branch on this field only.
+       * @example invalid_api_key
+       */
       code: string
+      /**
+       * @description A sentence for people. It can change at any time.
+       * @example Invalid or unknown API key.
+       */
       detail: string
+      /** @description Same value as the X-Request-Id response header. */
       request_id?: string
+      /** @description Fields that failed validation, when there are any. */
       issues?: {
         path: string
         code: string
       }[]
+      /**
+       * @description On `product_not_enabled`: the category of the services that would open the route. `on_off_ramp` (a payments provider moves the money) or `p2p` (TuCOP runs the exchange). Null when they belong to both.
+       * @enum {string|null}
+       */
+      category?: 'on_off_ramp' | 'p2p' | null
+      /**
+       * @description On `product_not_enabled`: the services that would open the route. Any one is enough.
+       * @example [
+       *       "pay"
+       *     ]
+       */
+      required?: string[]
+    }
+    /**
+     * @description Public id of an organization: `org_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example org_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    OrganizationPublicId: string
+    /**
+     * @description Public id of a consumer: `con_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example con_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    ConsumerPublicId: string
+    /**
+     * @description Public id of a party: `pty_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example pty_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    PartyPublicId: string
+    /**
+     * @description Public id of a destination: `dst_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example dst_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    DestinationPublicId: string
+    /**
+     * @description Public id of an operation: `op_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example op_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    OperationPublicId: string
+    /**
+     * @description Public id of a quote: `qte_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example qte_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    QuotePublicId: string
+    /**
+     * @description Public id of an event: `evt_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example evt_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    EventPublicId: string
+    /**
+     * @description Public id of a webhook endpoint: `whep_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example whep_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    WebhookEndpointPublicId: string
+    /**
+     * @description Public id of an API key: `key_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example key_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    ApiKeyPublicId: string
+    /**
+     * @description Public id of a wallet on-ramp order: `onr_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example onr_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    WalletOnrampPublicId: string
+    /**
+     * @description Public id of a withdrawal (liquidation address): `wdr_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example wdr_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    WithdrawalPublicId: string
+    /**
+     * @description Public id of a deposit account (virtual account): `dep_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example dep_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    DepositPublicId: string
+    /**
+     * @description Asset code. COP has 2 decimals (settled in whole pesos), USDC 6, COPm 18. On-chain assets are on Celo (CAIP-2 `eip155:42220`).
+     * @enum {string}
+     */
+    Asset: 'COP' | 'USDC' | 'COPm'
+    /**
+     * @description An amount of one asset.
+     * @example {
+     *       "amount": "1250000.00",
+     *       "asset": "COP"
+     *     }
+     */
+    Money: {
+      /**
+       * @description Decimal string with as many decimals as the asset has (a payment's deposit.amount has 2). Never a JSON number.
+       * @example 1250000.00
+       */
+      amount: string
+      asset: components['schemas']['Asset']
     }
     FeesBreakdown: {
       squid_usd: number
@@ -1251,7 +2701,7 @@ export interface components {
         | 'AWAITING_SIGNATURE'
         | 'SUBMITTED'
         | 'SWAP_CONFIRMED'
-        | 'BRIDGE_PROCESSING'
+        | 'PROVIDER_PROCESSING'
         | 'PAYOUT_COMPLETED'
         | 'FAILED'
       source_amount_copm: string
@@ -1322,30 +2772,6 @@ export interface components {
       wallet_address: string
       wallet_was_newly_linked: boolean
     }
-    InitiateKycRequest: {
-      wallet_address: string
-    }
-    InitiateKycResponse: {
-      /** Format: uri */
-      kyc_link: string
-      /** Format: date-time */
-      kyc_link_expires_at: string
-      /** Format: uuid */
-      pending_link_token: string
-    }
-    KycStatusResponse:
-      | {
-          /** @enum {string} */
-          status: 'pending'
-        }
-      | {
-          /** @enum {string} */
-          status: 'completed'
-          session_token: string
-          /** Format: uuid */
-          user_id: string
-          wallet_address: string
-        }
     Wallet: {
       address: string
       chain_id: number
@@ -1507,6 +2933,690 @@ export interface components {
       checks: {
         [key: string]: 'ok' | 'down' | 'skipped'
       }
+    }
+    PreregStatus: {
+      /**
+       * @description `new`: email verified, nothing submitted yet. `kyc_pending`: waiting on the payments provider for KYC, ToS or the cop endorsement. `kyc_approved`: ready for a Bre-B key. `destination_pending`: key validated, awaiting the person's confirmation. `destination_verified`: key confirmed; `offramp` carries the address once it is active.
+       * @enum {string}
+       */
+      state:
+        | 'new'
+        | 'kyc_pending'
+        | 'kyc_approved'
+        | 'destination_pending'
+        | 'destination_verified'
+        | 'rejected'
+        | 'restricted'
+      /** Format: email */
+      email: string
+      /**
+       * Format: uri
+       * @description The payments provider's hosted KYC page. Present only while `state` is `kyc_pending`.
+       */
+      kyc_link: string | null
+      /**
+       * Format: uri
+       * @description The payments provider's hosted Terms of Service page. Present only while `kyc_pending`.
+       */
+      tos_link: string | null
+      kyc_status: string | null
+      tos_status: string | null
+      /** @description What the Bre-B directory returned for the registered key. The key itself is never returned. */
+      destination: {
+        key_masked: string | null
+        bank: string | null
+        holder: string | null
+        document_last4: string | null
+      } | null
+      /** @description Present once the off-ramp is active. USDC sent to `address` on Celo is paid out in COP to the registered Bre-B key. Created when the key is confirmed; if that fails it is retried on the next `GET /prereg/me`, so the page can poll until it appears. */
+      offramp: {
+        /** @description Liquidation address. Accepts USDC on Celo only. */
+        address: string
+        /** @enum {string} */
+        chain: 'celo'
+        /** @enum {string} */
+        currency: 'usdc'
+        /** @description USDC contract on Celo. */
+        token_address: string
+        /** @enum {string} */
+        destination_currency: 'cop'
+        /** @example 1.0 */
+        developer_fee_percent: string
+        min_payout_cop: number
+      } | null
+    }
+    PreregEmailOtpRequest: {
+      /** Format: email */
+      email: string
+    }
+    PreregEmailOtpVerifyRequest: {
+      /** Format: uuid */
+      challenge_id: string
+      otp: string
+    }
+    PreregSession: components['schemas']['PreregStatus'] & {
+      session_token: string
+    }
+    PreregStartRequest: {
+      /** @description Legal name as on the identity document: at least a first and a last name. */
+      full_name: string
+      /**
+       * @description Case-insensitive on input.
+       * @enum {string}
+       */
+      document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
+      /** @description Separators are stripped. Stored encrypted and as a peppered hash; unique per document type. */
+      document_number: string
+      /**
+       * @description The person's explicit consent to the processing of their personal data.
+       * @enum {boolean}
+       */
+      consent: true
+    }
+    PreregDestinationRequest: {
+      bre_b_key: string
+    }
+    PreregConfirmRequest: {
+      accept: boolean
+    }
+    ConsumerWhoAmIResponse: {
+      consumer: {
+        id: components['schemas']['ConsumerPublicId']
+        /** @example acme-wallet */
+        name: string
+        /**
+         * @description Products enabled for this consumer by TuCOP.
+         * @example [
+         *       "pay",
+         *       "withdraw"
+         *     ]
+         */
+        products: string[]
+        /** @description The same products grouped by category. A service of one category never opens the routes of the other. */
+        services: {
+          /**
+           * @description On/Off Ramp services: a payments provider moves the money automatically, with identity verification per party and webhooks. Asset: USDC.
+           * @example [
+           *       "pay",
+           *       "withdraw"
+           *     ]
+           */
+          on_off_ramp: string[]
+          /**
+           * @description P2P services: TuCOP runs the exchange with its own account; an operator confirms each payment. Asset: COPm.
+           * @example []
+           */
+          p2p: string[]
+        }
+        /**
+         * @description Scopes this key has: the consumer's scopes, narrowed to the key's own scopes when it was issued with some. A key without `wallet.write` is read-only: it may only send GET requests, and anything else gets 403 `api_key_scope_missing`.
+         * @example [
+         *       "wallet.read",
+         *       "wallet.write"
+         *     ]
+         */
+        scopes: string[]
+      }
+      /** @description The key used for this request. Null for `tcr_<64 hex>` keys. */
+      api_key: {
+        id: components['schemas']['ApiKeyPublicId']
+        /**
+         * @description The non-secret part of the key, between `_sk_` and the dot.
+         * @example AbCdEfGhIjKlMnOp
+         */
+        public_id: string
+        /**
+         * @description `sk` for a secret key. `pk_legacy` for a key issued before the checksum format (`tcr_<env>_pk_...`); replace it with an `sk` key.
+         * @enum {string}
+         */
+        kind: 'sk' | 'pk_legacy'
+        /** @enum {string} */
+        environment: 'live' | 'test'
+        /**
+         * Format: date-time
+         * @description When the key stops working. Null if it does not expire.
+         */
+        expires_at: string | null
+      } | null
+    }
+    /** @description Identity documents a party from this country may give. */
+    DocumentTypesResponse: {
+      /**
+       * @description ISO 3166-1 alpha-3 code.
+       * @example COL
+       */
+      country: string
+      /** @example Colombia */
+      country_name: string
+      /** @enum {string} */
+      party_type: 'individual' | 'business'
+      document_types: {
+        /**
+         * @description Upper-case TuCOP code for Colombia (CC, CE, NUIP, PAS for individuals; NIT for businesses); the payments provider code elsewhere (cpf, rfc, tin, ...).
+         * @example CC
+         */
+        code: string
+        /** @example Cedula de ciudadania */
+        name: string
+        /**
+         * @description local: TuCOP checks the number with the issuer rule, including any check digit. format_only: only letters and digits within a length are checked, because the issuer rule is not published.
+         * @enum {string}
+         */
+        validation: 'local' | 'format_only'
+        /** @example 1 a 10 digitos */
+        hint: string
+      }[]
+    }
+    /** @description An event, as in the webhook body, plus its feed position. */
+    Event: {
+      id: components['schemas']['EventPublicId']
+      /**
+       * @description Position in your event feed. Grows in the order events become visible; use it with `after`.
+       * @example 1842
+       */
+      seq: number
+      /** @example ping */
+      type: string
+      /**
+       * @description Service category of the type: `on_off_ramp` (pay, withdraw, deposit, parties, destinations), `p2p` (COPm orders) or `platform` (pings). Also in the webhook body.
+       * @example platform
+       * @enum {string}
+       */
+      category: 'on_off_ramp' | 'p2p' | 'platform'
+      /**
+       * Format: date-time
+       * @description When the event happened, ISO 8601 UTC.
+       */
+      timestamp: string
+      /**
+       * @example 2026-10-08
+       * @enum {string}
+       */
+      api_version: '2026-10-08'
+      /** @description Ids, statuses and amounts. Never personal data. Same as the webhook `data`. */
+      data: {
+        [key: string]: unknown
+      }
+    }
+    EventsPage: {
+      data: components['schemas']['Event'][]
+      /** @description Pass as `after` to get the next page. Equal to `after` when `data` is empty. */
+      next_after: number
+      has_more: boolean
+    }
+    /** @description A party session. */
+    PartySession: {
+      /**
+       * @description Send it in the X-TuCOPRamp-Party-Session header. Shown once; TuCOP keeps only its hash.
+       * @example tps_q1Xn0d3S2m6v9bK8aP4tZr7wYc5eH1jL0uG2fN3sD8o
+       */
+      token: string
+      /** @enum {string} */
+      method: 'email_otp' | 'wallet' | 'google'
+      /**
+       * Format: date-time
+       * @description One hour after it was issued.
+       */
+      expires_at: string
+      party_id: components['schemas']['PartyPublicId'] & (string | null)
+    }
+    /** @description A person or a business served through your consumer. */
+    Party: {
+      id: components['schemas']['PartyPublicId']
+      /** @enum {string} */
+      type: 'individual' | 'business'
+      /**
+       * @description ISO 3166-1 alpha-3 code of the country that issued the document.
+       * @example COL
+       */
+      country: string
+      status: {
+        /**
+         * @description Identity verification. `not_started` and `incomplete`: the person still has to act in `links.kyc`. `under_review`: waiting on the provider. `suspended`: paused or offboarded.
+         * @enum {string}
+         */
+        kyc: 'not_started' | 'incomplete' | 'under_review' | 'approved' | 'rejected' | 'suspended'
+        /**
+         * @description Provider terms of service.
+         * @enum {string}
+         */
+        tos: 'pending' | 'accepted'
+        /** @description What the party is cleared for. `cop`: Colombian pesos over Bre-B. */
+        endorsements: {
+          /** @enum {string} */
+          name: 'cop'
+          /** @enum {string} */
+          status: 'pending' | 'approved' | 'revoked'
+        }[]
+      }
+      /** @description Set by TuCOP. A restricted party gets no instruments. */
+      restricted: boolean
+      links: {
+        /**
+         * Format: uri
+         * @description Hosted identity verification. Null once there is nothing left to do. It can be set again after `status.kyc` is `approved` while the `cop` endorsement is `pending`: the COP enablement still needs something from the person, so show it to them again. Use the link from the latest response; TuCOP refreshes it.
+         */
+        kyc: string | null
+        /**
+         * Format: uri
+         * @description Hosted terms of service. Null once there is nothing left to do.
+         */
+        tos: string | null
+      }
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    PartyResponse: {
+      party: components['schemas']['Party']
+    }
+    DestinationSummary: {
+      id: components['schemas']['DestinationPublicId']
+      /** @enum {string} */
+      ownership: 'first_party' | 'third_party'
+      /** @enum {string} */
+      status: 'pending' | 'verified' | 'rejected'
+      /** @example ****4567 */
+      key_masked: string | null
+      /** @example Bancolombia */
+      bank: string | null
+      /** Format: date-time */
+      created_at: string
+    }
+    PartyMe: {
+      party: components['schemas']['Party']
+      /** @description Instruments your consumer may see: destinations it created and the party's own (first-party) destinations. Empty while the party is restricted. */
+      instruments: {
+        destinations: components['schemas']['DestinationSummary'][]
+      }
+    }
+    /** @description A Bre-B key registered for a party. */
+    Destination: {
+      id: components['schemas']['DestinationPublicId']
+      /** @enum {string} */
+      ownership: 'first_party' | 'third_party'
+      /** @enum {string} */
+      rail: 'bre_b'
+      /**
+       * @description `pending` until the Bre-B directory answers (about a minute), then `verified` or `rejected`. Each change is also sent as `destination.verified` or `destination.rejected`.
+       * @enum {string}
+       */
+      status: 'pending' | 'verified' | 'rejected'
+      /** @example ****4567 */
+      key_masked: string | null
+      /**
+       * @description Holder name sent to the payments provider: the payer's input for third_party, the KYC'd name for first_party. `null` for a key lookup (third_party created without `owner_name`): the holder comes from the Bre-B directory in `holder`.
+       * @example Carlos Ruiz
+       */
+      owner_name: string | null
+      /** @description What the Bre-B directory returned. Only on `verified`. Show it to the payer before they confirm a third-party destination. For a key lookup this is how the payer learns who holds the key. */
+      holder: {
+        name: string | null
+        bank: string | null
+        document_last4: string | null
+      } | null
+      /** @enum {string|null} */
+      rejection_reason:
+        | 'directory_no_match'
+        | 'holder_name_mismatch'
+        | 'holder_document_mismatch'
+        | 'verification_timeout'
+        | 'directory_unavailable'
+        | null
+      /** Format: date-time */
+      verified_at: string | null
+      /**
+       * Format: date-time
+       * @description When the payer confirmed the holder. Payments need it on third_party.
+       */
+      confirmed_at: string | null
+      /** @description `false` once the destination was deleted (DELETE /destinations/{id}). A deleted destination is only returned by GET /destinations/{id} and by GET /destinations?include_disabled=true, and cannot be paid or withdrawn to. `status` stays the verification status. */
+      active: boolean
+      /**
+       * Format: date-time
+       * @description When the destination was deleted. Null while active.
+       */
+      disabled_at: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    CreateDestinationRequest: {
+      /**
+       * @description `third_party`: someone the party pays (needs the pay product). `first_party`: the party's own account (needs the withdraw product).
+       * @enum {string}
+       */
+      ownership: 'first_party' | 'third_party'
+      /**
+       * @description The Bre-B key, in the format of its type: mobile number (10 digits starting with 3, no +57), document number (up to 18 letters or digits), email, alphanumeric key (@ and 5 to 20 letters or digits) or merchant code (10 digits starting with 00). Taken in lower case, and a mobile number without +57; anything else gets invalid_bre_b_key. Never stored; only a hash and the masked key are kept.
+       * @example 3001234567
+       */
+      bre_b_key: string
+      /**
+       * @description Holder name, at least two words. Optional for third_party: leave it out to look the key up, and the directory's holder (name, bank, document last 4) is returned in `holder` once verified. When sent, the directory also checks it loosely, as before. Ignored for first_party.
+       * @example Carlos Ruiz
+       */
+      owner_name?: string
+    }
+    DestinationList: {
+      data: components['schemas']['Destination'][]
+      has_more: boolean
+    }
+    /** @description How long the payout usually takes: after the USDC land on-chain, the pesos usually reach the Bre-B key between min_minutes and max_minutes later. Meanwhile the payment reads `awaiting_funds` while the provider detects the deposit, then `processing` (a withdrawal payout is in progress); neither is a failure. The status and the `operation.updated` webhook say when it completed. An expectation, not a guarantee. */
+    SettlementTime: {
+      /** @example 15 */
+      min_minutes: number
+      /** @example 30 */
+      max_minutes: number
+    }
+    CreateQuoteRequest: {
+      /**
+       * @description `pay`: a verified third-party destination. `withdraw`: one of the party's own verified (first-party) destinations.
+       * @enum {string}
+       */
+      product: 'pay' | 'withdraw'
+      destination_id: components['schemas']['DestinationPublicId']
+      amount_cop: components['schemas']['Money'] & unknown
+    }
+    /** @description Price of a payment or a withdrawal. A pay quote is used by one payment before it expires. A withdraw quote is only a price: send at least source_amount to the withdrawal's deposit address and at least destination_amount arrives. */
+    Quote: {
+      id: components['schemas']['QuotePublicId']
+      /** @enum {string} */
+      product: 'pay' | 'withdraw'
+      destination_id: components['schemas']['DestinationPublicId']
+      destination_amount: components['schemas']['Money']
+      source_amount: components['schemas']['Money'] & unknown
+      fees: {
+        tucop: components['schemas']['Money']
+        consumer: components['schemas']['Money'] & unknown
+        fx_buffer: components['schemas']['Money'] & unknown
+      }
+      total_amount: components['schemas']['Money'] & unknown
+      consumer_fee_wallet: string | null
+      rate: {
+        /**
+         * @description COP per USDC, as the source gave it.
+         * @example 4012.55
+         */
+        value: string
+        /** @enum {string} */
+        base: 'USDC'
+        /** @enum {string} */
+        quote: 'COP'
+        /** @example provider */
+        source: string
+        /** Format: date-time */
+        observed_at: string
+      }
+      /**
+       * @description How every division was rounded. `ceil`: the payer never sends too little.
+       * @enum {string}
+       */
+      rounding_mode: 'floor' | 'ceil' | 'down' | 'up' | 'half_up' | 'half_even'
+      settlement_time: components['schemas']['SettlementTime']
+      /** Format: date-time */
+      expires_at: string
+      /** Format: date-time */
+      created_at: string
+    }
+    /** @description One payout from a withdrawal address: USDC in, COP out to the Bre-B key. */
+    WithdrawalPayout: {
+      /** @description The payout id. Also `payout_id` in withdraw.drained. */
+      id: string
+      /**
+       * @description Same meanings as a payment's status. `processing`: the payments provider has the USDC and is sending the pesos; usually 15 to 30 minutes, not a failure. `completed`: the pesos were sent through Bre-B, which is instant, so in practice they arrived. `failed`: the payout could not be made (see `error_code`). `refunded`: the USDC went back to the withdrawal's `return_address`. `canceled`: the payments provider canceled it. All but `processing` are final, with one exception: a `completed` payout that is returned reads `processing` while the return is under way and ends `refunded`.
+       * @enum {string}
+       */
+      status: 'processing' | 'completed' | 'failed' | 'refunded' | 'canceled'
+      amount: components['schemas']['Money'] & (Record<string, never> | null)
+      destination_amount: components['schemas']['Money'] & (Record<string, never> | null)
+      /** @description Why the payout failed (`provider_<reason>`, as on payments). Null unless `failed`. */
+      error_code: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+      /**
+       * Format: date-time
+       * @description When the payout reached `completed`. Null until then.
+       */
+      completed_at: string | null
+    }
+    /** @description A payment to a third-party Bre-B key. */
+    Payment: {
+      id: components['schemas']['OperationPublicId']
+      /** @enum {string} */
+      product: 'pay'
+      /**
+       * @description `awaiting_funds` until the payments provider detects the deposit (about 15 minutes after it lands on-chain), then `processing`, then `completed`. From the deposit landing to `completed` usually takes 15 to 30 minutes (see `settlement_time`); it is not a failure. `completed` means the payments provider sent the pesos through Bre-B; Bre-B is instant, so in practice they arrived (the receiving bank's own confirmation is not visible to TuCOP). `failed` (see `error_code`), `refunded` (the USDC went back to `return_address`) and `canceled` (by you with POST /payments/{id}/cancel, or by TuCOP when no deposit arrived in time; see `error_code`) are final too. `creating` only after a request that failed with 5xx; retry it with the same Idempotency-Key.
+       * @enum {string}
+       */
+      status:
+        | 'creating'
+        | 'awaiting_funds'
+        | 'processing'
+        | 'completed'
+        | 'failed'
+        | 'refunded'
+        | 'canceled'
+      quote_id: components['schemas']['QuotePublicId'] & (string | null)
+      destination_id: components['schemas']['DestinationPublicId'] & (string | null)
+      destination_amount: components['schemas']['Money'] & (Record<string, never> | null)
+      source_amount: components['schemas']['Money'] & (Record<string, never> | null)
+      fees: {
+        tucop: components['schemas']['Money']
+        consumer: components['schemas']['Money']
+      } | null
+      total_amount: components['schemas']['Money'] & (Record<string, never> | null)
+      consumer_fee_wallet: string | null
+      deposit: {
+        /** @example 0x5b1d7c0a4f2e8b9d6c3a1e0f7b2d4c6a8e9f0b1c */
+        address: string
+        /** @example eip155:42220 */
+        chain: string
+        /** @enum {string} */
+        asset: 'USDC'
+        token_contract: string
+        amount: components['schemas']['Money'] & unknown
+      } | null
+      /** @description Where the payments provider returns the USDC if the payment fails. */
+      return_address: string | null
+      /** @description Why the payment ended without paying. `failed`: `provider_<reason>`. `canceled`: `canceled_by_integrator` (POST /payments/{id}/cancel), `expired_unfunded` (no deposit arrived within 30 minutes, so TuCOP canceled it) or `provider_canceled`. Null otherwise. */
+      error_code: string | null
+      settlement_time: components['schemas']['SettlementTime']
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    CreatePaymentRequest: {
+      quote_id: components['schemas']['QuotePublicId']
+      /** @description Wallet the USDC is sent from and returned to on failure. Defaults to the session's wallet. Required when there is no wallet session, for example when you call with the API key alone. The integrator sends it and answers for it. */
+      return_address?: string
+    }
+    LimitWindow: {
+      limit: components['schemas']['Money']
+      used: components['schemas']['Money']
+      remaining: components['schemas']['Money']
+    }
+    /** @description Effective pay limits for this integrator. */
+    PayLimits: {
+      pay: {
+        minimum_per_operation: components['schemas']['Money'] & unknown
+        maximum_per_operation?: components['schemas']['Money'] & unknown
+        integrator_day?: components['schemas']['LimitWindow'] & unknown
+        integrator_month: components['schemas']['LimitWindow'] & unknown
+      }
+    }
+    /** @description The current USDC/COP rate and, optionally, an estimate of the USDC needed to pay an exact COP amount. */
+    Rates: {
+      /** @description The payments provider's current sell rate, the one a pay quote would use now. */
+      rate: {
+        /**
+         * @description COP per USDC, as the source gave it.
+         * @example 4012.55
+         */
+        value: string
+        /** @enum {string} */
+        base: 'USDC'
+        /** @enum {string} */
+        quote: 'COP'
+        /** @example provider */
+        source: string
+        /** Format: date-time */
+        observed_at: string
+      }
+      /** @description Pricing of the pay product for this integrator. null when pay is not enabled. */
+      pay: {
+        fees: {
+          /**
+           * @description TuCOP's fee for this integrator, in basis points of source_amount.
+           * @example 150
+           */
+          tucop_bps: number
+          /**
+           * @description Margin for rate movement, in basis points of the converted amount.
+           * @example 100
+           */
+          fx_buffer_bps: number
+          /**
+           * @description Your own fee (your consumer's fee_bps), in basis points of source_amount.
+           * @example 50
+           */
+          consumer_bps: number
+        }
+        minimum_per_operation: components['schemas']['Money'] & unknown
+        /** @enum {string} */
+        rounding_mode: 'floor' | 'ceil' | 'down' | 'up' | 'half_up' | 'half_even'
+        /**
+         * @description How long a pay quote from POST /quotes is valid.
+         * @example 120
+         */
+        quote_ttl_seconds: number
+      } | null
+      /** @description Present when amount_cop was given; otherwise null. */
+      estimate: {
+        /** @enum {string} */
+        product: 'pay'
+        /**
+         * @description Always false: an estimate reserves nothing. Only a quote fixes the amount.
+         * @enum {boolean}
+         */
+        binding: false
+        destination_amount: components['schemas']['Money'] & unknown
+        source_amount: components['schemas']['Money'] & unknown
+        fees: {
+          tucop: components['schemas']['Money']
+          consumer: components['schemas']['Money']
+          fx_buffer: components['schemas']['Money']
+        }
+        total_amount: components['schemas']['Money'] & unknown
+        /** @enum {string} */
+        rounding_mode: 'floor' | 'ceil' | 'down' | 'up' | 'half_up' | 'half_even'
+        /** @description Whether a pay quote for this amount would pass this integrator's pay limits now. */
+        within_limits: boolean
+        /**
+         * @description The error POST /quotes would answer with for this amount, or null.
+         * @enum {string|null}
+         */
+        limit_error: 'amount_below_minimum' | 'pay_limit_exceeded' | null
+        /**
+         * @description Which limit, when limit_error is pay_limit_exceeded.
+         * @enum {string|null}
+         */
+        limit_check: 'per_operation' | 'integrator_day' | 'integrator_month' | null
+        settlement_time: components['schemas']['SettlementTime']
+        note: string
+      } | null
+    }
+    /** @description The party's liquidation address for one of its own Bre-B keys. USDC on Celo sent to `deposit.address` is paid out in COP to that key, and only to that key. One address per destination; reusable. */
+    Withdrawal: {
+      id: components['schemas']['WithdrawalPublicId']
+      /** @enum {string} */
+      product: 'withdraw'
+      /**
+       * @description `disabled` after DELETE /withdrawals/{id}. The payments provider cannot turn an address off: USDC sent to a disabled address is still paid out in COP to the same Bre-B key. It is not held or returned. POST /withdrawals for the destination re-enables it.
+       * @enum {string}
+       */
+      status: 'active' | 'disabled'
+      destination_id: components['schemas']['DestinationPublicId']
+      deposit: {
+        /** @example 0x5b1d7c0a4f2e8b9d6c3a1e0f7b2d4c6a8e9f0b1c */
+        address: string
+        /** @example eip155:42220 */
+        chain: string
+        /** @enum {string} */
+        asset: 'USDC'
+        token_contract: string
+        minimum_destination_amount: components['schemas']['Money'] & unknown
+      }
+      /** @description TuCOP's fee on this address, in basis points. TuCOP sets it for each integrator. */
+      fee_bps: number | null
+      /** @description Where the payments provider returns the USDC if a payout fails. Each address has its own; it can differ between the keys of one party. Null when none was given: a failed payout then goes to TuCOP, which returns it to the person. */
+      return_address: string | null
+      settlement_time: components['schemas']['SettlementTime']
+      /**
+       * Format: date-time
+       * @description When the address was disabled. Null while active.
+       */
+      disabled_at: string | null
+      /** @description Payouts from this address, most recent first. On GET /{id} only; the list leaves them out (use GET /{id} or the withdraw.drained webhook). */
+      payouts?: components['schemas']['WithdrawalPayout'][]
+      /** Format: date-time */
+      created_at: string
+    }
+    CreateWithdrawalRequest: {
+      destination_id: components['schemas']['DestinationPublicId'] & unknown
+      /** @description Optional. Where the payments provider returns the USDC if a payout fails. Defaults to the session's wallet. Without either, the address has no return wallet: a failed payout goes to TuCOP, which returns it to the person. When sent, the integrator answers for it. A different value sent for an existing address (active, or disabled and being re-enabled) replaces the stored one, here and at the payments provider; it can be added later this way. */
+      return_address?: string
+    }
+    /** @description The party's virtual account: COP paid over Bre-B to `deposit_instructions.bre_b_key` arrives as USDC on Celo at `destination.address`. Reusable. */
+    Deposit: {
+      id: components['schemas']['DepositPublicId']
+      /** @enum {string} */
+      product: 'deposit'
+      /** @enum {string} */
+      status: 'active' | 'deactivated'
+      deposit_instructions: {
+        /** @enum {string} */
+        rail: 'bre_b'
+        /** @enum {string} */
+        currency: 'COP'
+        /** @description The Bre-B key the person pays COP to. Issued by the payments provider for this account. */
+        bre_b_key: string
+        account_holder_name: string | null
+        bank_name: string | null
+      }
+      destination: {
+        address: string
+        /** @example eip155:42220 */
+        chain: string
+        /** @enum {string} */
+        asset: 'USDC'
+        token_contract: string
+      }
+      /** @description TuCOP's fee in basis points, fixed on the account. For an account the payments provider already had for the party and wallet (taken over by POST /deposits), it is that account's own fee, which can differ from your integrator's fee. */
+      fee_bps: number
+      /** @description Activity on the account, as the payments provider reports it. On GET /{id} only. */
+      events?: {
+        id: string
+        /** @description The payments provider's activity type. */
+        type: string
+        amount: components['schemas']['Money'] & (Record<string, never> | null)
+        created_at: string | null
+      }[]
+      /** Format: date-time */
+      created_at: string
+    }
+    CreateDepositRequest: {
+      /** @description Where the USDC goes. Defaults to the session's wallet. Required when there is no wallet session, for example when you call with the API key alone. The integrator sends it and answers for it. */
+      wallet_address?: string
+    }
+    ChangeDepositRequest: {
+      /** @description The wallet the USDC goes to from now on. Checked like POST /deposits: TuCOP checks only that it is an address; your app answers for it. */
+      wallet_address: string
     }
     P2PBank: {
       code: string
@@ -1696,6 +3806,15 @@ export interface components {
       /** Format: date-time */
       cancelled_at: string
     }
+    P2PSandboxSimulateResponse: {
+      /** Format: uuid */
+      id: string
+      /** @enum {string} */
+      order_type: 'offramp' | 'onramp'
+      status: string
+      /** @enum {string} */
+      outcome: 'complete' | 'cancel'
+    }
     P2PProofUploadResponse: {
       /** Format: uuid */
       proof_id: string
@@ -1817,6 +3936,13 @@ export interface components {
       outgoing_tx_sent_at: string | null
       /** Format: uuid */
       outgoing_sent_by_operator_id: string | null
+      refund_tx_hash: string | null
+      /** Format: uuid */
+      refund_proof_id: string | null
+      /** Format: date-time */
+      refunded_at: string | null
+      /** Format: uuid */
+      refunded_by_operator_id: string | null
       /** Format: date-time */
       rejected_at: string | null
       rejected_reason: string | null
@@ -1862,6 +3988,8 @@ export interface components {
       operator_id: string
       /** Format: date-time */
       expires_at: string
+      /** @description Order status after the claim. DEPOSIT_CONFIRMED becomes PROCESSING and AWAITING_REVIEW becomes VERIFYING; any other status is returned unchanged. */
+      status: string
     }
     AdminOrderReleaseResponse: {
       released: boolean
@@ -1874,6 +4002,14 @@ export interface components {
       payout_completed_at: string | null
       /** Format: uuid */
       proof_id: string
+    }
+    AdminAttachProofResponse: {
+      /** Format: uuid */
+      order_id: string
+      /** Format: uuid */
+      proof_id: string
+      /** @enum {string} */
+      kind: 'user_incoming_onramp' | 'operator_outgoing_offramp'
     }
     AdminCompleteOnrampRequest: {
       tx_hash: string
@@ -1889,15 +4025,27 @@ export interface components {
     AdminRefundOfframpRequest: {
       tx_hash: string
     }
-    AdminRefundOfframpResponse: {
+    AdminRefundOnrampRequest: {
+      /**
+       * Format: binary
+       * @description Bank receipt of the COP sent back (image/png, image/jpeg, application/pdf).
+       */
+      file?: string
+    }
+    AdminRefundResponse: {
       /** Format: uuid */
       order_id: string
       status: string
-      outgoing_tx_hash: string
+      refund_tx_hash: string | null
+      /** Format: uuid */
+      refund_proof_id: string | null
+      /** Format: date-time */
+      refunded_at: string | null
     }
     AdminRejectRequest: {
       reason: string
-      retryable?: boolean
+      /** @enum {string} */
+      outcome: 'retry' | 'no_funds' | 'refund'
     }
     AdminCancelRequest: {
       reason: string
@@ -2026,6 +4174,8 @@ export interface components {
       max_monthly_cop_override?: number | null
       bre_b_key_override?: string | null
       bre_b_display_override?: string | null
+      /** @description TuCOP's cap on first-party Bre-B keys per person through this consumer (1 to 1000). Null: no cap. */
+      max_first_party_destinations_cap?: number | null
     }
     AdminConsumer: {
       /** Format: uuid */
@@ -2044,6 +4194,33 @@ export interface components {
       max_monthly_cop_override: number | null
       bre_b_key_override: string | null
       bre_b_display_override: string | null
+      /** @description Most first-party Bre-B keys one person may have through this consumer (1 to 1000). Null: no limit. Read-only here: the integrator sets it in its console. */
+      max_first_party_destinations: number | null
+      /** @description TuCOP's cap on the same count (1 to 1000). Null: no cap. The smaller of the two applies. */
+      max_first_party_destinations_cap: number | null
+      products: ('withdraw' | 'pay' | 'collect' | 'deposit' | 'p2p_offramp' | 'p2p_onramp')[]
+      /** @description Products the integrator requested from its console and TuCOP has not decided yet. */
+      requested_products: (
+        | 'withdraw'
+        | 'pay'
+        | 'collect'
+        | 'deposit'
+        | 'p2p_offramp'
+        | 'p2p_onramp'
+      )[]
+      fee_bps: number
+      return_urls: string[]
+      /** Format: email */
+      contact_email: string | null
+      /**
+       * Format: uri
+       * @description URL of the consumer's oldest webhook endpoint. See webhook-endpoints for all.
+       */
+      webhook_url: string | null
+      /** @description Whether the consumer has a webhook endpoint (and so a signing secret). */
+      webhook_secret_configured: boolean
+      /** @description Emails that sign in to the integrator's console, oldest first. */
+      console_emails: string[]
     }
     AdminConsumersListResponse: {
       consumers: components['schemas']['AdminConsumer'][]
@@ -2055,6 +4232,11 @@ export interface components {
       name: string
       scopes: ('wallet.read' | 'wallet.write' | 'webhook.receive')[]
       overrides?: components['schemas']['AdminConsumerOverridesInput']
+      /**
+       * Format: email
+       * @description Who to write to about this integrator. Stored in lowercase.
+       */
+      contact_email?: string | null
     }
     AdminCreateConsumerResponse: {
       consumer: components['schemas']['AdminConsumer']
@@ -2065,6 +4247,12 @@ export interface components {
       scopes?: ('wallet.read' | 'wallet.write' | 'webhook.receive')[]
       is_active?: boolean
       overrides?: components['schemas']['AdminConsumerOverridesInput']
+      products?: ('withdraw' | 'pay' | 'collect' | 'deposit' | 'p2p_offramp' | 'p2p_onramp')[]
+      fee_bps?: number
+      /** @description https URLs only */
+      return_urls?: string[]
+      /** Format: email */
+      contact_email?: string | null
     }
     AdminRotateConsumerResponse: {
       consumer: components['schemas']['AdminConsumer']
@@ -2075,6 +4263,223 @@ export interface components {
        * @description ISO-8601 timestamp until which the previous key still authenticates. Backend integrators use this to schedule the env-var swap on their side without dropping requests. Null on the very first rotate of a fresh consumer that never had a previous key.
        */
       previous_key_valid_until: string | null
+    }
+    AdminConsumerApiKey: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      consumer_id: string
+      name: string
+      /** @description 16 chars base64url. The non-secret part of the key. */
+      public_id: string
+      /**
+       * @description sk: secret key, the only kind issued. pk_legacy: issued before migration 0018 (tcr_<env>_pk_<id>.<secret>, no checksum), deprecated, works until revoked. rk and pk are reserved.
+       * @enum {string}
+       */
+      kind: 'sk' | 'rk' | 'pk' | 'pk_legacy'
+      /** @description Null: the key has the consumer's scopes. Otherwise the key gets the intersection of these and the consumer's current scopes. */
+      scopes: string[] | null
+      /** Format: date-time */
+      expires_at: string | null
+      /** @description IP ranges the key is accepted from, canonical CIDR. Empty: any address. */
+      allowed_cidrs: string[]
+      /** @description Checked only for pk_legacy keys that have one. Always empty on sk keys. */
+      allowed_origins: string[]
+      rate_limit_per_minute: number | null
+      /** @description Email of the operator who issued the key. */
+      created_by: string
+      /** @enum {string} */
+      created_by_actor_type: 'operator' | 'consumer' | 'system'
+      /** @description staff.id for an operator. Null only for keys issued before 0018 by an operator who no longer exists. */
+      created_by_actor_id: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      last_used_at: string | null
+      /** Format: date-time */
+      revoked_at: string | null
+      revoked_by: string | null
+      /** @enum {string|null} */
+      revoked_by_actor_type: 'operator' | 'consumer' | 'system' | null
+      revoked_by_actor_id: string | null
+    }
+    AdminConsumerApiKeysListResponse: {
+      keys: components['schemas']['AdminConsumerApiKey'][]
+    }
+    AdminCreateConsumerApiKeyRequest: {
+      name: string
+      /** @description Must be empty or absent: secret keys cannot be limited to browser origins (api_key_origins_not_supported). */
+      allowed_origins?: string[]
+      /** @description IPv4 or IPv6 addresses or CIDR ranges the key is accepted from, for example 203.0.113.0/24. Empty or absent: any address. Recommended for live keys that can move money. */
+      allowed_cidrs?: string[]
+      /** @description A non-empty subset of the consumer's scopes. Null or absent: the key has the consumer's scopes. */
+      scopes?: string[] | null
+      /**
+       * Format: date-time
+       * @description A future time after which the key gets 401. Null or absent: no expiry.
+       */
+      expires_at?: string | null
+      rate_limit_per_minute?: number | null
+    }
+    AdminCreateConsumerApiKeyResponse: {
+      key: components['schemas']['AdminConsumerApiKey']
+      /** @description tcr_<env>_sk_<public_id>.<secret><checksum>. Shown exactly once. Never persisted. */
+      api_key_plaintext: string
+    }
+    AdminConsumerApiKeyResponse: {
+      key: components['schemas']['AdminConsumerApiKey']
+    }
+    AdminConsumerWebhookConfig: {
+      /** Format: uri */
+      webhook_url: string | null
+      secret_configured: boolean
+    }
+    AdminPutConsumerWebhookRequest: {
+      /** Format: uri */
+      url: string
+    }
+    AdminPutConsumerWebhookResponse: {
+      webhook: components['schemas']['AdminConsumerWebhookConfig']
+      /** @description whsec_ secret, only on the call that created the endpoint. Null otherwise. */
+      webhook_secret_plaintext: string | null
+    }
+    AdminRotateConsumerWebhookSecretResponse: {
+      /** @description New whsec_ secret. Shown exactly once. */
+      webhook_secret_plaintext: string
+      /**
+       * Format: date-time
+       * @description Until then requests also carry a signature made with the replaced secret.
+       */
+      previous_secret_expires_at: string | null
+    }
+    AdminWebhookEndpoint: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      consumer_id: string
+      /** Format: uri */
+      url: string
+      description: string | null
+      /** @description Event types sent to this endpoint. Empty means every type. */
+      event_types: string[]
+      api_version: string
+      enabled: boolean
+      /** Format: date-time */
+      disabled_at: string | null
+      /** @description disabled_by_operator, disabled_by_integrator (paused from the console), endpoint_gone (HTTP 410) or failing_for_3_days. */
+      disabled_reason: string | null
+      consecutive_failures: number
+      /** Format: date-time */
+      failing_since: string | null
+      /**
+       * Format: date-time
+       * @description Circuit breaker: no attempt before this time.
+       */
+      paused_until: string | null
+      /** Format: date-time */
+      previous_secret_expires_at: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    AdminWebhookEndpointResponse: {
+      endpoint: components['schemas']['AdminWebhookEndpoint']
+    }
+    AdminWebhookEndpointsResponse: {
+      endpoints: components['schemas']['AdminWebhookEndpoint'][]
+    }
+    AdminCreateWebhookEndpointRequest: {
+      /** Format: uri */
+      url: string
+      description?: string | null
+      event_types?: string[]
+      api_version?: string
+    }
+    AdminUpdateWebhookEndpointRequest: {
+      /** Format: uri */
+      url?: string
+      description?: string | null
+      event_types?: string[]
+      api_version?: string
+      /** @description false disables and closes pending deliveries; true clears the failure state. */
+      enabled?: boolean
+    }
+    AdminCreateWebhookEndpointResponse: {
+      endpoint: components['schemas']['AdminWebhookEndpoint']
+      /** @description whsec_ secret. Shown exactly once. */
+      webhook_secret_plaintext: string
+    }
+    AdminRotateWebhookEndpointSecretRequest: {
+      /** @description How long the replaced secret keeps signing as a second signature. Default 24. */
+      overlap_hours?: number
+    }
+    AdminRotateWebhookEndpointSecretResponse: {
+      endpoint: components['schemas']['AdminWebhookEndpoint']
+      /** @description New whsec_ secret. Shown exactly once. */
+      webhook_secret_plaintext: string
+      /** Format: date-time */
+      previous_secret_expires_at: string | null
+    }
+    AdminConsumerWebhookDeliveryOutcome: {
+      /** Format: uuid */
+      delivery_id: string
+      /** Format: uuid */
+      event_id: string
+      /** Format: uuid */
+      consumer_id: string
+      /** Format: uuid */
+      endpoint_id: string | null
+      /** @enum {string} */
+      result: 'delivered' | 'failed' | 'closed' | 'released' | 'lost'
+      delivered: boolean
+      attempts: number
+      status: number | null
+      error: string | null
+      /** Format: date-time */
+      next_try_at: string | null
+    }
+    AdminTestConsumerWebhookResponse: {
+      /** Format: uuid */
+      event_id: string
+      delivery: components['schemas']['AdminConsumerWebhookDeliveryOutcome'] &
+        (Record<string, never> | null)
+    }
+    AdminWebhookAttempt: {
+      attempt_no: number
+      /** Format: date-time */
+      started_at: string
+      duration_ms: number
+      status: number | null
+      error: string | null
+      response_excerpt: string | null
+    }
+    AdminConsumerWebhookDelivery: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      endpoint_id: string | null
+      /** Format: uuid */
+      event_id: string
+      event_type: string
+      /** @description Attempts since the delivery was created or last replayed. */
+      attempts: number
+      last_status: number | null
+      last_error: string | null
+      /** Format: date-time */
+      delivered_at: string | null
+      /** Format: date-time */
+      next_try_at: string | null
+      in_flight: boolean
+      /** Format: date-time */
+      created_at: string
+      attempt_history: components['schemas']['AdminWebhookAttempt'][]
+    }
+    AdminConsumerWebhookDeliveriesResponse: {
+      deliveries: components['schemas']['AdminConsumerWebhookDelivery'][]
+    }
+    AdminConsumerWebhookDeliveryResponse: {
+      delivery: components['schemas']['AdminConsumerWebhookDelivery']
     }
     AdminConsumerUsageWindow: {
       window_hours: number
@@ -2112,13 +4517,57 @@ export interface components {
       next_cursor: string | null
     }
     AdminStatsResponse: {
-      pending_count: number
-      in_progress_count: number
-      completed_today: number
-      rejected_today: number
-      refund_owed_count: number
-      cop_volume_today: number
-      cop_volume_this_month: number
+      days: 7 | 30 | 90 | 'all'
+      /** @enum {string} */
+      bucket: 'day' | 'month'
+      queue: {
+        /** @description DEPOSIT_CONFIRMED plus AWAITING_REVIEW. */
+        pending_count: number
+        awaiting_review_count: number
+        deposit_confirmed_count: number
+        /** @description Open (unresolved) unmatched deposits. Null below operator, the role the unmatched-deposits list requires. */
+        unmatched_deposits_count: number | null
+        in_progress_count: number
+        refund_owed_count: number
+        oldest_pending_hours: number
+      }
+      period: {
+        completed: number
+        volume_cop: number
+        rejected: number
+        created: number
+        completed_offramp: number
+        completed_onramp: number
+        /**
+         * @description COPm of completed offramp orders, as a decimal string.
+         * @example 1250.5
+         */
+        volume_copm_sell: string
+        /**
+         * @description COPm of completed onramp orders, as a decimal string.
+         * @example 300
+         */
+        volume_copm_buy: string
+        median_hours_to_complete: number
+        fees_total_cop: number
+        fees_absorbed_cop: number
+        fees_charged_cop: number
+        fee_percent_avg: number
+      }
+      previous_period: {
+        completed: number
+        volume_cop: number
+      } | null
+      daily: {
+        date: string
+        completed: number
+        volume_cop: number
+      }[]
+      by_status: {
+        status: string
+        count: number
+      }[]
+      orders_total: number
     }
     AdminUnmatchedDeposit: {
       tx_hash: string
@@ -2147,11 +4596,419 @@ export interface components {
       /** Format: date-time */
       resolved_at: string | null
     }
+    AdminBridgeCustomerStatus: {
+      /** Format: uuid */
+      consumer_id: string
+      bridge_customer_id: string | null
+      /** @description Read live from the payments provider, never stored. Null when not set or not readable. */
+      bridge: {
+        /** @description individual or business, as the payments provider reports it. */
+        type: string | null
+        /** @description Status string of the provider customer. */
+        status: string
+        /** @enum {string} */
+        kyc: 'not_started' | 'incomplete' | 'under_review' | 'approved' | 'rejected' | 'suspended'
+        /** @enum {string|null} */
+        tos: 'pending' | 'accepted' | null
+        /** @enum {string} */
+        cop_endorsement: 'pending' | 'approved' | 'revoked'
+      } | null
+      /** @description True when a customer is set but the payments provider could not be read. */
+      bridge_unavailable: boolean
+      /** @description The party holding the customer. Null when none does. */
+      party: {
+        id: components['schemas']['PartyPublicId']
+        /** @enum {string} */
+        type: 'individual' | 'business'
+        restricted: boolean
+        /** @description Statuses stored on the party, which the pay routes check. */
+        status: {
+          /** @enum {string} */
+          kyc: 'not_started' | 'incomplete' | 'under_review' | 'approved' | 'rejected' | 'suspended'
+          /** @enum {string|null} */
+          tos: 'pending' | 'accepted' | null
+          /** @enum {string} */
+          cop_endorsement: 'pending' | 'approved' | 'revoked'
+        }
+        /** Format: date-time */
+        bridge_synced_at: string | null
+        /** @description Active (not revoked) link to this consumer. */
+        linked: boolean
+        link: {
+          consent_version: string
+          /** Format: date-time */
+          consented_at: string
+          /** Format: date-time */
+          revoked_at: string | null
+          /** @description Created by an operator (consent version operator-link-v1). */
+          by_operator: boolean
+        } | null
+      } | null
+      /** @description True when pay accepts this consumer's API key alone. */
+      ready_for_pay: boolean
+      missing: (
+        | 'consumer_inactive'
+        | 'pay_product_not_enabled'
+        | 'no_bridge_customer'
+        | 'bridge_customer_not_found'
+        | 'no_party_for_customer'
+        | 'party_not_linked'
+        | 'party_restricted'
+        | 'party_has_no_bridge_customer'
+        | 'kyc_not_approved'
+        | 'tos_not_accepted'
+        | 'cop_endorsement_not_approved'
+      )[]
+    }
+    AdminPutBridgeCustomerRequest: {
+      bridge_customer_id: string
+    }
+    AdminConsoleOperator: {
+      /** Format: uuid */
+      id: string
+      /** Format: email */
+      email: string
+      /** @description 'self' for self-registration, or the email of the TuCOP admin that added it. */
+      created_by: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      last_login_at: string | null
+      has_identity_document: boolean
+      google_linked: boolean
+    }
+    AdminIntegratorSignup: {
+      /** Format: uuid */
+      id: string
+      name: string
+      /** Format: email */
+      email: string
+      country: string
+      /** @enum {string} */
+      party_type: 'individual' | 'business'
+      document_type: string
+      google_linked: boolean
+      /** Format: date-time */
+      created_at: string
+    }
+    AdminLedgerAccount: {
+      /** Format: uuid */
+      id: string
+      /** @example tucop:fee_receivable:bridge:USDC */
+      code: string
+      name: string
+      /** @enum {string} */
+      kind: 'asset' | 'liability' | 'revenue' | 'expense' | 'equity'
+      /** @enum {string} */
+      asset: 'COP' | 'USDC' | 'COPm'
+      /** @enum {string} */
+      owner_type: 'tucop' | 'consumer' | 'provider'
+      /** Format: uuid */
+      owner_id: string | null
+      /**
+       * @description Sum of postings, signed.
+       * @example 1.500000
+       */
+      balance: string
+      postings: number
+    }
+    AdminLedgerPosting: {
+      account_code: string
+      /** @enum {string} */
+      asset: 'COP' | 'USDC' | 'COPm'
+      /**
+       * @description Positive debit, negative credit.
+       * @example -1.500000
+       */
+      amount: string
+    }
+    AdminLedgerEntry: {
+      /** Format: uuid */
+      id: string
+      /** @example pay.completed */
+      kind: string
+      description: string
+      /** Format: uuid */
+      operation_id: string | null
+      /** Format: uuid */
+      consumer_id: string | null
+      /** Format: date-time */
+      occurred_at: string
+      /** Format: date-time */
+      created_at: string
+      postings: components['schemas']['AdminLedgerPosting'][]
+    }
+    AdminClient: {
+      /** Format: uuid */
+      id: string
+      /** @enum {string} */
+      kind: 'party' | 'prereg'
+      name: string
+      /** Format: email */
+      email: string | null
+      kyc_status: string | null
+      /** @description The provider's COP endorsement status: whether the COP KYC passed. */
+      cop_status: string | null
+      /** @description The provider customer status: whether the account is enabled. */
+      account_status: string | null
+      /** @description Masked Bre-B keys the person pays out to. */
+      bre_b_keys: string[]
+      integrator_names: string[]
+      /** @enum {string|null} */
+      origin: 'prereg' | null
+      /** Format: uuid */
+      prereg_id: string | null
+      /** Format: date-time */
+      created_at: string
+    }
+    AdminPreregPerson: {
+      /** Format: uuid */
+      id: string
+      /** Format: email */
+      email: string
+      /** @enum {string} */
+      state:
+        | 'kyc_pending'
+        | 'kyc_approved'
+        | 'destination_pending'
+        | 'destination_verified'
+        | 'rejected'
+        | 'restricted'
+      full_name: string
+      document_type: string
+      bridge_customer_id: string | null
+      kyc_status: string | null
+      tos_status: string | null
+      cop_endorsement_status: string | null
+      bre_b_key_masked: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    AdminMetricsResponse: {
+      /** @enum {string} */
+      kind: 'api' | 'provider'
+      /** @enum {string} */
+      window: '1h' | '24h' | '7d' | '30d'
+      /** Format: date-time */
+      from: string
+      /** Format: date-time */
+      to: string
+      /** @description 300 for 1h, 3600 otherwise. */
+      bucket_seconds: number
+      /**
+       * @description raw rows for 1h and 24h, the hourly rollup for 7d and 30d.
+       * @enum {string}
+       */
+      source: 'raw' | 'hourly'
+      /**
+       * @description exact over raw rows. hourly_weighted_avg: count-weighted average of the exact hourly percentiles (an approximation); avg and max stay exact.
+       * @enum {string}
+       */
+      percentiles: 'exact' | 'hourly_weighted_avg'
+      totals: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+      }
+      series: {
+        /** Format: date-time */
+        at: string
+        count: number
+        errors: number
+        avg_ms: number | null
+        p95_ms: number | null
+      }[]
+      by_consumer: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        /** Format: uuid */
+        consumer_id: string | null
+        consumer_name: string | null
+        /**
+         * @description kind api: who made the requests. integrator: an integrator key (a revoked key whose secret matched counts too); admin, console: TuCOP's admin and the integrator console; provider_webhook: payments provider webhooks; rejected: refused before a route matched (bad key); other: end users and public endpoints. null for kind provider.
+         * @enum {string|null}
+         */
+        client:
+          | 'integrator'
+          | 'admin'
+          | 'console'
+          | 'provider_webhook'
+          | 'rejected'
+          | 'other'
+          | null
+      }[]
+      /** @description kind api: route templates (/payments/:id). Empty for kind provider. */
+      by_route: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        route: string
+        method: string
+      }[]
+      /** @description kind provider: templated provider endpoints. Empty for kind api. */
+      by_endpoint: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        endpoint: string
+        method: string
+      }[]
+      /** @description kind provider: per integrator key alias, null for the default key. */
+      by_alias: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        alias: string | null
+      }[]
+      /** @description kind provider: 'request', 'webhook' or 'job'. */
+      by_origin: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        origin: string | null
+      }[]
+      by_status: {
+        status: number | null
+        count: number
+      }[]
+      /** @description Top 10 routes (kind api) or endpoints (kind provider) by p95. */
+      slowest: {
+        count: number
+        count_4xx: number
+        count_5xx: number
+        count_429: number
+        /** @description Provider calls with no response (network error, timeout). Always 0 for kind api. */
+        count_network_error: number
+        /** @description (4xx + 5xx + network errors) / count, 0..1. */
+        error_rate: number
+        avg_ms: number | null
+        p50_ms: number | null
+        p95_ms: number | null
+        p99_ms: number | null
+        max_ms: number | null
+        route: string
+        method: string
+      }[]
+      /** @description kind api: integrators worth a look in the window. rejected_key: 5 or more 401s (a revoked or wrong key); not_found: 10% or more 404s over 50+ requests; errors: 25% or more 4xx/5xx over 50+ requests. Empty for kind provider. */
+      signals: {
+        /** @enum {string} */
+        kind: 'rejected_key' | 'not_found' | 'errors'
+        /** Format: uuid */
+        consumer_id: string
+        consumer_name: string | null
+        count: number
+        total: number
+        rate: number
+      }[]
+      /** @description kind provider: each payments provider key the ramp runs with, as the provider names it (whoami, cached an hour). alias null is the default key. Empty for kind api. */
+      provider_keys: {
+        alias: string | null
+        name: string | null
+        last4: string | null
+        can_cancel_transfers: boolean | null
+        error: string | null
+      }[]
+    }
+    GithubSecretScanningToken: {
+      token: string
+      type: string
+      url?: string
+      source?: string
+    }
+    GithubSecretScanningResult: {
+      token_raw: string
+      token_type: string
+      /** @enum {string} */
+      label: 'true_positive' | 'false_positive'
+    }
+    /**
+     * @description Deprecated: do not send it. The API has a single version and paths carry none. Still accepted for now; an unknown value gets 400 invalid_api_version.
+     * @example 2026-10-08
+     * @enum {string}
+     */
+    TuCOPRampVersion: '2026-10-08'
+    /**
+     * @description Unique key for this operation, for example a UUID. Retrying with the same key and body returns the first response; a different body gets 422 idempotency_key_reuse; a retry while the first is running gets 409 idempotency_in_progress. Kept 24 hours.
+     * @example 7b8f2f4e-0a7c-4d55-9a8e-3c1f9e0d2b61
+     */
+    IdempotencyKey: string
   }
   responses: never
-  parameters: never
+  parameters: {
+    /** @deprecated */
+    TuCOPRampVersion: components['schemas']['TuCOPRampVersion']
+    IdempotencyKey: components['schemas']['IdempotencyKey']
+  }
   requestBodies: never
-  headers: never
+  headers: {
+    /** @description Deprecated. The single API version; nothing needs to read it. */
+    TuCOPRampVersion: string
+    /** @description `true` when the response is a replay of an earlier request with the same key. */
+    IdempotentReplayed: 'true'
+  }
   pathItems: never
 }
 export type $defs = Record<string, never>
@@ -2324,88 +5181,6 @@ export interface operations {
       }
       /** @description Rate limited */
       429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  initiateKyc: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['InitiateKycRequest']
-      }
-    }
-    responses: {
-      /** @description KYC link issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['InitiateKycResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Bridge upstream error */
-      502: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  pollKycStatus: {
-    parameters: {
-      query: {
-        pending_link_token: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description KYC status */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['KycStatusResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Token not found or expired */
-      404: {
         headers: {
           [name: string]: unknown
         }
@@ -2629,7 +5404,7 @@ export interface operations {
           'application/json': components['schemas']['ExternalAccount']
         }
       }
-      /** @description Invalid request body or Bridge rejected the account */
+      /** @description Invalid request body or the payments provider rejected the account */
       400: {
         headers: {
           [name: string]: unknown
@@ -2665,7 +5440,7 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
-      /** @description Bridge upstream error */
+      /** @description Payments provider upstream error */
       502: {
         headers: {
           [name: string]: unknown
@@ -2752,7 +5527,7 @@ export interface operations {
           | 'AWAITING_SIGNATURE'
           | 'SUBMITTED'
           | 'SWAP_CONFIRMED'
-          | 'BRIDGE_PROCESSING'
+          | 'PROVIDER_PROCESSING'
           | 'PAYOUT_COMPLETED'
           | 'FAILED'
         limit?: number
@@ -3035,6 +5810,442 @@ export interface operations {
       }
     }
   }
+  preregEmailOtpRequest: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreregEmailOtpRequest']
+      }
+    }
+    responses: {
+      /** @description Code sent */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['EmailOtpRequestResponse']
+        }
+      }
+      /** @description Invalid request body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description The email could not be sent */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregEmailOtpVerify: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreregEmailOtpVerifyRequest']
+      }
+    }
+    responses: {
+      /** @description Session issued, with the current status for that email */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreregSession']
+        }
+      }
+      /** @description Invalid credentials */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregStatus: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreregStatus']
+        }
+      }
+      /** @description Missing or invalid session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregStart: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreregStartRequest']
+      }
+    }
+    responses: {
+      /** @description Status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreregStatus']
+        }
+      }
+      /** @description invalid_body, invalid_name, invalid_document or consent_required */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description document_already_registered: the document belongs to another email */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregDestination: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreregDestinationRequest']
+      }
+    }
+    responses: {
+      /** @description Status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreregStatus']
+        }
+      }
+      /** @description invalid_key */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description not_registered */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description kyc_not_approved, kyc_name_missing or already_verified */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_rejected: not an account in the person's own name */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_validation_timeout: the directory lookup did not finish in time */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregDestinationConfirm: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreregConfirmRequest']
+      }
+    }
+    responses: {
+      /** @description Status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreregStatus']
+        }
+      }
+      /** @description Invalid request body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description not_registered */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description nothing_to_confirm */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  preregBridgeWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          event_id: string
+        }
+      }
+    }
+    responses: {
+      /** @description Processed */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookAck']
+        }
+      }
+      /** @description Invalid signature or payload */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  providerWebhookRamp: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          event_id: string
+        }
+      }
+    }
+    responses: {
+      /** @description Processed, skipped or duplicate */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookAck']
+        }
+      }
+      /** @description Invalid signature or payload */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  providerWebhookAlias: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        alias: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          event_id: string
+        }
+      }
+    }
+    responses: {
+      /** @description Processed, skipped or duplicate */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookAck']
+        }
+      }
+      /** @description Invalid signature or payload */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description No webhook configured for this alias */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
   healthLive: {
     parameters: {
       query?: never
@@ -3080,6 +6291,2594 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['HealthReadyResponse']
+        }
+      }
+    }
+  }
+  getConsumer: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The calling consumer */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ConsumerWhoAmIResponse']
+        }
+      }
+      /** @description api_key_conflict (X-TuCOPRamp-Key and Authorization carry different keys) or invalid_api_version (unknown TuCOPRamp-Version) */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description api_key_ip_not_allowed (the key is limited to other IP ranges) or api_key_origin_not_allowed (an older pk key limited to other origins) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listDocumentTypes: {
+    parameters: {
+      query: {
+        country: string
+        party_type?: 'individual' | 'business'
+      }
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Accepted document types */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DocumentTypesResponse']
+        }
+      }
+      /** @description invalid_country (not an ISO 3166-1 alpha-3 code), invalid_party_type, api_key_conflict or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listEvents: {
+    parameters: {
+      query?: {
+        after?: number | null
+        limit?: number
+        category?: 'on_off_ramp' | 'p2p' | 'platform'
+      }
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description A page of events */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['EventsPage']
+        }
+      }
+      /** @description invalid_query, or invalid_api_version (unknown TuCOPRamp-Version) */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description api_key_ip_not_allowed (the key is limited to other IP ranges) or api_key_origin_not_allowed (an older pk key limited to other origins) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  sendPartySessionEmailCode: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * Format: email
+           * @example ana@example.com
+           */
+          email: string
+        }
+      }
+    }
+    responses: {
+      /** @description Code sent */
+      202: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** Format: date-time */
+            expires_at: string
+          }
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_email or rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description email_not_sent */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  verifyPartySessionEmailCode: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * Format: email
+           * @example ana@example.com
+           */
+          email: string
+          /** @example 493027 */
+          code: string
+        }
+      }
+    }
+    responses: {
+      /** @description Session opened */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartySession']
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description invalid_code (wrong, used or expired), or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_email or rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createPartySessionWalletNonce: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          address: string
+          /**
+           * @description Only 42220 (Celo) is accepted. Default 42220.
+           * @example 42220
+           */
+          chain_id?: number
+        }
+      }
+    }
+    responses: {
+      /** @description Nonce issued */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** @example 9f2c4b1e0a7d4c3b8e6f5a4d3c2b1a09 */
+            nonce: string
+            /**
+             * @example TuCOPRamp party session
+             *     Consumer: con_01j9z3k8q2m4n6p8r0s2t4v6w8
+             *     Wallet: 0x8f51dc0791cdddce08052fff939eb7cf0c17856
+             *     Chain ID: 42220
+             *     Nonce: 9f2c4b1e0a7d4c3b8e6f5a4d3c2b1a09
+             *     Expires: 2026-10-08T15:05:00.000Z
+             */
+            message: string
+            chain_id: number
+            /** Format: date-time */
+            expires_at: string
+          }
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description chain_not_supported */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_wallet or rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createPartySessionFromWallet: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          address: string
+          nonce: string
+          signature: string
+        }
+      }
+    }
+    responses: {
+      /** @description Session opened */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartySession']
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description nonce_invalid (unknown, used, expired or issued to another consumer), signature_invalid, or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createPartySessionGoogleNonce: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': Record<string, never>
+      }
+    }
+    responses: {
+      /** @description Nonce issued */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** @example 9f2c4b1e0a7d4c3b8e6f5a4d3c2b1a09 */
+            nonce: string
+            client_id: string
+            /** Format: date-time */
+            expires_at: string
+          }
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description google_sign_in_unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createPartySessionFromGoogle: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          id_token: string
+        }
+      }
+    }
+    responses: {
+      /** @description Session opened */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartySession']
+        }
+      }
+      /** @description invalid_body or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description id_token_invalid, nonce_invalid (unknown, used, expired or issued to another consumer), email_not_verified, or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description google_sign_in_unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  revokePartySession: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Signed out */
+      204: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description party_session_required (header missing) or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createParty: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * @description `individual` (verified with hosted KYC) or `business` (verified with hosted KYB).
+           * @enum {string}
+           */
+          type: 'individual' | 'business'
+          /**
+           * @description ISO 3166-1 alpha-3 code of the country that issued the document. Defaults to `COL`.
+           * @example COL
+           */
+          country?: string
+          /**
+           * @description A business: its registered name (required). An individual: the full legal name, at least two words, when first_names and last_names are not sent.
+           * @example Empresa Ejemplo SAS
+           */
+          legal_name?: string
+          /**
+           * @description Individuals: given names as on the document. Sent together with last_names; preferred over legal_name.
+           * @example Ana Maria
+           */
+          first_names?: string
+          /**
+           * @description Individuals: surnames as on the document. Sent together with first_names.
+           * @example Perez Gomez
+           */
+          last_names?: string
+          /**
+           * @description ISO 3166-1 alpha-3. Can differ from `country`, which is the document issuer: a foreigner with a Colombian cedula de extranjeria has nationality VEN and country COL. Unknown code: `400 invalid_nationality`.
+           * @example COL
+           */
+          nationality?: string
+          /**
+           * @description One of the codes GET /document-types lists for `country` and `type`. Colombia: `CC`, `CE`, `NUIP`, `PAS` (individual) or `NIT` (business). `TI` is not accepted. Other countries: the payments provider's code, for example `cpf` for Brazil.
+           * @example CC
+           */
+          document_type: string
+          /**
+           * @description Dots, spaces and dashes are ignored. A Colombian NIT may carry its check digit after a dash (`900123456-8`); when it does, the digit must be right.
+           * @example 1017123456
+           */
+          document_number: string
+          consent: {
+            /**
+             * @description Version of the consent text the person accepted in your app.
+             * @example 2026-10-08
+             */
+            version: string
+            /** Format: date-time */
+            accepted_at: string
+          }
+          /**
+           * Format: email
+           * @description Contact email for identity verification. Only used when the session was opened with a wallet and the party has no verified email. Not attached to the party.
+           */
+          email?: string
+          /**
+           * Format: uri
+           * @description Where the person returns after identity verification. Must be one of the return URLs TuCOP has on file for your consumer.
+           */
+          redirect_url?: string
+        }
+      }
+    }
+    responses: {
+      /** @description The existing party, now linked to your consumer */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartyResponse']
+        }
+      }
+      /** @description Party created */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartyResponse']
+        }
+      }
+      /** @description invalid_body, invalid_country, invalid_document, invalid_name, invalid_consent, invalid_api_version, idempotency_key_required or idempotency_key_invalid */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_session_required (also with the API key alone: creating or linking a party always needs a party session), party_session_invalid, or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay, collect or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_identity_not_proven or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description email_required, redirect_url_not_allowed or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_party_session. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable. Retry with the same Idempotency-Key. */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getMyParty: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The party */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartyMe']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_session_required, party_session_invalid, or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), product_not_enabled (no On/Off Ramp service; `category` on_off_ramp), api_key_ip_not_allowed or api_key_origin_not_allowed */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listDestinations: {
+    parameters: {
+      query?: {
+        include_disabled?: 'true' | 'false'
+        limit?: number
+        starting_after?: string
+      }
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Destinations */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DestinationList']
+        }
+      }
+      /** @description invalid_query or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createDestination: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateDestinationRequest']
+      }
+    }
+    responses: {
+      /** @description The destination already existed */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description Created; verification in progress */
+      202: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description invalid_body, invalid_bre_b_key, invalid_owner_name, idempotency_key_required, idempotency_key_invalid or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_not_verified, kyc_name_missing (first_party, KYC name not available yet), first_party_not_available (first_party for a party that stands for a payments provider account linked by TuCOP: it has no identity document to match; use pay for third-party keys), destination_conflict (the same key is being registered by another request; retry), holder_name_mismatch (third_party: the key was already looked up and its holder does not match owner_name; includes destination_id), destination_already_registered (the key is already registered on this payments provider account and could not be matched to one; list destinations or contact TuCOP), destination_limit_reached (first_party: the person already has as many active first-party keys registered by this integrator as allowed: the lower of the limit the integrator sets in its console and a maximum TuCOP may set for the integrator; none by default. The detail says which applies; delete one first), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_invalid (the payments provider refused the key) or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getDestination: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['DestinationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The destination */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  deleteDestination: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['DestinationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Deleted */
+      204: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_in_use (a payment in progress or an active withdrawal address uses it; disable the withdrawal first) or integrator_not_linked */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  confirmDestination: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['schemas']['DestinationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': Record<string, never>
+      }
+    }
+    responses: {
+      /** @description The confirmed destination */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description invalid_body, idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_verified, integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createQuote: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateQuoteRequest']
+      }
+    }
+    responses: {
+      /** @description The quote */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quote']
+        }
+      }
+      /** @description invalid_body, invalid_amount, amount_not_settleable (not whole pesos), idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_verified, party_not_verified, first_party_not_available (withdraw, for a party that stands for a payments provider account linked by TuCOP; use pay for third-party keys), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description amount_below_minimum (pay: with `minimum`), pay_limit_exceeded (pay: with `check`, one of `per_operation`, `integrator_day`, `integrator_month`), destination_not_third_party (pay), destination_not_first_party (withdraw) or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createPayment: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreatePaymentRequest']
+      }
+    }
+    responses: {
+      /** @description The payment */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Payment']
+        }
+      }
+      /** @description invalid_body, invalid_return_address, idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description quote_not_found or destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description quote_expired (also when the rate moved and the quote no longer pays the destination), quote_already_used, destination_not_confirmed, destination_not_verified, party_not_verified, integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description payment_rejected (the payments provider refused it), return_address_required, amount_below_minimum, pay_limit_exceeded (with `check`), destination_not_third_party or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_error */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  cancelPayment: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['schemas']['OperationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The canceled payment */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Payment']
+        }
+      }
+      /** @description The payments provider accepted the cancel and has not confirmed it yet: the payment still reads `awaiting_funds`. It ends `canceled` with `canceled_by_integrator` shortly; `operation.updated` says when. Do not send the deposit. */
+      202: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Payment']
+        }
+      }
+      /** @description idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description payment_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description payment_not_cancelable (the deposit arrived or the payment already ended; the error includes `payment`), deposit_in_flight (a deposit of exactly `deposit.amount` from `return_address` is on-chain and the payments provider has not detected it yet; follow the payment) or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getPayment: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['OperationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The payment */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Payment']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description payment_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getLimits: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Effective limits */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PayLimits']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getRates: {
+    parameters: {
+      query?: {
+        amount_cop?: string
+      }
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The rate, and the estimate when amount_cop was given */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Rates']
+        }
+      }
+      /** @description invalid_amount, amount_not_settleable (not whole pesos), api_key_conflict or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing, invalid, expired or revoked consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (an estimate needs pay; the bare rate needs pay, withdraw or deposit), api_key_ip_not_allowed or api_key_origin_not_allowed */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listWithdrawals: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The party's withdrawals your integrator created, newest first */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            data: components['schemas']['Withdrawal'][]
+          }
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createWithdrawal: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateWithdrawalRequest']
+      }
+    }
+    responses: {
+      /** @description The existing withdrawal */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description The new withdrawal */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description invalid_body, invalid_return_address, idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_verified, party_not_verified, first_party_not_available (a party that stands for a payments provider account linked by TuCOP has no identity document to match a first-party key; use pay for third-party keys), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_first_party, provider_rejected or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable (also when a new return_address could not be set at the payments provider: the previous one stays, and a disabled address stays disabled) */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getWithdrawal: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['WithdrawalPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The withdrawal with `payouts` */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description withdrawal_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  disableWithdrawal: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['WithdrawalPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The disabled withdrawal */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description withdrawal_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listDeposits: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The party's deposit accounts, newest first */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            data: components['schemas']['Deposit'][]
+          }
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createDeposit: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateDepositRequest']
+      }
+    }
+    responses: {
+      /** @description The existing deposit account */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description The new deposit account */
+      201: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description invalid_body, invalid_wallet_address, idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_not_verified, integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description wallet_address_required, provider_rejected or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getDeposit: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+      }
+      path: {
+        id: components['schemas']['DepositPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The deposit account with `events` */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description deposit_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  changeDepositDestination: {
+    parameters: {
+      query?: never
+      header: {
+        /** @deprecated */
+        'TuCOPRamp-Version'?: components['parameters']['TuCOPRampVersion']
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['schemas']['DepositPublicId']
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChangeDepositRequest']
+      }
+    }
+    responses: {
+      /** @description The deposit account with its new (or unchanged) destination */
+      200: {
+        headers: {
+          'TuCOPRamp-Version': components['headers']['TuCOPRampVersion']
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description invalid_body, invalid_wallet_address, idempotency_key_required or invalid_api_version */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description deposit_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description deposit_in_flight (the error includes `deposit`), deposit_not_owned (an account from before accounts belonged to one integrator), deposit_deactivated, deposit_wallet_in_use (you already have an account for that wallet), party_not_verified, integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_rejected or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable (also when the payments provider did not accept the change: the destination stays as it was) */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
@@ -3336,6 +9135,15 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
+      /** @description The p2p_offramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
       /** @description Amount exceeds one or more limits */
       409: {
         headers: {
@@ -3382,6 +9190,15 @@ export interface operations {
       }
       /** @description Missing or invalid wallet signature */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description The p2p_offramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -3440,6 +9257,15 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
       /** @description Amount exceeds one or more limits */
       409: {
         headers: {
@@ -3486,6 +9312,15 @@ export interface operations {
       }
       /** @description Missing or invalid wallet signature */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -3637,6 +9472,71 @@ export interface operations {
         }
       }
       /** @description Order cannot be cancelled from its current state */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  p2pSandboxSimulate: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @enum {string} */
+          outcome: 'complete' | 'cancel'
+        }
+      }
+    }
+    responses: {
+      /** @description Order reached the requested outcome, or was already there */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['P2PSandboxSimulateResponse']
+        }
+      }
+      /** @description Invalid body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid wallet signature */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Order not found, or this deployment is not the sandbox */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Outcome is not legal from the current status, or an on-ramp still needs a proof */
       409: {
         headers: {
           [name: string]: unknown
@@ -4154,6 +10054,76 @@ export interface operations {
       }
     }
   }
+  adminAttachOrderProof: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /**
+           * Format: binary
+           * @description Bank-transfer proof (image/png, image/jpeg, application/pdf).
+           */
+          file: string
+          /** @description Optional bank reference. Updates payout_reference when set. */
+          payout_reference?: string
+        }
+      }
+    }
+    responses: {
+      /** @description Proof stored */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminAttachProofResponse']
+        }
+      }
+      /** @description Missing file, invalid type, exceeds 10MB, or invalid body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Order not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
   adminCompleteOfframp: {
     parameters: {
       query?: never
@@ -4304,7 +10274,7 @@ export interface operations {
       }
     }
   }
-  adminRefundOfframp: {
+  adminRefundOrder: {
     parameters: {
       query?: never
       header?: never
@@ -4313,9 +10283,10 @@ export interface operations {
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['AdminRefundOfframpRequest']
+        'multipart/form-data': components['schemas']['AdminRefundOnrampRequest']
       }
     }
     responses: {
@@ -4325,7 +10296,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['AdminRefundOfframpResponse']
+          'application/json': components['schemas']['AdminRefundResponse']
         }
       }
       /** @description Invalid body */
@@ -5126,6 +11097,59 @@ export interface operations {
       }
     }
   }
+  adminGetConsumerOpenP2POrders: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Open order counts */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            consumer_id: string
+            p2p_orders: number
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
   adminRotateConsumer: {
     parameters: {
       query?: never
@@ -5156,6 +11180,1658 @@ export interface operations {
         }
       }
       /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminApproveConsumerProduct: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        product: 'withdraw' | 'pay' | 'collect' | 'deposit' | 'p2p_offramp' | 'p2p_onramp'
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Product approved */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerDetailResponse']
+        }
+      }
+      /** @description consumer_product_unknown */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_requested */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRejectConsumerProduct: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        product: 'withdraw' | 'pay' | 'collect' | 'deposit' | 'p2p_offramp' | 'p2p_onramp'
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Request rejected */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerDetailResponse']
+        }
+      }
+      /** @description consumer_product_unknown */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_requested */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListConsumerApiKeys: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Keys */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerApiKeysListResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminCreateConsumerApiKey: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCreateConsumerApiKeyRequest']
+      }
+    }
+    responses: {
+      /** @description Key issued; api_key_plaintext returned once */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminCreateConsumerApiKeyResponse']
+        }
+      }
+      /** @description invalid_body, api_key_origins_not_supported, api_key_cidrs_invalid, api_key_scopes_invalid, api_key_expires_at_invalid, api_key_rate_limit_invalid */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRevokeConsumerApiKey: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        keyId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Key revoked */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerApiKeyResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or api_key_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description api_key_already_revoked */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListWebhookEndpoints: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Endpoints, oldest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminWebhookEndpointsResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminCreateWebhookEndpoint: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCreateWebhookEndpointRequest']
+      }
+    }
+    responses: {
+      /** @description Endpoint created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminCreateWebhookEndpointResponse']
+        }
+      }
+      /** @description invalid_body, webhook_url_*, webhook_event_types_invalid, webhook_api_version_unsupported */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetWebhookEndpoint: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The endpoint */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminWebhookEndpointResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminDeleteWebhookEndpoint: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Endpoint deleted */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminUpdateWebhookEndpoint: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateWebhookEndpointRequest']
+      }
+    }
+    responses: {
+      /** @description Endpoint updated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminWebhookEndpointResponse']
+        }
+      }
+      /** @description invalid_body, webhook_url_*, webhook_event_types_invalid, webhook_api_version_unsupported */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRotateWebhookEndpointSecret: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AdminRotateWebhookEndpointSecretRequest']
+      }
+    }
+    responses: {
+      /** @description Secret rotated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminRotateWebhookEndpointSecretResponse']
+        }
+      }
+      /** @description invalid_body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminTestWebhookEndpoint: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Delivery result */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminTestConsumerWebhookResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description webhook_endpoint_disabled */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListWebhookEndpointDeliveries: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        endpointId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Deliveries, newest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerWebhookDeliveriesResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_endpoint_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetWebhookDelivery: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        deliveryId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The delivery */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerWebhookDeliveryResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_delivery_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminReplayWebhookDelivery: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        deliveryId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Queued */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerWebhookDeliveryResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or webhook_delivery_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description webhook_endpoint_disabled, webhook_endpoint_deleted or webhook_delivery_in_flight */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetConsumerBridgeCustomer: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminBridgeCustomerStatus']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminPutConsumerBridgeCustomer: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminPutBridgeCustomerRequest']
+      }
+    }
+    responses: {
+      /** @description Linked; the new status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminBridgeCustomerStatus']
+        }
+      }
+      /** @description invalid_body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description bridge_customer_in_use */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description bridge_customer_not_found */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description bridge_unavailable */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminDeleteConsumerBridgeCustomer: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Unlinked; the new status */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminBridgeCustomerStatus']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or bridge_customer_not_set */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListIntegratorSignups: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Pending requests */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            requests: components['schemas']['AdminIntegratorSignup'][]
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator or no integrations area */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminApproveIntegratorSignup: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Approved */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            consumer_id: string
+            email_sent: boolean
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description signup_request_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description already_registered */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRejectIntegratorSignup: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Rejected */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** @enum {boolean} */
+            ok: true
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description signup_request_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListConsoleOperators: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Console operators, oldest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            operators: components['schemas']['AdminConsoleOperator'][]
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminAddConsoleOperator: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: email */
+          email: string
+        }
+      }
+    }
+    responses: {
+      /** @description Added */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsoleOperator']
+        }
+      }
+      /** @description invalid_body or invalid_email */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description console_operator_exists or console_email_in_use */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRemoveConsoleOperator: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+        operatorId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Removed */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            /** @enum {boolean} */
+            ok: true
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description consumer_not_found or console_operator_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminPutConsumerWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminPutConsumerWebhookRequest']
+      }
+    }
+    responses: {
+      /** @description Webhook set */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminPutConsumerWebhookResponse']
+        }
+      }
+      /** @description Invalid body or webhook_url_* validation error */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminDeleteConsumerWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Webhook endpoints deleted */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminRotateConsumerWebhookSecret: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Secret rotated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminRotateConsumerWebhookSecretResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description webhook_not_configured */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminTestConsumerWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Delivery result */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminTestConsumerWebhookResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below admin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Consumer not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description webhook_not_configured or webhook_endpoint_disabled */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListConsumerWebhookDeliveries: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Deliveries, newest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminConsumerWebhookDeliveriesResponse']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
       403: {
         headers: {
           [name: string]: unknown
@@ -5230,9 +12906,408 @@ export interface operations {
       }
     }
   }
-  adminGetStats: {
+  adminListClients: {
+    parameters: {
+      query?: {
+        q?: string
+        limit?: number
+        offset?: number | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description A page of clients */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            clients: components['schemas']['AdminClient'][]
+            total: number
+          }
+        }
+      }
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetClient: {
     parameters: {
       query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Client */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminClient']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Not found (client_not_found) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminFindPreregUser: {
+    parameters: {
+      query?: {
+        email?: string
+        q?: string
+        limit?: number
+        offset?: number | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description A page of people, or one person when email is given */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json':
+            | {
+                people: components['schemas']['AdminPreregPerson'][]
+                total: number
+              }
+            | components['schemas']['AdminPreregPerson']
+        }
+      }
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description No person with that email (prereg_user_not_found) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetPreregUser: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Person */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminPreregPerson']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Not found (prereg_user_not_found) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminChangePreregUserEmail: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: email */
+          email: string
+          reason: string
+        }
+      }
+    }
+    responses: {
+      /** @description Changed */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminPreregPerson'] & {
+            bridge_updated: boolean
+          }
+        }
+      }
+      /** @description Invalid body */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below superadmin */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Not found (prereg_user_not_found) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description prereg_email_in_use or prereg_email_unchanged */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description The payments provider could not be reached or refused the change (bridge_unavailable) */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListLedgerAccounts: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Accounts */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            accounts: components['schemas']['AdminLedgerAccount'][]
+          }
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminListLedgerEntries: {
+    parameters: {
+      query?: {
+        operation_id?: string
+        consumer_id?: string
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Entries */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            entries: components['schemas']['AdminLedgerEntry'][]
+          }
+        }
+      }
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetStats: {
+    parameters: {
+      query?: {
+        days?: '7' | '30' | '90' | 'all'
+      }
       header?: never
       path?: never
       cookie?: never
@@ -5258,6 +13333,61 @@ export interface operations {
         }
       }
       /** @description Role below viewer */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  adminGetMetrics: {
+    parameters: {
+      query?: {
+        kind?: 'api' | 'provider'
+        window?: '1h' | '24h' | '7d' | '30d'
+        consumer_id?: string
+        route?: string
+        endpoint?: string
+        alias?: string
+        origin?: 'request' | 'webhook' | 'job'
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Metrics */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AdminMetricsResponse']
+        }
+      }
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid admin session */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Role below operator or no Sistema area */
       403: {
         headers: {
           [name: string]: unknown
@@ -5386,6 +13516,74 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  githubSecretScanning: {
+    parameters: {
+      query?: never
+      header: {
+        'Github-Public-Key-Identifier': string
+        'Github-Public-Key-Signature': string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GithubSecretScanningToken'][]
+      }
+    }
+    responses: {
+      /** @description One label per reported token, in the same order */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GithubSecretScanningResult'][]
+        }
+      }
+      /** @description Body is not an array of {token, type} */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid GitHub signature */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  consoleTerms: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Current terms */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            version: string
+            text: string
+          }
         }
       }
     }

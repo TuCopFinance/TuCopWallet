@@ -32,21 +32,22 @@ describe('platformFetch', () => {
     const fetchImpl = jest.fn().mockResolvedValue(response(200, { ok: true }))
     const result = await platformFetch<{ ok: boolean }>({
       method: 'POST',
-      path: '/v1/destinations',
+      path: '/destinations',
       body: { ownership: 'first_party' },
       partySession: 'tps_abc',
       idempotencyKey: 'idem-1',
       baseUrl: BASE,
       fetchImpl,
+      requestId: 'req-1',
     })
     expect(result).toEqual({ ok: true })
-    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/destinations`, {
+    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/destinations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-TuCOPRamp-Party-Session': 'tps_abc',
         'Idempotency-Key': 'idem-1',
-        'TuCOPRamp-Version': '2026-10-08',
+        'X-Request-Id': 'req-1',
       },
       body: JSON.stringify({ ownership: 'first_party' }),
     })
@@ -56,12 +57,12 @@ describe('platformFetch', () => {
     const fetchImpl = jest.fn().mockResolvedValue(response(204))
     const result = await platformFetch<void>({
       method: 'DELETE',
-      path: '/v1/destinations/dst_1',
+      path: '/destinations/dst_1',
       baseUrl: BASE,
       fetchImpl,
     })
     expect(result).toBeUndefined()
-    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ 'TuCOPRamp-Version': '2026-10-08' })
+    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ 'X-Request-Id': expect.any(String) })
   })
 
   it('throws a TucopRampError with the server code on non-2xx', async () => {
@@ -75,7 +76,7 @@ describe('platformFetch', () => {
         )
       )
     await expect(
-      platformFetch({ method: 'GET', path: '/v1/parties/me', baseUrl: BASE, fetchImpl })
+      platformFetch({ method: 'GET', path: '/parties/me', baseUrl: BASE, fetchImpl })
     ).rejects.toMatchObject<Partial<TucopRampError>>({
       httpStatus: 409,
       code: 'party_not_verified',
@@ -85,10 +86,16 @@ describe('platformFetch', () => {
     })
   })
 
-  it('refuses paths that are not upstream /v1 paths', async () => {
+  it('refuses a proxy-prefixed path', async () => {
     await expect(
-      platformFetch({ method: 'GET', path: '/api/tucopramp/v1/parties/me', fetchImpl: jest.fn() })
-    ).rejects.toThrow('upstream /v1/ path')
+      platformFetch({ method: 'GET', path: 'api/tucopramp/parties/me', fetchImpl: jest.fn() })
+    ).rejects.toThrow('unversioned upstream path')
+  })
+
+  it('refuses a path that still carries the retired version prefix', async () => {
+    await expect(
+      platformFetch({ method: 'GET', path: '/v1/parties/me', fetchImpl: jest.fn() })
+    ).rejects.toThrow('unversioned upstream path')
   })
 })
 
@@ -109,12 +116,12 @@ describe('openWalletPartySession', () => {
     expect(session.token).toBe('tps_1')
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `${BASE}/v1/sessions/wallet/nonce`,
+      `${BASE}/sessions/wallet/nonce`,
       expect.objectContaining({ body: JSON.stringify({ address: USER }) })
     )
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `${BASE}/v1/sessions/wallet`,
+      `${BASE}/sessions/wallet`,
       expect.objectContaining({
         body: JSON.stringify({
           address: USER,
@@ -142,10 +149,10 @@ describe('api wrappers', () => {
     updated_at: '',
   }
 
-  it('getParty hits /v1/parties/me with the session', async () => {
+  it('getParty hits /parties/me with the session', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(response(200, party))
     await expect(getParty('tps_1', { baseUrl: BASE, fetchImpl })).resolves.toEqual(party)
-    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/v1/parties/me`)
+    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/parties/me`)
     expect(fetchImpl.mock.calls[0][1].headers['X-TuCOPRamp-Party-Session']).toBe('tps_1')
   })
 
@@ -179,7 +186,7 @@ describe('api wrappers', () => {
       'idem-3',
       { baseUrl: BASE, fetchImpl }
     )
-    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/v1/quotes`)
+    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/quotes`)
     expect(JSON.parse(fetchImpl.mock.calls[0][1].body)).toEqual({
       product: 'withdraw',
       destination_id: 'dst_1',
@@ -189,25 +196,27 @@ describe('api wrappers', () => {
       baseUrl: BASE,
       fetchImpl,
     })
-    expect(fetchImpl.mock.calls[1][0]).toBe(`${BASE}/v1/withdrawals`)
+    expect(fetchImpl.mock.calls[1][0]).toBe(`${BASE}/withdrawals`)
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toEqual({ destination_id: 'dst_1' })
   })
 
-  it('pins the platform API version on every call', async () => {
+  it('sends a fresh request id on every call and never the retired version header', async () => {
     const fetchImpl = jest.fn().mockImplementation(async () => response(200, {}))
     await createWithdrawal('tps_1', { destination_id: 'dst_1' }, 'idem-5', {
       baseUrl: BASE,
       fetchImpl,
     })
-    expect(fetchImpl.mock.calls[0][1].headers['TuCOPRamp-Version']).toBe('2026-10-08')
+    const headers = fetchImpl.mock.calls[0][1].headers
+    expect(headers['X-Request-Id']).toEqual(expect.any(String))
+    expect(headers['TuCOPRamp-Version']).toBeUndefined()
   })
 
-  it('signs out with DELETE /v1/sessions/current and the session header', async () => {
+  it('signs out with DELETE /sessions/current and the session header', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(response(204))
     await revokePartySession('tps_1', { baseUrl: BASE, fetchImpl })
-    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/v1/sessions/current`, {
+    expect(fetchImpl).toHaveBeenCalledWith(`${BASE}/sessions/current`, {
       method: 'DELETE',
-      headers: { 'TuCOPRamp-Version': '2026-10-08', 'X-TuCOPRamp-Party-Session': 'tps_1' },
+      headers: { 'X-Request-Id': expect.any(String), 'X-TuCOPRamp-Party-Session': 'tps_1' },
       body: undefined,
     })
   })

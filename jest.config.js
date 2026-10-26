@@ -28,7 +28,16 @@ module.exports = {
     '<rootDir>/jest_setup.ts',
     '<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js',
   ],
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/e2e'],
+  // contracts*/lib hold vendored Foundry dependencies (forge-std, OpenZeppelin).
+  // They ship their own Hardhat test suites, which jest picks up and fails on
+  // once the submodules are checked out locally. CI never sees them because it
+  // does not init submodules.
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/e2e',
+    '<rootDir>/contracts/lib/',
+    '<rootDir>/contracts-research/lib/',
+  ],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',

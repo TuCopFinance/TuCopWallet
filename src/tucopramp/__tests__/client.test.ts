@@ -29,13 +29,13 @@ describe('signTucopRampRequest', () => {
     const kc = makeFakeKeychainAccounts('0xdead')
     const res = await signTucopRampRequest({
       method: 'GET',
-      upstreamPath: '/v1/p2p/banks',
+      upstreamPath: '/p2p/banks',
       walletAddress: TEST_WALLET,
       keychainAccounts: kc,
       now: () => 1_755_566_400_000,
     })
     expect(res.canonical).toBe(
-      'TuCOPRamp:GET:/v1/p2p/banks:0xabc0000000000000000000000000000000000000:1755566400:'
+      'TuCOPRamp:GET:/p2p/banks:0xabc0000000000000000000000000000000000000:1755566400:'
     )
     // 5 separators, 6 parts (prefix, method, path, address, timestamp, body hash);
     // last part is empty for GET, so string ends with a single trailing colon.
@@ -51,14 +51,14 @@ describe('signTucopRampRequest', () => {
     const expectedHash = crypto.createHash('sha256').update(body).digest('hex')
     const res = await signTucopRampRequest({
       method: 'POST',
-      upstreamPath: '/v1/p2p/offramp/quote',
+      upstreamPath: '/p2p/offramp/quote',
       body,
       walletAddress: TEST_WALLET,
       keychainAccounts: kc,
       now: () => 1_755_566_400_000,
     })
     expect(res.canonical).toBe(
-      `TuCOPRamp:POST:/v1/p2p/offramp/quote:${TEST_WALLET}:1755566400:${expectedHash}`
+      `TuCOPRamp:POST:/p2p/offramp/quote:${TEST_WALLET}:1755566400:${expectedHash}`
     )
     expect(res.canonical.endsWith(`:${expectedHash}`)).toBe(true)
   })
@@ -68,11 +68,11 @@ describe('signTucopRampRequest', () => {
     await expect(
       signTucopRampRequest({
         method: 'GET',
-        upstreamPath: '/api/tucopramp/v1/p2p/banks',
+        upstreamPath: '/api/tucopramp/p2p/banks',
         walletAddress: TEST_WALLET,
         keychainAccounts: kc,
       })
-    ).rejects.toThrow(/must start with "\/v1\/p2p\/"/)
+    ).rejects.toThrow(/must start with "\/p2p\/"/)
   })
 
   it('lowercases the wallet address in the canonical string', async () => {
@@ -80,7 +80,7 @@ describe('signTucopRampRequest', () => {
     const upper = '0xABC0000000000000000000000000000000000000' as Address
     const res = await signTucopRampRequest({
       method: 'GET',
-      upstreamPath: '/v1/p2p/users/me',
+      upstreamPath: '/p2p/users/me',
       walletAddress: upper,
       keychainAccounts: kc,
       now: () => 1_755_566_400_000,
@@ -101,7 +101,7 @@ describe('tucopRampFetch', () => {
     )
     const res = await tucopRampFetch<{ banks: unknown[] }>({
       method: 'GET',
-      upstreamPath: '/v1/p2p/banks',
+      upstreamPath: '/p2p/banks',
       skipWalletAuth: true,
       baseUrl: TEST_BASE_URL,
       fetchImpl: fetchMock,
@@ -109,7 +109,7 @@ describe('tucopRampFetch', () => {
     expect(res.banks).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toBe(`${TEST_BASE_URL}/v1/p2p/banks`)
+    expect(url).toBe(`${TEST_BASE_URL}/p2p/banks`)
     const headers = new Headers(init?.headers)
     expect(headers.get('X-Wallet-Address')).toBeNull()
     expect(headers.get('X-Wallet-Signature')).toBeNull()
@@ -126,7 +126,7 @@ describe('tucopRampFetch', () => {
     const body = { gross_amount_cop: 250_000, cedula: '1234567890' }
     await tucopRampFetch({
       method: 'POST',
-      upstreamPath: '/v1/p2p/offramp/quote',
+      upstreamPath: '/p2p/offramp/quote',
       body,
       walletAddress: TEST_WALLET,
       keychainAccounts: kc,
@@ -135,7 +135,7 @@ describe('tucopRampFetch', () => {
       now: () => 1_755_566_400_000,
     })
     const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toBe(`${TEST_BASE_URL}/v1/p2p/offramp/quote`)
+    expect(url).toBe(`${TEST_BASE_URL}/p2p/offramp/quote`)
     expect(receivedBody).toBe(JSON.stringify(body))
     const headers = new Headers(init?.headers)
     expect(headers.get('X-Wallet-Address')).toBe(TEST_WALLET)
@@ -152,7 +152,7 @@ describe('tucopRampFetch', () => {
     )
     await tucopRampFetch({
       method: 'POST',
-      upstreamPath: '/v1/p2p/offramp/orders',
+      upstreamPath: '/p2p/offramp/orders',
       body: { ok: true },
       walletAddress: TEST_WALLET,
       keychainAccounts: kc,
@@ -183,7 +183,7 @@ describe('tucopRampFetch', () => {
     try {
       await tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/v1/p2p/banks',
+        upstreamPath: '/p2p/banks',
         skipWalletAuth: true,
         baseUrl: TEST_BASE_URL,
         fetchImpl: fetchMock,
@@ -211,7 +211,7 @@ describe('tucopRampFetch', () => {
     try {
       await tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/v1/p2p/banks',
+        upstreamPath: '/p2p/banks',
         skipWalletAuth: true,
         baseUrl: TEST_BASE_URL,
         fetchImpl: fetchMock,
@@ -235,7 +235,7 @@ describe('tucopRampFetch', () => {
     try {
       await tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/v1/p2p/banks',
+        upstreamPath: '/p2p/banks',
         skipWalletAuth: true,
         baseUrl: TEST_BASE_URL,
         fetchImpl: fetchMock,
@@ -259,7 +259,7 @@ describe('tucopRampFetch', () => {
     try {
       await tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/v1/p2p/banks',
+        upstreamPath: '/p2p/banks',
         skipWalletAuth: true,
         baseUrl: TEST_BASE_URL,
         fetchImpl: fetchMock,
@@ -277,7 +277,7 @@ describe('tucopRampFetch', () => {
     await expect(
       tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/v1/p2p/users/me',
+        upstreamPath: '/p2p/users/me',
         baseUrl: TEST_BASE_URL,
         fetchImpl: fetchMock,
       })
@@ -285,16 +285,16 @@ describe('tucopRampFetch', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('throws when upstreamPath does not start with /v1/p2p/', async () => {
+  it('throws when upstreamPath does not start with /p2p/', async () => {
     await expect(
       tucopRampFetch({
         method: 'GET',
-        upstreamPath: '/api/tucopramp/v1/p2p/banks',
+        upstreamPath: '/api/tucopramp/p2p/banks',
         skipWalletAuth: true,
         baseUrl: TEST_BASE_URL,
         fetchImpl: jest.fn(),
       })
-    ).rejects.toThrow(/must start with "\/v1\/p2p\/"/)
+    ).rejects.toThrow(/must start with "\/p2p\/"/)
   })
 
   // The 10 codes added to the TucopRampErrorCode union on 2026-09-02 must
@@ -325,7 +325,7 @@ describe('tucopRampFetch', () => {
       try {
         await tucopRampFetch({
           method: 'GET',
-          upstreamPath: '/v1/p2p/banks',
+          upstreamPath: '/p2p/banks',
           skipWalletAuth: true,
           baseUrl: TEST_BASE_URL,
           fetchImpl: fetchMock,

@@ -1136,6 +1136,30 @@ describe('BridgeRampFlow', () => {
       expect(getByTestId('bridgeramp-done')).toBeTruthy()
     })
 
+    it('quotes the settlement window TuCOPRamp reported for the address', () => {
+      const { getByTestId } = renderFlow(
+        'offramp',
+        progressState({
+          status: 'awaiting_payout',
+          payout: null,
+          withdrawal: { ...withdrawal, settlement_time: { min_minutes: 15, max_minutes: 30 } },
+        })
+      )
+      expect(getByTestId('bridgeramp-progress')).toHaveTextContent(
+        'bridgeramp.progress.payingBodyWindow'
+      )
+      expect(getByTestId('bridgeramp-progress')).toHaveTextContent('15')
+      expect(getByTestId('bridgeramp-progress')).toHaveTextContent('30')
+    })
+
+    it('falls back to the vaguer line when the address carries no window', () => {
+      const { getByTestId } = renderFlow(
+        'offramp',
+        progressState({ status: 'awaiting_payout', payout: null })
+      )
+      expect(getByTestId('bridgeramp-progress')).toHaveTextContent('bridgeramp.progress.payingBody')
+    })
+
     it('restarts polling and shows the stored swap hash after a restart', () => {
       const hash = '0x9a1b7608c83f8de10f4fabbb4c4708efa55fdf73f599de6c4d8f9d995710d16a'
       const { getByTestId, store } = renderFlow(

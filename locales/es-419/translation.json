@@ -3678,13 +3678,13 @@
   "bridgeramp": {
     "offramp": {
       "title": "TuCOP Ramp",
-      "explainer": "Tus pesos digitales se convierten a dólares digitales en Mento y Bridge te paga en pesos a tu llave Bre-B. Es una sola transacción: si algo falla, tus pesos digitales no se mueven.",
+      "explainer": "Tus pesos digitales se convierten a dólares digitales y Bridge te paga en pesos a tu llave Bre-B. Pasa en un solo paso: si algo falla, tus pesos digitales no se mueven.",
       "quoteIn": "Envías",
       "quoteOut": "Dólares digitales a liquidar"
     },
     "onramp": {
       "title": "TuCOP Ramp",
-      "explainer": "Transfieres pesos por Bre-B, Bridge entrega dólares digitales en tu wallet y la app los convierte a pesos digitales.",
+      "explainer": "Transfieres pesos por Bre-B, Bridge entrega dólares digitales en tu billetera y la app los convierte a pesos digitales.",
       "quoteIn": "Pagas",
       "quoteOut": "Recibirás"
     },
@@ -3692,7 +3692,7 @@
     "amountPlaceholder": "Ingresa el monto",
     "amountBelowMin": "El monto mínimo es {{min}} pesos",
     "rateLabel": "Tasa de conversión",
-    "quoteNote": "Tasa de Mento en este momento. No incluye la tasa de Bridge ni la comisión de TuCOP.",
+    "quoteNote": "Tasa de conversión en este momento. No incluye la tasa de Bridge ni la comisión de TuCOP.",
     "quoteError": "No pudimos obtener la cotización. Intenta de nuevo.",
     "continueCta": "Continuar",
     "insufficientBalance": "No tienes suficientes pesos digitales. Tu saldo es {{balance}}.",
@@ -3763,7 +3763,7 @@
         "quote_failed": "No pudimos consultar la tasa de Bridge. Intenta de nuevo en unos minutos.",
         "amount_below_minimum": "Con la tasa actual ese monto no alcanza el pago mínimo de {{min}} pesos. Prueba con un monto mayor.",
         "withdrawal_disabled": "Los retiros a esta llave están desactivados. Escríbenos a support@tucop.org.",
-        "no_wallet": "No encontramos tu wallet. Cierra la app y vuelve a abrirla.",
+        "no_wallet": "No pudimos leer tu billetera. Intenta cerrar y abrir la app.",
         "party_not_verified": "Tu verificación de identidad todavía no está lista para retirar.",
         "destination_not_verified": "Esa llave Bre-B todavía no está verificada. Elige otra o espera a que se verifique.",
         "provider_unavailable": "Bridge no está disponible en este momento. Intenta de nuevo en unos minutos."
@@ -3774,12 +3774,12 @@
       "receive": "Recibirás aprox.",
       "tucopFee": "Comisión TuCOP",
       "bridgeRate": "Tasa Bridge",
-      "networkFee": "Tarifa de red estimada",
-      "note": "Firmas una sola transacción: tus pesos digitales se convierten en Mento y los dólares digitales llegan directo a Bridge, que te paga con su propia tasa. Si la conversión falla, tus pesos digitales no se mueven.",
-      "badDeposit": "La dirección de depósito que devolvió TuCOP no es de dólares digitales en Celo. No firmamos nada.",
+      "networkFee": "Comisión de red estimada",
+      "note": "Todo pasa en un solo paso: tus pesos digitales se convierten y los dólares digitales llegan directo a Bridge, que te paga con su propia tasa. Si la conversión falla, tus pesos digitales no se mueven.",
+      "badDeposit": "La cuenta que devolvió TuCOP no sirve para dólares digitales. Nos detuvimos antes de mover nada.",
       "rateMoved": "La tasa cambió y con este monto ya no alcanzas el pago mínimo de {{min}} pesos. Vuelve a empezar con un monto mayor.",
       "startOver": "Volver a empezar",
-      "notEnoughForGas": "No tienes saldo para pagar la tarifa de red.",
+      "notEnoughForGas": "No tienes saldo para pagar la comisión de red.",
       "confirmCta": "Confirmar y retirar",
       "cancelCta": "Cancelar",
       "marketClosed": "El mercado de conversión está cerrado en este momento. Intenta de nuevo en horario bancario.",
@@ -3788,18 +3788,19 @@
       "checkStatusCta": "Consultar estado"
     },
     "swapError": {
-      "reverted": "La conversión se revirtió en la red y tu saldo no se movió (solo se cobró la tarifa de red). Intenta de nuevo.",
+      "reverted": "La conversión no se completó y tu saldo no se movió (solo se cobró la comisión de red). Intenta de nuevo.",
       "broadcast_failed": "No pudimos enviar la transacción. Intenta de nuevo.",
       "stale_quote": "La cotización venció. Intenta de nuevo.",
-      "invalid_recipient": "La transacción no coincide con el retiro. No firmamos nada.",
+      "invalid_recipient": "La operación no coincide con el retiro. Nos detuvimos antes de mover nada.",
       "generic": "La conversión falló. Intenta de nuevo.",
       "receipt_unknown": "Enviamos la transacción, pero todavía no tenemos la confirmación. Si reintentas, consultamos su estado sin enviarla dos veces.",
-      "market_closed": "Convertiremos tus dólares cuando abra el mercado. Siguen seguros en tu wallet; deja esta pantalla abierta o vuelve más tarde.",
-      "insufficient_gas": "No te alcanza el saldo para pagar la tarifa de red de la conversión. Tus dólares siguen en tu wallet."
+      "market_closed": "Convertiremos tus dólares cuando abra el mercado. Siguen seguros en tu billetera; deja esta pantalla abierta o vuelve más tarde.",
+      "insufficient_gas": "No te alcanza el saldo para pagar la comisión de red de la conversión. Tus dólares siguen en tu billetera."
     },
     "progress": {
       "payingTitle": "Bridge está pagando a tu llave",
       "payingBody": "Tus dólares digitales ya llegaron a Bridge. El pago a tu llave Bre-B toma unos minutos.",
+      "payingBodyWindow": "Tus dólares digitales ya llegaron a Bridge. El pago a tu llave Bre-B suele tomar entre {{min}} y {{max}} minutos.",
       "completedTitle": "Retiro completado",
       "completedBody": "Bridge pagó {{amount}} pesos a tu llave Bre-B.",
       "failedTitle": "El retiro no se completó",
@@ -3811,8 +3812,8 @@
     },
     "payoutError": {
       "generic": "Bridge no pudo completar el pago ({{code}}). TuCOP revisará la operación.",
-      "payout_returned": "Bridge no pudo pagar a tu llave Bre-B y devolvió los dólares a tu wallet.",
-      "payout_refunded": "Bridge reembolsó el pago: los dólares volvieron a tu wallet."
+      "payout_returned": "Bridge no pudo pagar a tu llave Bre-B y devolvió los dólares a tu billetera.",
+      "payout_refunded": "Bridge reembolsó el pago: los dólares volvieron a tu billetera."
     },
     "onboarding": {
       "title": "Crea tu cuenta en TuCOP",
@@ -3828,7 +3829,7 @@
         "email_required": "Necesitamos un correo para la verificación.",
         "not_supported_yet": "Por ahora solo personas naturales pueden registrarse.",
         "generic": "No pudimos crear tu cuenta ({{code}}). Intenta de nuevo.",
-        "party_identity_not_proven": "No pudimos confirmar que esta wallet es tuya. Intenta de nuevo y, si sigue pasando, escríbenos a support@tucop.org con el código de abajo.",
+        "party_identity_not_proven": "No pudimos confirmar que esta billetera es tuya. Intenta de nuevo y, si sigue pasando, escríbenos a support@tucop.org con el código de abajo.",
         "invalid_document": "El número de documento no es válido. Revísalo e intenta de nuevo.",
         "invalid_name": "Revisa tus nombres y apellidos: escríbelos como aparecen en tu documento.",
         "invalid_nationality": "No pudimos validar tu nacionalidad con ese documento. Revisa el tipo de documento.",
@@ -3838,32 +3839,32 @@
     },
     "deposit": {
       "payTitle": "Paga por Bre-B a esta llave",
-      "payBody": "Desde tu banco, envía pesos por Bre-B a la llave de abajo. Bridge convierte el pago a dólares digitales, los envía a tu wallet y la app los cambia a pesos digitales automáticamente.",
+      "payBody": "Desde tu banco, envía pesos por Bre-B a la llave de abajo. Bridge convierte el pago a dólares digitales, los envía a tu billetera y la app los cambia a pesos digitales automáticamente.",
       "breBKey": "Llave Bre-B",
       "keyCopied": "Llave copiada",
       "holder": "Titular",
       "bank": "Banco",
-      "onlyCop": "Envía solo pesos colombianos por Bre-B y desde una cuenta a tu nombre. Lo que envíes a esta llave llega a esta wallet como pesos digitales.",
+      "onlyCop": "Envía solo pesos colombianos por Bre-B y desde una cuenta a tu nombre. Lo que envíes a esta llave llega a esta billetera como pesos digitales.",
       "estimateLabel": "¿Cuánto vas a depositar? (opcional, para ver un estimado)",
-      "estimateNote": "Estimado: el monto menos la comisión de TuCOP. Lo que recibes al final depende de la tasa de cambio de Bridge y de Mento cuando llegue tu pago.",
+      "estimateNote": "Estimado: el monto menos la comisión de TuCOP. Lo que recibes al final depende de la tasa de Bridge y de la tasa de conversión cuando llegue tu pago.",
       "waiting": "Esperando tu pago por Bre-B. Esta pantalla se actualiza sola.",
-      "lastConverted": "Tu último depósito ya está en tu wallet: {{amount}} pesos digitales.",
+      "lastConverted": "Tu último depósito ya está en tu billetera: {{amount}} pesos digitales.",
       "convertingTitle": "Llegaron tus dólares digitales",
       "convertingBody": "Recibimos {{usdc}} de Bridge. Confirma con tu PIN para cambiarlos a pesos digitales.",
       "convertFailedTitle": "No pudimos convertir a pesos digitales",
       "retryConvert": "Intentar de nuevo",
-      "keepUsdcHint": "Tus {{usdc}} siguen en tu wallet. Si prefieres, déjalos como dólares digitales.",
+      "keepUsdcHint": "Tus {{usdc}} siguen en tu billetera. Si prefieres, déjalos como dólares digitales.",
       "keepUsdc": "Dejar como dólares digitales",
       "accountError": "No pudimos preparar tu cuenta de depósito en TuCOP ({{code}}). Intenta de nuevo.",
       "fee": "Comisión TuCOP",
-      "wrongWallet": "Esta cuenta de depósito no apunta a tu wallet. No la uses y escribe a support@tucop.org.",
+      "wrongWallet": "Esta cuenta de depósito no es la tuya. No la uses y escribe a support@tucop.org.",
       "estimateApprox": "aprox. {{amount}}",
       "marketClosedTitle": "Tus dólares ya llegaron",
       "accountErrors": {
         "party_not_verified": "Tu verificación de identidad todavía no está lista para depositar.",
         "provider_unavailable": "Bridge no está disponible en este momento. Intenta de nuevo en unos minutos.",
         "rate_limited_party_session": "Hiciste demasiados intentos seguidos. Espera unos minutos e intenta de nuevo.",
-        "no_wallet": "No encontramos tu wallet. Cierra la app y vuelve a abrirla.",
+        "no_wallet": "No pudimos leer tu billetera. Intenta cerrar y abrir la app.",
         "product_not_enabled": "Los depósitos con TuCOP Ramp todavía no están habilitados para tu cuenta."
       }
     },

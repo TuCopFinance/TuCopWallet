@@ -358,6 +358,15 @@ export enum FiatExchangeEvents {
   ramp_chooser_open = 'ramp_chooser_open',
   ramp_chooser_select = 'ramp_chooser_select',
 
+  // Ramp funnel, emitted from rampAnalyticsSaga by watching the slice actions
+  // of both ramps, so the flow screens stay free of tracking calls. One event
+  // per stage lets the dashboard measure drop-off between them.
+  ramp_flow_start = 'ramp_flow_start',
+  ramp_quote_ready = 'ramp_quote_ready',
+  ramp_order_created = 'ramp_order_created',
+  ramp_flow_completed = 'ramp_flow_completed',
+  ramp_flow_error = 'ramp_flow_error',
+
   // The CICO Amount screen where the user selects the amount of money
   cico_amount_chosen = 'cico_amount_chosen',
   cico_amount_chosen_invalid = 'cico_amount_chosen_invalid',
