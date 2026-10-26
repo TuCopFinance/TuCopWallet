@@ -34,7 +34,6 @@ const config: KnipConfig = {
     'react-native-adjust', // required for @segment/analytics-react-native-plugin-adjust
     'react-native-vector-icons', // used via react-native-dropdown-picker
     '@react-native-community/cli', // react-native cli tooling
-    '@sentry/types', // type definitions for sentry
     'react-native-svg-mock', // test mocking
     '@types/jest',
   ],
@@ -50,6 +49,9 @@ const config: KnipConfig = {
     'src/abis/IReFiMedellinUBI.ts', // ABI for paused ReFi feature
     'src/transactions/apiTestHelpers.ts', // test helpers
     'src/earn/marranitos/**/*', // paused feature - Marranitos staking
+    'src/components/PasswordInput.tsx', // only consumer is the paused Marranitos feature
+    'src/components/Row.tsx', // design-system primitive, adoption pending (see .claude/rules/design-system.md)
+    'src/lib/revoke7702/**/*', // EIP-7702 kill-switch recovery helper, wired only in an emergency
   ],
 }
 
