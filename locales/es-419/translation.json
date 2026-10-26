@@ -3800,6 +3800,7 @@
     "progress": {
       "payingTitle": "Bridge está pagando a tu llave",
       "payingBody": "Tus dólares digitales ya llegaron a Bridge. El pago a tu llave Bre-B toma unos minutos.",
+      "payingBodyWindow": "Tus dólares digitales ya llegaron a Bridge. El pago a tu llave Bre-B suele tomar entre {{min}} y {{max}} minutos.",
       "completedTitle": "Retiro completado",
       "completedBody": "Bridge pagó {{amount}} pesos a tu llave Bre-B.",
       "failedTitle": "El retiro no se completó",

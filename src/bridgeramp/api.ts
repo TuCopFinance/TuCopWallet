@@ -235,6 +235,10 @@ export interface Withdrawal {
   }
   // TuCOP's fee on this address, e.g. 150 = 1.5 percent of what arrives.
   fee_bps: number | null
+  // How long the payout usually takes once the USDC land. TuCOPRamp asks
+  // integrators to quote this instead of hard-coding a window, since it can
+  // move. Optional here so an older response still parses.
+  settlement_time?: { min_minutes: number; max_minutes: number }
   return_address: Address | null
   // Only on GET /v1/withdrawals/{id}; most recent first.
   payouts?: WithdrawalPayout[]

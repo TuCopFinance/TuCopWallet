@@ -3786,6 +3786,7 @@
     "progress": {
       "payingTitle": "Bridge is paying your key",
       "payingBody": "Your digital dollars reached Bridge. The payout to your Bre-B key takes a few minutes.",
+      "payingBodyWindow": "Your digital dollars reached Bridge. Paying your Bre-B key usually takes {{min}} to {{max}} minutes.",
       "completedTitle": "Withdrawal completed",
       "completedBody": "Bridge paid {{amount}} pesos to your Bre-B key.",
       "failedTitle": "The withdrawal did not complete",

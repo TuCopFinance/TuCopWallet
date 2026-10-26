@@ -1012,7 +1012,15 @@ function ProgressStep() {
         ? t(`bridgeramp.payoutError.${withdraw.errorCode}`, {
             defaultValue: t('bridgeramp.payoutError.generic', { code: withdraw.errorCode }),
           })
-        : t('bridgeramp.progress.payingBody')
+        : // TuCOPRamp asks us to quote the window it reports rather than hard-code
+          // one, since it can move. Fall back to the vaguer line when the address
+          // was stored before the field existed.
+          withdrawal?.settlement_time
+          ? t('bridgeramp.progress.payingBodyWindow', {
+              min: withdrawal.settlement_time.min_minutes,
+              max: withdrawal.settlement_time.max_minutes,
+            })
+          : t('bridgeramp.progress.payingBody')
 
   return (
     <View testID="bridgeramp-progress">
