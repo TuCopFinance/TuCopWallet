@@ -56,7 +56,7 @@ import { TokenPickerOrigin } from 'src/components/TokenBottomSheet'
 import { DappSection } from 'src/dapps/types'
 import { BeforeDepositActionName, EarnActiveMode, SerializableRewardsInfo } from 'src/earn/types'
 import { ProviderSelectionAnalyticsData } from 'src/fiatExchanges/types'
-import { RampAnalyticsId, RampDirection } from 'src/fiatExchanges/rampProviders'
+import { RampAnalyticsId, RampDirection, RampFunnelStage } from 'src/fiatExchanges/rampProviders'
 import { CICOFlow, FiatExchangeFlow, PaymentMethod } from 'src/fiatExchanges/utils'
 import { HomeActionName, NotificationBannerCTATypes, NotificationType } from 'src/home/types'
 import {
@@ -736,6 +736,16 @@ interface FiatExchangeEventsProperties {
   [FiatExchangeEvents.cico_landing_how_to_fund]: undefined
   [FiatExchangeEvents.ramp_chooser_open]: { direction: RampDirection }
   [FiatExchangeEvents.ramp_chooser_select]: { ramp: RampAnalyticsId; direction: RampDirection }
+  [FiatExchangeEvents.ramp_flow_start]: { ramp: RampAnalyticsId; direction: RampDirection }
+  [FiatExchangeEvents.ramp_quote_ready]: { ramp: RampAnalyticsId; direction: RampDirection }
+  [FiatExchangeEvents.ramp_order_created]: { ramp: RampAnalyticsId; direction: RampDirection }
+  [FiatExchangeEvents.ramp_flow_completed]: { ramp: RampAnalyticsId; direction: RampDirection }
+  [FiatExchangeEvents.ramp_flow_error]: {
+    ramp: RampAnalyticsId
+    direction: RampDirection
+    stage: RampFunnelStage
+    errorCode?: string
+  }
   [FiatExchangeEvents.cico_amount_chosen]: {
     amount: number
     currency: string

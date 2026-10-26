@@ -18,6 +18,7 @@ import { fetchDappsListCompleted } from 'src/dapps/slice'
 import { earnSaga } from 'src/earn/saga'
 import { neeruSaga } from 'src/earn/neeru/saga'
 import { goldSaga } from 'src/gold/saga'
+import { rampAnalyticsSaga } from 'src/fiatExchanges/rampAnalyticsSaga'
 import { fiatExchangesSaga } from 'src/fiatExchanges/saga'
 import { fiatConnectSaga } from 'src/fiatconnect/saga'
 import { homeSaga } from 'src/home/saga'
@@ -156,6 +157,7 @@ export function* rootSaga() {
     yield* spawn(neeruSaga)
     yield* spawn(tucoprampSaga)
     yield* spawn(bridgeRampSaga)
+    yield* spawn(rampAnalyticsSaga)
     yield* spawn(goldSaga)
   } catch (error) {
     Logger.error('@rootSaga', 'Error while initializing sagas', error)

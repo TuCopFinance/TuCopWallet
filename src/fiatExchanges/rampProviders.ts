@@ -20,6 +20,10 @@ type RampProviderId = 'tucopramp' | 'bridgeramp'
 // "TuCOP Ramp"), not after the code modules.
 export type RampAnalyticsId = 'tucopramp_p2p' | 'tucopramp_bridge'
 
+// Stage a ramp run had reached when it failed. Mirrors the funnel events in
+// FiatExchangeEvents so a drop-off can be attributed to a step.
+export type RampFunnelStage = 'start' | 'quote' | 'order' | 'settlement'
+
 export interface RampProviderDefinition {
   id: RampProviderId
   analyticsId: RampAnalyticsId

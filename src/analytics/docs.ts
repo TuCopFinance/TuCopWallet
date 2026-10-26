@@ -324,6 +324,14 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [FiatExchangeEvents.ramp_chooser_open]: `User opens the ramp chooser to deposit (direction onramp) or withdraw (direction offramp)`,
   [FiatExchangeEvents.ramp_chooser_select]: `User picks a ramp in the chooser: tucopramp_p2p (TuCOP Ramp P2P) or tucopramp_bridge (TuCOP Ramp powered by Bridge)`,
 
+  // Ramp funnel, emitted by rampAnalyticsSaga for both ramps and both
+  // directions. Stages run start -> quote -> order -> settlement.
+  [FiatExchangeEvents.ramp_flow_start]: `User asked for a quote and the ramp run began`,
+  [FiatExchangeEvents.ramp_quote_ready]: `The ramp returned a quote and the user can see what they get`,
+  [FiatExchangeEvents.ramp_order_created]: `The order was created and the ramp is waiting on the money to move`,
+  [FiatExchangeEvents.ramp_flow_completed]: `The run reached its final successful state (money delivered)`,
+  [FiatExchangeEvents.ramp_flow_error]: `The run failed; stage says how far it got and errorCode why it stopped`,
+
   // The CICO Amount screen where the user selects the amount of money
   [FiatExchangeEvents.cico_amount_chosen]: `User selects a valid amount and taps next`,
   [FiatExchangeEvents.cico_amount_chosen_invalid]: `User attempts to click next but the amount is invalid`,
