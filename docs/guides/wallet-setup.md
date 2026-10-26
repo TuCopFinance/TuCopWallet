@@ -14,7 +14,7 @@ TuCOP Wallet is a React Native mobile wallet focused on Celo (Colombia). It supp
 
 ## Prerequisites
 
-- **Node.js**: v20.17.0 (use NVM)
+- **Node.js**: v24.18.1 (use NVM)
 - **Yarn**: v1.22+
 - **JDK**: v17 (for Android)
 - **Xcode**: Latest version (for iOS, macOS only)
@@ -28,7 +28,7 @@ TuCOP Wallet is a React Native mobile wallet focused on Celo (Colombia). It supp
 ```bash
 git clone https://github.com/TuCopFinance/TuCopWallet.git
 cd TuCopWallet
-nvm use 20.17.0
+nvm use 24.18.1
 yarn install
 ```
 
