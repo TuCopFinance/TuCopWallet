@@ -1798,6 +1798,10 @@
   },
   "dappNotListed": "Esta aplicación no se encuentra entre las seleccionadas por {{appName}}. Las aplicaciones son aplicaciones de terceros. Utilízalas bajo tu propia responsabilidad.",
   "swapScreen": {
+    "copFxWeekendPause": {
+      "title": "Cambio en pausa por el fin de semana",
+      "body": "Los cambios entre dólares y pesos descansan los sábados y domingos. Vuelve de lunes a viernes."
+    },
     "title": "Cambiar",
     "balance": "Saldo",
     "review": "Revisar",
@@ -3380,6 +3384,10 @@
     }
   },
   "tucopramp": {
+    "onrampRefundOwed": "Devolución en proceso",
+    "onrampRefundOwedBody": "No pudimos completar tu recarga. Te vamos a devolver los pesos a tu cuenta bancaria. Puede tomar unas horas.",
+    "onrampRefunded": "Devolución completada",
+    "onrampRefundedBody": "Te devolvimos los pesos a tu cuenta bancaria.",
     "providerName": "TuCOP Ramp P2P",
     "providerBy": "by TuCOP Solutions",
     "offrampTitle": "Retirar a tu banco",
@@ -3470,11 +3478,18 @@
     "refundOwedBody": "Vas a recibir los pesos digitales de vuelta en tu billetera. Puede tomar unas horas.",
     "errorHeading": "Algo salió mal",
     "errors": {
+      "idempotency_in_progress": "Tu solicitud anterior todavía se está procesando. Espera un momento e intenta de nuevo.",
+      "idempotency_key_invalid": "No pudimos procesar la solicitud. Intenta de nuevo.",
+      "invalid_wallet_address": "No pudimos validar tu billetera. Cierra la app y vuelve a abrirla.",
+      "not_found": "El servicio no reconoció la solicitud. Actualiza la app e intenta de nuevo.",
+      "open_order_amount_conflict": "Ya tienes un retiro abierto por un monto casi igual. Espera a que termine o cancélalo antes de abrir otro.",
+      "payload_too_large": "El archivo es demasiado grande. Elige una imagen más liviana.",
       "unknown": "Ocurrió un problema. Intenta de nuevo o contacta a soporte.",
       "no_wallet": "No pudimos leer tu billetera. Intenta cerrar y abrir la app.",
       "invalid_api_key": "Servicio no disponible. Intenta más tarde.",
       "signature_invalid": "No pudimos verificar tu billetera. Intenta de nuevo.",
       "signature_expired": "La sesión expiró. Vuelve a intentar.",
+      "unsupported_encoding": "No pudimos leer el archivo. Intenta con otra imagen.",
       "wallet_not_linked": "Necesitas registrar tu cédula la primera vez.",
       "invalid_body": "Revisa los datos ingresados.",
       "consent_required": "Debes aceptar los términos para continuar.",
@@ -3751,17 +3766,30 @@
       },
       "loadError": "No pudimos cargar tus llaves Bre-B.",
       "error": {
+        "destination_conflict": "Esa llave ya está registrada con otros datos. Escríbenos a support@tucop.org.",
+        "destination_in_use": "Esa llave está en uso y no se puede cambiar en este momento.",
+        "destination_limit_reached": "Llegaste al máximo de llaves Bre-B registradas. Escríbenos a support@tucop.org si necesitas cambiarla.",
         "invalid_bre_b_key": "Esa llave Bre-B no es válida. Revísala e intenta de nuevo.",
+        "invalid_owner_name": "No pudimos validar el nombre del titular de la llave. Intenta de nuevo.",
         "kyc_name_missing": "Todavía no tenemos tu nombre verificado para compararlo con la llave. Termina la verificación de identidad e intenta de nuevo.",
-        "destination_invalid": "No pudimos usar esa llave. Revisa que sea una llave Bre-B a tu nombre."
+        "destination_invalid": "No pudimos usar esa llave. Revisa que sea una llave Bre-B a tu nombre.",
+        "provider_unavailable": "El directorio Bre-B no está disponible. Intenta de nuevo en unos minutos.",
+        "rate_limited_consumer": "Hay mucho tráfico en este momento. Espera un minuto e intenta de nuevo."
       }
     },
     "withdraw": {
       "startFailed": "No pudimos iniciar el retiro ({{code}}). Intenta de nuevo.",
       "startError": {
         "create_failed": "No pudimos abrir tu retiro en este momento. Intenta de nuevo.",
+        "destination_not_first_party": "Esa llave no está a tu nombre. Solo puedes retirar a una cuenta tuya.",
+        "first_party_not_available": "Esta cuenta no puede retirar a una llave propia. Escríbenos a support@tucop.org.",
+        "party_restricted": "Tu cuenta tiene una restricción y por ahora no puedes retirar. Escríbenos a support@tucop.org.",
+        "provider_rejected": "Bridge rechazó la solicitud. Intenta de nuevo y, si sigue pasando, escríbenos a support@tucop.org.",
+        "quote_expired": "La cotización venció. Intenta de nuevo para pedir una nueva.",
         "quote_failed": "No pudimos consultar la tasa de Bridge. Intenta de nuevo en unos minutos.",
         "amount_below_minimum": "Con la tasa actual ese monto no alcanza el pago mínimo de {{min}} pesos. Prueba con un monto mayor.",
+        "rate_limited_consumer": "Hay mucho tráfico en este momento. Espera un minuto e intenta de nuevo.",
+        "rate_unavailable": "No pudimos consultar la tasa en este momento. Intenta de nuevo en unos minutos.",
         "withdrawal_disabled": "Los retiros a esta llave están desactivados. Escríbenos a support@tucop.org.",
         "no_wallet": "No encontramos tu wallet. Cierra la app y vuelve a abrirla.",
         "party_not_verified": "Tu verificación de identidad todavía no está lista para retirar.",
@@ -3825,15 +3853,20 @@
       "consent": "Autorizo a TuCOP a verificar mi identidad y acepto los términos y condiciones.",
       "submitCta": "Continuar con la verificación",
       "error": {
+        "email_not_sent": "No pudimos enviarte el correo. Revisa la dirección e intenta de nuevo.",
         "email_required": "Necesitamos un correo para la verificación.",
+        "invalid_consent": "Necesitamos tu autorización para verificar tu identidad. Marca la casilla e intenta de nuevo.",
+        "invalid_country": "No pudimos validar el país de tu documento. Revisa el tipo de documento.",
         "not_supported_yet": "Por ahora solo personas naturales pueden registrarse.",
         "generic": "No pudimos crear tu cuenta ({{code}}). Intenta de nuevo.",
         "party_identity_not_proven": "No pudimos confirmar que esta wallet es tuya. Intenta de nuevo y, si sigue pasando, escríbenos a support@tucop.org con el código de abajo.",
         "invalid_document": "El número de documento no es válido. Revísalo e intenta de nuevo.",
         "invalid_name": "Revisa tus nombres y apellidos: escríbelos como aparecen en tu documento.",
         "invalid_nationality": "No pudimos validar tu nacionalidad con ese documento. Revisa el tipo de documento.",
+        "rate_limited_email": "Enviamos demasiados correos a esa dirección. Espera unos minutos e intenta de nuevo.",
         "rate_limited_party_session": "Hiciste demasiados intentos seguidos. Espera unos minutos e intenta de nuevo.",
-        "provider_unavailable": "El servicio de verificación no está disponible en este momento. Intenta de nuevo en unos minutos."
+        "provider_unavailable": "El servicio de verificación no está disponible en este momento. Intenta de nuevo en unos minutos.",
+        "redirect_url_not_allowed": "No pudimos abrir la verificación. Actualiza la app e intenta de nuevo."
       }
     },
     "deposit": {
@@ -3861,10 +3894,14 @@
       "marketClosedTitle": "Tus dólares ya llegaron",
       "accountErrors": {
         "party_not_verified": "Tu verificación de identidad todavía no está lista para depositar.",
+        "party_restricted": "Tu cuenta tiene una restricción y por ahora no puedes depositar. Escríbenos a support@tucop.org.",
+        "provider_rejected": "Bridge no pudo crear tu cuenta de depósito. Intenta de nuevo más tarde.",
         "provider_unavailable": "Bridge no está disponible en este momento. Intenta de nuevo en unos minutos.",
+        "rate_limited_consumer": "Hay mucho tráfico en este momento. Espera un minuto e intenta de nuevo.",
         "rate_limited_party_session": "Hiciste demasiados intentos seguidos. Espera unos minutos e intenta de nuevo.",
         "no_wallet": "No encontramos tu wallet. Cierra la app y vuelve a abrirla.",
-        "product_not_enabled": "Los depósitos con TuCOP Ramp todavía no están habilitados para tu cuenta."
+        "product_not_enabled": "Los depósitos con TuCOP Ramp todavía no están habilitados para tu cuenta.",
+        "wallet_address_required": "No encontramos tu wallet. Cierra la app y vuelve a abrirla."
       }
     },
     "units": {

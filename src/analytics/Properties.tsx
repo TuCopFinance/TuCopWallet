@@ -1220,6 +1220,10 @@ export enum SwapShowInfoType {
 }
 interface SwapEventsProperties {
   [SwapEvents.swap_screen_open]: undefined
+  [SwapEvents.swap_cop_fx_paused_shown]: {
+    // Which surface showed the weekend notice.
+    context: 'swap' | 'gold_buy'
+  }
   [SwapEvents.swap_screen_select_token]: {
     fieldType: Field
   }

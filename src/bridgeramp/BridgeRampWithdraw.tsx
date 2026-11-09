@@ -95,7 +95,7 @@ const BRE_B_KEY_MIN_LENGTH = 6
 const BRIDGE_RAMP_CONSENT_VERSION = '2026-10-10'
 const TUCOP_TERMS_URL = 'https://tucop.xyz/terminos-y-condiciones/'
 // TuCOPRamp verifies people (individuals) here; NIT is a company document and
-// POST /v1/parties refuses it for an individual.
+// POST /parties refuses it for an individual.
 type IndividualDocumentType = Exclude<DocumentType, 'NIT' | 'TI'>
 // TuCOPRamp parties take CC, CE, NUIP and PAS for a person: NIT is a business
 // document and TI a minor's (identity verification is for adults only).

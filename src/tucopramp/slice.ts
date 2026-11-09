@@ -46,6 +46,10 @@ export type OnrampFlowStatus =
   | 'verifying'
   | 'completed'
   | 'rejected'
+  // The COP arrived but the order cannot complete; Ops owes a bank-transfer
+  // refund. Not final: the poller keeps running until REFUNDED lands.
+  | 'refund-owed'
+  | 'refunded'
   | 'cancelling'
   | 'cancelled'
   | 'expired'
@@ -65,11 +69,12 @@ export const OFFRAMP_FINAL_STATUSES: readonly OfframpFlowStatus[] = [
 export const ONRAMP_FINAL_STATUSES: readonly OnrampFlowStatus[] = [
   'completed',
   'rejected',
+  'refunded',
   'cancelled',
   'expired',
 ]
 
-// Short-lived HMAC-signed URL from GET /v1/p2p/orders/{id}/proof-url. Not
+// Short-lived HMAC-signed URL from GET /p2p/orders/{id}/proof-url. Not
 // persisted across app restarts (server TTL 300 s, wallet re-fetches on
 // terminal-screen re-open). Kept on the offramp flow rather than a global
 // slot because only the offramp completion screen renders it today.
@@ -104,7 +109,7 @@ export interface FlowErrorPayload {
 
 // Local state for the on-chain COPm deposit that the wallet broadcasts as
 // part of the offramp flow. The server does NOT expose the deposit tx hash
-// back through the wallet-facing GET /v1/p2p/orders/{id} endpoint (that field
+// back through the wallet-facing GET /p2p/orders/{id} endpoint (that field
 // only lives on AdminOrderDetail). So the wallet keeps the hash it got from
 // broadcasting locally and renders it as the user's on-chain receipt link.
 export type OfframpDepositTxStatus = 'idle' | 'submitting' | 'submitted' | 'failed'
@@ -489,7 +494,7 @@ export const slice = createSlice({
     },
     // On-chain deposit lifecycle, dispatched by sendOfframpDepositSaga. The
     // hash is the ONLY on-chain reference the user gets - the server-facing
-    // GET /v1/p2p/orders/{id} response does not include incoming_tx_hash
+    // GET /p2p/orders/{id} response does not include incoming_tx_hash
     // (that field lives on AdminOrderDetail, not P2POrderDetail), so the
     // wallet is the sole source of truth for the deposit tx link.
     offrampDepositSubmitting: (state) => {

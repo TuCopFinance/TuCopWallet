@@ -1,6 +1,8 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import BigNumber from 'bignumber.js'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import AppAnalytics from 'src/analytics/AppAnalytics'
+import { SwapEvents } from 'src/analytics/Events'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -421,9 +423,19 @@ export default function GoldBuyConfirmation({ route }: Props) {
   const slippageInfoBottomSheetRef = useRef<BottomSheetModalRefType>(null)
   const estimatedDurationBottomSheetRef = useRef<BottomSheetModalRefType>(null)
 
+  // One event per mount when the weekend pause blocked the gold purchase
+  // through the Dolares path (see SwapScreen's twin for rationale).
+  const copFxPausedTracked = useRef(false)
+  useEffect(() => {
+    if (isVirtualDolares && multiSwapQuote.marketPaused && !copFxPausedTracked.current) {
+      copFxPausedTracked.current = true
+      AppAnalytics.track(SwapEvents.swap_cop_fx_paused_shown, { context: 'gold_buy' })
+    }
+  }, [isVirtualDolares, multiSwapQuote.marketPaused])
+
   const onPressConfirm = () => {
     if (isVirtualDolares) {
-      if (!multiSwapPlan || multiSwapPlan.shortfall.gt(0)) return
+      if (!multiSwapPlan || multiSwapPlan.shortfall.gt(0) || multiSwapQuote.marketPaused) return
       // Optimistic loading flag BEFORE dispatch, see multiSwapClickPending
       // block above for why. Dropped by the effect once inFlight goes truthy.
       setMultiSwapClickPending(true)
@@ -598,6 +610,19 @@ export default function GoldBuyConfirmation({ route }: Props) {
           testID="GoldBuyConfirmation/Info"
         />
 
+        {/* Weekend pause of the COP FX rail: the Dolares path quotes nothing
+            on Sat/Sun UTC (see dollarsSpend/fxMarket.ts), so the confirm
+            button stays off and this notice says why. */}
+        {isVirtualDolares && multiSwapQuote.marketPaused && (
+          <InLineNotification
+            variant={NotificationVariant.Info}
+            title={t('swapScreen.copFxWeekendPause.title')}
+            description={t('swapScreen.copFxWeekendPause.body')}
+            style={styles.infoNotice}
+            testID="GoldBuyConfirmation/CopFxWeekendPause"
+          />
+        )}
+
         {/* Error Notice */}
         {!!error && (
           <InLineNotification
@@ -619,7 +644,7 @@ export default function GoldBuyConfirmation({ route }: Props) {
             disabled={
               isSubmitting ||
               (isVirtualDolares
-                ? !multiSwapPlan || multiSwapPlan.shortfall.gt(0)
+                ? !multiSwapPlan || multiSwapPlan.shortfall.gt(0) || multiSwapQuote.marketPaused
                 : isGettingQuote ||
                   !Array.isArray(preparedTransactions) ||
                   preparedTransactions.length === 0 ||

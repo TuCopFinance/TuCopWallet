@@ -577,8 +577,9 @@ for (const [walletConnectChainId, networkId] of Object.entries(walletConnectChai
 Logger.info('Connecting to Celo mainnet')
 
 // TuCOPRamp off-ramp / on-ramp constants (Pattern B: wallet talks to backend proxy).
-// The proxy strips the /api/tucopramp prefix and forwards to https://api.ramp.tucop.xyz/v1/p2p/*.
-// Wallet MUST sign the UPSTREAM path (/v1/p2p/<endpoint>), not the prefixed one.
+// The proxy strips the /api/tucopramp prefix and forwards to https://api.ramp.tucop.xyz.
+// TuCOPRamp paths carry no version (the /v1 prefix was removed upstream for good).
+// Wallet MUST sign the UPSTREAM path (/p2p/<endpoint>), not the prefixed one.
 // See .claude/coordination/tucopramp.md + .claude/coordination/tucopramp-backend-brief.md.
 export const TUCOPRAMP_API_BASE_URL =
   'https://tucop-backend-production.up.railway.app/api/tucopramp'

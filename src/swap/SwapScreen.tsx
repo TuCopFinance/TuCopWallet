@@ -533,6 +533,17 @@ export function SwapScreen({ route }: Props) {
     AppAnalytics.track(SwapEvents.swap_screen_open)
   }, [])
 
+  // One event per mount when the weekend pause actually blocked the user:
+  // measures how many people hit the closed window (product signal for
+  // whether the Sat/Sun rest needs better placement upstream).
+  const copFxPausedTracked = useRef(false)
+  useEffect(() => {
+    if (isVirtualDolares && multiSwapQuote.marketPaused && !copFxPausedTracked.current) {
+      copFxPausedTracked.current = true
+      AppAnalytics.track(SwapEvents.swap_cop_fx_paused_shown, { context: 'swap' })
+    }
+  }, [isVirtualDolares, multiSwapQuote.marketPaused])
+
   const isTransientUpstreamError =
     !!fetchSwapQuoteError?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR) ||
     !!multiSwapQuote.error?.message?.includes(SWAP_UPSTREAM_TRANSIENT_ERROR)
@@ -995,6 +1006,9 @@ export function SwapScreen({ route }: Props) {
         multiSwapPlan.steps.length > 0 &&
         multiSwapPlan.shortfall.lte(0) &&
         fromAmountUsd.gt(0) &&
+        // Weekend pause of the COP FX rail: quoting is skipped entirely, so
+        // confirming would fire legs that can only fail. Banner explains.
+        !multiSwapQuote.marketPaused &&
         !confirmSwapIsLoading
       )
     }
@@ -1025,6 +1039,7 @@ export function SwapScreen({ route }: Props) {
     showCrossChainFeeWarning,
     showBelowMinSwapWarning,
     isTransientUpstreamError,
+    multiSwapQuote.marketPaused,
   ])
   // For the Dolares -> Pesos aggregate path the single `quote` is undefined
   // (the wallet runs N parallel quotes via useMultiSwapQuote). Synthesize the
@@ -1478,6 +1493,15 @@ export function SwapScreen({ route }: Props) {
                 minSwapUsd: MIN_SWAP_USD.toFixed(2),
               })}
               style={styles.warning}
+            />
+          )}
+          {isVirtualDolares && multiSwapQuote.marketPaused && (
+            <InLineNotification
+              variant={NotificationVariant.Info}
+              title={t('swapScreen.copFxWeekendPause.title')}
+              description={t('swapScreen.copFxWeekendPause.body')}
+              style={styles.warning}
+              testID="SwapScreen/CopFxWeekendPauseBanner"
             />
           )}
           {isTransientUpstreamError && (

@@ -191,6 +191,11 @@ class AppAnalytics {
       // a mismatch between Statsig console and this snapshot, which is
       // itself useful diagnostic signal.
       try {
+        // Overwrites the `feature_gates` fallback context that
+        // installGlobalContextForSentry() seeded during Sentry.init. Marks
+        // this snapshot as `_source: 'live'` so Sentry event detail can
+        // tell a Statsig-fresh snapshot apart from the boot-window fallback
+        // (see src/sentry/globalContext.ts installFeatureGatesFallbackContext).
         const gateSnapshot: Record<string, boolean> = {}
         for (const gate of Object.values(StatsigFeatureGates)) {
           try {
@@ -200,11 +205,13 @@ class AppAnalytics {
             Logger.warn(TAG, `feature gate read failed: ${gate}`, readErr)
           }
         }
-        Sentry.setContext('feature_gates', gateSnapshot)
+        Sentry.setContext('feature_gates', { _source: 'live', ...gateSnapshot })
         // Cache on the instance so getSuperProps() can attach the same
         // snapshot to every tracked event without re-reading gates on
         // every capture (getFeatureGate is cheap but this runs on hot
-        // paths).
+        // paths). The `_source` marker is intentionally NOT cached on the
+        // PostHog super-props (only Sentry needs it) so PostHog dashboards
+        // keep the gate_* columns clean.
         this.featureGateSnapshot = gateSnapshot
       } catch (snapshotErr) {
         Logger.warn(TAG, 'feature gate snapshot failed', snapshotErr)

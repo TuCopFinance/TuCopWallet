@@ -483,6 +483,7 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [CoinbasePayEvents.coinbase_pay_flow_start]: `When user is navigated to Coinbase Pay experience`,
   [CoinbasePayEvents.coinbase_pay_flow_exit]: `When user exits Coinbase Pay`,
   [SwapEvents.swap_screen_open]: `When the screen is mounted`,
+  [SwapEvents.swap_cop_fx_paused_shown]: `The COP FX weekend pause blocked a Dolares conversion surface (confirm off + weekend notice shown). Context says which screen.`,
   [SwapEvents.swap_screen_select_token]: `When a user selects a token, prompting the token select bottom sheet`,
   [SwapEvents.swap_screen_confirm_token]: `When a user selects a token from the bottom sheet`,
   [SwapEvents.swap_screen_percentage_selected]: `When the user selects a pre-defined percentage of their balance to transact with`,
@@ -679,6 +680,6 @@ export const eventDocs: Record<AnalyticsEventType, string> = {
   [SubsidiesEvents.subsidies_claim_press]: `User pressed the Reclamar CTA. Fires before the biometric prompt.`,
   [SubsidiesEvents.subsidies_claim_start]: `Claim flow started post-authentication (about to submit the on-chain claim).`,
   [SubsidiesEvents.subsidies_claim_success]: `Subsidy claim tx confirmed on-chain. transactionHash carries the tx.`,
-  [SubsidiesEvents.subsidies_claim_error]: `Subsidy claim failed. Error is a short human-readable message (contract revert or user cancel).`,
+  [SubsidiesEvents.subsidies_claim_error]: `Subsidy claim failed. Error is a stable code (already_claimed_this_week, insufficient_gas, out_of_gas, base_fee_stale, not_beneficiary, wallet_locked, receipt_timeout...) or the raw message only when unclassified.`,
   [SubsidiesEvents.subsidies_history_view]: `User viewed their claim history.`,
 }

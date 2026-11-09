@@ -398,7 +398,33 @@ export class ReFiColombiaSubsidiesContract {
       // so Sentry fingerprint groups the same failure across users regardless
       // of message wording. Only known-safe strings feed the tag; unknown
       // errors fall through to 'unknown' which still gets a Sentry event.
-      const errorMessage = error instanceof Error ? error.message : String(error)
+      let errorMessage = error instanceof Error ? error.message : String(error)
+      // Forno's eth_estimateGas strips the revert reason: a cooldown revert
+      // arrives as "Execution reverted for an unknown reason." with no
+      // "Cannot claim yet." anywhere, so the text mapping below filed it
+      // under 'unknown' and the user saw a raw error they retried daily
+      // (production pattern, 2026-11: same wallets, 11+ attempts each). An
+      // eth_call simulation DOES return the reason (verified live), so on a
+      // bare revert ask the contract once more and classify on the real one.
+      if (
+        /execution reverted/i.test(errorMessage) &&
+        !/Cannot claim yet|already claimed|too soon|Not beneficiary/i.test(errorMessage)
+      ) {
+        try {
+          await this.client.simulateContract({
+            address: REFI_COLOMBIA_SUBSIDIES_ADDRESS,
+            abi: ReFiColombiaSubsidies.abi,
+            functionName: 'claimSubsidy',
+            args: [],
+            account: walletAddress,
+          })
+        } catch (simError) {
+          const simMessage = simError instanceof Error ? simError.message : String(simError)
+          if (simMessage) {
+            errorMessage = `${errorMessage}\n[simulated reason] ${simMessage}`
+          }
+        }
+      }
       let errorCode:
         | 'already_claimed_this_week'
         | 'not_beneficiary'
@@ -449,6 +475,11 @@ export class ReFiColombiaSubsidiesContract {
         provider: 'refi-colombia',
         action: 'claim_subsidy',
         errorCode,
+        extra: {
+          // Whether the bare "execution reverted" had to be re-simulated to
+          // recover the contract's reason (Forno strips it at estimateGas).
+          reasonRecovered: errorMessage.includes('[simulated reason]'),
+        },
       })
       Logger.warn(TAG, `Claim failed [${errorCode}]`)
       // User-facing sheet. The underlying error was already normalized by
@@ -479,7 +510,11 @@ export class ReFiColombiaSubsidiesContract {
         context: { screen: 'reficolombia', action: 'claimSubsidy' },
         variant: 'sheet',
       })
-      return { success: false, error: errorMessage }
+      // Return the stable code when we classified the failure: the screen
+      // feeds this string to PostHog (subsidies_claim_error.error), and a
+      // short code aggregates across users while the raw viem dump (with
+      // addresses and fee figures baked into the text) never groups.
+      return { success: false, error: errorCode === 'unknown' ? errorMessage : errorCode }
     }
   }
 

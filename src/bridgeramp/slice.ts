@@ -73,7 +73,7 @@ export interface BridgeRampPartyState {
   // address but no party is linked to this app yet (onboarding needed).
   needsOnboarding: boolean
   errorCode: string | null
-  // POST /v1/parties in flight / refused. Success lands in `value`.
+  // POST /parties in flight / refused. Success lands in `value`.
   onboarding: {
     status: 'idle' | 'submitting' | 'error'
     errorCode: string | null
@@ -94,7 +94,7 @@ export interface BridgeRampDestinationsState {
 // `swap`; this is the TuCOPRamp side (quote, operation, payout).
 export type BridgeRampWithdrawStatus =
   | 'idle'
-  // POST /v1/withdrawals (the reusable address) + POST /v1/quotes in flight.
+  // POST /withdrawals (the reusable address) + POST /quotes in flight.
   | 'creating'
   // Opening the operation failed before anything was signed (no wallet,
   // quote refused, below the floor...). The amount step shows why.

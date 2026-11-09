@@ -650,11 +650,21 @@ export function* executeMultiSwapSaga(action: PayloadAction<ExecuteMultiSwapPayl
         TAG,
         `step ${index} (${step.symbol}) exhausted ${MAX_LEG_ATTEMPTS} attempts; continuing to next leg`
       )
+      // The weekend pause of the COP FX rail is an expected state, not a
+      // defect: every attempt fails with squid_unavailable while Mento rests
+      // (Sat/Sun UTC). Give it its own fingerprint so the weekend noise does
+      // not pollute the real step_failed issue (TUCOPWALLET-1H), and so a
+      // spike of step_failed on a weekday still pages as itself. The UI is
+      // proactively closed during the window (fxMarket.ts); this only fires
+      // on the edge hours around the boundary.
+      const allAttemptsMarketPaused =
+        attemptFailures.length > 0 &&
+        attemptFailures.every((f) => String(f.reason).includes('squid_unavailable'))
       captureBusinessError(new Error(`multi_swap_step_failed`), {
         feature: 'dollars_spend',
         provider: 'internal',
         action: 'multi_swap_step',
-        errorCode: 'step_failed',
+        errorCode: allAttemptsMarketPaused ? 'squid_unavailable' : 'step_failed',
         extra: {
           stepIndex: index,
           stepSymbol: step.symbol,

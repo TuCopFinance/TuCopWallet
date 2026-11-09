@@ -44,11 +44,14 @@ export type PayoutMethod = OfframpOrderRequest['payout_method']
 export type BankAccountType = NonNullable<OfframpOrderRequest['bank_account_type']>
 export type P2POrderType = OrderSummary['order_type']
 
-// Off-ramp state machine (guide section 6.1). The openapi types `status` as
-// a plain string, so we keep the enum listed here as the wallet's known
-// vocabulary. If Ramp adds a state, ordering picks it up as a raw string;
-// terminal-state predicates in saga.ts have to be updated by hand.
+// Off-ramp state machine, 9 states per Ramp's order-state-machine.ts. The
+// openapi types `status` as a plain string, so we keep the enum listed here
+// as the wallet's known vocabulary. If Ramp adds a state, ordering picks it
+// up as a raw string; terminal-state predicates in saga.ts have to be
+// updated by hand, and an unknown status must NEVER read as terminal.
+// DRAFT is a valid enum value upstream that is not produced today.
 export type OfframpOrderStatus =
+  | 'DRAFT'
   | 'AWAITING_DEPOSIT'
   | 'DEPOSIT_CONFIRMED'
   | 'PROCESSING'
@@ -58,14 +61,22 @@ export type OfframpOrderStatus =
   | 'CANCELLED'
   | 'EXPIRED'
 
-// On-ramp state machine (guide section 6.2). Same caveat as off-ramp.
-// REJECTED is final: the operator could not match the user's payment.
+// On-ramp state machine, 10 states. Same caveat as off-ramp.
+// REJECTED is final (operator chose outcome `no_funds`). A rejection with
+// outcome `retry` sends the order BACK to AWAITING_PROOF (the user uploads
+// the receipt again); outcome `refund` sends it to REFUND_OWED: the COP
+// arrived but the order cannot complete, so the refund is a bank transfer
+// back, proven with a receipt. REFUND_OWED is NOT terminal; it transitions
+// to REFUNDED.
 export type OnrampOrderStatus =
+  | 'DRAFT'
   | 'AWAITING_PROOF'
   | 'AWAITING_REVIEW'
   | 'VERIFYING'
   | 'COMPLETED'
   | 'REJECTED'
+  | 'REFUND_OWED'
+  | 'REFUNDED'
   | 'CANCELLED'
   | 'EXPIRED'
 

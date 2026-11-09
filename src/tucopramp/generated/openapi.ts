@@ -4,375 +4,7 @@
  */
 
 export interface paths {
-  '/v1/auth/siwe/nonce': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Issue a SIWE nonce
-     * @description Issue a one-time nonce for SIWE.
-     */
-    post: operations['siweNonce']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/siwe': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Verify a SIWE signature
-     * @description Verify a SIWE message + signature. Returns a session token if the wallet is linked to a known user, otherwise 401 wallet_not_linked.
-     */
-    post: operations['siweVerify']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/email-otp': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Request an email OTP
-     * @description Request an email OTP. Returns 202 with an opaque challenge_id even for unknown emails (anti-enumeration).
-     */
-    post: operations['emailOtpRequest']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/email-otp/verify': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Verify an email OTP
-     * @description Verify an email OTP plus an SIWE message in one step. Links the wallet on success.
-     */
-    post: operations['emailOtpVerify']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/initiate-kyc': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Initiate KYC
-     * @description Start a KYC flow with Bridge and return the hosted link plus a polling token.
-     */
-    post: operations['initiateKyc']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/auth/kyc-status': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Poll KYC status
-     * @description Poll the KYC flow. Returns { status: pending } until the webhook arrives.
-     */
-    get: operations['pollKycStatus']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get current user
-     * @description Return the authenticated user profile.
-     */
-    get: operations['getMe']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me/audit-log': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List audit-log events
-     * @description Paginated stream of user events (cursor on created_at).
-     */
-    get: operations['listAuditLog']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me/email/initiate-change': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Initiate email change
-     * @description Start an email change. If the user already has a verified email, OTPs go to BOTH addresses.
-     */
-    post: operations['initiateEmailChange']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me/email/confirm-change': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Confirm email change
-     * @description Confirm an email change with the OTP(s) issued by initiate-change.
-     */
-    post: operations['confirmEmailChange']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/users/me/external-accounts': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List external accounts
-     * @description List the user's active payout accounts.
-     */
-    get: operations['listExternalAccounts']
-    put?: never
-    /**
-     * Create external account
-     * @description Register a Colombian payout account (BRE-B key or co_bank_transfer). Body is a discriminated union on `rail`.
-     */
-    post: operations['createExternalAccount']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/offramp/quote': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Request off-ramp quote
-     * @description Request an off-ramp quote (COPm on Celo -> USDC on Base -> COP via Bridge). Returns an opaque envelope to attach to the operation create call.
-     */
-    post: operations['requestQuote']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/offramp/operations': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List operations
-     * @description Paginated list of the user's operations (cursor on created_at).
-     */
-    get: operations['listOperations']
-    put?: never
-    /**
-     * Create off-ramp operation
-     * @description Create an off-ramp operation from a quote envelope. The `Idempotency-Key` header is required.
-     */
-    post: operations['createOperation']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/offramp/operations/{id}/submit': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Submit swap tx hash
-     * @description Attach the swap tx hash. Transitions AWAITING_SIGNATURE -> SUBMITTED.
-     */
-    post: operations['submitOperation']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/offramp/operations/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get one operation
-     * @description Get one operation.
-     */
-    get: operations['getOperation']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/webhooks/bridge': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Bridge.xyz webhook
-     * @description Receive Bridge.xyz webhooks. Authenticated via HMAC signature header (`X-Bridge-Signature`), no bearer auth.
-     */
-    post: operations['bridgeWebhook']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/health': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Liveness probe
-     * @description Liveness check.
-     */
-    get: operations['healthLive']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/health/ready': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Readiness probe
-     * @description Readiness check (DB + upstreams).
-     */
-    get: operations['healthReady']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/p2p/banks': {
+  '/p2p/banks': {
     parameters: {
       query?: never
       header?: never
@@ -381,7 +13,7 @@ export interface paths {
     }
     /**
      * List supported Colombian banks
-     * @description Return the active bank list plus supported account types. Consumer key only.
+     * @description Return the active bank list plus supported account types. Consumer key only; the consumer needs a P2P product.
      */
     get: operations['p2pListBanks']
     put?: never
@@ -392,27 +24,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/receiving-account': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get the onramp Bre-B receiving account
-     * @description Return the TuCop Bre-B key the user must send COP to. Consumer key only, no wallet auth.
-     */
-    get: operations['p2pGetOnrampReceivingAccount']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/p2p/limits': {
+  '/p2p/limits': {
     parameters: {
       query?: never
       header?: never
@@ -421,7 +33,7 @@ export interface paths {
     }
     /**
      * Get effective AML caps for the calling consumer
-     * @description Return the resolved min/max order and daily/monthly rolling caps for this consumer. Values respect per-consumer overrides from migration 0008; NULL overrides fall back to the global env defaults. Wallet clients can call this at boot and cache locally so their pre-round-trip UX validations stay in sync with the server without a wallet release when Ops bumps the caps. Response is Cache-Control: public, max-age=300. Consumer key only, no wallet auth. Daily and monthly windows are enforced per-cedula (not per-wallet); field names stay neutral.
+     * @description Return the resolved min/max order and daily/monthly rolling caps for this consumer. Values respect per-consumer overrides from migration 0008; NULL overrides fall back to the global env defaults. Wallet clients can call this at boot and cache locally so their pre-round-trip UX validations stay in sync with the server without a wallet release when Ops bumps the caps. Response is Cache-Control: public, max-age=300. Consumer key only, no wallet auth; the consumer needs a P2P product. Daily and monthly windows are enforced per-cedula (not per-wallet); field names stay neutral.
      */
     get: operations['p2pGetLimits']
     put?: never
@@ -432,7 +44,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/users/me': {
+  '/p2p/onramp/receiving-account': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get the onramp Bre-B receiving account
+     * @description Return the TuCop Bre-B key the user must send COP to. Consumer key only, no wallet auth; the consumer needs the p2p_onramp product.
+     */
+    get: operations['p2pGetOnrampReceivingAccount']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/p2p/users/me': {
     parameters: {
       query?: never
       header?: never
@@ -452,7 +84,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/users/cedula': {
+  '/p2p/users/cedula': {
     parameters: {
       query?: never
       header?: never
@@ -472,7 +104,7 @@ export interface paths {
     patch: operations['p2pPatchCedula']
     trace?: never
   }
-  '/v1/p2p/offramp/quote': {
+  '/p2p/offramp/quote': {
     parameters: {
       query?: never
       header?: never
@@ -492,7 +124,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/offramp/orders': {
+  '/p2p/offramp/orders': {
     parameters: {
       query?: never
       header?: never
@@ -512,7 +144,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/quote': {
+  '/p2p/onramp/quote': {
     parameters: {
       query?: never
       header?: never
@@ -523,7 +155,7 @@ export interface paths {
     put?: never
     /**
      * Quote a P2P onramp
-     * @description Return a fee + limits snapshot for a proposed onramp order.
+     * @description Return a fee + limits snapshot for a proposed onramp order. Signed by the end user's wallet, like the rest of the wallet surface. TuCOP can turn the signature off for an integrator that opens orders from its own backend, for users who hold no wallet of their own; the consumer key alone is then enough. Ask TuCOP which applies to your integrator.
      */
     post: operations['p2pOnrampQuote']
     delete?: never
@@ -532,18 +164,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/onramp/orders': {
+  '/p2p/onramp/orders': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    get?: never
+    /**
+     * List the consumer's P2P onramp orders
+     * @description The calling consumer's onramp orders across every wallet, newest first, up to 100. Consumer key only, no wallet signature: this is an integrator-scoped read across wallets, so there is no one wallet to sign it. The consumer needs the p2p_onramp product.
+     */
+    get: operations['p2pOnrampListOrders']
     put?: never
     /**
      * Create a P2P onramp order
      * @description Idempotent create. The Idempotency-Key header is required. Returns the Bre-B receiving-account plus user-facing instructions to send COP.
+     *
+     *     Signed by the end user's wallet: the signature says which wallet asked for the order and is what the per-wallet rate limit counts. It is not a claim about the destination - `wallet_address` in the body may be a wallet the signer does not hold, because opening an order that pays someone else is allowed.
+     *
+     *     TuCOP can turn the signature off for an integrator that opens orders from its own backend, for users who hold no wallet of their own; the consumer key alone is then enough. Ask TuCOP which applies to your integrator.
      */
     post: operations['p2pOnrampCreateOrder']
     delete?: never
@@ -552,7 +192,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders': {
+  '/p2p/orders': {
     parameters: {
       query?: never
       header?: never
@@ -572,7 +212,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}': {
+  '/p2p/orders/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -592,7 +232,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}/cancel': {
+  '/p2p/orders/{id}/cancel': {
     parameters: {
       query?: never
       header?: never
@@ -612,27 +252,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/orders/{id}/proof': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Upload payment proof for an onramp order
-     * @description Multipart upload of the user's Bre-B receipt (PNG, JPEG, or PDF, 10MB max). Transitions AWAITING_PROOF -> AWAITING_REVIEW. Wallet signature covers the empty-body hash: the file bytes themselves are not signed in V1.
-     */
-    post: operations['p2pUploadProof']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/p2p/orders/{id}/proof-url': {
+  '/p2p/orders/{id}/proof-url': {
     parameters: {
       query?: never
       header?: never
@@ -652,87 +272,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/p2p/proofs/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Serve a proof file via a presigned URL
-     * @description Public endpoint gated by HMAC (ts + sig query params) issued by /v1/p2p/orders/{id}/proof-url. Consumer-key middleware still runs at the app layer, but there is NO wallet-auth on this route.
-     */
-    get: operations['p2pServeProof']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/auth/google/login': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Start Google SSO for an operator
-     * @description Issues a signed admin_oauth_state cookie and 302-redirects the browser to Google. No request body.
-     */
-    get: operations['adminGoogleLogin']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/auth/google/callback': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Complete Google SSO for an operator
-     * @description Exchange the OAuth code, verify the hd=tucop.org constraint, look up the provisioned operator, mint an admin_session cookie, and redirect to /admin. On failure, redirect to /admin/login?error=<code> (browser requests) or return a JSON error (API clients).
-     */
-    get: operations['adminGoogleCallback']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/auth/me': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get the currently authenticated operator
-     * @description Return the operator profile bound to the admin_session cookie. Used by the admin UI shell to render the header and detect stale sessions.
-     */
-    get: operations['adminAuthMe']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/auth/logout': {
+  '/p2p/orders/{id}/proof': {
     parameters: {
       query?: never
       header?: never
@@ -742,57 +282,17 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Revoke the admin session and clear the cookie
-     * @description Revokes the p2p_operator_sessions row and clears the admin_session cookie. Safe to call without an active session (returns 200 in either case).
+     * Upload payment proof for an onramp order
+     * @description Multipart upload of the user's Bre-B receipt (PNG, JPEG, or PDF, 10MB max). Transitions AWAITING_PROOF -> AWAITING_REVIEW. Wallet signature covers the empty-body hash: the file bytes themselves are not signed in V1.
      */
-    post: operations['adminAuthLogout']
+    post: operations['p2pUploadProof']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List and filter orders
-     * @description Paginated list of orders. Filters by status, type, operator, date range, and cedula hash. viewer+ role.
-     */
-    get: operations['adminListOrders']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get one order (detail view)
-     * @description Detail view with amounts, payout, user contact, active claim, and last 20 audit entries. Viewers see masked cedula and payout details; operators + admins see decrypted values.
-     */
-    get: operations['adminGetOrder']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/claim': {
+  '/sessions/wallet/nonce': {
     parameters: {
       query?: never
       header?: never
@@ -802,17 +302,17 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Claim an order (5 minute row-lock)
-     * @description Acquires a 5 minute claim on the order. Fails with 409 if another operator already holds the claim. operator+ role.
+     * Get a message for a wallet to sign
+     * @description Returns a nonce and the exact message the wallet signs with EIP-191 (personal_sign). The message names your consumer, the wallet, the chain, the nonce and its expiry (5 minutes). Sign `message` as returned, without changing it. Consumer key only.
      */
-    post: operations['adminClaimOrder']
+    post: operations['createPartySessionWalletNonce']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/release': {
+  '/sessions/wallet': {
     parameters: {
       query?: never
       header?: never
@@ -822,157 +322,17 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Release the current operator's claim
-     * @description Release the caller's own claim on the order. Safe to call if no claim is held (returns { released: false }).
+     * Exchange a wallet signature for a party session
+     * @description Verifies the EIP-191 signature of the message from POST /sessions/wallet/nonce. A nonce is used once and only by the consumer it was issued to. EOA signatures only. Consumer key only.
      */
-    post: operations['adminReleaseOrder']
+    post: operations['createPartySessionFromWallet']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/orders/{id}/complete-offramp': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Complete an offramp order (multipart)
-     * @description Multipart body: file (PNG/JPEG/PDF, 10MB max) + payout_reference. Transitions PROCESSING -> COMPLETED. Requires an active claim held by the caller.
-     */
-    post: operations['adminCompleteOfframp']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/complete-onramp': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Complete an onramp order
-     * @description Record the outgoing COPm transfer tx hash. Transitions VERIFYING -> COMPLETED. Requires an active claim held by the caller.
-     */
-    post: operations['adminCompleteOnramp']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/refund-offramp': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Execute a refund on a REFUND_OWED offramp order
-     * @description Record the refund COPm transfer tx hash. Transitions REFUND_OWED -> REFUNDED. Requires an active claim held by the caller.
-     */
-    post: operations['adminRefundOfframp']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/reject': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Reject an order
-     * @description Reject an order with a reason. Valid for offramp orders in PROCESSING and onramp orders in AWAITING_REVIEW or VERIFYING. Requires an active claim held by the caller. Setting retryable=true routes offramps to REFUND_OWED instead of REJECTED so a refund can follow.
-     */
-    post: operations['adminRejectOrder']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/cancel': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Cancel an unfunded order
-     * @description Closes an order the user never funded: offramp in AWAITING_DEPOSIT, onramp in AWAITING_PROOF. Restricted to superadmin because it terminates an order the user may still have open, with no undo. Once funds have arrived the order is no longer cancelable and must be completed, rejected or refunded instead. No claim is required, since a claim cannot be held before a deposit exists. The reason is recorded on the order and in the audit log, and cancelled_by_operator_id distinguishes this from a user-initiated cancel.
-     */
-    post: operations['adminCancelOrder']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/orders/{id}/note': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Attach or update the last_operator_note on an order
-     * @description Overwrites the last_operator_note field on the order. Requires an active claim held by the caller.
-     */
-    post: operations['adminAddOrderNote']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/users/by-cedula-hash/{hash}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Look up a user by cedula hash
-     * @description Returns the plaintext cedula (decrypted server-side), the linked wallets, order counters, and cedula-history count. operator+ role.
-     */
-    get: operations['adminLookupUserByCedulaHash']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/users/{id}/cedula': {
+  '/sessions/current': {
     parameters: {
       query?: never
       header?: never
@@ -982,126 +342,17 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    delete?: never
-    options?: never
-    head?: never
     /**
-     * Override a user's cedula (admin only)
-     * @description Delegates to the same cedulaService.correctCedula path the wallet self-service uses. Rejected while any active order references the current cedula. admin role.
+     * Sign out: revoke the party session
+     * @description Revokes the session sent in X-TuCOPRamp-Party-Session at once; later calls with it get 401 `party_session_invalid`. Only the consumer that opened the session can revoke it. Answers 204 whether or not there was a live session to revoke, so it can be called on every sign-out.
      */
-    patch: operations['adminPatchUserCedula']
-    trace?: never
-  }
-  '/v1/admin/operators': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List the operator roster (admin only)
-     * @description Returns the full p2p_operators roster ordered by creation date. admin role.
-     */
-    get: operations['adminListOperators']
-    put?: never
-    /**
-     * Provision a new operator (admin only)
-     * @description Provisions an email-first operator row. google_sub and full_name fill in on the operator's first Google login. Email must belong to the configured GOOGLE_OAUTH_HD domain. admin role.
-     */
-    post: operations['adminCreateOperator']
-    delete?: never
+    delete: operations['revokePartySession']
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/operators/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /**
-     * Change an operator's role or active state (admin only)
-     * @description Patch role and/or is_active on an operator. Refuses self-modification so an admin cannot lock themselves out. admin role.
-     */
-    patch: operations['adminPatchOperator']
-    trace?: never
-  }
-  '/v1/admin/consumers': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * List all API consumer keys (operator+)
-     * @description Returns every row in the consumers table, active first then by created_at DESC. Plaintext keys are NEVER included; only prefix + hash-derived metadata. Reads permit operator+ so on-call can identify which consumer produced a request.
-     */
-    get: operations['adminListConsumers']
-    put?: never
-    /**
-     * Provision a new consumer key (admin only)
-     * @description Generates a fresh tcr_<64hex> API key, stores only the SHA-256 hash + prefix, returns the plaintext exactly once. Callers MUST surface the plaintext immediately and warn it will never be shown again.
-     */
-    post: operations['adminCreateConsumer']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/consumers/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get one consumer key (operator+) */
-    get: operations['adminGetConsumer']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /**
-     * Update scopes and/or deactivate a consumer (admin only)
-     * @description Update `scopes` and/or toggle `is_active`. Deactivated consumers immediately fail with 401 invalid_api_key on any request. There is no DELETE because consumers.id is FK-referenced from p2p_orders.
-     */
-    patch: operations['adminPatchConsumer']
-    trace?: never
-  }
-  '/v1/admin/consumers/{id}/usage': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Recent usage stats for a consumer (operator+)
-     * @description V1 surfaces last_used_at + count of admin-driven audit-log entries in the last 24 hours. Shape is future-friendly for per-endpoint request counts once the access log persists.
-     */
-    get: operations['adminGetConsumerUsage']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/v1/admin/consumers/{id}/rotate': {
+  '/parties': {
     parameters: {
       query?: never
       header?: never
@@ -1111,17 +362,17 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Rotate a consumer's API key (admin only)
-     * @description Generates a fresh secret, invalidates the previous key immediately, returns the new plaintext exactly once. All in-flight requests using the old key start returning 401 invalid_api_key on the next verification.
+     * Create or link the session's party
+     * @description Creates the party for the person in the party session and starts identity verification (201), or links the party that already holds the document to your consumer (200). An existing party is linked only when the session's email or wallet is already attached to it; otherwise the answer is 409 `party_identity_not_proven`, which TuCOP reviews. Consumer key, party session and Idempotency-Key.
      */
-    post: operations['adminRotateConsumer']
+    post: operations['createParty']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/audit-log': {
+  '/parties/me': {
     parameters: {
       query?: never
       header?: never
@@ -1129,10 +380,10 @@ export interface paths {
       cookie?: never
     }
     /**
-     * Search the audit log (admin only)
-     * @description Paginated audit log with filters on operator, action, date range, and order. admin role.
+     * Get the session's party
+     * @description Status, endorsements and the instruments your consumer may see. While verification is moving, the status is re-read from the provider (at most every 10 seconds). Consumer key and party session.
      */
-    get: operations['adminListAuditLog']
+    get: operations['getMyParty']
     put?: never
     post?: never
     delete?: never
@@ -1141,7 +392,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/v1/admin/stats': {
+  '/destinations': {
     parameters: {
       query?: never
       header?: never
@@ -1149,19 +400,23 @@ export interface paths {
       cookie?: never
     }
     /**
-     * Dashboard counters (viewer+)
-     * @description Single-query snapshot for the ops portal home strip. Pending / in-progress / completed-today / rejected-today / refund-owed / cop volumes.
+     * List destinations
+     * @description The party's destinations your consumer can see: those it created and the party's first-party ones. Newest first, a page at a time: `limit` (1 to 100, default 100) and `starting_after` (the last `id` of the previous page); `has_more` says whether there is another page. Deleted destinations are left out unless `include_disabled=true`; they then come with `active: false` and `disabled_at`.
      */
-    get: operations['adminGetStats']
+    get: operations['listDestinations']
     put?: never
-    post?: never
+    /**
+     * Register a Bre-B key
+     * @description Registers a Bre-B key for the session's party. When the party already has it (first_party: same key; third_party: same key added by your consumer) the existing destination is returned with 200; that includes a deleted first-party destination that had a withdrawal address, which comes back active. Otherwise TuCOP creates the account with the payments provider and answers 202 with status `pending`; the Bre-B directory answers in about a minute and the result arrives as `destination.verified` or `destination.rejected`, or by polling GET /destinations/{id}. first_party passes only when the directory matches, the holder is the party's KYC'd name and the holder document is the party's. third_party with `owner_name` passes when the directory matches. third_party without `owner_name` is a key lookup: it passes when the directory resolves the key to a holder, and is rejected with `directory_no_match` when it finds none. Either way, confirm a third-party destination (POST /destinations/{id}/confirm) after showing `holder` to the payer; payments need it. Rejected accounts are deleted at the payments provider. There is no limit on how many destinations a party has.
+     */
+    post: operations['createDestination']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/unmatched-deposits': {
+  '/destinations/{id}': {
     parameters: {
       query?: never
       header?: never
@@ -1169,19 +424,23 @@ export interface paths {
       cookie?: never
     }
     /**
-     * List unmatched COPm deposits (operator+)
-     * @description Paginated list of chain-monitor-detected transfers that did not match any open order. Default filter is unresolved only.
+     * Get a destination
+     * @description Returns the destination, also after it was deleted (`active: false`), so you can still show it.
      */
-    get: operations['adminListUnmatchedDeposits']
+    get: operations['getDestination']
     put?: never
     post?: never
-    delete?: never
+    /**
+     * Delete a destination
+     * @description Deletes a destination your consumer created, or a first-party destination of the party. It is kept with `active: false` and can no longer be paid or withdrawn to. Deleting it again answers 204 and changes nothing. The account is also deleted at the payments provider, except while a withdrawal address (even a disabled one) pays to it: the provider keeps paying out what reaches a disabled address to its key, so that key must stay. A destination with an active withdrawal address cannot be deleted: disable the withdrawal first (DELETE /withdrawals/{id}). To use the key again, register it again with POST /destinations: a key that had a withdrawal address comes back as the same destination (200, same id, still verified) and its address can be re-enabled; any other key gets a new destination.
+     */
+    delete: operations['deleteDestination']
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/v1/admin/unmatched-deposits/{tx_hash}/resolve': {
+  '/quotes': {
     parameters: {
       query?: never
       header?: never
@@ -1191,10 +450,76 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Mark an unmatched deposit as resolved (operator+)
-     * @description Records a resolution note (and optional refund_tx_hash appended in a stable format) on the unmatched deposit row.
+     * Quote a payment or a withdrawal
+     * @description `pay`: prices a payment of `amount_cop` to a verified third-party destination at the payments provider's current rate. The quote lasts 2 minutes and is used by one payment. `withdraw`: the USDC to send to the party's liquidation address (POST /withdrawals) so that at least `amount_cop` reaches its own Bre-B key. Nothing takes a withdraw quote.
      */
-    post: operations['adminResolveUnmatchedDeposit']
+    post: operations['createQuote']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/withdrawals': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List withdrawal addresses
+     * @description The party's withdrawal addresses, active and disabled, newest first, at most 50, without payouts. Each has `status` and `disabled_at`. For payouts and their status read one address (GET /withdrawals/{id}) or listen to withdraw.drained.
+     */
+    get: operations['listWithdrawals']
+    put?: never
+    /**
+     * Create or get a withdrawal address
+     * @description Returns the party's liquidation address for a verified first-party destination, creating it the first time (201) and returning the same one afterwards (200). There is one address per destination and integrator (another integrator linked to the person never sees or reuses yours); a party with several keys gets one address per key, each paying only to its own key. When the address was disabled, this re-enables the same address (200, `status: active`); no new address is created. Send USDC on Celo to `deposit.address`; the payments provider pays it out in COP to the destination. Use POST /quotes with `product: withdraw` to know how much to send for a given COP amount.
+     */
+    post: operations['createWithdrawal']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/withdrawals/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a withdrawal address and its payouts */
+    get: operations['getWithdrawal']
+    put?: never
+    post?: never
+    /**
+     * Disable a withdrawal address
+     * @description Disables the address and answers 200 with it (`status: disabled`, `disabled_at`). Disabling it again answers 200 with the same resource. The payments provider cannot turn an address off: USDC sent to it afterwards is still paid out in COP to the same Bre-B key. It is not held or returned. Tell the person to stop using the address. TuCOP keeps reading a disabled address for 7 days, so payouts in that time still arrive as `withdraw.drained`. POST /withdrawals for the same destination re-enables the same address. Sends `withdrawal.disabled` when the status changes.
+     */
+    delete: operations['disableWithdrawal']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/deposits': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List deposit accounts */
+    get: operations['listDeposits']
+    put?: never
+    /**
+     * Create or get a deposit account
+     * @description Returns the party's virtual account for a wallet, creating it the first time (201) and returning the same one afterwards (200). When the payments provider already has an active COP account for the party that sends USDC on Celo to that wallet (opened outside TuCOP) and no integrator holds it yet, TuCOP takes it over instead of opening another one and answers 200: same Bre-B key, and `fee_bps` is that account's own fee. Not available in the sandbox: the payments provider's sandbox does not create COP virtual accounts, so the request answers 422 provider_rejected there.
+     */
+    post: operations['createDeposit']
     delete?: never
     options?: never
     head?: never
@@ -1205,308 +530,8 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    Error: {
-      type?: string
-      title?: string
-      status: number
-      code: string
-      detail: string
-      request_id?: string
-      issues?: {
-        path: string
-        code: string
-      }[]
-    }
-    FeesBreakdown: {
-      squid_usd: number
-      bridge_cop: number
-      total_cop_equivalent: number
-    }
-    UnsignedTx: {
-      to: string
-      data: string
-      value: string
-      chainId: number
-      gasEstimate?: string
-    }
-    QuoteEnvelope: {
-      provider_route_id: string
-      provider_request_id: string
-      unsigned_tx: components['schemas']['UnsignedTx']
-      approval_tx: components['schemas']['UnsignedTx'] & (Record<string, never> | null)
-      dst_amount_estimate_wei: string
-      dst_amount_min_wei: string
-      dest_amount_cop_estimate: string
-      fees: components['schemas']['FeesBreakdown']
-      /** Format: date-time */
-      expires_at: string
-      liquidation_address: string
-      source_wallet_address: string
-    }
-    Operation: {
-      /** Format: uuid */
-      id: string
-      /** @enum {string} */
-      status:
-        | 'AWAITING_SIGNATURE'
-        | 'SUBMITTED'
-        | 'SWAP_CONFIRMED'
-        | 'BRIDGE_PROCESSING'
-        | 'PAYOUT_COMPLETED'
-        | 'FAILED'
-      source_amount_copm: string
-      dest_amount_cop_estimate: string
-      dest_amount_cop_actual: string | null
-      fees: components['schemas']['FeesBreakdown']
-      slippage_bps: number
-      /** Format: uuid */
-      external_account_id: string
-      liquidation_address: string
-      swap_tx_hash: string | null
-      swap_confirmations: number
-      bridge_drain_id: string | null
-      error_code: string | null
-      error_detail: {
-        [key: string]: unknown
-      } | null
-      /** Format: date-time */
-      quote_expires_at: string
-      /** Format: date-time */
-      created_at: string
-      /** Format: date-time */
-      updated_at: string
-      unsigned_tx?: components['schemas']['UnsignedTx']
-      approval_tx?: components['schemas']['UnsignedTx'] & (Record<string, never> | null)
-    }
-    SiweNonceRequest: {
-      wallet_address: string
-    }
-    SiweNonceResponse: {
-      nonce: string
-      /** Format: date-time */
-      expires_at: string
-    }
-    SiweVerifyRequest: {
-      message: string
-      signature: string
-    }
-    SiweSuccess: {
-      session_token: string
-      /** Format: uuid */
-      user_id: string
-      wallet_address: string
-    }
-    EmailOtpRequest: {
-      /** Format: email */
-      email: string
-      /** @enum {string} */
-      purpose: 'wallet_link' | 'email_verify'
-    }
-    EmailOtpRequestResponse: {
-      /** Format: uuid */
-      challenge_id: string
-      /** Format: date-time */
-      expires_at: string
-    }
-    EmailOtpVerifyRequest: {
-      /** Format: uuid */
-      challenge_id: string
-      otp: string
-      siwe_message: string
-      siwe_signature: string
-    }
-    EmailOtpVerifyResponse: {
-      session_token: string
-      /** Format: uuid */
-      user_id: string
-      wallet_address: string
-      wallet_was_newly_linked: boolean
-    }
-    InitiateKycRequest: {
-      wallet_address: string
-    }
-    InitiateKycResponse: {
-      /** Format: uri */
-      kyc_link: string
-      /** Format: date-time */
-      kyc_link_expires_at: string
-      /** Format: uuid */
-      pending_link_token: string
-    }
-    KycStatusResponse:
-      | {
-          /** @enum {string} */
-          status: 'pending'
-        }
-      | {
-          /** @enum {string} */
-          status: 'completed'
-          session_token: string
-          /** Format: uuid */
-          user_id: string
-          wallet_address: string
-        }
-    Wallet: {
-      address: string
-      chain_id: number
-      is_primary: boolean
-      /** Format: date-time */
-      linked_at: string
-    }
-    Me: {
-      /** Format: uuid */
-      id: string
-      kyc_status: string
-      cop_endorsement_status: string
-      /** Format: email */
-      email: string | null
-      email_verified: boolean
-      wallets: components['schemas']['Wallet'][]
-      external_accounts_count: number
-    }
-    AuditEvent: {
-      /** Format: uuid */
-      id: string
-      type: string
-      metadata: {
-        [key: string]: unknown
-      }
-      initiated_by: string | null
-      /** Format: date-time */
-      created_at: string
-      notification_sent: boolean
-    }
-    AuditLogResponse: {
-      events: components['schemas']['AuditEvent'][]
-      has_more: boolean
-      /** Format: date-time */
-      next_before: string | null
-    }
-    InitiateEmailChangeRequest: {
-      /** Format: email */
-      new_email: string
-    }
-    InitiateEmailChangeResponse: {
-      /** Format: uuid */
-      new_email_challenge_id: string
-      /** Format: uuid */
-      old_email_challenge_id: string | null
-      /** Format: date-time */
-      expires_at: string
-    }
-    ConfirmEmailChangeRequest: {
-      /** Format: uuid */
-      new_email_challenge_id: string
-      new_email_otp: string
-      /** Format: uuid */
-      old_email_challenge_id?: string
-      old_email_otp?: string
-    }
-    ConfirmEmailChangeResponse: {
-      /** Format: email */
-      email: string
-      email_verified: boolean
-    }
-    CreateExternalAccountRequest:
-      | {
-          /** @enum {string} */
-          rail: 'bre_b'
-          account_holder_name: string
-          /** @enum {string} */
-          account_owner_type: 'individual' | 'business'
-          bre_b_key: string
-          /** @enum {string} */
-          document_type: 'cc' | 'nit' | 'ce'
-          document_number: string
-          phone_number: string
-        }
-      | {
-          /** @enum {string} */
-          rail: 'co_bank_transfer'
-          account_holder_name: string
-          /** @enum {string} */
-          account_owner_type: 'individual' | 'business'
-          bank_code: string
-          account_number: string
-          /** @enum {string} */
-          account_type_detail: 'savings' | 'checking'
-          /** @enum {string} */
-          document_type: 'cc' | 'nit' | 'ce'
-          document_number: string
-          phone_number: string
-        }
-    ExternalAccount: {
-      /** Format: uuid */
-      id: string
-      /** @enum {string} */
-      rail: 'bre_b' | 'co_bank_transfer'
-      masked_identifier: string
-      account_holder_name: string
-      bank_code: string | null
-      account_type_detail: string | null
-      liquidation_address: string
-      /** Format: date-time */
-      created_at: string
-    }
-    ListExternalAccountsResponse: {
-      external_accounts: components['schemas']['ExternalAccount'][]
-    }
-    QuoteRequest: {
-      /** Format: uuid */
-      external_account_id: string
-      source_amount_copm: string
-      slippage_bps?: number
-    }
-    QuoteResponse: {
-      /** Format: uuid */
-      external_account_id: string
-      source_amount_copm: string
-      dst_amount_usdc_estimate: string
-      dst_amount_usdc_min: string
-      dest_amount_cop_estimate: string
-      slippage_bps: number
-      fees: components['schemas']['FeesBreakdown']
-      /** Format: date-time */
-      expires_at: string
-      _quote_envelope: components['schemas']['QuoteEnvelope']
-    }
-    CreateOperationRequest: {
-      /** Format: uuid */
-      external_account_id: string
-      source_amount_copm: string
-      slippage_bps: number
-      quote_envelope: components['schemas']['QuoteEnvelope']
-    }
-    SubmitOperationRequest: {
-      swap_tx_hash: string
-    }
-    ListOperationsResponse: {
-      operations: components['schemas']['Operation'][]
-      has_more: boolean
-      /** Format: date-time */
-      next_before: string | null
-    }
-    BridgeWebhookPayload: {
-      id: string
-      type: string
-    } & {
-      [key: string]: unknown
-    }
-    /** @description Either { accepted: true } or { deduped: true }. */
-    WebhookAck: {
-      accepted?: boolean
-      deduped?: boolean
-    }
-    HealthLiveResponse: {
-      /** @enum {string} */
-      status: 'ok'
-    }
-    HealthReadyResponse: {
-      /** @enum {string} */
-      status: 'ok' | 'degraded'
-      checks: {
-        [key: string]: 'ok' | 'down' | 'skipped'
-      }
+    P2PBanksResponse: {
+      banks: components['schemas']['P2PBank'][]
     }
     P2PBank: {
       code: string
@@ -1514,8 +539,304 @@ export interface components {
       supported_account_types: string[]
       ach_code: string | null
     }
-    P2PBanksResponse: {
-      banks: components['schemas']['P2PBank'][]
+    /** @description RFC 7807 problem details, sent as application/problem+json. Every platform route answers errors in this shape. */
+    Error: {
+      /**
+       * @description URI derived from `code`. An identifier, not a page.
+       * @example https://errors.tucopramp.xyz/invalid-api-key
+       */
+      type?: string
+      /** @example Invalid api key */
+      title?: string
+      /** @example 401 */
+      status: number
+      /**
+       * @description Machine-readable code in snake_case. Branch on this field only.
+       * @example invalid_api_key
+       * @enum {string}
+       */
+      code:
+        | 'admin_unauthenticated'
+        | 'already_registered'
+        | 'already_verified'
+        | 'amount_below_minimum'
+        | 'amount_limit_exceeded'
+        | 'amount_not_settleable'
+        | 'api_key_already_revoked'
+        | 'api_key_cidrs_invalid'
+        | 'api_key_conflict'
+        | 'api_key_expires_at_invalid'
+        | 'api_key_ip_not_allowed'
+        | 'api_key_name_invalid'
+        | 'api_key_not_found'
+        | 'api_key_origin_not_allowed'
+        | 'api_key_origins_not_supported'
+        | 'api_key_rate_limit_invalid'
+        | 'api_key_scope_missing'
+        | 'api_key_scopes_invalid'
+        | 'area_not_allowed'
+        | 'bridge_customer_in_use'
+        | 'bridge_customer_not_found'
+        | 'bridge_customer_not_set'
+        | 'bridge_unavailable'
+        | 'cedula_invalid_format'
+        | 'cedula_locked_by_active_order'
+        | 'chain_not_supported'
+        | 'client_not_found'
+        | 'code_expired'
+        | 'consent_required'
+        | 'console_deposits_unavailable'
+        | 'console_email_in_use'
+        | 'console_google_unavailable'
+        | 'console_login_required'
+        | 'console_metrics_unavailable'
+        | 'console_operator_exists'
+        | 'console_operator_not_found'
+        | 'console_payments_unavailable'
+        | 'console_sandbox_unavailable'
+        | 'console_sandbox_unreachable'
+        | 'console_settings_unavailable'
+        | 'console_unavailable'
+        | 'console_view_read_only'
+        | 'console_view_unavailable'
+        | 'console_webhooks_unavailable'
+        | 'consumer_bridge_key_alias_invalid'
+        | 'consumer_contact_email_invalid'
+        | 'consumer_fee_bps_invalid'
+        | 'consumer_max_deposit_accounts_per_wallet_invalid'
+        | 'consumer_max_first_party_destinations_cap_invalid'
+        | 'consumer_name_already_exists'
+        | 'consumer_name_invalid'
+        | 'consumer_not_found'
+        | 'consumer_override_amount_invalid'
+        | 'consumer_override_bre_b_incomplete'
+        | 'consumer_override_bre_b_invalid'
+        | 'consumer_product_unknown'
+        | 'consumer_return_url_invalid'
+        | 'consumer_scope_unknown'
+        | 'consumer_scopes_required'
+        | 'consumer_tucop_fee_bps_invalid'
+        | 'consumer_update_empty'
+        | 'crypto_unavailable'
+        | 'deposit_deactivated'
+        | 'deposit_in_flight'
+        | 'deposit_not_found'
+        | 'deposit_not_owned'
+        | 'deposit_pool_limit'
+        | 'deposit_wallet_in_use'
+        | 'destination_already_registered'
+        | 'destination_conflict'
+        | 'destination_in_use'
+        | 'destination_invalid'
+        | 'destination_limit_reached'
+        | 'destination_not_confirmed'
+        | 'destination_not_first_party'
+        | 'destination_not_found'
+        | 'destination_not_third_party'
+        | 'destination_not_verified'
+        | 'destination_rejected'
+        | 'destination_validation_timeout'
+        | 'destination_wallet_missing'
+        | 'document_already_registered'
+        | 'email_not_sent'
+        | 'email_not_verified'
+        | 'email_required'
+        | 'email_reserved'
+        | 'fee_above_max'
+        | 'fee_wallet_required'
+        | 'first_party_not_available'
+        | 'github_signature_invalid'
+        | 'github_signature_required'
+        | 'google_account_mismatch'
+        | 'google_email_unverified'
+        | 'google_oauth_failed'
+        | 'google_sign_in_unavailable'
+        | 'holder_name_mismatch'
+        | 'id_token_invalid'
+        | 'idempotency_in_progress'
+        | 'idempotency_key_invalid'
+        | 'idempotency_key_required'
+        | 'idempotency_key_reuse'
+        | 'integrator_customer_mismatch'
+        | 'integrator_not_linked'
+        | 'internal_error'
+        | 'invalid_amount'
+        | 'invalid_api_key'
+        | 'invalid_body'
+        | 'invalid_bre_b_key'
+        | 'invalid_code'
+        | 'invalid_consent'
+        | 'invalid_consumer_fee_bps'
+        | 'invalid_consumer_fee_wallet'
+        | 'invalid_country'
+        | 'invalid_credentials'
+        | 'invalid_document'
+        | 'invalid_email'
+        | 'invalid_json'
+        | 'invalid_key'
+        | 'invalid_link_request'
+        | 'invalid_link_secret'
+        | 'invalid_live_consumer'
+        | 'invalid_login'
+        | 'invalid_max_consumer_fee_bps'
+        | 'invalid_max_first_party_destinations'
+        | 'invalid_name'
+        | 'invalid_nationality'
+        | 'invalid_oauth_request'
+        | 'invalid_oauth_state'
+        | 'invalid_owner_name'
+        | 'invalid_party_type'
+        | 'invalid_product'
+        | 'invalid_query'
+        | 'invalid_return_address'
+        | 'invalid_signature'
+        | 'invalid_signup_token'
+        | 'invalid_token'
+        | 'invalid_upload'
+        | 'invalid_wallet_address'
+        | 'key_already_revoked'
+        | 'key_not_found'
+        | 'key_not_stored'
+        | 'kyc_name_missing'
+        | 'kyc_not_approved'
+        | 'ledger_account_not_found'
+        | 'limit_above_cap'
+        | 'nonce_invalid'
+        | 'not_found'
+        | 'not_registered'
+        | 'nothing_to_confirm'
+        | 'open_order_amount_conflict'
+        | 'operator_area_not_held'
+        | 'operator_area_system_requires_admin'
+        | 'operator_areas_empty'
+        | 'operator_areas_locked_to_role'
+        | 'operator_cannot_delete_bound'
+        | 'operator_cannot_delete_self'
+        | 'operator_cannot_modify_self'
+        | 'operator_email_already_exists'
+        | 'operator_email_exists_inactive'
+        | 'operator_email_exists_other_list'
+        | 'operator_email_invalid'
+        | 'operator_not_found'
+        | 'operator_outranked'
+        | 'operator_role_above_actor'
+        | 'operator_role_insufficient'
+        | 'order_claim_required'
+        | 'order_claimed_by_other'
+        | 'order_not_cancelable'
+        | 'order_not_found'
+        | 'order_state_transition_not_allowed'
+        | 'order_wrong_status'
+        | 'order_wrong_type'
+        | 'party_identity_not_proven'
+        | 'party_not_linked'
+        | 'party_not_verified'
+        | 'party_required'
+        | 'party_restricted'
+        | 'party_session_invalid'
+        | 'party_session_required'
+        | 'pay_limit_exceeded'
+        | 'payload_too_large'
+        | 'payment_not_cancelable'
+        | 'payment_not_found'
+        | 'payment_rejected'
+        | 'payout_invalid_shape'
+        | 'prereg_email_in_use'
+        | 'prereg_email_unchanged'
+        | 'prereg_user_not_found'
+        | 'product_not_available'
+        | 'product_not_enabled'
+        | 'product_not_requested'
+        | 'proof_invalid_type'
+        | 'proof_missing_file'
+        | 'proof_not_acceptable_in_state'
+        | 'proof_not_found'
+        | 'proof_signature_invalid'
+        | 'proof_too_large'
+        | 'proof_url_expired'
+        | 'provider_error'
+        | 'provider_rejected'
+        | 'provider_unavailable'
+        | 'quote_already_used'
+        | 'quote_expired'
+        | 'quote_not_found'
+        | 'rate_limited_api_key'
+        | 'rate_limited_consumer'
+        | 'rate_limited_email'
+        | 'rate_limited_ip'
+        | 'rate_limited_party_session'
+        | 'rate_limited_user'
+        | 'rate_limited_wallet'
+        | 'rate_limited_webhook_test'
+        | 'rate_unavailable'
+        | 'redirect_url_not_allowed'
+        | 'reject_outcome_invalid'
+        | 'return_address_required'
+        | 'sandbox_error'
+        | 'sandbox_name_taken'
+        | 'sandbox_outcome_not_allowed'
+        | 'sandbox_proof_required'
+        | 'signature_expired'
+        | 'signature_invalid'
+        | 'signup_request_not_found'
+        | 'signup_token_required'
+        | 'terms_required'
+        | 'too_many_attempts'
+        | 'tucop_fee_required'
+        | 'unmatched_deposit_already_resolved'
+        | 'unmatched_deposit_not_found'
+        | 'unsupported_encoding'
+        | 'user_not_found'
+        | 'wallet_address_required'
+        | 'wallet_linked_to_other_user'
+        | 'wallet_not_linked'
+        | 'webhook_api_version_unsupported'
+        | 'webhook_category_invalid'
+        | 'webhook_category_mismatch'
+        | 'webhook_category_required'
+        | 'webhook_delivery_in_flight'
+        | 'webhook_delivery_not_found'
+        | 'webhook_description_too_long'
+        | 'webhook_endpoint_deleted'
+        | 'webhook_endpoint_disabled'
+        | 'webhook_endpoint_limit'
+        | 'webhook_endpoint_not_found'
+        | 'webhook_endpoint_paused_by_tucop'
+        | 'webhook_endpoints_unavailable'
+        | 'webhook_event_types_invalid'
+        | 'webhook_host_paused_by_tucop'
+        | 'webhook_not_configured'
+        | 'webhook_overlap_invalid'
+        | 'webhook_url_has_credentials'
+        | 'webhook_url_invalid'
+        | 'webhook_url_not_https'
+        | 'webhook_url_private_address'
+        | 'webhook_url_unresolvable'
+        | 'withdrawal_not_found'
+      /**
+       * @description A sentence for people. It can change at any time.
+       * @example Invalid or unknown API key.
+       */
+      detail: string
+      /** @description Same value as the X-Request-Id response header. */
+      request_id?: string
+      /** @description Fields that failed validation, when there are any. */
+      issues?: {
+        path: string
+        code: string
+      }[]
+      /**
+       * @description On `product_not_enabled`: the category of the services that would open the route. `on_off_ramp` (a payments provider moves the money) or `p2p` (TuCOP runs the exchange). Null when they belong to both.
+       * @enum {string|null}
+       */
+      category?: 'on_off_ramp' | 'p2p' | null
+      /**
+       * @description On `product_not_enabled`: the services that would open the route. Any one is enough.
+       * @example [
+       *       "pay"
+       *     ]
+       */
+      required?: string[]
     }
     P2PLimitsResponse: {
       min_order_cop: number
@@ -1564,12 +885,6 @@ export interface components {
       /** @enum {string} */
       document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
     }
-    P2POnrampQuoteRequest: {
-      gross_amount_cop: number
-      cedula: string
-      /** @enum {string} */
-      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
-    }
     P2PQuoteResponse: {
       quote_id: string
       gross_amount_cop: number
@@ -1614,7 +929,284 @@ export interface components {
       /** Format: date-time */
       expires_at: string
     }
+    /** @description Business error of the two P2P order-create routes, sent as application/json. The problem members are the same as everywhere else; `error_code` and `message` repeat `code` and `detail` for clients written before they were added. */
+    P2POrderCreateError: components['schemas']['Error'] & {
+      /**
+       * @description The same value as `code`. Read `code`; this one stays for older clients.
+       * @example amount_limit_exceeded
+       * @enum {string}
+       */
+      error_code:
+        | 'admin_unauthenticated'
+        | 'already_registered'
+        | 'already_verified'
+        | 'amount_below_minimum'
+        | 'amount_limit_exceeded'
+        | 'amount_not_settleable'
+        | 'api_key_already_revoked'
+        | 'api_key_cidrs_invalid'
+        | 'api_key_conflict'
+        | 'api_key_expires_at_invalid'
+        | 'api_key_ip_not_allowed'
+        | 'api_key_name_invalid'
+        | 'api_key_not_found'
+        | 'api_key_origin_not_allowed'
+        | 'api_key_origins_not_supported'
+        | 'api_key_rate_limit_invalid'
+        | 'api_key_scope_missing'
+        | 'api_key_scopes_invalid'
+        | 'area_not_allowed'
+        | 'bridge_customer_in_use'
+        | 'bridge_customer_not_found'
+        | 'bridge_customer_not_set'
+        | 'bridge_unavailable'
+        | 'cedula_invalid_format'
+        | 'cedula_locked_by_active_order'
+        | 'chain_not_supported'
+        | 'client_not_found'
+        | 'code_expired'
+        | 'consent_required'
+        | 'console_deposits_unavailable'
+        | 'console_email_in_use'
+        | 'console_google_unavailable'
+        | 'console_login_required'
+        | 'console_metrics_unavailable'
+        | 'console_operator_exists'
+        | 'console_operator_not_found'
+        | 'console_payments_unavailable'
+        | 'console_sandbox_unavailable'
+        | 'console_sandbox_unreachable'
+        | 'console_settings_unavailable'
+        | 'console_unavailable'
+        | 'console_view_read_only'
+        | 'console_view_unavailable'
+        | 'console_webhooks_unavailable'
+        | 'consumer_bridge_key_alias_invalid'
+        | 'consumer_contact_email_invalid'
+        | 'consumer_fee_bps_invalid'
+        | 'consumer_max_deposit_accounts_per_wallet_invalid'
+        | 'consumer_max_first_party_destinations_cap_invalid'
+        | 'consumer_name_already_exists'
+        | 'consumer_name_invalid'
+        | 'consumer_not_found'
+        | 'consumer_override_amount_invalid'
+        | 'consumer_override_bre_b_incomplete'
+        | 'consumer_override_bre_b_invalid'
+        | 'consumer_product_unknown'
+        | 'consumer_return_url_invalid'
+        | 'consumer_scope_unknown'
+        | 'consumer_scopes_required'
+        | 'consumer_tucop_fee_bps_invalid'
+        | 'consumer_update_empty'
+        | 'crypto_unavailable'
+        | 'deposit_deactivated'
+        | 'deposit_in_flight'
+        | 'deposit_not_found'
+        | 'deposit_not_owned'
+        | 'deposit_pool_limit'
+        | 'deposit_wallet_in_use'
+        | 'destination_already_registered'
+        | 'destination_conflict'
+        | 'destination_in_use'
+        | 'destination_invalid'
+        | 'destination_limit_reached'
+        | 'destination_not_confirmed'
+        | 'destination_not_first_party'
+        | 'destination_not_found'
+        | 'destination_not_third_party'
+        | 'destination_not_verified'
+        | 'destination_rejected'
+        | 'destination_validation_timeout'
+        | 'destination_wallet_missing'
+        | 'document_already_registered'
+        | 'email_not_sent'
+        | 'email_not_verified'
+        | 'email_required'
+        | 'email_reserved'
+        | 'fee_above_max'
+        | 'fee_wallet_required'
+        | 'first_party_not_available'
+        | 'github_signature_invalid'
+        | 'github_signature_required'
+        | 'google_account_mismatch'
+        | 'google_email_unverified'
+        | 'google_oauth_failed'
+        | 'google_sign_in_unavailable'
+        | 'holder_name_mismatch'
+        | 'id_token_invalid'
+        | 'idempotency_in_progress'
+        | 'idempotency_key_invalid'
+        | 'idempotency_key_required'
+        | 'idempotency_key_reuse'
+        | 'integrator_customer_mismatch'
+        | 'integrator_not_linked'
+        | 'internal_error'
+        | 'invalid_amount'
+        | 'invalid_api_key'
+        | 'invalid_body'
+        | 'invalid_bre_b_key'
+        | 'invalid_code'
+        | 'invalid_consent'
+        | 'invalid_consumer_fee_bps'
+        | 'invalid_consumer_fee_wallet'
+        | 'invalid_country'
+        | 'invalid_credentials'
+        | 'invalid_document'
+        | 'invalid_email'
+        | 'invalid_json'
+        | 'invalid_key'
+        | 'invalid_link_request'
+        | 'invalid_link_secret'
+        | 'invalid_live_consumer'
+        | 'invalid_login'
+        | 'invalid_max_consumer_fee_bps'
+        | 'invalid_max_first_party_destinations'
+        | 'invalid_name'
+        | 'invalid_nationality'
+        | 'invalid_oauth_request'
+        | 'invalid_oauth_state'
+        | 'invalid_owner_name'
+        | 'invalid_party_type'
+        | 'invalid_product'
+        | 'invalid_query'
+        | 'invalid_return_address'
+        | 'invalid_signature'
+        | 'invalid_signup_token'
+        | 'invalid_token'
+        | 'invalid_upload'
+        | 'invalid_wallet_address'
+        | 'key_already_revoked'
+        | 'key_not_found'
+        | 'key_not_stored'
+        | 'kyc_name_missing'
+        | 'kyc_not_approved'
+        | 'ledger_account_not_found'
+        | 'limit_above_cap'
+        | 'nonce_invalid'
+        | 'not_found'
+        | 'not_registered'
+        | 'nothing_to_confirm'
+        | 'open_order_amount_conflict'
+        | 'operator_area_not_held'
+        | 'operator_area_system_requires_admin'
+        | 'operator_areas_empty'
+        | 'operator_areas_locked_to_role'
+        | 'operator_cannot_delete_bound'
+        | 'operator_cannot_delete_self'
+        | 'operator_cannot_modify_self'
+        | 'operator_email_already_exists'
+        | 'operator_email_exists_inactive'
+        | 'operator_email_exists_other_list'
+        | 'operator_email_invalid'
+        | 'operator_not_found'
+        | 'operator_outranked'
+        | 'operator_role_above_actor'
+        | 'operator_role_insufficient'
+        | 'order_claim_required'
+        | 'order_claimed_by_other'
+        | 'order_not_cancelable'
+        | 'order_not_found'
+        | 'order_state_transition_not_allowed'
+        | 'order_wrong_status'
+        | 'order_wrong_type'
+        | 'party_identity_not_proven'
+        | 'party_not_linked'
+        | 'party_not_verified'
+        | 'party_required'
+        | 'party_restricted'
+        | 'party_session_invalid'
+        | 'party_session_required'
+        | 'pay_limit_exceeded'
+        | 'payload_too_large'
+        | 'payment_not_cancelable'
+        | 'payment_not_found'
+        | 'payment_rejected'
+        | 'payout_invalid_shape'
+        | 'prereg_email_in_use'
+        | 'prereg_email_unchanged'
+        | 'prereg_user_not_found'
+        | 'product_not_available'
+        | 'product_not_enabled'
+        | 'product_not_requested'
+        | 'proof_invalid_type'
+        | 'proof_missing_file'
+        | 'proof_not_acceptable_in_state'
+        | 'proof_not_found'
+        | 'proof_signature_invalid'
+        | 'proof_too_large'
+        | 'proof_url_expired'
+        | 'provider_error'
+        | 'provider_rejected'
+        | 'provider_unavailable'
+        | 'quote_already_used'
+        | 'quote_expired'
+        | 'quote_not_found'
+        | 'rate_limited_api_key'
+        | 'rate_limited_consumer'
+        | 'rate_limited_email'
+        | 'rate_limited_ip'
+        | 'rate_limited_party_session'
+        | 'rate_limited_user'
+        | 'rate_limited_wallet'
+        | 'rate_limited_webhook_test'
+        | 'rate_unavailable'
+        | 'redirect_url_not_allowed'
+        | 'reject_outcome_invalid'
+        | 'return_address_required'
+        | 'sandbox_error'
+        | 'sandbox_name_taken'
+        | 'sandbox_outcome_not_allowed'
+        | 'sandbox_proof_required'
+        | 'signature_expired'
+        | 'signature_invalid'
+        | 'signup_request_not_found'
+        | 'signup_token_required'
+        | 'terms_required'
+        | 'too_many_attempts'
+        | 'tucop_fee_required'
+        | 'unmatched_deposit_already_resolved'
+        | 'unmatched_deposit_not_found'
+        | 'unsupported_encoding'
+        | 'user_not_found'
+        | 'wallet_address_required'
+        | 'wallet_linked_to_other_user'
+        | 'wallet_not_linked'
+        | 'webhook_api_version_unsupported'
+        | 'webhook_category_invalid'
+        | 'webhook_category_mismatch'
+        | 'webhook_category_required'
+        | 'webhook_delivery_in_flight'
+        | 'webhook_delivery_not_found'
+        | 'webhook_description_too_long'
+        | 'webhook_endpoint_deleted'
+        | 'webhook_endpoint_disabled'
+        | 'webhook_endpoint_limit'
+        | 'webhook_endpoint_not_found'
+        | 'webhook_endpoint_paused_by_tucop'
+        | 'webhook_endpoints_unavailable'
+        | 'webhook_event_types_invalid'
+        | 'webhook_host_paused_by_tucop'
+        | 'webhook_not_configured'
+        | 'webhook_overlap_invalid'
+        | 'webhook_url_has_credentials'
+        | 'webhook_url_invalid'
+        | 'webhook_url_not_https'
+        | 'webhook_url_private_address'
+        | 'webhook_url_unresolvable'
+        | 'withdrawal_not_found'
+      /** @description The same value as `detail`. Read `detail`; this one stays for older clients. */
+      message: string
+      /** @description Extra context for the code, when the code carries any. */
+      details?: unknown
+    }
+    P2POnrampQuoteRequest: {
+      gross_amount_cop: number
+      cedula: string
+      /** @enum {string} */
+      document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
+    }
     P2POnrampOrderRequest: {
+      wallet_address: string
       gross_amount_cop: number
       cedula: string
       /** @enum {string} */
@@ -1643,6 +1235,10 @@ export interface components {
       proof_upload_required: true
       instructions: string
     }
+    P2POrdersListResponse: {
+      orders: components['schemas']['P2POrderSummary'][]
+      next_cursor: string | null
+    }
     P2POrderSummary: {
       /** Format: uuid */
       id: string
@@ -1655,10 +1251,6 @@ export interface components {
       created_at: string
       /** Format: date-time */
       expires_at: string
-    }
-    P2POrdersListResponse: {
-      orders: components['schemas']['P2POrderSummary'][]
-      next_cursor: string | null
     }
     P2POrderDetail: {
       /** Format: uuid */
@@ -1696,1394 +1288,406 @@ export interface components {
       /** Format: date-time */
       cancelled_at: string
     }
-    P2PProofUploadResponse: {
-      /** Format: uuid */
-      proof_id: string
-      status: string
-    }
     P2PProofUrlResponse: {
       /** Format: uri */
       url: string
       /** Format: date-time */
       expires_at: string
     }
-    AdminMeResponse: {
-      /** Format: uuid */
-      operator_id: string
-      /** Format: email */
-      email: string
-      full_name: string | null
-      /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
-    }
-    AdminLogoutResponse: {
-      /** @enum {boolean} */
-      ok: true
-    }
-    AdminOrderListItem: {
-      /** Format: uuid */
-      id: string
-      /** @enum {string} */
-      order_type: 'offramp' | 'onramp'
-      status: string
-      /** Format: uuid */
-      user_id: string
-      cedula_hash: string
-      gross_amount_cop: number
-      gross_amount_copm: number
-      /** Format: uuid */
-      payout_by_operator_id: string | null
-      /** Format: uuid */
-      outgoing_sent_by_operator_id: string | null
-      /** Format: uuid */
-      rejected_by_operator_id: string | null
-      /** Format: uuid */
-      claimed_by_operator_id: string | null
-      /** Format: email */
-      claimed_by_operator_email: string | null
-      /** Format: date-time */
-      claim_expires_at: string | null
-      /** Format: date-time */
-      created_at: string
-      /** Format: date-time */
-      updated_at: string
-      /** Format: date-time */
-      expires_at: string
-    }
-    AdminOrderListResponse: {
-      orders: components['schemas']['AdminOrderListItem'][]
-      next_cursor: string | null
-    }
-    AdminOrderDetail: {
-      /** Format: uuid */
-      id: string
-      /** @enum {string} */
-      order_type: 'offramp' | 'onramp'
-      status: string
-      wallet_address: string
-      consumer_id: string
-      idempotency_key: string | null
-      full_name: string | null
-      /** Format: email */
-      email: string | null
-      phone: string | null
-      user: {
-        /** Format: uuid */
-        id: string
-        cedula: string | null
-        /** @enum {string} */
-        document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
-        cedula_last_4: string | null
-        cedula_hash: string
-        /** Format: email */
-        primary_email: string | null
-        primary_phone: string | null
-      } | null
-      amounts: {
-        gross_amount_cop: number
-        gross_amount_copm: number
-        fee_percent: number
-        fee_amount_cop: number
-        /** @enum {string} */
-        fee_absorbed_by: 'tucop' | 'user'
-        net_amount_to_user_cop: number
-      }
-      payout: {
-        /** @enum {string} */
-        method: 'bank_account' | 'bre_b_key'
-        bank_code?: string | null
-        bank_account_type?: string | null
-        bank_account_number_last_4?: string | null
-        bank_account_number?: string | null
-        bre_b_key?: string | null
-      } | null
-      incoming_tx_hash: string | null
-      incoming_tx_from_address: string | null
-      /** Format: date-time */
-      incoming_tx_confirmed_at: string | null
-      payout_reference: string | null
-      /** Format: date-time */
-      payout_completed_at: string | null
-      /** Format: uuid */
-      payout_by_operator_id: string | null
-      /** Format: uuid */
-      user_incoming_proof_id: string | null
-      /** Format: date-time */
-      user_incoming_verified_at: string | null
-      /** Format: uuid */
-      user_incoming_verified_by_operator_id: string | null
-      outgoing_tx_hash: string | null
-      /** Format: date-time */
-      outgoing_tx_sent_at: string | null
-      /** Format: uuid */
-      outgoing_sent_by_operator_id: string | null
-      /** Format: date-time */
-      rejected_at: string | null
-      rejected_reason: string | null
-      /** Format: uuid */
-      rejected_by_operator_id: string | null
-      /** Format: date-time */
-      cancelled_at: string | null
-      cancelled_reason: string | null
-      /** Format: uuid */
-      cancelled_by_operator_id: string | null
-      last_operator_note: string | null
-      claim: {
-        /** Format: uuid */
-        operator_id: string
-        /** Format: email */
-        operator_email: string | null
-        /** Format: date-time */
-        expires_at: string | null
-      } | null
-      audit_log: {
-        /** Format: uuid */
-        id: string
-        action: string
-        /** Format: uuid */
-        operator_id: string | null
-        /** Format: email */
-        operator_email: string | null
-        metadata: {
-          [key: string]: unknown
-        }
-        /** Format: date-time */
-        created_at: string
-      }[]
-      /** Format: date-time */
-      created_at: string
-      /** Format: date-time */
-      updated_at: string
-      /** Format: date-time */
-      expires_at: string
-    }
-    AdminOrderClaimResponse: {
-      /** Format: uuid */
-      operator_id: string
-      /** Format: date-time */
-      expires_at: string
-    }
-    AdminOrderReleaseResponse: {
-      released: boolean
-    }
-    AdminCompleteOfframpResponse: {
-      /** Format: uuid */
-      order_id: string
-      status: string
-      /** Format: date-time */
-      payout_completed_at: string | null
+    P2PProofUploadResponse: {
       /** Format: uuid */
       proof_id: string
-    }
-    AdminCompleteOnrampRequest: {
-      tx_hash: string
-    }
-    AdminCompleteOnrampResponse: {
-      /** Format: uuid */
-      order_id: string
-      status: string
-      outgoing_tx_hash: string
-      /** Format: date-time */
-      outgoing_tx_sent_at: string | null
-    }
-    AdminRefundOfframpRequest: {
-      tx_hash: string
-    }
-    AdminRefundOfframpResponse: {
-      /** Format: uuid */
-      order_id: string
-      status: string
-      outgoing_tx_hash: string
-    }
-    AdminRejectRequest: {
-      reason: string
-      retryable?: boolean
-    }
-    AdminCancelRequest: {
-      reason: string
-    }
-    AdminCancelResponse: {
-      /** Format: uuid */
-      order_id: string
       status: string
     }
-    AdminRejectResponse: {
-      /** Format: uuid */
-      order_id: string
-      status: string
-    }
-    AdminNoteRequest: {
-      note: string
-    }
-    AdminNoteResponse: {
-      /** Format: uuid */
-      order_id: string
-      last_operator_note: string
-    }
-    AdminUserLookupResponse: {
-      user: {
-        /** Format: uuid */
-        id: string
-        cedula: string | null
-        /** @enum {string} */
-        document_type: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
-        full_name: string
-        /** Format: email */
-        primary_email: string | null
-        primary_phone: string | null
-        /** Format: date-time */
-        created_at: string | null
-      }
-      wallets: {
-        wallet_address: string
-        chain_id: number
-        /** Format: date-time */
-        linked_at: string | null
-        /** Format: date-time */
-        last_signature_at: string | null
-      }[]
-      orders_count: {
-        total: number
-        open: number
-        completed: number
-        cancelled_expired_rejected: number
-      }
-      cedula_history_count: number
-    }
-    AdminPatchCedulaRequest: {
-      new_cedula: string
+    /** @description A party session. */
+    PartySession: {
+      /**
+       * @description Send it in the X-TuCOPRamp-Party-Session header. Shown once; TuCOP keeps only its hash.
+       * @example tps_q1Xn0d3S2m6v9bK8aP4tZr7wYc5eH1jL0uG2fN3sD8o
+       */
+      token: string
       /** @enum {string} */
-      new_document_type?: 'CC' | 'CE' | 'TI' | 'NUIP' | 'NIT' | 'PAS'
-      reason: string
-    }
-    AdminPatchCedulaResponse: {
-      /** Format: uuid */
-      userId: string
-      /** Format: date-time */
-      updated_at: string | null
-    }
-    AdminOperator: {
-      /** Format: uuid */
-      id: string
-      /** Format: email */
-      email: string
-      google_sub_bound: boolean
-      full_name: string | null
-      /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
-      is_active: boolean
-      /** Format: date-time */
-      created_at: string | null
-      /** Format: date-time */
-      updated_at: string | null
-      /** Format: date-time */
-      last_login_at: string | null
-    }
-    AdminOperatorsListResponse: {
-      operators: components['schemas']['AdminOperator'][]
-    }
-    AdminCreateOperatorRequest: {
-      /** Format: email */
-      email: string
-      /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
-    }
-    AdminCreateOperatorResponse: {
-      /** Format: uuid */
-      operator_id: string
-      /** Format: email */
-      email: string
-      /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
-      is_active: boolean
-    }
-    AdminPatchOperatorRequest: {
-      /** @enum {string} */
-      role?: 'viewer' | 'operator' | 'admin' | 'superadmin'
-      is_active?: boolean
-    }
-    AdminPatchOperatorResponse: {
-      /** Format: uuid */
-      operator_id: string
-      /** Format: email */
-      email: string
-      /** @enum {string} */
-      role: 'viewer' | 'operator' | 'admin' | 'superadmin'
-      is_active: boolean
-    }
-    AdminConsumerOverrides: {
-      min_order_cop_override: number | null
-      max_order_cop_override: number | null
-      max_daily_cop_override: number | null
-      max_monthly_cop_override: number | null
-      bre_b_key_override: string | null
-      bre_b_display_override: string | null
-    }
-    AdminConsumerOverridesInput: {
-      min_order_cop_override?: number | null
-      max_order_cop_override?: number | null
-      max_daily_cop_override?: number | null
-      max_monthly_cop_override?: number | null
-      bre_b_key_override?: string | null
-      bre_b_display_override?: string | null
-    }
-    AdminConsumer: {
-      /** Format: uuid */
-      id: string
-      name: string
-      api_key_prefix: string
-      scopes: string[]
-      is_active: boolean
-      /** Format: date-time */
-      created_at: string
-      /** Format: date-time */
-      last_used_at: string | null
-      min_order_cop_override: number | null
-      max_order_cop_override: number | null
-      max_daily_cop_override: number | null
-      max_monthly_cop_override: number | null
-      bre_b_key_override: string | null
-      bre_b_display_override: string | null
-    }
-    AdminConsumersListResponse: {
-      consumers: components['schemas']['AdminConsumer'][]
-    }
-    AdminConsumerDetailResponse: {
-      consumer: components['schemas']['AdminConsumer']
-    }
-    AdminCreateConsumerRequest: {
-      name: string
-      scopes: ('wallet.read' | 'wallet.write' | 'webhook.receive')[]
-      overrides?: components['schemas']['AdminConsumerOverridesInput']
-    }
-    AdminCreateConsumerResponse: {
-      consumer: components['schemas']['AdminConsumer']
-      /** @description Full plaintext API key. Shown exactly once. Never persisted. */
-      api_key_plaintext: string
-    }
-    AdminPatchConsumerRequest: {
-      scopes?: ('wallet.read' | 'wallet.write' | 'webhook.receive')[]
-      is_active?: boolean
-      overrides?: components['schemas']['AdminConsumerOverridesInput']
-    }
-    AdminRotateConsumerResponse: {
-      consumer: components['schemas']['AdminConsumer']
-      /** @description New plaintext API key. Shown exactly once. The previous key stays valid until previous_key_valid_until (24h dual-valid window per migration 0011), then invalidates. */
-      api_key_plaintext: string
+      method: 'email_otp' | 'wallet' | 'google'
       /**
        * Format: date-time
-       * @description ISO-8601 timestamp until which the previous key still authenticates. Backend integrators use this to schedule the env-var swap on their side without dropping requests. Null on the very first rotate of a fresh consumer that never had a previous key.
+       * @description One hour after it was issued.
        */
-      previous_key_valid_until: string | null
+      expires_at: string
+      party_id: components['schemas']['PartyPublicId'] & (string | null)
     }
-    AdminConsumerUsageWindow: {
-      window_hours: number
-      request_count: number
-      /** Format: date-time */
-      last_used_at: string | null
+    /**
+     * @description Public id of a party: `pty_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example pty_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    PartyPublicId: string
+    /**
+     * @description Unique key for this operation, for example a UUID. Retrying with the same key and body returns the first response; a different body gets 422 idempotency_key_reuse; a retry while the first is running gets 409 idempotency_in_progress. Kept 24 hours.
+     * @example 7b8f2f4e-0a7c-4d55-9a8e-3c1f9e0d2b61
+     */
+    IdempotencyKey: string
+    PartyResponse: {
+      party: components['schemas']['Party']
     }
-    AdminConsumerUsageResponse: {
-      /** Format: uuid */
-      consumer_id: string
-      windows: components['schemas']['AdminConsumerUsageWindow'][]
-    }
-    AdminAuditEntry: {
-      /** Format: uuid */
-      id: string
-      action: string
-      /** Format: uuid */
-      operator_id: string | null
-      /** Format: email */
-      operator_email: string | null
-      /** Format: uuid */
-      order_id: string | null
-      /** Format: uuid */
-      user_id: string | null
-      metadata: {
-        [key: string]: unknown
+    /** @description A person or a business served through your consumer. */
+    Party: {
+      id: components['schemas']['PartyPublicId']
+      /** @enum {string} */
+      type: 'individual' | 'business'
+      /**
+       * @description ISO 3166-1 alpha-3 code of the country that issued the document.
+       * @example COL
+       */
+      country: string
+      status: {
+        /**
+         * @description Identity verification. `not_started` and `incomplete`: the person still has to act in `links.kyc`. `under_review`: waiting on the provider. `suspended`: paused or offboarded.
+         * @enum {string}
+         */
+        kyc: 'not_started' | 'incomplete' | 'under_review' | 'approved' | 'rejected' | 'suspended'
+        /**
+         * @description Provider terms of service.
+         * @enum {string}
+         */
+        tos: 'pending' | 'accepted'
+        /** @description What the party is cleared for. `cop`: Colombian pesos over Bre-B. */
+        endorsements: {
+          /** @enum {string} */
+          name: 'cop'
+          /** @enum {string} */
+          status: 'pending' | 'approved' | 'revoked'
+        }[]
       }
-      ip_address: string | null
-      user_agent: string | null
+      /** @description Set by TuCOP. A restricted party gets no instruments. */
+      restricted: boolean
+      links: {
+        /**
+         * Format: uri
+         * @description Hosted identity verification. Null once there is nothing left to do. It can be set again after `status.kyc` is `approved` while the `cop` endorsement is `pending`: the COP enablement still needs something from the person, so show it to them again. Use the link from the latest response; TuCOP refreshes it.
+         */
+        kyc: string | null
+        /**
+         * Format: uri
+         * @description Hosted terms of service. Null once there is nothing left to do.
+         */
+        tos: string | null
+      }
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+    }
+    PartyMe: {
+      party: components['schemas']['Party']
+      /** @description Instruments your consumer may see: destinations it created and the party's own (first-party) destinations. Empty while the party is restricted. */
+      instruments: {
+        destinations: components['schemas']['DestinationSummary'][]
+      }
+    }
+    DestinationSummary: {
+      id: components['schemas']['DestinationPublicId']
+      /** @enum {string} */
+      ownership: 'first_party' | 'third_party'
+      /** @enum {string} */
+      status: 'pending' | 'verified' | 'rejected'
+      /** @example ****4567 */
+      key_masked: string | null
+      /** @example Bancolombia */
+      bank: string | null
       /** Format: date-time */
       created_at: string
     }
-    AdminAuditListResponse: {
-      entries: components['schemas']['AdminAuditEntry'][]
-      next_cursor: string | null
+    /**
+     * @description Public id of a destination: `dst_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example dst_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    DestinationPublicId: string
+    CreateDestinationRequest: {
+      /**
+       * @description `third_party`: someone the party pays (needs the pay product). `first_party`: the party's own account (needs the withdraw product).
+       * @enum {string}
+       */
+      ownership: 'first_party' | 'third_party'
+      /**
+       * @description The Bre-B key, in the format of its type: mobile number (10 digits starting with 3, no +57), document number (up to 18 letters or digits), email, alphanumeric key (@ and 5 to 20 letters or digits) or merchant code (10 digits starting with 00). Taken in lower case, and a mobile number without +57; anything else gets invalid_bre_b_key. Never stored; only a hash and the masked key are kept.
+       * @example 3001234567
+       */
+      bre_b_key: string
+      /**
+       * @description Holder name, at least two words. Optional for third_party: leave it out to look the key up, and the directory's holder (name, bank, document last 4) is returned in `holder` once verified. When sent, the directory also checks it loosely, as before. Ignored for first_party.
+       * @example Carlos Ruiz
+       */
+      owner_name?: string
     }
-    AdminStatsResponse: {
-      pending_count: number
-      in_progress_count: number
-      completed_today: number
-      rejected_today: number
-      refund_owed_count: number
-      cop_volume_today: number
-      cop_volume_this_month: number
-    }
-    AdminUnmatchedDeposit: {
-      tx_hash: string
-      chain_id: number
-      from_address: string
-      amount_copm: string
-      block_number: number
+    /** @description A Bre-B key registered for a party. */
+    Destination: {
+      id: components['schemas']['DestinationPublicId']
+      /** @enum {string} */
+      ownership: 'first_party' | 'third_party'
+      /** @enum {string} */
+      rail: 'bre_b'
+      /**
+       * @description `pending` until the Bre-B directory answers (about a minute), then `verified` or `rejected`. Each change is also sent as `destination.verified` or `destination.rejected`.
+       * @enum {string}
+       */
+      status: 'pending' | 'verified' | 'rejected'
+      /** @example ****4567 */
+      key_masked: string | null
+      /**
+       * @description Holder name sent to the payments provider: the payer's input for third_party, the KYC'd name for first_party. `null` for a key lookup (third_party created without `owner_name`): the holder comes from the Bre-B directory in `holder`.
+       * @example Carlos Ruiz
+       */
+      owner_name: string | null
+      /** @description What the Bre-B directory returned. Only on `verified`. Show it to the payer before they confirm a third-party destination. For a key lookup this is how the payer learns who holds the key. */
+      holder: {
+        name: string | null
+        bank: string | null
+        document_last4: string | null
+      } | null
+      /** @enum {string|null} */
+      rejection_reason:
+        | 'directory_no_match'
+        | 'holder_name_mismatch'
+        | 'holder_document_mismatch'
+        | 'verification_timeout'
+        | 'directory_unavailable'
+        | null
       /** Format: date-time */
-      received_at: string | null
+      verified_at: string | null
+      /**
+       * Format: date-time
+       * @description When the payer confirmed the holder. Payments need it on third_party.
+       */
+      confirmed_at: string | null
+      /** @description `false` once the destination was deleted (DELETE /destinations/{id}). A deleted destination is only returned by GET /destinations/{id} and by GET /destinations?include_disabled=true, and cannot be paid or withdrawn to. `status` stays the verification status. */
+      active: boolean
+      /**
+       * Format: date-time
+       * @description When the destination was deleted. Null while active.
+       */
+      disabled_at: string | null
       /** Format: date-time */
-      resolved_at: string | null
-      /** Format: email */
-      resolved_by_operator_email: string | null
-      resolution_note: string | null
-    }
-    AdminUnmatchedListResponse: {
-      deposits: components['schemas']['AdminUnmatchedDeposit'][]
-      next_cursor: string | null
-    }
-    AdminResolveUnmatchedRequest: {
-      note: string
-      refund_tx_hash?: string
-    }
-    AdminResolveUnmatchedResponse: {
-      tx_hash: string
+      created_at: string
       /** Format: date-time */
-      resolved_at: string | null
+      updated_at: string
     }
+    DestinationList: {
+      data: components['schemas']['Destination'][]
+      has_more: boolean
+    }
+    CreateQuoteRequest: {
+      /**
+       * @description `pay`: a verified third-party destination. `withdraw`: one of the party's own verified (first-party) destinations.
+       * @enum {string}
+       */
+      product: 'pay' | 'withdraw'
+      destination_id: components['schemas']['DestinationPublicId']
+      amount_cop: components['schemas']['Money'] & unknown
+    }
+    /**
+     * @description An amount of one asset.
+     * @example {
+     *       "amount": "1250000.00",
+     *       "asset": "COP"
+     *     }
+     */
+    Money: {
+      /**
+       * @description Decimal string with as many decimals as the asset has (a payment's deposit.amount has 2). Never a JSON number.
+       * @example 1250000.00
+       */
+      amount: string
+      asset: components['schemas']['Asset']
+    }
+    /**
+     * @description Asset code. COP has 2 decimals (settled in whole pesos), USDC 6, COPm 18. On-chain assets are on Celo (CAIP-2 `eip155:42220`).
+     * @enum {string}
+     */
+    Asset: 'COP' | 'USDC' | 'COPm'
+    /** @description Price of a payment or a withdrawal. A pay quote is used by one payment before it expires. A withdraw quote is only a price: send at least source_amount to the withdrawal's deposit address and at least destination_amount arrives. */
+    Quote: {
+      id: components['schemas']['QuotePublicId']
+      /** @enum {string} */
+      product: 'pay' | 'withdraw'
+      destination_id: components['schemas']['DestinationPublicId']
+      destination_amount: components['schemas']['Money']
+      source_amount: components['schemas']['Money'] & unknown
+      fees: {
+        tucop: components['schemas']['Money']
+        consumer: components['schemas']['Money'] & unknown
+        fx_buffer: components['schemas']['Money'] & unknown
+      }
+      total_amount: components['schemas']['Money'] & unknown
+      consumer_fee_wallet: string | null
+      rate: {
+        /**
+         * @description COP per USDC, as the source gave it.
+         * @example 4012.55
+         */
+        value: string
+        /** @enum {string} */
+        base: 'USDC'
+        /** @enum {string} */
+        quote: 'COP'
+        /** @example provider */
+        source: string
+        /** Format: date-time */
+        observed_at: string
+      }
+      /**
+       * @description How every division was rounded. `ceil`: the payer never sends too little.
+       * @enum {string}
+       */
+      rounding_mode: 'floor' | 'ceil' | 'down' | 'up' | 'half_up' | 'half_even'
+      settlement_time: components['schemas']['SettlementTime']
+      /** Format: date-time */
+      expires_at: string
+      /** Format: date-time */
+      created_at: string
+    }
+    /**
+     * @description Public id of a quote: `qte_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example qte_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    QuotePublicId: string
+    /** @description How long the payout usually takes: after the USDC land on-chain, the pesos usually reach the Bre-B key between min_minutes and max_minutes later. Meanwhile the payment reads `awaiting_funds` while the provider detects the deposit, then `processing` (a withdrawal payout is in progress); neither is a failure. The status and the `operation.updated` webhook say when it completed. An expectation, not a guarantee. */
+    SettlementTime: {
+      /** @example 15 */
+      min_minutes: number
+      /** @example 30 */
+      max_minutes: number
+    }
+    CreateWithdrawalRequest: {
+      destination_id: components['schemas']['DestinationPublicId'] & unknown
+      /** @description Optional. Where the payments provider returns the USDC if a payout fails. Defaults to the session's wallet. Without either, the address has no return wallet: a failed payout goes to TuCOP, which returns it to the person. When sent, the integrator answers for it. A different value sent for an existing address (active, or disabled and being re-enabled) replaces the stored one, here and at the payments provider; it can be added later this way. */
+      return_address?: string
+    }
+    /** @description The party's liquidation address for one of its own Bre-B keys. USDC on Celo sent to `deposit.address` is paid out in COP to that key, and only to that key. One address per destination; reusable. */
+    Withdrawal: {
+      id: components['schemas']['WithdrawalPublicId']
+      /** @enum {string} */
+      product: 'withdraw'
+      /**
+       * @description `disabled` after DELETE /withdrawals/{id}. The payments provider cannot turn an address off: USDC sent to a disabled address is still paid out in COP to the same Bre-B key. It is not held or returned. POST /withdrawals for the destination re-enables it.
+       * @enum {string}
+       */
+      status: 'active' | 'disabled'
+      destination_id: components['schemas']['DestinationPublicId']
+      deposit: {
+        /** @example 0x5b1d7c0a4f2e8b9d6c3a1e0f7b2d4c6a8e9f0b1c */
+        address: string
+        /** @example eip155:42220 */
+        chain: string
+        /** @enum {string} */
+        asset: 'USDC'
+        token_contract: string
+        minimum_destination_amount: components['schemas']['Money'] & unknown
+      }
+      /** @description TuCOP's fee on this address, in basis points. TuCOP sets it for each integrator. */
+      fee_bps: number | null
+      /** @description Where the payments provider returns the USDC if a payout fails. Each address has its own; it can differ between the keys of one party. Null when none was given: a failed payout then goes to TuCOP, which returns it to the person. */
+      return_address: string | null
+      settlement_time: components['schemas']['SettlementTime']
+      /**
+       * Format: date-time
+       * @description When the address was disabled. Null while active.
+       */
+      disabled_at: string | null
+      /** @description Payouts from this address, most recent first. On GET /{id} only; the list leaves them out (use GET /{id} or the withdraw.drained webhook). */
+      payouts?: components['schemas']['WithdrawalPayout'][]
+      /** Format: date-time */
+      created_at: string
+    }
+    /**
+     * @description Public id of a withdrawal (liquidation address): `wdr_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example wdr_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    WithdrawalPublicId: string
+    /** @description One payout from a withdrawal address: USDC in, COP out to the Bre-B key. */
+    WithdrawalPayout: {
+      /** @description The payout id. Also `payout_id` in withdraw.drained. */
+      id: string
+      /**
+       * @description Same meanings as a payment's status. `processing`: the payments provider has the USDC and is sending the pesos; usually 15 to 30 minutes, not a failure. `completed`: the pesos were sent through Bre-B, which is instant, so in practice they arrived. `failed`: the payout could not be made (see `error_code`). `refunded`: the USDC went back to the withdrawal's `return_address`. `canceled`: the payments provider canceled it. All but `processing` are final, with one exception: a `completed` payout that is returned reads `processing` while the return is under way and ends `refunded`.
+       * @enum {string}
+       */
+      status: 'processing' | 'completed' | 'failed' | 'refunded' | 'canceled'
+      amount: components['schemas']['Money'] & (Record<string, never> | null)
+      destination_amount: components['schemas']['Money'] & (Record<string, never> | null)
+      /** @description Why the payout failed (`provider_<reason>`, as on payments). Null unless `failed`. */
+      error_code: string | null
+      /** Format: date-time */
+      created_at: string
+      /** Format: date-time */
+      updated_at: string
+      /**
+       * Format: date-time
+       * @description When the payout reached `completed`. Null until then.
+       */
+      completed_at: string | null
+    }
+    CreateDepositRequest: {
+      /** @description Where the USDC goes. Defaults to the session's wallet. Required when there is no wallet session, for example when you call with the API key alone. The integrator sends it and answers for it. */
+      wallet_address?: string
+      /** @description Open one more deposit account for this wallet instead of answering with the one you already have. Only when TuCOP enabled several accounts per wallet for your integrator; otherwise 409 deposit_pool_limit. Each account has its own Bre-B key and its own id, so a payment tells you which one took it. */
+      new?: boolean
+    }
+    /** @description The party's virtual account: COP paid over Bre-B to `deposit_instructions.bre_b_key` arrives as USDC on Celo at `destination.address`. Reusable. */
+    Deposit: {
+      id: components['schemas']['DepositPublicId']
+      /** @enum {string} */
+      product: 'deposit'
+      /** @enum {string} */
+      status: 'active' | 'deactivated'
+      deposit_instructions: {
+        /** @enum {string} */
+        rail: 'bre_b'
+        /** @enum {string} */
+        currency: 'COP'
+        /** @description The Bre-B key the person pays COP to. Issued by the payments provider for this account. */
+        bre_b_key: string
+        account_holder_name: string | null
+        bank_name: string | null
+      }
+      destination: {
+        address: string
+        /** @example eip155:42220 */
+        chain: string
+        /** @enum {string} */
+        asset: 'USDC'
+        token_contract: string
+      }
+      /** @description TuCOP's fee in basis points, fixed on the account. For an account the payments provider already had for the party and wallet (taken over by POST /deposits), it is that account's own fee, which can differ from your integrator's fee. */
+      fee_bps: number
+      /** @description Activity on the account, as the payments provider reports it. On GET /{id} only. */
+      events?: {
+        id: string
+        /** @description The payments provider's activity type. */
+        type: string
+        amount: components['schemas']['Money'] & (Record<string, never> | null)
+        created_at: string | null
+      }[]
+      /** Format: date-time */
+      created_at: string
+    }
+    /**
+     * @description Public id of a deposit account (virtual account): `dep_` followed by 26 Crockford base32 characters. Treat it as an opaque string; compare it case-insensitively.
+     * @example dep_01j9z3k8q2m4n6p8r0s2t4v6w8
+     */
+    DepositPublicId: string
   }
   responses: never
-  parameters: never
+  parameters: {
+    IdempotencyKey: components['schemas']['IdempotencyKey']
+  }
   requestBodies: never
-  headers: never
+  headers: {
+    /** @description `true` when the response is a replay of an earlier request with the same key. */
+    IdempotentReplayed: 'true'
+  }
   pathItems: never
 }
 export type $defs = Record<string, never>
 export interface operations {
-  siweNonce: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SiweNonceRequest']
-      }
-    }
-    responses: {
-      /** @description Nonce issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['SiweNonceResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  siweVerify: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SiweVerifyRequest']
-      }
-    }
-    responses: {
-      /** @description Session issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['SiweSuccess']
-        }
-      }
-      /** @description Invalid credentials or wallet_not_linked */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  emailOtpRequest: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EmailOtpRequest']
-      }
-    }
-    responses: {
-      /** @description Challenge issued (or fake-issued for unknown emails) */
-      202: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['EmailOtpRequestResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  emailOtpVerify: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EmailOtpVerifyRequest']
-      }
-    }
-    responses: {
-      /** @description Session issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['EmailOtpVerifyResponse']
-        }
-      }
-      /** @description Invalid credentials */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Wallet owned by another user */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  initiateKyc: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['InitiateKycRequest']
-      }
-    }
-    responses: {
-      /** @description KYC link issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['InitiateKycResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Bridge upstream error */
-      502: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  pollKycStatus: {
-    parameters: {
-      query: {
-        pending_link_token: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description KYC status */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['KycStatusResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Token not found or expired */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  getMe: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description User profile */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Me']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description User not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  listAuditLog: {
-    parameters: {
-      query?: {
-        limit?: number
-        before?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Audit log page */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AuditLogResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  initiateEmailChange: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['InitiateEmailChangeRequest']
-      }
-    }
-    responses: {
-      /** @description Challenge(s) issued */
-      202: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['InitiateEmailChangeResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  confirmEmailChange: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ConfirmEmailChangeRequest']
-      }
-    }
-    responses: {
-      /** @description Email updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ConfirmEmailChangeResponse']
-        }
-      }
-      /** @description Invalid request body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session / OTP */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  listExternalAccounts: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description External accounts */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ListExternalAccountsResponse']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  createExternalAccount: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateExternalAccountRequest']
-      }
-    }
-    responses: {
-      /** @description External account created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ExternalAccount']
-        }
-      }
-      /** @description Invalid request body or Bridge rejected the account */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Duplicate account */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description User not endorsed for COP */
-      412: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Bridge upstream error */
-      502: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  requestQuote: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['QuoteRequest']
-      }
-    }
-    responses: {
-      /** @description Quote issued */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['QuoteResponse']
-        }
-      }
-      /** @description Invalid body or below minimum */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description External account not accessible */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Account inactive or no wallet on file */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Swap or rate provider unavailable */
-      502: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  listOperations: {
-    parameters: {
-      query?: {
-        status?:
-          | 'AWAITING_SIGNATURE'
-          | 'SUBMITTED'
-          | 'SWAP_CONFIRMED'
-          | 'BRIDGE_PROCESSING'
-          | 'PAYOUT_COMPLETED'
-          | 'FAILED'
-        limit?: number
-        before?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Operations page */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ListOperationsResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  createOperation: {
-    parameters: {
-      query?: never
-      header: {
-        'Idempotency-Key': string
-      }
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateOperationRequest']
-      }
-    }
-    responses: {
-      /** @description Idempotent replay (Idempotent-Replay header set) */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Operation']
-        }
-      }
-      /** @description Operation created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Operation']
-        }
-      }
-      /** @description Invalid body or Idempotency-Key missing */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description External account not accessible */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Account inactive, no wallet, idempotency-key reused with different body, or quote envelope mismatch */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Quote expired */
-      410: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  submitOperation: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SubmitOperationRequest']
-      }
-    }
-    responses: {
-      /** @description Operation transitioned */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Operation']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operation not accessible */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operation not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operation cannot be submitted from its current state */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  getOperation: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Operation */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Operation']
-        }
-      }
-      /** @description Missing or invalid session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operation not accessible */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operation not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  bridgeWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['BridgeWebhookPayload']
-      }
-    }
-    responses: {
-      /** @description Accepted or deduped */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WebhookAck']
-        }
-      }
-      /** @description Invalid payload */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Invalid signature */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  healthLive: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Alive */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['HealthLiveResponse']
-        }
-      }
-    }
-  }
-  healthReady: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Ready */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['HealthReadyResponse']
-        }
-      }
-      /** @description Degraded */
-      503: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['HealthReadyResponse']
-        }
-      }
-    }
-  }
   p2pListBanks: {
     parameters: {
       query?: never
@@ -3104,6 +1708,62 @@ export interface operations {
       }
       /** @description Missing or invalid consumer key */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description No P2P product is enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  p2pGetLimits: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Effective caps */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['P2PLimitsResponse']
+        }
+      }
+      /** @description Missing or invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description No P2P product is enabled for this consumer (product_not_enabled) */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -3149,37 +1809,8 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  p2pGetLimits: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Effective caps */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['P2PLimitsResponse']
-        }
-      }
-      /** @description Missing or invalid consumer key */
-      401: {
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -3336,6 +1967,15 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
+      /** @description The p2p_offramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
       /** @description Amount exceeds one or more limits */
       409: {
         headers: {
@@ -3371,31 +2011,50 @@ export interface operations {
           'application/json': components['schemas']['P2POfframpOrderResponse']
         }
       }
-      /** @description Invalid body, missing consent, or missing idempotency key */
+      /** @description invalid_body, idempotency_key_required, consent_required, cedula_invalid_format or payout_invalid_shape */
       400: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
+          'application/json': components['schemas']['P2POrderCreateError']
         }
       }
-      /** @description Missing or invalid wallet signature */
+      /** @description Missing or invalid wallet signature, or missing consumer key */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Amount limit exceeded or wallet linked to another user */
+      /** @description The p2p_offramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description amount_limit_exceeded, wallet_linked_to_other_user, open_order_amount_conflict (another offramp order is open for this wallet with an amount too close to tell a deposit apart) or idempotency_key_reuse */
       409: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/json': components['schemas']['P2POrderCreateError']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
@@ -3440,8 +2099,78 @@ export interface operations {
           'application/json': components['schemas']['Error']
         }
       }
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
       /** @description Amount exceeds one or more limits */
       409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  p2pOnrampListOrders: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Onramp orders */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            orders: {
+              /** Format: uuid */
+              order_id: string
+              wallet_address: string
+              status: string
+              gross_amount_cop: number
+              outgoing_tx_hash: string | null
+              /** Format: date-time */
+              created_at: string
+              /** Format: date-time */
+              expires_at: string
+              receiving_account: components['schemas']['P2PReceivingAccountResponse']
+            }[]
+          }
+        }
+      }
+      /** @description Missing or invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
         headers: {
           [name: string]: unknown
         }
@@ -3475,31 +2204,50 @@ export interface operations {
           'application/json': components['schemas']['P2POnrampOrderResponse']
         }
       }
-      /** @description Invalid body, missing consent, or missing idempotency key */
+      /** @description invalid_body, idempotency_key_required, consent_required or cedula_invalid_format */
       400: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
+          'application/json': components['schemas']['P2POrderCreateError']
         }
       }
-      /** @description Missing or invalid wallet signature */
+      /** @description Missing or invalid wallet signature, or missing consumer key */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Amount limit exceeded or wallet linked to another user */
+      /** @description The p2p_onramp product is not enabled for this consumer (product_not_enabled) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description amount_limit_exceeded, wallet_linked_to_other_user or idempotency_key_reuse */
       409: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/json': components['schemas']['P2POrderCreateError']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
@@ -3647,6 +2395,57 @@ export interface operations {
       }
     }
   }
+  p2pGetProofUrl: {
+    parameters: {
+      query: {
+        kind: 'user_incoming' | 'operator_outgoing' | 'operator_refund'
+      }
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Presigned URL */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['P2PProofUrlResponse']
+        }
+      }
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid wallet signature */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+      /** @description Order or proof not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Error']
+        }
+      }
+    }
+  }
   p2pUploadProof: {
     parameters: {
       query?: never
@@ -3715,1198 +2514,98 @@ export interface operations {
       }
     }
   }
-  p2pGetProofUrl: {
-    parameters: {
-      query: {
-        kind: 'user_incoming' | 'operator_outgoing' | 'operator_refund'
-      }
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Presigned URL */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['P2PProofUrlResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid wallet signature */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order or proof not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  p2pServeProof: {
-    parameters: {
-      query: {
-        ts: string
-        sig: string
-      }
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Binary proof payload */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/octet-stream': string
-        }
-      }
-      /** @description Invalid or missing HMAC signature */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Proof not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Signed URL expired */
-      410: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminGoogleLogin: {
+  createPartySessionWalletNonce: {
     parameters: {
       query?: never
       header?: never
       path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Redirect to Google OAuth consent screen */
-      302: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Failed to build the OAuth URL */
-      500: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminGoogleCallback: {
-    parameters: {
-      query: {
-        code: string
-        state: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Redirect to /admin on success or /admin/login?error=<code> on failure */
-      302: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Missing code or invalid_oauth_state */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description google_oauth_failed */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description google_hosted_domain_mismatch, operator_not_provisioned, or operator_google_sub_mismatch */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminAuthMe: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Operator profile */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminMeResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminAuthLogout: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Session revoked (or no-op if none was present) */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminLogoutResponse']
-        }
-      }
-    }
-  }
-  adminListOrders: {
-    parameters: {
-      query?: {
-        status?: string
-        type?: 'offramp' | 'onramp'
-        operator_id?: string
-        start_date?: string
-        end_date?: string
-        cedula_hash?: string
-        limit?: number
-        cursor?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Orders page */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminOrderListResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below viewer */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminGetOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Order detail */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminOrderDetail']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below viewer */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminClaimOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Claim acquired */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminOrderClaimResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description order_claimed_by_other */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminReleaseOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Release outcome */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminOrderReleaseResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminCompleteOfframp: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
       cookie?: never
     }
     requestBody: {
       content: {
-        'multipart/form-data': {
+        'application/json': {
+          address: string
           /**
-           * Format: binary
-           * @description Bank-transfer proof (image/png, image/jpeg, application/pdf).
+           * @description Only 42220 (Celo) is accepted. Default 42220.
+           * @example 42220
            */
-          file: string
-          /** @description Free-form bank reference number. */
-          payout_reference: string
+          chain_id?: number
         }
       }
     }
     responses: {
-      /** @description Order completed */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminCompleteOfframpResponse']
-        }
-      }
-      /** @description Missing file, invalid type, exceeds 10MB, or invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Wrong type, wrong status, transition not allowed, or claim not held */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminCompleteOnramp: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminCompleteOnrampRequest']
-      }
-    }
-    responses: {
-      /** @description Order completed */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminCompleteOnrampResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Wrong type, wrong status, transition not allowed, or claim not held */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminRefundOfframp: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminRefundOfframpRequest']
-      }
-    }
-    responses: {
-      /** @description Refund recorded */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminRefundOfframpResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Wrong type, wrong status, transition not allowed, or claim not held */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminRejectOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminRejectRequest']
-      }
-    }
-    responses: {
-      /** @description Order rejected */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminRejectResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Wrong status, transition not allowed, or claim not held */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminCancelOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminCancelRequest']
-      }
-    }
-    responses: {
-      /** @description Order cancelled */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminCancelResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below superadmin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order is past the point where it can be cancelled */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminAddOrderNote: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminNoteRequest']
-      }
-    }
-    responses: {
-      /** @description Note stored */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminNoteResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Order not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Claim not held */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminLookupUserByCedulaHash: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        hash: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description User profile bundle */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminUserLookupResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description User not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminPatchUserCedula: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminPatchCedulaRequest']
-      }
-    }
-    responses: {
-      /** @description Cedula updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminPatchCedulaResponse']
-        }
-      }
-      /** @description Invalid body or cedula_invalid_format */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below admin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description User not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description cedula_locked_by_active_order */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminListOperators: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Operators */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminOperatorsListResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below admin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminCreateOperator: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminCreateOperatorRequest']
-      }
-    }
-    responses: {
-      /** @description Operator provisioned */
+      /** @description Nonce issued */
       201: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['AdminCreateOperatorResponse']
+          'application/json': {
+            /** @example 9f2c4b1e0a7d4c3b8e6f5a4d3c2b1a09 */
+            nonce: string
+            /**
+             * @example TuCOPRamp party session
+             *     Consumer: con_01j9z3k8q2m4n6p8r0s2t4v6w8
+             *     Wallet: 0x8f51dc0791cdddce08052fff939eb7cf0c17856
+             *     Chain ID: 42220
+             *     Nonce: 9f2c4b1e0a7d4c3b8e6f5a4d3c2b1a09
+             *     Expires: 2026-10-08T15:05:00.000Z
+             */
+            message: string
+            chain_id: number
+            /** Format: date-time */
+            expires_at: string
+          }
         }
       }
-      /** @description Invalid body or operator_email_not_tucop_domain */
+      /** @description invalid_body */
       400: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Missing or invalid admin session */
+      /** @description Missing, invalid, expired or revoked consumer key */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Role below admin */
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
       403: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description operator_email_already_exists */
-      409: {
+      /** @description chain_not_supported */
+      422: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_wallet or rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
   }
-  adminPatchOperator: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminPatchOperatorRequest']
-      }
-    }
-    responses: {
-      /** @description Operator updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminPatchOperatorResponse']
-        }
-      }
-      /** @description Invalid body or operator_cannot_modify_self */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below admin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Operator not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminListConsumers: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Consumers list */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminConsumersListResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminCreateConsumer: {
+  createPartySessionFromWallet: {
     parameters: {
       query?: never
       header?: never
@@ -4915,276 +2614,317 @@ export interface operations {
     }
     requestBody: {
       content: {
-        'application/json': components['schemas']['AdminCreateConsumerRequest']
+        'application/json': {
+          address: string
+          nonce: string
+          signature: string
+        }
       }
     }
     responses: {
-      /** @description Consumer created; api_key_plaintext returned once */
+      /** @description Session opened */
       201: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['AdminCreateConsumerResponse']
+          'application/json': components['schemas']['PartySession']
         }
       }
-      /** @description Invalid body or consumer_name_invalid */
+      /** @description invalid_body */
       400: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Missing or invalid admin session */
+      /** @description nonce_invalid (unknown, used, expired or issued to another consumer), signature_invalid, or an invalid consumer key */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Role below admin */
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
       403: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description consumer_name_already_exists */
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  revokePartySession: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Signed out */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description party_session_required (header missing) or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_consumer. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createParty: {
+    parameters: {
+      query?: never
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * @description `individual` (verified with hosted KYC) or `business` (verified with hosted KYB).
+           * @enum {string}
+           */
+          type: 'individual' | 'business'
+          /**
+           * @description ISO 3166-1 alpha-3 code of the country that issued the document. Defaults to `COL`.
+           * @example COL
+           */
+          country?: string
+          /**
+           * @description A business: its registered name (required). An individual: the full legal name, at least two words, when first_names and last_names are not sent.
+           * @example Empresa Ejemplo SAS
+           */
+          legal_name?: string
+          /**
+           * @description Individuals: given names as on the document. Sent together with last_names; preferred over legal_name.
+           * @example Ana Maria
+           */
+          first_names?: string
+          /**
+           * @description Individuals: surnames as on the document. Sent together with first_names.
+           * @example Perez Gomez
+           */
+          last_names?: string
+          /**
+           * @description ISO 3166-1 alpha-3. Can differ from `country`, which is the document issuer: a foreigner with a Colombian cedula de extranjeria has nationality VEN and country COL. Unknown code: `400 invalid_nationality`.
+           * @example COL
+           */
+          nationality?: string
+          /**
+           * @description One of the codes GET /document-types lists for `country` and `type`. Colombia: `CC`, `CE`, `NUIP`, `PAS` (individual) or `NIT` (business). `TI` is not accepted. Other countries: the payments provider's code, for example `cpf` for Brazil.
+           * @example CC
+           */
+          document_type: string
+          /**
+           * @description Dots, spaces and dashes are ignored. A Colombian NIT may carry its check digit after a dash (`900123456-8`); when it does, the digit must be right.
+           * @example 1017123456
+           */
+          document_number: string
+          consent: {
+            /**
+             * @description Version of the consent text the person accepted in your app.
+             * @example 2026-10-08
+             */
+            version: string
+            /** Format: date-time */
+            accepted_at: string
+          }
+          /**
+           * Format: email
+           * @description Contact email for identity verification. Only used when the session was opened with a wallet and the party has no verified email. Not attached to the party.
+           */
+          email?: string
+          /**
+           * Format: uri
+           * @description Where the person returns after identity verification. Must be one of the return URLs TuCOP has on file for your consumer.
+           */
+          redirect_url?: string
+        }
+      }
+    }
+    responses: {
+      /** @description The existing party, now linked to your consumer */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartyResponse']
+        }
+      }
+      /** @description Party created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PartyResponse']
+        }
+      }
+      /** @description invalid_body, invalid_country, invalid_document, invalid_name, invalid_consent, idempotency_key_required or idempotency_key_invalid */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_session_required (also with the API key alone: creating or linking a party always needs a party session), party_session_invalid, or an invalid consumer key */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description product_not_enabled (the key has no On/Off Ramp service: withdraw, pay or deposit; `category` on_off_ramp), api_key_ip_not_allowed (the key is limited to other IP ranges), api_key_origin_not_allowed (an older pk key limited to other origins) or api_key_scope_missing (a read-only key on a request that changes something) */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_identity_not_proven or idempotency_in_progress */
       409: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description email_required, redirect_url_not_allowed or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_limited_party_session. See Retry-After. */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable. Retry with the same Idempotency-Key. */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
   }
-  adminGetConsumer: {
+  getMyParty: {
     parameters: {
       query?: never
       header?: never
-      path: {
-        id: string
-      }
+      path?: never
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Consumer */
+      /** @description The party */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['AdminConsumerDetailResponse']
+          'application/json': components['schemas']['PartyMe']
         }
       }
-      /** @description Missing or invalid admin session */
+      /** @description party_session_required, party_session_invalid, or an invalid consumer key */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Role below operator */
+      /** @description party_required (the session has no party linked to your consumer yet), product_not_enabled (no On/Off Ramp service; `category` on_off_ramp), api_key_ip_not_allowed or api_key_origin_not_allowed */
       403: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Consumer not found */
-      404: {
+      /** @description Rate limited */
+      429: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }
   }
-  adminPatchConsumer: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminPatchConsumerRequest']
-      }
-    }
-    responses: {
-      /** @description Consumer updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminConsumerDetailResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below admin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Consumer not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminGetConsumerUsage: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Usage stats */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminConsumerUsageResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Consumer not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminRotateConsumer: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Consumer rotated; new api_key_plaintext returned once */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminRotateConsumerResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below admin */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Consumer not found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminListAuditLog: {
+  listDestinations: {
     parameters: {
       query?: {
-        operator_id?: string
-        action?: string
-        start_date?: string
-        end_date?: string
-        order_id?: string
+        include_disabled?: 'true' | 'false'
         limit?: number
-        cursor?: string
+        starting_after?: string
       }
       header?: never
       path?: never
@@ -5192,200 +2932,848 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Audit log page */
+      /** @description Destinations */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['AdminAuditListResponse']
+          'application/json': components['schemas']['DestinationList']
         }
       }
-      /** @description Invalid query */
+      /** @description invalid_query */
       400: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Missing or invalid admin session */
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
       401: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-      /** @description Role below admin */
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
       403: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
         }
       }
-    }
-  }
-  adminGetStats: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Dashboard stats */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminStatsResponse']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below viewer */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminListUnmatchedDeposits: {
-    parameters: {
-      query?: {
-        resolved?: 'true' | 'false' | 'all'
-        limit?: number
-        cursor?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Unmatched deposits page */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminUnmatchedListResponse']
-        }
-      }
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-    }
-  }
-  adminResolveUnmatchedDeposit: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        tx_hash: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AdminResolveUnmatchedRequest']
-      }
-    }
-    responses: {
-      /** @description Resolved */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AdminResolveUnmatchedResponse']
-        }
-      }
-      /** @description Invalid body */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Missing or invalid admin session */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description Role below operator */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description unmatched_deposit_not_found */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Error']
-        }
-      }
-      /** @description unmatched_deposit_already_resolved */
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
       409: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Error']
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createDestination: {
+    parameters: {
+      query?: never
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateDestinationRequest']
+      }
+    }
+    responses: {
+      /** @description The destination already existed */
+      200: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description Created; verification in progress */
+      202: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description invalid_body, invalid_bre_b_key, invalid_owner_name, idempotency_key_required or idempotency_key_invalid */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_not_verified, kyc_name_missing (first_party, KYC name not available yet), first_party_not_available (first_party for a party that stands for a payments provider account linked by TuCOP: it has no identity document to match; use pay for third-party keys), destination_conflict (the same key is being registered by another request; retry), holder_name_mismatch (third_party: the key was already looked up and its holder does not match owner_name; includes destination_id), destination_already_registered (the key is already registered on this payments provider account and could not be matched to one; list destinations or contact TuCOP), destination_limit_reached (first_party: the person already has as many active first-party keys registered by this integrator as allowed: the lower of the limit the integrator sets in its console and a maximum TuCOP may set for the integrator; none by default. The detail says which applies; delete one first), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_invalid (the payments provider refused the key) or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getDestination: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: components['schemas']['DestinationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The destination */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Destination']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  deleteDestination: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: components['schemas']['DestinationPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Deleted */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_in_use (a payment in progress or an active withdrawal address uses it; disable the withdrawal first) or integrator_not_linked */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createQuote: {
+    parameters: {
+      query?: never
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateQuoteRequest']
+      }
+    }
+    responses: {
+      /** @description The quote */
+      201: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quote']
+        }
+      }
+      /** @description invalid_body, invalid_amount, amount_not_settleable (not whole pesos) or idempotency_key_required */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_verified, party_not_verified, first_party_not_available (withdraw, for a party that stands for a payments provider account linked by TuCOP; use pay for third-party keys), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description amount_below_minimum (pay: with `minimum`), pay_limit_exceeded (pay: with `check`, one of `per_operation`, `integrator_day`, `integrator_month`), destination_not_third_party (pay), destination_not_first_party (withdraw) or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description rate_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listWithdrawals: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The party's withdrawals your integrator created, newest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            data: components['schemas']['Withdrawal'][]
+          }
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createWithdrawal: {
+    parameters: {
+      query?: never
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateWithdrawalRequest']
+      }
+    }
+    responses: {
+      /** @description The existing withdrawal */
+      200: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description The new withdrawal */
+      201: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description invalid_body, invalid_return_address or idempotency_key_required */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_verified, party_not_verified, first_party_not_available (a party that stands for a payments provider account linked by TuCOP has no identity document to match a first-party key; use pay for third-party keys), integrator_not_linked or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description destination_not_first_party, provider_rejected or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable (also when a new return_address could not be set at the payments provider: the previous one stays, and a disabled address stays disabled) */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  getWithdrawal: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: components['schemas']['WithdrawalPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The withdrawal with `payouts` */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description withdrawal_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  disableWithdrawal: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: components['schemas']['WithdrawalPublicId']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The disabled withdrawal */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Withdrawal']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description withdrawal_not_found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  listDeposits: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The party's deposit accounts, newest first */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': {
+            data: components['schemas']['Deposit'][]
+          }
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description integrator_not_linked (no session sent, and the payments provider account TuCOP set for your integrator is not linked to it yet) */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+    }
+  }
+  createDeposit: {
+    parameters: {
+      query?: never
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateDepositRequest']
+      }
+    }
+    responses: {
+      /** @description The existing deposit account */
+      200: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description The new deposit account */
+      201: {
+        headers: {
+          'Idempotent-Replayed': components['headers']['IdempotentReplayed']
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deposit']
+        }
+      }
+      /** @description invalid_body, invalid_wallet_address or idempotency_key_required */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Missing or invalid consumer key, party_session_required (no session, and TuCOP has not linked a payments provider account to your integrator) or party_session_invalid */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_required (the session has no party linked to your consumer yet), party_not_linked, party_restricted, product_not_enabled, integrator_customer_mismatch (your integrator pays from its own payments provider account and the session is for another party), or an API key restriction */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description party_not_verified, integrator_not_linked, deposit_pool_limit or idempotency_in_progress */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description wallet_address_required, provider_rejected or idempotency_key_reuse */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
+        }
+      }
+      /** @description provider_unavailable */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/problem+json': components['schemas']['Error']
         }
       }
     }

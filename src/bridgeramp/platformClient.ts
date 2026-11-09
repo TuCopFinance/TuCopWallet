@@ -10,22 +10,31 @@ import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 const TAG = 'bridgeramp/platformClient'
 const REQUEST_TIMEOUT_MS = 30_000
 
-// Bridge Ramp talks to TuCOPRamp's platform API (/v1/sessions, /v1/parties,
-// /v1/destinations, /v1/quotes, ...), not to the /v1/p2p/* routes TuCOP Ramp
+// Bridge Ramp talks to TuCOPRamp's platform API (/sessions, /parties,
+// /destinations, /quotes, ...), not to the /p2p/* routes TuCOP Ramp
 // uses. The platform API authenticates the APP with a consumer key
 // (X-TuCOPRamp-Key) and the USER with a party session
 // (X-TuCOPRamp-Party-Session). The consumer key never ships in the app: the
 // wallet hits the same backend proxy as TuCOP Ramp and the proxy adds the key
 // before forwarding. The party session is the user's and travels end to end.
 const PARTY_SESSION_HEADER = 'X-TuCOPRamp-Party-Session'
-// Platform API behavior version the wallet is written against
-// (developer-docs/conventions.mdx). Pinning it here means a newer default on
-// TuCOPRamp's side cannot change shapes under an app already in stores.
-const TUCOPRAMP_API_VERSION = '2026-10-08'
+// The platform paths the wallet is allowed to hit. TuCOPRamp dropped the /v1
+// prefix for good (no path version, no version header; conventions.mdx says
+// so explicitly and the server reads none), so instead of asserting a prefix
+// we assert against this explicit list: a typo'd path fails here instead of
+// reaching the proxy as a signed-for-nothing request.
+const PLATFORM_PATH_PREFIXES = [
+  '/sessions/',
+  '/parties',
+  '/destinations',
+  '/quotes',
+  '/withdrawals',
+  '/deposits',
+] as const
 
 export interface PlatformFetchArgs {
   method: HttpMethod
-  // Upstream path, e.g. '/v1/parties/me'.
+  // Upstream path, e.g. '/parties/me'.
   path: string
   body?: unknown
   partySession?: string
@@ -36,15 +45,15 @@ export interface PlatformFetchArgs {
 }
 
 export async function platformFetch<T>(args: PlatformFetchArgs): Promise<T> {
-  if (!args.path.startsWith('/v1/')) {
-    throw new Error(`platformFetch: path must be an upstream /v1/ path, got "${args.path}"`)
+  if (!PLATFORM_PATH_PREFIXES.some((p) => args.path === p || args.path.startsWith(p))) {
+    throw new Error(`platformFetch: path must be an upstream platform path, got "${args.path}"`)
   }
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
   const doFetch: FetchImpl =
     args.fetchImpl ?? ((url, init) => fetchWithTimeout(url, init ?? null, REQUEST_TIMEOUT_MS))
 
   const bodyStr = args.body === undefined ? undefined : JSON.stringify(args.body)
-  const headers: Record<string, string> = { 'TuCOPRamp-Version': TUCOPRAMP_API_VERSION }
+  const headers: Record<string, string> = {}
   if (bodyStr !== undefined) {
     headers['Content-Type'] = 'application/json'
   }
@@ -95,7 +104,7 @@ export function revokePartySession(
   return platformFetch<void>({
     ...opts,
     method: 'DELETE',
-    path: '/v1/sessions/current',
+    path: '/sessions/current',
     partySession,
   })
 }
@@ -127,14 +136,14 @@ export async function openWalletPartySession(
   const { nonce, message } = await platformFetch<WalletNonceResponse>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet/nonce',
+    path: '/sessions/wallet/nonce',
     body: { address: walletAddress },
   })
   const signature = (await getSiweSigningFunction(keychainAccounts)(message)) as Hex
   return platformFetch<PartySession>({
     ...opts,
     method: 'POST',
-    path: '/v1/sessions/wallet',
+    path: '/sessions/wallet',
     body: { address: walletAddress, nonce, signature },
   })
 }

@@ -374,13 +374,23 @@ export function* triggerShortcutSaga({ payload }: ReturnType<typeof triggerShort
     const data = yield* call(triggerShortcutRequest, hooksApiUrl, payload.data)
     yield* put(triggerShortcutSuccess({ id: payload.id, transactions: data.transactions }))
   } catch (error) {
-    captureBusinessError(error, {
-      feature: 'positions',
-      provider: 'internal',
-      action: 'trigger_shortcut',
-      errorCode: classifyHttpError(error),
-      extra: { shortcutId: payload.data?.shortcutId, appId: payload.data?.appId },
-    })
+    // The hooks API answers 400 POSITION_ALREADY_CLOSED when the user taps a
+    // shortcut on a position that closed since the last refresh (e.g. a Neeru
+    // withdrawal that already settled). Stale UI, not a defect: the failure
+    // action below clears the spinner and the next positions poll drops the
+    // card, so this one stays out of Sentry (TUCOPWALLET-1K).
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes('POSITION_ALREADY_CLOSED')) {
+      Logger.info(`${TAG}/triggerShortcutSaga`, 'Shortcut on an already-closed position; benign')
+    } else {
+      captureBusinessError(error, {
+        feature: 'positions',
+        provider: 'internal',
+        action: 'trigger_shortcut',
+        errorCode: classifyHttpError(error),
+        extra: { shortcutId: payload.data?.shortcutId, appId: payload.data?.appId },
+      })
+    }
     yield* put(triggerShortcutFailure(payload.id))
   }
 }
