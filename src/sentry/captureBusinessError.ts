@@ -102,7 +102,24 @@ const lastFiredByFingerprint = new Map<string, number>()
 
 export function captureBusinessError(error: unknown, context: BusinessContext): void {
   if (!SENTRY_ENABLED) return
-  const err = error instanceof Error ? error : new Error(String(error))
+  // String({...}) yields the useless "[object Object]" (shipped as
+  // TUCOPWALLET-2F): when a caller hands us a plain object, serialize its
+  // fields so the Sentry title says what actually happened. JSON.stringify
+  // can throw on circular structures, so keep String() as the last resort.
+  let err: Error
+  if (error instanceof Error) {
+    err = error
+  } else if (typeof error === 'object' && error !== null) {
+    let serialized: string
+    try {
+      serialized = JSON.stringify(error)
+    } catch {
+      serialized = String(error)
+    }
+    err = new Error(serialized)
+  } else {
+    err = new Error(String(error))
+  }
   const normalizedErrorCode = normalizeErrorCode(context.errorCode)
   const fingerprint = [
     context.feature,
