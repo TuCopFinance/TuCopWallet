@@ -533,6 +533,9 @@ export enum CoinbasePayEvents {
 
 export enum SwapEvents {
   swap_screen_open = 'swap_screen_open',
+  // The COP FX weekend pause blocked a Dolares conversion surface: the
+  // confirm button is off and the "come back Monday" notice is visible.
+  swap_cop_fx_paused_shown = 'swap_cop_fx_paused_shown',
   swap_screen_select_token = 'swap_screen_select_token',
   swap_screen_confirm_token = 'swap_screen_confirm_token',
   swap_screen_percentage_selected = 'swap_screen_percentage_selected',

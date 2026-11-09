@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { useEffect, useState } from 'react'
+import { isCopFxWeekendPause } from 'src/dollarsSpend/fxMarket'
 import { SpendStep } from 'src/dollarsSpend/types'
 import Logger from 'src/utils/Logger'
 import { useSelector } from 'src/redux/hooks'
@@ -27,6 +28,11 @@ interface UseMultiSwapQuoteResult {
   // "Tarifa de TuCop" for the aggregate Dolares -> Pesos path instead of
   // falling back to "Desconocido".
   aggregateAppFeeUsd: BigNumber
+  // The COP FX rail rests on weekends (see fxMarket.ts). When true, no quote
+  // was even requested: the screens show the weekend notice and keep the
+  // confirm button off instead of letting the user fire legs that can only
+  // fail with squid_unavailable.
+  marketPaused: boolean
   error?: Error
 }
 
@@ -46,6 +52,7 @@ export function useMultiSwapQuote(
   const [totalOutToken, setTotalOutToken] = useState<BigNumber>(new BigNumber(0))
   const [unquotedUsd, setUnquotedUsd] = useState<BigNumber>(new BigNumber(0))
   const [aggregateAppFeeUsd, setAggregateAppFeeUsd] = useState<BigNumber>(new BigNumber(0))
+  const [marketPaused, setMarketPaused] = useState(false)
 
   const totalInUsd = steps.reduce((sum, s) => sum.plus(s.amountUsd), new BigNumber(0))
 
@@ -60,9 +67,27 @@ export function useMultiSwapQuote(
       setTotalOutToken(new BigNumber(0))
       setUnquotedUsd(new BigNumber(0))
       setAggregateAppFeeUsd(new BigNumber(0))
+      setMarketPaused(false)
       setError(undefined)
       return
     }
+
+    // Weekend pause: do not even ask for quotes. Every Dolares -> Pesos leg
+    // answers 502 squid_unavailable on Sat/Sun UTC, so firing N requests only
+    // burns the Squid budget and shows the user a failure they cannot act on.
+    // Evaluated per effect run (screen open / input change), which is enough:
+    // these screens are short-lived.
+    if (isCopFxWeekendPause()) {
+      setLoading(false)
+      setPerStepQuotes([])
+      setTotalOutToken(new BigNumber(0))
+      setUnquotedUsd(steps.reduce((sum, s) => sum.plus(s.amountUsd), new BigNumber(0)))
+      setAggregateAppFeeUsd(new BigNumber(0))
+      setMarketPaused(true)
+      setError(undefined)
+      return
+    }
+    setMarketPaused(false)
 
     // Mark loading while debouncing too — UI should show spinner the whole
     // time, not flicker between idle and loading on each keystroke.
@@ -167,6 +192,7 @@ export function useMultiSwapQuote(
     perStepQuotes,
     unquotedUsd,
     aggregateAppFeeUsd,
+    marketPaused,
     error,
   }
 }

@@ -47,6 +47,13 @@ const mockGetNumberFormatSettings = jest.fn()
 
 // Use comma as decimal separator for all tests here
 // Input with "." will still work, but it will also work with ",".
+// Calendar-proof: SwapScreen's virtual-Dolares path quotes through
+// useMultiSwapQuote, which closes on the real weekend (dollarsSpend/fxMarket).
+// Pin it open so the suite behaves the same on a Saturday CI run.
+jest.mock('src/dollarsSpend/fxMarket', () => ({
+  isCopFxWeekendPause: jest.fn(() => false),
+}))
+
 jest.mock('src/components/ErrorMessage', () => ({
   showErrorMessage: jest.fn(),
 }))

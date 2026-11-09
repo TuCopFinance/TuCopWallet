@@ -11,7 +11,15 @@ jest.mock('src/swap/useSwapQuote', () => ({
   fetchSwapQuote: jest.fn(),
 }))
 
+// Calendar-proof: the hook short-circuits on the real weekend (fxMarket.ts),
+// so without this mock the whole suite would change behavior when CI runs on
+// a Saturday. Default open; the weekend tests flip it.
+jest.mock('src/dollarsSpend/fxMarket', () => ({
+  isCopFxWeekendPause: jest.fn(() => false),
+}))
+
 const { fetchSwapQuote } = jest.requireMock('src/swap/useSwapQuote')
+const { isCopFxWeekendPause } = jest.requireMock('src/dollarsSpend/fxMarket')
 
 const stepUsat: SpendStep = {
   tokenId: 'celo-mainnet:usat',
@@ -43,6 +51,32 @@ const renderWithStore = <T,>(hook: () => T) => {
 describe('useMultiSwapQuote', () => {
   beforeEach(() => {
     fetchSwapQuote.mockReset()
+    isCopFxWeekendPause.mockReset()
+    isCopFxWeekendPause.mockReturnValue(false)
+  })
+
+  it('does not fetch and reports marketPaused during the weekend pause', async () => {
+    isCopFxWeekendPause.mockReturnValue(true)
+    const { result } = renderWithStore(() =>
+      useMultiSwapQuote([stepUsat, stepUsdm], 'celo-mainnet:copm', 0)
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.marketPaused).toBe(true)
+    expect(fetchSwapQuote).not.toHaveBeenCalled()
+    expect(result.current.perStepQuotes).toEqual([])
+    expect(result.current.totalOutToken.isZero()).toBe(true)
+    // Every planned dollar counts as unquoted: nothing can be delivered.
+    expect(result.current.unquotedUsd.toNumber()).toBe(80)
+    expect(result.current.error).toBeUndefined()
+  })
+
+  it('reports marketPaused=false on weekdays', async () => {
+    fetchSwapQuote.mockImplementation(async () => ({
+      swapAmount: { TO: new BigNumber(0) },
+    }))
+    const { result } = renderWithStore(() => useMultiSwapQuote([stepUsat], 'celo-mainnet:copm', 0))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.marketPaused).toBe(false)
   })
 
   it('returns loading=true while quotes are fetching', () => {
