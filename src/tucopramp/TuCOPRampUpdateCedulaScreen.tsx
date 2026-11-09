@@ -43,7 +43,7 @@ type Props = NativeStackScreenProps<StackParamList, Screens.TuCOPRampUpdateCedul
 
 // Settings-side screen for cedula self-correction.
 //
-// Backend rejects PATCH /v1/p2p/users/cedula with 409 cedula_locked_by_active_order
+// Backend rejects PATCH /p2p/users/cedula with 409 cedula_locked_by_active_order
 // while any non-terminal order references the current cedula. This screen does not
 // preflight active-order state (avoids a listOrders round-trip on mount); the
 // server-side rejection is authoritative and surfaced via cedulaUpdateFailed

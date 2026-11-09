@@ -9,7 +9,7 @@ import { TUCOPRAMP_API_BASE_URL } from 'src/web3/networkConfig'
 
 const TAG = 'tucopramp/client'
 const CANONICAL_PREFIX = 'TuCOPRamp'
-const UPSTREAM_PATH_PREFIX = '/v1/p2p/'
+const UPSTREAM_PATH_PREFIX = '/p2p/'
 const REQUEST_TIMEOUT_MS = 30_000
 
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
@@ -33,9 +33,10 @@ export interface SignTucopRampRequestArgs {
   now?: () => number
 }
 
-// Build the canonical string per guide V1.1 Auth section and sign it via the
-// existing viem-based keychain path (getSiweSigningFunction). The signing
-// primitive lives in src/fiatconnect/clients.ts:20-36; we do not reimplement it.
+// Build the canonical string per the published auth contract
+// (admin.ramp.tucop.xyz/docs) and sign it via the existing viem-based keychain
+// path (getSiweSigningFunction). The signing primitive lives in
+// src/fiatconnect/clients.ts:20-36; we do not reimplement it.
 //
 // The canonical string format is:
 //   TuCOPRamp:<METHOD>:<PATH>:<WALLET_ADDRESS>:<TIMESTAMP>:<BODY_HASH>
@@ -71,7 +72,7 @@ export interface TucopRampFetchArgs {
   method: HttpMethod
   upstreamPath: string
   // Query string WITHOUT leading `?`. Sent to the server but NOT covered by
-  // the signature: per guide V1.1 §Auth the canonical string covers the path
+  // the signature: per the auth contract the canonical string covers the path
   // only, no query string. Callers use this for list pagination + proof-url
   // ?kind=... on GET endpoints.
   queryString?: string
@@ -102,7 +103,7 @@ export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
 }
 
 // Response metadata surfaced to callers that need it (e.g. Cache-Control on
-// GET /v1/p2p/limits to honour the server's max-age hint).
+// GET /p2p/limits to honour the server's max-age hint).
 export interface ResponseMeta {
   headers: Headers
   status: number
@@ -218,8 +219,11 @@ export async function parseErrorEnvelope(response: Response): Promise<ErrorEnvel
     if (parsed && typeof parsed === 'object' && typeof parsed.code === 'string') {
       return parsed as ErrorEnvelope
     }
-    // Legacy P2P bodies (e.g. 409 idempotency_key_reuse on order creation)
-    // carry only `error_code` + `message`, without the RFC 7807 `code`.
+    // `code` is the contract ("Branch on this field only" in the spec) and
+    // Ramp confirmed (2026-11 alignment) it is present on EVERY error body,
+    // including the order-create bodies that also carry the legacy
+    // `error_code` twin. This fallback is a belt only: it never fires on a
+    // compliant response, and must never take priority over `code`.
     if (parsed && typeof parsed === 'object' && typeof parsed.error_code === 'string') {
       return {
         ...parsed,

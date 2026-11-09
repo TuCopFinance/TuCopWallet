@@ -8,7 +8,7 @@ export const userProfileSelector = (state: RootState) => state.tucopramp.userPro
 export const limitsFetchedAtSelector = (state: RootState) => state.tucopramp.limits.fetchedAt
 // Limits the screens render against: the cached server value, or the
 // hardcoded fallback on a cold cache. Being a selector, screens re-render
-// as soon as GET /v1/p2p/limits lands.
+// as soon as GET /p2p/limits lands.
 export const effectiveLimitsSelector = (state: RootState) =>
   state.tucopramp.limits.value ?? TUCOPRAMP_HARDCODED_LIMITS
 

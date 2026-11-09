@@ -1,6 +1,6 @@
 // Operational caps + document validation for the TuCOPRamp integration.
 //
-// The server is the source of truth for both. `GET /v1/p2p/limits` is
+// The server is the source of truth for both. `GET /p2p/limits` is
 // fetched at boot by fetchLimitsSaga and persisted in the tucopramp Redux
 // slice with a 12h TTL; screens read it through effectiveLimitsSelector
 // (selectors.ts), which falls back to TUCOPRAMP_HARDCODED_LIMITS on a cold

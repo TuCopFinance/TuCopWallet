@@ -417,11 +417,18 @@ export const pollBridgeRampWithdrawal = createAction<{ withdrawalId: string }>(
 // Reopen when less than this is left, so a request never races the expiry.
 const SESSION_MIN_REMAINING_SECONDS = 60
 const DESTINATION_POLL_DELAY_MS = 5_000
-// The Bre-B directory answers in about a minute; TuCOPRamp gives up at 5.
-const DESTINATION_POLL_MAX_ATTEMPTS = 66
+// The Bre-B directory usually answers in about a minute, but Ramp's docs say
+// a destination can stay `pending` for up to ~10 minutes and explicitly ask
+// consumers not to give up on a fixed shorter budget of their own. 144
+// attempts at 5 s = 12 min, a cushion past the documented ceiling.
+const DESTINATION_POLL_MAX_ATTEMPTS = 144
 const WITHDRAWAL_POLL_DELAY_MS = 10_000
-// Bridge payouts take minutes; stop asking after 20.
-const WITHDRAWAL_POLL_MAX_ATTEMPTS = 120
+// The documented settlement window is 15 to 30 minutes after the USDC
+// arrive (`settlement_time` on the withdrawal). The old 20-minute budget
+// abandoned healthy payouts mid-window. 210 attempts at 10 s = 35 min,
+// a cushion past the top of the window; see withdrawalPollMaxAttempts for
+// the per-withdrawal value derived from `settlement_time` itself.
+const WITHDRAWAL_POLL_MAX_ATTEMPTS = 210
 
 function errorCodeOf(err: unknown, fallback: string): string {
   return err instanceof TucopRampError ? err.code : fallback
@@ -646,12 +653,32 @@ export function* startWithdrawSaga(action: PayloadAction<StartBridgeRampWithdraw
   )
 }
 
+// Attempts needed to cover the server-advertised settlement window plus a
+// 5-minute cushion, never below the hardcoded floor. Exported for tests.
+export function withdrawalPollMaxAttempts(settlementMaxMinutes: number | undefined): number {
+  if (
+    typeof settlementMaxMinutes !== 'number' ||
+    !Number.isFinite(settlementMaxMinutes) ||
+    settlementMaxMinutes <= 0
+  ) {
+    return WITHDRAWAL_POLL_MAX_ATTEMPTS
+  }
+  return Math.max(
+    WITHDRAWAL_POLL_MAX_ATTEMPTS,
+    Math.ceil(((settlementMaxMinutes + 5) * 60_000) / WITHDRAWAL_POLL_DELAY_MS)
+  )
+}
+
 export function* pollWithdrawalSaga(action: PayloadAction<{ withdrawalId: string }>) {
   const { withdrawalId } = action.payload
   let attempts = 0
-  while (attempts < WITHDRAWAL_POLL_MAX_ATTEMPTS) {
+  let maxAttempts = WITHDRAWAL_POLL_MAX_ATTEMPTS
+  while (attempts < maxAttempts) {
     try {
       const withdrawal = yield* withSession((token) => getWithdrawal(token, withdrawalId))
+      // The server tells us how long a payout usually takes; stretch the
+      // budget to cover it rather than abandoning a healthy payout.
+      maxAttempts = withdrawalPollMaxAttempts(withdrawal.settlement_time?.max_minutes)
       const { knownPayoutIds } = yield* select(bridgeRampWithdrawSelector)
       // The newest payout that was not on the address before this swap.
       const payout = (withdrawal.payouts ?? []).find((p) => !knownPayoutIds.includes(p.id))
@@ -676,7 +703,7 @@ export function* pollWithdrawalSaga(action: PayloadAction<{ withdrawalId: string
     yield* delay(WITHDRAWAL_POLL_DELAY_MS)
     attempts++
   }
-  Logger.warn(TAG, `pollWithdrawal gave up after ${WITHDRAWAL_POLL_MAX_ATTEMPTS} attempts`)
+  Logger.warn(TAG, `pollWithdrawal gave up after ${attempts} attempts`)
   yield* put(withdrawPollTimedOut())
 }
 

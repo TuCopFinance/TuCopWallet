@@ -565,15 +565,17 @@ describe('offrampActiveResumed with a sent deposit', () => {
 })
 
 describe('pollDelayMs', () => {
-  it('backs off from 15 s to a 5 min cap', () => {
-    expect(pollDelayMs(0, false)).toBe(15_000)
-    expect(pollDelayMs(3 * 60_000, false)).toBe(30_000)
-    expect(pollDelayMs(15 * 60_000, false)).toBe(60_000)
+  // Polling is a safety net behind the backend's p2p_order.updated webhook:
+  // Ramp asked for 2 to 5 minutes, never the old 15-second cadence.
+  it('starts at 2 min and backs off to a 5 min cap', () => {
+    expect(pollDelayMs(0, false)).toBe(2 * 60_000)
+    expect(pollDelayMs(3 * 60_000, false)).toBe(2 * 60_000)
+    expect(pollDelayMs(15 * 60_000, false)).toBe(5 * 60_000)
     expect(pollDelayMs(2 * 60 * 60_000, false)).toBe(5 * 60_000)
   })
 
-  it('never polls faster than 30 s once the operator has the order', () => {
-    expect(pollDelayMs(0, true)).toBe(30_000)
+  it('never polls faster than 2 min once the operator has the order', () => {
+    expect(pollDelayMs(0, true)).toBe(2 * 60_000)
   })
 })
 

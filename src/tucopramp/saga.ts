@@ -122,20 +122,21 @@ import {
 
 const TAG = 'tucopramp/saga'
 
-// Poll cadence. Operators settle by hand and can take up to 24 h, so the
-// poller backs off instead of giving up after a few minutes: 15 s for the
-// first 2 min, 30 s up to 10 min, 60 s up to 30 min, then every 5 min. Never
-// faster than 30 s once the operator has the order. After 24 h of polling
-// the flow moves to `poll-timeout`, where the user can refresh by hand. The
-// screen stops the poller on close (stop*Polling) and re-polls when the app
-// returns to the foreground.
+// Poll cadence. Polling is a SAFETY NET, not the primary signal: the backend
+// receives Ramp's `p2p_order.updated` webhook on every status change, and
+// Ramp asked us (2026-11 alignment) to keep client polling at 2 to 5 minutes
+// because fast polling against operator-worked orders distorts their
+// metrics. Operators settle by hand and can take up to 24 h, so the poller
+// never gives up early: 2 min for the first 10 min, then every 5 min. After
+// 24 h of polling the flow moves to `poll-timeout`, where the user can
+// refresh by hand. The screen stops the poller on close (stop*Polling),
+// re-polls when the app returns to the foreground, and the user always has
+// the manual refresh button for an instant read.
 const POLL_SCHEDULE: ReadonlyArray<{ untilMs: number; delayMs: number }> = [
-  { untilMs: 2 * 60_000, delayMs: 15_000 },
-  { untilMs: 10 * 60_000, delayMs: 30_000 },
-  { untilMs: 30 * 60_000, delayMs: 60_000 },
+  { untilMs: 10 * 60_000, delayMs: 2 * 60_000 },
 ]
 const POLL_MAX_DELAY_MS = 5 * 60_000
-const POLL_OPERATOR_ACTIVE_MIN_DELAY_MS = 30_000
+const POLL_OPERATOR_ACTIVE_MIN_DELAY_MS = 2 * 60_000
 export const POLL_GIVE_UP_AFTER_MS = 24 * 60 * 60_000
 
 export function pollDelayMs(elapsedMs: number, operatorActive: boolean): number {
@@ -144,7 +145,7 @@ export function pollDelayMs(elapsedMs: number, operatorActive: boolean): number 
   return operatorActive ? Math.max(base, POLL_OPERATOR_ACTIVE_MIN_DELAY_MS) : base
 }
 
-// GET /v1/p2p/limits is cached client-side per guide sec 10 (server also
+// GET /p2p/limits is cached client-side per guide sec 10 (server also
 // advertises Cache-Control: max-age=300). We skip refetching within this
 // window even on explicit refresh triggers so Ops config bumps propagate on
 // the next natural cold-cache boot rather than on every screen open.
@@ -193,7 +194,10 @@ export const checkActiveOfframpOrder = createAction('tucopramp/checkActiveOffram
 
 export const requestOnrampQuote = createAction<OnrampQuoteRequest>('tucopramp/requestOnrampQuote')
 export const submitOnrampOrder = createAction<{
-  body: OnrampOrderRequest
+  // wallet_address is deliberately NOT part of the payload: the api layer
+  // injects the signing wallet as the destination, so no screen can name a
+  // different one.
+  body: Omit<OnrampOrderRequest, 'wallet_address'>
   idempotencyKey?: string
 }>('tucopramp/submitOnrampOrder')
 export const uploadOnrampProof = createAction<{ orderId: string; file: ProofFile }>(
@@ -209,7 +213,7 @@ export const cancelOnrampOrder = createAction<{ orderId: string; idempotencyKey?
 )
 
 // Terminal state predicates shared with pollers.
-function isOfframpTerminal(status: OfframpOrderStatus): boolean {
+export function isOfframpTerminal(status: OfframpOrderStatus): boolean {
   return (
     status === 'COMPLETED' ||
     status === 'CANCELLED' ||
@@ -218,10 +222,13 @@ function isOfframpTerminal(status: OfframpOrderStatus): boolean {
   )
 }
 
-function isOnrampTerminal(status: OnrampOrderStatus): boolean {
+export function isOnrampTerminal(status: OnrampOrderStatus): boolean {
+  // REFUND_OWED is deliberately absent: it transitions to REFUNDED, so the
+  // poller must keep following the order while the refund is under way.
   return (
     status === 'COMPLETED' ||
     status === 'REJECTED' ||
+    status === 'REFUNDED' ||
     status === 'CANCELLED' ||
     status === 'EXPIRED'
   )
@@ -242,7 +249,9 @@ function isOnrampLocallySettled(status: OnrampFlowStatus): boolean {
 // a retry of the pending request (reuse its Idempotency-Key) or a new one.
 // quote_id is left out: a retry after the quote expired is still the same
 // request. Two 32-bit string hashes, so no personal data is persisted.
-export function orderRequestFingerprint(body: OfframpOrderRequest | OnrampOrderRequest): string {
+export function orderRequestFingerprint(
+  body: OfframpOrderRequest | Omit<OnrampOrderRequest, 'wallet_address'>
+): string {
   const { quote_id: _quoteId, ...rest } = body as Record<string, unknown>
   const canonical = JSON.stringify(
     Object.keys(rest)
@@ -312,7 +321,7 @@ export function* fetchUserProfileSaga() {
   }
 }
 
-// Cedula self-correction via PATCH /v1/p2p/users/cedula. Backend rejects with
+// Cedula self-correction via PATCH /p2p/users/cedula. Backend rejects with
 // 409 cedula_locked_by_active_order when any non-terminal order references the
 // current cedula; the settings screen SHOULD prevent submission in that state
 // but the saga also surfaces the code via cedulaUpdateFailed so the UI stays
@@ -336,7 +345,7 @@ export function* submitCedulaUpdateSaga(action: PayloadAction<UpdateCedulaReques
   }
 }
 
-// Runtime operational caps from GET /v1/p2p/limits with a 3-tier staleness
+// Runtime operational caps from GET /p2p/limits with a 3-tier staleness
 // gate honoring both the server's Cache-Control: max-age hint AND the
 // wallet's hard 12h upper bound.
 //
@@ -761,7 +770,7 @@ export function* sendOfframpDepositSaga(
 // flow (blocks the fresh-form path). Otherwise, look up the most recent
 // completed order's payout details and cache them for auto-fill.
 //
-// The server-facing GET /v1/p2p/orders/{id} response does NOT include the
+// The server-facing GET /p2p/orders/{id} response does NOT include the
 // deposit multisig_address, so if the local slice was wiped (cold boot,
 // reinstall) and the server has an AWAITING_DEPOSIT order for us, we cannot
 // recover the multisig to broadcast the deposit ourselves. The UI in that
@@ -948,7 +957,10 @@ export function* requestOnrampQuoteSaga(action: PayloadAction<OnrampQuoteRequest
 }
 
 export function* submitOnrampOrderSaga(
-  action: PayloadAction<{ body: OnrampOrderRequest; idempotencyKey?: string }>
+  action: PayloadAction<{
+    body: Omit<OnrampOrderRequest, 'wallet_address'>
+    idempotencyKey?: string
+  }>
 ) {
   const auth = yield* call(resolveAuth)
   if (!auth) {
@@ -991,7 +1003,10 @@ export function* submitOnrampOrderSaga(
   }
 }
 
-function* ensureFreshOnrampQuote(auth: TucopRampAuth, body: OnrampOrderRequest) {
+function* ensureFreshOnrampQuote(
+  auth: TucopRampAuth,
+  body: Omit<OnrampOrderRequest, 'wallet_address'>
+) {
   const lastQuote = yield* select((s) => s.tucopramp.onramp.lastQuote)
   if (!lastQuote || !lastQuote.expires_at || lastQuote.quote_id !== body.quote_id) {
     return body
@@ -1318,6 +1333,10 @@ function mapOnrampDetailStatus(status: OnrampOrderStatus): OnrampFlowStatus | nu
       return 'completed'
     case 'REJECTED':
       return 'rejected'
+    case 'REFUND_OWED':
+      return 'refund-owed'
+    case 'REFUNDED':
+      return 'refunded'
     case 'CANCELLED':
       return 'cancelled'
     case 'EXPIRED':

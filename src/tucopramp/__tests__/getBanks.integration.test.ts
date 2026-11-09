@@ -1,8 +1,8 @@
 // Integration smoke for Phase 1 of the TuCOPRamp integration.
 //
 // Hits the real prod backend proxy at
-//   https://tucop-backend-production.up.railway.app/api/tucopramp/v1/p2p/banks
-// which forwards to https://api.ramp.tucop.xyz/v1/p2p/banks.
+//   https://tucop-backend-production.up.railway.app/api/tucopramp/p2p/banks
+// which forwards to https://api.ramp.tucop.xyz/p2p/banks.
 //
 // Guarded by RUN_TUCOPRAMP_INTEGRATION_TESTS=1 so CI does not exercise a
 // third-party production dependency on every run.

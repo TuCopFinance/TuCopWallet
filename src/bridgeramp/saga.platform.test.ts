@@ -27,6 +27,7 @@ import {
   onSwapConfirmedSaga,
   pollBridgeRampWithdrawal,
   pollWithdrawalSaga,
+  withdrawalPollMaxAttempts,
   registerBridgeRampDestination,
   registerDestinationSaga,
   startBridgeRampWithdraw,
@@ -522,10 +523,11 @@ describe('pollWithdrawalSaga', () => {
       .put(withdrawPollTimedOut())
       .run({ timeout: 10_000 })
     expect(storeState.bridgeramp.withdraw.status).toBe('awaiting_payout')
-    expect(mockedApi.getWithdrawal).toHaveBeenCalledTimes(120)
-    // 120 polls through the saga runner; the saga's own run timeout is 10 s,
-    // so the test needs more than jest's 5 s default when the suite runs in
-    // parallel with the rest of the repo.
+    // 210 = the 35-minute floor at one poll every 10 s (the fixture carries
+    // no settlement_time, so the floor applies). The saga's own run timeout
+    // is 10 s, so the test needs more than jest's 5 s default when the
+    // suite runs in parallel with the rest of the repo.
+    expect(mockedApi.getWithdrawal).toHaveBeenCalledTimes(210)
   }, 15_000)
 })
 
@@ -1239,5 +1241,23 @@ describe('deposit sagas', () => {
     await Promise.resolve()
     task.cancel()
     expect(converts).toBe(1)
+  })
+})
+
+describe('withdrawalPollMaxAttempts', () => {
+  it('falls back to the hardcoded floor when the server sends no window', () => {
+    expect(withdrawalPollMaxAttempts(undefined)).toBe(210)
+    expect(withdrawalPollMaxAttempts(0)).toBe(210)
+    expect(withdrawalPollMaxAttempts(Number.NaN)).toBe(210)
+  })
+
+  it('stretches past the floor when the advertised window is longer', () => {
+    // 60-minute window + 5-minute cushion at one poll every 10 s.
+    expect(withdrawalPollMaxAttempts(60)).toBe(390)
+  })
+
+  it('never shrinks below the floor for a short window', () => {
+    // 15-minute window would be 120 attempts; the 35-minute floor wins.
+    expect(withdrawalPollMaxAttempts(15)).toBe(210)
   })
 })

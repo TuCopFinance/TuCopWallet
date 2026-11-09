@@ -655,6 +655,8 @@ function TuCOPRampOnrampFlow(_props: Props) {
 
         {(status === 'completed' ||
           status === 'rejected' ||
+          status === 'refund-owed' ||
+          status === 'refunded' ||
           status === 'cancelled' ||
           status === 'expired') && (
           <View style={styles.centered}>
@@ -663,17 +665,25 @@ function TuCOPRampOnrampFlow(_props: Props) {
                 ? t('tucopramp.completed')
                 : status === 'rejected'
                   ? t('tucopramp.rejected')
-                  : status === 'expired'
-                    ? t('tucopramp.expired')
-                    : t('tucopramp.cancelled')}
+                  : status === 'refund-owed'
+                    ? t('tucopramp.onrampRefundOwed')
+                    : status === 'refunded'
+                      ? t('tucopramp.onrampRefunded')
+                      : status === 'expired'
+                        ? t('tucopramp.expired')
+                        : t('tucopramp.cancelled')}
             </Text>
             {status !== 'completed' && (
               <Text style={styles.terminalBody}>
                 {status === 'rejected'
                   ? t('tucopramp.rejectedBody')
-                  : status === 'expired'
-                    ? t('tucopramp.expiredBody')
-                    : t('tucopramp.cancelledBody')}
+                  : status === 'refund-owed'
+                    ? t('tucopramp.onrampRefundOwedBody')
+                    : status === 'refunded'
+                      ? t('tucopramp.onrampRefundedBody')
+                      : status === 'expired'
+                        ? t('tucopramp.expiredBody')
+                        : t('tucopramp.cancelledBody')}
               </Text>
             )}
             {status === 'rejected' && !!orderId && (

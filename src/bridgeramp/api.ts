@@ -47,7 +47,7 @@ export function partyCanTransact(party: Party): boolean {
 }
 
 export function getParty(partySession: string, opts?: CallOpts): Promise<Party> {
-  return platformFetch<Party>({ ...opts, method: 'GET', path: '/v1/parties/me', partySession })
+  return platformFetch<Party>({ ...opts, method: 'GET', path: '/parties/me', partySession })
 }
 
 export interface CreatePartyRequest {
@@ -61,7 +61,7 @@ export interface CreatePartyRequest {
   // ISO 3166-1 alpha-3. Optional; it can differ from country (a foreigner
   // with a Colombian CE).
   nationality?: string
-  // Individuals in Colombia (GET /v1/document-types). NIT is a business
+  // Individuals in Colombia (GET /document-types). NIT is a business
   // document; TI is a minor's and Bridge verifies adults only.
   document_type: 'CC' | 'CE' | 'NUIP' | 'PAS'
   document_number: string
@@ -80,7 +80,7 @@ export function createParty(
   return platformFetch<{ party: Party }>({
     ...opts,
     method: 'POST',
-    path: '/v1/parties',
+    path: '/parties',
     body: request,
     partySession,
     idempotencyKey,
@@ -119,7 +119,7 @@ export function listDestinations(partySession: string, opts?: CallOpts): Promise
   return platformFetch<Destination[]>({
     ...opts,
     method: 'GET',
-    path: '/v1/destinations',
+    path: '/destinations',
     partySession,
   })
 }
@@ -132,7 +132,7 @@ export function getDestination(
   return platformFetch<Destination>({
     ...opts,
     method: 'GET',
-    path: `/v1/destinations/${encodeURIComponent(destinationId)}`,
+    path: `/destinations/${encodeURIComponent(destinationId)}`,
     partySession,
   })
 }
@@ -150,7 +150,7 @@ export function createFirstPartyDestination(
   return platformFetch<Destination>({
     ...opts,
     method: 'POST',
-    path: '/v1/destinations',
+    path: '/destinations',
     body: { ownership: 'first_party', bre_b_key: breBKey },
     partySession,
     idempotencyKey,
@@ -169,8 +169,8 @@ export function createFirstPartyDestination(
 // needs (it always lands a little above amountOutMin). A quote is only a
 // price; nothing takes it.
 
-const WITHDRAWALS_PATH = '/v1/withdrawals'
-const QUOTES_PATH = '/v1/quotes'
+const WITHDRAWALS_PATH = '/withdrawals'
+const QUOTES_PATH = '/quotes'
 
 export interface MoneyAmount {
   // Decimal string with the asset's decimals (COP 2, USDC 6).
@@ -236,7 +236,11 @@ export interface Withdrawal {
   // TuCOP's fee on this address, e.g. 150 = 1.5 percent of what arrives.
   fee_bps: number | null
   return_address: Address | null
-  // Only on GET /v1/withdrawals/{id}; most recent first.
+  // Expected payout window in minutes after the USDC arrive. The docs ask
+  // consumers to read it instead of hardcoding 15-30; the poll budget in
+  // saga.ts derives from it when present.
+  settlement_time?: { min_minutes: number; max_minutes: number }
+  // Only on GET /withdrawals/{id}; most recent first.
   payouts?: WithdrawalPayout[]
   created_at: string
 }
@@ -298,7 +302,7 @@ export function createWithdrawQuote(
 // wallet, created once and reused. The COPm conversion happens in the app
 // (convertBridgeDeposit).
 
-const DEPOSITS_PATH = '/v1/deposits'
+const DEPOSITS_PATH = '/deposits'
 
 export interface DepositEvent {
   id: string
@@ -322,7 +326,7 @@ export interface DepositAccount {
   // Where Bridge sends the USDC.
   destination: { address: Address; chain: string; asset: 'USDC'; token_contract: Address }
   fee_bps: number
-  // Only on GET /v1/deposits/{id}; most recent first.
+  // Only on GET /deposits/{id}; most recent first.
   events?: DepositEvent[]
   created_at: string
 }

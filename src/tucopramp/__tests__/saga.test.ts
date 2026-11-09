@@ -5,6 +5,8 @@ import * as api from 'src/tucopramp/api'
 import {
   fetchLimitsSaga,
   fetchOfframpProofUrlSaga,
+  isOfframpTerminal,
+  isOnrampTerminal,
   submitCedulaUpdateSaga,
   submitOfframpOrderSaga,
   submitOnrampOrderSaga,
@@ -277,7 +279,9 @@ describe('submitOfframpOrderSaga quote expiry guard', () => {
 describe('submitOnrampOrderSaga quote expiry guard', () => {
   ;(getKeychainAccounts as jest.Mock).mockResolvedValue(mockKeychainAccounts)
 
-  const baseBody: OnrampOrderRequest = {
+  // The screen-facing payload: wallet_address is injected by the api layer
+  // from the signing wallet, so the body built in the UI never carries it.
+  const baseBody: Omit<OnrampOrderRequest, 'wallet_address'> = {
     gross_amount_cop: 100_000,
     cedula: '1234567',
     full_name: 'Test User',
@@ -433,7 +437,7 @@ describe('fetchOfframpProofUrlSaga', () => {
 
   it('dispatches loading -> loaded on 200 with the {url, expires_at} shape', async () => {
     const proof = {
-      url: 'https://api.ramp.tucop.xyz/v1/p2p/proofs/xyz?ts=1&sig=abc',
+      url: 'https://api.ramp.tucop.xyz/p2p/proofs/xyz?ts=1&sig=abc',
       expires_at: '2026-09-03T20:00:00Z',
     }
     await expectSaga(fetchOfframpProofUrlSaga, {
@@ -563,5 +567,34 @@ describe('submitOfframpOrderSaga idempotency persist', () => {
       (e: any) => e.payload.fn === api.createOfframpOrder
     )
     expect(createCall?.payload.args[2]).toBe(explicit)
+  })
+})
+
+describe('terminal-state predicates (Ramp state machine, 2026-11 alignment)', () => {
+  it('REFUND_OWED is never terminal: the refund is still under way', () => {
+    expect(isOfframpTerminal('REFUND_OWED')).toBe(false)
+    expect(isOnrampTerminal('REFUND_OWED')).toBe(false)
+  })
+
+  it('REFUNDED is terminal on both directions', () => {
+    expect(isOfframpTerminal('REFUNDED')).toBe(true)
+    expect(isOnrampTerminal('REFUNDED')).toBe(true)
+  })
+
+  it('a status this build does not know is NOT terminal (keep following the order)', () => {
+    // `status` is a plain string in the spec and Ramp ships no versioning:
+    // a new state must keep the poller alive, not freeze the order as done.
+    expect(isOfframpTerminal('SOME_FUTURE_STATE' as never)).toBe(false)
+    expect(isOnrampTerminal('SOME_FUTURE_STATE' as never)).toBe(false)
+    expect(isOfframpTerminal('DRAFT')).toBe(false)
+    expect(isOnrampTerminal('DRAFT')).toBe(false)
+  })
+
+  it('the known finals stay final', () => {
+    for (const s of ['COMPLETED', 'CANCELLED', 'EXPIRED'] as const) {
+      expect(isOfframpTerminal(s)).toBe(true)
+      expect(isOnrampTerminal(s)).toBe(true)
+    }
+    expect(isOnrampTerminal('REJECTED')).toBe(true)
   })
 })
