@@ -1791,6 +1791,10 @@
   },
   "dappNotListed": "This app is not listed in {{appName}}. apps are third party applications. Use at your own risk.",
   "swapScreen": {
+    "copFxWeekendPause": {
+      "title": "Exchange paused for the weekend",
+      "body": "Dollar to peso exchanges rest on Saturdays and Sundays. Come back Monday through Friday."
+    },
     "title": "Swap",
     "review": "Review",
     "confirmSwap": "Confirm Swap",
@@ -2905,6 +2909,10 @@
     }
   },
   "tucopramp": {
+    "onrampRefundOwed": "Refund in progress",
+    "onrampRefundOwedBody": "We could not complete your top-up. We will send the pesos back to your bank account. It can take a few hours.",
+    "onrampRefunded": "Refund completed",
+    "onrampRefundedBody": "We sent the pesos back to your bank account.",
     "providerName": "TuCOP Ramp",
     "offrampTitle": "Withdraw to your bank",
     "onrampTitle": "Receive digital pesos",
@@ -2993,11 +3001,18 @@
     "refundOwedBody": "You will get the digital pesos back in your wallet. It may take a few hours.",
     "errorHeading": "Something went wrong",
     "errors": {
+      "idempotency_in_progress": "Your previous request is still being processed. Wait a moment and try again.",
+      "idempotency_key_invalid": "We could not process the request. Try again.",
+      "invalid_wallet_address": "We could not validate your wallet. Close the app and open it again.",
+      "not_found": "The service did not recognize the request. Update the app and try again.",
+      "open_order_amount_conflict": "You already have an open withdrawal for an almost identical amount. Wait for it to finish or cancel it before opening another.",
+      "payload_too_large": "The file is too large. Pick a lighter image.",
       "unknown": "There was a problem. Try again or contact support.",
       "no_wallet": "We could not read your wallet. Try closing and reopening the app.",
       "invalid_api_key": "Service unavailable. Try later.",
       "signature_invalid": "We could not verify your wallet. Try again.",
       "signature_expired": "Session expired. Try again.",
+      "unsupported_encoding": "We could not read the file. Try another image.",
       "wallet_not_linked": "You need to register your ID the first time.",
       "invalid_body": "Please review the entered data.",
       "consent_required": "You must accept the terms to continue.",
