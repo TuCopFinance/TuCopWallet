@@ -175,7 +175,7 @@ describe('getTokensInfo', () => {
     mockFetch.mockResponseOnce(JSON.stringify({}))
     await getTokensInfo([NetworkId['celo-mainnet']])
     const calledUrl = mockFetch.mock.calls[0][0] as string
-    expect(calledUrl).toContain('tucop-backend-production.up.railway.app/api/tokens/info')
+    expect(calledUrl).toContain('backend.tucop.xyz/api/tokens/info')
     expect(calledUrl).not.toContain('valora.xyz')
     expect(calledUrl).toContain('networkIds=celo-mainnet')
   })

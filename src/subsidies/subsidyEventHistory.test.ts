@@ -99,7 +99,7 @@ describe('getLastClaimTimestamp', () => {
     await getLastClaimTimestamp(WALLET)
 
     const fetchCall = (global.fetch as jest.Mock).mock.calls[0][0] as string
-    expect(fetchCall).toContain('https://tucop-backend-production.up.railway.app/events')
+    expect(fetchCall).toContain('https://backend.tucop.xyz/events')
     expect(fetchCall).toContain('address=0x947c6db1569edc9fd37b017b791ca0f008ab4946')
     expect(fetchCall).toContain('topic0=' + SUBSIDY_CLAIMED_TOPIC)
     expect(fetchCall).toContain('topic1=' + encodeURIComponent(PADDED_WALLET))

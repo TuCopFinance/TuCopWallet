@@ -2,12 +2,21 @@ import { FetchMock } from 'jest-fetch-mock'
 import { _resetForTests } from 'src/lib/circuitBreaker/circuitBreaker'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 
+// Pinned so the failover suite is deterministic and the rest of the file
+// stays out of failover territory (null = not a backend URL).
+jest.mock('src/web3/backendHosts', () => ({
+  toBackendFallbackUrl: jest.fn(() => null),
+}))
+const { toBackendFallbackUrl } = jest.requireMock('src/web3/backendHosts')
+
 const mockFetch = fetch as FetchMock
 
 describe('fetchWithTimeout', () => {
   beforeEach(() => {
     mockFetch.resetMocks()
     _resetForTests()
+    toBackendFallbackUrl.mockReset()
+    toBackendFallbackUrl.mockReturnValue(null)
   })
 
   it('returns response if request completes within timeout', async () => {
@@ -139,5 +148,117 @@ describe('fetchWithTimeout with retry', () => {
     const res = await fetchWithTimeout('https://tripped.test/x')
     expect(res.status).toBe(503)
     expect(mockFetch.mock.calls.length).toBe(callsBefore)
+  })
+})
+
+describe('backend host failover', () => {
+  const PRIMARY = 'https://backend.tucop.xyz/api/tucopramp/p2p/banks'
+  const FALLBACK = 'https://tucop-backend-production.up.railway.app/api/tucopramp/p2p/banks'
+
+  // The retry loop sleeps between attempts; with the repo's fake timers those
+  // sleeps never resolve and every test here would hit the jest timeout.
+  beforeAll(() => {
+    jest.useRealTimers()
+  })
+  afterAll(() => {
+    jest.useFakeTimers()
+  })
+
+  beforeEach(() => {
+    mockFetch.resetMocks()
+    _resetForTests()
+    toBackendFallbackUrl.mockReset()
+    toBackendFallbackUrl.mockReturnValue(FALLBACK)
+  })
+
+  it('GET: fails over to the fallback host after exhausting 5xx retries', async () => {
+    mockFetch.mockResponses(
+      ['boom', { status: 500 }],
+      ['boom', { status: 500 }],
+      ['boom', { status: 500 }],
+      ['ok', { status: 200 }]
+    )
+    const response = await fetchWithTimeout(PRIMARY)
+    expect(response.status).toBe(200)
+    expect(mockFetch).toHaveBeenCalledTimes(4)
+    expect(mockFetch.mock.calls[3][0]).toBe(FALLBACK)
+  })
+
+  it('GET: never fails over on 503 proxy_disabled (operator kill switch is final)', async () => {
+    mockFetch.mockResponse(JSON.stringify({ code: 'proxy_disabled' }), { status: 503 })
+    const response = await fetchWithTimeout(PRIMARY)
+    expect(response.status).toBe(503)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    for (const call of mockFetch.mock.calls) {
+      expect(call[0]).toBe(PRIMARY)
+    }
+  })
+
+  it('POST: fails over on network error (request never got through)', async () => {
+    mockFetch
+      .mockRejectOnce(new Error('network down'))
+      .mockRejectOnce(new Error('network down'))
+      .mockRejectOnce(new Error('network down'))
+      .mockResponseOnce('ok', { status: 200 })
+    const response = await fetchWithTimeout(PRIMARY, { method: 'POST', body: '{}' })
+    expect(response.status).toBe(200)
+    expect(mockFetch).toHaveBeenCalledTimes(4)
+    expect(mockFetch.mock.calls[3][0]).toBe(FALLBACK)
+  })
+
+  it('POST: fails over on 503 proxy_misconfigured (guaranteed not processed)', async () => {
+    mockFetch.mockResponses(
+      [JSON.stringify({ code: 'proxy_misconfigured' }), { status: 503 }],
+      [JSON.stringify({ code: 'proxy_misconfigured' }), { status: 503 }],
+      [JSON.stringify({ code: 'proxy_misconfigured' }), { status: 503 }],
+      ['ok', { status: 200 }]
+    )
+    const response = await fetchWithTimeout(PRIMARY, { method: 'POST', body: '{}' })
+    expect(response.status).toBe(200)
+    expect(mockFetch.mock.calls[3][0]).toBe(FALLBACK)
+  })
+
+  it('POST: never fails over on 502 upstream_unavailable (may have been processed)', async () => {
+    mockFetch.mockResponse(JSON.stringify({ code: 'upstream_unavailable' }), { status: 502 })
+    const response = await fetchWithTimeout(PRIMARY, { method: 'POST', body: '{}' })
+    expect(response.status).toBe(502)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+    for (const call of mockFetch.mock.calls) {
+      expect(call[0]).toBe(PRIMARY)
+    }
+  })
+
+  it('POST: never fails over on passthrough 5xx without a safe code', async () => {
+    mockFetch.mockResponse('upstream exploded', { status: 500 })
+    const response = await fetchWithTimeout(PRIMARY, { method: 'POST', body: '{}' })
+    expect(response.status).toBe(500)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it('4xx is final: no retry, no failover', async () => {
+    mockFetch.mockResponseOnce('nope', { status: 404 })
+    const response = await fetchWithTimeout(PRIMARY)
+    expect(response.status).toBe(404)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('non-backend URLs never fail over', async () => {
+    toBackendFallbackUrl.mockReturnValue(null)
+    mockFetch.mockResponse('boom', { status: 500 })
+    const response = await fetchWithTimeout('https://forno.celo.org/')
+    expect(response.status).toBe(500)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it('returns the primary outcome when the fallback also fails', async () => {
+    mockFetch
+      .mockResponseOnce('boom', { status: 500 })
+      .mockResponseOnce('boom', { status: 500 })
+      .mockResponseOnce('primary says 500', { status: 500 })
+      .mockRejectOnce(new Error('fallback down too'))
+    const response = await fetchWithTimeout(PRIMARY)
+    expect(response.status).toBe(500)
+    expect(await response.text()).toBe('primary says 500')
+    expect(mockFetch).toHaveBeenCalledTimes(4)
   })
 })

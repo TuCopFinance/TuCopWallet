@@ -118,6 +118,13 @@ export const DynamicConfigs = {
       moreAavePoolsUrl: '',
     },
   },
+  [StatsigDynamicConfigs.BACKEND_HOSTS]: {
+    configName: StatsigDynamicConfigs.BACKEND_HOSTS,
+    defaultValues: {
+      primary: 'https://backend.tucop.xyz',
+      fallback: 'https://tucop-backend-production.up.railway.app',
+    },
+  },
   [StatsigDynamicConfigs.APP_CONFIG]: {
     configName: StatsigDynamicConfigs.APP_CONFIG,
     defaultValues: {
