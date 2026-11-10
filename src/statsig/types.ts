@@ -13,6 +13,10 @@ export enum StatsigDynamicConfigs {
   // can retarget cities, tune the match copy, rotate the Safe destination,
   // or extend the campaign without shipping a wallet release.
   EARTHQUAKE_DONATION_CONFIG = 'earthquake_donation_config',
+  // Backend origin pair (primary + fallback) so an infrastructure move is a
+  // config flip instead of an app release. Values are validated against a
+  // compiled host allowlist in src/web3/backendHosts.ts before use.
+  BACKEND_HOSTS = 'backend_hosts',
 }
 
 // Separating into different enum from StatsigDynamicConfigs to allow for more strict typing
