@@ -5,6 +5,7 @@ import {
   shouldShortCircuit,
 } from 'src/lib/circuitBreaker/circuitBreaker'
 import { addRpcBreadcrumb } from 'src/sentry/breadcrumbs'
+import { toBackendFallbackUrl } from 'src/web3/backendHosts'
 
 const MAX_ATTEMPTS = 3
 const BASE_BACKOFF_MS = 250
@@ -66,9 +67,63 @@ async function attemptFetch(
   }
 }
 
+// ---------- Backend host failover (VPS primary, Railway secondary) ----------
+//
+// Semantics agreed with the backend team (2026-11-10), bilateral:
+//
+//   GET/HEAD: failover on network error or any 5xx, EXCEPT a 503 whose body
+//     carries code `proxy_disabled`. That one is the operator's kill switch
+//     and MUST stay final on every method: failing over to the secondary
+//     would mean the switch kills nothing. (Their summary table listed the
+//     two 503s as failover-able for GET; their prose says proxy_disabled is
+//     final. We implement the prose: the safe reading.)
+//   POST/other mutating: failover ONLY on network error (the request never
+//     got through) or a 503 with code `proxy_misconfigured` (the proxy
+//     answers it BEFORE any upstream call, guaranteed not-processed). Never
+//     on 502 `upstream_unavailable` (ambiguous: upstream may have processed
+//     it) and never on passthrough 5xx, even though the ramp POSTs carry an
+//     Idempotency-Key: other backend POSTs do not.
+//   4xx: always final, never retried, never failed over.
+//
+// Only URLs on the effective PRIMARY backend origin are eligible
+// (toBackendFallbackUrl returns null for everything else), and the fallback
+// is a single attempt with no circuit-breaker bookkeeping: it is the
+// emergency path, not a second first-class origin.
+const FAILOVER_SAFE_503_CODES = new Set(['proxy_misconfigured'])
+const NEVER_FAILOVER_CODE = 'proxy_disabled'
+
+async function bodyCode(response: Response): Promise<string | null> {
+  try {
+    const parsed = await response.clone().json()
+    return typeof parsed?.code === 'string' ? parsed.code : null
+  } catch {
+    return null
+  }
+}
+
+async function resolveBackendFailoverUrl(
+  url: string,
+  method: string,
+  outcome: { response: Response | null; error: unknown }
+): Promise<string | null> {
+  const fallbackUrl = toBackendFallbackUrl(url)
+  if (!fallbackUrl) return null
+  // Network error: the request never completed against the primary.
+  if (!outcome.response) return fallbackUrl
+  const status = outcome.response.status
+  if (status < 500) return null
+  const code = await bodyCode(outcome.response)
+  if (code === NEVER_FAILOVER_CODE) return null
+  const isMutating = method !== 'GET' && method !== 'HEAD'
+  if (isMutating) {
+    return status === 503 && code !== null && FAILOVER_SAFE_503_CODES.has(code) ? fallbackUrl : null
+  }
+  return fallbackUrl
+}
+
 /**
- * Fetch with timeout, retry on transient failures, and per-endpoint circuit
- * breaker.
+ * Fetch with timeout, retry on transient failures, per-endpoint circuit
+ * breaker, and a one-shot host failover for the wallet's own backend.
  *
  * - Retries up to {@link MAX_ATTEMPTS} times on 5xx responses or network errors.
  * - Does NOT retry on 4xx (client errors are not transient).
@@ -112,7 +167,10 @@ export const fetchWithTimeout = async (
           await sleep(backoffDelayMs(attempt))
           continue
         }
-        return response
+        // Retries exhausted on a 5xx: fall through to the failover check
+        // below instead of returning here, so an eligible request gets its
+        // one shot against the fallback host.
+        break
       }
       // 2xx, 3xx, 4xx: do not retry. 2xx clears breaker, others leave as-is.
       if (response.status < 400 && circuitKey) recordSuccess(circuitKey)
@@ -135,6 +193,29 @@ export const fetchWithTimeout = async (
         await sleep(backoffDelayMs(attempt))
         continue
       }
+    }
+  }
+
+  const failoverUrl = await resolveBackendFailoverUrl(url, method, {
+    response: lastResponse,
+    error: lastError,
+  })
+  if (failoverUrl) {
+    const startedAt = Date.now()
+    try {
+      const response = await attemptFetch(failoverUrl, options, duration)
+      addRetryBreadcrumb(failoverUrl, method, {
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      })
+      return response
+    } catch (err) {
+      addRetryBreadcrumb(failoverUrl, method, {
+        error: (err as Error)?.message ?? String(err),
+        durationMs: Date.now() - startedAt,
+      })
+      // Both origins unreachable: surface the primary's outcome below, which
+      // is the one the caller's error handling is written against.
     }
   }
 
