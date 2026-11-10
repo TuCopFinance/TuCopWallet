@@ -1,11 +1,15 @@
 import Logger from 'src/utils/Logger'
+import networkConfig from 'src/web3/networkConfig'
 import { Address } from 'viem'
 
 import { REFI_COLOMBIA_SUBSIDIES_ADDRESS } from 'src/subsidies/ReFiColombiaSubsidiesContract'
 
 const TAG = 'subsidies/subsidyEventHistory'
 
-const TUCOP_BACKEND_URL = 'https://tucop-backend-production.up.railway.app'
+// Backend origin shared with the rest of the app (primary + remote-config +
+// failover live in networkConfig/backendHosts; this module must not pin its
+// own copy of the host).
+const TUCOP_BACKEND_URL = networkConfig.tucopBackendApiUrl
 
 // keccak256("SubsidyClaimed(address,uint256,uint256)") -- the real event signature
 // emitted by the current ReFi Colombia subsidies contract. The previous 2-arg

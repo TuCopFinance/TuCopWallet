@@ -242,8 +242,7 @@ const NFTS_APP_URL = 'https://nfts.valoraapp.com/'
 // Dev-only override: set TUCOP_BACKEND_BASE_URL in .env to point the app at
 // a local backend (e.g. http://localhost:8080 for iOS simulator smoke tests
 // of the Uniswap V4 executor with flags ON). Falls back to prod.
-const TUCOP_BACKEND_BASE_URL =
-  Config.TUCOP_BACKEND_BASE_URL || 'https://tucop-backend-production.up.railway.app'
+const TUCOP_BACKEND_BASE_URL = Config.TUCOP_BACKEND_BASE_URL || 'https://backend.tucop.xyz'
 
 const GET_SWAP_QUOTE_URL = `${TUCOP_BACKEND_BASE_URL}/api/swap/quote`
 
@@ -340,10 +339,16 @@ const SET_REGISTRATION_PROPERTIES_AUTH_MAINNET = {
 
 const CROSS_CHAIN_EXPLORER_URL = 'https://axelarscan.io/gmp/'
 
-// TuCop backend proxies (Railway). Used to remove third-party API keys from the mobile app:
+// TuCop backend proxies. Used to remove third-party API keys from the mobile app:
 // - /api/prices/xaut       -> XAUt0 USD price (replaces CoinMarketCap)
 // - /api/v2/...            -> Blockscout passthrough (replaces direct Blockscout calls + key)
-const TUCOP_BACKEND_BASE = 'https://tucop-backend-production.up.railway.app'
+//
+// Host architecture (2026-11): backend.tucop.xyz (VPS) is the PRIMARY origin
+// and Railway stays as the fallback. The effective pair is remote-configured
+// (Statsig `backend_hosts`, validated against the compiled allowlist in
+// src/web3/backendHosts.ts) and the failover lives in fetchWithTimeout, so
+// these literals are the compiled defaults, not the whole story.
+const TUCOP_BACKEND_BASE = 'https://backend.tucop.xyz'
 const GET_XAUT_PRICE_URL = `${TUCOP_BACKEND_BASE}/api/prices/xaut?vs=usd`
 const WRI_DELEGATE_RELAY_URL = `${TUCOP_BACKEND_BASE}/api/wri/delegate-relay`
 // WRI Track C feed migration (gated by StatsigFeatureGates.WRI_TX_FEED_TUCOP_V1):
@@ -581,8 +586,7 @@ Logger.info('Connecting to Celo mainnet')
 // TuCOPRamp paths carry no version (the /v1 prefix was removed upstream for good).
 // Wallet MUST sign the UPSTREAM path (/p2p/<endpoint>), not the prefixed one.
 // See .claude/coordination/tucopramp.md + .claude/coordination/tucopramp-backend-brief.md.
-export const TUCOPRAMP_API_BASE_URL =
-  'https://tucop-backend-production.up.railway.app/api/tucopramp'
+export const TUCOPRAMP_API_BASE_URL = 'https://backend.tucop.xyz/api/tucopramp'
 
 // Where TuCOPRamp's hosted identity verification sends the user back after
 // TuCOP Ramp (Bridge) onboarding. Must be registered as an allowed redirect for the
