@@ -4,6 +4,7 @@ import {
   createWithdrawal,
   getParty,
   partyCanTransact,
+  listDestinations,
 } from 'src/bridgeramp/api'
 import {
   openWalletPartySession,
@@ -88,6 +89,30 @@ describe('platformFetch', () => {
     await expect(
       platformFetch({ method: 'GET', path: '/api/tucopramp/parties/me', fetchImpl: jest.fn() })
     ).rejects.toThrow('upstream platform path')
+  })
+})
+
+describe('listDestinations pagination', () => {
+  it('walks pages with starting_after until has_more is false and returns a flat array', async () => {
+    const page = (ids: string[], hasMore: boolean) =>
+      response(200, { data: ids.map((id) => ({ id })), has_more: hasMore })
+    const fetchImpl = jest
+      .fn()
+      .mockResolvedValueOnce(page(['dst_1', 'dst_2'], true))
+      .mockResolvedValueOnce(page(['dst_3'], false))
+    const result = await listDestinations('tps_1', { baseUrl: BASE, fetchImpl })
+    expect(result.map((d) => d.id)).toEqual(['dst_1', 'dst_2', 'dst_3'])
+    expect(fetchImpl.mock.calls[0][0]).toBe(`${BASE}/destinations`)
+    expect(fetchImpl.mock.calls[1][0]).toBe(`${BASE}/destinations?starting_after=dst_2`)
+  })
+
+  it('returns a single page as-is when has_more is false', async () => {
+    const fetchImpl = jest
+      .fn()
+      .mockResolvedValueOnce(response(200, { data: [{ id: 'dst_1' }], has_more: false }))
+    const result = await listDestinations('tps_1', { baseUrl: BASE, fetchImpl })
+    expect(result).toHaveLength(1)
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
   })
 })
 
