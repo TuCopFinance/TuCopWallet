@@ -75,6 +75,48 @@ describe('signTucopRampRequest', () => {
     ).rejects.toThrow(/must start with "\/p2p\/"/)
   })
 
+  it('re-signs and retries exactly once on 401 signature_expired', async () => {
+    const kc = makeFakeKeychainAccounts('0xsig')
+    const fetchImpl = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: 'signature_expired', status: 401 }), { status: 401 })
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+    const result = await tucopRampFetch<{ ok: boolean }>({
+      method: 'GET',
+      upstreamPath: '/p2p/users/me',
+      walletAddress: TEST_WALLET,
+      keychainAccounts: kc,
+      baseUrl: TEST_BASE_URL,
+      fetchImpl,
+    })
+    expect(result).toEqual({ ok: true })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not retry signature_expired more than once', async () => {
+    const kc = makeFakeKeychainAccounts('0xsig')
+    // Fresh Response per call: a shared instance's body can only be read once.
+    const fetchImpl = jest
+      .fn()
+      .mockImplementation(
+        async () =>
+          new Response(JSON.stringify({ code: 'signature_expired', status: 401 }), { status: 401 })
+      )
+    await expect(
+      tucopRampFetch({
+        method: 'GET',
+        upstreamPath: '/p2p/users/me',
+        walletAddress: TEST_WALLET,
+        keychainAccounts: kc,
+        baseUrl: TEST_BASE_URL,
+        fetchImpl,
+      })
+    ).rejects.toMatchObject({ code: 'signature_expired' })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
   it('never signs a versioned path (the upstream /v1 prefix is gone for good)', async () => {
     // TuCOPRamp removed the /v1 prefix with no redirect (2026-10, PRs #245
     // and #249): a canonical string carrying /v1 produces a signature the

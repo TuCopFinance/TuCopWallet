@@ -5,7 +5,7 @@ import {
   shouldShortCircuit,
 } from 'src/lib/circuitBreaker/circuitBreaker'
 import { addRpcBreadcrumb } from 'src/sentry/breadcrumbs'
-import { toBackendFallbackUrl } from 'src/web3/backendHosts'
+import { toBackendFallbackUrl, toEffectivePrimaryUrl } from 'src/web3/backendHosts'
 
 const MAX_ATTEMPTS = 3
 const BASE_BACKOFF_MS = 250
@@ -141,6 +141,10 @@ export const fetchWithTimeout = async (
   options: RequestInit | null = null,
   duration: number = FETCH_TIMEOUT_DURATION
 ): Promise<Response> => {
+  // A remotely flipped primary re-roots compiled backend URLs here, at the
+  // same single choke point that owns the failover. No-op while the config
+  // matches the compiled default (the normal state).
+  url = toEffectivePrimaryUrl(url)
   const circuitKey = extractCircuitKey(url)
 
   if (circuitKey && shouldShortCircuit(circuitKey)) {

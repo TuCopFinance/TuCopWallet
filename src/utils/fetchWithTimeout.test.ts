@@ -6,8 +6,9 @@ import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 // stays out of failover territory (null = not a backend URL).
 jest.mock('src/web3/backendHosts', () => ({
   toBackendFallbackUrl: jest.fn(() => null),
+  toEffectivePrimaryUrl: jest.fn((url: string) => url),
 }))
-const { toBackendFallbackUrl } = jest.requireMock('src/web3/backendHosts')
+const { toBackendFallbackUrl, toEffectivePrimaryUrl } = jest.requireMock('src/web3/backendHosts')
 
 const mockFetch = fetch as FetchMock
 
@@ -17,6 +18,8 @@ describe('fetchWithTimeout', () => {
     _resetForTests()
     toBackendFallbackUrl.mockReset()
     toBackendFallbackUrl.mockReturnValue(null)
+    toEffectivePrimaryUrl.mockReset()
+    toEffectivePrimaryUrl.mockImplementation((url: string) => url)
   })
 
   it('returns response if request completes within timeout', async () => {
@@ -169,6 +172,8 @@ describe('backend host failover', () => {
     _resetForTests()
     toBackendFallbackUrl.mockReset()
     toBackendFallbackUrl.mockReturnValue(FALLBACK)
+    toEffectivePrimaryUrl.mockReset()
+    toEffectivePrimaryUrl.mockImplementation((url: string) => url)
   })
 
   it('GET: fails over to the fallback host after exhausting 5xx retries', async () => {
@@ -248,6 +253,16 @@ describe('backend host failover', () => {
     const response = await fetchWithTimeout('https://forno.celo.org/')
     expect(response.status).toBe(500)
     expect(mockFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it('re-roots the request when the remote primary differs from the compiled default', async () => {
+    const FLIPPED = 'https://backend2.tucop.xyz/api/tucopramp/p2p/banks'
+    toEffectivePrimaryUrl.mockReturnValue(FLIPPED)
+    mockFetch.mockResponseOnce('ok', { status: 200 })
+    const response = await fetchWithTimeout(PRIMARY)
+    expect(response.status).toBe(200)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch.mock.calls[0][0]).toBe(FLIPPED)
   })
 
   it('returns the primary outcome when the fallback also fails', async () => {

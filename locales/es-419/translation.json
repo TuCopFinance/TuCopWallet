@@ -3490,6 +3490,8 @@
       "signature_invalid": "No pudimos verificar tu billetera. Intenta de nuevo.",
       "signature_expired": "La sesión expiró. Vuelve a intentar.",
       "unsupported_encoding": "No pudimos leer el archivo. Intenta con otra imagen.",
+      "upstream_unavailable": "El servicio no respondio a tiempo. Espera un momento e intenta de nuevo.",
+      "versioned_path_removed": "Tu version de la app ya no es compatible con este servicio. Actualiza la app para continuar.",
       "wallet_not_linked": "Necesitas registrar tu cédula la primera vez.",
       "invalid_body": "Revisa los datos ingresados.",
       "consent_required": "Debes aceptar los términos para continuar.",

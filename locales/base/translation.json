@@ -3476,6 +3476,8 @@
       "signature_invalid": "We could not verify your wallet. Try again.",
       "signature_expired": "The session expired. Try again.",
       "unsupported_encoding": "We could not read the file. Try another image.",
+      "upstream_unavailable": "The service did not respond in time. Wait a moment and try again.",
+      "versioned_path_removed": "This version of the app is no longer compatible with this service. Update the app to continue.",
       "wallet_not_linked": "You need to register your ID the first time.",
       "invalid_body": "Check the details you entered.",
       "consent_required": "You must accept the terms to continue.",

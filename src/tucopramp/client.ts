@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { Address, Hex } from 'viem'
-import { getSiweSigningFunction } from 'src/fiatconnect/clients'
+import { getPassword } from 'src/pincode/authentication'
+import { UNLOCK_DURATION } from 'src/web3/consts'
 import { ErrorEnvelope, TucopRampError } from 'src/tucopramp/types'
 import Logger from 'src/utils/Logger'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
@@ -34,9 +35,8 @@ export interface SignTucopRampRequestArgs {
 }
 
 // Build the canonical string per the published auth contract
-// (admin.ramp.tucop.xyz/docs) and sign it via the existing viem-based keychain
-// path (getSiweSigningFunction). The signing primitive lives in
-// src/fiatconnect/clients.ts:20-36; we do not reimplement it.
+// (admin.ramp.tucop.xyz/docs) and sign it with the keychain account that owns
+// the wallet address going into the X-Wallet-Address header.
 //
 // The canonical string format is:
 //   TuCOPRamp:<METHOD>:<PATH>:<WALLET_ADDRESS>:<TIMESTAMP>:<BODY_HASH>
@@ -63,8 +63,24 @@ export async function signTucopRampRequest(
   const isMutating = method === 'POST' || method === 'PATCH' || method === 'PUT'
   const bodyHash = isMutating ? sha256Hex(args.body ?? '') : ''
   const canonical = `${CANONICAL_PREFIX}:${method}:${args.upstreamPath}:${address}:${timestamp}:${bodyHash}`
-  const signMessage = getSiweSigningFunction(args.keychainAccounts)
-  const signature = (await signMessage(canonical)) as Hex
+  // Sign with the account that owns X-Wallet-Address, looked up explicitly.
+  // The previous helper (getSiweSigningFunction) signed with getAccounts()[0],
+  // which happens to match today because the wallet is single-account, but a
+  // second account would silently produce signature_invalid on every call
+  // (assumption surfaced by the Ramp team's 2026-11-15 cross review).
+  const signerAddress = args.walletAddress
+  if (!args.keychainAccounts.isUnlocked(signerAddress)) {
+    await args.keychainAccounts.unlock(
+      signerAddress,
+      await getPassword(signerAddress),
+      UNLOCK_DURATION
+    )
+  }
+  const viemAccount = args.keychainAccounts.getViemAccount(signerAddress)
+  if (!viemAccount) {
+    throw new Error(`tucopramp: no keychain account for ${signerAddress}`)
+  }
+  const signature = (await viemAccount.signMessage({ message: canonical })) as Hex
   return { timestamp, signature, canonical }
 }
 
@@ -92,11 +108,16 @@ export interface TucopRampFetchArgs {
 // (or omission for public endpoints via skipWalletAuth), and typed error
 // throwing on non-2xx.
 //
-// Does NOT retry on non-2xx responses. fetchWithTimeout already applies a
-// retry-on-5xx policy at a lower level; wallet-side retry on top would double
-// exposure to TuCOPRamp's rate limits without a coherent recovery strategy.
-// Callers that need to retry (e.g. after signature_expired) should do so
-// explicitly with a fresh timestamp.
+// Does NOT retry on non-2xx responses, with ONE exception: a 401
+// signature_expired is re-signed and re-sent once with a fresh timestamp
+// (a slow request or a backgrounded app can push the signature past the
+// server's 300s window; the retry costs nothing and recovers that case).
+// Everything else: fetchWithTimeout already applies a retry-on-5xx policy at
+// a lower level; wallet-side retry on top would double exposure to
+// TuCOPRamp's rate limits without a coherent recovery strategy. A clock
+// skewed by MORE than the window fails the retry too and shows the
+// signature_expired copy; fixing that needs server-time sync, tracked
+// separately.
 export async function tucopRampFetch<T>(args: TucopRampFetchArgs): Promise<T> {
   const { data } = await tucopRampFetchWithMeta<T>(args)
   return data
@@ -115,6 +136,13 @@ export interface ResponseMeta {
 // other call site should stay on tucopRampFetch to avoid coupling.
 export async function tucopRampFetchWithMeta<T>(
   args: TucopRampFetchArgs
+): Promise<{ data: T; meta: ResponseMeta }> {
+  return tucopRampFetchAttempt(args, false)
+}
+
+async function tucopRampFetchAttempt<T>(
+  args: TucopRampFetchArgs,
+  isSignatureRetry: boolean
 ): Promise<{ data: T; meta: ResponseMeta }> {
   assertUpstreamPath(args.upstreamPath)
   const baseUrl = args.baseUrl ?? TUCOPRAMP_API_BASE_URL
@@ -173,6 +201,11 @@ export async function tucopRampFetchWithMeta<T>(
     `code=${envelope.code}`,
     envelope.request_id ? `request_id=${envelope.request_id}` : ''
   )
+
+  if (envelope.code === 'signature_expired' && !args.skipWalletAuth && !isSignatureRetry) {
+    Logger.info(TAG, 'signature_expired; re-signing once with a fresh timestamp')
+    return tucopRampFetchAttempt(args, true)
+  }
 
   throw new TucopRampError({
     httpStatus: response.status,

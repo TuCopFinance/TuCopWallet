@@ -115,13 +115,40 @@ export interface Destination {
   updated_at: string
 }
 
-export function listDestinations(partySession: string, opts?: CallOpts): Promise<Destination[]> {
-  return platformFetch<Destination[]>({
-    ...opts,
-    method: 'GET',
-    path: '/destinations',
-    partySession,
-  })
+// The list comes paged as { data, has_more } (newest first, limit 1..100,
+// default 100; next page via starting_after = last id of the previous one).
+// Typing it as a bare array shipped a crash-in-waiting: the slice stored the
+// envelope and the withdraw screen called .filter on it (caught by the Ramp
+// team's 2026-11-15 cross review). The pages are walked here so callers keep
+// receiving a plain Destination[]; a person holds a handful of Bre-B keys,
+// so the page cap is a defensive bound, not an expected path.
+interface DestinationsPage {
+  data: Destination[]
+  has_more: boolean
+}
+
+const DESTINATIONS_MAX_PAGES = 5
+
+export async function listDestinations(
+  partySession: string,
+  opts?: CallOpts
+): Promise<Destination[]> {
+  const all: Destination[] = []
+  let startingAfter: string | undefined
+  for (let pageCount = 0; pageCount < DESTINATIONS_MAX_PAGES; pageCount++) {
+    const page = await platformFetch<DestinationsPage>({
+      ...opts,
+      method: 'GET',
+      path: startingAfter
+        ? `/destinations?starting_after=${encodeURIComponent(startingAfter)}`
+        : '/destinations',
+      partySession,
+    })
+    all.push(...(page.data ?? []))
+    if (!page.has_more || page.data.length === 0) break
+    startingAfter = page.data[page.data.length - 1].id
+  }
+  return all
 }
 
 export function getDestination(
