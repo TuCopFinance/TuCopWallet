@@ -213,7 +213,12 @@ function TuCOPRampOfframpFlow(_props: Props) {
       !!findRecordByIndexSelector(state, offrampDepositFlowId(trackedOrderId), 0)
   )
   const pollActive =
-    status === 'awaiting-deposit' || status === 'deposit-confirmed' || status === 'processing'
+    status === 'awaiting-deposit' ||
+    status === 'deposit-confirmed' ||
+    status === 'processing' ||
+    // refund-owed is open: the refund is on its way and the poller is what
+    // flips the screen to refunded when it lands.
+    status === 'refund-owed'
 
   // maxFeeAmount is expressed in the fee currency (COPm on Celo when the user
   // pays fees with COPm). Since 1 COPm = 1 COP always, we render it directly

@@ -795,7 +795,11 @@ export function* checkActiveOfframpOrderSaga() {
       (o) =>
         o.status === 'AWAITING_DEPOSIT' ||
         o.status === 'DEPOSIT_CONFIRMED' ||
-        o.status === 'PROCESSING'
+        o.status === 'PROCESSING' ||
+        // Not terminal: the operator still owes the refund transfer. Without
+        // this, a user with a pending refund who reopens the app loses the
+        // order's tracking entirely (Ramp cross review, 2026-11-15).
+        o.status === 'REFUND_OWED'
     )
     if (activeSummary) {
       const detail = yield* call(apiGetOrder, auth, activeSummary.id)
@@ -1049,6 +1053,27 @@ export function* uploadOnrampProofSaga(
     yield* call(apiUploadProof, auth, action.payload.orderId, action.payload.file)
     yield* put(onrampProofUploaded())
   } catch (err) {
+    // The upload POST carries no Idempotency-Key, and fetchWithTimeout
+    // retries 5xx: if the FIRST attempt actually landed, the retry answers
+    // 409 proof_not_acceptable_in_state. Before surfacing that as an error,
+    // ask the order: review-side means the receipt is in and this was a
+    // duplicate, i.e. a success (Ramp cross review, 2026-11-15).
+    if (err instanceof TucopRampError && err.code === 'proof_not_acceptable_in_state') {
+      try {
+        const detail = yield* call(apiGetOrder, auth, action.payload.orderId)
+        if (
+          detail.status === 'AWAITING_REVIEW' ||
+          detail.status === 'VERIFYING' ||
+          detail.status === 'COMPLETED'
+        ) {
+          Logger.info(TAG, 'proof upload 409 but the order is review-side; treating as success')
+          yield* put(onrampProofUploaded())
+          return
+        }
+      } catch (verifyErr) {
+        Logger.warn(TAG, 'could not verify order state after proof 409', verifyErr)
+      }
+    }
     // The user already paid: keep the order on the upload step with an
     // inline error and let them retry the upload only.
     yield* put(onrampProofUploadFailed({ code: errorCode(err) }))
@@ -1157,7 +1182,12 @@ export function* checkActiveOnrampOrderSaga() {
     const page = yield* call(apiListOrders, auth, params)
     const activeSummary = (page.orders ?? []).find(
       (o) =>
-        o.status === 'AWAITING_PROOF' || o.status === 'AWAITING_REVIEW' || o.status === 'VERIFYING'
+        o.status === 'AWAITING_PROOF' ||
+        o.status === 'AWAITING_REVIEW' ||
+        o.status === 'VERIFYING' ||
+        // Same as the off-ramp resume: a refund still owed must keep its
+        // tracking across app restarts.
+        o.status === 'REFUND_OWED'
     )
     if (!activeSummary) {
       yield* put(onrampNoActiveFound())

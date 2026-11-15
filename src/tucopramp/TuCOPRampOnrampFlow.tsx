@@ -105,7 +105,15 @@ const MAX_PROOF_BYTES = 10 * 1024 * 1024
 // Statuses with an open order the poller follows (also during the upload
 // step, so an order that expires or is cancelled by an operator is noticed
 // before a late upload).
-const POLLED_STATUSES = ['awaiting-proof-upload', 'uploading-proof', 'awaiting-review', 'verifying']
+// refund-owed is open (it transitions to refunded), so the poller must keep
+// following it; see isOnrampTerminal in saga.ts.
+const POLLED_STATUSES = [
+  'awaiting-proof-upload',
+  'uploading-proof',
+  'awaiting-review',
+  'verifying',
+  'refund-owed',
+]
 
 function proofFileName(uri: string, type: string): string {
   const fromUri = uri.split('?')[0].split('/').pop()
