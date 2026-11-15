@@ -92,6 +92,18 @@ export function getBackendHosts(): BackendHosts {
   }
 }
 
+// When remote config moves the primary off the compiled default, every URL
+// built from networkConfig still carries the default origin. Rewriting at
+// fetch time is what makes a remote flip actually move the traffic;
+// without it, backend_hosts would only ever drive the fallback match and
+// the "infrastructure move as a flag flip" promise would be hollow.
+export function toEffectivePrimaryUrl(url: string): string {
+  const { primary } = getBackendHosts()
+  if (primary === DEFAULT_BACKEND_PRIMARY) return url
+  if (!url.startsWith(`${DEFAULT_BACKEND_PRIMARY}/`) && url !== DEFAULT_BACKEND_PRIMARY) return url
+  return `${primary}${url.slice(DEFAULT_BACKEND_PRIMARY.length)}`
+}
+
 // If `url` points at the effective primary backend, return the same URL
 // re-rooted at the fallback host. Null for every other origin (third-party
 // APIs, RPC nodes, localhost dev overrides) so the failover logic in

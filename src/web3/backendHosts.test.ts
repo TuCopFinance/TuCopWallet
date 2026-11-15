@@ -5,6 +5,7 @@ import {
   getBackendHosts,
   sanitizeBackendBaseUrl,
   toBackendFallbackUrl,
+  toEffectivePrimaryUrl,
 } from 'src/web3/backendHosts'
 
 jest.mock('src/statsig', () => ({
@@ -107,5 +108,32 @@ describe('toBackendFallbackUrl', () => {
     expect(toBackendFallbackUrl(`${DEFAULT_BACKEND_FALLBACK}/api/swap/quote`)).toBeNull()
     // Prefix trickery: primary host as a prefix of a longer hostname.
     expect(toBackendFallbackUrl('https://backend.tucop.xyz.evil.com/api')).toBeNull()
+  })
+})
+
+describe('toEffectivePrimaryUrl', () => {
+  beforeEach(() => {
+    _resetBackendHostsForTests()
+    getDynamicConfigParams.mockReturnValue({})
+  })
+
+  it('is a no-op while the remote primary matches the compiled default', () => {
+    const url = `${DEFAULT_BACKEND_PRIMARY}/api/swap/quote`
+    expect(toEffectivePrimaryUrl(url)).toBe(url)
+  })
+
+  it('re-roots compiled-default URLs when the remote primary was flipped', () => {
+    getDynamicConfigParams.mockReturnValue({ primary: 'https://backend2.tucop.xyz' })
+    expect(toEffectivePrimaryUrl(`${DEFAULT_BACKEND_PRIMARY}/api/swap/quote?x=1`)).toBe(
+      'https://backend2.tucop.xyz/api/swap/quote?x=1'
+    )
+  })
+
+  it('never touches other origins, flipped or not', () => {
+    getDynamicConfigParams.mockReturnValue({ primary: 'https://backend2.tucop.xyz' })
+    expect(toEffectivePrimaryUrl('https://forno.celo.org/')).toBe('https://forno.celo.org/')
+    expect(toEffectivePrimaryUrl('https://backend.tucop.xyz.evil.com/a')).toBe(
+      'https://backend.tucop.xyz.evil.com/a'
+    )
   })
 })
